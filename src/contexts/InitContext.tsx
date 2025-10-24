@@ -1,6 +1,6 @@
 "use client";
 
-import React, {createContext, PropsWithChildren, useEffect, useState} from 'react';
+import {createContext, PropsWithChildren, useEffect, useState} from 'react';
 import {useAppDispatch, useAppSelector} from '@/utils/hooks';
 import {
   InitStateInterface,
