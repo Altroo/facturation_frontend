@@ -13,7 +13,7 @@ import {allowAnyInstance, setFormikAutoErrors} from "@/utils/helpers";
 import {AccountPostLoginResponseType} from "@/types/account/accountTypes";
 import {postApi} from "@/store/services/_init/_initAPI";
 import {ThemeProvider} from "@mui/system";
-import {LoadingButton} from "@mui/lab";
+import { Button } from '@mui/material';
 import {getDefaultTheme} from "@/utils/themes";
 import {refreshAppTokenStatesAction} from "@/store/actions/_init/_initActions";
 
@@ -53,7 +53,7 @@ const Login: NextPage = () => {
 
   const loginFormSchema = z.object({
     email: z.email({ message: "Invalid email address" }).nonempty("Required"),
-    password: z.string().nonempty("Required").min(8, "Password must be at least 8 characters"),
+    password: z.string({ message: "Password must be at least 8 characters" }).nonempty("Required").min(8),
     globalError: z.string().optional(),
   });
 
@@ -63,7 +63,7 @@ const Login: NextPage = () => {
       password: "",
       globalError: "",
     },
-    validate: toFormikValidationSchema(loginFormSchema),
+    validationSchema: toFormikValidationSchema(loginFormSchema),
     onSubmit: async (values, {setFieldError}) => {
       startTransition(async () => {
         try {
@@ -133,7 +133,7 @@ const Login: NextPage = () => {
             )}
             <ThemeProvider theme={getDefaultTheme()}>
               <Stack direction="row" justifyContent="space-between">
-                <LoadingButton
+                <Button
                   loading={isPending}
                   disabled={!(formik.isValid && !isPending)}
                   type="submit"
@@ -142,7 +142,7 @@ const Login: NextPage = () => {
                   variant="outlined"
                 >
                   Login
-                </LoadingButton>
+                </Button>
               </Stack>
             </ThemeProvider>
           </form>
