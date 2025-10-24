@@ -1,0 +1,42 @@
+{
+  "name": "facturation_frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "upgrade": "yarn upgrade-interactive"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/lab": "^7.0.1-beta.18",
+    "@mui/material": "^7.3.4",
+    "@mui/material-nextjs": "^7.3.3",
+    "@reduxjs/toolkit": "^2.9.2",
+    "axios": "^1.12.2",
+    "cookie": "^1.0.2",
+    "formik": "^2.4.6",
+    "next": "16.0.0",
+    "next-auth": "^5.0.0-beta.29",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "react-redux": "^9.2.0",
+    "redux-saga": "^1.4.2",
+    "zod": "^4.1.12",
+    "zod-formik-adapter": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.9.1",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "babel-plugin-react-compiler": "1.0.0",
+    "eslint": "9.38.0",
+    "eslint-config-next": "16.0.0",
+    "sass": "^1.93.2",
+    "typescript": "5.9.3"
+  },
+  "packageManager": "yarn@4.10.3"
+}
