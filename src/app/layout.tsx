@@ -10,7 +10,7 @@ import {auth} from "@/auth";
 
 
 export const metadata: Metadata = {
-  title: "AI worx App",
+  title: "Facturation - Casa Di Lusso",
   description: "",
   icons: {
     icon: '/favicon.ico',
