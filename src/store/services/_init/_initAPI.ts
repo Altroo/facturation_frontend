@@ -66,6 +66,19 @@ export const getApi = async (url: string | undefined, instance: AxiosInstance, q
   };
 };
 
+/*** Base Axios Json Api call [PATCH] */
+export const patchApi = async (
+  url: string | undefined,
+  instance: AxiosInstance,
+  body?: object,
+) => {
+  const response = await instance.patch(`${url}`, { ...body });
+  return {
+    status: response.status,
+    data: response.data,
+  };
+};
+
 /*** Base Axios Json Api call [PUT] */
 export const putApi = async (url: string | undefined, instance: AxiosInstance, body: object) => {
   const response = await instance.put(`${url}`, body);

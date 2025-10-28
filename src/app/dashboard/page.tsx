@@ -14,7 +14,7 @@ const Dashboard: NextPage = () => {
 
   return (
     <>
-      {session && session.user && (
+      {session && session.user ? (
         <>
           <Typography variant="h5" gutterBottom>
             Welcome, {session.user.email}
@@ -23,6 +23,8 @@ const Dashboard: NextPage = () => {
             Logout
           </Button>
         </>
+      ) : (
+        <div>TEST</div>
       )}
     </>
   );

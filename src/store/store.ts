@@ -2,11 +2,15 @@ import createSagaMiddleware, {Task} from 'redux-saga';
 import {combineReducers, configureStore, Store} from "@reduxjs/toolkit";
 import {rootSaga} from './sagas';
 import _initReducer from './slices/_init/_initSlice';
+import accountReducer from './slices/account/accountSlice';
+import { accountApi } from './services/account/account';
 
 const SagaMiddleware = createSagaMiddleware({});
 
 const combinedReducers = combineReducers({
   _init: _initReducer,
+  account: accountReducer,
+  [accountApi.reducerPath]: accountApi.reducer,
 });
 
 export interface SagaStore extends Store {
@@ -24,7 +28,9 @@ export const store: SagaStore = configureStore({
     getDefaultMiddleware({
       serializableCheck: false,
       thunk: true,
-    }).prepend(SagaMiddleware),
+    })
+      .concat(accountApi.middleware)
+      .prepend(SagaMiddleware),
   devTools: process.env.NODE_ENV !== 'production',
 });
 

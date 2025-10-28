@@ -2,5 +2,15 @@
 export const SITE_ROOT = `${process.env.NEXT_PUBLIC_DOMAIN_URL_PREFIX}/`;
 // Auth
 export const AUTH_LOGIN = `${SITE_ROOT}/login`;
-// Dashboard
-export const DASHBOARD_ROOT = `${SITE_ROOT}dashboard`;
+// Auth forgot password
+export const AUTH_RESET_PASSWORD = `${SITE_ROOT}/reset-password`;
+export const AUTH_RESET_PASSWORD_ENTER_CODE = `${SITE_ROOT}/reset-password/enter-code`;
+export const AUTH_RESET_PASSWORD_SET_PASSWORD = `${SITE_ROOT}/reset-password/set-password`;
+export const AUTH_RESET_PASSWORD_COMPLETE = `${SITE_ROOT}/reset-password/set-password-complete`;
+// dashboard index
+export const DASHBOARD = `${SITE_ROOT}dashboard`;
+// Mon profil
+export const DASHBOARD_ACCOUNT = `${SITE_ROOT}dashboard/compte`;
+export const DASHBOARD_EDIT_PROFILE = `${SITE_ROOT}dashboard/compte/edit-profil`;
+export const DASHBOARD_ADRESSE_EMAIL = `${SITE_ROOT}dashboard/compte/adresse-email`;
+export const DASHBOARD_PASSWORD = `${SITE_ROOT}dashboard/compte/mot-de-passe`;

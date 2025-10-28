@@ -1,12 +1,32 @@
 export type ApiErrorType = {
-  status_code: number | null;
-  message: string | null;
-  details: Record<string, Array<string>> | { error: Array<string> } | null;
+  status_code: number;
+  message: string;
+  details?: Record<string, string[]>;
 };
 
 export type ApiErrorResponseType = {
-  error: ApiErrorType;
+  status_code: number;
+  message: string;
+  details?: Record<string, string[]>;
 };
+
+export type NormalizedError = {
+  status: number;
+  data: {
+    status_code: number;
+    message?: string;
+    details?: Record<string, string[]>;
+  };
+};
+
+
+export type SuccessResponseType<T = unknown> = {
+  status_code: number;
+  message: string;
+  data?: T;
+};
+
+export type ApiPromiseStatus = 'PENDING' | 'RESOLVED' | 'REJECTED' | null;
 
 export interface ResponseDataInterface<T> {
   data: T;
@@ -33,3 +53,10 @@ export interface InitStateInterface<T> {
   initStateToken: T;
 }
 
+export type AuthSagaContextType = {
+  initStateToken: InitStateToken;
+};
+
+export interface ResponseOnlyInterface {
+  status: number;
+}

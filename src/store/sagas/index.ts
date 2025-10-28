@@ -1,9 +1,11 @@
 import {all, spawn, call, fork} from 'redux-saga/effects';
 import {watchInit} from './_init/_initSaga';
 import {watchWS} from './ws/wsSaga';
+import { watchAccount } from './account/accountSaga';
 
 const sagas = [
   watchInit,
+  watchAccount
 ];
 
 // spawn : whenever a watcher get's crashed somehow,

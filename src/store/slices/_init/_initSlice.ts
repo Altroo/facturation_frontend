@@ -25,9 +25,12 @@
       setInitState: (state, action: PayloadAction<InitStateInterface<InitStateToken>>) => {
         state.initStateToken = action.payload.initStateToken;
       },
+      initToken: () => {
+        return initialState;
+      },
     },
   });
 
-  export const {setInitState} = _initSlice.actions;
+  export const {setInitState, initToken} = _initSlice.actions;
 
   export default _initSlice.reducer;

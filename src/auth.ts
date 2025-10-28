@@ -69,8 +69,8 @@ export const {handlers, auth} = NextAuth({
   },
 
   pages: {
-    signIn: "/login",
-    error: "/login",
+    signIn: "login",
+    error: "login",
   },
 
   callbacks: {

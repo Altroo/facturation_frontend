@@ -1,10 +1,11 @@
-import {put, takeLatest} from 'redux-saga/effects';
+import {put, takeLatest, select} from 'redux-saga/effects';
 import * as Types from '../../actions';
 import {
   InitStateInterface,
   InitStateToken,
 } from "@/types/_init/_initTypes";
 import {setInitState} from '../../slices/_init/_initSlice';
+import { getInitStateToken} from '../../selectors';
 import {Session} from "next-auth";
 
 function* initAppSaga() {
@@ -59,6 +60,14 @@ function* refreshAppTokenStatesSaga(payload: { type: string; session: Record<str
   if (appToken) {
     yield put(setInitState(appToken));
   }
+}
+
+export function* ctxAuthSaga() {
+  return {
+    initStateToken: yield select(getInitStateToken),
+  } as {
+    initStateToken: InitStateToken,
+  };
 }
 
 export function* watchInit() {

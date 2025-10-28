@@ -1,0 +1,14 @@
+@use '@/styles/sass/colors' as *
+@use '@/styles/sass/variables' as *
+@use '@/styles/sass/mixins' as *
+
+// Global styles
+.dialog
+  position: fixed
+  right: 0
+  left: calc(100% - 430px)
+@media #{$mobile}
+  .dialog
+    left: -0vh
+// @media #{}
+// @media #{}
