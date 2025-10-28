@@ -17,11 +17,18 @@ export const accountApi = createApi({
 
     passwordReset: builder.mutation<SuccessResponseType, { email: string, code: string }>({
       query: (payload) => ({
-        url: `${process.env.NEXT_PUBLIC_ACCOUNT_PASSWORD_RESET}/${payload.email}/${payload.code}/`,
+        url: `${process.env.NEXT_PUBLIC_ACCOUNT_PASSWORD_RESET}${payload.email}/${payload.code}/`,
         method: 'GET',
+      }),
+    }),
+    SetPassword: builder.mutation<SuccessResponseType, { email: string, code: string, new_password: string, new_password2: string }>({
+      query: (payload) => ({
+        url: `${process.env.NEXT_PUBLIC_ACCOUNT_PASSWORD_RESET}`,
+        method: 'PUT',
+        data: payload,
       }),
     }),
   }),
 });
 
-export const { useSendPasswordResetCodeMutation, usePasswordResetMutation } = accountApi;
+export const { useSendPasswordResetCodeMutation, usePasswordResetMutation, useSetPasswordMutation } = accountApi;

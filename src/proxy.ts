@@ -4,9 +4,9 @@ import { NextResponse } from "next/server";
 const PUBLIC_PATHS = [
   "/login",
   "/reset-password",
-  "/set-password",
-  "/enter-code",
-  "/dashboard"
+  "/reset-password/enter-code",
+  "/reset-password/set-password",
+  "/reset-password/set-password-complete"
 ];
 
 export default auth((req) => {

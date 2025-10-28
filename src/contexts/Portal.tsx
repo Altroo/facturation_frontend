@@ -18,6 +18,7 @@ const Portal: React.FC<PortalProps> = ({ id, children }) => {
 			el.id = id;
 			document.body.appendChild(el);
 		}
+		// eslint-disable-next-line react-hooks/set-state-in-effect
 		setContainer(el);
 	}, [id]);
 

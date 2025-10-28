@@ -54,7 +54,7 @@ const CustomPasswordInput = forwardRef<HTMLInputElement, Props>((props: Props, r
 				color="primary"
 				disabled={props.disabled}
 				slotProps={{
-					input : {
+					htmlInput : {
 						endAdornment: (
 							<InputAdornment position="end">
 								<IconButton

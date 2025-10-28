@@ -1,20 +1,18 @@
 "use client";
 
-import React, {useState, useTransition} from 'react';
+import React, { useState, useTransition } from 'react';
 import Styles from '@/styles/auth/reset-password/enter-code.module.sass';
-import {
-  setFormikAutoErrors
-} from "@/utils/helpers";
-import {Desktop, TabletAndMobile} from "@/utils/clientHelpers";
-import {cookiesPoster} from "@/store/services/_init/_initAPI";
-import {AUTH_RESET_PASSWORD_SET_PASSWORD} from '@/utils/routes';
+import { setFormikAutoErrors } from "@/utils/helpers";
+import { Desktop, TabletAndMobile } from "@/utils/clientHelpers";
+import { cookiesPoster } from "@/store/services/_init/_initAPI";
+import { AUTH_RESET_PASSWORD_SET_PASSWORD } from '@/utils/routes';
 import AuthLayout from '@/components/layouts/auth/authLayout';
-import {Stack} from '@mui/material';
-import {useRouter} from 'next/navigation';
-import {useFormik} from 'formik';
-import {passwordResetCodeSchema} from '@/utils/formValidationSchemas';
-import {toFormikValidationSchema} from 'zod-formik-adapter';
-import {codeTextInputTheme} from '@/utils/themes';
+import { Stack } from '@mui/material';
+import { useRouter } from 'next/navigation';
+import { useFormik } from 'formik';
+import { passwordResetCodeSchema } from '@/utils/formValidationSchemas';
+import { toFormikValidationSchema } from 'zod-formik-adapter';
+import { codeTextInputTheme } from '@/utils/themes';
 import CustomOutlinedText from '@/components/formikElements/customOutlinedText/customOutlinedText';
 import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
 import ApiProgress from '@/components/formikElements/apiLoadingResponseOrError/apiProgress/apiProgress';
@@ -22,27 +20,27 @@ import UserMainNavigationBar from '@/components/layouts/userMainNavigationBar/us
 import Portal from '@/contexts/Portal';
 import CustomToast from '@/components/portals/customToast/customToast';
 import PrimaryLoadingButton from "@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton";
-import {useSendPasswordResetCodeMutation, usePasswordResetMutation} from '@/store/services/account/account';
-import {isAxiosError} from 'axios';
-import {NormalizedError} from "@/types/_init/_initTypes";
-import {useSession} from 'next-auth/react';
+import { useSendPasswordResetCodeMutation, usePasswordResetMutation } from '@/store/services/account/account';
+import { isAxiosError } from 'axios';
+import { NormalizedError } from "@/types/_init/_initTypes";
+import { useSession } from 'next-auth/react';
 
-type enterCodePageContentProps = {
+type EnterCodePageContentProps = {
   email: string;
 };
 
-const EnterCodePageContent = ({email}: enterCodePageContentProps) => {
+const EnterCodePageContent = ({ email }: EnterCodePageContentProps) => {
   const router = useRouter();
   const [showDataUpdated, setShowDataUpdated] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [isPending, startTransition] = useTransition();
 
-  const [reSendPasswordResetCode, {isLoading: isResendLoading}] = useSendPasswordResetCodeMutation();
-  const [passwordReset, {isLoading: isPasswordResetLoading}] = usePasswordResetMutation();
+  const [reSendPasswordResetCode, { isLoading: isResendLoading }] = useSendPasswordResetCodeMutation();
+  const [passwordReset, { isLoading: isPasswordResetLoading }] = usePasswordResetMutation();
 
   const renvoyerLeCodeHandler = async () => {
     try {
-      await reSendPasswordResetCode({email}).unwrap();
+      await reSendPasswordResetCode({ email }).unwrap();
       setToastMessage('code envoyé.');
       setShowDataUpdated(true);
     } catch (err) {
@@ -51,27 +49,21 @@ const EnterCodePageContent = ({email}: enterCodePageContentProps) => {
         setToastMessage(message);
       }
     }
-  }
+  };
 
   const formik = useFormik({
-    initialValues: {
-      one: '',
-      two: '',
-      three: '',
-      four: '',
-      globalError: '',
-    },
+    initialValues: { one: '', two: '', three: '', four: '', globalError: '' },
     validateOnMount: true,
     validationSchema: toFormikValidationSchema(passwordResetCodeSchema),
-    onSubmit: async (values, {setFieldError}) => {
+    onSubmit: async (values, { setFieldError }) => {
       startTransition(async () => {
         const code = values.one + values.two + values.three + values.four;
         try {
-          await passwordReset({email, code}).unwrap();
-          await cookiesPoster('/cookies', {code});
+          await passwordReset({ email, code }).unwrap();
+          await cookiesPoster('/cookies', { code });
           router.push(AUTH_RESET_PASSWORD_SET_PASSWORD);
         } catch (e) {
-          setFormikAutoErrors({e: e as NormalizedError, setFieldError});
+          setFormikAutoErrors({ e: e as NormalizedError, setFieldError });
         }
       });
     },
@@ -82,7 +74,7 @@ const EnterCodePageContent = ({email}: enterCodePageContentProps) => {
       <Stack direction="column" className={Styles.contentWrapper} spacing={4}>
         {(isResendLoading || isPending || isPasswordResetLoading) && (
           <ApiProgress
-            cssStyle={{position: 'absolute', top: '50%', left: '50%'}}
+            cssStyle={{ position: 'absolute', top: '50%', left: '50%' }}
             backdropColor="#FFFFFF"
             circularColor="#FFFFFF"
           />
@@ -90,10 +82,10 @@ const EnterCodePageContent = ({email}: enterCodePageContentProps) => {
         <Stack direction="column" spacing={1}>
           <span className={Styles.content}>Rentrez le code</span>
           <span className={Styles.paragraphe}>
-            Un code a été envoyé a <span className={Styles.email}>{email}</span>
+            Un code a été envoyé à <span className={Styles.email}>{email}</span>
           </span>
         </Stack>
-        <form style={{width: '100%'}} onSubmit={(e) => e.preventDefault()}>
+        <form style={{ width: '100%' }} onSubmit={(e) => e.preventDefault()}>
           <Stack direction="column" spacing={8}>
             <Stack
               direction="row"
@@ -113,7 +105,7 @@ const EnterCodePageContent = ({email}: enterCodePageContentProps) => {
                   fullWidth={false}
                   size="medium"
                   type="tel"
-                  slotProps={{input: {maxLength: 1}}}
+                  slotProps={{ htmlInput: { maxLength: 1 } }}
                   theme={codeTextInputTheme(
                     formik.touched[field as keyof typeof formik.touched] &&
                     Boolean(formik.errors[field as keyof typeof formik.errors])
@@ -144,30 +136,25 @@ const EnterCodePageContent = ({email}: enterCodePageContentProps) => {
         </form>
       </Stack>
       <Portal id="snackbar_portal">
-        <CustomToast type="success" message={toastMessage} setShow={setShowDataUpdated} show={showDataUpdated}/>
+        <CustomToast type="success" message={toastMessage} setShow={setShowDataUpdated} show={showDataUpdated} />
       </Portal>
     </>
   );
 };
 
 type Props = {
-  pageProps: {
-    email: string;
-  };
-  children?: React.ReactNode;
+  email: string;
 };
 
-const EnterCode: React.FC<Props> = (props: Props) => {
-  // TODO : retreive from cookie
-  const {email} = props.pageProps;
-  const {data: session, status} = useSession();
+const EnterCode: React.FC<Props> = ({ email }) => {
+  const { data: session, status } = useSession();
   const loading = status === 'loading';
 
   return (
     <>
       {loading && (
         <ApiProgress
-          cssStyle={{position: 'absolute', top: '50%', left: '50%'}}
+          cssStyle={{ position: 'absolute', top: '50%', left: '50%' }}
           backdropColor="#FFFFFF"
           circularColor="#0D070B"
         />
@@ -176,14 +163,14 @@ const EnterCode: React.FC<Props> = (props: Props) => {
         <>
           <Desktop>
             <AuthLayout>
-              <EnterCodePageContent email={email}/>
+              <EnterCodePageContent email={email} />
             </AuthLayout>
           </Desktop>
           <TabletAndMobile>
-            <div style={{display: 'flex', width: '100%', height: '100%'}}>
+            <div style={{ display: 'flex', width: '100%', height: '100%' }}>
               <main className={Styles.main}>
-                <UserMainNavigationBar/>
-                <EnterCodePageContent email={email}/>
+                <UserMainNavigationBar />
+                <EnterCodePageContent email={email} />
               </main>
             </div>
           </TabletAndMobile>
