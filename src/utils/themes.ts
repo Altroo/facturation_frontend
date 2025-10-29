@@ -206,7 +206,7 @@ export const customToastTheme = (primaryColor: string | undefined = undefined) =
 			MuiSnackbar: {
 				styleOverrides: {
 					root: {
-						width: '95%',
+						width: '20%',
 						// maxWidth: '1440px !important',
 						backgroundColor: 'white',
 						borderRadius: '20px',

@@ -12,36 +12,30 @@ export async function POST(request: Request) {
       sameSite: "lax" as const,
     };
 
-    if ("initStateToken" in body) {
-      (await cookies()).set("@initStateToken", body.initStateToken, {
-        maxAge: body.maxAge,
-        ...baseOptions,
-      });
+    const cookieStore = await cookies();
 
-      return NextResponse.json({ success: true });
+    // Define allowed keys and their corresponding cookie names
+    const allowedKeys: Record<string, string> = {
+      initStateToken: "@initStateToken",
+      new_email: "@new_email",
+      code: "@code",
+      pass_updated: "@pass_updated",
+    };
+
+    let success = false;
+
+    for (const [key, cookieName] of Object.entries(allowedKeys)) {
+      if (key in body) {
+        const value = body[key];
+        cookieStore.set(cookieName, value, {
+          maxAge: body.maxAge,
+          ...baseOptions,
+        });
+        success = true;
+      }
     }
 
-    if ("new_email" in body) {
-      (await cookies()).set("@new_email", body.new_email, {
-        maxAge: body.maxAge,
-        ...baseOptions,
-      });
-      return NextResponse.json({ success: true });
-    }
-
-    if ("code" in body) {
-      (await cookies()).set("@code", body.code, {
-        maxAge: body.maxAge,
-        ...baseOptions,
-      });
-      return NextResponse.json({ success: true });
-    }
-
-    if ("pass_updated" in body) {
-      (await cookies()).set("@pass_updated", body.pass_updated, {
-        maxAge: body.maxAge,
-        ...baseOptions,
-      });
+    if (success) {
       return NextResponse.json({ success: true });
     }
 
@@ -61,27 +55,16 @@ export async function GET(request: NextRequest) {
 
 export async function DELETE(request: Request) {
   const body = await request.json();
+  const cookieStore = await cookies();
 
-  if ("initStateToken" in body) {
-    (await cookies()).delete("@initStateToken");
+  const validKeys = ["@initStateToken", "@new_email", "@code", "@pass_updated"];
+  let deleted = false;
 
-    return NextResponse.json({ success: true }, { status: 200 });
+  for (const key of validKeys) {
+    if (key.slice(1) in body) {
+      cookieStore.delete(key);
+      deleted = true;
+    }
   }
-  if ("new_email" in body) {
-    (await cookies()).delete("@new_email");
-
-    return NextResponse.json({ success: true }, { status: 200 });
-  }
-  if ("code" in body) {
-    (await cookies()).delete("@code");
-
-    return NextResponse.json({ success: true }, { status: 200 });
-  }
-  if ("pass_updated" in body) {
-    (await cookies()).delete("@pass_updated");
-
-    return NextResponse.json({ success: true }, { status: 200 });
-  }
-
-  return NextResponse.json({ success: false }, { status: 400 });
+  return NextResponse.json({ success: deleted }, { status: deleted ? 200 : 400 });
 }
