@@ -1,6 +1,6 @@
 "use client";
 
-import React, {useTransition} from 'react';
+import React, {useTransition, useEffect} from 'react';
 import Styles from '@/styles/auth/reset-password/reset-password.module.sass';
 import {
   setFormikAutoErrors
@@ -8,7 +8,7 @@ import {
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import {Desktop, TabletAndMobile} from "@/utils/clientHelpers";
 import { cookiesPoster } from '@/store/services/_init/_initAPI';
-import {AUTH_RESET_PASSWORD_ENTER_CODE} from '@/utils/routes';
+import {AUTH_RESET_PASSWORD_ENTER_CODE, DASHBOARD} from '@/utils/routes';
 import AuthLayout from '@/components/layouts/auth/authLayout';
 import { Stack, Divider } from '@mui/material';
 import { useRouter } from 'next/navigation';
@@ -94,6 +94,14 @@ const ResetPasswordPageContent = () => {
 const ResetPassword: React.FC = () => {
   const { data: session, status } = useSession();
   const loading = status === 'loading';
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && session) {
+      router.replace(DASHBOARD);
+    }
+  }, [loading, session, router]);
+
 
   return (
     <>
@@ -121,7 +129,6 @@ const ResetPassword: React.FC = () => {
                 <ResetPasswordPageContent />
               </main>
             </div>
-
           </TabletAndMobile>
         </>
       )}
