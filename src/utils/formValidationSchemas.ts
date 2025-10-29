@@ -6,20 +6,27 @@ import {
   SHORT_INPUT_REQUIRED
 } from "@/utils/formValidationErrorMessages";
 
+const passwordField = z.preprocess(
+  (val) => (val === undefined ? "" : val),
+  z.string()
+    .min(8, { error: INPUT_PASSWORD_MIN(8) })
+    .nonempty({ error: INPUT_REQUIRED })
+);
+
 export const loginSchema = z.object({
-  email: z.email({ error: MINI_INPUT_EMAIL }).nonempty({ message: INPUT_REQUIRED }),
-  password: z.string().min(8, { message: INPUT_PASSWORD_MIN(8) }).nonempty({ message: INPUT_REQUIRED }),
+  email: z.email({ error: MINI_INPUT_EMAIL }).nonempty({ error: INPUT_REQUIRED }),
+  password: passwordField,
   globalError: z.string().optional(),
 });
 
 export const emailSchema= z.object({
-  email: z.email({ error: MINI_INPUT_EMAIL }).nonempty({ message: INPUT_REQUIRED }),
+  email: z.email({ error: MINI_INPUT_EMAIL }).nonempty({ error: INPUT_REQUIRED }),
   globalError: z.string().optional(),
 });
 
 export const passwordResetConfirmationSchema = z.object({
-  new_password: z.string().min(8, { message: INPUT_PASSWORD_MIN(8) }).nonempty({ message: INPUT_REQUIRED }),
-  new_password2: z.string().min(8, { message: INPUT_PASSWORD_MIN(8) }).nonempty({ message: INPUT_REQUIRED }),
+  new_password: passwordField,
+  new_password2: passwordField,
   globalError: z.string().optional(),
 });
 
