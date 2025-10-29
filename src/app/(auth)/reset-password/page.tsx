@@ -19,7 +19,6 @@ import CustomTextInput from '@/components/formikElements/customTextInput/customT
 import UserMainNavigationBar from '@/components/layouts/userMainNavigationBar/userMainNavigationBar';
 import PrimaryLoadingButton from "@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton";
 import { useSendPasswordResetCodeMutation } from '@/store/services/account/account';
-import {NormalizedError} from "@/types/_init/_initTypes";
 import { useSession } from 'next-auth/react';
 import ApiProgress from "@/components/formikElements/apiLoadingResponseOrError/apiProgress/apiProgress";
 
@@ -44,7 +43,7 @@ const ResetPasswordPageContent = () => {
           await cookiesPoster('/cookies', { new_email: values.email });
           router.push(AUTH_RESET_PASSWORD_ENTER_CODE);
         } catch (e) {
-          setFormikAutoErrors({ e: e as NormalizedError, setFieldError });
+          setFormikAutoErrors({ e, setFieldError });
         }
       });
     },

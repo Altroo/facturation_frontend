@@ -15,7 +15,6 @@ import { useRouter } from 'next/navigation';
 import { useFormik } from 'formik';
 import { passwordResetConfirmationSchema } from '@/utils/formValidationSchemas';
 import { coordonneeTextInputTheme } from '@/utils/themes';
-import { NormalizedError } from '@/types/_init/_initTypes';
 import CustomPasswordInput from '@/components/formikElements/customPasswordInput/customPasswordInput';
 import UserMainNavigationBar from "@/components/layouts/userMainNavigationBar/userMainNavigationBar";
 import {useSetPasswordMutation} from "@/store/services/account/account";
@@ -53,7 +52,7 @@ const SetPasswordPageContent: React.FC<SetPasswordPageContentProps> = ({email, c
           await cookiesPoster('/cookies', { pass_updated: 1 });
           router.push(AUTH_RESET_PASSWORD_COMPLETE);
         } catch (e) {
-          setFormikAutoErrors({ e: e as NormalizedError, setFieldError });
+          setFormikAutoErrors({ e, setFieldError });
         }
       });
     },

@@ -1,22 +1,7 @@
-export type ApiErrorType = {
-  status_code: number;
-  message: string;
-  details?: Record<string, string[]>;
-};
-
 export type ApiErrorResponseType = {
   status_code: number;
   message: string;
   details?: Record<string, string[]>;
-};
-
-export type NormalizedError = {
-  status: number;
-  data: {
-    status_code: number;
-    message?: string;
-    details?: Record<string, string[]>;
-  };
 };
 
 

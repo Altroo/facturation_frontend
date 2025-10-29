@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 import type { BaseQueryFn } from "@reduxjs/toolkit/query";
-import type { ApiErrorType } from "@/types/_init/_initTypes";
+import type { ApiErrorResponseType } from "@/types/_init/_initTypes";
 
 type NormalizedError = {
   error: {
@@ -33,7 +33,7 @@ export const axiosBaseQuery =
   ): BaseQueryFn<
     AxiosBaseQueryArgs<D, P>,
     unknown,
-    { status: number; data: ApiErrorType }
+    { status: number; data: ApiErrorResponseType }
   > =>
     async ({ url, method, data, params }) => {
       const instance = getInstance();
@@ -45,7 +45,7 @@ export const axiosBaseQuery =
         if (axios.isAxiosError(err)) {
           const status = err.response?.status ?? 0;
           const errorData =
-            (err.response?.data as ApiErrorType) ?? {
+            (err.response?.data as ApiErrorResponseType) ?? {
               status_code: status,
               message: err.message,
               details: {},

@@ -26,7 +26,6 @@ import TextButton from '@/components/htmlElements/buttons/textButton/textButton'
 import { refreshAppTokenStatesAction } from '@/store/actions/_init/_initActions';
 import UserMainNavigationBar from '@/components/layouts/userMainNavigationBar/userMainNavigationBar';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
-import {NormalizedError} from "@/types/_init/_initTypes";
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -71,7 +70,7 @@ const LoginPageContent = () => {
             });
           }
         } catch (e) {
-          setFormikAutoErrors({ e: e as NormalizedError, setFieldError });
+          setFormikAutoErrors({ e, setFieldError });
         }
       })
     },

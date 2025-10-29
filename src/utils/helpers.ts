@@ -1,6 +1,6 @@
 import {
   APIContentTypeInterface,
-  ApiErrorResponseType, InitStateToken, NormalizedError,
+  ApiErrorResponseType, InitStateToken,
 } from '@/types/_init/_initTypes';
 import {initToken} from '@/store/slices/_init/_initSlice';
 import axios, {AxiosInstance, AxiosResponse, InternalAxiosRequestConfig} from 'axios';
@@ -111,26 +111,30 @@ export const allowAnyInstance = (contentType: APIContentTypeInterface = 'applica
 };
 
 type FormikAutoErrorsProps = {
-  e: NormalizedError;
+  e: unknown;
   setFieldError: (field: string, message: string | undefined) => void;
 };
 
-
 export const setFormikAutoErrors = ({ e, setFieldError }: FormikAutoErrorsProps) => {
-  const { details, message } = e.data;
+  const payload =
+    (e as { error?: ApiErrorResponseType; data?: ApiErrorResponseType }).error ??
+    (e as { error?: ApiErrorResponseType; data?: ApiErrorResponseType }).data ??
+    (e as ApiErrorResponseType);
 
-  if (details) {
-    for (const [field, messages] of Object.entries(details)) {
-      if (Array.isArray(messages) && messages.length > 0) {
-        setFieldError(field, messages[0]);
-      }
+  if (!payload?.details) return;
+
+  if (payload.details.error?.length) {
+    setFieldError("globalError", payload.details.error[0]);
+  }
+
+  for (const [field, messages] of Object.entries(payload.details)) {
+    if (field === "error") continue;
+    if (Array.isArray(messages)) {
+      messages.forEach((msg) => setFieldError(field, msg));
     }
   }
-
-  if ((!details || Object.keys(details).length === 0) && message) {
-    setFieldError("globalError", message);
-  }
 };
+
 
 
 

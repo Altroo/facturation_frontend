@@ -22,7 +22,6 @@ import CustomToast from '@/components/portals/customToast/customToast';
 import PrimaryLoadingButton from "@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton";
 import { useSendPasswordResetCodeMutation, usePasswordResetMutation } from '@/store/services/account/account';
 import { isAxiosError } from 'axios';
-import { NormalizedError } from "@/types/_init/_initTypes";
 import { useSession } from 'next-auth/react';
 
 type EnterCodePageContentProps = {
@@ -63,7 +62,7 @@ const EnterCodePageContent = ({ email }: EnterCodePageContentProps) => {
           await cookiesPoster('/cookies', { code });
           router.push(AUTH_RESET_PASSWORD_SET_PASSWORD);
         } catch (e) {
-          setFormikAutoErrors({ e: e as NormalizedError, setFieldError });
+          setFormikAutoErrors({ e, setFieldError });
         }
       });
     },

@@ -1,12 +1,12 @@
 import React from "react";
 import ApiProgress from "./apiProgress/apiProgress";
 import ApiAlert from "./apiAlert/apiAlert";
-import { ApiErrorType, ApiPromiseStatus } from "@/types/_init/_initTypes";
+import {ApiErrorResponseType, ApiPromiseStatus} from "@/types/_init/_initTypes";
 
 type Props = {
 	promiseStatus: ApiPromiseStatus;
 	inProgress: boolean;
-	error: ApiErrorType;
+	error: ApiErrorResponseType;
 	children?: React.ReactNode;
 }
 
