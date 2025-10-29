@@ -24,7 +24,7 @@ interface EntryPointProps extends AppProps {
 const RootLayout: React.FC<EntryPointProps> = async (props) => {
   const session = await auth();
   return (
-    <html lang="en">
+    <html lang="fr">
     <body>
     <SessionProvider session={session}>
       <StoreProvider>
