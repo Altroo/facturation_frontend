@@ -1,15 +1,13 @@
 import { cookies } from 'next/headers';
-import SetPasswordComplete from '@/components/pages/setPasswordComplete';
+import SetPasswordComplete from '@/components/pages/auth/setPasswordComplete';
 import ClearCookiesClient from './clearCookiesClient';
 import { redirect } from 'next/navigation';
-import {AUTH_RESET_PASSWORD, DASHBOARD} from "@/utils/routes";
-import {auth} from "@/auth";
+import { AUTH_RESET_PASSWORD, DASHBOARD } from "@/utils/routes";
+import { auth } from "@/auth";
 
 export default async function Page() {
-  // check if user is logged in
   const session = await auth();
   if (session) {
-    // user is already logged in → redirect to dashboard
     redirect(DASHBOARD);
   }
 
@@ -18,6 +16,7 @@ export default async function Page() {
   if (!passUpdated) {
     redirect(AUTH_RESET_PASSWORD);
   }
+
   return (
     <>
       {passUpdated && <ClearCookiesClient />}

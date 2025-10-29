@@ -120,7 +120,7 @@ type Props = {
   code: string;
 };
 
-const SetPassword: React.FC<Props> = ({ email, code }) => (
+const SetPasswordClient: React.FC<Props> = ({ email, code }) => (
   <>
     <Desktop>
       <div>
@@ -140,4 +140,4 @@ const SetPassword: React.FC<Props> = ({ email, code }) => (
   </>
 );
 
-export default SetPassword;
+export default SetPasswordClient;

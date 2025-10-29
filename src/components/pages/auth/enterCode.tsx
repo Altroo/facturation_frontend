@@ -145,7 +145,7 @@ type Props = {
   email: string;
 };
 
-const EnterCode: React.FC<Props> = ({ email }) => {
+const EnterCodeClient: React.FC<Props> = ({ email }) => {
   const { data: session, status } = useSession();
   const loading = status === 'loading';
 
@@ -179,4 +179,4 @@ const EnterCode: React.FC<Props> = ({ email }) => {
   );
 };
 
-export default EnterCode;
+export default EnterCodeClient;

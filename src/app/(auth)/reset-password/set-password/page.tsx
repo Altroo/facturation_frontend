@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import SetPasswordClient from '@/components/pages/setPassword';
+import SetPasswordClient from '@/components/pages/auth/setPassword';
 import { redirect } from 'next/navigation';
 import {AUTH_RESET_PASSWORD, DASHBOARD} from "@/utils/routes";
 import { auth } from "@/auth";

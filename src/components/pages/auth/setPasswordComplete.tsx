@@ -9,7 +9,7 @@ import { AUTH_LOGIN } from '@/utils/routes';
 import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
 import UserMainNavigationBar from '@/components/layouts/userMainNavigationBar/userMainNavigationBar';
 
-const SetPasswordComplete: React.FC = () => {
+const SetPasswordCompleteClient: React.FC = () => {
   return (
     <>
       <Desktop>
@@ -43,4 +43,4 @@ const SetPasswordComplete: React.FC = () => {
   );
 };
 
-export default SetPasswordComplete;
+export default SetPasswordCompleteClient;
