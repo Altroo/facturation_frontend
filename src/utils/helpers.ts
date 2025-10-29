@@ -5,7 +5,7 @@ import {
 import {initToken} from '@/store/slices/_init/_initSlice';
 import axios, {AxiosInstance, AxiosResponse, InternalAxiosRequestConfig} from 'axios';
 import {SITE_ROOT} from "@/utils/routes";
-import {bulkCookiesDeleter} from "@/store/services/_init/_initAPI";
+import {cookiesDeleter} from "@/store/services/_init/_initAPI";
 import {signOut} from 'next-auth/react';
 import {store} from '@/store/store';
 
@@ -54,7 +54,14 @@ export const isAuthenticatedInstance = (
           return Promise.reject(errorObj);
         }
         if (error.response.status === 401) {
-          await bulkCookiesDeleter('/cookie/delete');
+          cookiesDeleter('/cookies', {
+            initStateToken: true,
+            pass_updated: true,
+            new_email: true,
+            code: true,
+          }).catch((err) => {
+            console.error('Failed to clear reset cookies', err);
+          });
           await signOut({redirect: false, callbackUrl: SITE_ROOT});
           store.dispatch(initToken());
         }

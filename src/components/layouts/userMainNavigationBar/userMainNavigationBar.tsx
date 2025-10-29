@@ -27,11 +27,10 @@ import Link from 'next/link';
 import {
 	AUTH_LOGIN,
 	DASHBOARD,
-	SITE_ROOT,
 } from '@/utils/routes';
 import SideNavDrawer from '../../mobile/sideNavDrawer/sideNavDrawer';
 import CloseSVG from '@/public/assets/svgs/navigationIcons/close.svg';
-import { bulkCookiesDeleter } from '@/store/services/_init/_initAPI';
+import {cookiesDeleter} from '@/store/services/_init/_initAPI';
 import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
 
 const UserMainNavigationBar: React.FC = () => {
@@ -70,10 +69,17 @@ const UserMainNavigationBar: React.FC = () => {
 		setProfileSubMenuMobileEl(null);
 	}, []);
 
-	const logOutHandler = useCallback(async () => {
-		await bulkCookiesDeleter('/cookie/delete');
-		await signOut({ redirect: true, callbackUrl: SITE_ROOT });
-	}, []);
+	const logOutHandler = async () => {
+		cookiesDeleter('/cookies', {
+			initStateToken: true,
+			pass_updated: true,
+			new_email: true,
+			code: true,
+		}).catch((err) => {
+			console.error('Failed to clear reset cookies', err);
+		});
+		await signOut({redirect: true, redirectTo: AUTH_LOGIN});
+	};
 
 	const [openMobileDrawer, setOpenMobileDrawer] = useState<boolean>(false);
 

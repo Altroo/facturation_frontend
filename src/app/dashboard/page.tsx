@@ -1,31 +1,14 @@
-"use client";
-
-import {signOut, useSession} from "next-auth/react";
-import {NextPage} from "next";
-import {Button, Typography} from "@mui/material";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
 import {AUTH_LOGIN} from "@/utils/routes";
+import DashboardClient from "@/components/pages/dashboard/dashboard";
 
-const Dashboard: NextPage = () => {
-  const {data: session} = useSession();
+export default async function DashboardPage() {
+  const session = await auth();
 
-  const logOutHandler = async () => {
-    await signOut({redirect: true, redirectTo: AUTH_LOGIN});
-  };
+  if (!session) {
+    redirect(AUTH_LOGIN);
+  }
 
-  return (
-    <>
-      {session && session.user && (
-        <>
-          <Typography variant="h5" gutterBottom>
-            Welcome, {session.user.email}
-          </Typography>
-          <Button variant="contained" color="secondary" onClick={logOutHandler}>
-            Logout
-          </Button>
-        </>
-      )}
-    </>
-  );
-};
-
-export default Dashboard;
+  return <DashboardClient />;
+}

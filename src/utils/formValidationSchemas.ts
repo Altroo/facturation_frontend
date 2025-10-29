@@ -1,27 +1,32 @@
 import {z} from "zod";
-import {INPUT_PASSWORD_MIN, MINI_INPUT_EMAIL, SHORT_INPUT_REQUIRED} from "@/utils/formValidationErrorMessages";
+import {
+  INPUT_PASSWORD_MIN,
+  INPUT_REQUIRED,
+  MINI_INPUT_EMAIL,
+  SHORT_INPUT_REQUIRED
+} from "@/utils/formValidationErrorMessages";
 
 export const loginSchema = z.object({
-  email: z.email({ message: MINI_INPUT_EMAIL }).nonempty("Required"),
-  password: z.string({ message: INPUT_PASSWORD_MIN(8) }).nonempty("Required").min(8),
+  email: z.email({ error: MINI_INPUT_EMAIL }).nonempty({ message: INPUT_REQUIRED }),
+  password: z.string().min(8, { message: INPUT_PASSWORD_MIN(8) }).nonempty({ message: INPUT_REQUIRED }),
   globalError: z.string().optional(),
 });
 
 export const emailSchema= z.object({
-  email: z.email({ message: MINI_INPUT_EMAIL }).nonempty("Required"),
+  email: z.email({ error: MINI_INPUT_EMAIL }).nonempty({ message: INPUT_REQUIRED }),
   globalError: z.string().optional(),
 });
 
 export const passwordResetConfirmationSchema = z.object({
-  new_password: z.string({ message: INPUT_PASSWORD_MIN(8) }).nonempty("Required").min(8),
-  new_password2: z.string({ message: INPUT_PASSWORD_MIN(8) }).nonempty("Required").min(8),
+  new_password: z.string().min(8, { message: INPUT_PASSWORD_MIN(8) }).nonempty({ message: INPUT_REQUIRED }),
+  new_password2: z.string().min(8, { message: INPUT_PASSWORD_MIN(8) }).nonempty({ message: INPUT_REQUIRED }),
   globalError: z.string().optional(),
 });
 
 const singleDigit = z
   .string()
-  .nonempty({ message: SHORT_INPUT_REQUIRED })        // required
-  .regex(/^\d$/, { message: SHORT_INPUT_REQUIRED })   // exactly one digit 0–9
+  .nonempty({ error: SHORT_INPUT_REQUIRED })        // required
+  .regex(/^\d$/, { error: SHORT_INPUT_REQUIRED })   // exactly one digit 0–9
   .transform((val) => Number(val));             // convert to number if needed
 
 export const passwordResetCodeSchema = z.object({
