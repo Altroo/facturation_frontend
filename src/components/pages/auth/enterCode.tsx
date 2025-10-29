@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useTransition } from 'react';
+import React, { useState, useTransition, useRef } from 'react';
 import Styles from '@/styles/auth/reset-password/enter-code.module.sass';
 import { setFormikAutoErrors } from "@/utils/helpers";
 import { Desktop, TabletAndMobile } from "@/utils/clientHelpers";
@@ -28,6 +28,10 @@ type EnterCodePageContentProps = {
   email: string;
 };
 
+type FieldKey = "one" | "two" | "three" | "four";
+const fields: FieldKey[] = ["one", "two", "three", "four"];
+
+
 const EnterCodePageContent = ({ email }: EnterCodePageContentProps) => {
   const router = useRouter();
   const [showDataUpdated, setShowDataUpdated] = useState(false);
@@ -36,6 +40,63 @@ const EnterCodePageContent = ({ email }: EnterCodePageContentProps) => {
 
   const [reSendPasswordResetCode, { isLoading: isResendLoading }] = useSendPasswordResetCodeMutation();
   const [passwordReset, { isLoading: isPasswordResetLoading }] = usePasswordResetMutation();
+
+  const inputRefs: Record<FieldKey, React.RefObject<HTMLInputElement | null>> = {
+    one: useRef<HTMLInputElement | null>(null),
+    two: useRef<HTMLInputElement | null>(null),
+    three: useRef<HTMLInputElement | null>(null),
+    four: useRef<HTMLInputElement | null>(null),
+  };
+
+  // input/onChange handler attached to native input (htmlInput)
+  const handleInput = (field: FieldKey, e: React.FormEvent<HTMLInputElement> | React.ChangeEvent<HTMLInputElement>) => {
+    const val = (e.currentTarget as HTMLInputElement).value.replace(/\D/g, '').slice(0, 1);
+    formik.setFieldValue(field, val);
+
+    // update combined code if you use one
+    const next = { ...formik.values, [field]: val } as Record<string, string>;
+    formik.setFieldValue('code', fields.map(k => next[k]).join(''));
+
+    if (val.length >= 1) {
+      const i = fields.indexOf(field);
+      const nextField = fields[i + 1];
+      if (nextField) setTimeout(() => inputRefs[nextField].current?.focus(), 0);
+      else setTimeout(() => formik.validateForm(), 0);
+    }
+  };
+
+  // Backspace navigation on native input
+  const handleKeyDown = (field: FieldKey, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace") {
+      const curVal = (e.currentTarget as HTMLInputElement).value;
+      if (!curVal) {
+        const i = fields.indexOf(field);
+        const prev = fields[i - 1];
+        if (prev) {
+          // focus previous
+          setTimeout(() => {
+            inputRefs[prev].current?.focus();
+          }, 0);
+        }
+      }
+    }
+  };
+
+  // Paste handler: fill fields with digits from clipboard
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const txt = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, fields.length);
+    if (!txt) return;
+    const digits = txt.split('');
+    digits.forEach((ch, idx) => formik.setFieldValue(fields[idx], ch));
+    formik.setFieldValue('code', digits.join(''));
+    setTimeout(() => {
+      formik.validateForm();
+      const focusIndex = Math.min(digits.length, fields.length - 1);
+      inputRefs[fields[focusIndex]].current?.focus();
+    }, 0);
+  };
+
 
   const renvoyerLeCodeHandler = async () => {
     try {
@@ -93,22 +154,28 @@ const EnterCodePageContent = ({ email }: EnterCodePageContentProps) => {
               spacing={1}
               className={Styles.mobileCodeRootWrapper}
             >
-              {['one', 'two', 'three', 'four'].map((field) => (
+              {fields.map((field) => (
                 <CustomOutlinedText
+                  autoFocus={field === 'one'}
                   key={field}
                   id={field}
-                  value={formik.values[field as keyof typeof formik.values]}
-                  onChange={formik.handleChange(field)}
+                  value={formik.values[field]}
                   onBlur={formik.handleBlur(field)}
-                  error={formik.touched[field as keyof typeof formik.touched] && Boolean(formik.errors[field as keyof typeof formik.errors])}
-                  fullWidth={false}
-                  size="medium"
+                  error={formik.touched[field] && Boolean(formik.errors[field])}
                   type="tel"
-                  slotProps={{ htmlInput: { maxLength: 1 } }}
-                  theme={codeTextInputTheme(
-                    formik.touched[field as keyof typeof formik.touched] &&
-                    Boolean(formik.errors[field as keyof typeof formik.errors])
-                  )}
+                  theme={codeTextInputTheme(formik.touched[field] && Boolean(formik.errors[field]))}
+                  size="medium"
+                  fullWidth={false}
+                  slotProps={{
+                    htmlInput: {
+                      maxLength: 1,
+                      onInput: (e: React.FormEvent<HTMLInputElement>) => handleInput(field, e),
+                      onChange: (e: React.ChangeEvent<HTMLInputElement>) => handleInput(field, e),
+                      onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => handleKeyDown(field, e),
+                      onPaste: (e: React.ClipboardEvent<HTMLInputElement>) => handlePaste(e),
+                    },
+                  }}
+                  inputRef={inputRefs[field]}
                 />
               ))}
             </Stack>

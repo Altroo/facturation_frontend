@@ -86,6 +86,19 @@ const UserMainNavigationBar: React.FC = () => {
 				<Box>
 					<AppBar position="static" className={Styles.appBar}>
 						<Toolbar>
+							<Stack direction="row" justifyContent="space-between" width="100%">
+								{/*<Image*/}
+								{/*	src={QarybSVG}*/}
+								{/*	alt=""*/}
+								{/*	width="0"*/}
+								{/*	height="0"*/}
+								{/*	sizes="100vw"*/}
+								{/*	className={Styles.logo}*/}
+								{/*	onClick={() => {*/}
+								{/*		router.push(SITE_ROOT).then();*/}
+								{/*	}}*/}
+								{/*	style={{ cursor: 'pointer' }}*/}
+								{/*/>*/}
 							<Stack direction="row" spacing={1}>
 									{!loading && session ? (
 										<>
@@ -170,6 +183,7 @@ const UserMainNavigationBar: React.FC = () => {
 										</IconButton>
 									)}
 								</Stack>
+							</Stack>
 						</Toolbar>
 					</AppBar>
 				</Box>
