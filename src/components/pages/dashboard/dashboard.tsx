@@ -10,13 +10,10 @@ const DashboardClient: NextPage = () => {
   const {data: session} = useSession();
 
   const logOutHandler = async () => {
-    cookiesDeleter('/cookies', {
-      initStateToken: true,
+    await cookiesDeleter('/cookies', {
       pass_updated: true,
       new_email: true,
       code: true,
-    }).catch((err) => {
-      console.error('Failed to clear reset cookies', err);
     });
     await signOut({redirect: true, redirectTo: AUTH_LOGIN});
   };

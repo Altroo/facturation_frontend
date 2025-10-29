@@ -16,7 +16,6 @@ export async function POST(request: Request) {
 
     // Define allowed keys and their corresponding cookie names
     const allowedKeys: Record<string, string> = {
-      initStateToken: "@initStateToken",
       new_email: "@new_email",
       code: "@code",
       pass_updated: "@pass_updated",
@@ -51,13 +50,11 @@ export async function GET(request: NextRequest) {
   });
 }
 
-
-
 export async function DELETE(request: Request) {
   const body = await request.json();
   const cookieStore = await cookies();
 
-  const validKeys = ["@initStateToken", "@new_email", "@code", "@pass_updated"];
+  const validKeys = ["@new_email", "@code", "@pass_updated"];
   let deleted = false;
 
   for (const key of validKeys) {

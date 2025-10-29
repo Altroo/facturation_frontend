@@ -54,13 +54,10 @@ export const isAuthenticatedInstance = (
           return Promise.reject(errorObj);
         }
         if (error.response.status === 401) {
-          cookiesDeleter('/cookies', {
-            initStateToken: true,
+          await cookiesDeleter('/cookies', {
             pass_updated: true,
             new_email: true,
             code: true,
-          }).catch((err) => {
-            console.error('Failed to clear reset cookies', err);
           });
           await signOut({redirect: false, callbackUrl: SITE_ROOT});
           store.dispatch(initToken());

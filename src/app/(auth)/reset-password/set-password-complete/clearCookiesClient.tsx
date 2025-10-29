@@ -9,9 +9,7 @@ export default function ClearCookiesClient() {
       pass_updated: true,
       new_email: true,
       code: true,
-    }).catch((err) => {
-      console.error('Failed to clear reset cookies', err);
-    });
+    }).then();
   }, []);
 
   return null;
