@@ -1,4 +1,5 @@
 "use client";
+
 import { useMediaQuery } from 'react-responsive';
 import { useComponentHydrated } from 'react-hydration-provider';
 import { ReactNode } from "react";
