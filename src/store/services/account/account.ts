@@ -1,7 +1,10 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
-import {allowAnyInstance} from "@/utils/helpers";
+import {allowAnyInstance, isAuthenticatedInstance} from "@/utils/helpers";
 import {axiosBaseQuery} from "@/utils/axiosBaseQuery";
 import {SuccessResponseType} from "@/types/_init/_initTypes";
+import {store} from "@/store/store";
+import {getInitStateToken} from "@/store/selectors";
+import {UserClass} from "@/models/account/UserClass";
 
 export const accountApi = createApi({
   reducerPath: 'accountApi',
@@ -14,7 +17,6 @@ export const accountApi = createApi({
         data: payload,
       }),
     }),
-
     passwordReset: builder.mutation<SuccessResponseType, { email: string, code: string }>({
       query: (payload) => ({
         url: `${process.env.NEXT_PUBLIC_ACCOUNT_PASSWORD_RESET}${payload.email}/${payload.code}/`,
@@ -31,4 +33,22 @@ export const accountApi = createApi({
   }),
 });
 
+export const profilApi = createApi({
+  reducerPath: "profilApi",
+  baseQuery: axiosBaseQuery(() => {
+    // pass function which will be used by the interceptor to read the latest token from redux
+    return isAuthenticatedInstance(() => getInitStateToken(store.getState()));
+  }),
+  endpoints: (builder) => ({
+    getProfil: builder.query<UserClass, string | undefined>({
+      query: (token) => ({
+        url: process.env.NEXT_PUBLIC_ACCOUNT_PROFIL as string,
+        method: "GET",
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      }),
+    }),
+  }),
+});
+
 export const { useSendPasswordResetCodeMutation, usePasswordResetMutation, useSetPasswordMutation } = accountApi;
+export const { useGetProfilQuery } = profilApi;

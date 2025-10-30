@@ -1,3 +1,5 @@
+import type { Session } from "next-auth";
+
 export type ApiErrorResponseType = {
   status_code: number;
   message: string;
@@ -44,4 +46,16 @@ export type AuthSagaContextType = {
 
 export interface ResponseOnlyInterface {
   status: number;
+}
+
+export type AppSession = Session & {
+  accessToken?: string;
+  user?: Session["user"] & {
+    accessToken?: string;
+  };
+};
+
+export type SagaPayloadType<T> = {
+  type: string,
+  data: T,
 }

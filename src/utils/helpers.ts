@@ -3,68 +3,62 @@ import {
   ApiErrorResponseType, InitStateToken,
 } from '@/types/_init/_initTypes';
 import {initToken} from '@/store/slices/_init/_initSlice';
-import axios, {AxiosInstance, AxiosResponse, InternalAxiosRequestConfig} from 'axios';
+import axios, {AxiosHeaders, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig} from 'axios';
 import {SITE_ROOT} from "@/utils/routes";
 import {cookiesDeleter} from "@/store/services/_init/_initAPI";
 import {signOut} from 'next-auth/react';
 import {store} from '@/store/store';
 
 export const isAuthenticatedInstance = (
-  initStateToken: InitStateToken,
-  contentType: APIContentTypeInterface = 'application/json',
-) => {
+  getToken?: () => InitStateToken | undefined,
+  contentType: APIContentTypeInterface = "application/json",
+): AxiosInstance => {
   const instance: AxiosInstance = axios.create({
     baseURL: `${process.env.NEXT_PUBLIC_ROOT_API_URL}`,
     headers: {
-      'Content-Type': contentType,
+      "Content-Type": contentType,
     },
-    // withCredentials: true
   });
+
   instance.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
-      /* initStateToken might be using the old access_token. */
-      // load new access token from storage instead.
-      config.headers.set({
-        Authorization: 'Bearer ' + initStateToken.access
-      });
+      const existing = config.headers ?? {};
+      const headers = new AxiosHeaders(existing as Record<string, string>);
+      const token = getToken ? getToken() : undefined;
+      if (token && typeof token.access === "string" && token.access.length > 0) {
+        headers.set("Authorization", "Bearer " + token.access);
+      }
+      // assign back a typed headers object
+      config.headers = headers as unknown as InternalAxiosRequestConfig["headers"];
       return config;
     },
-    (error) => {
-      return Promise.reject(error);
-    },
+    (error) => Promise.reject(error),
   );
+
   instance.interceptors.response.use(
-    (response: AxiosResponse) => {
-      // Any status code with range of 2xx
-      return response;
-    },
+    (response: AxiosResponse) => response,
     async (error) => {
-      if (error.response) {
-        // access token expired
+      if (error && error.response) {
         if (error.response.status >= 500) {
           const errorObj = {
             error: {
               status_code: 502,
-              message: 'Server error.',
+              message: "Server error.",
               details: {
-                error: ['It looks like we are unable to connect. Please check your network connection and try again.'],
+                error: [
+                  "It looks like we are unable to connect. Please check your network connection and try again.",
+                ],
               },
             },
           };
           return Promise.reject(errorObj);
         }
         if (error.response.status === 401) {
-          await cookiesDeleter('/cookies', {
-            pass_updated: true,
-            new_email: true,
-            code: true,
-          });
-          await signOut({redirect: false, callbackUrl: SITE_ROOT});
+          await cookiesDeleter("/cookies", { pass_updated: true, new_email: true, code: true });
+          await signOut({ redirect: false, callbackUrl: SITE_ROOT });
           store.dispatch(initToken());
         }
-        const errorObj = {
-          error: error.response.data.error as ApiErrorResponseType, // for custom api errors
-        };
+        const errorObj = { error: error.response.data?.error as ApiErrorResponseType };
         return Promise.reject(errorObj);
       }
       return Promise.reject(error);
@@ -138,10 +132,6 @@ export const setFormikAutoErrors = ({ e, setFieldError }: FormikAutoErrorsProps)
     }
   }
 };
-
-
-
-
 
 // convert hex color to rgba
 export const hexToRGB = (hex: string, alpha: number) => {

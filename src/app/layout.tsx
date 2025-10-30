@@ -1,4 +1,4 @@
-import type {Metadata} from "next";
+import type { Metadata } from "next";
 import "@/styles/globals.sass";
 import React from "react";
 import {AppRouterCacheProvider} from '@mui/material-nextjs/v15-appRouter';

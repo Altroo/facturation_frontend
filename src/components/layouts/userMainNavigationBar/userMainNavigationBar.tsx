@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, MouseEvent, useCallback } from 'react';
+import React, { useState, MouseEvent, useCallback } from 'react';
 import Styles from './userMainNavigationBar.module.sass';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -18,11 +18,7 @@ import HambourgerMenuSVG from '@/public/assets/svgs/mainNavBarIcons/hambourger-m
 import LogoutSVG from '@/public/assets/svgs/mainNavBarIcons/logout.svg';
 import { useSession, signOut } from 'next-auth/react';
 import { useAppSelector } from '@/utils/hooks';
-import {
-	getUserFirstName,
-	getUserLastName,
-	getUserProfilAvatar,
-} from "@/store/selectors";
+import {getProfilState} from "@/store/selectors";
 import Link from 'next/link';
 import {
 	AUTH_LOGIN,
@@ -32,21 +28,13 @@ import SideNavDrawer from '../../mobile/sideNavDrawer/sideNavDrawer';
 import CloseSVG from '@/public/assets/svgs/navigationIcons/close.svg';
 import {cookiesDeleter} from '@/store/services/_init/_initAPI';
 import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
+// import { useRouter } from 'next/navigation';
 
 const UserMainNavigationBar: React.FC = () => {
 	const { data: session, status } = useSession();
-	const stateAvatar = useAppSelector(getUserProfilAvatar);
-	const [navBarPicture, setNavBarPicture] = useState<string | null>(null);
-	const firstName = useAppSelector(getUserFirstName);
-	const lastName = useAppSelector(getUserLastName);
+	// const router = useRouter();
+	const {avatar, first_name, last_name} = useAppSelector(getProfilState);
 	const loading = status === 'loading';
-
-	useEffect(() => {
-		if (stateAvatar) {
-			// eslint-disable-next-line react-hooks/set-state-in-effect
-			setNavBarPicture(stateAvatar);
-		}
-	}, [stateAvatar]);
 
 	const [profileSubMenuEl, setProfileSubMenuEl] = useState<null | HTMLElement>(null);
 	const openProfileSubMenu = Boolean(profileSubMenuEl);
@@ -87,15 +75,16 @@ const UserMainNavigationBar: React.FC = () => {
 					<AppBar position="static" className={Styles.appBar}>
 						<Toolbar>
 							<Stack direction="row" justifyContent="space-between" width="100%">
+								{/* TODO add hamburger menu */}
 								{/*<Image*/}
-								{/*	src={QarybSVG}*/}
+								{/*	src={CasaDiLussoSVG}*/}
 								{/*	alt=""*/}
 								{/*	width="0"*/}
 								{/*	height="0"*/}
 								{/*	sizes="100vw"*/}
 								{/*	className={Styles.logo}*/}
 								{/*	onClick={() => {*/}
-								{/*		router.push(SITE_ROOT).then();*/}
+								{/*		router.push(SITE_ROOT);*/}
 								{/*	}}*/}
 								{/*	style={{ cursor: 'pointer' }}*/}
 								{/*/>*/}
@@ -113,16 +102,17 @@ const UserMainNavigationBar: React.FC = () => {
 												size="large"
 												color="inherit"
 											>
-												{!navBarPicture ? (
+												{!avatar ? (
 													<Skeleton variant="circular" width={30} height={30} />
 												) : (
 													<Image
-														src={navBarPicture as string}
+														src={avatar as string}
 														alt=""
 														width="30"
 														height="30"
 														sizes="100vw"
 														className={Styles.avatarButton}
+														loading="eager"
 													/>
 												)}
 											</IconButton>
@@ -231,20 +221,21 @@ const UserMainNavigationBar: React.FC = () => {
 										{!loading && session ? (
 											<Stack direction="column" paddingX="40px" paddingY="18px" paddingTop={0} spacing={2}>
 												<Stack direction="row" spacing={2} alignItems="center">
-													{!navBarPicture ? (
+													{!avatar ? (
 														<Skeleton variant="circular" width={48} height={48} />
 													) : (
 														<Image
-															src={navBarPicture as string}
+															src={avatar as string}
 															alt=""
 															width={48}
 															height={48}
 															sizes="100vw"
 															className={Styles.avatarDrawerButton}
+															loading="eager"
 														/>
 													)}
 													<span className={Styles.mobileProfileName}>
-														{firstName} {lastName}
+														{first_name} {last_name}
 													</span>
 												</Stack>
 												<Link href={DASHBOARD} className={Styles.anchorWrapper}>
@@ -304,16 +295,17 @@ const UserMainNavigationBar: React.FC = () => {
 											aria-expanded={openProfileSubMenuMobile ? 'true' : undefined}
 											onClick={handleProfileSubMenuMobileClick}
 										>
-											{!navBarPicture ? (
+											{!avatar ? (
 												<Skeleton variant="circular" width={30} height={30} />
 											) : (
 												<Image
-													src={navBarPicture as string}
+													src={avatar as string}
 													alt=""
 													width="30"
 													height="30"
 													sizes="100vw"
 													className={Styles.avatarButton}
+													loading="eager"
 												/>
 											)}
 										</IconButton>

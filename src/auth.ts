@@ -129,68 +129,68 @@ export const {handlers, auth} = NextAuth({
       return session;
     },
   },
-  cookies: {
-    sessionToken: {
-      name: `${process.env.NODE_ENV === 'production' ? '__Secure-' : ''}next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: "/",
-        secure: process.env.NODE_ENV !== 'development',
-        // domain: `${process.env.NEXT_BACKEND_DOMAIN}`,
-      }
-    },
-    callbackUrl: {
-      name: `${process.env.NODE_ENV === 'production' ? '__Secure-' : ''}next-auth.callback-url`,
-      options: {
-        sameSite: 'lax',
-        path: "/",
-        secure: process.env.NODE_ENV !== 'development',
-        // domain: `${process.env.NEXT_BACKEND_DOMAIN}`,
-      }
-    },
-    csrfToken: {
-      name: `${process.env.NODE_ENV === 'production' ? '__Host-' : ''}next-auth.csrf-token`,
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: "/",
-        secure: process.env.NODE_ENV !== 'development',
-        // domain: `${process.env.NEXT_BACKEND_DOMAIN}`,
-      }
-    },
-    pkceCodeVerifier: {
-      name: "next-auth.pkce.code_verifier",
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: "/",
-        secure: process.env.NODE_ENV !== 'development',
-        maxAge: 900,
-        // domain: `${process.env.NEXT_BACKEND_DOMAIN}`,
-      }
-    },
-    state: {
-      name: "next-auth.state",
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: "/",
-        secure: process.env.NODE_ENV !== 'development',
-        maxAge: 900,
-        // domain: `${process.env.NEXT_BACKEND_DOMAIN}`,
-      }
-    },
-    nonce: {
-      name: "next-auth.nonce",
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: "/",
-        secure: process.env.NODE_ENV !== 'development',
-        // domain: `${process.env.NEXT_BACKEND_DOMAIN}`,
-      }
-    }
-  },
+  // cookies: {
+  //   sessionToken: {
+  //     name: `${process.env.NODE_ENV === 'production' ? '__Secure-' : ''}next-auth.session-token`,
+  //     options: {
+  //       httpOnly: true,
+  //       sameSite: 'lax',
+  //       path: "/",
+  //       secure: process.env.NODE_ENV !== 'development',
+  //       // domain: `${process.env.NEXT_BACKEND_DOMAIN}`,
+  //     }
+  //   },
+  //   callbackUrl: {
+  //     name: `${process.env.NODE_ENV === 'production' ? '__Secure-' : ''}next-auth.callback-url`,
+  //     options: {
+  //       sameSite: 'lax',
+  //       path: "/",
+  //       secure: process.env.NODE_ENV !== 'development',
+  //       // domain: `${process.env.NEXT_BACKEND_DOMAIN}`,
+  //     }
+  //   },
+  //   csrfToken: {
+  //     name: `${process.env.NODE_ENV === 'production' ? '__Host-' : ''}next-auth.csrf-token`,
+  //     options: {
+  //       httpOnly: true,
+  //       sameSite: 'lax',
+  //       path: "/",
+  //       secure: process.env.NODE_ENV !== 'development',
+  //       // domain: `${process.env.NEXT_BACKEND_DOMAIN}`,
+  //     }
+  //   },
+  //   pkceCodeVerifier: {
+  //     name: "next-auth.pkce.code_verifier",
+  //     options: {
+  //       httpOnly: true,
+  //       sameSite: 'lax',
+  //       path: "/",
+  //       secure: process.env.NODE_ENV !== 'development',
+  //       maxAge: 900,
+  //       // domain: `${process.env.NEXT_BACKEND_DOMAIN}`,
+  //     }
+  //   },
+  //   state: {
+  //     name: "next-auth.state",
+  //     options: {
+  //       httpOnly: true,
+  //       sameSite: 'lax',
+  //       path: "/",
+  //       secure: process.env.NODE_ENV !== 'development',
+  //       maxAge: 900,
+  //       // domain: `${process.env.NEXT_BACKEND_DOMAIN}`,
+  //     }
+  //   },
+  //   nonce: {
+  //     name: "next-auth.nonce",
+  //     options: {
+  //       httpOnly: true,
+  //       sameSite: 'lax',
+  //       path: "/",
+  //       secure: process.env.NODE_ENV !== 'development',
+  //       // domain: `${process.env.NEXT_BACKEND_DOMAIN}`,
+  //     }
+  //   }
+  // },
   debug: true,
 });
