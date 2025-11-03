@@ -317,6 +317,7 @@ const NavigationBar = (props: Props) => {
 									alt={`${first_name} ${last_name}`}
 									width={80}
 									height={80}
+									loading="eager"
 									style={{ objectFit: 'cover' }}
 								/>
 							</Box>

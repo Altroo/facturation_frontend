@@ -131,5 +131,5 @@ export const { handlers, auth } = NextAuth({
 			return session;
 		},
 	},
-	debug: true,
+	debug: process.env.NODE_ENV === 'development',
 });
