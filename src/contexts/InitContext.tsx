@@ -18,7 +18,9 @@ export const InitContextProvider: React.FC<PropsWithChildren<Record<string, unkn
 	const dispatch = useAppDispatch();
 	const token = useAppSelector(getInitStateToken);
 	const { data: session, status } = useSession();
-	const { data: user } = useGetProfilQuery(token, { skip: !token });
+	const { data: user } = useGetProfilQuery(token, {
+		skip: !token || status !== 'authenticated',
+	});
 	const [appTokenSessionLoaded, setAppTokenSessionLoaded] = useState<boolean>(false);
 
 	useEffect(() => {

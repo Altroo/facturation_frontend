@@ -17,7 +17,6 @@ export type svgImageType = {
 	width: number;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const AuthPageLayout = forwardRef<HTMLAnchorElement, Props>((props: Props, ref: ForwardedRef<HTMLAnchorElement>) => {
 	const [authIlluRandom, setAuthIlluRandom] = useState<{ image: svgImageType; color: string } | null>(null);
 
@@ -43,7 +42,7 @@ const AuthPageLayout = forwardRef<HTMLAnchorElement, Props>((props: Props, ref: 
 	}, [authIlluRandom]);
 
 	return (
-		<main className={Styles.main}>
+		<main className={Styles.main} ref={ref}>
 			<Stack direction="row">
 				{/* Left side */}
 				<Box
