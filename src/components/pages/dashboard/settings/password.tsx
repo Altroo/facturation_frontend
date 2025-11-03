@@ -127,7 +127,7 @@ const FormikContenChangePassword: React.FC<formikContentType> = (props: formikCo
 
 type Props = { session?: AppSession };
 
-const MotDePasseClient: React.FC<Props> = (props: Props) => {
+const PasswordClient: React.FC<Props> = (props: Props) => {
 	const { session } = props;
 	const token = getAccessTokenFromSession(session);
 	const [showDataUpdated, setShowDataUpdated] = useState<boolean>(false);
@@ -164,4 +164,4 @@ const MotDePasseClient: React.FC<Props> = (props: Props) => {
 	);
 };
 
-export default MotDePasseClient;
+export default PasswordClient;

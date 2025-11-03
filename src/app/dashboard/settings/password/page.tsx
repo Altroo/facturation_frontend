@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
-import MotDePasseClient from '@/components/pages/dashboard/settings/mot-de-passe';
+import PasswordClient from '@/components/pages/dashboard/settings/password';
 import { AUTH_LOGIN } from '@/utils/routes';
 
 const EditPasswordPage = async () => {
@@ -10,7 +10,7 @@ const EditPasswordPage = async () => {
 		redirect(AUTH_LOGIN);
 	}
 
-	return <MotDePasseClient session={session} />;
+	return <PasswordClient session={session} />;
 };
 
 export default EditPasswordPage;

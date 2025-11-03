@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useState, MouseEvent, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { styled, ThemeProvider } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
@@ -16,6 +16,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
+import LogoutIcon from '@mui/icons-material/Logout';
 import ListItemText from '@mui/material/ListItemText';
 import { useAppSelector } from '@/utils/hooks';
 import { getProfilState } from '@/store/selectors';
@@ -23,10 +24,18 @@ import { cookiesDeleter } from '@/store/services/_init/_initAPI';
 import { AUTH_LOGIN, DASHBOARD, DASHBOARD_EDIT_PROFILE, DASHBOARD_PASSWORD, SITE_ROOT } from '@/utils/routes';
 import { signOut, useSession } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
-import Styles from '@/components/layouts/navigationBar/navigationBar.module.sass';
-import { getDropDownMenuTheme, navigationBarTheme } from '@/utils/themes';
-import LogoutSVG from '@/public/assets/svgs/mainNavBarIcons/logout.svg';
-import { Accordion, AccordionDetails, AccordionSummary, Menu, MenuItem, Skeleton, Stack, Tooltip } from '@mui/material';
+import { navigationBarTheme } from '@/utils/themes';
+import {
+	Accordion,
+	AccordionDetails,
+	AccordionSummary,
+	Button,
+	Skeleton,
+	Stack,
+	Tooltip,
+	useTheme,
+	useMediaQuery,
+} from '@mui/material';
 import Image from 'next/image';
 import Link from 'next/link';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -37,6 +46,7 @@ import RequestQuoteIcon from '@mui/icons-material/RequestQuote';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import PaymentIcon from '@mui/icons-material/Payment';
 import SettingsIcon from '@mui/icons-material/Settings';
+import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
 
 export const navigationMenu = {
 	dashboard: {
@@ -113,26 +123,22 @@ const drawerWidth = 240;
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
 	open?: boolean;
-}>(({ theme }) => ({
+}>(({ theme, open }) => ({
 	flexGrow: 1,
 	padding: theme.spacing(3),
 	transition: theme.transitions.create('margin', {
 		easing: theme.transitions.easing.sharp,
 		duration: theme.transitions.duration.leavingScreen,
 	}),
-	marginLeft: `-${drawerWidth}px`,
-	variants: [
-		{
-			props: ({ open }) => open,
-			style: {
-				transition: theme.transitions.create('margin', {
-					easing: theme.transitions.easing.easeOut,
-					duration: theme.transitions.duration.enteringScreen,
-				}),
-				marginLeft: 0,
-			},
-		},
-	],
+	marginLeft: 0, // default: no shift
+
+	[theme.breakpoints.up('md')]: {
+		marginLeft: open ? 0 : `-${drawerWidth}px`,
+		transition: theme.transitions.create('margin', {
+			easing: open ? theme.transitions.easing.easeOut : theme.transitions.easing.sharp,
+			duration: open ? theme.transitions.duration.enteringScreen : theme.transitions.duration.leavingScreen,
+		}),
+	},
 }));
 
 interface AppBarProps extends MuiAppBarProps {
@@ -166,23 +172,13 @@ type Props = {
 };
 
 const NavigationBar = (props: Props) => {
-	// const theme = useTheme();
+	const theme = useTheme();
 	const [open, setOpen] = React.useState(true);
 	const { data: session, status } = useSession();
 	// const router = useRouter();
 	const { avatar, first_name, last_name, gender } = useAppSelector(getProfilState);
 	const loading = status === 'loading';
-
-	const [profileSubMenuEl, setProfileSubMenuEl] = useState<null | HTMLElement>(null);
-	const openProfileSubMenu = Boolean(profileSubMenuEl);
-
-	const handleProfileSubMenuClick = useCallback((event: MouseEvent<HTMLButtonElement>) => {
-		setProfileSubMenuEl(event.currentTarget);
-	}, []);
-
-	const handleProfileSubMenuClose = useCallback(() => {
-		setProfileSubMenuEl(null);
-	}, []);
+	const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
 	const logOutHandler = async () => {
 		await cookiesDeleter('/cookies', {
@@ -237,6 +233,10 @@ const NavigationBar = (props: Props) => {
 		setExpanded(isExpanded ? panel : false);
 	};
 
+	const handleDrawerToggle = () => {
+		setOpen(!open);
+	};
+
 	return (
 		<ThemeProvider theme={navigationBarTheme()}>
 			<Box sx={{ display: 'flex' }}>
@@ -259,58 +259,16 @@ const NavigationBar = (props: Props) => {
 							<Stack direction="row" spacing={1}>
 								{!loading && session && (
 									<>
-										{/* Avatar button (loggedIn) */}
-										<IconButton
-											aria-label="profile of current user"
-											id="my-profile-button"
-											aria-controls={openProfileSubMenu ? 'profile-menu' : undefined}
-											aria-haspopup="true"
-											aria-expanded={openProfileSubMenu ? 'true' : undefined}
-											onClick={handleProfileSubMenuClick}
-											size="large"
-											color="inherit"
-										>
-											{!avatar ? (
-												<Skeleton variant="circular" width={30} height={30} />
-											) : (
-												<Image
-													src={avatar as string}
-													alt=""
-													width="30"
-													height="30"
-													sizes="100vw"
-													className={Styles.avatarButton}
-													loading="eager"
-												/>
-											)}
-										</IconButton>
-										{/* profil sub Menu */}
-										<ThemeProvider theme={getDropDownMenuTheme()}>
-											<Menu
-												id="profile-menu"
-												anchorEl={profileSubMenuEl}
-												open={openProfileSubMenu}
-												onClose={handleProfileSubMenuClose}
-												slotProps={{
-													root: { 'aria-labelledby': 'my-profile-mobile-button' },
-												}}
-												keepMounted
-											>
-												<MenuItem onClick={handleProfileSubMenuClose} className={Styles.fadedMenuItem}>
-													<Box onClick={logOutHandler} className={Styles.anchorWrapper}>
-														<Image
-															src={LogoutSVG}
-															alt=""
-															width="0"
-															height="0"
-															sizes="100vw"
-															className={Styles.subMenuIcons}
-														/>
-														<span>Se déconnecter</span>
-													</Box>
-												</MenuItem>
-											</Menu>
-										</ThemeProvider>
+										<Desktop>
+											<Button variant="text" color="inherit" endIcon={<LogoutIcon />} onClick={logOutHandler}>
+												Se déconnecter
+											</Button>
+										</Desktop>
+										<TabletAndMobile>
+											<IconButton color="inherit" onClick={logOutHandler}>
+												<LogoutIcon />
+											</IconButton>
+										</TabletAndMobile>
 									</>
 								)}
 							</Stack>
@@ -326,19 +284,21 @@ const NavigationBar = (props: Props) => {
 							boxSizing: 'border-box',
 						},
 					}}
-					variant="persistent"
+					variant={isMobile ? 'temporary' : 'persistent'}
 					anchor="left"
 					open={open}
+					onClose={handleDrawerToggle}
 				>
 					<Divider />
 					{/* User Profile Section */}
 					<Box
 						sx={{
 							display: 'flex',
-							flexDirection: 'column',
+							flexDirection: 'row',
 							alignItems: 'center',
 							py: 3,
 							px: 2,
+							gap: 2,
 						}}
 					>
 						{!avatar ? (
@@ -350,7 +310,6 @@ const NavigationBar = (props: Props) => {
 									height: 80,
 									borderRadius: '50%',
 									overflow: 'hidden',
-									mb: 2,
 								}}
 							>
 								<Image
@@ -362,12 +321,15 @@ const NavigationBar = (props: Props) => {
 								/>
 							</Box>
 						)}
-						<Typography variant="subtitle1" sx={{ fontWeight: 600, textAlign: 'center' }}>
-							{gender === 'H' ? 'Bienvenu' : gender === 'F' ? 'Bienvenue' : 'Bienvenu(e)'}
-						</Typography>
-						<Typography variant="body2" sx={{ textAlign: 'center', color: 'text.secondary' }}>
-							{first_name} {last_name}
-						</Typography>
+						{/* Text block next to avatar */}
+						<Box sx={{ display: 'flex', flexDirection: 'column' }}>
+							<Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+								{gender === 'H' ? 'Bienvenu' : gender === 'F' ? 'Bienvenue' : 'Bienvenu(e)'}
+							</Typography>
+							<Typography variant="body2" sx={{ color: 'text.secondary' }}>
+								{first_name} {last_name}
+							</Typography>
+						</Box>
 					</Box>
 					<Divider />
 					<List sx={{ p: 0 }}>
