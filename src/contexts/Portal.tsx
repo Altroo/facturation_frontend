@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 interface PortalProps {
@@ -9,7 +9,7 @@ interface PortalProps {
 }
 
 const Portal: React.FC<PortalProps> = ({ id, children }) => {
-	const containerRef = useRef<HTMLElement | null>(null);
+	const [container, setContainer] = useState<HTMLElement | null>(null);
 
 	useEffect(() => {
 		let el = document.getElementById(id);
@@ -18,11 +18,11 @@ const Portal: React.FC<PortalProps> = ({ id, children }) => {
 			el.id = id;
 			document.body.appendChild(el);
 		}
-		containerRef.current = el;
+		setContainer(el);
 	}, [id]);
 
-	if (!containerRef.current) return null;
-	return createPortal(children, containerRef.current);
+	if (!container) return null;
+	return createPortal(children, container);
 };
 
 export default Portal;
