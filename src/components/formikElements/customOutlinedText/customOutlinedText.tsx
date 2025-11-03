@@ -1,7 +1,7 @@
-import React, { forwardRef } from "react";
-import { ThemeProvider } from "@mui/material";
-import TextField, { TextFieldProps } from "@mui/material/TextField";
-import { Theme } from "@mui/material/styles";
+import React, { forwardRef } from 'react';
+import { ThemeProvider } from '@mui/material';
+import TextField, { TextFieldProps } from '@mui/material/TextField';
+import { Theme } from '@mui/material/styles';
 
 type Props = {
 	type: React.HTMLInputTypeAttribute;
@@ -19,11 +19,11 @@ type Props = {
 	placeholder?: string;
 	label?: string;
 	fullWidth?: boolean;
-	size?: "small" | "medium";
+	size?: 'small' | 'medium';
 	disabled?: boolean;
 	onClick?: () => void;
 	autoFocus?: boolean;
-	slotProps?: TextFieldProps["slotProps"] & { htmlInput?: React.InputHTMLAttributes<HTMLInputElement> };
+	slotProps?: TextFieldProps['slotProps'] & { htmlInput?: React.InputHTMLAttributes<HTMLInputElement> };
 	inputRef?: React.Ref<HTMLInputElement | null>;
 };
 
@@ -95,5 +95,5 @@ const CustomOutlinedText = forwardRef<HTMLInputElement, Props>((props, ref) => {
 	);
 });
 
-CustomOutlinedText.displayName = "CustomOutlinedText";
+CustomOutlinedText.displayName = 'CustomOutlinedText';
 export default CustomOutlinedText;

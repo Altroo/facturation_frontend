@@ -18,7 +18,7 @@ export type svgImageType = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const AuthPageLayout = forwardRef<HTMLAnchorElement, Props>((props: Props, _ref: ForwardedRef<HTMLAnchorElement>) => {
+const AuthPageLayout = forwardRef<HTMLAnchorElement, Props>((props: Props, ref: ForwardedRef<HTMLAnchorElement>) => {
 	const [authIlluRandom, setAuthIlluRandom] = useState<{ image: svgImageType; color: string } | null>(null);
 
 	useEffect(() => {

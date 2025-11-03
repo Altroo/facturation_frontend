@@ -1,16 +1,16 @@
-import { redirect } from "next/navigation";
-import { auth } from "@/auth";
-import LoginClient from "@/components/pages/auth/login/login";
-import {DASHBOARD} from "@/utils/routes";
+import { redirect } from 'next/navigation';
+import { auth } from '@/auth';
+import LoginClient from '@/components/pages/auth/login/login';
+import { DASHBOARD } from '@/utils/routes';
 
 const LoginPage = async () => {
-  const session = await auth();
+	const session = await auth();
 
-  if (session) {
-    redirect(DASHBOARD);
-  }
+	if (session) {
+		redirect(DASHBOARD);
+	}
 
-  return <LoginClient />;
-}
+	return <LoginClient />;
+};
 
-export default LoginPage
+export default LoginPage;

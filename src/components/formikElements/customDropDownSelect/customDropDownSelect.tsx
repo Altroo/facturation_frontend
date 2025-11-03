@@ -1,11 +1,11 @@
 import React from 'react';
 import Styles from './customDropDownSelect.module.sass';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
-import { ThemeProvider, MenuItem, FormControl, InputLabel, OutlinedInput, Stack, FormHelperText } from "@mui/material";
-import { Theme } from "@mui/material/styles";
+import { ThemeProvider, MenuItem, FormControl, InputLabel, OutlinedInput, Stack, FormHelperText } from '@mui/material';
+import { Theme } from '@mui/material/styles';
 import ActiveCheckBlue from '@/public/assets/svgs/globalIcons/active-check-blue.svg';
 import Image from 'next/image';
-import { AccountGenderCodeValueType } from "@/types/account/accountTypes";
+import { AccountGenderCodeValueType } from '@/types/account/accountTypes';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -58,7 +58,6 @@ const CustomDropDownSelect: React.FC<Props> = (props: Props) => {
 							</Stack>
 						</MenuItem>
 					))}
-
 				</Select>
 			</FormControl>
 		</ThemeProvider>

@@ -1,10 +1,10 @@
-import type { AppSession } from "@/types/_init/_initTypes";
+import type { AppSession } from '@/types/_init/_initTypes';
 
 export const getAccessTokenFromSession = (session?: AppSession): string | undefined => {
-  if (!session) return undefined;
-  if (typeof session.accessToken === "string" && session.accessToken.length > 0) return session.accessToken;
-  if (session.user && typeof session.user.accessToken === "string" && session.user.accessToken.length > 0) {
-    return session.user.accessToken;
-  }
-  return undefined;
-}
+	if (!session) return undefined;
+	if (typeof session.accessToken === 'string' && session.accessToken.length > 0) return session.accessToken;
+	if (session.user && typeof session.user.accessToken === 'string' && session.user.accessToken.length > 0) {
+		return session.user.accessToken;
+	}
+	return undefined;
+};

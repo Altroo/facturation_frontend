@@ -1,57 +1,56 @@
-import type { Session } from "next-auth";
+import type { Session } from 'next-auth';
 
 export type ApiErrorResponseType = {
-  status_code: number;
-  message: string;
-  details?: Record<string, string[]>;
+	status_code: number;
+	message: string;
+	details?: Record<string, string[]>;
 };
 
-
 export type SuccessResponseType<T = unknown> = {
-  status_code: number;
-  message: string;
-  data?: T;
+	status_code: number;
+	message: string;
+	data?: T;
 };
 
 export type ApiPromiseStatus = 'PENDING' | 'RESOLVED' | 'REJECTED' | null;
 
 export interface ResponseDataInterface<T> {
-  data: T;
-  status: number;
+	data: T;
+	status: number;
 }
 
 export type APIContentTypeInterface = 'application/json' | 'application/x-www-form-urlencoded' | 'multipart/form-data';
 
 //!- Init State
 export type InitStateToken = {
-  user: {
-    pk: number | null;
-    email: string | null;
-    first_name: string | null;
-    last_name: string | null;
-  };
-  access: string | null;
-  refresh: string | null;
-  access_expiration: string | null;
-  refresh_expiration: string | null;
+	user: {
+		pk: number | null;
+		email: string | null;
+		first_name: string | null;
+		last_name: string | null;
+	};
+	access: string | null;
+	refresh: string | null;
+	access_expiration: string | null;
+	refresh_expiration: string | null;
 };
 
 export interface InitStateInterface<T> {
-  initStateToken: T;
+	initStateToken: T;
 }
 
 export type AppSession = Session & {
-  accessToken?: string;
-  user?: Session["user"] & {
-    accessToken?: string;
-  };
+	accessToken?: string;
+	user?: Session['user'] & {
+		accessToken?: string;
+	};
 };
 
 export type SagaPayloadType<T> = {
-  type: string,
-  data: T,
-}
+	type: string;
+	data: T;
+};
 
 export type TokenType = {
-  token?: string,
-}
+	token?: string;
+};

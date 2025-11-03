@@ -1,5 +1,5 @@
-import {RootState} from '@/store/store';
-import {UserClass} from "@/models/account/UserClass";
+import { RootState } from '@/store/store';
+import { UserClass } from '@/models/account/UserClass';
 
 // _Init
 export const getInitStateToken = (state: RootState) => state._init.initStateToken;

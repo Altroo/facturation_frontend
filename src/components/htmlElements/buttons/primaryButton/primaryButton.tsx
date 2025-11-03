@@ -1,14 +1,14 @@
 import React from 'react';
 import Styles from './primaryButton.module.sass';
-import { ThemeProvider, Button } from "@mui/material";
-import { getDefaultTheme } from "@/utils/themes";
+import { ThemeProvider, Button } from '@mui/material';
+import { getDefaultTheme } from '@/utils/themes';
 
 type Props = {
-	buttonText: string
-	active: boolean,
+	buttonText: string;
+	active: boolean;
 	type?: 'submit' | 'reset' | 'button' | undefined;
-	onClick?: () => void,
-	cssClass?: string,
+	onClick?: () => void;
+	cssClass?: string;
 	children?: React.ReactNode;
 };
 

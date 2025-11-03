@@ -1,48 +1,48 @@
-import {eventChannel} from 'redux-saga';
-import {WSEvent, WSEventType, WSUserAvatar} from "@/types/ws/wsTypes";
-import {WSUserAvatarAction} from "@/store/actions/ws/wsActions";
+import { eventChannel } from 'redux-saga';
+import { WSEvent, WSEventType, WSUserAvatar } from '@/types/ws/wsTypes';
+import { WSUserAvatarAction } from '@/store/actions/ws/wsActions';
 
 let ws: WebSocket;
 
 export function initWebsocket(token: string) {
-  return eventChannel((emitter) => {
-    function createWs() {
-      const wsUrl = `${process.env.NEXT_PUBLIC_ROOT_WS_URL}`;
-      if (typeof window !== 'undefined') {
-        ws = new WebSocket(`${wsUrl}?token=${token}`);
-        ws.onopen = () => {
-          console.log('Listening to ws...');
-        };
-        ws.onerror = (error: Event) => {
-          console.log('WS error ' + error);
-        };
-        ws.onmessage = (e: MessageEvent) => {
-          const msg = JSON.parse(e.data);
-          if (msg) {
-            const { message } = msg;
-            const signalType : WSEventType = message.type;
-            if (signalType === 'USER_AVATAR') {
-              const { message } = msg as WSEvent<WSUserAvatar>;
-              const {pk, avatar} = message;
-              return emitter(WSUserAvatarAction(pk, avatar));
-            }
-          }
-        }; // unsubscribe function
-        ws.onclose = (e: CloseEvent) => {
-          console.log('Socket is closed Unexpectedly. Reconnect will be attempted in 1 second.', e.reason);
-          setTimeout(() => {
-            createWs();
-          }, 1000);
-        };
-      }
-    }
+	return eventChannel((emitter) => {
+		function createWs() {
+			const wsUrl = `${process.env.NEXT_PUBLIC_ROOT_WS_URL}`;
+			if (typeof window !== 'undefined') {
+				ws = new WebSocket(`${wsUrl}?token=${token}`);
+				ws.onopen = () => {
+					console.log('Listening to ws...');
+				};
+				ws.onerror = (error: Event) => {
+					console.log('WS error ' + error);
+				};
+				ws.onmessage = (e: MessageEvent) => {
+					const msg = JSON.parse(e.data);
+					if (msg) {
+						const { message } = msg;
+						const signalType: WSEventType = message.type;
+						if (signalType === 'USER_AVATAR') {
+							const { message } = msg as WSEvent<WSUserAvatar>;
+							const { pk, avatar } = message;
+							return emitter(WSUserAvatarAction(pk, avatar));
+						}
+					}
+				}; // unsubscribe function
+				ws.onclose = (e: CloseEvent) => {
+					console.log('Socket is closed Unexpectedly. Reconnect will be attempted in 1 second.', e.reason);
+					setTimeout(() => {
+						createWs();
+					}, 1000);
+				};
+			}
+		}
 
-    createWs();
-    return () => {
-      console.log('Closing Websocket');
-      ws.close();
-    };
-  });
+		createWs();
+		return () => {
+			console.log('Closing Websocket');
+			ws.close();
+		};
+	});
 }
 
 /*

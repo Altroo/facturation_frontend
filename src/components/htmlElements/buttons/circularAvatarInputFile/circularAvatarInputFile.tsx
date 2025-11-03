@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useRef } from 'react';
 import Styles from './circularAvatarInputFile.module.sass';
@@ -20,17 +20,17 @@ const CircularAvatarInputFile: React.FC<Props> = (props: Props) => {
 
 	const avatarInputOnChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
 		if (!e.target.files) {
-				return;
-			}
-			if (!setAvatar) {
-				return;
-			}
-			const file = e.target.files[0];
-			if (file && file.type.substring(0, 5) === 'image') {
-				setAvatar(file);
-			} else {
-				setAvatar(null);
-			}
+			return;
+		}
+		if (!setAvatar) {
+			return;
+		}
+		const file = e.target.files[0];
+		if (file && file.type.substring(0, 5) === 'image') {
+			setAvatar(file);
+		} else {
+			setAvatar(null);
+		}
 	};
 
 	// opens hidden avatar input

@@ -1,35 +1,33 @@
-import {take, call, put, select} from 'redux-saga/effects';
-import {initWebsocket} from '@/store/services/ws';
-import {getAccessToken} from '@/store/selectors';
-import {RootState} from '@/store/store';
-import { Action } from "redux";
-import {EventChannel, SagaIterator} from "redux-saga";
-
+import { take, call, put, select } from 'redux-saga/effects';
+import { initWebsocket } from '@/store/services/ws';
+import { getAccessToken } from '@/store/selectors';
+import { RootState } from '@/store/store';
+import { Action } from 'redux';
+import { EventChannel, SagaIterator } from 'redux-saga';
 
 function* monitorToken(
-  selector: (state: RootState) => string | null,
-  previousValue: string | null,
-  takePattern = "*"
+	selector: (state: RootState) => string | null,
+	previousValue: string | null,
+	takePattern = '*',
 ): SagaIterator<string | null> {
-  while (true) {
-    const nextValue: string | null = yield select(selector);
-    if (nextValue !== previousValue) {
-      return nextValue;
-    }
-    yield take(takePattern);
-  }
+	while (true) {
+		const nextValue: string | null = yield select(selector);
+		if (nextValue !== previousValue) {
+			return nextValue;
+		}
+		yield take(takePattern);
+	}
 }
 
 export function* watchWS(): SagaIterator<void> {
-  const token: string | null = yield call(monitorToken, getAccessToken, null);
+	const token: string | null = yield call(monitorToken, getAccessToken, null);
 
-  if (token) {
-    const channel: EventChannel<Action> = yield call(initWebsocket, token);
+	if (token) {
+		const channel: EventChannel<Action> = yield call(initWebsocket, token);
 
-    while (true) {
-      const action: Action = yield take(channel);
-      yield put(action);
-    }
-  }
+		while (true) {
+			const action: Action = yield take(channel);
+			yield put(action);
+		}
+	}
 }
-

@@ -1,12 +1,11 @@
-export type WSEventType =
-  'USER_AVATAR'
+export type WSEventType = 'USER_AVATAR';
 
 export type WSEvent<T> = {
-  message: T;
+	message: T;
 };
 
 interface WSRootType {
-  type: WSEventType;
+	type: WSEventType;
 }
 
 /*
@@ -17,6 +16,6 @@ interface WSRootType {
  */
 // USER_AVATAR
 export interface WSUserAvatar extends WSRootType {
-  pk: number;
-  avatar: string;
+	pk: number;
+	avatar: string;
 }

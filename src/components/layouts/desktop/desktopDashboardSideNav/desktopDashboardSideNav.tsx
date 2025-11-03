@@ -8,12 +8,8 @@ import MotDePasseSVG from '@/public/assets/svgs/dashboardIcons/leftSideNavIcons/
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { usePathname } from "next/navigation";
-import {
-	DASHBOARD_PASSWORD,
-	DASHBOARD_EDIT_PROFILE,
-	SITE_ROOT,
-} from "@/utils/routes";
+import { usePathname } from 'next/navigation';
+import { DASHBOARD_PASSWORD, DASHBOARD_EDIT_PROFILE, SITE_ROOT } from '@/utils/routes';
 
 export type DesktopSideNavElementType = {
 	icon: string;
@@ -52,11 +48,10 @@ type Props = {
 const DesktopDashboardSideNav: React.FC<Props> = (props: Props) => {
 	const router = useRouter();
 	const pathname = usePathname();
-	const editProfilPageTarget = DASHBOARD_EDIT_PROFILE.replace(SITE_ROOT, "");
-	const passwordPageTarget = DASHBOARD_PASSWORD.replace(SITE_ROOT, "");
+	const editProfilPageTarget = DASHBOARD_EDIT_PROFILE.replace(SITE_ROOT, '');
+	const passwordPageTarget = DASHBOARD_PASSWORD.replace(SITE_ROOT, '');
 	const isEditProfilePage = !!pathname && pathname.endsWith(editProfilPageTarget);
 	const isPasswordPage = !!pathname && pathname.endsWith(passwordPageTarget);
-
 
 	const profilNavElements: Array<DesktopSideNavElementType> = [
 		{

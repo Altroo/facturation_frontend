@@ -1,16 +1,16 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
+import EditProfilClient from '@/components/pages/dashboard/settings/edit-profile';
 import { AUTH_LOGIN } from '@/utils/routes';
-import DashboardClient from '@/components/pages/dashboard/dashboard';
 
-const DashboardPage = async () => {
+const EditProfilePage = async () => {
 	const session = await auth();
 
 	if (!session) {
 		redirect(AUTH_LOGIN);
 	}
 
-	return <DashboardClient session={session} />;
+	return <EditProfilClient session={session} />;
 };
 
-export default DashboardPage;
+export default EditProfilePage;

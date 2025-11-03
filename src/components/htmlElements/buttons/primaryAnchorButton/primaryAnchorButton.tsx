@@ -24,7 +24,14 @@ type Props = {
 const PrimaryAnchorButton = forwardRef<HTMLAnchorElement, Props>(
 	(props: Props, ref: ForwardedRef<HTMLAnchorElement>) => {
 		return (
-			<Link href={props.nextPage} className={props.anchorcssClass} scroll={props.scroll} shallow={props.shallow} replace={props.replace} ref={ref}>
+			<Link
+				href={props.nextPage}
+				className={props.anchorcssClass}
+				scroll={props.scroll}
+				shallow={props.shallow}
+				replace={props.replace}
+				ref={ref}
+			>
 				<ThemeProvider theme={getDefaultTheme()}>
 					<Button
 						onClick={props.onClick}

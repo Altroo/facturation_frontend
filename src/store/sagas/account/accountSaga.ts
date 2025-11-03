@@ -1,10 +1,7 @@
 import { put, takeLatest } from 'redux-saga/effects';
 import * as Types from '../../actions';
-import {
-	setProfil,
-	setWSUserAvatar,
-} from "../../slices/account/accountSlice";
-import {setProfilPayloadType} from "@/types/account/accountTypes";
+import { setProfil, setWSUserAvatar } from '../../slices/account/accountSlice';
+import { setProfilPayloadType } from '@/types/account/accountTypes';
 
 function* accountSetProfilSaga(payload: setProfilPayloadType) {
 	yield put(setProfil(payload.data));
@@ -14,9 +11,8 @@ function* accountPatchProfilSaga(payload: setProfilPayloadType) {
 	yield put(setProfil(payload.data));
 }
 
-
 function* wsUserAvatarSaga(payload: { type: string; pk: number; avatar: string }) {
-	yield put(setWSUserAvatar({avatar: payload.avatar}));
+	yield put(setWSUserAvatar({ avatar: payload.avatar }));
 }
 
 export function* watchAccount() {

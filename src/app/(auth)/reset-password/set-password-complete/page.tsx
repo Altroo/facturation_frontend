@@ -2,27 +2,27 @@ import { cookies } from 'next/headers';
 import SetPasswordComplete from '@/components/pages/auth/reset-password/setPasswordComplete';
 import ClearCookiesClient from './clearCookiesClient';
 import { redirect } from 'next/navigation';
-import { AUTH_RESET_PASSWORD, DASHBOARD } from "@/utils/routes";
-import { auth } from "@/auth";
+import { AUTH_RESET_PASSWORD, DASHBOARD } from '@/utils/routes';
+import { auth } from '@/auth';
 
 const SetPasswordCompletePage = async () => {
-  const session = await auth();
-  if (session) {
-    redirect(DASHBOARD);
-  }
+	const session = await auth();
+	if (session) {
+		redirect(DASHBOARD);
+	}
 
-  const cookieStore = await cookies();
-  const passUpdated = cookieStore.get('@pass_updated')?.value ?? '';
-  if (!passUpdated) {
-    redirect(AUTH_RESET_PASSWORD);
-  }
+	const cookieStore = await cookies();
+	const passUpdated = cookieStore.get('@pass_updated')?.value ?? '';
+	if (!passUpdated) {
+		redirect(AUTH_RESET_PASSWORD);
+	}
 
-  return (
-    <>
-      {passUpdated && <ClearCookiesClient />}
-      <SetPasswordComplete />
-    </>
-  );
-}
+	return (
+		<>
+			{passUpdated && <ClearCookiesClient />}
+			<SetPasswordComplete />
+		</>
+	);
+};
 
 export default SetPasswordCompletePage;

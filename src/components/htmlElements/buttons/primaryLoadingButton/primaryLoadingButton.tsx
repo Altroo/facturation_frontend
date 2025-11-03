@@ -1,7 +1,7 @@
 import React from 'react';
 import { ThemeProvider, Button } from '@mui/material';
 import Styles from './primaryLoadingButton.module.sass';
-import { getDefaultTheme } from "@/utils/themes";
+import { getDefaultTheme } from '@/utils/themes';
 
 type Props = {
 	buttonText: string;

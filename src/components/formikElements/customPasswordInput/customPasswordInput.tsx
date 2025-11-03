@@ -1,10 +1,5 @@
-import React, { ForwardedRef, forwardRef, useState } from "react";
-import {
-	ThemeProvider,
-	TextField,
-	InputAdornment,
-	IconButton,
-} from '@mui/material';
+import React, { ForwardedRef, forwardRef, useState } from 'react';
+import { ThemeProvider, TextField, InputAdornment, IconButton } from '@mui/material';
 import { Theme } from '@mui/material/styles';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 
@@ -30,8 +25,8 @@ const CustomPasswordInput = forwardRef<HTMLInputElement, Props>((props: Props, r
 	const [showpassword, setshowpassword] = useState<boolean>(false);
 
 	const handleClickShowPassword = () => {
-		setshowpassword(prevState => !prevState);
-  };
+		setshowpassword((prevState) => !prevState);
+	};
 
 	return (
 		<ThemeProvider theme={theme}>
@@ -54,7 +49,7 @@ const CustomPasswordInput = forwardRef<HTMLInputElement, Props>((props: Props, r
 				color="primary"
 				disabled={props.disabled}
 				slotProps={{
-					input : {
+					input: {
 						endAdornment: (
 							<InputAdornment position="end">
 								<IconButton
@@ -63,7 +58,7 @@ const CustomPasswordInput = forwardRef<HTMLInputElement, Props>((props: Props, r
 									onMouseDown={(e) => e.preventDefault()}
 									edge="end"
 								>
-									{showpassword ? <VisibilityOff/> : <Visibility/>}
+									{showpassword ? <VisibilityOff /> : <Visibility />}
 								</IconButton>
 							</InputAdornment>
 						),
