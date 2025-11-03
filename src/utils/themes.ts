@@ -137,7 +137,7 @@ export const getDropDownMenuTheme = (primaryColor: string | undefined = undefine
 	});
 };
 
-export const userMainNavigationBarTheme = (primaryColor: string | undefined = undefined) => {
+export const navigationBarTheme = (primaryColor: string | undefined = undefined) => {
 	const defaultTheme = getDefaultTheme(primaryColor);
 	return createTheme({
 		...defaultTheme,
@@ -148,6 +148,27 @@ export const userMainNavigationBarTheme = (primaryColor: string | undefined = un
 						backgroundColor: 'white',
 						color: '#0D070B',
 						boxShadow: 'none',
+					},
+				},
+			},
+			MuiAccordionSummary: {
+				styleOverrides: {
+					content: {
+						fontSize: '15px',
+					},
+				},
+			},
+			MuiListItemText: {
+				styleOverrides: {
+					primary: {
+						fontSize: '15px',
+					},
+				},
+			},
+			MuiListItemButton: {
+				styleOverrides: {
+					root: {
+						fontSize: '15px',
 					},
 				},
 			},
@@ -231,6 +252,115 @@ export const customToastTheme = (primaryColor: string | undefined = undefined) =
 						},
 						'&.MuiAlert-outlinedInfo': {
 							border: '1px solid rgba(2, 116, 215, 0.2)',
+						},
+					},
+				},
+			},
+		},
+	});
+};
+
+export const genderDropdownTheme = (primaryColor: string | undefined = undefined) => {
+	const defaultTheme = getDefaultTheme(primaryColor);
+	const blueColor = '#0274d7';
+
+	return createTheme({
+		...defaultTheme,
+		components: {
+			MuiInputBase: {
+				styleOverrides: {
+					root: {
+						'& fieldset': {
+							borderRadius: '16px',
+							border: '1px solid #A3A3AD',
+						},
+						'& fieldset > legend': {
+							// size of red error line (label) (input size - 5px)
+							fontFamily: 'Poppins',
+							fontSize: '14px',
+						},
+					},
+					input: {
+						fontFamily: 'Poppins',
+						fontSize: '19px',
+						caretColor: blueColor,
+					},
+				},
+			},
+			MuiFormControl: {
+				styleOverrides: {
+					root: {
+						'& .MuiFormLabel-root': {
+							fontFamily: 'Poppins',
+							fontSize: '16px',
+							color: '#A3A3AD',
+						},
+						'& .MuiFormLabel-root.Mui-focused': {
+							fontFamily: 'Poppins',
+							fontSize: '19px',
+							color: blueColor,
+						},
+					},
+				},
+			},
+			MuiMenuItem: {
+				styleOverrides: {
+					gutters: {
+						fontFamily: 'Poppins',
+						fontSize: '16px',
+						paddingTop: '10px',
+						paddingBottom: '10px',
+					},
+				},
+			},
+			MuiPaper: {
+				styleOverrides: {
+					root: {
+						border: `1px solid ${blueColor}`,
+						borderBottomLeftRadius: '21px',
+						borderBottomRightRadius: '21px',
+					},
+				},
+			},
+		},
+	});
+};
+
+export const customModalTheme = (primaryColor: string | undefined = undefined) => {
+	const defaultTheme = getDefaultTheme(primaryColor);
+	return createTheme({
+		...defaultTheme,
+		components: {
+			MuiDialog: {
+				styleOverrides: {
+					root: {
+						'& .MuiPaper-root': {
+							overflowX: 'hidden',
+						},
+					},
+				},
+			},
+		},
+	});
+};
+
+export const customActionsModalTheme = (primaryColor: string | undefined = undefined) => {
+	const defaultTheme = getDefaultTheme(primaryColor);
+	return createTheme({
+		...defaultTheme,
+		components: {
+			MuiDialog: {
+				styleOverrides: {
+					root: {
+						'& .MuiPaper-root': {
+							overflowX: 'hidden',
+							height: 'auto',
+							maxWidth: '500px',
+							boxShadow: '0 4px 24px rgba(0, 0, 0, 0.25)',
+							borderRadius: '40px',
+							[defaultTheme.breakpoints.down('sm')]: {
+								width: 'calc(100vw - 2rem)',
+							},
 						},
 					},
 				},

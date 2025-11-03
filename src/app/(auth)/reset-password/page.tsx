@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import ResetPasswordClient from "@/components/pages/auth/resetPassword";
+import ResetPasswordClient from "@/components/pages/auth/reset-password/resetPassword";
 import {DASHBOARD} from "@/utils/routes";
 
-export default async function ResetPasswordPage() {
+const ResetPasswordPage = async () => {
   const session = await auth();
 
   if (session) {
@@ -12,3 +12,5 @@ export default async function ResetPasswordPage() {
 
   return <ResetPasswordClient />;
 }
+
+export default ResetPasswordPage;

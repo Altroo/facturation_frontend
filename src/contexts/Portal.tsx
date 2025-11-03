@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
 interface PortalProps {
@@ -9,7 +9,7 @@ interface PortalProps {
 }
 
 const Portal: React.FC<PortalProps> = ({ id, children }) => {
-	const [container, setContainer] = useState<HTMLElement | null>(null);
+	const containerRef = useRef<HTMLElement | null>(null);
 
 	useEffect(() => {
 		let el = document.getElementById(id);
@@ -18,12 +18,11 @@ const Portal: React.FC<PortalProps> = ({ id, children }) => {
 			el.id = id;
 			document.body.appendChild(el);
 		}
-		// eslint-disable-next-line react-hooks/set-state-in-effect
-		setContainer(el);
+		containerRef.current = el;
 	}, [id]);
 
-	if (!container) return null;
-	return createPortal(children, container);
+	if (!containerRef.current) return null;
+	return createPortal(children, containerRef.current);
 };
 
 export default Portal;

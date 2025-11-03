@@ -1,11 +1,11 @@
 import { cookies } from 'next/headers';
-import SetPasswordComplete from '@/components/pages/auth/setPasswordComplete';
+import SetPasswordComplete from '@/components/pages/auth/reset-password/setPasswordComplete';
 import ClearCookiesClient from './clearCookiesClient';
 import { redirect } from 'next/navigation';
 import { AUTH_RESET_PASSWORD, DASHBOARD } from "@/utils/routes";
 import { auth } from "@/auth";
 
-export default async function Page() {
+const SetPasswordCompletePage = async () => {
   const session = await auth();
   if (session) {
     redirect(DASHBOARD);
@@ -24,3 +24,5 @@ export default async function Page() {
     </>
   );
 }
+
+export default SetPasswordCompletePage;

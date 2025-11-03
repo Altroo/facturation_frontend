@@ -2,7 +2,7 @@
 
 import React, { useState, useTransition, useRef } from 'react';
 import Styles from '@/styles/auth/reset-password/enter-code.module.sass';
-import { setFormikAutoErrors } from "@/utils/helpers";
+import {setFormikAutoErrors} from "@/utils/helpers";
 import { Desktop, TabletAndMobile } from "@/utils/clientHelpers";
 import { cookiesPoster } from "@/store/services/_init/_initAPI";
 import { AUTH_RESET_PASSWORD_SET_PASSWORD } from '@/utils/routes';
@@ -15,13 +15,11 @@ import { toFormikValidationSchema } from 'zod-formik-adapter';
 import { codeTextInputTheme } from '@/utils/themes';
 import CustomOutlinedText from '@/components/formikElements/customOutlinedText/customOutlinedText';
 import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
-import ApiProgress from '@/components/formikElements/apiLoadingResponseOrError/apiProgress/apiProgress';
-import UserMainNavigationBar from '@/components/layouts/userMainNavigationBar/userMainNavigationBar';
+import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import Portal from '@/contexts/Portal';
 import CustomToast from '@/components/portals/customToast/customToast';
 import PrimaryLoadingButton from "@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton";
 import { useSendPasswordResetCodeMutation, usePasswordResetMutation } from '@/store/services/account/account';
-import { isAxiosError } from 'axios';
 import { useSession } from 'next-auth/react';
 
 type EnterCodePageContentProps = {
@@ -97,20 +95,6 @@ const EnterCodePageContent = ({ email }: EnterCodePageContentProps) => {
     }, 0);
   };
 
-
-  const renvoyerLeCodeHandler = async () => {
-    try {
-      await reSendPasswordResetCode({ email }).unwrap();
-      setToastMessage('code envoyé.');
-      setShowDataUpdated(true);
-    } catch (err) {
-      if (isAxiosError(err)) {
-        const message = err.response?.data?.error?.message ?? err.message;
-        setToastMessage(message);
-      }
-    }
-  };
-
   const formik = useFormik({
     initialValues: { one: '', two: '', three: '', four: '', globalError: '' },
     validateOnMount: true,
@@ -129,6 +113,17 @@ const EnterCodePageContent = ({ email }: EnterCodePageContentProps) => {
     },
   });
 
+  const renvoyerLeCodeHandler = async () => {
+    try {
+      await reSendPasswordResetCode({ email }).unwrap();
+      setToastMessage('code envoyé.');
+      setShowDataUpdated(true);
+    } catch (e) {
+      const setFieldError = formik.setFieldError;
+      setFormikAutoErrors({ e, setFieldError });
+    }
+  };
+
   return (
     <>
       <Stack direction="column" className={Styles.contentWrapper} spacing={4}>
@@ -136,7 +131,7 @@ const EnterCodePageContent = ({ email }: EnterCodePageContentProps) => {
           <ApiProgress
             cssStyle={{ position: 'absolute', top: '50%', left: '50%' }}
             backdropColor="#FFFFFF"
-            circularColor="#FFFFFF"
+            circularColor="#0D070B"
           />
         )}
         <Stack direction="column" spacing={1}>
@@ -235,7 +230,6 @@ const EnterCodeClient: React.FC<Props> = ({ email }) => {
           <TabletAndMobile>
             <div style={{ display: 'flex', width: '100%', height: '100%' }}>
               <main className={Styles.main}>
-                <UserMainNavigationBar />
                 <EnterCodePageContent email={email} />
               </main>
             </div>

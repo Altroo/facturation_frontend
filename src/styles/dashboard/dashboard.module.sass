@@ -1,0 +1,674 @@
+@use '@/styles/sass/variables' as *
+@use '@/styles/sass/colors' as *
+@use '@/styles/sass/mixins' as *
+
+// Global styles
+.cropButton
+  max-width: fit-content
+  padding-left: 24px
+  padding-right: 24px
+.centerModal
+  left: 0 !important
+.comingSoon
+  +Regular
+  font-size: 9px
+  color: #84848A
+  border: 1px solid #A3A3AD
+  border-radius: 13px
+  padding: 0 4px
+.main
+  display: block
+  padding-right: 60px
+  padding-top: 32px
+  width: 100%
+.form
+  min-width: 430px
+.dashboardIndexMain
+  display: flex
+  flex-direction: row
+  width: 100%
+  padding: 32px 60px 32px 60px
+.rootStack
+  height: calc(100vh - 140px)
+  width: 100%
+.rootStackVH
+  @extend .rootStack
+  margin-top: 32px
+.flexRootStack
+  width: 100%
+.userCardStack
+  padding: 18px
+.userCardStackContent
+  width: 252px
+.userMembreDepuis
+  +Regular
+  font-size: 15px
+  color: #84848A
+.divider
+  color: #F2F2F3
+  margin-top: 12px
+  margin-bottom: 12px
+.splitDivider
+  color: $buttonTextDisabled !important
+  border-width: 0.1px
+.blockedUsersListRootStack:last-child
+  .splitDivider
+    +Hidden
+.unblockButton
+  +Regular
+  margin: 0 !important
+  font-size: 13px !important
+  padding: 7px 12px !important
+  background-color: #FFFFFF !important
+  color: $primary !important
+  border: 1px solid $primary !important
+  width: fit-content !important
+  height: fit-content !important
+  &:hover
+    background-color: rgba(13, 7, 11, 0.04) !important
+.userShopLink
+  +Medium
+  font-size: 19px
+  color: #0274d7
+.userShopName
+  +SemiBold
+  color: $primary
+  font-size: 32px
+.userNoAvailableComments
+  +SemiBold
+  font-size: 19px
+  color: $primary
+.userOfferThumb
+  border-radius: 10px
+  width: 176px
+  height: 120px
+  object-fit: cover
+.chip
+  +Regular
+.userOfferTitle
+  width: 100%
+  +Medium
+  font-size: 17px
+  color: $primary
+  word-break: break-word
+.userOfferRating
+  +Regular
+  font-size: 14px
+  color: #525256
+.userOfferPrice
+  +Medium
+  font-size: 17px
+  color: $primary
+.userOldPrice
+  color: $primary
+  text-decoration: line-through
+.userSolderPrice
+  @extend .userOldPrice
+  color: #E12D3D
+.dashboardShopCardStack
+  padding: 18px
+  background-color: #FBFBFB
+  border-radius: 20px
+  justify-content: space-between
+.dashboardAvatarSubWrapper
+  width: 98px
+  height: 98px
+  position: relative
+  overflow: hidden
+  border-radius: 50%
+.dashboardAvatar
+  width: 100%
+  max-width: 100%
+  object-fit: cover
+  height: 100%
+.dashboardShopName
+  +SemiBold
+  font-size: 21px
+  color: $primary
+.dashboardRatingText
+  +Medium
+  font-size: 15px
+  color: $primary
+.dashboardValuesCount
+  +Regular
+  font-size: 15px
+  color: #525256
+.dashboardAnchorLink
+  +Regular
+  font-size: 13px
+  color: #0274d7
+.dashboardMyBusinessCardStack
+  border: 1px solid #D9D9DD
+  border-radius: 20px
+  padding: 18px
+.dashboardCardIconText
+  +SemiBold
+  font-size: 19px
+  color: $primary
+.dashboardMiniCards
+  border-radius: 20px
+  height: 90px
+  padding: 16px 12px
+.dashboardIndexedMiniCard
+  @extend .dashboardMiniCards
+  background-color: rgba(219, 232, 244, 0.24)
+  //width: 163px
+.dashboardSubscribedMiniCard
+  @extend .dashboardMiniCards
+  background-color: rgba(213, 206, 238, 0.24)
+.dashboardMiniCardCounter
+  +SemiBold
+  font-size: 32px
+  color: $primary
+  line-height: 2.5rem
+.dashboardMiniCardSubHeader
+  +Regular
+  font-size: 15px
+  color: #525256
+.dashboardVuesMiniCard
+  @extend .dashboardMiniCards
+  background-color: rgba(243, 216, 225, 0.24)
+.dashboardSellsMiniCard
+  @extend .dashboardMiniCards
+  background-color: rgba(255, 217, 162, 0.24)
+.dashboardSellsDesktopCard
+  border-radius: 20px
+  height: 132px
+  width: 364px
+  background-color: #FFD9A2
+  padding: 24px 12px
+.dashboardVuesDesktopCard
+  border-radius: 20px
+  height: 132px
+  width: 364px
+  padding: 24px 12px
+  background-color: rgba(243, 216, 225, 0.6)
+.dashboardSellsDesktopBox
+  padding: 32px 12px
+  width: 100%
+  border: 1px solid #D9D9DD
+  border-radius: 20px
+  gap: 20px
+  grid-gap: 20px
+.dashboardEmptyVuesDesktopBox
+  padding: 32px 12px
+  width: 100%
+  border: 1px solid #D9D9DD
+  border-radius: 20px
+  text-align: center
+.dashboardVuesBox
+  width: 100%
+  border: 1px solid #D9D9DD
+  border-radius: 20px
+  padding: 12px
+  margin-bottom: 0 !important
+  .offerVuesTopArticlesRootList:last-child
+    .divider
+      display: none
+.dashboardSellsDesktopBoxContent
+  +Regular
+  font-size: 17px
+  color: $primary
+.dashboardMiniCardPourcentage
+  +Medium
+  font-size: 15px
+.dashboardPositivePourcentage
+  color: #059982
+.dashboardNegativePourcentage
+  color: #E12D3D
+.dashboardNeutralePourcentage
+  color: #525256
+.dashboardActivationModal
+  left: 0 !important
+.enterCodePageContentRoot
+  padding: 32px !important
+  width: 100%
+  height: 100%
+.dashboardCreateShopSubTitle
+  +Regular
+  font-size: 15px
+  color: $primary
+.pageTitle
+  +Bold
+  font-size: 32px
+  color: $primary
+  margin-top: 0
+.userShopTitle
+  @extend .pageTitle
+  margin: 0
+  padding: 0
+.addPictureSpan
+  +Regular
+  font-size: 17px
+  color: #0274d7
+.maxWidth
+  width: 100% !important
+.maxHeight
+  height: 100% !important
+.submitButton
+  margin-top: 32px !important
+  margin-bottom: 32px !important
+.dashboardNoContentHeader
+  +SemiBold
+  font-size: 21px
+  color: #84848A
+.dashboardNoContentText
+  +Regular
+  font-size: 17px
+  color: #84848A
+  margin-left: 10px !important
+  margin-right: 10px !important
+  margin-top: 0 !important
+.dashboardCardBox
+  height: 100%
+  padding: 18px
+  border: 1px solid #D9D9DD
+  border-radius: 20px
+.dashboardSizedBox
+  padding: 18px
+  border: 1px solid #D9D9DD
+  border-radius: 20px
+  width: 100%
+  height: 100%
+.dashboardCreateShopButton
+  width: 148px !important
+  height: 32px !important
+  min-width: 148px !important
+  +Medium
+  font-size: 15px
+  color: $primary
+.paragrapheContent
+  +Regular
+  font-size: 17px
+  color: #84848A
+  margin-bottom: 2rem !important
+  span
+    color: #0274d7
+.backIcon
+  width: 12px
+  height: 7px
+.myBusinessQuestion
+  +Regular
+  font-size: 17px
+  color: #0274d7
+.dashboardRightContentMarginLeft
+  margin-left: 32px
+.dashboardNotSubscribedRootStack
+  margin-left: 32px
+  padding-right: 60px
+  padding-bottom: 60px
+.dashboardNotSubscribedSubRootStack
+  padding: 18px 60px
+  border-radius: 20px
+  background: #D5CEEE
+  width: 100%
+.dashboardNotSubscribedSpanHeaderOne
+  +Light
+  font-size: 30px
+  color: $primary
+  letter-spacing: -0.03em
+.dashboardNotSubscribedSpanHeaderTwo
+  +Bold
+  font-size: 30px
+  color: $primary
+  letter-spacing: -0.03em
+.dashboardNotSubscribedHeaderWrapper
+  width: 50%
+.dashboardNotSubscribedParagraphe
+  +Regular
+  font-size: 17px
+  color: $primary
+  padding: 0
+  text-align: center
+.dashboardNotSubscribedHeadline
+  span
+    +Bold
+    font-size: 32px
+    color: $primary
+    line-height: 40px
+  a
+    +Regular
+    font-size: 17px
+    color: #0274d7
+.dashboardNotSubscribedPriceType
+  +Regular
+  font-size: 19px
+  color: #84848A
+.dashboardNotSubscribedPriceToggleActive
+  color: $primary
+.dashboardNotSubscribedPriceMessage
+  +Regular
+  font-size: 13px
+  color: #84848A
+.dashboardNotSubscribedNousContacter
+  font-family: $font-family-medium !important
+  font-weight: 500 !important
+  font-size: 15px !important
+  color: #0274d7 !important
+.dashboardNotSubscribedNousContacterBox
+  span:nth-child(1)
+    +SemiBold
+    font-size: 17px
+    color: $primary
+  span:nth-child(2)
+    +Regular
+    font-size: 15px
+    color: #525256
+.dashboardNotSubscribedPriceBy
+  +Bold
+  font-size: 19px
+  color: $primary
+  span
+    font-size: 36px
+.dashboardNotSubscribedPriceByDescription
+  +Regular
+  font-size: 15px
+  color: #525256
+.dashboardNotSubscribedSaveWrapper
+  background-color: #DBFAEA
+  border-radius: 9px
+  padding: 2px 6px
+.dashboardNotSubscribedSave
+  +Medium
+  font-size: 15px
+  color: #07CBAD
+.dashboardNotSubscribedArticlesBox
+  border: 1px solid #A3A3AD
+  border-radius: 21px
+  padding: 10px 18px
+  display: flex
+  flex-direction: row
+  justify-content: center
+  width: 150px
+  gap: 7px
+  grid-gap: 7px
+  span
+    +Regular
+    font-size: 19px
+    color: $primary
+.dashboardNotSubscribedSliderBox
+  min-width: 625px
+.dashboardNotSubscribedActionButton
+  margin-top: 18px
+  width: 196px !important
+  height: 54px !important
+.dashboardNotSubscribedAvantageBox
+  margin-top: 32px
+  margin-bottom: 32px
+  background-color: #FBFBFB
+  border-radius: 20px
+  padding: 32px 0
+.dashboardNotSubscribedAvantage
+  +Medium
+  font-size: 17px
+  color: $primary
+  text-align: center
+.dashboardNotSubscribedAvantageItem
+  +Regular
+  font-size: 17px
+  color: $primary
+.dashboardNotSubscribedPopulaireBannerWrapper
+  position: relative
+  overflow: hidden
+.dashboardNotSubscribedPopulaireBanner
+  position: absolute
+  transform: rotate(-30deg)
+  top: 15px
+  left: -40px
+  width: 200px
+  height: 40px
+  background-color: #F2F2F3
+  text-align: center
+  span
+    +Bold
+    font-size: 17px
+    color: #8669FB
+    letter-spacing: -0.04em
+    line-height: 40px
+.offerVuesThumbnail
+  border-radius: 10px
+  object-fit: cover
+.offerVuesOfferTitle
+  +Medium
+  font-size: 17px
+  color: $primary
+.offerVuesNumber
+  +SemiBold
+  font-size: 17px
+  color: $primary
+.offerVuesloadMoreStack
+  margin-top: 32px !important
+  margin-bottom: 32px !important
+.offerVuesloadMoreButton
+  +SemiBold
+  font-size: 17px
+  color: $primary
+  text-transform: none
+  border: 1px solid $primary
+  border-radius: 50px
+  padding: 14px 32px
+  width: 364px
+  height: 54px
+.orderNumber
+  +Medium
+  font-size: 17px
+  color: $primary
+  letter-spacing: -0.03em
+.orderSpan
+  +Regular
+  font-size: 15px
+  color: #525256
+.dashboardChiffreAffaireBox
+  width: 100%
+  border: 1px solid #D9D9DD
+  border-radius: 20px
+  padding: 12px
+  margin-bottom: 0 !important
+  &:hover
+    background-color: rgba(13, 7, 11, 0.04) !important // hover effect
+.orderRootStack
+  padding: 2px 8px
+
+.hover
+  border-radius: 13px
+  &:hover
+    background-color: rgba(13, 7, 11, 0.04) !important // hover effect
+.hrefLink
+  +Regular
+  font-size: 13px
+  color: #0274d7
+.buyerAvatar
+  object-fit: cover
+  max-height: 100%
+  max-width: 100%
+  overflow: hidden
+  border-radius: 50%
+.buyerName
+  +SemiBold
+  font-size: 19px
+  color: $primary
+  letter-spacing: 0.02em
+.orderDate
+  +Regular
+  font-size: 11px
+  color: #84848A
+.buyerProductPrice
+  +Regular
+  font-size: 15px
+  color: #84848A
+.orderStatus
+  +Regular
+  border-radius: 13px
+  padding: 2px 8px
+  text-align: center
+  font-size: 11px
+  color: $primary
+.emptyBlockStack
+  text-align: center
+  color: $primary
+  h2
+    +Bold
+    margin: 0
+    font-size: 32px
+    line-height: 40px
+  p
+    +Regular
+    margin: 0
+    font-size: 17px
+    line-height: 26px
+.blockRootStack
+  width: 100%
+  margin-left: 40px
+  padding-right: 40px
+  min-height: 650px
+.blockSubHeader
+  +Regular
+  font-size: 15px
+  color: #84848A
+  line-height: 22px
+.blockHeader
+  +Bold
+  font-size: 32px
+  color: $primary
+  margin: 0
+.miniBlockImage
+  width: 18px
+  height: 18px
+.blockedUserAvatar
+  width: 48px
+  height: 48px
+  filter: grayscale(1.0)
+.blockedUserName
+  +Medium
+  font-size: 17px
+  letter-spacing: -0.03em
+  line-height: 18px
+  color: $primary
+@media #{$tablette}
+  .blockRootStack
+    margin-left: 0
+    padding-right: 0
+    margin-top: 32px
+    margin-bottom: 32px
+    min-height: 100%
+  .dashboardNotSubscribedPriceBy
+    margin-left: 0 !important
+  .form
+    min-width: 100%
+  .dashboardRightContentMarginLeft
+    margin-left: 0 !important
+  .dashboardNotSubscribedSliderBox
+    min-width: 100%
+  .dashboardNotSubscribedArticlesBox
+    margin-left: 0 !important
+    margin-bottom: 32px !important
+  .dashboardNotSubscribedAvantageBox
+    margin-top: 0
+    margin-bottom: 0
+    padding-bottom: 0
+  .dashboardNotSubscribedAvantage
+    text-align: start
+  .dashboardNotSubscribedAvantageMobile
+    padding-left: 24px
+    padding-right: 24px
+  .dashboardNotSubscribedAvantageMobileStack
+    flex-direction: column
+    justify-content: start
+    margin-top: 0 !important
+    div:nth-child(1)
+      margin-top: 12px
+    div:nth-child(2)
+      margin-top: 12px
+  .dashboardNotSubscribedSliderRoot
+    flex-direction: column
+  .dashboardNotSubscribedSliderBox
+    width: 100%
+  .dashboardNotSubscribedParagraphe
+    text-align: start
+  .dashboardNotSubscribedRootStack
+    margin-left: 0
+    padding-right: 0
+    padding-bottom: 0
+  .dashboardNotSubscribedSubRootStack
+    padding: 48px 33px 15px 23px
+    flex-direction: column
+    align-items: flex-start
+    border-radius: 0
+  .dashboardNotSubscribedHeaderWrapper
+    width: 100%
+  .dashboardSellsDesktopCard, .dashboardVuesDesktopCard
+    width: 100%
+  .dashboardSellsDesktopBoxContent
+    text-align: center
+  .dashboardSellsDesktopBox
+    margin-bottom: 60px !important
+  .main
+    padding-top: 0 !important
+    margin-top: 1rem !important
+  .userCardStackContent
+    padding-top: 0 !important
+  .userCardStack
+    padding-top: 36px !important
+  .mobileDrawerButton
+    position: absolute
+    left: 24px
+  .rootStack
+    justify-content: center
+    align-items: center
+  .rootStackVH
+    @extend .rootStack
+    justify-content: flex-start
+  .mobileMsgNotifRootStack
+    margin-left: 24px
+    margin-right: 24px
+  .mobileMessageIconButton
+    padding: 0
+    margin: 12px 6px 12px 0
+  .mobileNotificationIconButton
+    padding: 0
+    margin: 12px 0 12px 6px
+  .fixMobile
+    display: flex
+    flex-direction: column
+    justify-content: space-between
+    height: 100%
+    padding-left: 24px
+    padding-right: 24px
+  .noPaddingFixMobile
+    display: flex
+    flex-direction: column
+    justify-content: space-between
+    padding-right: 0 !important
+    height: 100%
+  .pageTitle
+    text-align: start !important
+    margin-bottom: 0
+  .mobileButton
+    margin-top: 2rem !important
+    margin-bottom: 2rem !important
+  .mobileDrawerIcon
+    width: auto
+    height: 26px
+  .iconButton
+    margin: 0
+    padding: 12px 0 0
+  .topBackNavigationStack
+    cursor: pointer
+    width: fit-content
+  .marginLeft
+    margin-left: 24px !important
+  .backText
+    +Regular
+    font-size: 13px
+    color: $primary
+  .userCardStackContent
+    width: 100%
+  .dashboardIndexMain
+    padding-top: 0 !important
+@media #{$mobile}
+  .userCardOfferWrapper
+    width: 100%
+  .offerVuesloadMoreStack
+    width: 100%
+  .offerVuesloadMoreButton
+    width: calc(100vw - 48px)

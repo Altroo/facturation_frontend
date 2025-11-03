@@ -7,7 +7,6 @@ import SuccessIlluSVG from '@/public/assets/images/success-illu.svg';
 import PrimaryAnchorButton from '@/components/htmlElements/buttons/primaryAnchorButton/primaryAnchorButton';
 import { AUTH_LOGIN } from '@/utils/routes';
 import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
-import UserMainNavigationBar from '@/components/layouts/userMainNavigationBar/userMainNavigationBar';
 
 const SetPasswordCompleteClient: React.FC = () => {
   return (
@@ -27,7 +26,6 @@ const SetPasswordCompleteClient: React.FC = () => {
       <TabletAndMobile>
         <div>
           <main className={Styles.main}>
-            <UserMainNavigationBar />
             <Stack direction="column" spacing={4} className={Styles.contentWrapper}>
               <Image src={SuccessIlluSVG} alt="" width="0" height="0" sizes="100vw" className={Styles.logo} />
               <h2 className={Styles.header}>Mot de passe modifié</h2>

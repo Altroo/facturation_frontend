@@ -16,7 +16,6 @@ import { useFormik } from 'formik';
 import { passwordResetConfirmationSchema } from '@/utils/formValidationSchemas';
 import { coordonneeTextInputTheme } from '@/utils/themes';
 import CustomPasswordInput from '@/components/formikElements/customPasswordInput/customPasswordInput';
-import UserMainNavigationBar from "@/components/layouts/userMainNavigationBar/userMainNavigationBar";
 import {useSetPasswordMutation} from "@/store/services/account/account";
 import PrimaryLoadingButton from "@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton";
 
@@ -132,7 +131,6 @@ const SetPasswordClient: React.FC<Props> = ({ email, code }) => (
     <TabletAndMobile>
       <div style={{ display: 'flex', width: '100%', height: '100%' }}>
         <main className={Styles.main}>
-          <UserMainNavigationBar />
           <SetPasswordPageContent email={email} code={code} />
         </main>
       </div>

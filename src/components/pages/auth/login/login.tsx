@@ -19,12 +19,11 @@ import { useAppDispatch } from '@/utils/hooks';
 import AuthLayout from '@/components/layouts/auth/authLayout';
 import { useFormik } from 'formik';
 import { loginSchema } from '@/utils/formValidationSchemas';
-import ApiProgress from '@/components/formikElements/apiLoadingResponseOrError/apiProgress/apiProgress';
+import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import CustomPasswordInput from '@/components/formikElements/customPasswordInput/customPasswordInput';
 import { coordonneeTextInputTheme } from '@/utils/themes';
 import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
 import { refreshAppTokenStatesAction } from '@/store/actions/_init/_initActions';
-import UserMainNavigationBar from '@/components/layouts/userMainNavigationBar/userMainNavigationBar';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 
 const inputTheme = coordonneeTextInputTheme();
@@ -38,7 +37,6 @@ const LoginPageContent = () => {
 
   useEffect(() => {
     if (error === 'AccessDenied') {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setErrorState('Service non disponible.');
     } else {
       setErrorState(error);
@@ -145,7 +143,6 @@ const LoginClient: React.FC = () => {
   useEffect(() => {
     if (session && !sessionUpdated) {
       dispatch(refreshAppTokenStatesAction(session));
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSessionUpdated(true);
       router.replace(DASHBOARD);
     }
@@ -172,7 +169,6 @@ const LoginClient: React.FC = () => {
           <TabletAndMobile>
             <div style={{display: 'flex', width: '100%', height: '100%'}}>
               <main className={Styles.main}>
-                <UserMainNavigationBar />
                 <LoginPageContent />
               </main>
             </div>

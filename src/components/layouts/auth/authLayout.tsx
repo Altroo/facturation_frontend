@@ -38,7 +38,6 @@ const AuthPageLayout = forwardRef<HTMLAnchorElement, Props>((props: Props, ref: 
         }
       ];
       const randomElement = availableAuthBgImages[Math.floor(Math.random() * availableAuthBgImages.length)];
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAuthIlluRandom(randomElement);
     }
   }, [authIlluRandom]);

@@ -1,11 +1,11 @@
 import { cookies } from 'next/headers';
 import React from 'react';
-import EnterCodeClient from '@/components/pages/auth/enterCode';
+import EnterCodeClient from '@/components/pages/auth/reset-password/enterCode';
 import { redirect } from 'next/navigation';
 import {AUTH_RESET_PASSWORD, DASHBOARD} from "@/utils/routes";
 import {auth} from "@/auth";
 
-export default async function Page() {
+const EnterCodePage = async () => {
   // check if user is logged in
   const session = await auth();
   if (session) {
@@ -20,3 +20,5 @@ export default async function Page() {
   }
   return <EnterCodeClient email={email} />;
 }
+
+export default EnterCodePage;

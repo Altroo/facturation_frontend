@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import {cookiesDeleter} from "@/store/services/_init/_initAPI";
 
-export default function ClearCookiesClient() {
+const ClearCookiesClient = () => {
   useEffect(() => {
     cookiesDeleter('/cookies', {
       pass_updated: true,
@@ -14,3 +14,5 @@ export default function ClearCookiesClient() {
 
   return null;
 }
+
+export default ClearCookiesClient;

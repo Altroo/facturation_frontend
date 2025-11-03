@@ -10,7 +10,7 @@ type NormalizedError = {
   };
 };
 
-function isNormalizedError(err: unknown): err is NormalizedError {
+const isNormalizedError = (err: unknown): err is NormalizedError => {
   return (
     typeof err === "object" &&
     err !== null &&

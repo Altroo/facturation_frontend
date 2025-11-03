@@ -1,5 +1,7 @@
 import {z} from "zod";
 import {
+  INPUT_MAX,
+  INPUT_MIN,
   INPUT_PASSWORD_MIN,
   INPUT_REQUIRED,
   MINI_INPUT_EMAIL,
@@ -10,6 +12,13 @@ const passwordField = z.preprocess(
   (val) => (val === undefined ? "" : val),
   z.string()
     .min(8, { error: INPUT_PASSWORD_MIN(8) })
+    .nonempty({ error: INPUT_REQUIRED })
+);
+
+const userNameField = z.preprocess(
+  (val) => (val === undefined ? "" : val),
+  z.string()
+    .min(2, { error: INPUT_MIN(2) }).max(30, { error: INPUT_MAX(30) })
     .nonempty({ error: INPUT_REQUIRED })
 );
 
@@ -42,4 +51,15 @@ export const passwordResetCodeSchema = z.object({
   three: singleDigit,
   four: singleDigit,
   globalError: z.string().optional(),
+});
+
+export const profilSchema = z.object({
+  first_name: userNameField,
+  last_name: userNameField,
+});
+
+export const changePasswordSchema = z.object({
+  old_password: passwordField,
+  new_password: passwordField,
+  new_password2: passwordField,
 });

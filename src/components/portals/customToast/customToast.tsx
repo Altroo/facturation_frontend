@@ -24,7 +24,7 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(props,
 const CustomToast: React.FC<Props> = (props) => {
 	const { type } = props;
 
-	const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+	const handleClose = (_event?: React.SyntheticEvent | Event, reason?: string) => {
 		if (reason === 'clickaway') return;
 		props.setShow(false);
 	};
@@ -51,9 +51,7 @@ const CustomToast: React.FC<Props> = (props) => {
 							error: (
 								<Image src={ErrorIconSVG} alt="" width="0" height="0" sizes="100vw" className={Styles.alertIcon} />
 							),
-							info: (
-								<Image src={InfoIconSVG} alt="" width="0" height="0" sizes="100vw" className={Styles.alertIcon} />
-							),
+							info: <Image src={InfoIconSVG} alt="" width="0" height="0" sizes="100vw" className={Styles.alertIcon} />,
 							warning: (
 								<Image src={WarningIconSVG} alt="" width="0" height="0" sizes="100vw" className={Styles.alertIcon} />
 							),

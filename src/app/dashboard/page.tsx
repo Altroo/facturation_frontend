@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import {AUTH_LOGIN} from "@/utils/routes";
 import DashboardClient from "@/components/pages/dashboard/dashboard";
 
-export default async function DashboardPage() {
+const DashboardPage = async () => {
   const session = await auth();
 
   if (!session) {
@@ -12,3 +12,5 @@ export default async function DashboardPage() {
 
   return <DashboardClient session={session} />;
 }
+
+export default DashboardPage;

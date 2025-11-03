@@ -40,14 +40,6 @@ export interface InitStateInterface<T> {
   initStateToken: T;
 }
 
-export type AuthSagaContextType = {
-  initStateToken: InitStateToken;
-};
-
-export interface ResponseOnlyInterface {
-  status: number;
-}
-
 export type AppSession = Session & {
   accessToken?: string;
   user?: Session["user"] & {
@@ -58,4 +50,8 @@ export type AppSession = Session & {
 export type SagaPayloadType<T> = {
   type: string,
   data: T,
+}
+
+export type TokenType = {
+  token?: string,
 }

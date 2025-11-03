@@ -16,11 +16,10 @@ import { useFormik } from 'formik';
 import { emailSchema } from '@/utils/formValidationSchemas';
 import { coordonneeTextInputTheme } from '@/utils/themes';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
-import UserMainNavigationBar from '@/components/layouts/userMainNavigationBar/userMainNavigationBar';
 import PrimaryLoadingButton from "@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton";
 import { useSendPasswordResetCodeMutation } from '@/store/services/account/account';
 import { useSession } from 'next-auth/react';
-import ApiProgress from "@/components/formikElements/apiLoadingResponseOrError/apiProgress/apiProgress";
+import ApiProgress from "@/components/formikElements/apiLoading/apiProgress/apiProgress";
 
 const inputTheme = coordonneeTextInputTheme();
 const ResetPasswordPageContent = () => {
@@ -125,7 +124,6 @@ const ResetPasswordClient: React.FC = () => {
           <TabletAndMobile>
             <div style={{display: 'flex', width: '100%', height: '100%'}}>
               <main className={Styles.main}>
-                <UserMainNavigationBar />
                 <ResetPasswordPageContent />
               </main>
             </div>

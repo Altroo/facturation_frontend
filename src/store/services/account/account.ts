@@ -5,6 +5,7 @@ import {SuccessResponseType} from "@/types/_init/_initTypes";
 import {store} from "@/store/store";
 import {getInitStateToken} from "@/store/selectors";
 import {UserClass} from "@/models/account/UserClass";
+import {UpdateProfilResponse, PasswordResetResponse} from "@/types/account/accountTypes";
 
 export const accountApi = createApi({
   reducerPath: 'accountApi',
@@ -33,6 +34,8 @@ export const accountApi = createApi({
   }),
 });
 
+
+
 export const profilApi = createApi({
   reducerPath: "profilApi",
   baseQuery: axiosBaseQuery(() => {
@@ -47,8 +50,24 @@ export const profilApi = createApi({
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       }),
     }),
+    updateProfil: builder.mutation<SuccessResponseType, UpdateProfilResponse>({
+      query: ({ token, data }) => ({
+        url: process.env.NEXT_PUBLIC_ACCOUNT_PROFIL as string,
+        method: "PATCH",
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        data,
+      }),
+    }),
+    updatePassword: builder.mutation<SuccessResponseType, PasswordResetResponse>({
+      query: ({ token, data }) => ({
+        url: process.env.NEXT_PUBLIC_ACCOUNT_PASSWORD_CHANGE as string,
+        method: "PUT",
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        data,
+      }),
+    }),
   }),
 });
 
 export const { useSendPasswordResetCodeMutation, usePasswordResetMutation, useSetPasswordMutation } = accountApi;
-export const { useGetProfilQuery } = profilApi;
+export const { useGetProfilQuery, useUpdateProfilMutation, useUpdatePasswordMutation } = profilApi;

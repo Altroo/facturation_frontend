@@ -1,0 +1,46 @@
+@use '@/styles/sass/variables' as *
+@use '@/styles/sass/colors' as *
+@use '@/styles/sass/mixins' as *
+
+// Global styles
+.hiddenFile
+  +Hidden
+.avatarContainer
+  background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='100' ry='100' stroke='%230274D7' stroke-width='4' stroke-dasharray='15' stroke-dashoffset='0' stroke-linecap='butt'/%3e%3c/svg%3e")
+  border-radius: 50%
+  width: 98px
+  height: 98px
+  padding: 20px
+  margin-right: 10px
+  display: flex
+  justify-content: center
+  justify-items: center
+  align-items: center
+  flex: 1
+  cursor: pointer
+.removeBorders
+  border: 0 solid transparent !important
+  position: relative
+.previewAvatar
+  position: absolute
+  width: 100%
+  height: 100%
+  object-fit: cover
+  border-radius: 50%
+.addPictureSpan
+  +Regular
+  font-size: 17px
+  color: #0274d7
+  cursor: pointer
+.hideIcon
+  +Hidden
+// @media #{$desktop}
+@media #{$tablette}
+  .avatarIcon
+    span
+      width: 30px !important
+      height: 30px !important
+  .avatarContainer
+    margin-right: 0 !important
+    min-width: 100px
+    min-height: 100px

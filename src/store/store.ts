@@ -1,9 +1,9 @@
 import createSagaMiddleware, { Task } from "redux-saga";
 import { combineReducers, configureStore, Store, Action, ThunkDispatch } from "@reduxjs/toolkit";
-import { rootSaga } from "./sagas";
-import _initReducer from "./slices/_init/_initSlice";
-import accountReducer from "./slices/account/accountSlice";
-import { accountApi, profilApi } from "./services/account/account";
+import { rootSaga } from "@/store/sagas";
+import _initReducer from "@/store/slices/_init/_initSlice";
+import accountReducer from "@/store/slices/account/accountSlice";
+import { accountApi, profilApi } from "@/store/services/account/account";
 
 const sagaMiddleware = createSagaMiddleware();
 

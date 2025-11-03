@@ -1,10 +1,10 @@
 import { cookies } from 'next/headers';
-import SetPasswordClient from '@/components/pages/auth/setPassword';
+import SetPasswordClient from '@/components/pages/auth/reset-password/setPassword';
 import { redirect } from 'next/navigation';
 import {AUTH_RESET_PASSWORD, DASHBOARD} from "@/utils/routes";
 import { auth } from "@/auth";
 
-export default async function Page() {
+const SetPasswordPage = async () => {
   // check if user is logged in
   const session = await auth();
   if (session) {
@@ -20,3 +20,5 @@ export default async function Page() {
   }
   return <SetPasswordClient email={email} code={code} />;
 }
+
+export default SetPasswordPage;

@@ -1,5 +1,5 @@
-@use '@/styles/sass/colors' as *
 @use '@/styles/sass/variables' as *
+@use '@/styles/sass/colors' as *
 @use '@/styles/sass/mixins' as *
 
 // Global styles
@@ -7,6 +7,13 @@
   position: fixed
   right: 0
   left: calc(100% - 430px)
+.closeButtonWrapper
+  position: absolute
+  top: 0
+  right: 0
+  margin: 1rem
+  cursor: pointer
+  z-index: 1
 @media #{$mobile}
   .dialog
     left: -0vh

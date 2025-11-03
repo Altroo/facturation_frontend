@@ -1,0 +1,484 @@
+'use client';
+
+import React, { useCallback, useState, MouseEvent, useEffect } from 'react';
+import { styled, ThemeProvider } from '@mui/material/styles';
+import Box from '@mui/material/Box';
+import Drawer from '@mui/material/Drawer';
+import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import List from '@mui/material/List';
+import Typography from '@mui/material/Typography';
+import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
+import MenuIcon from '@mui/icons-material/Menu';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import { useAppSelector } from '@/utils/hooks';
+import { getProfilState } from '@/store/selectors';
+import { cookiesDeleter } from '@/store/services/_init/_initAPI';
+import { AUTH_LOGIN, DASHBOARD, DASHBOARD_EDIT_PROFILE, DASHBOARD_PASSWORD, SITE_ROOT } from '@/utils/routes';
+import { signOut, useSession } from 'next-auth/react';
+import { usePathname } from 'next/navigation';
+import Styles from '@/components/layouts/navigationBar/navigationBar.module.sass';
+import { getDropDownMenuTheme, navigationBarTheme } from '@/utils/themes';
+import LogoutSVG from '@/public/assets/svgs/mainNavBarIcons/logout.svg';
+import { Accordion, AccordionDetails, AccordionSummary, Menu, MenuItem, Skeleton, Stack, Tooltip } from '@mui/material';
+import Image from 'next/image';
+import Link from 'next/link';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
+import PeopleIcon from '@mui/icons-material/People';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import RequestQuoteIcon from '@mui/icons-material/RequestQuote';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import PaymentIcon from '@mui/icons-material/Payment';
+import SettingsIcon from '@mui/icons-material/Settings';
+
+export const navigationMenu = {
+	dashboard: {
+		title: 'Tableau de bord',
+		icon: <DashboardIcon />,
+		items: [{ title: 'Tableau de bord', label: 'Consulter le tableau de bord', path: DASHBOARD }],
+	},
+	articles: {
+		title: 'Articles',
+		icon: <LibraryBooksIcon />,
+		items: [
+			{ title: 'Liste des articles', label: 'Liste des articles', path: '/articles/list' },
+			{ title: 'Articles archivés', label: 'Articles archivés', path: '/articles/archived' },
+			{ title: 'Nouvel article', label: 'Nouvel article', path: '/articles/new' },
+		],
+	},
+	clients: {
+		title: 'Client',
+		icon: <PeopleIcon />,
+		items: [
+			{ title: 'Liste des clients', label: 'Liste des clients', path: '/clients/list' },
+			{ title: 'Clients archivés', label: 'Clients archivés', path: '/clients/archived' },
+			{ title: 'Nouveau client', label: 'Nouveau client', path: '/clients/new' },
+		],
+	},
+	devis: {
+		title: 'Devis',
+		icon: <RequestQuoteIcon />,
+		items: [
+			{ title: 'Liste des devis', label: 'Liste des devis', path: '/devis/list' },
+			{ title: 'Nouveau devis', label: 'Nouveau devis', path: '/devis/new' },
+		],
+	},
+	factures: {
+		title: 'Factures',
+		icon: <ReceiptLongIcon />,
+		items: [
+			{ title: 'Liste des factures', label: 'Liste des factures', path: '/factures/list' },
+			{ title: 'Factures impayées', label: 'Factures impayées', path: '/factures/unpaid' },
+			{ title: 'Factures pro-forma', label: 'Factures pro-forma', path: '/factures/proforma' },
+			{ title: 'Nouvelle facture', label: 'Nouvelle facture', path: '/factures/new' },
+		],
+	},
+	bonsLivraison: {
+		title: 'Bons de livraison',
+		icon: <LocalShippingIcon />,
+		items: [
+			{ title: 'Liste des BLs', label: 'Liste des BLs', path: '/bls/list' },
+			{ title: 'BLs non facturés', label: 'BLs non facturés', path: '/bls/uninvoiced' },
+			{ title: 'Nouveau BL', label: 'Nouveau bon de livraison', path: '/bls/new' },
+			{ title: 'État de livraison', label: 'État de livraison', path: '/bls/status' },
+		],
+	},
+	reglement: {
+		title: 'Règlement',
+		icon: <PaymentIcon />,
+		items: [{ title: 'Liste des règlements', label: 'Liste des règlements', path: '/reglements/list' }],
+	},
+	parametres: {
+		title: 'Paramètres',
+		icon: <SettingsIcon />,
+		items: [
+			{ title: 'Mon Profil', label: 'Mon Profil', path: DASHBOARD_EDIT_PROFILE },
+			{ title: 'Liste des sociétés', label: 'Liste des sociétés', path: '/dashboard/companies' },
+			{ title: 'Nouvelle société', label: 'Nouvelle société', path: '/dashboard/companies/new' },
+			{ title: 'Liste des utilisateurs', label: 'Liste des utilisateurs', path: '/dashboard/users' },
+			{ title: 'Nouvel utilisateur', label: 'Nouvel utilisateur', path: '/dashboard/users/new' },
+			{ title: 'Mot de passe', label: 'Changer le mot de passe', path: DASHBOARD_PASSWORD },
+		],
+	},
+};
+
+const drawerWidth = 240;
+
+const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
+	open?: boolean;
+}>(({ theme }) => ({
+	flexGrow: 1,
+	padding: theme.spacing(3),
+	transition: theme.transitions.create('margin', {
+		easing: theme.transitions.easing.sharp,
+		duration: theme.transitions.duration.leavingScreen,
+	}),
+	marginLeft: `-${drawerWidth}px`,
+	variants: [
+		{
+			props: ({ open }) => open,
+			style: {
+				transition: theme.transitions.create('margin', {
+					easing: theme.transitions.easing.easeOut,
+					duration: theme.transitions.duration.enteringScreen,
+				}),
+				marginLeft: 0,
+			},
+		},
+	],
+}));
+
+interface AppBarProps extends MuiAppBarProps {
+	open?: boolean;
+}
+
+const AppBar = styled(MuiAppBar, {
+	shouldForwardProp: (prop) => prop !== 'open',
+})<AppBarProps>(({ theme }) => ({
+	transition: theme.transitions.create(['margin', 'width'], {
+		easing: theme.transitions.easing.sharp,
+		duration: theme.transitions.duration.leavingScreen,
+	}),
+	variants: [
+		{
+			props: ({ open }) => open,
+			style: {
+				width: `calc(100% - ${drawerWidth}px)`,
+				marginLeft: `${drawerWidth}px`,
+				transition: theme.transitions.create(['margin', 'width'], {
+					easing: theme.transitions.easing.easeOut,
+					duration: theme.transitions.duration.enteringScreen,
+				}),
+			},
+		},
+	],
+}));
+
+type Props = {
+	children: React.ReactNode;
+};
+
+const NavigationBar = (props: Props) => {
+	// const theme = useTheme();
+	const [open, setOpen] = React.useState(true);
+	const { data: session, status } = useSession();
+	// const router = useRouter();
+	const { avatar, first_name, last_name, gender } = useAppSelector(getProfilState);
+	const loading = status === 'loading';
+
+	const [profileSubMenuEl, setProfileSubMenuEl] = useState<null | HTMLElement>(null);
+	const openProfileSubMenu = Boolean(profileSubMenuEl);
+
+	const handleProfileSubMenuClick = useCallback((event: MouseEvent<HTMLButtonElement>) => {
+		setProfileSubMenuEl(event.currentTarget);
+	}, []);
+
+	const handleProfileSubMenuClose = useCallback(() => {
+		setProfileSubMenuEl(null);
+	}, []);
+
+	const logOutHandler = async () => {
+		await cookiesDeleter('/cookies', {
+			pass_updated: true,
+			new_email: true,
+			code: true,
+		});
+		await signOut({ redirect: true, redirectTo: AUTH_LOGIN });
+	};
+
+	const handleDrawerOpen = () => {
+		setOpen(true);
+	};
+
+	const handleDrawerClose = () => {
+		setOpen(false);
+	};
+
+	const pathname = usePathname();
+
+	const selectedItemLabel =
+		Object.values(navigationMenu)
+			.flatMap((section) => section.items)
+			.find((item) => {
+				const itemPath = new URL(item.path, SITE_ROOT).pathname;
+				return itemPath === pathname;
+			})?.title ?? 'Accueil';
+
+	const [expanded, setExpanded] = React.useState<string | false>(false);
+
+	useEffect(() => {
+		const match = Object.entries(navigationMenu).find(([, section]) =>
+			section.items.some((item) => {
+				const normalizedPath = item.path.replace(/^https?:\/\/[^/]+/, '');
+				return normalizedPath === pathname;
+			}),
+		);
+		if (match) {
+			setExpanded(`panel-${match[0]}`);
+		}
+	}, [pathname]);
+
+	const normalizePath = (url: string) => {
+		try {
+			return new URL(url, SITE_ROOT).pathname;
+		} catch {
+			return url;
+		}
+	};
+
+	const handleChange = (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
+		setExpanded(isExpanded ? panel : false);
+	};
+
+	return (
+		<ThemeProvider theme={navigationBarTheme()}>
+			<Box sx={{ display: 'flex' }}>
+				<AppBar position="fixed" open={open}>
+					<Toolbar>
+						<Stack direction="row" justifyContent="space-between" alignItems="center" width="100%">
+							<Stack direction="row" alignItems="center" spacing={1}>
+								<IconButton
+									color="inherit"
+									aria-label="toggle drawer"
+									onClick={open ? handleDrawerClose : handleDrawerOpen}
+									size="small"
+								>
+									{open ? <ChevronLeftIcon /> : <MenuIcon />}
+								</IconButton>
+								<Typography variant="h6" noWrap component="div">
+									{selectedItemLabel}
+								</Typography>
+							</Stack>
+							<Stack direction="row" spacing={1}>
+								{!loading && session && (
+									<>
+										{/* Avatar button (loggedIn) */}
+										<IconButton
+											aria-label="profile of current user"
+											id="my-profile-button"
+											aria-controls={openProfileSubMenu ? 'profile-menu' : undefined}
+											aria-haspopup="true"
+											aria-expanded={openProfileSubMenu ? 'true' : undefined}
+											onClick={handleProfileSubMenuClick}
+											size="large"
+											color="inherit"
+										>
+											{!avatar ? (
+												<Skeleton variant="circular" width={30} height={30} />
+											) : (
+												<Image
+													src={avatar as string}
+													alt=""
+													width="30"
+													height="30"
+													sizes="100vw"
+													className={Styles.avatarButton}
+													loading="eager"
+												/>
+											)}
+										</IconButton>
+										{/* profil sub Menu */}
+										<ThemeProvider theme={getDropDownMenuTheme()}>
+											<Menu
+												id="profile-menu"
+												anchorEl={profileSubMenuEl}
+												open={openProfileSubMenu}
+												onClose={handleProfileSubMenuClose}
+												slotProps={{
+													root: { 'aria-labelledby': 'my-profile-mobile-button' },
+												}}
+												keepMounted
+											>
+												<MenuItem onClick={handleProfileSubMenuClose} className={Styles.fadedMenuItem}>
+													<Box onClick={logOutHandler} className={Styles.anchorWrapper}>
+														<Image
+															src={LogoutSVG}
+															alt=""
+															width="0"
+															height="0"
+															sizes="100vw"
+															className={Styles.subMenuIcons}
+														/>
+														<span>Se déconnecter</span>
+													</Box>
+												</MenuItem>
+											</Menu>
+										</ThemeProvider>
+									</>
+								)}
+							</Stack>
+						</Stack>
+					</Toolbar>
+				</AppBar>
+				<Drawer
+					sx={{
+						width: drawerWidth,
+						flexShrink: 0,
+						'& .MuiDrawer-paper': {
+							width: drawerWidth,
+							boxSizing: 'border-box',
+						},
+					}}
+					variant="persistent"
+					anchor="left"
+					open={open}
+				>
+					<Divider />
+					{/* User Profile Section */}
+					<Box
+						sx={{
+							display: 'flex',
+							flexDirection: 'column',
+							alignItems: 'center',
+							py: 3,
+							px: 2,
+						}}
+					>
+						{!avatar ? (
+							<Skeleton variant="circular" width={80} height={80} />
+						) : (
+							<Box
+								sx={{
+									width: 80,
+									height: 80,
+									borderRadius: '50%',
+									overflow: 'hidden',
+									mb: 2,
+								}}
+							>
+								<Image
+									src={avatar as string}
+									alt={`${first_name} ${last_name}`}
+									width={80}
+									height={80}
+									style={{ objectFit: 'cover' }}
+								/>
+							</Box>
+						)}
+						<Typography variant="subtitle1" sx={{ fontWeight: 600, textAlign: 'center' }}>
+							{gender === 'H' ? 'Bienvenu' : gender === 'F' ? 'Bienvenue' : 'Bienvenu(e)'}
+						</Typography>
+						<Typography variant="body2" sx={{ textAlign: 'center', color: 'text.secondary' }}>
+							{first_name} {last_name}
+						</Typography>
+					</Box>
+					<Divider />
+					<List sx={{ p: 0 }}>
+						{Object.entries(navigationMenu).map(([key, section]) => (
+							<Box key={key} sx={{ display: 'block' }}>
+								<Accordion
+									expanded={expanded === `panel-${key}`}
+									onChange={handleChange(`panel-${key}`)}
+									disableGutters
+									elevation={0}
+									sx={{
+										backgroundColor: 'transparent !important',
+										boxShadow: 'none !important',
+										'&:before': { display: 'none' },
+										margin: '0 !important',
+									}}
+								>
+									<Tooltip title={section.title} placement="right" disableHoverListener={open}>
+										<AccordionSummary
+											expandIcon={open ? <ExpandMoreIcon /> : null}
+											sx={[
+												{
+													minHeight: 48,
+													margin: '0 !important',
+													px: 2.5,
+													'& .MuiAccordionSummary-content': {
+														margin: '0 !important',
+														display: 'flex',
+														alignItems: 'center',
+													},
+												},
+												open
+													? {
+															justifyContent: 'initial',
+														}
+													: {
+															justifyContent: 'center',
+															px: 2.5,
+														},
+											]}
+										>
+											<Box
+												sx={{
+													display: 'flex',
+													alignItems: 'center',
+													width: '100%',
+												}}
+											>
+												<ListItemIcon
+													sx={[
+														{
+															minWidth: 0,
+															justifyContent: 'center',
+														},
+														open
+															? {
+																	mr: 3,
+																}
+															: {
+																	mr: 'auto',
+																},
+													]}
+												>
+													{section.icon}
+												</ListItemIcon>
+												<ListItemText
+													primary={section.title}
+													sx={[
+														open
+															? {
+																	opacity: 1,
+																}
+															: {
+																	opacity: 0,
+																},
+													]}
+												/>
+											</Box>
+										</AccordionSummary>
+									</Tooltip>
+									<AccordionDetails sx={{ p: 0, display: open ? 'block' : 'none' }}>
+										{section.items.map((item, idx) => (
+											<ListItem key={idx} disablePadding>
+												<Link href={item.path} style={{ textDecoration: 'none', color: 'inherit', width: '100%' }}>
+													<ListItemButton
+														selected={normalizePath(item.path) === pathname}
+														sx={{
+															pl: open ? 9 : 2,
+															minHeight: 48,
+															backgroundColor: normalizePath(item.path) === pathname ? '#F0F0F0' : 'transparent',
+															'&.Mui-selected': {
+																backgroundColor: '#E0E0E0',
+																fontWeight: 600,
+															},
+														}}
+													>
+														<ListItemText primary={item.label} />
+													</ListItemButton>
+												</Link>
+											</ListItem>
+										))}
+									</AccordionDetails>
+								</Accordion>
+							</Box>
+						))}
+					</List>
+				</Drawer>
+				<Main open={open}>{props.children}</Main>
+			</Box>
+		</ThemeProvider>
+	);
+};
+
+export default NavigationBar;

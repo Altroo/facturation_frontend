@@ -1,6 +1,6 @@
 import {
-  ResponseDataInterface, SagaPayloadType,
-} from '../_init/_initTypes';
+  ResponseDataInterface, SagaPayloadType, TokenType,
+} from '@/types/_init/_initTypes';
 import {UserClass} from "@/models/account/UserClass";
 
 //!- Account State
@@ -23,16 +23,24 @@ export type InitStateTokenNextAuth = {
 
 export type AccountPostLoginResponseType = ResponseDataInterface<InitStateTokenNextAuth>;
 
-export type AccountGenderType = 'H' | 'F' | '';
-
-// export type AccountPatchProfilResponseType = AccountGetProfilResponseType;
-//
-// export interface AccountPatchProfilType {
-//   type: string;
-//   avatar: string | ArrayBuffer | null;
-//   first_name: string;
-//   last_name: string;
-//   gender: string;
-// }
+export type AccountGenderCodeValueType = {
+  code: 'H' | 'F';
+  value: 'Homme' | 'Femme';
+};
 
 export type setProfilPayloadType = SagaPayloadType<UserClass>;
+
+
+
+export interface UpdateProfilResponse extends TokenType {
+  data: Partial<UserClass>
+}
+
+export interface PasswordResetResponse extends TokenType {
+  data: {
+    old_password: string,
+    new_password: string,
+    new_password2: string,
+  }
+}
+

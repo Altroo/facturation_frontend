@@ -1,4 +1,4 @@
-import {RootState} from '../store';
+import {RootState} from '@/store/store';
 import {UserClass} from "@/models/account/UserClass";
 
 // _Init
