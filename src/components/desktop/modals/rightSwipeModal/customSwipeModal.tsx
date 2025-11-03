@@ -155,6 +155,7 @@ const CustomSwipeModal: React.FC<Props> = (props: Props) => {
 							width="40"
 							height="40"
 							sizes="100vw"
+							loading="eager"
 							onClick={handleClose}
 							style={{ cursor: 'pointer' }}
 						/>

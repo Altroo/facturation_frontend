@@ -66,6 +66,7 @@ const CircularAvatarInputFile: React.FC<Props> = (props: Props) => {
 							alt=""
 							width={100}
 							height={100}
+							loading="eager"
 							className={`${Styles.previewAvatar} ${Styles.avatarIcon}`}
 						/>
 					)}
@@ -74,6 +75,7 @@ const CircularAvatarInputFile: React.FC<Props> = (props: Props) => {
 						alt=""
 						width="30"
 						height="27"
+						loading="eager"
 						sizes="100vw"
 						className={`${props.preview !== null ? Styles.hideIcon : ''}`}
 					/>
