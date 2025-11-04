@@ -4,7 +4,7 @@ import { axiosBaseQuery } from '@/utils/axiosBaseQuery';
 import { SuccessResponseType } from '@/types/_init/_initTypes';
 import { store } from '@/store/store';
 import { getInitStateToken } from '@/store/selectors';
-import { UserClass } from '@/models/account/UserClass';
+import { GroupClass, UserClass } from '@/models/account/UserClass';
 import { UpdateProfilResponse, PasswordResetResponse } from '@/types/account/accountTypes';
 
 export const accountApi = createApi({
@@ -32,6 +32,23 @@ export const accountApi = createApi({
 				url: `${process.env.NEXT_PUBLIC_ACCOUNT_PASSWORD_RESET}`,
 				method: 'PUT',
 				data: payload,
+			}),
+		}),
+	}),
+});
+
+export const groupApi = createApi({
+	reducerPath: 'groupApi',
+	baseQuery: axiosBaseQuery(() => {
+		// pass function which will be used by the interceptor to read the latest token from redux
+		return isAuthenticatedInstance(() => getInitStateToken(store.getState()));
+	}),
+	endpoints: (builder) => ({
+		getGroups: builder.query<GroupClass, string | undefined>({
+			query: (token) => ({
+				url: process.env.NEXT_PUBLIC_ACCOUNT_GROUPS as string,
+				method: 'GET',
+				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 		}),
 	}),
@@ -72,3 +89,4 @@ export const profilApi = createApi({
 
 export const { useSendPasswordResetCodeMutation, usePasswordResetMutation, useSetPasswordMutation } = accountApi;
 export const { useGetProfilQuery, useUpdateProfilMutation, useUpdatePasswordMutation } = profilApi;
+export const { useGetGroupsQuery } = groupApi;

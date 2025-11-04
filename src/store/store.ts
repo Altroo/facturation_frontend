@@ -3,7 +3,7 @@ import { combineReducers, configureStore, Store, Action, ThunkDispatch } from '@
 import { rootSaga } from '@/store/sagas';
 import _initReducer from '@/store/slices/_init/_initSlice';
 import accountReducer from '@/store/slices/account/accountSlice';
-import { accountApi, profilApi } from '@/store/services/account/account';
+import { accountApi, profilApi, groupApi } from '@/store/services/account/account';
 
 const sagaMiddleware = createSagaMiddleware();
 
@@ -12,6 +12,7 @@ const rootReducer = combineReducers({
 	account: accountReducer,
 	[accountApi.reducerPath]: accountApi.reducer,
 	[profilApi.reducerPath]: profilApi.reducer,
+	[groupApi.reducerPath]: groupApi.reducer,
 });
 
 export interface SagaStore extends Store {
@@ -32,6 +33,7 @@ export const store: SagaStore = configureStore({
 		})
 			.concat(accountApi.middleware)
 			.concat(profilApi.middleware)
+			.concat(groupApi.middleware)
 			.prepend(sagaMiddleware),
 	devTools: process.env.NODE_ENV !== 'production',
 });

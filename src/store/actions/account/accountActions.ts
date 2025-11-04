@@ -1,9 +1,16 @@
 import * as types from '../index';
-import { UserClass } from '@/models/account/UserClass';
+import { UserClass, GroupClass } from '@/models/account/UserClass';
 
 export const accountSetProfilAction = (props: UserClass) => {
 	return {
 		type: types.ACCOUNT_SET_PROFIL,
+		data: { ...props },
+	};
+};
+
+export const accountSetGroupesAction = (props: GroupClass) => {
+	return {
+		type: types.ACCOUNT_SET_GROUPES,
 		data: { ...props },
 	};
 };

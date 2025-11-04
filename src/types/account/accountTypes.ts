@@ -1,9 +1,10 @@
 import { ResponseDataInterface, SagaPayloadType, TokenType } from '@/types/_init/_initTypes';
-import { UserClass } from '@/models/account/UserClass';
+import { GroupClass, UserClass } from '@/models/account/UserClass';
 
 //!- Account State
 export interface AccountStateInterface {
 	profil: UserClass | Record<string, unknown>;
+	groupes: GroupClass | Record<string, unknown>;
 }
 
 export type InitStateTokenNextAuth = {
@@ -27,6 +28,7 @@ export type AccountGenderCodeValueType = {
 };
 
 export type setProfilPayloadType = SagaPayloadType<UserClass>;
+export type setGroupesPayloadType = SagaPayloadType<GroupClass>;
 
 export interface UpdateProfilResponse extends TokenType {
 	data: Partial<UserClass>;

@@ -6,7 +6,10 @@ export class UserClass {
 		public gender: string,
 		public avatar: string | ArrayBuffer | null,
 		public date_joined: string | null,
-		public is_staff: boolean,
-		public is_superuser: boolean,
+		// public group: string,
 	) {}
+}
+
+export class GroupClass {
+	constructor(public group_titles: Array<string> | Array<null>) {}
 }

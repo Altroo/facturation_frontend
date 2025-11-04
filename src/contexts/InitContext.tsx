@@ -7,8 +7,8 @@ import { initAppAction, initAppSessionTokensAction } from '@/store/actions/_init
 import { emptyInitStateToken } from '@/store/slices/_init/_initSlice';
 import { getInitStateToken } from '@/store/selectors';
 import { useSession } from 'next-auth/react';
-import { useGetProfilQuery } from '@/store/services/account/account';
-import { accountSetProfilAction } from '@/store/actions/account/accountActions';
+import { useGetProfilQuery, useGetGroupsQuery } from '@/store/services/account/account';
+import { accountSetGroupesAction, accountSetProfilAction } from '@/store/actions/account/accountActions';
 
 const InitContext = createContext<InitStateInterface<InitStateToken>>({
 	initStateToken: emptyInitStateToken,
@@ -19,6 +19,9 @@ export const InitContextProvider: React.FC<PropsWithChildren<Record<string, unkn
 	const token = useAppSelector(getInitStateToken);
 	const { data: session, status } = useSession();
 	const { data: user } = useGetProfilQuery(token, {
+		skip: !token || status !== 'authenticated',
+	});
+	const { data: groupes } = useGetGroupsQuery(token, {
 		skip: !token || status !== 'authenticated',
 	});
 	const [appTokenSessionLoaded, setAppTokenSessionLoaded] = useState<boolean>(false);
@@ -42,7 +45,10 @@ export const InitContextProvider: React.FC<PropsWithChildren<Record<string, unkn
 		if (user) {
 			dispatch(accountSetProfilAction(user));
 		}
-	}, [dispatch, user]);
+		if (groupes) {
+			dispatch(accountSetGroupesAction(groupes));
+		}
+	}, [dispatch, user, groupes]);
 
 	// Do not render children until we've attempted to initialize the token state
 	if (!appTokenSessionLoaded) {
