@@ -3,9 +3,9 @@
 import React, { ForwardedRef, forwardRef, useEffect, useState } from 'react';
 import Styles from './authPageLayout.module.sass';
 import { Box, Stack } from '@mui/material';
-import TeeshirtSVG from '@/public/assets/images/auth_illu/teeshirt.svg';
-import WatchSVG from '@/public/assets/images/auth_illu/watch.svg';
-import MessagesSVG from '@/public/assets/images/auth_illu/messages.svg';
+import TeeshirtSVG from '../../../../public/assets/images/auth_illu/teeshirt.svg';
+import WatchSVG from '../../../../public/assets/images/auth_illu/watch.svg';
+import MessagesSVG from '../../../../public/assets/images/auth_illu/messages.svg';
 
 type Props = {
 	children?: React.ReactNode;

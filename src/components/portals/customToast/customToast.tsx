@@ -3,10 +3,10 @@ import { Stack, Snackbar, ThemeProvider, Slide } from '@mui/material';
 import Styles from './customToast.module.sass';
 import MuiAlert, { AlertProps, AlertColor } from '@mui/material/Alert';
 import { customToastTheme } from '@/utils/themes';
-import ErrorIconSVG from '@/public/assets/svgs/portals/error.svg';
-import WarningIconSVG from '@/public/assets/svgs/portals/warning.svg';
-import InfoIconSVG from '@/public/assets/svgs/portals/info.svg';
-import SuccessIconSVG from '@/public/assets/svgs/portals/success.svg';
+import ErrorIconSVG from '../../../../public/assets/svgs/portals/error.svg';
+import WarningIconSVG from '../../../../public/assets/svgs/portals/warning.svg';
+import InfoIconSVG from '../../../../public/assets/svgs/portals/info.svg';
+import SuccessIconSVG from '../../../../public/assets/svgs/portals/success.svg';
 import Image from 'next/image';
 
 type Props = {

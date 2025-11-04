@@ -3,7 +3,7 @@
 import React, { useRef } from 'react';
 import Styles from './circularAvatarInputFile.module.sass';
 import Image from 'next/image';
-import AvatarIconSVG from '@/public/assets/svgs/globalIcons/avatar.svg';
+import AvatarIconSVG from '../../../../../public/assets/svgs/globalIcons/avatar.svg';
 import { Stack } from '@mui/material';
 
 type Props = {

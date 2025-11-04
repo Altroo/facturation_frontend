@@ -3,7 +3,7 @@ import Styles from '@/styles/auth/reset-password/set-password-complete.module.sa
 import AuthLayout from '@/components/layouts/auth/authLayout';
 import { Stack } from '@mui/material';
 import Image from 'next/image';
-import SuccessIlluSVG from '@/public/assets/images/success-illu.svg';
+import SuccessIlluSVG from '../../../../../public/assets/images/success-illu.svg';
 import PrimaryAnchorButton from '@/components/htmlElements/buttons/primaryAnchorButton/primaryAnchorButton';
 import { AUTH_LOGIN } from '@/utils/routes';
 import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';

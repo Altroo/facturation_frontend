@@ -1,10 +1,10 @@
 import React from 'react';
 import { Stack } from '@mui/material';
 import Styles from './desktopDashboardSideNav.module.sass';
-import ArrowActiveSVG from '@/public/assets/svgs/dashboardIcons/leftSideNavIcons/arrow-active.svg';
-import MiniBackSVG from '@/public/assets/svgs/dashboardIcons/leftSideNavIcons/mini-back.svg';
-import MonProfilSVG from '@/public/assets/svgs/dashboardIcons/leftSideNavIcons/mon-profil.svg';
-import MotDePasseSVG from '@/public/assets/svgs/dashboardIcons/leftSideNavIcons/mot-de-passe.svg';
+import ArrowActiveSVG from '../../../../../public/assets/svgs/dashboardIcons/leftSideNavIcons/arrow-active.svg';
+import MiniBackSVG from '../../../../../public/assets/svgs/dashboardIcons/leftSideNavIcons/mini-back.svg';
+import MonProfilSVG from '../../../../../public/assets/svgs/dashboardIcons/leftSideNavIcons/mon-profil.svg';
+import MotDePasseSVG from '../../../../../public/assets/svgs/dashboardIcons/leftSideNavIcons/mot-de-passe.svg';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
