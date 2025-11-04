@@ -147,7 +147,7 @@ export const navigationBarTheme = (primaryColor: string | undefined = undefined)
 					root: {
 						backgroundColor: 'white',
 						color: '#0D070B',
-						boxShadow: 'none',
+						boxShadow: '0px 0px 24px rgba(13, 7, 11, 0.2)',
 					},
 				},
 			},
