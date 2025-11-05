@@ -1,10 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { AccountStateInterface } from '@/types/account/accountTypes';
-import { GroupClass, UserClass } from '@/models/account/UserClass';
+import { UserClass, GroupClass } from '@/models/Classes';
 
 const initialState: AccountStateInterface = {
 	profil: {},
-	groupes: {},
+	groupes: [],
 };
 
 const accountSlice = createSlice({
@@ -15,7 +15,7 @@ const accountSlice = createSlice({
 			state.profil = action.payload;
 		},
 		setGroupes: (state, action: PayloadAction<GroupClass>) => {
-			state.groupes = action.payload;
+			state.groupes = action.payload.group_titles;
 		},
 		setWSUserAvatar: (state, action: PayloadAction<{ avatar: string }>) => {
 			// payload has user_avatar

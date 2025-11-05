@@ -4,7 +4,7 @@ import { axiosBaseQuery } from '@/utils/axiosBaseQuery';
 import { SuccessResponseType } from '@/types/_init/_initTypes';
 import { store } from '@/store/store';
 import { getInitStateToken } from '@/store/selectors';
-import { GroupClass, UserClass } from '@/models/account/UserClass';
+import { GroupClass, UserClass } from '@/models/Classes';
 import { UpdateProfilResponse, PasswordResetResponse } from '@/types/account/accountTypes';
 
 export const accountApi = createApi({

@@ -17,6 +17,7 @@
     "@mui/lab": "^7.0.1-beta.19",
     "@mui/material": "^7.3.5",
     "@mui/material-nextjs": "^7.3.5",
+    "@mui/x-data-grid": "^8.16.0",
     "@mui/x-date-pickers": "^8.16.0",
     "@reduxjs/toolkit": "^2.10.0",
     "axios": "^1.13.1",

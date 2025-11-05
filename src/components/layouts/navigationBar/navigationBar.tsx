@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { styled, ThemeProvider } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
@@ -45,78 +45,95 @@ import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import RequestQuoteIcon from '@mui/icons-material/RequestQuote';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import PaymentIcon from '@mui/icons-material/Payment';
+import DomainIcon from '@mui/icons-material/Domain';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
 
-export const navigationMenu = {
-	dashboard: {
-		title: 'Tableau de bord',
-		icon: <DashboardIcon />,
-		items: [{ title: 'Tableau de bord', label: 'Consulter le tableau de bord', path: DASHBOARD }],
-	},
-	articles: {
-		title: 'Articles',
-		icon: <LibraryBooksIcon />,
-		items: [
-			{ title: 'Liste des articles', label: 'Liste des articles', path: '/articles/list' },
-			{ title: 'Articles archivés', label: 'Articles archivés', path: '/articles/archived' },
-			{ title: 'Nouvel article', label: 'Nouvel article', path: '/articles/new' },
-		],
-	},
-	clients: {
-		title: 'Client',
-		icon: <PeopleIcon />,
-		items: [
-			{ title: 'Liste des clients', label: 'Liste des clients', path: '/clients/list' },
-			{ title: 'Clients archivés', label: 'Clients archivés', path: '/clients/archived' },
-			{ title: 'Nouveau client', label: 'Nouveau client', path: '/clients/new' },
-		],
-	},
-	devis: {
-		title: 'Devis',
-		icon: <RequestQuoteIcon />,
-		items: [
-			{ title: 'Liste des devis', label: 'Liste des devis', path: '/devis/list' },
-			{ title: 'Nouveau devis', label: 'Nouveau devis', path: '/devis/new' },
-		],
-	},
-	factures: {
-		title: 'Factures',
-		icon: <ReceiptLongIcon />,
-		items: [
-			{ title: 'Liste des factures', label: 'Liste des factures', path: '/factures/list' },
-			{ title: 'Factures impayées', label: 'Factures impayées', path: '/factures/unpaid' },
-			{ title: 'Factures pro-forma', label: 'Factures pro-forma', path: '/factures/proforma' },
-			{ title: 'Nouvelle facture', label: 'Nouvelle facture', path: '/factures/new' },
-		],
-	},
-	bonsLivraison: {
-		title: 'Bons de livraison',
-		icon: <LocalShippingIcon />,
-		items: [
-			{ title: 'Liste des BLs', label: 'Liste des BLs', path: '/bls/list' },
-			{ title: 'BLs non facturés', label: 'BLs non facturés', path: '/bls/uninvoiced' },
-			{ title: 'Nouveau BL', label: 'Nouveau bon de livraison', path: '/bls/new' },
-			{ title: 'État de livraison', label: 'État de livraison', path: '/bls/status' },
-		],
-	},
-	reglement: {
-		title: 'Règlement',
-		icon: <PaymentIcon />,
-		items: [{ title: 'Liste des règlements', label: 'Liste des règlements', path: '/reglements/list' }],
-	},
-	parametres: {
-		title: 'Paramètres',
-		icon: <SettingsIcon />,
-		items: [
-			{ title: 'Mon Profil', label: 'Mon Profil', path: DASHBOARD_EDIT_PROFILE },
-			{ title: 'Liste des sociétés', label: 'Liste des sociétés', path: '/dashboard/companies' },
-			{ title: 'Nouvelle société', label: 'Nouvelle société', path: '/dashboard/companies/new' },
-			{ title: 'Liste des utilisateurs', label: 'Liste des utilisateurs', path: '/dashboard/users' },
-			{ title: 'Nouvel utilisateur', label: 'Nouvel utilisateur', path: '/dashboard/users/new' },
-			{ title: 'Mot de passe', label: 'Changer le mot de passe', path: DASHBOARD_PASSWORD },
-		],
-	},
+const getNavigationMenu = (isSuperUser: boolean) => {
+	return {
+		dashboard: {
+			title: 'Tableau de bord',
+			icon: <DashboardIcon />,
+			items: [{ title: 'Tableau de bord', label: 'Consulter le tableau de bord', path: DASHBOARD }],
+		},
+		articles: {
+			title: 'Articles',
+			icon: <LibraryBooksIcon />,
+			items: [
+				{ title: 'Liste des articles', label: 'Liste des articles', path: '/articles/list' },
+				{ title: 'Articles archivés', label: 'Articles archivés', path: '/articles/archived' },
+				{ title: 'Nouvel article', label: 'Nouvel article', path: '/articles/new' },
+			],
+		},
+		clients: {
+			title: 'Client',
+			icon: <PeopleIcon />,
+			items: [
+				{ title: 'Liste des clients', label: 'Liste des clients', path: '/clients/list' },
+				{ title: 'Clients archivés', label: 'Clients archivés', path: '/clients/archived' },
+				{ title: 'Nouveau client', label: 'Nouveau client', path: '/clients/new' },
+			],
+		},
+		devis: {
+			title: 'Devis',
+			icon: <RequestQuoteIcon />,
+			items: [
+				{ title: 'Liste des devis', label: 'Liste des devis', path: '/devis/list' },
+				{ title: 'Nouveau devis', label: 'Nouveau devis', path: '/devis/new' },
+			],
+		},
+		factures: {
+			title: 'Factures',
+			icon: <ReceiptLongIcon />,
+			items: [
+				{ title: 'Liste des factures', label: 'Liste des factures', path: '/factures/list' },
+				{ title: 'Factures impayées', label: 'Factures impayées', path: '/factures/unpaid' },
+				{ title: 'Factures pro-forma', label: 'Factures pro-forma', path: '/factures/proforma' },
+				{ title: 'Nouvelle facture', label: 'Nouvelle facture', path: '/factures/new' },
+			],
+		},
+		bonsLivraison: {
+			title: 'Bons de livraison',
+			icon: <LocalShippingIcon />,
+			items: [
+				{ title: 'Liste des BLs', label: 'Liste des BLs', path: '/bls/list' },
+				{ title: 'BLs non facturés', label: 'BLs non facturés', path: '/bls/uninvoiced' },
+				{ title: 'Nouveau BL', label: 'Nouveau bon de livraison', path: '/bls/new' },
+				{ title: 'État de livraison', label: 'État de livraison', path: '/bls/status' },
+			],
+		},
+		reglement: {
+			title: 'Règlement',
+			icon: <PaymentIcon />,
+			items: [{ title: 'Liste des règlements', label: 'Liste des règlements', path: '/reglements/list' }],
+		},
+		...(isSuperUser && {
+			societe: {
+				title: 'Entreprises',
+				icon: <DomainIcon />,
+				items: [
+					{ title: 'Liste des entreprises', label: 'Liste des entreprises', path: '/dashboard/companies' },
+					{ title: 'Nouvelle entreprise', label: 'Nouvelle entreprise', path: '/dashboard/companies/new' },
+				],
+			},
+			utilisateurs: {
+				title: 'Utilisateurs',
+				icon: <PeopleIcon />,
+				items: [
+					{ title: 'Liste des utilisateurs', label: 'Liste des utilisateurs', path: '/dashboard/users' },
+					{ title: 'Nouvel utilisateur', label: 'Nouvel utilisateur', path: '/dashboard/users/new' },
+				],
+			},
+			parametres: {
+				title: 'Paramètres',
+				icon: <SettingsIcon />,
+				items: [
+					{ title: 'Mon Profil', label: 'Mon Profil', path: DASHBOARD_EDIT_PROFILE },
+					{ title: 'Mot de passe', label: 'Changer le mot de passe', path: DASHBOARD_PASSWORD },
+				],
+			},
+		}),
+	};
 };
 
 const drawerWidth = 240;
@@ -125,7 +142,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
 	open?: boolean;
 }>(({ theme, open }) => ({
 	flexGrow: 1,
-	padding: theme.spacing(3),
+	paddingTop: theme.spacing(3),
 	transition: theme.transitions.create('margin', {
 		easing: theme.transitions.easing.sharp,
 		duration: theme.transitions.duration.leavingScreen,
@@ -176,7 +193,9 @@ const NavigationBar = (props: Props) => {
 	const [open, setOpen] = React.useState(true);
 	const { data: session, status } = useSession();
 	// const router = useRouter();
-	const { avatar, first_name, last_name, gender } = useAppSelector(getProfilState);
+	const { avatar, first_name, last_name, gender, is_superuser } = useAppSelector(getProfilState);
+	const navigationMenu = useMemo(() => getNavigationMenu(is_superuser), [is_superuser]);
+
 	const loading = status === 'loading';
 	const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 

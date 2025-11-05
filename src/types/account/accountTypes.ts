@@ -1,10 +1,10 @@
 import { ResponseDataInterface, SagaPayloadType, TokenType } from '@/types/_init/_initTypes';
-import { GroupClass, UserClass } from '@/models/account/UserClass';
+import { GroupClass, UserClass } from '@/models/Classes';
 
 //!- Account State
 export interface AccountStateInterface {
 	profil: UserClass | Record<string, unknown>;
-	groupes: GroupClass | Record<string, unknown>;
+	groupes: Array<string> | Array<null>;
 }
 
 export type InitStateTokenNextAuth = {

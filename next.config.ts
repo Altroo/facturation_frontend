@@ -8,9 +8,9 @@ type http = 'http' | 'https' | undefined;
 
 const remotePatterns: RemotePattern[] = [
 	{
-		protocol: process.env.HTTP_PROTOCOLE as http,
-		hostname: process.env.API_ROOT_URL as string,
-		port: process.env.API_ROOT_PORT,
+		protocol: process.env.NEXT_PUBLIC_HTTP_PROTOCOLE as http,
+		hostname: process.env.NEXT_PUBLIC_API_ROOT_URL as string,
+		port: process.env.NEXT_PUBLIC_API_ROOT_PORT,
 		pathname: '/media/user_avatars/**',
 	},
 ];

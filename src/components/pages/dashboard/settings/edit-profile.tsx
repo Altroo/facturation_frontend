@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useTransition } from 'react';
-import Styles from '@/styles/dashboard/dashboard.module.sass';
+import Styles from '@/styles/dashboard/settings/edit-profil.module.sass';
 import { TabletAndMobile, Desktop } from '@/utils/clientHelpers';
 import { Box, Stack } from '@mui/material';
 import { useFormik } from 'formik';

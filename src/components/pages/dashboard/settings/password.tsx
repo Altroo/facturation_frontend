@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
-import Styles from '@/styles/dashboard/dashboard.module.sass';
+import Styles from '@/styles/dashboard/settings/password.module.sass';
 import { Box, Stack } from '@mui/material';
 import { setFormikAutoErrors } from '@/utils/helpers';
 import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';

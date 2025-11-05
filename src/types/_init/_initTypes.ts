@@ -54,3 +54,10 @@ export type SagaPayloadType<T> = {
 export type TokenType = {
 	token?: string;
 };
+
+export interface PaginationResponseType<T> {
+	count: number;
+	next: string | null;
+	previous: string | null;
+	results: Array<T>;
+}

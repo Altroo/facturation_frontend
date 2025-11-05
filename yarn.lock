@@ -1049,6 +1049,33 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@mui/x-data-grid@npm:^8.16.0":
+  version: 8.16.0
+  resolution: "@mui/x-data-grid@npm:8.16.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.28.4"
+    "@mui/utils": "npm:^7.3.3"
+    "@mui/x-internals": "npm:8.16.0"
+    "@mui/x-virtualizer": "npm:0.2.6"
+    clsx: "npm:^2.1.1"
+    prop-types: "npm:^15.8.1"
+    use-sync-external-store: "npm:^1.6.0"
+  peerDependencies:
+    "@emotion/react": ^11.9.0
+    "@emotion/styled": ^11.8.1
+    "@mui/material": ^5.15.14 || ^6.0.0 || ^7.0.0
+    "@mui/system": ^5.15.14 || ^6.0.0 || ^7.0.0
+    react: ^17.0.0 || ^18.0.0 || ^19.0.0
+    react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
+  peerDependenciesMeta:
+    "@emotion/react":
+      optional: true
+    "@emotion/styled":
+      optional: true
+  checksum: 10c0/0999080366b6f24d9216ea0650dc1789896423d7a0c17a3b67f765edd20f731659709f14f5b411feb262a9ac42c7fb5051d678a9c871f467e2124e95d2182536
+  languageName: node
+  linkType: hard
+
 "@mui/x-date-pickers@npm:^8.16.0":
   version: 8.16.0
   resolution: "@mui/x-date-pickers@npm:8.16.0"
@@ -1108,6 +1135,20 @@ __metadata:
   peerDependencies:
     react: ^17.0.0 || ^18.0.0 || ^19.0.0
   checksum: 10c0/bebc52a1140d707ef0a781bcc15c330e74612ca1733a7109af10adc00db062c0b581b7724cadaa3e407c3f2c71ccfbb145abe5c20e6111db154759afbdc22af1
+  languageName: node
+  linkType: hard
+
+"@mui/x-virtualizer@npm:0.2.6":
+  version: 0.2.6
+  resolution: "@mui/x-virtualizer@npm:0.2.6"
+  dependencies:
+    "@babel/runtime": "npm:^7.28.4"
+    "@mui/utils": "npm:^7.3.3"
+    "@mui/x-internals": "npm:8.16.0"
+  peerDependencies:
+    react: ^17.0.0 || ^18.0.0 || ^19.0.0
+    react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 10c0/39f9823ef5ec6f11ad4a29883f2db5d19750a8881557f5cfa15591a671b99c8eedd872f93543536661981732979fa54e1895bcca7b72983a25e6f04c2500ff21
   languageName: node
   linkType: hard
 
@@ -3293,6 +3334,7 @@ __metadata:
     "@mui/lab": "npm:^7.0.1-beta.19"
     "@mui/material": "npm:^7.3.5"
     "@mui/material-nextjs": "npm:^7.3.5"
+    "@mui/x-data-grid": "npm:^8.16.0"
     "@mui/x-date-pickers": "npm:^8.16.0"
     "@reduxjs/toolkit": "npm:^2.10.0"
     "@types/node": "npm:24.10.0"
