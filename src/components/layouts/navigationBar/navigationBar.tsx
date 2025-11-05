@@ -143,6 +143,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
 }>(({ theme, open }) => ({
 	flexGrow: 1,
 	paddingTop: theme.spacing(3),
+	overflow: 'hidden',
 	transition: theme.transitions.create('margin', {
 		easing: theme.transitions.easing.sharp,
 		duration: theme.transitions.duration.leavingScreen,
@@ -238,6 +239,7 @@ const NavigationBar = (props: Props) => {
 		if (match) {
 			setExpanded(`panel-${match[0]}`);
 		}
+		// ignore do not update deps
 	}, [pathname]);
 
 	const normalizePath = (url: string) => {

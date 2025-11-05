@@ -14,6 +14,7 @@ import { useGetCompaniesListQuery } from '@/store/services/company/company';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import type { AppSession } from '@/types/_init/_initTypes';
 import { COMPANIES_ADD, COMPANIES_EDIT } from '@/utils/routes';
+import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 
 type Props = { session?: AppSession };
 
@@ -26,7 +27,7 @@ const CompaniesList: React.FC<Props> = ({ session }: Props) => {
 		{
 			field: 'logo',
 			headerName: 'Logo',
-			width: 50,
+			width: 60,
 			renderCell: (params) => (
 				<Avatar
 					src={`${process.env.NEXT_PUBLIC_API_URL_GRID_IMAGES}${params.value}`}
@@ -38,33 +39,95 @@ const CompaniesList: React.FC<Props> = ({ session }: Props) => {
 			sortable: false,
 			filterable: false,
 		},
-		{ field: 'raison_sociale', headerName: 'Raison Sociale', width: 120 },
-		{ field: 'ICE', headerName: 'ICE', width: 150 },
+		{
+			field: 'raison_sociale',
+			headerName: 'Raison Sociale',
+			width: 180,
+			renderCell: (params) => (
+				<DarkTooltip title={params.value}>
+					<Typography variant="body2" noWrap>
+						{params.value}
+					</Typography>
+				</DarkTooltip>
+			),
+		},
+		{
+			field: 'ICE',
+			headerName: 'ICE',
+			width: 180,
+			renderCell: (params) => (
+				<DarkTooltip title={params.value}>
+					<Typography variant="body2" noWrap>
+						{params.value}
+					</Typography>
+				</DarkTooltip>
+			),
+		},
 		{
 			field: 'nom_responsable',
 			headerName: 'Responsable',
 			width: 220,
+			renderCell: (params) => {
+				const fullName = `${params.row.civilite_responsable} ${params.value}`;
+				return (
+					<DarkTooltip title={fullName}>
+						<Typography variant="body2" noWrap>
+							{fullName}
+						</Typography>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'email',
+			headerName: 'Email',
+			width: 240,
 			renderCell: (params) => (
-				<Box>
-					<Typography variant="body2">
-						{params.row.civilite_responsable} {params.value}
+				<DarkTooltip title={params.value}>
+					<Typography variant="body2" noWrap>
+						{params.value}
 					</Typography>
-				</Box>
+				</DarkTooltip>
 			),
 		},
-		{ field: 'email', headerName: 'Email', width: 200 },
-		{ field: 'telephone', headerName: 'Téléphone', width: 150 },
+		{
+			field: 'telephone',
+			headerName: 'Téléphone',
+			width: 180,
+			renderCell: (params) => (
+				<DarkTooltip title={params.value}>
+					<Typography variant="body2" noWrap>
+						{params.value}
+					</Typography>
+				</DarkTooltip>
+			),
+		},
 		{
 			field: 'nbr_employe',
 			headerName: 'Employés',
-			width: 100,
-			renderCell: (params) => <Chip label={params.value} size="small" variant="outlined" />,
+			width: 120,
+			renderCell: (params) => (
+				<DarkTooltip title={params.value}>
+					<Chip label={params.value} size="small" variant="outlined" />
+				</DarkTooltip>
+			),
 		},
-		{ field: 'date_created', headerName: 'Date de création', width: 140 },
+		{
+			field: 'date_created',
+			headerName: 'Date de création',
+			width: 180,
+			renderCell: (params) => (
+				<DarkTooltip title={params.value}>
+					<Typography variant="body2" noWrap>
+						{params.value}
+					</Typography>
+				</DarkTooltip>
+			),
+		},
 		{
 			field: 'actions',
 			headerName: 'Actions',
-			width: 100,
+			width: 200,
 			sortable: false,
 			filterable: false,
 			renderCell: (params) => (
@@ -152,7 +215,17 @@ const CompaniesList: React.FC<Props> = ({ session }: Props) => {
 								mb: { xs: 1, sm: 2, md: 3 },
 							}}
 						>
-							<Box sx={{ width: 'fit-content' }}>
+							<Box
+								sx={{
+									width: {
+										xs: 'fit-content',
+										sm: 'fit-content',
+										md: '100%',
+										maxWidth: '1600px',
+										mx: 'auto',
+									},
+								}}
+							>
 								<DataGrid
 									rows={rows}
 									columns={columns}
