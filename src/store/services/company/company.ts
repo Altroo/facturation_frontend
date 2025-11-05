@@ -13,9 +13,12 @@ export const companyApi = createApi({
 		return isAuthenticatedInstance(() => getInitStateToken(store.getState()));
 	}),
 	endpoints: (builder) => ({
-		getCompaniesList: builder.query<PaginationResponseType<CompanyClass>, string | undefined>({
-			query: (token) => ({
-				url: process.env.NEXT_PUBLIC_COMPANY_LIST as string,
+		getCompaniesList: builder.query<
+			PaginationResponseType<CompanyClass>,
+			{ token: string | undefined; page: number; pageSize: number; search?: string }
+		>({
+			query: ({ token, page, pageSize }) => ({
+				url: `${process.env.NEXT_PUBLIC_COMPANY_LIST}?page=${page}&page_size=${pageSize}`,
 				method: 'GET',
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
