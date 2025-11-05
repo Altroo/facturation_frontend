@@ -26,7 +26,7 @@ const CompaniesList: React.FC<Props> = ({ session }: Props) => {
 		{
 			field: 'logo',
 			headerName: 'Logo',
-			width: 80,
+			width: 50,
 			renderCell: (params) => (
 				<Avatar
 					src={`${process.env.NEXT_PUBLIC_API_URL_GRID_IMAGES}${params.value}`}
@@ -38,12 +38,12 @@ const CompaniesList: React.FC<Props> = ({ session }: Props) => {
 			sortable: false,
 			filterable: false,
 		},
-		{ field: 'raison_sociale', headerName: 'Raison Sociale', width: 200, flex: 1 },
+		{ field: 'raison_sociale', headerName: 'Raison Sociale', width: 120 },
 		{ field: 'ICE', headerName: 'ICE', width: 150 },
 		{
 			field: 'nom_responsable',
 			headerName: 'Responsable',
-			width: 200,
+			width: 220,
 			renderCell: (params) => (
 				<Box>
 					<Typography variant="body2">
@@ -52,20 +52,19 @@ const CompaniesList: React.FC<Props> = ({ session }: Props) => {
 				</Box>
 			),
 		},
-		{ field: 'email', headerName: 'Email', width: 220 },
+		{ field: 'email', headerName: 'Email', width: 200 },
 		{ field: 'telephone', headerName: 'Téléphone', width: 150 },
 		{
 			field: 'nbr_employe',
 			headerName: 'Employés',
-			width: 120,
+			width: 100,
 			renderCell: (params) => <Chip label={params.value} size="small" variant="outlined" />,
 		},
-		{ field: 'adresse', headerName: 'Adresse', width: 250, flex: 1 },
-		{ field: 'date_created', headerName: 'Date de création', width: 150 },
+		{ field: 'date_created', headerName: 'Date de création', width: 140 },
 		{
 			field: 'actions',
 			headerName: 'Actions',
-			width: 120,
+			width: 100,
 			sortable: false,
 			filterable: false,
 			renderCell: (params) => (
@@ -76,12 +75,7 @@ const CompaniesList: React.FC<Props> = ({ session }: Props) => {
 						</IconButton>
 					</Tooltip>
 					<Tooltip title="Supprimer">
-						<IconButton
-							size="small"
-							onClick={() => {
-								/* TODO: delete logic add confirmation modal */
-							}}
-						>
+						<IconButton size="small" onClick={() => {}}>
 							<Delete />
 						</IconButton>
 					</Tooltip>
@@ -94,45 +88,96 @@ const CompaniesList: React.FC<Props> = ({ session }: Props) => {
 
 	return (
 		<ThemeProvider theme={getDefaultTheme()}>
-			<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
+			<Stack
+				direction="column"
+				spacing={2}
+				className={Styles.flexRootStack}
+				mt="32px"
+				sx={{ overflowX: 'auto', overflowY: 'hidden' }}
+			>
 				<NavigationBar>
-					<Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2, mt: 3, mr: 2 }}>
-						<Button variant="contained" onClick={() => router.push(COMPANIES_ADD)}>
+					<Box
+						sx={{
+							width: '100%',
+							display: 'flex',
+							justifyContent: 'flex-start',
+							px: { xs: 1, sm: 2, md: 3 },
+							mt: { xs: 1, sm: 2, md: 3 },
+							mb: { xs: 1, sm: 2, md: 3 },
+						}}
+					>
+						<Button
+							variant="contained"
+							onClick={() => router.push(COMPANIES_ADD)}
+							sx={{
+								whiteSpace: 'nowrap',
+								px: { xs: 1.5, sm: 2, md: 3 },
+								py: { xs: 0.8, sm: 1, md: 1 },
+								fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
+							}}
+						>
 							Nouvelle entreprise
 						</Button>
 					</Box>
 
-					<Box sx={{ height: '100%', width: '100%' }}>
+					<Box
+						sx={{
+							width: '100%',
+							position: 'relative',
+							overflow: 'auto',
+						}}
+					>
 						{isLoading && (
 							<ApiProgress
-								cssStyle={{ position: 'absolute', top: '50%', left: '50%' }}
+								cssStyle={{
+									position: 'absolute',
+									top: '50%',
+									left: '50%',
+									transform: 'translate(-50%, -50%)',
+									zIndex: 1500,
+								}}
 								backdropColor="#FFFFFF"
 								circularColor="#0D070B"
 							/>
 						)}
 
-						<DataGrid
-							rows={rows}
-							columns={columns}
-							loading={isLoading}
-							pageSizeOptions={[5, 10, 25, 50, 100]}
-							initialState={{
-								pagination: { paginationModel: { pageSize: 10, page: 0 } },
-							}}
-							showToolbar
-							slotProps={{
-								toolbar: {
-									showQuickFilter: true,
-									quickFilterProps: { debounceMs: 500 },
-								},
-							}}
-							localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
-							disableRowSelectionOnClick
+						<Box
 							sx={{
-								'& .MuiDataGrid-cell': { display: 'flex', alignItems: 'center' },
-								'& .MuiDataGrid-row:hover': { cursor: 'pointer' },
+								width: '100%',
+								overflowX: 'auto',
+								overflowY: 'visible',
+								WebkitOverflowScrolling: 'touch',
+								overscrollBehavior: 'contain',
+								px: { xs: 1, sm: 2, md: 3 },
+								mb: { xs: 1, sm: 2, md: 3 },
 							}}
-						/>
+						>
+							<Box sx={{ width: 'fit-content' }}>
+								<DataGrid
+									rows={rows}
+									columns={columns}
+									loading={isLoading}
+									pageSizeOptions={[5, 10, 25, 50, 100]}
+									initialState={{
+										pagination: { paginationModel: { pageSize: 10, page: 0 } },
+									}}
+									showToolbar
+									slotProps={{
+										toolbar: {
+											showQuickFilter: true,
+											quickFilterProps: { debounceMs: 500 },
+										},
+									}}
+									localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
+									disableRowSelectionOnClick
+									sx={{
+										height: '100%',
+										'& .MuiDataGrid-cell': { display: 'flex', alignItems: 'center' },
+										'& .MuiDataGrid-row:hover': { cursor: 'pointer' },
+									}}
+								/>
+							</Box>
+						</Box>
 					</Box>
 				</NavigationBar>
 			</Stack>
