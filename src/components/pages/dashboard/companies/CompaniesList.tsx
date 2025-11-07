@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, Stack, Typography, Avatar, Chip, IconButton, Tooltip } from '@mui/material';
 import { Edit, Delete } from '@mui/icons-material';
@@ -8,11 +8,14 @@ import { GridColDef } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/companies/companies.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import { useGetCompaniesListQuery } from '@/store/services/company';
-import { COMPANIES_ADD, COMPANIES_EDIT } from '@/utils/routes';
+import { useDeleteCompanyMutation, useGetCompaniesListQuery } from '@/store/services/company';
+import { COMPANIES_ADD, COMPANIES_DETAIL } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import type { AppSession } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
+import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
+import CustomToast from '@/components/portals/customToast/customToast';
+import Portal from '@/contexts/Portal';
 
 type Props = { session?: AppSession };
 
@@ -20,13 +23,15 @@ const CompaniesList: React.FC<Props> = ({ session }: Props) => {
 	const router = useRouter();
 	const token = getAccessTokenFromSession(session);
 
-	const [paginationModel, setPaginationModel] = React.useState<{ page: number; pageSize: number }>({
+	const [paginationModel, setPaginationModel] = useState<{ page: number; pageSize: number }>({
 		page: 0,
 		pageSize: 10,
 	});
-	const [searchTerm, setSearchTerm] = React.useState<string>('');
+	const [searchTerm, setSearchTerm] = useState<string>('');
+	const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
+	const [selectedCompanyId, setSelectedCompanyId] = useState<number | null>(null);
 
-	const { data, isLoading } = useGetCompaniesListQuery(
+	const { data, isLoading, refetch } = useGetCompaniesListQuery(
 		{
 			token,
 			page: paginationModel.page + 1,
@@ -35,6 +40,50 @@ const CompaniesList: React.FC<Props> = ({ session }: Props) => {
 		},
 		{ skip: !token },
 	);
+	const [deleteCompany] = useDeleteCompanyMutation();
+
+	const [showToast, setShowToast] = useState(false);
+	const [toastMessage, setToastMessage] = useState<string>('');
+	const [toastType, setToastType] = useState<'success' | 'error'>('success');
+
+	const deleteCompanyHandler = async () => {
+		try {
+			await deleteCompany({ token, id: selectedCompanyId! }).unwrap();
+			// success toast
+			setToastMessage('Entreprise supprimée avec succès');
+			setToastType('success');
+			setShowToast(true);
+			// refresh the page / data
+			refetch();
+		} catch (err) {
+			// error toast
+			setToastMessage('Erreur lors de la suppression de l’entreprise');
+			setToastType('error');
+			setShowToast(true);
+
+			console.error(err);
+		} finally {
+			setShowDeleteModal(false);
+		}
+	};
+
+	const deleteModalActions = [
+		{
+			active: true,
+			text: 'Oui',
+			onClick: deleteCompanyHandler,
+		},
+		{
+			active: false,
+			text: 'Non',
+			onClick: () => setShowDeleteModal(false),
+		},
+	];
+
+	const showDeleteCompanyModal = (id: number) => {
+		setSelectedCompanyId(id);
+		setShowDeleteModal(true);
+	};
 
 	const columns: GridColDef[] = [
 		{
@@ -146,12 +195,12 @@ const CompaniesList: React.FC<Props> = ({ session }: Props) => {
 			renderCell: (params) => (
 				<Box sx={{ display: 'flex', gap: 1 }}>
 					<Tooltip title="Modifier">
-						<IconButton size="small" onClick={() => router.push(COMPANIES_EDIT(params.row.id))}>
+						<IconButton size="small" onClick={() => router.push(COMPANIES_DETAIL(params.row.id))}>
 							<Edit />
 						</IconButton>
 					</Tooltip>
 					<Tooltip title="Supprimer">
-						<IconButton size="small" onClick={() => {}}>
+						<IconButton size="small" onClick={() => showDeleteCompanyModal(params.row.id)}>
 							<Delete />
 						</IconButton>
 					</Tooltip>
@@ -202,6 +251,16 @@ const CompaniesList: React.FC<Props> = ({ session }: Props) => {
 					setSearchTerm={setSearchTerm}
 					toolbar={{ quickFilter: true, debounceMs: 500 }}
 				/>
+				{showDeleteModal && (
+					<ActionModals
+						title="Supprimer cette entreprise ?"
+						body="Êtes‑vous sûr de vouloir supprimer cette entreprise?"
+						actions={deleteModalActions}
+					/>
+				)}
+				<Portal id="snackbar_portal">
+					<CustomToast type={toastType} message={toastMessage} setShow={setShowToast} show={showToast} />
+				</Portal>
 			</NavigationBar>
 		</Stack>
 	);

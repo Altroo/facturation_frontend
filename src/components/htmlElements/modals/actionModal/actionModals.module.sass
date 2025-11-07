@@ -1,0 +1,83 @@
+@use '@/styles/sass/variables' as *
+@use '@/styles/sass/colors' as *
+@use '@/styles/sass/mixins' as *
+
+// Global styles
+.dimmerEffect
+  position: fixed
+  top: 0
+  right: 0
+  width: 100%
+  height: 100%
+  background-color: #000
+  z-index: 1
+  opacity: 0.5
+
+.modalbox
+  display: flex
+  justify-content: center
+  align-items: center
+  z-index: 1
+  position: absolute
+  left: 50%
+  right: 50%
+  top: 29.03%
+  bottom: 41.94%
+  transform: translate(-50%, 0)
+  width: 363px
+  height: 270px
+  background: $white
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25)
+  border-radius: 40px
+
+.modalWrapper
+  display: flex
+  flex-direction: column
+  justify-content: space-between
+  text-align: center
+  width: 80%
+
+.modalTitle
+  +Regular
+  color: $primary
+  font-size: 24px
+  font-weight: 600
+  overflow-wrap: break-word
+  margin: 0
+  letter-spacing: -0.01em
+
+.modalBody
+  +Regular
+  color: $buttonTextDisabled
+  font-size: 17px
+  overflow-wrap: break-word
+  margin-top: 12px
+
+.modalComingSoon
+  +Medium
+  font-size: 16px
+  color: $buttonTextDisabled
+  display: flex
+  justify-content: center
+  align-items: center
+
+.modalActionsRowWrapper
+  display: flex
+  flex-direction: row
+
+.modalActionColumnWrapper
+  display: flex
+  flex-direction: column
+
+.modalRowButton
+  +modal-button($font-family-semi-bold)
+  font-weight: 600
+
+.modalColumnButton
+  +modal-button($font-family-semi-bold)
+  font-weight: 600
+
+
+// @media #{$desktop}
+// @media #{$tablette}
+// @media #{$mobile}

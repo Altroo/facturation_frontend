@@ -4,7 +4,7 @@ import { axiosBaseQuery } from '@/utils/axiosBaseQuery';
 import { store } from '@/store/store';
 import { getInitStateToken } from '@/store/selectors';
 import { CompanyClass } from '@/models/Classes';
-import { PaginationResponseType } from '@/types/_initTypes';
+import { PaginationResponseType, SuccessResponseType } from '@/types/_initTypes';
 
 export const companyApi = createApi({
 	reducerPath: 'companyApi',
@@ -23,7 +23,14 @@ export const companyApi = createApi({
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 		}),
+		deleteCompany: builder.mutation<SuccessResponseType, { token: string | undefined; id: number | null }>({
+			query: ({ token, id }) => ({
+				url: `${process.env.NEXT_PUBLIC_COMPANY_ROOT}/${id}/`,
+				method: 'DELETE',
+				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+			}),
+		}),
 	}),
 });
 
-export const { useGetCompaniesListQuery } = companyApi;
+export const { useGetCompaniesListQuery, useDeleteCompanyMutation } = companyApi;
