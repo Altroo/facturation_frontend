@@ -1,4 +1,4 @@
-import type { AppSession } from '@/types/_init/_initTypes';
+import type { AppSession } from '@/types/_initTypes';
 
 export const getAccessTokenFromSession = (session?: AppSession): string | undefined => {
 	if (!session) return undefined;

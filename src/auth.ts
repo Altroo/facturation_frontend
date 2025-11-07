@@ -2,8 +2,8 @@ import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { z } from 'zod';
 import { allowAnyInstance } from '@/utils/helpers';
-import { postApi } from '@/store/services/_init/_initAPI';
-import { AccountPostLoginResponseType } from '@/types/account/accountTypes';
+import { postApi } from '@/store/services/_initAPI';
+import { AccountPostLoginResponseType } from '@/types/accountTypes';
 
 export const { handlers, auth } = NextAuth({
 	providers: [

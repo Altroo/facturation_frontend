@@ -7,8 +7,8 @@ import CustomTextInput from '@/components/formikElements/customTextInput/customT
 import { allowAnyInstance, setFormikAutoErrors } from '@/utils/helpers';
 import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
-import { AccountPostLoginResponseType } from '@/types/account/accountTypes';
-import { postApi } from '@/store/services/_init/_initAPI';
+import { AccountPostLoginResponseType } from '@/types/accountTypes';
+import { postApi } from '@/store/services/_initAPI';
 import { AUTH_RESET_PASSWORD, DASHBOARD } from '@/utils/routes';
 import { signIn, useSession } from 'next-auth/react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -20,7 +20,7 @@ import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiP
 import CustomPasswordInput from '@/components/formikElements/customPasswordInput/customPasswordInput';
 import { coordonneeTextInputTheme } from '@/utils/themes';
 import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
-import { refreshAppTokenStatesAction } from '@/store/actions/_init/_initActions';
+import { refreshAppTokenStatesAction } from '@/store/actions/_initActions';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 
 const inputTheme = coordonneeTextInputTheme();

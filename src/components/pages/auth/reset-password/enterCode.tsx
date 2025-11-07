@@ -4,7 +4,7 @@ import React, { useState, useTransition, useRef } from 'react';
 import Styles from '@/styles/auth/reset-password/enter-code.module.sass';
 import { setFormikAutoErrors } from '@/utils/helpers';
 import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
-import { cookiesPoster } from '@/store/services/_init/_initAPI';
+import { cookiesPoster } from '@/store/services/_initAPI';
 import { AUTH_RESET_PASSWORD_SET_PASSWORD } from '@/utils/routes';
 import AuthLayout from '@/components/layouts/auth/authLayout';
 import { Stack } from '@mui/material';
@@ -19,7 +19,7 @@ import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiP
 import Portal from '@/contexts/Portal';
 import CustomToast from '@/components/portals/customToast/customToast';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
-import { useSendPasswordResetCodeMutation, usePasswordResetMutation } from '@/store/services/account/account';
+import { useSendPasswordResetCodeMutation, usePasswordResetMutation } from '@/store/services/account';
 import { useSession } from 'next-auth/react';
 
 type EnterCodePageContentProps = {

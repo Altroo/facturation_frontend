@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { cookiesDeleter } from '@/store/services/_init/_initAPI';
+import { cookiesDeleter } from '@/store/services/_initAPI';
 
 const ClearCookiesClient = () => {
 	useEffect(() => {

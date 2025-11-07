@@ -8,10 +8,10 @@ import { GridColDef } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/companies/companies.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import { useGetCompaniesListQuery } from '@/store/services/company/company';
+import { useGetCompaniesListQuery } from '@/store/services/company';
 import { COMPANIES_ADD, COMPANIES_EDIT } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
-import type { AppSession } from '@/types/_init/_initTypes';
+import type { AppSession } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 
 type Props = { session?: AppSession };

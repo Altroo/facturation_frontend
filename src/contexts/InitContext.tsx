@@ -2,13 +2,13 @@
 
 import React, { createContext, PropsWithChildren, useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/utils/hooks';
-import { InitStateInterface, InitStateToken } from '@/types/_init/_initTypes';
-import { initAppAction, initAppSessionTokensAction } from '@/store/actions/_init/_initActions';
-import { emptyInitStateToken } from '@/store/slices/_init/_initSlice';
+import { InitStateInterface, InitStateToken } from '@/types/_initTypes';
+import { initAppAction, initAppSessionTokensAction } from '@/store/actions/_initActions';
+import { emptyInitStateToken } from '@/store/slices/_initSlice';
 import { getInitStateToken } from '@/store/selectors';
 import { useSession } from 'next-auth/react';
-import { useGetProfilQuery, useGetGroupsQuery } from '@/store/services/account/account';
-import { accountSetGroupesAction, accountSetProfilAction } from '@/store/actions/account/accountActions';
+import { useGetProfilQuery, useGetGroupsQuery } from '@/store/services/account';
+import { accountSetGroupesAction, accountSetProfilAction } from '@/store/actions/accountActions';
 
 const InitContext = createContext<InitStateInterface<InitStateToken>>({
 	initStateToken: emptyInitStateToken,

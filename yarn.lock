@@ -211,27 +211,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@date-io/core@npm:^3.2.0":
-  version: 3.2.0
-  resolution: "@date-io/core@npm:3.2.0"
-  checksum: 10c0/e320e5eb1dc5cdafbebdb5b3a4c80fcf18cef1ccf39bd57e63de7826c966b89814c984b59f7fb1fc3f7650859fb0ba890e39b0e77bfb671f4b01991432ccc06e
-  languageName: node
-  linkType: hard
-
-"@date-io/date-fns@npm:^3.2.1":
-  version: 3.2.1
-  resolution: "@date-io/date-fns@npm:3.2.1"
-  dependencies:
-    "@date-io/core": "npm:^3.2.0"
-  peerDependencies:
-    date-fns: ^3.2.0 || ^4.1.0
-  peerDependenciesMeta:
-    date-fns:
-      optional: true
-  checksum: 10c0/fe489ce51599264ec6d0e64d0a1675220cea4123568320fe58c2c6e8f2b6cea0124e4ee7fccfbc905173bd98b841948cde1030023517da8ed2d54a133513e19d
-  languageName: node
-  linkType: hard
-
 "@emnapi/core@npm:^1.4.3":
   version: 1.6.0
   resolution: "@emnapi/core@npm:1.6.0"
@@ -1049,14 +1028,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/x-data-grid@npm:^8.16.0":
-  version: 8.16.0
-  resolution: "@mui/x-data-grid@npm:8.16.0"
+"@mui/x-data-grid@npm:^8.17.0":
+  version: 8.17.0
+  resolution: "@mui/x-data-grid@npm:8.17.0"
   dependencies:
     "@babel/runtime": "npm:^7.28.4"
     "@mui/utils": "npm:^7.3.3"
-    "@mui/x-internals": "npm:8.16.0"
-    "@mui/x-virtualizer": "npm:0.2.6"
+    "@mui/x-internals": "npm:8.17.0"
+    "@mui/x-virtualizer": "npm:0.2.7"
     clsx: "npm:^2.1.1"
     prop-types: "npm:^15.8.1"
     use-sync-external-store: "npm:^1.6.0"
@@ -1072,61 +1051,13 @@ __metadata:
       optional: true
     "@emotion/styled":
       optional: true
-  checksum: 10c0/0999080366b6f24d9216ea0650dc1789896423d7a0c17a3b67f765edd20f731659709f14f5b411feb262a9ac42c7fb5051d678a9c871f467e2124e95d2182536
+  checksum: 10c0/316f2bfcb36153f4b50e7ae03c219e88f6af36a2a28c8e722916381d4bd5b4a5914e7cf76edcf3ccfba691cf1c72fc4fa35fe2e176e157f896d41e2811eccaa6
   languageName: node
   linkType: hard
 
-"@mui/x-date-pickers@npm:^8.16.0":
-  version: 8.16.0
-  resolution: "@mui/x-date-pickers@npm:8.16.0"
-  dependencies:
-    "@babel/runtime": "npm:^7.28.4"
-    "@mui/utils": "npm:^7.3.3"
-    "@mui/x-internals": "npm:8.16.0"
-    "@types/react-transition-group": "npm:^4.4.12"
-    clsx: "npm:^2.1.1"
-    prop-types: "npm:^15.8.1"
-    react-transition-group: "npm:^4.4.5"
-  peerDependencies:
-    "@emotion/react": ^11.9.0
-    "@emotion/styled": ^11.8.1
-    "@mui/material": ^5.15.14 || ^6.0.0 || ^7.0.0
-    "@mui/system": ^5.15.14 || ^6.0.0 || ^7.0.0
-    date-fns: ^2.25.0 || ^3.2.0 || ^4.0.0
-    date-fns-jalali: ^2.13.0-0 || ^3.2.0-0 || ^4.0.0-0
-    dayjs: ^1.10.7
-    luxon: ^3.0.2
-    moment: ^2.29.4
-    moment-hijri: ^2.1.2 || ^3.0.0
-    moment-jalaali: ^0.7.4 || ^0.8.0 || ^0.9.0 || ^0.10.0
-    react: ^17.0.0 || ^18.0.0 || ^19.0.0
-    react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
-  peerDependenciesMeta:
-    "@emotion/react":
-      optional: true
-    "@emotion/styled":
-      optional: true
-    date-fns:
-      optional: true
-    date-fns-jalali:
-      optional: true
-    dayjs:
-      optional: true
-    luxon:
-      optional: true
-    moment:
-      optional: true
-    moment-hijri:
-      optional: true
-    moment-jalaali:
-      optional: true
-  checksum: 10c0/4865d67fa1609a820c0a79a62b7601ff72741ea4572c410eaf9d241913ea41268c24b86a0ae38e4592ce606fd294559b8ce0426ba60f35755d47d0dbef57e9ef
-  languageName: node
-  linkType: hard
-
-"@mui/x-internals@npm:8.16.0":
-  version: 8.16.0
-  resolution: "@mui/x-internals@npm:8.16.0"
+"@mui/x-internals@npm:8.17.0":
+  version: 8.17.0
+  resolution: "@mui/x-internals@npm:8.17.0"
   dependencies:
     "@babel/runtime": "npm:^7.28.4"
     "@mui/utils": "npm:^7.3.3"
@@ -1134,21 +1065,21 @@ __metadata:
     use-sync-external-store: "npm:^1.6.0"
   peerDependencies:
     react: ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10c0/bebc52a1140d707ef0a781bcc15c330e74612ca1733a7109af10adc00db062c0b581b7724cadaa3e407c3f2c71ccfbb145abe5c20e6111db154759afbdc22af1
+  checksum: 10c0/746290e5a3db2838ff4acd23a744c210b54bdc0722c49ab195f6c3e799ce71ff8d43dc30d7c91c1a3bb9c9fec33f915c01513c5c523d75e6279d7c39d0b3d30f
   languageName: node
   linkType: hard
 
-"@mui/x-virtualizer@npm:0.2.6":
-  version: 0.2.6
-  resolution: "@mui/x-virtualizer@npm:0.2.6"
+"@mui/x-virtualizer@npm:0.2.7":
+  version: 0.2.7
+  resolution: "@mui/x-virtualizer@npm:0.2.7"
   dependencies:
     "@babel/runtime": "npm:^7.28.4"
     "@mui/utils": "npm:^7.3.3"
-    "@mui/x-internals": "npm:8.16.0"
+    "@mui/x-internals": "npm:8.17.0"
   peerDependencies:
     react: ^17.0.0 || ^18.0.0 || ^19.0.0
     react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10c0/39f9823ef5ec6f11ad4a29883f2db5d19750a8881557f5cfa15591a671b99c8eedd872f93543536661981732979fa54e1895bcca7b72983a25e6f04c2500ff21
+  checksum: 10c0/814bafbad194e1342e80d0f60b6d40e78aac71bd271028369349bbaf12c444e868e50799a05012fc524d6f56052bdbe5ee8a7be28d33a02cad6323cfa9550cb9
   languageName: node
   linkType: hard
 
@@ -1518,9 +1449,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@reduxjs/toolkit@npm:^2.10.0":
-  version: 2.10.0
-  resolution: "@reduxjs/toolkit@npm:2.10.0"
+"@reduxjs/toolkit@npm:^2.10.1":
+  version: 2.10.1
+  resolution: "@reduxjs/toolkit@npm:2.10.1"
   dependencies:
     "@standard-schema/spec": "npm:^1.0.0"
     "@standard-schema/utils": "npm:^0.3.0"
@@ -1536,7 +1467,7 @@ __metadata:
       optional: true
     react-redux:
       optional: true
-  checksum: 10c0/413ccbce8caceaf458b2f3de10d36380beef34b017eec2482aba5b9953101a3c6a90b5a0c656b278e60ac97ef40c29385c94e8557fa6411007bf1c43e5b5b4ce
+  checksum: 10c0/0296a73c8dfbe8b2a14095cfaaf67a8e4c5537b164c021bdb81c43922d10042a2fe733fbdfc956f9233884a6db5491fbc6d950a8883e1cd6137251db392f6a9e
   languageName: node
   linkType: hard
 
@@ -2300,14 +2231,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^1.13.1":
-  version: 1.13.1
-  resolution: "axios@npm:1.13.1"
+"axios@npm:^1.13.2":
+  version: 1.13.2
+  resolution: "axios@npm:1.13.2"
   dependencies:
     follow-redirects: "npm:^1.15.6"
     form-data: "npm:^4.0.4"
     proxy-from-env: "npm:^1.1.0"
-  checksum: 10c0/de9c3c6de43d3ee1146d3afe78645f19450cac6a5d7235bef8b8e8eeb705c2e47e2d231dea99cecaec4dae1897c521118ca9413b9d474063c719c4d94c5b9adc
+  checksum: 10c0/e8a42e37e5568ae9c7a28c348db0e8cf3e43d06fcbef73f0048669edfe4f71219664da7b6cc991b0c0f01c28a48f037c515263cb79be1f1ae8ff034cd813867b
   languageName: node
   linkType: hard
 
@@ -2549,25 +2480,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cookie@npm:^1.0.1":
-  version: 1.0.2
-  resolution: "cookie@npm:1.0.2"
-  checksum: 10c0/fd25fe79e8fbcfcaf6aa61cd081c55d144eeeba755206c058682257cb38c4bd6795c6620de3f064c740695bb65b7949ebb1db7a95e4636efb8357a335ad3f54b
-  languageName: node
-  linkType: hard
-
-"cookies-next@npm:^6.1.1":
-  version: 6.1.1
-  resolution: "cookies-next@npm:6.1.1"
-  dependencies:
-    cookie: "npm:^1.0.1"
-  peerDependencies:
-    next: ">=15.0.0"
-    react: ">= 16.8.0"
-  checksum: 10c0/09b53c819b532c70de4645c615b308652ab529c56f52b00aaa16bbc6caea2be8de6fbb2187ef882ea39831fc4b445d90898990f21ee3ccd9a124fadd31320391
-  languageName: node
-  linkType: hard
-
 "cors@npm:^2.8.5":
   version: 2.8.5
   resolution: "cors@npm:2.8.5"
@@ -2660,20 +2572,6 @@ __metadata:
     es-errors: "npm:^1.3.0"
     is-data-view: "npm:^1.0.1"
   checksum: 10c0/fa7aa40078025b7810dcffc16df02c480573b7b53ef1205aa6a61533011005c1890e5ba17018c692ce7c900212b547262d33279fde801ad9843edc0863bf78c4
-  languageName: node
-  linkType: hard
-
-"date-fns@npm:^4.1.0":
-  version: 4.1.0
-  resolution: "date-fns@npm:4.1.0"
-  checksum: 10c0/b79ff32830e6b7faa009590af6ae0fb8c3fd9ffad46d930548fbb5acf473773b4712ae887e156ba91a7b3dc30591ce0f517d69fd83bd9c38650fdc03b4e0bac8
-  languageName: node
-  linkType: hard
-
-"dayjs@npm:^1.11.19":
-  version: 1.11.19
-  resolution: "dayjs@npm:1.11.19"
-  checksum: 10c0/7d8a6074a343f821f81ea284d700bd34ea6c7abbe8d93bce7aba818948957c1b7f56131702e5e890a5622cdfc05dcebe8aed0b8313bdc6838a594d7846b0b000
   languageName: node
   linkType: hard
 
@@ -3327,25 +3225,20 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "facturation_frontend@workspace:."
   dependencies:
-    "@date-io/date-fns": "npm:^3.2.1"
     "@emotion/react": "npm:^11.14.0"
     "@emotion/styled": "npm:^11.14.1"
     "@mui/icons-material": "npm:^7.3.5"
     "@mui/lab": "npm:^7.0.1-beta.19"
     "@mui/material": "npm:^7.3.5"
     "@mui/material-nextjs": "npm:^7.3.5"
-    "@mui/x-data-grid": "npm:^8.16.0"
-    "@mui/x-date-pickers": "npm:^8.16.0"
-    "@reduxjs/toolkit": "npm:^2.10.0"
+    "@mui/x-data-grid": "npm:^8.17.0"
+    "@reduxjs/toolkit": "npm:^2.10.1"
     "@types/node": "npm:24.10.0"
     "@types/react": "npm:19.2.2"
     "@types/react-dom": "npm:19.2.2"
     "@typescript-eslint/eslint-plugin": "npm:^8.46.3"
-    axios: "npm:^1.13.1"
+    axios: "npm:^1.13.2"
     babel-plugin-react-compiler: "npm:1.0.0"
-    cookies-next: "npm:^6.1.1"
-    date-fns: "npm:^4.1.0"
-    dayjs: "npm:^1.11.19"
     eslint: "npm:9.39.1"
     eslint-config-next: "npm:16.0.1"
     eslint-config-prettier: "npm:^10.1.8"

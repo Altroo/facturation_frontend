@@ -1,5 +1,5 @@
-import { AccountGenderCodeValueType } from '@/types/account/accountTypes';
-import type { NbrEmployeType, CiviliteType } from '@/types/company/companyTypes';
+import { AccountGenderCodeValueType } from '@/types/accountTypes';
+import type { NbrEmployeType, CiviliteType } from '@/types/companyTypes';
 
 export const genderItemsList: Array<AccountGenderCodeValueType> = [
 	{

@@ -5,7 +5,7 @@ import Styles from '@/styles/auth/reset-password/reset-password.module.sass';
 import { setFormikAutoErrors } from '@/utils/helpers';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
-import { cookiesPoster } from '@/store/services/_init/_initAPI';
+import { cookiesPoster } from '@/store/services/_initAPI';
 import { AUTH_RESET_PASSWORD_ENTER_CODE, DASHBOARD } from '@/utils/routes';
 import AuthLayout from '@/components/layouts/auth/authLayout';
 import { Stack, Divider } from '@mui/material';
@@ -15,7 +15,7 @@ import { emailSchema } from '@/utils/formValidationSchemas';
 import { coordonneeTextInputTheme } from '@/utils/themes';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
-import { useSendPasswordResetCodeMutation } from '@/store/services/account/account';
+import { useSendPasswordResetCodeMutation } from '@/store/services/account';
 import { useSession } from 'next-auth/react';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 

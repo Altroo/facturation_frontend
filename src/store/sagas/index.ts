@@ -1,7 +1,7 @@
 import { all, spawn, call, fork } from 'redux-saga/effects';
-import { watchInit } from '@/store/sagas/_init/_initSaga';
-import { watchWS } from '@/store/sagas/ws/wsSaga';
-import { watchAccount } from '@/store/sagas/account/accountSaga';
+import { watchInit } from '@/store/sagas/_initSaga';
+import { watchWS } from '@/store/sagas/wsSaga';
+import { watchAccount } from '@/store/sagas/accountSaga';
 
 const sagas = [watchInit, watchAccount];
 

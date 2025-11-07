@@ -12,10 +12,10 @@ import { coordonneeTextInputTheme } from '@/utils/themes';
 import CustomPasswordInput from '@/components/formikElements/customPasswordInput/customPasswordInput';
 import CustomToast from '@/components/portals/customToast/customToast';
 import Portal from '@/contexts/Portal';
-import type { AppSession } from '@/types/_init/_initTypes';
+import type { AppSession } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
-import { useUpdatePasswordMutation } from '@/store/services/account/account';
+import { useUpdatePasswordMutation } from '@/store/services/account';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 

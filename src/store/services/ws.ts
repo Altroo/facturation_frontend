@@ -1,6 +1,6 @@
 import { eventChannel } from 'redux-saga';
-import { WSEvent, WSEventType, WSUserAvatar } from '@/types/ws/wsTypes';
-import { WSUserAvatarAction } from '@/store/actions/ws/wsActions';
+import { WSEvent, WSEventType, WSUserAvatar } from '@/types/wsTypes';
+import { WSUserAvatarAction } from '@/store/actions/wsActions';
 
 let ws: WebSocket;
 

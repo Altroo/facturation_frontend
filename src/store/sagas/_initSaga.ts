@@ -1,7 +1,7 @@
 import { put, takeLatest } from 'redux-saga/effects';
-import * as Types from '../../actions';
-import { InitStateInterface, InitStateToken } from '@/types/_init/_initTypes';
-import { setInitState } from '../../slices/_init/_initSlice';
+import * as Types from '../actions';
+import { InitStateInterface, InitStateToken } from '@/types/_initTypes';
+import { setInitState } from '../slices/_initSlice';
 import { Session } from 'next-auth';
 
 function* initAppSaga() {

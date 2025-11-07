@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { AccountStateInterface } from '@/types/account/accountTypes';
+import { AccountStateInterface } from '@/types/accountTypes';
 import { UserClass, GroupClass } from '@/models/Classes';
 
 const initialState: AccountStateInterface = {

@@ -1,4 +1,4 @@
-import type { NbrEmployeType, CiviliteType } from '@/types/company/companyTypes';
+import type { NbrEmployeType, CiviliteType } from '@/types/companyTypes';
 
 export class UserClass {
 	constructor(

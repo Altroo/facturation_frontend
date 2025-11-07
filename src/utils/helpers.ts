@@ -1,10 +1,10 @@
 import axios, { AxiosHeaders, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { signOut } from 'next-auth/react';
 import { store } from '@/store/store';
-import { initToken } from '@/store/slices/_init/_initSlice';
-import { cookiesDeleter } from '@/store/services/_init/_initAPI';
+import { initToken } from '@/store/slices/_initSlice';
+import { cookiesDeleter } from '@/store/services/_initAPI';
 import { SITE_ROOT } from '@/utils/routes';
-import { APIContentTypeInterface, ApiErrorResponseType, InitStateToken } from '@/types/_init/_initTypes';
+import { APIContentTypeInterface, ApiErrorResponseType, InitStateToken } from '@/types/_initTypes';
 
 /**
  * Handles unauthorized response by clearing cookies, signing out, and resetting token.

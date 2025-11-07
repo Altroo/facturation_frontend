@@ -20,7 +20,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import ListItemText from '@mui/material/ListItemText';
 import { useAppSelector } from '@/utils/hooks';
 import { getProfilState } from '@/store/selectors';
-import { cookiesDeleter } from '@/store/services/_init/_initAPI';
+import { cookiesDeleter } from '@/store/services/_initAPI';
 import { AUTH_LOGIN, DASHBOARD, DASHBOARD_EDIT_PROFILE, DASHBOARD_PASSWORD, SITE_ROOT } from '@/utils/routes';
 import { signOut, useSession } from 'next-auth/react';
 import { usePathname } from 'next/navigation';

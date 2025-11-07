@@ -1,4 +1,4 @@
-import * as types from '../index';
+import * as types from './index';
 import { Session } from 'next-auth';
 
 export const initAppAction = () => {

@@ -22,12 +22,12 @@ import CustomSwipeModal from '@/components/desktop/modals/rightSwipeModal/custom
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import { setFormikAutoErrors } from '@/utils/helpers';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
-import type { AppSession } from '@/types/_init/_initTypes';
-import { useGetProfilQuery, useUpdateProfilMutation } from '@/store/services/account/account';
+import type { AppSession } from '@/types/_initTypes';
+import { useGetProfilQuery, useUpdateProfilMutation } from '@/store/services/account';
 import { getAccessTokenFromSession } from '@/store/session';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import { accountUpdateProfilAction } from '@/store/actions/account/accountActions';
+import { accountUpdateProfilAction } from '@/store/actions/accountActions';
 
 const inputTheme = coordonneeTextInputTheme();
 

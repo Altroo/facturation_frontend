@@ -1,4 +1,4 @@
-import { tokenUser } from './_init/_initTypes';
+import { tokenUser } from './_initTypes';
 import { ProviderType } from 'next-auth/providers';
 import { DefaultSession } from 'next-auth';
 

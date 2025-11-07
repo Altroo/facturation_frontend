@@ -1,4 +1,4 @@
-import * as types from '../index';
+import * as types from './index';
 
 export const WSUserAvatarAction = (pk: number, avatar: string) => {
 	return {

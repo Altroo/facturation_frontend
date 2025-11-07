@@ -5,7 +5,7 @@ import { ThemeProvider, MenuItem, FormControl, InputLabel, OutlinedInput, Stack,
 import { Theme } from '@mui/material/styles';
 import ActiveCheckBlue from '../../../../public/assets/svgs/globalIcons/active-check-blue.svg';
 import Image from 'next/image';
-import { AccountGenderCodeValueType } from '@/types/account/accountTypes';
+import { AccountGenderCodeValueType } from '@/types/accountTypes';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;

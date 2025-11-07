@@ -1,11 +1,11 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { allowAnyInstance, isAuthenticatedInstance } from '@/utils/helpers';
 import { axiosBaseQuery } from '@/utils/axiosBaseQuery';
-import { SuccessResponseType } from '@/types/_init/_initTypes';
+import { SuccessResponseType } from '@/types/_initTypes';
 import { store } from '@/store/store';
 import { getInitStateToken } from '@/store/selectors';
 import { GroupClass, UserClass } from '@/models/Classes';
-import { UpdateProfilResponse, PasswordResetResponse } from '@/types/account/accountTypes';
+import { UpdateProfilResponse, PasswordResetResponse } from '@/types/accountTypes';
 
 export const accountApi = createApi({
 	reducerPath: 'accountApi',

@@ -1,4 +1,4 @@
-import { ResponseDataInterface, SagaPayloadType, TokenType } from '@/types/_init/_initTypes';
+import { ResponseDataInterface, SagaPayloadType, TokenType } from '@/types/_initTypes';
 import { GroupClass, UserClass } from '@/models/Classes';
 
 //!- Account State

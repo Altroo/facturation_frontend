@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import type { BaseQueryFn } from '@reduxjs/toolkit/query';
-import type { ApiErrorResponseType } from '@/types/_init/_initTypes';
+import type { ApiErrorResponseType } from '@/types/_initTypes';
 
 type NormalizedError = {
 	error: {
