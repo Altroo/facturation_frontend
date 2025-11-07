@@ -26,13 +26,12 @@ type PaginatedDataGridProps<T> = {
 const PaginatedDataGrid = <T,>({
 	queryHook,
 	columns,
+	paginationModel,
+	setPaginationModel,
+	searchTerm,
+	setSearchTerm,
 	toolbar = { quickFilter: true, debounceMs: 500 },
 }: PaginatedDataGridProps<T>) => {
-	const [paginationModel, setPaginationModel] = React.useState({
-		page: 0,
-		pageSize: 10,
-	});
-	const [searchTerm, setSearchTerm] = React.useState('');
 	const [filterModel, setFilterModel] = React.useState<GridFilterModel>({
 		items: [],
 		quickFilterValues: [],
@@ -44,7 +43,7 @@ const PaginatedDataGrid = <T,>({
 		search: searchTerm,
 	});
 
-	const rows = data?.results || [];
+	const rows = data?.results ?? [];
 
 	return (
 		<ThemeProvider theme={getDefaultTheme()}>
@@ -90,7 +89,7 @@ const PaginatedDataGrid = <T,>({
 								rows={rows}
 								columns={columns}
 								loading={isLoading}
-								rowCount={data?.count || 0}
+								rowCount={data?.count ?? 0}
 								paginationMode="server"
 								paginationModel={paginationModel}
 								onPaginationModelChange={setPaginationModel}
@@ -101,15 +100,13 @@ const PaginatedDataGrid = <T,>({
 								slotProps={{
 									toolbar: {
 										showQuickFilter: toolbar.quickFilter,
-										quickFilterProps: {
-											debounceMs: toolbar.debounceMs,
-										},
+										quickFilterProps: { debounceMs: toolbar.debounceMs },
 									},
 								}}
 								filterModel={filterModel}
 								onFilterModelChange={(model) => {
 									setFilterModel(model);
-									const value = model.quickFilterValues?.[0] || '';
+									const value = model.quickFilterValues?.[0] ?? '';
 									setSearchTerm(value);
 								}}
 								sx={{
