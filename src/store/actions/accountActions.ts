@@ -15,9 +15,9 @@ export const accountSetGroupesAction = (props: GroupClass) => {
 	};
 };
 
-export const accountUpdateProfilAction = (props: Partial<UserClass>) => {
+export const accountEditProfilAction = (props: UserClass) => {
 	return {
-		type: types.ACCOUNT_PATCH_PROFIL,
+		type: types.ACCOUNT_EDIT_PROFIL,
 		data: { ...props },
 	};
 };

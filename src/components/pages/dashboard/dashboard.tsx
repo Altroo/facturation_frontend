@@ -18,7 +18,7 @@ const DashboardClient: React.FC<Props> = ({ session }: Props) => {
 	return (
 		<ThemeProvider theme={getDefaultTheme()}>
 			<Stack direction="column" spacing={2} className={`${Styles.flexRootStack}`} mt="32px">
-				<NavigationBar>
+				<NavigationBar title="Tableau de bord">
 					<p>Dashboard page</p>
 				</NavigationBar>
 			</Stack>

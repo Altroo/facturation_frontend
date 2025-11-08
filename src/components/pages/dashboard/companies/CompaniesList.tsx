@@ -3,13 +3,13 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, Stack, Typography, Avatar, Chip, IconButton, Tooltip } from '@mui/material';
-import { Edit, Delete } from '@mui/icons-material';
+import { Edit, Delete, Visibility } from '@mui/icons-material';
 import { GridColDef } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/companies/companies.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { useDeleteCompanyMutation, useGetCompaniesListQuery } from '@/store/services/company';
-import { COMPANIES_ADD, COMPANIES_DETAIL } from '@/utils/routes';
+import { COMPANIES_ADD, COMPANIES_VIEW, COMPANIES_EDIT } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import type { AppSession } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
@@ -19,7 +19,7 @@ import Portal from '@/contexts/Portal';
 
 type Props = { session?: AppSession };
 
-const CompaniesList: React.FC<Props> = ({ session }: Props) => {
+const CompaniesListClient: React.FC<Props> = ({ session }: Props) => {
 	const router = useRouter();
 	const token = getAccessTokenFromSession(session);
 
@@ -194,13 +194,20 @@ const CompaniesList: React.FC<Props> = ({ session }: Props) => {
 			filterable: false,
 			renderCell: (params) => (
 				<Box sx={{ display: 'flex', gap: 1 }}>
+					<Tooltip title="Voir">
+						<IconButton size="small" color="info" onClick={() => router.push(COMPANIES_VIEW(params.row.id))}>
+							<Visibility />
+						</IconButton>
+					</Tooltip>
+
 					<Tooltip title="Modifier">
-						<IconButton size="small" onClick={() => router.push(COMPANIES_DETAIL(params.row.id))}>
+						<IconButton size="small" color="primary" onClick={() => router.push(COMPANIES_EDIT(params.row.id))}>
 							<Edit />
 						</IconButton>
 					</Tooltip>
+
 					<Tooltip title="Supprimer">
-						<IconButton size="small" onClick={() => showDeleteCompanyModal(params.row.id)}>
+						<IconButton size="small" color="error" onClick={() => showDeleteCompanyModal(params.row.id)}>
 							<Delete />
 						</IconButton>
 					</Tooltip>
@@ -217,7 +224,7 @@ const CompaniesList: React.FC<Props> = ({ session }: Props) => {
 			mt="32px"
 			sx={{ overflowX: 'auto', overflowY: 'hidden' }}
 		>
-			<NavigationBar>
+			<NavigationBar title="Liste des entreprises">
 				<Box
 					sx={{
 						width: '100%',
@@ -266,4 +273,4 @@ const CompaniesList: React.FC<Props> = ({ session }: Props) => {
 	);
 };
 
-export default CompaniesList;
+export default CompaniesListClient;

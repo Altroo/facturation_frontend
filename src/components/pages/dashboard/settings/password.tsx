@@ -15,7 +15,7 @@ import Portal from '@/contexts/Portal';
 import type { AppSession } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
-import { useUpdatePasswordMutation } from '@/store/services/account';
+import { useEditPasswordMutation } from '@/store/services/account';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 
@@ -28,7 +28,7 @@ type formikContentType = {
 
 const FormikContenChangePassword: React.FC<formikContentType> = (props: formikContentType) => {
 	const { token, onSuccess } = props;
-	const [changePassword, { isLoading: isChangePasswordLoading }] = useUpdatePasswordMutation();
+	const [changePassword, { isLoading: isChangePasswordLoading }] = useEditPasswordMutation();
 	const [isPending, startTransition] = useTransition();
 
 	const formik = useFormik({
@@ -62,13 +62,7 @@ const FormikContenChangePassword: React.FC<formikContentType> = (props: formikCo
 
 	return (
 		<Stack direction="column" alignItems="center" spacing={2} className={`${Styles.flexRootStack}`} mt="32px">
-			{(isChangePasswordLoading || isPending) && (
-				<ApiProgress
-					cssStyle={{ position: 'absolute', top: '50%', left: '50%' }}
-					backdropColor="#FFFFFF"
-					circularColor="#0D070B"
-				/>
-			)}
+			{(isChangePasswordLoading || isPending) && <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />}
 			<h2 className={Styles.pageTitle}>Modifier le mot de passe</h2>
 			<form className={Styles.form} onSubmit={(e) => e.preventDefault()}>
 				<Stack direction="column" spacing={2}>
@@ -134,7 +128,7 @@ const PasswordClient: React.FC<Props> = (props: Props) => {
 
 	return (
 		<Stack direction="column" sx={{ position: 'relative' }}>
-			<NavigationBar>
+			<NavigationBar title="Changer le mot de passe">
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
 					<Desktop>
 						<Stack direction="row" className={Styles.flexRootStack}>

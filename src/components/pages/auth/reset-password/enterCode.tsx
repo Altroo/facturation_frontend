@@ -127,11 +127,7 @@ const EnterCodePageContent = ({ email }: EnterCodePageContentProps) => {
 		<>
 			<Stack direction="column" className={Styles.contentWrapper} spacing={4}>
 				{(isResendLoading || isPending || isPasswordResetLoading) && (
-					<ApiProgress
-						cssStyle={{ position: 'absolute', top: '50%', left: '50%' }}
-						backdropColor="#FFFFFF"
-						circularColor="#0D070B"
-					/>
+					<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
 				)}
 				<Stack direction="column" spacing={1}>
 					<span className={Styles.content}>Rentrez le code</span>
@@ -210,13 +206,7 @@ const EnterCodeClient: React.FC<Props> = ({ email }) => {
 
 	return (
 		<>
-			{loading && (
-				<ApiProgress
-					cssStyle={{ position: 'absolute', top: '50%', left: '50%' }}
-					backdropColor="#FFFFFF"
-					circularColor="#0D070B"
-				/>
-			)}
+			{loading && <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />}
 			{!loading && !session && (
 				<>
 					<Desktop>

@@ -101,13 +101,7 @@ const ResetPasswordClient: React.FC = () => {
 
 	return (
 		<>
-			{loading && (
-				<ApiProgress
-					cssStyle={{ position: 'absolute', top: '50%', left: '50%' }}
-					backdropColor="#FFFFFF"
-					circularColor="#0D070B"
-				/>
-			)}
+			{loading && <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />}
 			{!loading && !session && (
 				<>
 					<Desktop>

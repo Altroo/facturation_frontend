@@ -4,7 +4,7 @@ import { axiosBaseQuery } from '@/utils/axiosBaseQuery';
 import { store } from '@/store/store';
 import { getInitStateToken } from '@/store/selectors';
 import { CompanyClass } from '@/models/Classes';
-import { PaginationResponseType, SuccessResponseType } from '@/types/_initTypes';
+import { ApiErrorResponseType, PaginationResponseType, SuccessResponseType } from '@/types/_initTypes';
 
 export const companyApi = createApi({
 	reducerPath: 'companyApi',
@@ -23,14 +23,29 @@ export const companyApi = createApi({
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 		}),
-		deleteCompany: builder.mutation<SuccessResponseType, { token: string | undefined; id: number | null }>({
+		getCompany: builder.query<CompanyClass, { token: string | undefined; id: number | null }>({
+			query: ({ token, id }) => ({
+				url: `${process.env.NEXT_PUBLIC_COMPANY_ROOT}/${id}/`,
+				method: 'GET',
+				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+			}),
+		}),
+		deleteCompany: builder.mutation<void | ApiErrorResponseType, { token: string | undefined; id: number | null }>({
 			query: ({ token, id }) => ({
 				url: `${process.env.NEXT_PUBLIC_COMPANY_ROOT}/${id}/`,
 				method: 'DELETE',
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 		}),
+		editCompany: builder.mutation<SuccessResponseType, { token: string | undefined; id: number | null }>({
+			query: ({ token, id }) => ({
+				url: `${process.env.NEXT_PUBLIC_COMPANY_ROOT}/${id}/`,
+				method: 'PUT',
+				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+			}),
+		}),
 	}),
 });
 
-export const { useGetCompaniesListQuery, useDeleteCompanyMutation } = companyApi;
+export const { useGetCompaniesListQuery, useDeleteCompanyMutation, useEditCompanyMutation, useGetCompanyQuery } =
+	companyApi;

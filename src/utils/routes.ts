@@ -13,6 +13,7 @@ export const DASHBOARD = `${SITE_ROOT}dashboard`;
 export const DASHBOARD_EDIT_PROFILE = `${SITE_ROOT}dashboard/settings/edit-profile`;
 export const DASHBOARD_PASSWORD = `${SITE_ROOT}dashboard/settings/password`;
 // Companies index
-export const COMPANIES = `${SITE_ROOT}dashboard/companies`;
+export const COMPANIES_LIST = `${SITE_ROOT}dashboard/companies`;
 export const COMPANIES_ADD = `${SITE_ROOT}dashboard/companies/new`;
-export const COMPANIES_DETAIL = (id: number) => `${SITE_ROOT}dashboard/companies/${id}`;
+export const COMPANIES_VIEW = (id: number) => `${SITE_ROOT}dashboard/companies/${id}`;
+export const COMPANIES_EDIT = (id: number) => `${SITE_ROOT}dashboard/companies/${id}/edit`;

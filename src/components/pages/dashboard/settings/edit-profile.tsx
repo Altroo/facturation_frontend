@@ -23,11 +23,11 @@ import { toFormikValidationSchema } from 'zod-formik-adapter';
 import { setFormikAutoErrors } from '@/utils/helpers';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import type { AppSession } from '@/types/_initTypes';
-import { useGetProfilQuery, useUpdateProfilMutation } from '@/store/services/account';
+import { useGetProfilQuery, useEditProfilMutation } from '@/store/services/account';
 import { getAccessTokenFromSession } from '@/store/session';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import { accountUpdateProfilAction } from '@/store/actions/accountActions';
+import { accountEditProfilAction } from '@/store/actions/accountActions';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -39,7 +39,7 @@ type formikContentType = {
 const FormikContent: React.FC<formikContentType> = (props: formikContentType) => {
 	const { token, onSuccess } = props;
 	const { data: profilData, isLoading: isProfilLoading } = useGetProfilQuery(token, { skip: !token });
-	const [updateProfil, { isLoading: isUpdateLoading }] = useUpdateProfilMutation();
+	const [editProfil, { isLoading: isEditLoading }] = useEditProfilMutation();
 	const dispatch = useAppDispatch();
 	const [isPending, startTransition] = useTransition();
 
@@ -69,12 +69,11 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 					gender: values.gender,
 				};
 				try {
-					await updateProfil({
-						token,
-						data,
-					}).unwrap();
-					dispatch(accountUpdateProfilAction(data));
-					onSuccess();
+					const response = await editProfil({ token, data }).unwrap();
+					if (response.data) {
+						dispatch(accountEditProfilAction(response.data));
+						onSuccess();
+					}
 				} catch (e) {
 					setFormikAutoErrors({ e, setFieldError });
 				}
@@ -110,12 +109,8 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 
 	return (
 		<Stack direction="column" alignItems="center" spacing={2} className={`${Styles.flexRootStack}`} mt="32px">
-			{(isUpdateLoading || isPending || isProfilLoading) && (
-				<ApiProgress
-					cssStyle={{ position: 'absolute', top: '50%', left: '50%' }}
-					backdropColor="#FFFFFF"
-					circularColor="#0D070B"
-				/>
+			{(isEditLoading || isPending || isProfilLoading) && (
+				<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
 			)}
 			<h2 className={Styles.pageTitle}>Profil</h2>
 			<CircularAvatarInputFile setAvatar={setAvatar} preview={preview} active={true} showText />
@@ -218,7 +213,7 @@ const EditProfilClient: React.FC<Props> = (props: Props) => {
 
 	return (
 		<Stack direction="column" sx={{ position: 'relative' }}>
-			<NavigationBar>
+			<NavigationBar title="Éditer le profil">
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
 					<Desktop>
 						<Stack direction="row" className={Styles.flexRootStack}>

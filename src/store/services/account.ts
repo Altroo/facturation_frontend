@@ -5,27 +5,27 @@ import { SuccessResponseType } from '@/types/_initTypes';
 import { store } from '@/store/store';
 import { getInitStateToken } from '@/store/selectors';
 import { GroupClass, UserClass } from '@/models/Classes';
-import { UpdateProfilResponse, PasswordResetResponse } from '@/types/accountTypes';
+import { EditProfilResponse, PasswordResetResponse } from '@/types/accountTypes';
 
 export const accountApi = createApi({
 	reducerPath: 'accountApi',
 	baseQuery: axiosBaseQuery(() => allowAnyInstance()),
 	endpoints: (builder) => ({
-		sendPasswordResetCode: builder.mutation<SuccessResponseType, { email: string }>({
+		sendPasswordResetCode: builder.mutation<void | SuccessResponseType, { email: string }>({
 			query: (payload) => ({
 				url: process.env.NEXT_PUBLIC_ACCOUNT_SEND_PASSWORD_RESET as string,
 				method: 'POST',
 				data: payload,
 			}),
 		}),
-		passwordReset: builder.mutation<SuccessResponseType, { email: string; code: string }>({
+		passwordReset: builder.mutation<void | SuccessResponseType, { email: string; code: string }>({
 			query: (payload) => ({
 				url: `${process.env.NEXT_PUBLIC_ACCOUNT_PASSWORD_RESET}${payload.email}/${payload.code}/`,
 				method: 'GET',
 			}),
 		}),
 		SetPassword: builder.mutation<
-			SuccessResponseType,
+			void | SuccessResponseType,
 			{ email: string; code: string; new_password: string; new_password2: string }
 		>({
 			query: (payload) => ({
@@ -68,7 +68,7 @@ export const profilApi = createApi({
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 		}),
-		updateProfil: builder.mutation<SuccessResponseType, UpdateProfilResponse>({
+		editProfil: builder.mutation<SuccessResponseType<UserClass>, EditProfilResponse>({
 			query: ({ token, data }) => ({
 				url: process.env.NEXT_PUBLIC_ACCOUNT_PROFIL as string,
 				method: 'PATCH',
@@ -76,7 +76,7 @@ export const profilApi = createApi({
 				data,
 			}),
 		}),
-		updatePassword: builder.mutation<SuccessResponseType, PasswordResetResponse>({
+		editPassword: builder.mutation<void | SuccessResponseType, PasswordResetResponse>({
 			query: ({ token, data }) => ({
 				url: process.env.NEXT_PUBLIC_ACCOUNT_PASSWORD_CHANGE as string,
 				method: 'PUT',
@@ -88,5 +88,5 @@ export const profilApi = createApi({
 });
 
 export const { useSendPasswordResetCodeMutation, usePasswordResetMutation, useSetPasswordMutation } = accountApi;
-export const { useGetProfilQuery, useUpdateProfilMutation, useUpdatePasswordMutation } = profilApi;
+export const { useGetProfilQuery, useEditProfilMutation, useEditPasswordMutation } = profilApi;
 export const { useGetGroupsQuery } = groupApi;

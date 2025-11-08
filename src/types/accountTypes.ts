@@ -30,7 +30,7 @@ export type AccountGenderCodeValueType = {
 export type setProfilPayloadType = SagaPayloadType<UserClass>;
 export type setGroupesPayloadType = SagaPayloadType<GroupClass>;
 
-export interface UpdateProfilResponse extends TokenType {
+export interface EditProfilResponse extends TokenType {
 	data: Partial<UserClass>;
 }
 

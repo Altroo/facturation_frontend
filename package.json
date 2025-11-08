@@ -19,7 +19,7 @@
     "@mui/x-data-grid": "^8.17.0",
     "@reduxjs/toolkit": "^2.10.1",
     "axios": "^1.13.2",
-    "formik": "^2.4.6",
+    "formik": "^2.4.8",
     "next": "16.0.1",
     "next-auth": "^5.0.0-beta.30",
     "nextjs-cors": "^2.2.1",

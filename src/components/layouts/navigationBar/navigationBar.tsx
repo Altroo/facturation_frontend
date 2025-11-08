@@ -21,7 +21,15 @@ import ListItemText from '@mui/material/ListItemText';
 import { useAppSelector } from '@/utils/hooks';
 import { getProfilState } from '@/store/selectors';
 import { cookiesDeleter } from '@/store/services/_initAPI';
-import { AUTH_LOGIN, DASHBOARD, DASHBOARD_EDIT_PROFILE, DASHBOARD_PASSWORD, SITE_ROOT } from '@/utils/routes';
+import {
+	AUTH_LOGIN,
+	COMPANIES_ADD,
+	COMPANIES_LIST,
+	DASHBOARD,
+	DASHBOARD_EDIT_PROFILE,
+	DASHBOARD_PASSWORD,
+	SITE_ROOT,
+} from '@/utils/routes';
 import { signOut, useSession } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
 import { navigationBarTheme } from '@/utils/themes';
@@ -112,8 +120,8 @@ const getNavigationMenu = (isSuperUser: boolean) => {
 				title: 'Entreprises',
 				icon: <DomainIcon />,
 				items: [
-					{ title: 'Liste des entreprises', label: 'Liste des entreprises', path: '/dashboard/companies' },
-					{ title: 'Nouvelle entreprise', label: 'Nouvelle entreprise', path: '/dashboard/companies/new' },
+					{ title: 'Liste des entreprises', label: 'Liste des entreprises', path: COMPANIES_LIST },
+					{ title: 'Nouvelle entreprise', label: 'Nouvelle entreprise', path: COMPANIES_ADD },
 				],
 			},
 			utilisateurs: {
@@ -186,19 +194,20 @@ const AppBar = styled(MuiAppBar, {
 }));
 
 type Props = {
+	title: string;
 	children: React.ReactNode;
 };
 
 const NavigationBar = (props: Props) => {
 	const theme = useTheme();
-	const [open, setOpen] = React.useState(true);
+	const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+	const [open, setOpen] = React.useState(!isMobile);
 	const { data: session, status } = useSession();
 	// const router = useRouter();
 	const { avatar, first_name, last_name, gender, is_superuser } = useAppSelector(getProfilState);
 	const navigationMenu = useMemo(() => getNavigationMenu(is_superuser), [is_superuser]);
 
 	const loading = status === 'loading';
-	const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
 	const logOutHandler = async () => {
 		await cookiesDeleter('/cookies', {
@@ -219,28 +228,58 @@ const NavigationBar = (props: Props) => {
 
 	const pathname = usePathname();
 
-	const selectedItemLabel =
-		Object.values(navigationMenu)
-			.flatMap((section) => section.items)
-			.find((item) => {
-				const itemPath = new URL(item.path, SITE_ROOT).pathname;
-				return itemPath === pathname;
-			})?.title ?? 'Accueil';
-
 	const [expanded, setExpanded] = React.useState<string | false>(false);
 
 	useEffect(() => {
-		const match = Object.entries(navigationMenu).find(([, section]) =>
+		// First, try to find an exact match
+		const exactMatch = Object.entries(navigationMenu).find(([, section]) =>
 			section.items.some((item) => {
 				const normalizedPath = item.path.replace(/^https?:\/\/[^/]+/, '');
 				return normalizedPath === pathname;
 			}),
 		);
-		if (match) {
-			setExpanded(`panel-${match[0]}`);
+
+		if (exactMatch) {
+			setExpanded(`panel-${exactMatch[0]}`);
+			return;
 		}
-		// ignore do not update deps
-	}, [pathname]);
+
+		// If no exact match, find the best parent match
+		// We'll find the section whose items share the longest common path with current pathname
+		let bestMatch = null;
+		let longestMatchLength = 0;
+
+		Object.entries(navigationMenu).forEach(([key, section]) => {
+			section.items.forEach((item) => {
+				const normalizedPath = item.path.replace(/^https?:\/\/[^/]+/, '');
+
+				// Check if the current pathname starts with this menu item's path
+				// This handles /dashboard/companies/4 matching /dashboard/companies/list
+				const pathSegments = normalizedPath.split('/').filter(Boolean);
+				const currentSegments = pathname.split('/').filter(Boolean);
+
+				// Count how many segments match from the start
+				let matchCount = 0;
+				for (let i = 0; i < Math.min(pathSegments.length, currentSegments.length); i++) {
+					if (pathSegments[i] === currentSegments[i]) {
+						matchCount++;
+					} else {
+						break;
+					}
+				}
+
+				// Keep track of the best match (longest common path)
+				if (matchCount > longestMatchLength && matchCount > 0) {
+					longestMatchLength = matchCount;
+					bestMatch = key;
+				}
+			});
+		});
+
+		if (bestMatch) {
+			setExpanded(`panel-${bestMatch}`);
+		}
+	}, [pathname, navigationMenu]);
 
 	const normalizePath = (url: string) => {
 		try {
@@ -274,7 +313,7 @@ const NavigationBar = (props: Props) => {
 									{open ? <ChevronLeftIcon /> : <MenuIcon />}
 								</IconButton>
 								<Typography variant="h6" noWrap component="div">
-									{selectedItemLabel}
+									{props.title}
 								</Typography>
 							</Stack>
 							<Stack direction="row" spacing={1}>

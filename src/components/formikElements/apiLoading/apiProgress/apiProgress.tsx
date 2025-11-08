@@ -1,5 +1,5 @@
 import React, { CSSProperties } from 'react';
-import { Box, CircularProgress, Backdrop } from '@mui/material';
+import { CircularProgress, Backdrop } from '@mui/material';
 
 type Props = {
 	cssStyle?: CSSProperties;
@@ -11,11 +11,9 @@ type Props = {
 // '#FFFFFF'
 const ApiProgress: React.FC<Props> = (props: Props) => {
 	return (
-		<Box sx={props.cssStyle}>
-			<Backdrop sx={{ backgroundColor: props.backdropColor, zIndex: (theme) => theme.zIndex.drawer + 1 }} open>
-				<CircularProgress sx={{ color: props.circularColor }} />
-			</Backdrop>
-		</Box>
+		<Backdrop sx={{ backgroundColor: props.backdropColor, zIndex: (theme) => theme.zIndex.drawer + 1 }} open>
+			<CircularProgress sx={{ color: props.circularColor }} />
+		</Backdrop>
 	);
 };
 

@@ -7,7 +7,7 @@ function* accountSetProfilSaga(payload: setProfilPayloadType) {
 	yield put(setProfil(payload.data));
 }
 
-function* accountPatchProfilSaga(payload: setProfilPayloadType) {
+function* accountEditProfilSaga(payload: setProfilPayloadType) {
 	yield put(setProfil(payload.data));
 }
 
@@ -22,6 +22,6 @@ function* wsUserAvatarSaga(payload: { type: string; pk: number; avatar: string }
 export function* watchAccount() {
 	yield takeLatest(Types.ACCOUNT_SET_PROFIL, accountSetProfilSaga);
 	yield takeLatest(Types.ACCOUNT_SET_GROUPES, accountSetGroupesSaga);
-	yield takeLatest(Types.ACCOUNT_PATCH_PROFIL, accountPatchProfilSaga);
+	yield takeLatest(Types.ACCOUNT_EDIT_PROFIL, accountEditProfilSaga);
 	yield takeLatest(Types.WS_USER_AVATAR, wsUserAvatarSaga);
 }
