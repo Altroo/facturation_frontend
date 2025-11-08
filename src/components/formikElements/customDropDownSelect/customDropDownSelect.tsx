@@ -5,7 +5,7 @@ import { ThemeProvider, MenuItem, FormControl, InputLabel, OutlinedInput, Stack,
 import { Theme } from '@mui/material/styles';
 import ActiveCheckBlue from '../../../../public/assets/svgs/globalIcons/active-check-blue.svg';
 import Image from 'next/image';
-import { AccountGenderCodeValueType } from '@/types/accountTypes';
+import { DropDownType } from '@/types/accountTypes';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -21,7 +21,7 @@ const MenuProps = {
 type Props = {
 	id: string;
 	label: string;
-	items: Array<AccountGenderCodeValueType>;
+	items: Array<DropDownType>;
 	theme: Theme;
 	value: string | null;
 	onChange?: (event: SelectChangeEvent) => void;
@@ -51,10 +51,10 @@ const CustomDropDownSelect: React.FC<Props> = (props: Props) => {
 				>
 					{props.helperText ? <FormHelperText>{props.helperText}</FormHelperText> : null}
 					{props.items.map((item, index) => (
-						<MenuItem key={index} value={item.value}>
+						<MenuItem key={index} value={item.value} sx={{ minHeight: ITEM_HEIGHT }}>
 							<Stack direction="row" justifyContent="space-between" sx={{ width: '100%' }}>
-								<span>{item.value}</span>
-								{props.value && props.value.indexOf(item.value) > -1 && <Image src={ActiveCheckBlue} alt="" />}
+								<span>{item.value || 'Selectionner une valeur'}</span>
+								{props.value === item.value && <Image src={ActiveCheckBlue} alt="" />}
 							</Stack>
 						</MenuItem>
 					))}

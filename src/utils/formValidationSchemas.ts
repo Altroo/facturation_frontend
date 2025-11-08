@@ -3,6 +3,7 @@ import {
 	INPUT_MAX,
 	INPUT_MIN,
 	INPUT_PASSWORD_MIN,
+	INPUT_PHONE,
 	INPUT_REQUIRED,
 	MINI_INPUT_EMAIL,
 	SHORT_INPUT_REQUIRED,
@@ -16,23 +17,34 @@ const passwordField = z.preprocess(
 		.nonempty({ error: INPUT_REQUIRED }),
 );
 
-const userNameField = z.preprocess(
-	(val) => (val === undefined ? '' : val),
-	z
-		.string()
-		.min(2, { error: INPUT_MIN(2) })
-		.max(30, { error: INPUT_MAX(30) })
-		.nonempty({ error: INPUT_REQUIRED }),
-);
+const requiredTextField = (min: number, max: number) =>
+	z.preprocess(
+		(val) => (val === undefined ? '' : val),
+		z
+			.string()
+			.min(min, { error: INPUT_MIN(min) })
+			.max(max, { error: INPUT_MAX(max) })
+			.nonempty({ error: INPUT_REQUIRED }),
+	);
+
+const optionalTextField = (min: number, max: number) =>
+	z.preprocess(
+		(val) => (val === undefined || val === null || val === '' ? undefined : val),
+		z
+			.string()
+			.min(min, { error: INPUT_MIN(min) })
+			.max(max, { error: INPUT_MAX(max) })
+			.optional(),
+	);
 
 export const loginSchema = z.object({
-	email: z.email({ error: MINI_INPUT_EMAIL }).nonempty({ error: INPUT_REQUIRED }),
+	email: z.email({ error: MINI_INPUT_EMAIL }),
 	password: passwordField,
 	globalError: z.string().optional(),
 });
 
 export const emailSchema = z.object({
-	email: z.email({ error: MINI_INPUT_EMAIL }).nonempty({ error: INPUT_REQUIRED }),
+	email: z.email({ error: MINI_INPUT_EMAIL }),
 	globalError: z.string().optional(),
 });
 
@@ -44,9 +56,9 @@ export const passwordResetConfirmationSchema = z.object({
 
 const singleDigit = z
 	.string()
-	.nonempty({ error: SHORT_INPUT_REQUIRED }) // required
-	.regex(/^\d$/, { error: SHORT_INPUT_REQUIRED }) // exactly one digit 0–9
-	.transform((val) => Number(val)); // convert to number if needed
+	.min(1, { error: SHORT_INPUT_REQUIRED })
+	.regex(/^\d$/, { error: SHORT_INPUT_REQUIRED })
+	.transform((val) => Number(val));
 
 export const passwordResetCodeSchema = z.object({
 	one: singleDigit,
@@ -57,12 +69,74 @@ export const passwordResetCodeSchema = z.object({
 });
 
 export const profilSchema = z.object({
-	first_name: userNameField,
-	last_name: userNameField,
+	first_name: requiredTextField(2, 30),
+	last_name: requiredTextField(2, 30),
 });
 
 export const changePasswordSchema = z.object({
 	old_password: passwordField,
 	new_password: passwordField,
 	new_password2: passwordField,
+});
+
+// Helper for optional file inputs (File | null)
+const fileField = z
+	.any()
+	.refine((val) => val === null || val === undefined || val instanceof File, {
+		message: 'Fichier invalide',
+	})
+	.optional()
+	.nullable();
+
+const optionalEmailField = z.preprocess(
+	(val) => (val === undefined || val === null || val === '' ? undefined : val),
+	z.email({ error: MINI_INPUT_EMAIL }).optional(),
+);
+
+const optionalUrlField = z.preprocess(
+	(val) => (val === undefined || val === null || val === '' ? undefined : val),
+	z.url({ error: 'URL invalide' }).optional(),
+);
+
+const optionalPhoneField = z.preprocess(
+	(val) => (val === undefined || val === null || val === '' ? undefined : val),
+	z
+		.string()
+		.regex(/^\+?\d{7,15}$/, { error: INPUT_PHONE })
+		.optional(),
+);
+
+export const companySchema = z.object({
+	// REQUIRED FIELDS
+	raison_sociale: requiredTextField(2, 255),
+	ICE: requiredTextField(2, 100),
+	nbr_employe: z.string().min(1, { error: INPUT_REQUIRED }),
+
+	// OPTIONAL FIELDS
+	email: optionalEmailField,
+	civilite_responsable: z.string().optional(),
+	nom_responsable: optionalTextField(2, 255),
+	gsm_responsable: optionalPhoneField,
+	adresse: z.string().optional(),
+	telephone: optionalPhoneField,
+	fax: optionalPhoneField,
+	site_web: optionalUrlField,
+	numero_du_compte: z.string().optional(),
+	registre_de_commerce: z.string().optional(),
+	identifiant_fiscal: z.string().optional(),
+	tax_professionnelle: z.string().optional(),
+	CNSS: z.string().optional(),
+	managed_by: z
+		.array(
+			z.object({
+				id: z.number(),
+				first_name: z.string(),
+				last_name: z.string(),
+				role: z.string(),
+			}),
+		)
+		.optional(),
+	logo: fileField,
+	cachet: fileField,
+	globalError: z.string().optional(),
 });

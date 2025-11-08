@@ -12,7 +12,6 @@ import {
 	Typography,
 	Avatar,
 	Chip,
-	CircularProgress,
 	useTheme,
 	useMediaQuery,
 	Accordion,
@@ -45,8 +44,6 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 	const router = useRouter();
 	const token = getAccessTokenFromSession(session);
 	const { data: companyData, isLoading, error } = useGetCompanyQuery({ token, id }, { skip: !token });
-
-	console.log(error);
 
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));

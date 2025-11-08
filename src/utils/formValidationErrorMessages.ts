@@ -5,7 +5,7 @@ export const INPUT_NUMBER_MIN = (char: number) => `Assurez-vous que ce champ com
 export const INPUT_NUMBER_MAX = (char: number) => `Assurez-vous que ce champ comporte au plus ${char} chiffre.`;
 export const INPUT_MAX = (char: number) => `Assurez-vous que ce champ comporte au plus ${char} caractères.`;
 export const INPUT_IMG_MIN = (char: number) => `Assurez-vous que ce champ comporte au plus ${char} images.`;
-export const INPUT_PONE = 'Assurez-vous que ce champ comporte votre téléphone e.g : 212610203040';
+export const INPUT_PHONE = 'Assurez-vous que ce champ comporte votre téléphone e.g : 212610203040';
 export const INPUT_WHATSAPP_PONE = 'Assurez-vous que ce champ comporte votre whatsapp e.g : 212610203040';
 export const INPUT_POSTAL_CODE = 'Assurez-vous que ce champ comporte votre code postal ex: 10000';
 export const INPUT_ICE = 'Assurez-vous que ce champ comporte votre ICE ex: 00000 00000 00000';

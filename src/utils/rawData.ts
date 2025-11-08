@@ -1,4 +1,4 @@
-import { AccountGenderCodeValueType } from '@/types/accountTypes';
+import { AccountGenderCodeValueType, DropDownType } from '@/types/accountTypes';
 import type { NbrEmployeType, CiviliteType } from '@/types/companyTypes';
 
 export const genderItemsList: Array<AccountGenderCodeValueType> = [
@@ -12,6 +12,18 @@ export const genderItemsList: Array<AccountGenderCodeValueType> = [
 	},
 ];
 
-export const nbrEmployeItemsList: Array<NbrEmployeType> = ['1 à 5', '5 à 10', '10 à 50', '50 à 100', 'plus que 100'];
+export const nbrEmployeItemsList: Array<DropDownType> = [
+	{ code: '1 à 5', value: '1 à 5' },
+	{ code: '5 à 10', value: '5 à 10' },
+	{ code: '10 à 50', value: '10 à 50' },
+	{ code: '50 à 100', value: '50 à 100' },
+	{ code: 'plus que 100', value: 'plus que 100' },
+];
 
-export const civiliteItemsList: Array<CiviliteType> = ['', 'Mme', 'Mlle', 'M.'];
+// '', 'Mme', 'Mlle', 'M.'
+export const civiliteItemsList: Array<DropDownType> = [
+	{ code: '', value: '' },
+	{ code: 'M.', value: 'M.' },
+	{ code: 'Mme', value: 'Mme' },
+	{ code: 'Mlle', value: 'Mlle' },
+];

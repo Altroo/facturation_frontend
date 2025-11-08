@@ -23,25 +23,29 @@ export const companyApi = createApi({
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 		}),
-		getCompany: builder.query<CompanyClass, { token: string | undefined; id: number | null }>({
+		getCompany: builder.query<CompanyClass, { token: string | undefined; id: number }>({
 			query: ({ token, id }) => ({
 				url: `${process.env.NEXT_PUBLIC_COMPANY_ROOT}/${id}/`,
 				method: 'GET',
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 		}),
-		deleteCompany: builder.mutation<void | ApiErrorResponseType, { token: string | undefined; id: number | null }>({
+		deleteCompany: builder.mutation<void | ApiErrorResponseType, { token: string | undefined; id: number }>({
 			query: ({ token, id }) => ({
 				url: `${process.env.NEXT_PUBLIC_COMPANY_ROOT}/${id}/`,
 				method: 'DELETE',
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 		}),
-		editCompany: builder.mutation<SuccessResponseType, { token: string | undefined; id: number | null }>({
-			query: ({ token, id }) => ({
+		editCompany: builder.mutation<
+			SuccessResponseType<CompanyClass>,
+			{ token: string | undefined; id: number; data: Partial<CompanyClass> }
+		>({
+			query: ({ token, id, data }) => ({
 				url: `${process.env.NEXT_PUBLIC_COMPANY_ROOT}/${id}/`,
 				method: 'PUT',
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+				data,
 			}),
 		}),
 	}),

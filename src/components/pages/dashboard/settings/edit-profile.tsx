@@ -9,7 +9,7 @@ import { profilSchema } from '@/utils/formValidationSchemas';
 import CircularAvatarInputFile from '@/components/htmlElements/buttons/circularAvatarInputFile/circularAvatarInputFile';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import PrimaryButton from '@/components/htmlElements/buttons/primaryButton/primaryButton';
-import { coordonneeTextInputTheme, genderDropdownTheme } from '@/utils/themes';
+import { coordonneeTextInputTheme, customDropdownTheme } from '@/utils/themes';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import { genderItemsList } from '@/utils/rawData';
 import { useAppDispatch } from '@/utils/hooks';
@@ -148,7 +148,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 						id="gender"
 						label="Genre"
 						items={genderItemsList}
-						theme={genderDropdownTheme()}
+						theme={customDropdownTheme()}
 						onChange={(e) => formik.setFieldValue('gender', e.target.value)}
 						value={formik.values.gender}
 					/>
@@ -174,7 +174,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 				handleClose={() => setOpenCropModal(false)}
 				cssClasse={Styles.centerModal}
 			>
-				<Stack direction="column" spacing="24px" id="shopAvatarCropper">
+				<Stack direction="column" spacing="24px" id="userAvatarCropper">
 					<Cropper
 						src={preview as string}
 						style={{ height: '100%', width: '100%' }}

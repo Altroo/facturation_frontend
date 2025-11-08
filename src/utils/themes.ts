@@ -260,7 +260,7 @@ export const customToastTheme = (primaryColor: string | undefined = undefined) =
 	});
 };
 
-export const genderDropdownTheme = (primaryColor: string | undefined = undefined) => {
+export const customDropdownTheme = (primaryColor: string | undefined = undefined) => {
 	const defaultTheme = getDefaultTheme(primaryColor);
 	const blueColor = '#0274d7';
 
