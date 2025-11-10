@@ -83,7 +83,7 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 									<AccordionDetails>
 										<Stack direction={isMobile ? 'column' : 'row'} spacing={2} alignItems="center">
 											<Avatar
-												src={`${process.env.NEXT_PUBLIC_API_URL_GRID_IMAGES}${companyData?.logo}`}
+												src={`${companyData?.logo}`}
 												sx={{ width: isMobile ? 56 : 72, height: isMobile ? 56 : 72 }}
 											/>
 											<Stack>
@@ -103,7 +103,7 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 										<Stack direction="row" spacing={2} justifyContent="center" flexWrap="wrap">
 											<Avatar
 												variant="square"
-												src={`${process.env.NEXT_PUBLIC_API_URL_GRID_IMAGES}${companyData?.cachet}`}
+												src={`${companyData?.cachet}`}
 												sx={{ width: isMobile ? 100 : 140, height: isMobile ? 100 : 140, borderRadius: 1 }}
 											/>
 										</Stack>

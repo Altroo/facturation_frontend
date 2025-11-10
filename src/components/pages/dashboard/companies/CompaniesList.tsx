@@ -91,12 +91,7 @@ const CompaniesListClient: React.FC<Props> = ({ session }: Props) => {
 			headerName: 'Logo',
 			width: 60,
 			renderCell: (params) => (
-				<Avatar
-					src={`${process.env.NEXT_PUBLIC_API_URL_GRID_IMAGES}${params.value}`}
-					alt={params.row.raison_sociale}
-					variant="rounded"
-					sx={{ width: 40, height: 40 }}
-				/>
+				<Avatar src={params.value} alt={params.row.raison_sociale} variant="rounded" sx={{ width: 40, height: 40 }} />
 			),
 			sortable: false,
 			filterable: false,

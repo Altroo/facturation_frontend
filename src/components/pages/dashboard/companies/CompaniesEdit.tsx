@@ -10,7 +10,6 @@ import { Stack, Box, Typography, Button, IconButton } from '@mui/material';
 import { ArrowBack, Delete } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
-import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
@@ -23,6 +22,7 @@ import { setFormikAutoErrors } from '@/utils/helpers';
 import { coordonneeTextInputTheme, customDropdownTheme } from '@/utils/themes';
 import { COMPANIES_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
+import CustomSquareImageUploading from '@/components/formikElements/customSquareImageUploading/customSquareImageUploading';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -58,8 +58,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			tax_professionnelle: companyData?.tax_professionnelle ?? '',
 			CNSS: companyData?.CNSS ?? '',
 			managed_by: companyData?.managed_by ?? [],
-			logo: null as string | ArrayBuffer | null,
-			cachet: null as string | ArrayBuffer | null,
+			logo: companyData?.logo ?? '',
+			logo_cropped: companyData?.logo_cropped ?? '',
+			cachet: companyData?.cachet ?? '',
+			cachet_cropped: companyData?.cachet_cropped ?? '',
 		},
 		enableReinitialize: true,
 		validateOnMount: true,
@@ -75,11 +77,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			});
 		},
 	});
-
-	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'logo' | 'cachet') => {
-		const file = e.currentTarget.files?.[0] ?? null;
-		formik.setFieldValue(field, file);
-	};
 
 	return (
 		<Box padding={2}>
@@ -300,26 +297,27 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								size="small"
 								theme={inputTheme}
 							/>
-							<Box>
-								<label htmlFor="logo">Logo</label>
-								<input
-									id="logo"
-									name="logo"
-									type="file"
-									accept="image/*"
-									onChange={(e) => handleFileChange(e, 'logo')}
-								/>
-							</Box>
-							<Box>
-								<label htmlFor="cachet">Cachet</label>
-								<input
-									id="cachet"
-									name="cachet"
-									type="file"
-									accept="image/*"
-									onChange={(e) => handleFileChange(e, 'cachet')}
-								/>
-							</Box>
+							<Stack direction="row" gap={4} className={Styles.mobileStack}>
+								<Box>
+									<label>Logo</label>
+									<CustomSquareImageUploading
+										image={formik.values.logo}
+										croppedImage={formik.values.logo_cropped}
+										onChange={(img) => formik.setFieldValue('logo', img)}
+										onCrop={(cropped) => formik.setFieldValue('logo_cropped', cropped)}
+									/>
+								</Box>
+								<Box>
+									<label>Cachet</label>
+									<CustomSquareImageUploading
+										image={formik.values.cachet}
+										croppedImage={formik.values.cachet_cropped}
+										onChange={(img) => formik.setFieldValue('cachet', img)}
+										onCrop={(cropped) => formik.setFieldValue('cachet_cropped', cropped)}
+									/>
+								</Box>
+							</Stack>
+
 							{/* Managed By Section */}
 							<Box>
 								<Typography variant="subtitle1" gutterBottom>
@@ -339,7 +337,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												items={[
 													{ value: 'Admin', code: 'Admin' },
 													{ value: 'Manager', code: 'Manager' },
-													{ value: 'User', code: 'Utilisateur' },
+													{ value: 'Lecture', code: 'Utilisateur' },
 												]}
 												value={user.role}
 												onChange={(e) => {
@@ -422,16 +420,9 @@ const CompaniesEditClient: React.FC<Props> = ({ session, id }) => {
 		<Stack direction="column" sx={{ position: 'relative' }}>
 			<NavigationBar title="Modifier l'entreprise">
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
-					<Desktop>
-						<Box sx={{ width: '100%' }}>
-							<FormikContent token={token} id={id} onSuccess={() => setShowDataUpdated(true)} />
-						</Box>
-					</Desktop>
-					<TabletAndMobile>
-						<Box sx={{ width: '100%' }}>
-							<FormikContent token={token} id={id} onSuccess={() => setShowDataUpdated(true)} />
-						</Box>
-					</TabletAndMobile>
+					<Box sx={{ width: '100%' }}>
+						<FormikContent token={token} id={id} onSuccess={() => setShowDataUpdated(true)} />
+					</Box>
 				</main>
 			</NavigationBar>
 

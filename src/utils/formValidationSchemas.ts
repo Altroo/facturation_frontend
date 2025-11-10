@@ -79,14 +79,7 @@ export const changePasswordSchema = z.object({
 	new_password2: passwordField,
 });
 
-// Helper for optional file inputs (File | null)
-const fileField = z
-	.any()
-	.refine((val) => val === null || val === undefined || val instanceof File, {
-		message: 'Fichier invalide',
-	})
-	.optional()
-	.nullable();
+const base64ImageField = z.url().or(z.string().startsWith('data:image/')).nullable().optional();
 
 const optionalEmailField = z.preprocess(
 	(val) => (val === undefined || val === null || val === '' ? undefined : val),
@@ -136,7 +129,9 @@ export const companySchema = z.object({
 			}),
 		)
 		.optional(),
-	logo: fileField,
-	cachet: fileField,
+	logo: base64ImageField,
+	logo_cropped: base64ImageField,
+	cachet: base64ImageField,
+	cachet_cropped: base64ImageField,
 	globalError: z.string().optional(),
 });
