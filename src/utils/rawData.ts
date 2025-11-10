@@ -1,5 +1,4 @@
 import { AccountGenderCodeValueType, DropDownType } from '@/types/accountTypes';
-import type { NbrEmployeType, CiviliteType } from '@/types/companyTypes';
 
 export const genderItemsList: Array<AccountGenderCodeValueType> = [
 	{
