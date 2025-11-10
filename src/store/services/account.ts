@@ -51,6 +51,13 @@ export const groupApi = createApi({
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 		}),
+		getUsers: builder.query<Array<Partial<UserClass>>, string | undefined>({
+			query: (token) => ({
+				url: process.env.NEXT_PUBLIC_ACCOUNT_USERS as string,
+				method: 'GET',
+				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+			}),
+		}),
 	}),
 });
 
@@ -89,4 +96,4 @@ export const profilApi = createApi({
 
 export const { useSendPasswordResetCodeMutation, usePasswordResetMutation, useSetPasswordMutation } = accountApi;
 export const { useGetProfilQuery, useEditProfilMutation, useEditPasswordMutation } = profilApi;
-export const { useGetGroupsQuery } = groupApi;
+export const { useGetGroupsQuery, useGetUsersQuery } = groupApi;

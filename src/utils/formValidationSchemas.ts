@@ -122,9 +122,7 @@ export const companySchema = z.object({
 	managed_by: z
 		.array(
 			z.object({
-				id: z.number(),
-				first_name: z.string(),
-				last_name: z.string(),
+				pk: z.number(),
 				role: z.string(),
 			}),
 		)

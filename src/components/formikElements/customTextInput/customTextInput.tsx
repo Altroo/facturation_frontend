@@ -1,6 +1,6 @@
 import React, { ForwardedRef, forwardRef } from 'react';
 import { Theme } from '@mui/material/styles';
-import { ThemeProvider } from '@mui/material';
+import { InputAdornment, ThemeProvider } from '@mui/material';
 import TextField, { TextFieldProps } from '@mui/material/TextField';
 
 type Props = {
@@ -20,11 +20,13 @@ type Props = {
 	disabled?: boolean;
 	variant?: 'filled' | 'standard' | 'outlined';
 	onClick?: () => void;
+	startIcon?: React.ReactNode;
+	endIcon?: React.ReactNode;
 	slotProps?: TextFieldProps['slotProps'];
 };
 
 const CustomTextInput = forwardRef<HTMLInputElement, Props>((props: Props, ref: ForwardedRef<HTMLInputElement>) => {
-	const { cssClass, theme, ...restOfProps } = props;
+	const { cssClass, theme, startIcon, endIcon, ...restOfProps } = props;
 
 	return (
 		<ThemeProvider theme={theme}>
@@ -47,7 +49,14 @@ const CustomTextInput = forwardRef<HTMLInputElement, Props>((props: Props, ref: 
 				onClick={props.onClick}
 				color="primary"
 				disabled={props.disabled}
-				slotProps={props.slotProps}
+				slotProps={{
+					...props.slotProps,
+					input: {
+						...props.slotProps?.input,
+						startAdornment: startIcon ? <InputAdornment position="start">{startIcon}</InputAdornment> : undefined,
+						endAdornment: endIcon ? <InputAdornment position="end">{endIcon}</InputAdornment> : undefined,
+					},
+				}}
 			/>
 		</ThemeProvider>
 	);

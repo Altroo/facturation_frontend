@@ -120,6 +120,7 @@ const CustomSquareImageUploading: React.FC<Props> = ({ image, croppedImage, onCh
 								onClick={handleEditClick}
 							>
 								<Image
+									loading="eager"
 									width={360}
 									height={250}
 									src={typeof croppedImage === 'string' ? croppedImage : ''}

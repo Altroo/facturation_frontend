@@ -11,6 +11,11 @@ export type managedByType = Array<{
 	role: string | null;
 }>;
 
+export type ManagedByWriteOnlyType = Array<{
+	pk: number;
+	role: string | null;
+}>;
+
 export interface EditCompanyResponse extends TokenType {
 	data: Partial<CompanyClass>;
 }

@@ -203,7 +203,6 @@ const NavigationBar = (props: Props) => {
 	const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 	const [open, setOpen] = React.useState(!isMobile);
 	const { data: session, status } = useSession();
-	// const router = useRouter();
 	const { avatar, first_name, last_name, gender, is_superuser } = useAppSelector(getProfilState);
 	const navigationMenu = useMemo(() => getNavigationMenu(is_superuser), [is_superuser]);
 

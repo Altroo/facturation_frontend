@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useTransition } from 'react';
+import React, { useState, useTransition, useEffect, useRef } from 'react';
 import type { AppSession } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
 import { useEditCompanyMutation, useGetCompanyQuery } from '@/store/services/company';
@@ -10,6 +10,7 @@ import {
 	Box,
 	Button,
 	IconButton,
+	Skeleton,
 	Stack,
 	Table,
 	TableBody,
@@ -19,6 +20,21 @@ import {
 	Typography,
 } from '@mui/material';
 import { ArrowBack, Delete } from '@mui/icons-material';
+import BusinessIcon from '@mui/icons-material/Business';
+import EmailIcon from '@mui/icons-material/Email';
+import GroupsIcon from '@mui/icons-material/Groups';
+import PersonIcon from '@mui/icons-material/Person';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import SmartphoneIcon from '@mui/icons-material/Smartphone';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import PhoneIcon from '@mui/icons-material/Phone';
+import PrintIcon from '@mui/icons-material/Print';
+import LanguageIcon from '@mui/icons-material/Language';
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import FingerprintIcon from '@mui/icons-material/Fingerprint';
+import BadgeIcon from '@mui/icons-material/Badge';
+import CreditCardIcon from '@mui/icons-material/CreditCard';
+
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
@@ -34,6 +50,9 @@ import { coordonneeTextInputTheme, customDropdownTheme } from '@/utils/themes';
 import { COMPANIES_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import CustomSquareImageUploading from '@/components/formikElements/customSquareImageUploading/customSquareImageUploading';
+import { useAppSelector } from '@/utils/hooks';
+import { getGroupesState, getProfilState } from '@/store/selectors';
+import { useGetUsersQuery } from '@/store/services/account';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -46,9 +65,16 @@ type FormikContentProps = {
 const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
 	const { token, id, onSuccess } = props;
 	const { data: companyData, isLoading: isCompanyLoading, error } = useGetCompanyQuery({ token, id }, { skip: !token });
+	const { data: usersData, isLoading: isUsersLoading } = useGetUsersQuery(token, { skip: !token });
 	const [updateCompany, { isLoading: isUpdateLoading }] = useEditCompanyMutation();
+	const { id: userID } = useAppSelector(getProfilState);
+	const groupes = useAppSelector(getGroupesState);
 	const [isPending, startTransition] = useTransition();
 	const router = useRouter();
+
+	const [adminUsers, setAdminUsers] = useState(companyData?.admins ?? []);
+
+	const roleOptions = groupes.map((role) => ({ value: role, code: role }));
 
 	const formik = useFormik({
 		initialValues: {
@@ -68,11 +94,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			identifiant_fiscal: companyData?.identifiant_fiscal ?? '',
 			tax_professionnelle: companyData?.tax_professionnelle ?? '',
 			CNSS: companyData?.CNSS ?? '',
-			managed_by: companyData?.managed_by ?? [],
 			logo: companyData?.logo ?? '',
 			logo_cropped: companyData?.logo_cropped ?? '',
 			cachet: companyData?.cachet ?? '',
 			cachet_cropped: companyData?.cachet_cropped ?? '',
+			managed_by: adminUsers.map((user) => ({
+				pk: user.id,
+				role: user.role,
+			})),
 		},
 		enableReinitialize: true,
 		validateOnMount: true,
@@ -80,6 +109,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		onSubmit: async (data, { setFieldError }) => {
 			startTransition(async () => {
 				try {
+					console.log('Submitting data:', data);
 					await updateCompany({ token, data, id }).unwrap();
 					onSuccess();
 				} catch (e) {
@@ -88,6 +118,33 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			});
 		},
 	});
+
+	const managedIds = formik.values.managed_by.map((entry) => entry.pk);
+
+	const availableUsers = (usersData ?? [])
+		.filter((user): user is { id: number; first_name: string; last_name: string } => typeof user.id === 'number')
+		.filter((user) => !managedIds.includes(user.id))
+		.map((user) => ({
+			value: user.id.toString(),
+			code: `${user.first_name} ${user.last_name}`,
+		}));
+
+	const initializedRef = useRef(false);
+
+	useEffect(() => {
+		if (!initializedRef.current && companyData?.admins && Array.isArray(companyData.admins)) {
+			setAdminUsers(companyData.admins);
+			formik.setFieldValue(
+				'managed_by',
+				companyData.admins.map((user) => ({
+					pk: user.id,
+					role: user.role,
+				})),
+			);
+			initializedRef.current = true;
+		}
+		console.log('errors : ', formik.errors);
+	}, [companyData?.admins, formik]);
 
 	return (
 		<Box padding={2}>
@@ -142,6 +199,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								size="small"
 								label="Raison sociale"
 								theme={inputTheme}
+								startIcon={<BusinessIcon fontSize="small" />}
 							/>
 							<CustomTextInput
 								id="email"
@@ -155,6 +213,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								fullWidth={false}
 								size="small"
 								theme={inputTheme}
+								startIcon={<EmailIcon fontSize="small" />}
 							/>
 							<CustomDropDownSelect
 								id="nbr_employe"
@@ -163,6 +222,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								value={formik.values.nbr_employe}
 								onChange={(e) => formik.setFieldValue('nbr_employe', e.target.value)}
 								theme={customDropdownTheme()}
+								startIcon={<GroupsIcon fontSize="small" />}
 							/>
 							<CustomDropDownSelect
 								id="civilite_responsable"
@@ -171,6 +231,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								value={formik.values.civilite_responsable}
 								onChange={(e) => formik.setFieldValue('civilite_responsable', e.target.value)}
 								theme={customDropdownTheme()}
+								startIcon={<PersonIcon fontSize="small" />}
 							/>
 							<CustomTextInput
 								id="nom_responsable"
@@ -184,6 +245,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								fullWidth={false}
 								size="small"
 								theme={inputTheme}
+								startIcon={<PersonOutlineIcon fontSize="small" />}
 							/>
 							<CustomTextInput
 								id="gsm_responsable"
@@ -197,6 +259,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								fullWidth={false}
 								size="small"
 								theme={inputTheme}
+								startIcon={<SmartphoneIcon fontSize="small" />}
 							/>
 							<CustomTextInput
 								id="adresse"
@@ -210,6 +273,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								fullWidth={false}
 								size="small"
 								theme={inputTheme}
+								startIcon={<LocationOnIcon fontSize="small" />}
 							/>
 							<CustomTextInput
 								id="telephone"
@@ -223,6 +287,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								fullWidth={false}
 								size="small"
 								theme={inputTheme}
+								startIcon={<PhoneIcon fontSize="small" />}
 							/>
 							<CustomTextInput
 								id="fax"
@@ -236,6 +301,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								fullWidth={false}
 								size="small"
 								theme={inputTheme}
+								startIcon={<PrintIcon fontSize="small" />}
 							/>
 							<CustomTextInput
 								id="site_web"
@@ -249,6 +315,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								fullWidth={false}
 								size="small"
 								theme={inputTheme}
+								startIcon={<LanguageIcon fontSize="small" />}
 							/>
 							<CustomTextInput
 								id="numero_du_compte"
@@ -262,6 +329,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								fullWidth={false}
 								size="small"
 								theme={inputTheme}
+								startIcon={<AccountBalanceIcon fontSize="small" />}
 							/>
 							<CustomTextInput
 								id="ICE"
@@ -275,6 +343,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								fullWidth={false}
 								size="small"
 								theme={inputTheme}
+								startIcon={<FingerprintIcon fontSize="small" />}
 							/>
 							<CustomTextInput
 								id="registre_de_commerce"
@@ -288,6 +357,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								fullWidth={false}
 								size="small"
 								theme={inputTheme}
+								startIcon={<BadgeIcon fontSize="small" />}
 							/>
 							<CustomTextInput
 								id="identifiant_fiscal"
@@ -301,6 +371,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								fullWidth={false}
 								size="small"
 								theme={inputTheme}
+								startIcon={<CreditCardIcon fontSize="small" />}
 							/>
 							<CustomTextInput
 								id="tax_professionnelle"
@@ -314,6 +385,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								fullWidth={false}
 								size="small"
 								theme={inputTheme}
+								startIcon={<CreditCardIcon fontSize="small" />}
 							/>
 							<CustomTextInput
 								id="CNSS"
@@ -327,11 +399,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								fullWidth={false}
 								size="small"
 								theme={inputTheme}
+								startIcon={<FingerprintIcon fontSize="small" />}
 							/>
 							<Box>
 								<Typography variant="h5" gutterBottom>
 									Utilisateurs gestionnaires
 								</Typography>
+
 								<Table>
 									<TableHead>
 										<TableRow>
@@ -341,83 +415,102 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										</TableRow>
 									</TableHead>
 									<TableBody>
-										{formik.values.managed_by.map((user, index) => (
-											<TableRow key={index}>
-												<TableCell>
-													{user.first_name} {user.last_name}
-												</TableCell>
-												<TableCell>
-													<Box sx={{ maxWidth: 180 }}>
-														<CustomDropDownSelect
-															id={`managed_by_role_${index}`}
-															label="Rôle"
-															value={user.role}
-															onChange={(e) => {
-																const updatedUsers = formik.values.managed_by.map((user, i) =>
-																	i === index ? { ...user, role: e.target.value } : user,
-																);
-																formik.setFieldValue('managed_by', updatedUsers);
-															}}
-															// replace with actual roles from api
-															items={[
-																{ value: 'Admin', code: 'Admin' },
-																{ value: 'Manager', code: 'Manager' },
-																{ value: 'Lecture', code: 'Utilisateur' },
-															]}
-															theme={customDropdownTheme()}
-														/>
-													</Box>
-												</TableCell>
-												<TableCell align="right">
-													<IconButton
-														color="error"
-														onClick={() => {
-															const updatedUsers = formik.values.managed_by.filter((_, i) => i !== index);
-															formik.setFieldValue('managed_by', updatedUsers);
-														}}
-													>
-														<Delete />
-													</IconButton>
+										{adminUsers.length === 0 ? (
+											<TableRow>
+												<TableCell colSpan={3} align="center">
+													<Typography variant="body2" color="text.secondary">
+														Aucun utilisateur gestionnaire n’a été ajouté.
+													</Typography>
 												</TableCell>
 											</TableRow>
-										))}
+										) : (
+											adminUsers.map((user, index) => (
+												<TableRow key={user.id}>
+													<TableCell>
+														{user.first_name} {user.last_name}
+														{user.id === userID && (
+															<Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+																(vous)
+															</Typography>
+														)}
+													</TableCell>
+													<TableCell>
+														<Box sx={{ maxWidth: 180 }}>
+															<CustomDropDownSelect
+																id={`managed_by_role_${index}`}
+																label="Rôle"
+																value={user.role}
+																onChange={(e) => {
+																	const newRole = e.target.value;
+																	const updatedAdmins = adminUsers.map((u, i) =>
+																		i === index ? { ...u, role: newRole } : u,
+																	);
+																	setAdminUsers(updatedAdmins);
+																	const updatedManagedBy = formik.values.managed_by.map((entry) =>
+																		entry.pk === user.id ? { ...entry, role: newRole } : entry,
+																	);
+																	formik.setFieldValue('managed_by', updatedManagedBy);
+																}}
+																items={roleOptions}
+																theme={customDropdownTheme()}
+																disabled={user.id === userID}
+															/>
+														</Box>
+													</TableCell>
+													<TableCell align="right">
+														<IconButton
+															disabled={user.id === userID}
+															color="error"
+															onClick={() => {
+																setAdminUsers(adminUsers.filter((u) => u.id !== user.id));
+																formik.setFieldValue(
+																	'managed_by',
+																	formik.values.managed_by.filter((entry) => entry.pk !== user.id),
+																);
+															}}
+														>
+															<Delete />
+														</IconButton>
+													</TableCell>
+												</TableRow>
+											))
+										)}
 									</TableBody>
 								</Table>
+
 								<Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 2 }}>
-									<CustomDropDownSelect
-										id="new_user_select"
-										label="Ajouter un utilisateur"
-										items={[
-											// Dummy data - replace with API call later
-											{ value: '2', code: 'Ahmed Benali' },
-											{ value: '3', code: 'Fatima Zahra' },
-											{ value: '4', code: 'Mohammed Alaoui' },
-										].filter((item) => !formik.values.managed_by.some((u) => u.id === parseInt(item.value)))}
-										value=""
-										onChange={(e) => {
-											const userId = parseInt(e.target.value);
-											// Dummy data - replace with actual user fetch later
-											const dummyUsers = [
-												{ id: 2, first_name: 'Ahmed', last_name: 'Benali' },
-												{ id: 3, first_name: 'Fatima', last_name: 'Zahra' },
-												{ id: 4, first_name: 'Mohammed', last_name: 'Alaoui' },
-											];
-											const selectedUser = dummyUsers.find((u) => u.id === userId);
-											if (selectedUser) {
-												formik.setFieldValue('managed_by', [
-													...formik.values.managed_by,
-													{ ...selectedUser, role: 'Lecture' },
-												]);
-											}
-										}}
-										theme={customDropdownTheme()}
-									/>
-									<Button variant="contained" onClick={() => {}}>
-										Ajouter
-									</Button>
+									{isUsersLoading ? (
+										<Skeleton variant="rectangular" width={250} height={40} />
+									) : (
+										<CustomDropDownSelect
+											id="new_user_select"
+											label="Ajouter un utilisateur"
+											items={availableUsers}
+											value=""
+											onChange={(e) => {
+												const userId = parseInt(e.target.value);
+												const selectedUser = usersData?.find((u) => u.id === userId);
+												if (selectedUser?.id && selectedUser.first_name && selectedUser.last_name) {
+													const newAdmin = {
+														id: selectedUser.id,
+														first_name: selectedUser.first_name,
+														last_name: selectedUser.last_name,
+														role: 'Lecture',
+													};
+
+													setAdminUsers([...adminUsers, newAdmin]);
+													formik.setFieldValue('managed_by', [
+														...formik.values.managed_by,
+														{ pk: selectedUser.id, role: 'Lecture' },
+													]);
+												}
+											}}
+											theme={customDropdownTheme()}
+											startIcon={<GroupsIcon fontSize="small" />}
+										/>
+									)}
 								</Stack>
 							</Box>
-
 							<PrimaryLoadingButton
 								buttonText="Mettre à jour"
 								active={formik.isValid && !isPending}

@@ -1,7 +1,16 @@
 import React from 'react';
 import Styles from './customDropDownSelect.module.sass';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
-import { ThemeProvider, MenuItem, FormControl, InputLabel, OutlinedInput, Stack, FormHelperText } from '@mui/material';
+import {
+	ThemeProvider,
+	MenuItem,
+	FormControl,
+	InputLabel,
+	OutlinedInput,
+	Stack,
+	FormHelperText,
+	InputAdornment,
+} from '@mui/material';
 import { Theme } from '@mui/material/styles';
 import ActiveCheckBlue from '../../../../public/assets/svgs/globalIcons/active-check-blue.svg';
 import Image from 'next/image';
@@ -21,7 +30,7 @@ const MenuProps = {
 type Props = {
 	id: string;
 	label: string;
-	items: Array<DropDownType>;
+	items: Array<DropDownType> | Array<string>;
 	theme: Theme;
 	value: string | null;
 	onChange?: (event: SelectChangeEvent) => void;
@@ -30,6 +39,8 @@ type Props = {
 	error?: boolean;
 	disabled?: boolean;
 	cssClass?: string;
+	startIcon?: React.ReactNode;
+	endIcon?: React.ReactNode;
 	children?: React.ReactNode;
 };
 
@@ -43,21 +54,35 @@ const CustomDropDownSelect: React.FC<Props> = (props: Props) => {
 					id={props.id}
 					value={props.value ? props.value : ''}
 					onChange={props.onChange}
-					input={<OutlinedInput label={props.label} />}
+					input={
+						<OutlinedInput
+							label={props.label}
+							startAdornment={
+								props.startIcon ? <InputAdornment position="start">{props.startIcon}</InputAdornment> : undefined
+							}
+							endAdornment={props.endIcon ? <InputAdornment position="end">{props.endIcon}</InputAdornment> : undefined}
+						/>
+					}
 					MenuProps={MenuProps}
 					renderValue={(selected) => selected}
 					onBlur={props.onBlur}
 					error={props.error}
 				>
 					{props.helperText ? <FormHelperText>{props.helperText}</FormHelperText> : null}
-					{props.items.map((item, index) => (
-						<MenuItem key={index} value={item.value} sx={{ minHeight: ITEM_HEIGHT }}>
-							<Stack direction="row" justifyContent="space-between" sx={{ width: '100%' }}>
-								<span>{item.value || 'Selectionner une valeur'}</span>
-								{props.value === item.value && <Image src={ActiveCheckBlue} alt="" />}
-							</Stack>
-						</MenuItem>
-					))}
+					{props.items.map((item, index) => {
+						const isObject = typeof item === 'object' && item !== null && 'value' in item;
+						const value = isObject ? item?.value : item;
+						const label = isObject ? item?.code : item;
+
+						return (
+							<MenuItem key={index} value={value} sx={{ minHeight: ITEM_HEIGHT }}>
+								<Stack direction="row" justifyContent="space-between" sx={{ width: '100%' }}>
+									<span>{label || 'Sélectionner une valeur'}</span>
+									{props.value === value && <Image src={ActiveCheckBlue} alt="" />}
+								</Stack>
+							</MenuItem>
+						);
+					})}
 				</Select>
 			</FormControl>
 		</ThemeProvider>
