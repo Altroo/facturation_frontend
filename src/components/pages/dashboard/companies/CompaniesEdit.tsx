@@ -6,7 +6,18 @@ import { getAccessTokenFromSession } from '@/store/session';
 import { useEditCompanyMutation, useGetCompanyQuery } from '@/store/services/company';
 import Styles from '@/styles/dashboard/companies/companies.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import { Stack, Box, Typography, Button, IconButton } from '@mui/material';
+import {
+	Box,
+	Button,
+	IconButton,
+	Stack,
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableRow,
+	Typography,
+} from '@mui/material';
 import { ArrowBack, Delete } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -17,7 +28,7 @@ import CustomToast from '@/components/portals/customToast/customToast';
 import Portal from '@/contexts/Portal';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { companySchema } from '@/utils/formValidationSchemas';
-import { nbrEmployeItemsList, civiliteItemsList } from '@/utils/rawData';
+import { civiliteItemsList, nbrEmployeItemsList } from '@/utils/rawData';
 import { setFormikAutoErrors } from '@/utils/helpers';
 import { coordonneeTextInputTheme, customDropdownTheme } from '@/utils/themes';
 import { COMPANIES_LIST } from '@/utils/routes';
@@ -99,6 +110,26 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				) : (
 					<form className={Styles.form}>
 						<Stack direction="column" spacing={2}>
+							<Stack direction="row" gap={4} className={Styles.mobileStack}>
+								<Box>
+									<label>Logo</label>
+									<CustomSquareImageUploading
+										image={formik.values.logo}
+										croppedImage={formik.values.logo_cropped}
+										onChange={(img) => formik.setFieldValue('logo', img)}
+										onCrop={(cropped) => formik.setFieldValue('logo_cropped', cropped)}
+									/>
+								</Box>
+								<Box>
+									<label>Cachet</label>
+									<CustomSquareImageUploading
+										image={formik.values.cachet}
+										croppedImage={formik.values.cachet_cropped}
+										onChange={(img) => formik.setFieldValue('cachet', img)}
+										onCrop={(cropped) => formik.setFieldValue('cachet_cropped', cropped)}
+									/>
+								</Box>
+							</Stack>
 							<CustomTextInput
 								id="raison_sociale"
 								type="text"
@@ -297,101 +328,96 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								size="small"
 								theme={inputTheme}
 							/>
-							<Stack direction="row" gap={4} className={Styles.mobileStack}>
-								<Box>
-									<label>Logo</label>
-									<CustomSquareImageUploading
-										image={formik.values.logo}
-										croppedImage={formik.values.logo_cropped}
-										onChange={(img) => formik.setFieldValue('logo', img)}
-										onCrop={(cropped) => formik.setFieldValue('logo_cropped', cropped)}
-									/>
-								</Box>
-								<Box>
-									<label>Cachet</label>
-									<CustomSquareImageUploading
-										image={formik.values.cachet}
-										croppedImage={formik.values.cachet_cropped}
-										onChange={(img) => formik.setFieldValue('cachet', img)}
-										onCrop={(cropped) => formik.setFieldValue('cachet_cropped', cropped)}
-									/>
-								</Box>
-							</Stack>
-
-							{/* Managed By Section */}
 							<Box>
-								<Typography variant="subtitle1" gutterBottom>
+								<Typography variant="h5" gutterBottom>
 									Utilisateurs gestionnaires
 								</Typography>
-								<Stack spacing={2}>
-									{formik.values.managed_by.map((user, index) => (
-										<Stack key={index} direction="row" spacing={2} alignItems="center">
-											<Box flex={1}>
-												<Typography variant="body2" noWrap>
+								<Table>
+									<TableHead>
+										<TableRow>
+											<TableCell>Utilisateur</TableCell>
+											<TableCell>Rôle</TableCell>
+											<TableCell align="right">Actions</TableCell>
+										</TableRow>
+									</TableHead>
+									<TableBody>
+										{formik.values.managed_by.map((user, index) => (
+											<TableRow key={index}>
+												<TableCell>
 													{user.first_name} {user.last_name}
-												</Typography>
-											</Box>
-											<CustomDropDownSelect
-												id={`managed_by_role_${index}`}
-												label="Rôle"
-												items={[
-													{ value: 'Admin', code: 'Admin' },
-													{ value: 'Manager', code: 'Manager' },
-													{ value: 'Lecture', code: 'Utilisateur' },
-												]}
-												value={user.role}
-												onChange={(e) => {
-													const updatedUsers = [...formik.values.managed_by];
-													updatedUsers[index].role = e.target.value;
-													formik.setFieldValue('managed_by', updatedUsers);
-												}}
-												theme={customDropdownTheme()}
-											/>
-											<IconButton
-												color="error"
-												onClick={() => {
-													const updatedUsers = formik.values.managed_by.filter((_, i) => i !== index);
-													formik.setFieldValue('managed_by', updatedUsers);
-												}}
-											>
-												<Delete />
-											</IconButton>
-										</Stack>
-									))}
-
-									{/* Add New User */}
-									<Stack direction="row" spacing={2} alignItems="flex-end">
-										<CustomDropDownSelect
-											id="new_user_select"
-											label="Ajouter un utilisateur"
-											items={[
-												// Dummy data - replace with API call later
-												{ value: '2', code: 'Ahmed Benali' },
-												{ value: '3', code: 'Fatima Zahra' },
-												{ value: '4', code: 'Mohammed Alaoui' },
-											].filter((item) => !formik.values.managed_by.some((u) => u.id === parseInt(item.value)))}
-											value=""
-											onChange={(e) => {
-												const userId = parseInt(e.target.value);
-												// Dummy data - replace with actual user fetch later
-												const dummyUsers = [
-													{ id: 2, first_name: 'Ahmed', last_name: 'Benali' },
-													{ id: 3, first_name: 'Fatima', last_name: 'Zahra' },
-													{ id: 4, first_name: 'Mohammed', last_name: 'Alaoui' },
-												];
-												const selectedUser = dummyUsers.find((u) => u.id === userId);
-												if (selectedUser) {
-													formik.setFieldValue('managed_by', [
-														...formik.values.managed_by,
-														{ ...selectedUser, role: 'User' },
-													]);
-												}
-											}}
-											theme={customDropdownTheme()}
-										/>
-									</Stack>
+												</TableCell>
+												<TableCell>
+													<Box sx={{ maxWidth: 180 }}>
+														<CustomDropDownSelect
+															id={`managed_by_role_${index}`}
+															label="Rôle"
+															value={user.role}
+															onChange={(e) => {
+																const updatedUsers = formik.values.managed_by.map((user, i) =>
+																	i === index ? { ...user, role: e.target.value } : user,
+																);
+																formik.setFieldValue('managed_by', updatedUsers);
+															}}
+															// replace with actual roles from api
+															items={[
+																{ value: 'Admin', code: 'Admin' },
+																{ value: 'Manager', code: 'Manager' },
+																{ value: 'Lecture', code: 'Utilisateur' },
+															]}
+															theme={customDropdownTheme()}
+														/>
+													</Box>
+												</TableCell>
+												<TableCell align="right">
+													<IconButton
+														color="error"
+														onClick={() => {
+															const updatedUsers = formik.values.managed_by.filter((_, i) => i !== index);
+															formik.setFieldValue('managed_by', updatedUsers);
+														}}
+													>
+														<Delete />
+													</IconButton>
+												</TableCell>
+											</TableRow>
+										))}
+									</TableBody>
+								</Table>
+								<Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 2 }}>
+									<CustomDropDownSelect
+										id="new_user_select"
+										label="Ajouter un utilisateur"
+										items={[
+											// Dummy data - replace with API call later
+											{ value: '2', code: 'Ahmed Benali' },
+											{ value: '3', code: 'Fatima Zahra' },
+											{ value: '4', code: 'Mohammed Alaoui' },
+										].filter((item) => !formik.values.managed_by.some((u) => u.id === parseInt(item.value)))}
+										value=""
+										onChange={(e) => {
+											const userId = parseInt(e.target.value);
+											// Dummy data - replace with actual user fetch later
+											const dummyUsers = [
+												{ id: 2, first_name: 'Ahmed', last_name: 'Benali' },
+												{ id: 3, first_name: 'Fatima', last_name: 'Zahra' },
+												{ id: 4, first_name: 'Mohammed', last_name: 'Alaoui' },
+											];
+											const selectedUser = dummyUsers.find((u) => u.id === userId);
+											if (selectedUser) {
+												formik.setFieldValue('managed_by', [
+													...formik.values.managed_by,
+													{ ...selectedUser, role: 'Lecture' },
+												]);
+											}
+										}}
+										theme={customDropdownTheme()}
+									/>
+									<Button variant="contained" onClick={() => {}}>
+										Ajouter
+									</Button>
 								</Stack>
 							</Box>
+
 							<PrimaryLoadingButton
 								buttonText="Mettre à jour"
 								active={formik.isValid && !isPending}

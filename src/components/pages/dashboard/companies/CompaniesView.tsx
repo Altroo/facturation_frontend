@@ -25,6 +25,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import { Edit } from '@mui/icons-material';
 import { COMPANIES_LIST, COMPANIES_EDIT } from '@/utils/routes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
+import Image from 'next/image';
 
 type Props = {
 	session?: AppSession;
@@ -83,7 +84,7 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 									<AccordionDetails>
 										<Stack direction={isMobile ? 'column' : 'row'} spacing={2} alignItems="center">
 											<Avatar
-												src={`${companyData?.logo}`}
+												src={`${companyData?.logo_cropped}`}
 												sx={{ width: isMobile ? 56 : 72, height: isMobile ? 56 : 72 }}
 											/>
 											<Stack>
@@ -101,10 +102,17 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 									</AccordionSummary>
 									<AccordionDetails>
 										<Stack direction="row" spacing={2} justifyContent="center" flexWrap="wrap">
-											<Avatar
-												variant="square"
-												src={`${companyData?.cachet}`}
-												sx={{ width: isMobile ? 100 : 140, height: isMobile ? 100 : 140, borderRadius: 1 }}
+											{/*<Avatar*/}
+											{/*	variant="square"*/}
+											{/*	src={`${companyData?.cachet_cropped}`}*/}
+											{/*	sx={{ width: isMobile ? 100 : 140, height: isMobile ? 100 : 140, borderRadius: 1 }}*/}
+											{/*/>*/}
+											<Image
+												alt="Cachet de l'entreprise"
+												width={360}
+												height={250}
+												src={`${companyData?.cachet_cropped}`}
+												style={{ objectFit: 'contain' }}
 											/>
 										</Stack>
 									</AccordionDetails>

@@ -20,7 +20,6 @@ const CustomSquareImageUploading: React.FC<Props> = ({ image, croppedImage, onCh
 	const cropperRef = useRef<ReactCropperElement>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
-	// state replaces the previous isNewUpload ref
 	const [isNewUpload, setIsNewUpload] = useState(false);
 	const [isEditing, setIsEditing] = useState(false);
 
@@ -37,8 +36,8 @@ const CustomSquareImageUploading: React.FC<Props> = ({ image, croppedImage, onCh
 			reader.onload = () => {
 				onChange(reader.result);
 				onCrop(null);
-				setIsNewUpload(true); // ← replace ref write
-				setIsEditing(true); // Show cropper for new upload
+				setIsNewUpload(true);
+				setIsEditing(true);
 			};
 			reader.readAsDataURL(file);
 		}
@@ -58,7 +57,7 @@ const CustomSquareImageUploading: React.FC<Props> = ({ image, croppedImage, onCh
 	const handleClear = () => {
 		onChange(null);
 		onCrop(null);
-		setIsNewUpload(false); // ← replace ref write
+		setIsNewUpload(false);
 		setIsEditing(false);
 		if (fileInputRef.current) {
 			fileInputRef.current.value = '';
@@ -68,7 +67,7 @@ const CustomSquareImageUploading: React.FC<Props> = ({ image, croppedImage, onCh
 	const handleReady = useCallback(() => {
 		if (isNewUpload) {
 			handleCrop();
-			setIsNewUpload(false); // ← replace ref write
+			setIsNewUpload(false);
 		}
 	}, [isNewUpload, handleCrop]);
 
@@ -76,7 +75,6 @@ const CustomSquareImageUploading: React.FC<Props> = ({ image, croppedImage, onCh
 		setIsEditing(true);
 	};
 
-	// Show cropper if: editing mode OR no cropped version exists yet OR it's a new upload
 	const showCropper = isEditing || !croppedImage || isNewUpload;
 	const displayImage = showCropper ? image : croppedImage;
 
@@ -116,7 +114,6 @@ const CustomSquareImageUploading: React.FC<Props> = ({ image, croppedImage, onCh
 						</>
 					) : (
 						<>
-							{/* Preview of cropped image with edit button */}
 							<Box
 								className={Styles.showImage}
 								sx={{ position: 'relative', cursor: 'pointer' }}
@@ -145,7 +142,7 @@ const CustomSquareImageUploading: React.FC<Props> = ({ image, croppedImage, onCh
 										'&:hover': { opacity: 1 },
 									}}
 								>
-									<span style={{ color: 'white', fontSize: '14px' }}>Click to edit crop</span>
+									<span style={{ color: 'white', fontSize: '14px' }}>Cliquez pour modifier le recadrage</span>
 								</Box>
 							</Box>
 							<Box className={Styles.closeButtonWrapper} onClick={handleClear}>

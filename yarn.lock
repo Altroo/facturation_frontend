@@ -3252,7 +3252,6 @@ __metadata:
     react-cropper: "npm:^2.3.3"
     react-dom: "npm:19.2.0"
     react-hydration-provider: "npm:^2.1.0"
-    react-images-uploading: "npm:^3.1.7"
     react-redux: "npm:^9.2.0"
     react-responsive: "npm:^10.0.1"
     redux-saga: "npm:^1.4.2"
@@ -5032,16 +5031,6 @@ __metadata:
   peerDependencies:
     react: ">=16"
   checksum: 10c0/c0bde0a89a69c847fed6fa9c354d12be4dfa8436ffc6aa647d7e004d932f5cabba8797d25350cdf9381079df7abbf0599d83f995e4ae885dea7648ed56eea45f
-  languageName: node
-  linkType: hard
-
-"react-images-uploading@npm:^3.1.7":
-  version: 3.1.7
-  resolution: "react-images-uploading@npm:3.1.7"
-  peerDependencies:
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-  checksum: 10c0/0da02d5b6bdc06d1fbbcc5618ff6577154a590049f7b4cc5325309239650b65bea0dfbbbd801291e833dc22d09338a9b43977fdd6bca70a8ce1814b6b8ba943a
   languageName: node
   linkType: hard
 
