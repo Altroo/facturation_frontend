@@ -3,7 +3,7 @@
 import React, { useState, useTransition, useEffect, useRef } from 'react';
 import { ApiErrorResponseType, AppSession, ResponseDataInterface } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
-import { useEditCompanyMutation, useGetCompanyQuery } from '@/store/services/company';
+import { useAddCompanyMutation } from '@/store/services/company';
 import Styles from '@/styles/dashboard/companies/companies.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import {
@@ -55,59 +55,58 @@ import { getGroupesState, getProfilState } from '@/store/selectors';
 import { useGetUsersQuery } from '@/store/services/account';
 import CustomAutocompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import { DropDownType } from '@/types/accountTypes';
+import { CompanyFormValues } from '@/types/companyTypes';
 
 const inputTheme = coordonneeTextInputTheme();
 
 type FormikContentProps = {
 	token: string | undefined;
-	id: number;
+	first_name: string | null;
+	last_name: string | null;
 	onSuccess: () => void;
 };
 
 const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
-	const { token, id, onSuccess } = props;
-	const { data: companyData, isLoading: isCompanyLoading, error } = useGetCompanyQuery({ token, id }, { skip: !token });
+	const { token, first_name, last_name, onSuccess } = props;
+	const [addCompany, { isLoading: isAddLoading, error }] = useAddCompanyMutation();
 	const [axiosError, setAxiosError] = useState<ResponseDataInterface<ApiErrorResponseType>>(
 		error as ResponseDataInterface<ApiErrorResponseType>,
 	);
 	const { data: usersData, isLoading: isUsersLoading } = useGetUsersQuery(token, { skip: !token });
-	const [updateCompany, { isLoading: isUpdateLoading }] = useEditCompanyMutation();
+
 	const { id: userID } = useAppSelector(getProfilState);
 	const groupes = useAppSelector(getGroupesState);
 	const [isPending, startTransition] = useTransition();
 	const router = useRouter();
-
-	const [adminUsers, setAdminUsers] = useState(companyData?.admins ?? []);
+	const [adminUsers, setAdminUsers] = useState<{ id: number; first_name: string; last_name: string; role: string }[]>(
+		[],
+	);
 	const [selectedUser, setSelectedUser] = useState<DropDownType | null>(null);
-
 	const roleOptions = groupes.map((role) => ({ value: role, code: role }));
 
-	const formik = useFormik({
+	const formik = useFormik<CompanyFormValues>({
 		initialValues: {
-			raison_sociale: companyData?.raison_sociale ?? '',
-			email: companyData?.email ?? '',
-			nbr_employe: companyData?.nbr_employe ?? '',
-			civilite_responsable: companyData?.civilite_responsable ?? '',
-			nom_responsable: companyData?.nom_responsable ?? '',
-			gsm_responsable: companyData?.gsm_responsable ?? '',
-			adresse: companyData?.adresse ?? '',
-			telephone: companyData?.telephone ?? '',
-			fax: companyData?.fax ?? '',
-			site_web: companyData?.site_web ?? '',
-			numero_du_compte: companyData?.numero_du_compte ?? '',
-			ICE: companyData?.ICE ?? '',
-			registre_de_commerce: companyData?.registre_de_commerce ?? '',
-			identifiant_fiscal: companyData?.identifiant_fiscal ?? '',
-			tax_professionnelle: companyData?.tax_professionnelle ?? '',
-			CNSS: companyData?.CNSS ?? '',
-			logo: companyData?.logo ?? '',
-			logo_cropped: companyData?.logo_cropped ?? '',
-			cachet: companyData?.cachet ?? '',
-			cachet_cropped: companyData?.cachet_cropped ?? '',
-			managed_by: adminUsers.map((user) => ({
-				pk: user.id,
-				role: user.role,
-			})),
+			raison_sociale: '',
+			email: '',
+			nbr_employe: '',
+			civilite_responsable: '',
+			nom_responsable: '',
+			gsm_responsable: '',
+			adresse: '',
+			telephone: '',
+			fax: '',
+			site_web: '',
+			numero_du_compte: '',
+			ICE: '',
+			registre_de_commerce: '',
+			identifiant_fiscal: '',
+			tax_professionnelle: '',
+			CNSS: '',
+			logo: '',
+			logo_cropped: '',
+			cachet: '',
+			cachet_cropped: '',
+			managed_by: [],
 		},
 		enableReinitialize: true,
 		validateOnMount: true,
@@ -115,8 +114,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		onSubmit: async (data, { setFieldError }) => {
 			startTransition(async () => {
 				try {
-					await updateCompany({ token, data, id }).unwrap();
+					await addCompany({ token, data }).unwrap();
 					onSuccess();
+					setTimeout(() => {
+						router.replace(COMPANIES_LIST);
+					}, 1000);
 				} catch (e) {
 					setFormikAutoErrors({ e, setFieldError });
 				}
@@ -125,7 +127,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	});
 
 	const managedIds = formik.values.managed_by.map((entry) => entry.pk);
-
 	const availableUsers: DropDownType[] = (usersData ?? [])
 		.filter((user): user is { id: number; first_name: string; last_name: string } => typeof user.id === 'number')
 		.filter((user) => !managedIds.includes(user.id))
@@ -133,25 +134,26 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			value: user.id.toString(),
 			code: `${user.first_name} ${user.last_name}`,
 		}));
+
 	const initializedRef = useRef(false);
 
 	useEffect(() => {
-		if (!initializedRef.current && companyData?.admins && Array.isArray(companyData.admins)) {
-			setAdminUsers(companyData.admins);
-			formik.setFieldValue(
-				'managed_by',
-				companyData.admins.map((user) => ({
-					pk: user.id,
-					role: user.role,
-				})),
-			);
+		if (!initializedRef.current && groupes.length && userID) {
+			const defaultAdmin = {
+				id: userID,
+				first_name: first_name ?? 'Moi',
+				last_name: last_name ?? '',
+				role: 'Admin',
+			};
+			setAdminUsers([defaultAdmin]);
+			formik.setFieldValue('managed_by', [{ pk: defaultAdmin.id, role: defaultAdmin.role }]);
 			initializedRef.current = true;
 		}
 		if (error) {
 			const axiosError = error as ResponseDataInterface<ApiErrorResponseType>;
 			setAxiosError(axiosError);
 		}
-	}, [companyData?.admins, error, formik]);
+	}, [groupes, userID, first_name, last_name, error, formik]);
 
 	return (
 		<Box padding={2}>
@@ -165,7 +167,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						</Stack>
 					</Stack>
 				</Stack>
-				{isCompanyLoading || isUpdateLoading || isPending ? (
+
+				{isUsersLoading || isAddLoading || isPending ? (
 					<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
 				) : axiosError?.status === 404 ? (
 					<Typography color="error" variant="h6">
@@ -520,8 +523,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									)}
 								</Stack>
 							</Box>
+
 							<PrimaryLoadingButton
-								buttonText="Mettre à jour"
+								buttonText="Ajouter l'entreprise"
 								active={formik.isValid && !isPending}
 								onClick={formik.handleSubmit}
 								loading={isPending}
@@ -537,26 +541,30 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 type Props = {
 	session?: AppSession;
-	id: number;
 };
 
-const CompaniesEditClient: React.FC<Props> = ({ session, id }) => {
+const CompaniesAdd: React.FC<Props> = ({ session }) => {
 	const token = getAccessTokenFromSession(session);
 	const [showDataUpdated, setShowDataUpdated] = useState<boolean>(false);
 
 	return (
 		<Stack direction="column" sx={{ position: 'relative' }}>
-			<NavigationBar title="Modifier l'entreprise">
+			<NavigationBar title="Créer une entreprise">
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
 					<Box sx={{ width: '100%' }}>
-						<FormikContent token={token} id={id} onSuccess={() => setShowDataUpdated(true)} />
+						<FormikContent
+							first_name={session?.user.first_name}
+							last_name={session?.user.last_name}
+							token={token}
+							onSuccess={() => setShowDataUpdated(true)}
+						/>
 					</Box>
 				</main>
 			</NavigationBar>
 			<Portal id="snackbar_portal">
 				<CustomToast
 					type="success"
-					message="Entreprise mise à jour"
+					message="Entreprise créée avec succès."
 					setShow={setShowDataUpdated}
 					show={showDataUpdated}
 				/>
@@ -565,4 +573,4 @@ const CompaniesEditClient: React.FC<Props> = ({ session, id }) => {
 	);
 };
 
-export default CompaniesEditClient;
+export default CompaniesAdd;

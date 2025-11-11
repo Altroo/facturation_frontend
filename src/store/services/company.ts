@@ -8,6 +8,7 @@ import { ApiErrorResponseType, PaginationResponseType, SuccessResponseType } fro
 
 export const companyApi = createApi({
 	reducerPath: 'companyApi',
+	tagTypes: ['Company'],
 	baseQuery: axiosBaseQuery(() => {
 		// pass function which will be used by the interceptor to read the latest token from redux
 		return isAuthenticatedInstance(() => getInitStateToken(store.getState()));
@@ -22,6 +23,7 @@ export const companyApi = createApi({
 				method: 'GET',
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
+			providesTags: ['Company'],
 		}),
 		getCompany: builder.query<CompanyClass, { token: string | undefined; id: number }>({
 			query: ({ token, id }) => ({
@@ -48,8 +50,25 @@ export const companyApi = createApi({
 				data,
 			}),
 		}),
+		addCompany: builder.mutation<
+			SuccessResponseType<CompanyClass>,
+			{ token: string | undefined; data: Partial<CompanyClass> }
+		>({
+			query: ({ token, data }) => ({
+				url: `${process.env.NEXT_PUBLIC_COMPANY_ROOT}/`,
+				method: 'POST',
+				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+				data,
+			}),
+			invalidatesTags: ['Company'],
+		}),
 	}),
 });
 
-export const { useGetCompaniesListQuery, useDeleteCompanyMutation, useEditCompanyMutation, useGetCompanyQuery } =
-	companyApi;
+export const {
+	useGetCompaniesListQuery,
+	useDeleteCompanyMutation,
+	useEditCompanyMutation,
+	useGetCompanyQuery,
+	useAddCompanyMutation,
+} = companyApi;
