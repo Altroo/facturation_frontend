@@ -28,11 +28,11 @@ const CustomToast: React.FC<Props> = (props) => {
 		if (reason === 'clickaway') return;
 		props.setShow(false);
 	};
-
 	return (
 		<ThemeProvider theme={customToastTheme()}>
 			<Stack spacing={2} className={Styles.rootStack}>
 				<Snackbar
+					style={{ width: 'max-content' }}
 					open={props.show}
 					autoHideDuration={6000}
 					onClose={handleClose}

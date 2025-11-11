@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useTransition, useEffect, useRef } from 'react';
-import type { AppSession } from '@/types/_initTypes';
+import { ApiErrorResponseType, AppSession, ResponseDataInterface } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
 import { useEditCompanyMutation, useGetCompanyQuery } from '@/store/services/company';
 import Styles from '@/styles/dashboard/companies/companies.module.sass';
@@ -67,6 +67,9 @@ type FormikContentProps = {
 const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
 	const { token, id, onSuccess } = props;
 	const { data: companyData, isLoading: isCompanyLoading, error } = useGetCompanyQuery({ token, id }, { skip: !token });
+	const [axiosError, setAxiosError] = useState<ResponseDataInterface<ApiErrorResponseType>>(
+		error as ResponseDataInterface<ApiErrorResponseType>,
+	);
 	const { data: usersData, isLoading: isUsersLoading } = useGetUsersQuery(token, { skip: !token });
 	const [updateCompany, { isLoading: isUpdateLoading }] = useEditCompanyMutation();
 	const { id: userID } = useAppSelector(getProfilState);
@@ -144,7 +147,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			);
 			initializedRef.current = true;
 		}
-	}, [companyData?.admins, formik]);
+		if (error) {
+			const axiosError = error as ResponseDataInterface<ApiErrorResponseType>;
+			setAxiosError(axiosError);
+		}
+	}, [companyData?.admins, error, formik]);
 
 	return (
 		<Box padding={2}>
@@ -160,9 +167,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				</Stack>
 				{isCompanyLoading || isUpdateLoading || isPending ? (
 					<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
-				) : error ? (
+				) : axiosError ? (
 					<Typography color="error" variant="h6">
-						Entreprise introuvable. Veuillez vérifier l&#39;identifiant.
+						{axiosError.data?.message}
 					</Typography>
 				) : (
 					<form className={Styles.form}>
@@ -547,7 +554,6 @@ const CompaniesEditClient: React.FC<Props> = ({ session, id }) => {
 					</Box>
 				</main>
 			</NavigationBar>
-
 			<Portal id="snackbar_portal">
 				<CustomToast
 					type="success"

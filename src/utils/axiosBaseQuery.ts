@@ -1,18 +1,26 @@
 import axios, { AxiosInstance } from 'axios';
 import type { BaseQueryFn } from '@reduxjs/toolkit/query';
-import type { ApiErrorResponseType } from '@/types/_initTypes';
 
-type NormalizedError = {
-	error: {
-		status_code: number;
-		message: string;
-		details: Record<string, string[]>;
-	};
+// Backend error response structure
+export type ApiErrorResponseType = {
+	status_code: number;
+	message: string;
+	details?: Record<string, string[] | string>;
 };
 
+// Normalized error structure used internally
+type NormalizedError = {
+	error: ApiErrorResponseType;
+};
+
+// Type guard for normalized errors
 const isNormalizedError = (err: unknown): err is NormalizedError => {
 	return (
-		typeof err === 'object' && err !== null && 'error' in err && typeof (err as { error: unknown }).error === 'object'
+		typeof err === 'object' &&
+		err !== null &&
+		'error' in err &&
+		typeof (err as { error: unknown }).error === 'object' &&
+		'status_code' in (err as NormalizedError).error
 	);
 };
 
@@ -34,32 +42,41 @@ export const axiosBaseQuery =
 			const response = await instance.request({ url, method, data, params });
 			return { data: response.data };
 		} catch (err) {
-			if (axios.isAxiosError(err)) {
-				const status = err.response?.status ?? 0;
-				const errorData = (err.response?.data as ApiErrorResponseType) ?? {
-					status_code: status,
-					message: err.message,
-					details: {},
-				};
-				return { error: { status, data: errorData } };
-			}
-
+			// Handle normalized errors from interceptors
 			if (isNormalizedError(err)) {
 				return {
 					error: {
-						status: err.error.status_code ?? 0,
+						status: err.error.status_code,
 						data: err.error,
 					},
 				};
 			}
 
+			// Handle raw Axios errors (shouldn't happen if interceptors work correctly)
+			if (axios.isAxiosError(err)) {
+				const status = err.response?.status ?? 0;
+				const errorData: ApiErrorResponseType = err.response?.data ?? {
+					status_code: status || 0,
+					message: err.message || 'Erreur réseau',
+					details: { error: ['Impossible de se connecter au serveur'] },
+				};
+
+				return {
+					error: {
+						status: status || 0,
+						data: errorData,
+					},
+				};
+			}
+
+			// Handle unexpected errors
 			return {
 				error: {
 					status: 0,
 					data: {
 						status_code: 0,
-						message: err instanceof Error ? err.message : 'Unknown error',
-						details: {},
+						message: err instanceof Error ? err.message : 'Erreur inconnue',
+						details: { error: ["Une erreur inattendue s'est produite."] },
 					},
 				},
 			};

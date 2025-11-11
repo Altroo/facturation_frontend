@@ -72,12 +72,10 @@ const CustomDropDownSelect: React.FC<Props> = (props: Props) => {
 					{props.items.map((item, index) => {
 						const isObject = typeof item === 'object' && item !== null && 'value' in item;
 						const value = isObject ? item?.value : item;
-						const label = isObject ? item?.code : item;
-
 						return (
 							<MenuItem key={index} value={value} sx={{ minHeight: ITEM_HEIGHT }}>
 								<Stack direction="row" justifyContent="space-between" sx={{ width: '100%' }}>
-									<span>{label || 'Sélectionner une valeur'}</span>
+									<span>{value || 'Sélectionner une valeur'}</span>
 									{props.value === value && <Image src={ActiveCheckBlue} alt="" />}
 								</Stack>
 							</MenuItem>

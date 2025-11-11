@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import type { AppSession } from '@/types/_initTypes';
+import { ApiErrorResponseType, AppSession, ResponseDataInterface } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
 import { useGetCompanyQuery } from '@/store/services/company';
 import Styles from '@/styles/dashboard/companies/companies.module.sass';
@@ -45,9 +45,18 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 	const router = useRouter();
 	const token = getAccessTokenFromSession(session);
 	const { data: companyData, isLoading, error } = useGetCompanyQuery({ token, id }, { skip: !token });
-
+	const [axiosError, setAxiosError] = useState<ResponseDataInterface<ApiErrorResponseType>>(
+		error as ResponseDataInterface<ApiErrorResponseType>,
+	);
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+	useEffect(() => {
+		if (error) {
+			const axiosError = error as ResponseDataInterface<ApiErrorResponseType>;
+			setAxiosError(axiosError);
+		}
+	}, [error]);
 
 	return (
 		<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
@@ -70,9 +79,9 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 
 					{isLoading ? (
 						<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
-					) : error ? (
+					) : axiosError ? (
 						<Typography color="error" variant="h6">
-							Entreprise introuvable. Veuillez vérifier l&#39;identifiant.
+							{axiosError.data?.message}
 						</Typography>
 					) : (
 						<Stack spacing={2}>
@@ -102,13 +111,9 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 									</AccordionSummary>
 									<AccordionDetails>
 										<Stack direction="row" spacing={2} justifyContent="center" flexWrap="wrap">
-											{/*<Avatar*/}
-											{/*	variant="square"*/}
-											{/*	src={`${companyData?.cachet_cropped}`}*/}
-											{/*	sx={{ width: isMobile ? 100 : 140, height: isMobile ? 100 : 140, borderRadius: 1 }}*/}
-											{/*/>*/}
 											<Image
 												alt="Cachet de l'entreprise"
+												loading="eager"
 												width={360}
 												height={250}
 												src={`${companyData?.cachet_cropped}`}
@@ -181,8 +186,8 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 								</AccordionSummary>
 								<AccordionDetails>
 									<Stack direction="row" spacing={1} flexWrap="wrap">
-										{companyData?.managed_by?.length ? (
-											companyData.managed_by.map((manager, index) => (
+										{companyData?.admins?.length ? (
+											companyData.admins.map((manager, index) => (
 												<Chip
 													key={manager.id ?? index}
 													label={

@@ -2,7 +2,6 @@ import axios, { AxiosHeaders, AxiosInstance, AxiosResponse, InternalAxiosRequest
 import { signOut } from 'next-auth/react';
 import { store } from '@/store/store';
 import { initToken } from '@/store/slices/_initSlice';
-import { cookiesDeleter } from '@/store/services/_initAPI';
 import { SITE_ROOT } from '@/utils/routes';
 import { APIContentTypeInterface, ApiErrorResponseType, InitStateToken } from '@/types/_initTypes';
 
@@ -10,11 +9,6 @@ import { APIContentTypeInterface, ApiErrorResponseType, InitStateToken } from '@
  * Handles unauthorized response by clearing cookies, signing out, and resetting token.
  */
 const handleUnauthorized = async () => {
-	await cookiesDeleter('/cookies', {
-		pass_updated: true,
-		new_email: true,
-		code: true,
-	});
 	await signOut({ redirect: false, callbackUrl: SITE_ROOT });
 	store.dispatch(initToken());
 };
@@ -33,45 +27,82 @@ export const isAuthenticatedInstance = (
 		},
 	});
 
+	// Request interceptor - add auth token
 	instance.interceptors.request.use(
 		(config: InternalAxiosRequestConfig) => {
 			const headers = new AxiosHeaders(config.headers as Record<string, string>);
 			const token = getToken?.();
+
 			if (token?.access) {
 				headers.set('Authorization', `Bearer ${token.access}`);
 			}
+
 			config.headers = headers as InternalAxiosRequestConfig['headers'];
 			return config;
 		},
 		(error) => Promise.reject(error),
 	);
 
+	// Response interceptor - handle errors
 	instance.interceptors.response.use(
 		(response: AxiosResponse) => response,
 		async (error) => {
-			if (error?.response) {
+			// Handle responses with error data
+			if (error.response?.data) {
+				const errorData = error.response.data as ApiErrorResponseType;
+
+				// Handle server errors (500+)
 				if (error.response.status >= 500) {
 					return Promise.reject({
 						error: {
-							status_code: 502,
-							message: 'Server error.',
+							status_code: error.response.status,
+							message: 'Erreur serveur.',
 							details: {
-								error: ['It looks like we are unable to connect. Please check your network connection and try again.'],
+								error: [
+									'Il semble que nous ne puissions pas nous connecter. Veuillez vérifier votre connexion réseau et réessayer.',
+								],
 							},
 						},
 					});
 				}
 
+				// Handle unauthorized (401)
 				if (error.response.status === 401) {
+					// Assuming handleUnauthorized is defined elsewhere
 					await handleUnauthorized();
+
+					return Promise.reject({
+						error: {
+							status_code: 401,
+							message: errorData.message || 'Non autorisé',
+							details: errorData.details || { error: ['Authentification requise'] },
+						},
+					});
 				}
 
-				return Promise.reject({
-					error: error.response.data?.error as ApiErrorResponseType,
-				});
+				// Handle all other error responses (400, 403, 404, etc.)
+				// Django always returns a single error object
+				if (errorData.status_code !== undefined && errorData.message !== undefined) {
+					return Promise.reject({
+						error: {
+							status_code: errorData.status_code,
+							message: errorData.message,
+							details: errorData.details || {},
+						},
+					});
+				}
 			}
 
-			return Promise.reject(error);
+			// Handle network errors (no response)
+			return Promise.reject({
+				error: {
+					status_code: 0,
+					message: error.message || 'Erreur réseau',
+					details: {
+						error: ['Impossible de se connecter au serveur'],
+					},
+				},
+			});
 		},
 	);
 
@@ -92,23 +123,29 @@ export const allowAnyInstance = (contentType: APIContentTypeInterface = 'applica
 	instance.interceptors.response.use(
 		(response: AxiosResponse) => response,
 		(error) => {
+			// Handle response errors
 			if (error.response?.data) {
-				const errorData = error.response.data[0] || error.response.data;
-				return Promise.reject({
-					error: {
-						status_code: errorData.status_code,
-						message: errorData.message,
-						details: errorData.details,
-					},
-				});
+				const errorData = error.response.data as ApiErrorResponseType;
+
+				// Django always returns a single error object with this structure
+				if (errorData.status_code !== undefined && errorData.message !== undefined) {
+					return Promise.reject({
+						error: {
+							status_code: errorData.status_code,
+							message: errorData.message,
+							details: errorData.details || {},
+						},
+					});
+				}
 			}
 
+			// Handle network errors or malformed responses
 			return Promise.reject({
 				error: {
-					status_code: 500,
-					message: 'Network error',
+					status_code: error.response?.status || 0,
+					message: error.message || 'Erreur réseau',
 					details: {
-						error: ['Unable to connect to the server'],
+						error: ['Impossible de se connecter au serveur'],
 					},
 				},
 			});
@@ -134,14 +171,22 @@ export const setFormikAutoErrors = ({ e, setFieldError }: FormikAutoErrorsProps)
 
 	if (!payload?.details) return;
 
-	if (payload.details.error?.length) {
-		setFieldError('globalError', payload.details.error[0]);
-	}
-
 	for (const [field, messages] of Object.entries(payload.details)) {
-		if (field === 'error') continue;
-		if (Array.isArray(messages)) {
-			messages.forEach((msg) => setFieldError(field, msg));
+		if (field === 'error') {
+			// Handle global errors
+			const errorMsg = Array.isArray(messages) ? messages[0] : messages;
+			setFieldError('globalError', errorMsg);
+		} else if (field === 'detail') {
+			// Handle DRF 'detail' errors as global errors
+			const errorMsg = Array.isArray(messages) ? messages[0] : messages;
+			setFieldError('globalError', errorMsg);
+		} else {
+			// Handle field-specific errors
+			if (Array.isArray(messages)) {
+				messages.forEach((msg) => setFieldError(field, msg));
+			} else {
+				setFieldError(field, messages);
+			}
 		}
 	}
 };

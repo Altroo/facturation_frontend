@@ -75,7 +75,7 @@ export const profilApi = createApi({
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 		}),
-		editProfil: builder.mutation<SuccessResponseType<UserClass>, EditProfilResponse>({
+		editProfil: builder.mutation<UserClass, EditProfilResponse>({
 			query: ({ token, data }) => ({
 				url: process.env.NEXT_PUBLIC_ACCOUNT_PROFIL as string,
 				method: 'PATCH',

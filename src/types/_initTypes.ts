@@ -12,8 +12,6 @@ export type SuccessResponseType<T = unknown> = {
 	data?: T;
 };
 
-export type ApiPromiseStatus = 'PENDING' | 'RESOLVED' | 'REJECTED' | null;
-
 export interface ResponseDataInterface<T> {
 	data: T;
 	status: number;

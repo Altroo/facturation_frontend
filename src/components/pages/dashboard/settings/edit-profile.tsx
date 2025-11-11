@@ -62,16 +62,16 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 		validationSchema: toFormikValidationSchema(profilSchema),
 		onSubmit: async (values, { setFieldError }) => {
 			startTransition(async () => {
-				const data = {
+				const payload = {
 					avatar: preview,
 					first_name: values.first_name,
 					last_name: values.last_name,
 					gender: values.gender,
 				};
 				try {
-					const response = await editProfil({ token, data }).unwrap();
-					if (response.data) {
-						dispatch(accountEditProfilAction(response.data));
+					const response = await editProfil({ token, data: payload }).unwrap();
+					if (response) {
+						dispatch(accountEditProfilAction(response));
 						onSuccess();
 					}
 				} catch (e) {
@@ -211,6 +211,10 @@ const EditProfilClient: React.FC<Props> = (props: Props) => {
 	const token = getAccessTokenFromSession(session);
 	const [showDataUpdated, setShowDataUpdated] = useState<boolean>(false);
 
+	useEffect(() => {
+		console.log('showDataUpdated', showDataUpdated);
+	}, [showDataUpdated]);
+
 	return (
 		<Stack direction="column" sx={{ position: 'relative' }}>
 			<NavigationBar title="Éditer le profil">
@@ -229,16 +233,11 @@ const EditProfilClient: React.FC<Props> = (props: Props) => {
 							</Box>
 						</Stack>
 					</TabletAndMobile>
-					<Portal id="snackbar_portal">
-						<CustomToast
-							type="success"
-							message="Profil mis à jour"
-							setShow={setShowDataUpdated}
-							show={showDataUpdated}
-						/>
-					</Portal>
 				</main>
 			</NavigationBar>
+			<Portal id="snackbar_portal">
+				<CustomToast type="success" message="Profil mis à jour" setShow={setShowDataUpdated} show={showDataUpdated} />
+			</Portal>
 		</Stack>
 	);
 };

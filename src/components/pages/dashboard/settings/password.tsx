@@ -144,16 +144,16 @@ const PasswordClient: React.FC<Props> = (props: Props) => {
 							</Box>
 						</Stack>
 					</TabletAndMobile>
-					<Portal id="snackbar_portal">
-						<CustomToast
-							type="success"
-							message="Mot de passe mis à jour"
-							setShow={setShowDataUpdated}
-							show={showDataUpdated}
-						/>
-					</Portal>
 				</main>
 			</NavigationBar>
+			<Portal id="snackbar_portal">
+				<CustomToast
+					type="success"
+					message="Mot de passe mis à jour"
+					setShow={setShowDataUpdated}
+					show={showDataUpdated}
+				/>
+			</Portal>
 		</Stack>
 	);
 };
