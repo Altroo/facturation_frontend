@@ -44,6 +44,10 @@ export type AppSession = Session & {
 	};
 };
 
+export type SessionProps = {
+	session?: AppSession;
+};
+
 export type SagaPayloadType<T> = {
 	type: string;
 	data: T;

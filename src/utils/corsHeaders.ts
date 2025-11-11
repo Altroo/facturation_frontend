@@ -1,5 +1,3 @@
-import { NextResponse } from 'next/server';
-
 const allowedOrigins = process.env.NODE_ENV !== 'production' ? '*' : ['*'];
 
 export const getCorsHeaders = (origin: string | null): HeadersInit => {

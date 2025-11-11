@@ -3,7 +3,7 @@ import { signOut } from 'next-auth/react';
 import { store } from '@/store/store';
 import { initToken } from '@/store/slices/_initSlice';
 import { SITE_ROOT } from '@/utils/routes';
-import { APIContentTypeInterface, ApiErrorResponseType, InitStateToken } from '@/types/_initTypes';
+import type { APIContentTypeInterface, ApiErrorResponseType, InitStateToken } from '@/types/_initTypes';
 
 /**
  * Handles unauthorized response by clearing cookies, signing out, and resetting token.

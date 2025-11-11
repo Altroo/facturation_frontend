@@ -22,7 +22,7 @@ import CustomSwipeModal from '@/components/desktop/modals/rightSwipeModal/custom
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import { setFormikAutoErrors } from '@/utils/helpers';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
-import type { AppSession } from '@/types/_initTypes';
+import type { SessionProps } from '@/types/_initTypes';
 import { useGetProfilQuery, useEditProfilMutation } from '@/store/services/account';
 import { getAccessTokenFromSession } from '@/store/session';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
@@ -204,9 +204,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 	);
 };
 
-type Props = { session?: AppSession };
-
-const EditProfilClient: React.FC<Props> = (props: Props) => {
+const EditProfilClient: React.FC<SessionProps> = (props: SessionProps) => {
 	const { session } = props;
 	const token = getAccessTokenFromSession(session);
 	const [showDataUpdated, setShowDataUpdated] = useState<boolean>(false);

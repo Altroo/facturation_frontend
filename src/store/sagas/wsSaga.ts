@@ -1,7 +1,7 @@
 import { take, call, put, select } from 'redux-saga/effects';
 import { initWebsocket } from '@/store/services/ws';
 import { getAccessToken } from '@/store/selectors';
-import { RootState } from '@/store/store';
+import type { RootState } from '@/store/store';
 import { Action } from 'redux';
 import { EventChannel, SagaIterator } from 'redux-saga';
 

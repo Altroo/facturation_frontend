@@ -4,14 +4,12 @@ import React from 'react';
 import { Stack, ThemeProvider } from '@mui/material';
 import { getDefaultTheme } from '@/utils/themes';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import type { AppSession } from '@/types/_initTypes';
+import type { SessionProps } from '@/types/_initTypes';
 // import {getAccessTokenFromSession} from "@/store/session";
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 // import {useGetProfilQuery} from "@/store/services/account/account";
 
-type Props = { session?: AppSession };
-
-const DashboardClient: React.FC<Props> = ({ session }: Props) => {
+const DashboardClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 	console.log(session);
 	// const token = getAccessTokenFromSession(session);
 	// const { data: user, isLoading, error } = useGetProfilQuery(token, { skip: !token });

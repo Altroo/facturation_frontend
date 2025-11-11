@@ -12,7 +12,7 @@ import { coordonneeTextInputTheme } from '@/utils/themes';
 import CustomPasswordInput from '@/components/formikElements/customPasswordInput/customPasswordInput';
 import CustomToast from '@/components/portals/customToast/customToast';
 import Portal from '@/contexts/Portal';
-import type { AppSession } from '@/types/_initTypes';
+import type { SessionProps } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import { useEditPasswordMutation } from '@/store/services/account';
@@ -119,9 +119,7 @@ const FormikContenChangePassword: React.FC<formikContentType> = (props: formikCo
 	);
 };
 
-type Props = { session?: AppSession };
-
-const PasswordClient: React.FC<Props> = (props: Props) => {
+const PasswordClient: React.FC<SessionProps> = (props: SessionProps) => {
 	const { session } = props;
 	const token = getAccessTokenFromSession(session);
 	const [showDataUpdated, setShowDataUpdated] = useState<boolean>(false);

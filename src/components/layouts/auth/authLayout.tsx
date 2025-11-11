@@ -1,7 +1,7 @@
 'use client';
 
 import React, { ForwardedRef, forwardRef, useEffect, useState } from 'react';
-import Styles from './authPageLayout.module.sass';
+import Styles from './authLayout.module.sass';
 import { Box, Stack } from '@mui/material';
 import TeeshirtSVG from '../../../../public/assets/images/auth_illu/teeshirt.svg';
 import WatchSVG from '../../../../public/assets/images/auth_illu/watch.svg';
@@ -17,7 +17,7 @@ export type svgImageType = {
 	width: number;
 };
 
-const AuthPageLayout = forwardRef<HTMLAnchorElement, Props>((props: Props, ref: ForwardedRef<HTMLAnchorElement>) => {
+const AuthLayout = forwardRef<HTMLAnchorElement, Props>((props: Props, ref: ForwardedRef<HTMLAnchorElement>) => {
 	const [authIlluRandom, setAuthIlluRandom] = useState<{ image: svgImageType; color: string } | null>(null);
 
 	useEffect(() => {
@@ -66,6 +66,6 @@ const AuthPageLayout = forwardRef<HTMLAnchorElement, Props>((props: Props, ref: 
 		</main>
 	);
 });
-AuthPageLayout.displayName = 'AuthPageLayout';
+AuthLayout.displayName = 'AuthLayout';
 
-export default AuthPageLayout;
+export default AuthLayout;

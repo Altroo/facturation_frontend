@@ -4,7 +4,7 @@ import { axiosBaseQuery } from '@/utils/axiosBaseQuery';
 import { store } from '@/store/store';
 import { getInitStateToken } from '@/store/selectors';
 import { CompanyClass } from '@/models/Classes';
-import { ApiErrorResponseType, PaginationResponseType, SuccessResponseType } from '@/types/_initTypes';
+import type { ApiErrorResponseType, PaginationResponseType, SuccessResponseType } from '@/types/_initTypes';
 
 export const companyApi = createApi({
 	reducerPath: 'companyApi',

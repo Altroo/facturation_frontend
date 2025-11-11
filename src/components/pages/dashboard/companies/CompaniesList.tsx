@@ -11,15 +11,13 @@ import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { useDeleteCompanyMutation, useGetCompaniesListQuery } from '@/store/services/company';
 import { COMPANIES_ADD, COMPANIES_VIEW, COMPANIES_EDIT } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
-import type { AppSession } from '@/types/_initTypes';
+import type { SessionProps } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import CustomToast from '@/components/portals/customToast/customToast';
 import Portal from '@/contexts/Portal';
 
-type Props = { session?: AppSession };
-
-const CompaniesListClient: React.FC<Props> = ({ session }: Props) => {
+const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 	const router = useRouter();
 	const token = getAccessTokenFromSession(session);
 

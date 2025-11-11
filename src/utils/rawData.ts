@@ -1,4 +1,4 @@
-import { AccountGenderCodeValueType, DropDownType } from '@/types/accountTypes';
+import type { AccountGenderCodeValueType, DropDownType } from '@/types/accountTypes';
 
 export const genderItemsList: Array<AccountGenderCodeValueType> = [
 	{

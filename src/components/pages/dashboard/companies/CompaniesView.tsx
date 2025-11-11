@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ApiErrorResponseType, AppSession, ResponseDataInterface } from '@/types/_initTypes';
+import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
 import { useGetCompanyQuery } from '@/store/services/company';
 import Styles from '@/styles/dashboard/companies/companies.module.sass';
@@ -27,11 +27,6 @@ import { COMPANIES_LIST, COMPANIES_EDIT } from '@/utils/routes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import Image from 'next/image';
 
-type Props = {
-	session?: AppSession;
-	id: number;
-};
-
 const InfoRow = ({ label, value }: { label: string; value: string | number | null | undefined }) => (
 	<Stack direction="row" spacing={2} alignItems="center" sx={{ flexWrap: 'wrap' }}>
 		<Typography fontWeight="bold" sx={{ minWidth: 190 }}>
@@ -40,6 +35,10 @@ const InfoRow = ({ label, value }: { label: string; value: string | number | nul
 		<Typography sx={{ flex: 1 }}>{value && value.toString().length > 1 ? value : '-'}</Typography>
 	</Stack>
 );
+
+interface Props extends SessionProps {
+	id: number;
+}
 
 const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 	const router = useRouter();

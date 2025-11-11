@@ -2,7 +2,7 @@
 
 import React, { createContext, PropsWithChildren, useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/utils/hooks';
-import { InitStateInterface, InitStateToken } from '@/types/_initTypes';
+import type { InitStateInterface, InitStateToken } from '@/types/_initTypes';
 import { initAppAction, initAppSessionTokensAction } from '@/store/actions/_initActions';
 import { emptyInitStateToken } from '@/store/slices/_initSlice';
 import { getInitStateToken } from '@/store/selectors';

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useTransition, useEffect, useRef } from 'react';
-import { ApiErrorResponseType, AppSession, ResponseDataInterface } from '@/types/_initTypes';
+import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
 import { useEditCompanyMutation, useGetCompanyQuery } from '@/store/services/company';
 import Styles from '@/styles/dashboard/companies/companies.module.sass';
@@ -54,7 +54,7 @@ import { useAppSelector } from '@/utils/hooks';
 import { getGroupesState, getProfilState } from '@/store/selectors';
 import { useGetUsersQuery } from '@/store/services/account';
 import CustomAutocompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
-import { DropDownType } from '@/types/accountTypes';
+import type { DropDownType } from '@/types/accountTypes';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -535,10 +535,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	);
 };
 
-type Props = {
-	session?: AppSession;
+interface Props extends SessionProps {
 	id: number;
-};
+}
 
 const CompaniesEditClient: React.FC<Props> = ({ session, id }) => {
 	const token = getAccessTokenFromSession(session);

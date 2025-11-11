@@ -7,7 +7,7 @@ import CustomTextInput from '@/components/formikElements/customTextInput/customT
 import { allowAnyInstance, setFormikAutoErrors } from '@/utils/helpers';
 import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
-import { AccountPostLoginResponseType } from '@/types/accountTypes';
+import type { AccountPostLoginResponseType } from '@/types/accountTypes';
 import { postApi } from '@/store/services/_initAPI';
 import { AUTH_RESET_PASSWORD, DASHBOARD } from '@/utils/routes';
 import { signIn, useSession } from 'next-auth/react';

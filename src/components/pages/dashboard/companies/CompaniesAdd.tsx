@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useTransition, useEffect, useRef } from 'react';
-import { ApiErrorResponseType, AppSession, ResponseDataInterface } from '@/types/_initTypes';
+import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
 import { useAddCompanyMutation } from '@/store/services/company';
 import Styles from '@/styles/dashboard/companies/companies.module.sass';
@@ -54,8 +54,8 @@ import { useAppSelector } from '@/utils/hooks';
 import { getGroupesState, getProfilState } from '@/store/selectors';
 import { useGetUsersQuery } from '@/store/services/account';
 import CustomAutocompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
-import { DropDownType } from '@/types/accountTypes';
-import { CompanyFormValues } from '@/types/companyTypes';
+import type { DropDownType } from '@/types/accountTypes';
+import type { CompanyFormValuesType } from '@/types/companyTypes';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -84,7 +84,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const [selectedUser, setSelectedUser] = useState<DropDownType | null>(null);
 	const roleOptions = groupes.map((role) => ({ value: role, code: role }));
 
-	const formik = useFormik<CompanyFormValues>({
+	const formik = useFormik<CompanyFormValuesType>({
 		initialValues: {
 			raison_sociale: '',
 			email: '',
@@ -539,11 +539,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	);
 };
 
-type Props = {
-	session?: AppSession;
-};
-
-const CompaniesAdd: React.FC<Props> = ({ session }) => {
+const CompaniesAdd: React.FC<SessionProps> = ({ session }) => {
 	const token = getAccessTokenFromSession(session);
 	const [showDataUpdated, setShowDataUpdated] = useState<boolean>(false);
 

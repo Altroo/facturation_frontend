@@ -1,4 +1,4 @@
-import { NbrEmployeType, CiviliteType, managedByType, ManagedByWriteOnlyType } from '@/types/companyTypes';
+import type { NbrEmployeType, CiviliteType, managedByType, ManagedByWriteOnlyType } from '@/types/companyTypes';
 
 export class UserClass {
 	constructor(

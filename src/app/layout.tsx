@@ -8,7 +8,7 @@ import { AppProps } from 'next/app';
 import { InitContextProvider } from '@/contexts/InitContext';
 import { auth } from '@/auth';
 import type { Viewport } from 'next';
-import ThemeRegistry from '@/app/ThemeRegistry';
+import ThemeProvider from '@/providers/ThemeProvider';
 
 export const metadata: Metadata = {
 	title: 'Facturation - Casa Di Lusso',
@@ -67,7 +67,7 @@ const RootLayout: React.FC<EntryPointProps> = async (props) => {
 					<StoreProvider>
 						<InitContextProvider>
 							<AppRouterCacheProvider>
-								<ThemeRegistry>{props.children}</ThemeRegistry>
+								<ThemeProvider>{props.children}</ThemeProvider>
 							</AppRouterCacheProvider>
 						</InitContextProvider>
 					</StoreProvider>

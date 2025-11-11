@@ -4,7 +4,7 @@ import React, { ForwardedRef, forwardRef } from 'react';
 import Styles from './primaryAnchorButton.module.sass';
 import { ThemeProvider, Button } from '@mui/material';
 import Link from 'next/link';
-import { UrlObject } from 'url';
+import type { UrlObject } from 'url';
 import { getDefaultTheme } from '@/utils/themes';
 
 type Props = {

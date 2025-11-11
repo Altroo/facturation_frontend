@@ -1,6 +1,6 @@
-import { tokenUser } from './_initTypes';
-import { ProviderType } from 'next-auth/providers';
-import { DefaultSession } from 'next-auth';
+import type { tokenUser } from './_initTypes';
+import type { ProviderType } from 'next-auth/providers';
+import type { DefaultSession } from 'next-auth';
 
 // Extend the NextAuth types to include your custom types
 declare module 'next-auth' {

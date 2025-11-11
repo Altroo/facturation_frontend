@@ -132,7 +132,7 @@ const CustomSwipeModal: React.FC<Props> = (props: Props) => {
 				slots={{ transition: transition ? Transition : undefined }}
 				hideBackdrop={hideBackdrop}
 				disableScrollLock={disableScrollLock}
-				onClose={(e, reason) => {
+				onClose={(_e, reason) => {
 					if (onBackdrop) {
 						if (reason) {
 							onBackdrop();

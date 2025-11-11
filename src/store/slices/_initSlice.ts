@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { InitStateInterface, InitStateToken } from '@/types/_initTypes';
+import type { InitStateInterface, InitStateToken } from '@/types/_initTypes';
 
 export const emptyInitStateToken = {
 	access: null,

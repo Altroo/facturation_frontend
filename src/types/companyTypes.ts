@@ -18,7 +18,7 @@ type ManagedByEntry = {
 	role: string;
 };
 
-export type CompanyFormValues = {
+export type CompanyFormValuesType = {
 	raison_sociale: string;
 	email: string;
 	nbr_employe: string;
