@@ -112,7 +112,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		onSubmit: async (data, { setFieldError }) => {
 			startTransition(async () => {
 				try {
-					console.log('Submitting data:', data);
 					await updateCompany({ token, data, id }).unwrap();
 					onSuccess();
 				} catch (e) {
