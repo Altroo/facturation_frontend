@@ -1,0 +1,79 @@
+import React from 'react';
+import TextField, { TextFieldProps } from '@mui/material/TextField';
+import { Theme, ThemeProvider } from '@mui/material/styles';
+import { DropDownType } from '@/types/accountTypes';
+import { Autocomplete, InputAdornment } from '@mui/material';
+
+type Props = {
+	id: string;
+	label: string;
+	items: Array<DropDownType>;
+	theme: Theme;
+	value: DropDownType | null;
+	fullWidth?: boolean;
+	onChange?: (event: React.SyntheticEvent, newValue: DropDownType | null) => void;
+	disabled?: boolean;
+	startIcon?: React.ReactNode;
+	endIcon?: React.ReactNode;
+	slotProps?: TextFieldProps['slotProps'];
+};
+
+const CustomAutocompleteSelect: React.FC<Props> = ({
+	id,
+	label,
+	items,
+	theme,
+	value,
+	fullWidth,
+	onChange,
+	disabled,
+	slotProps,
+	startIcon,
+	endIcon,
+}) => {
+	return (
+		<ThemeProvider theme={theme}>
+			<Autocomplete
+				id={id}
+				fullWidth={fullWidth}
+				noOptionsText="Aucun utilisateur trouvé"
+				options={items}
+				getOptionLabel={(option) => option.code}
+				filterOptions={(options, state) =>
+					options.filter((opt) => opt.code.toLowerCase().includes(state.inputValue.toLowerCase()))
+				}
+				value={value}
+				onChange={onChange}
+				disabled={disabled}
+				isOptionEqualToValue={(option, val) => option.value === val.value}
+				renderInput={(params) => (
+					<TextField
+						{...params}
+						label={label}
+						slotProps={{
+							...slotProps,
+							input: {
+								...params.InputProps,
+								...slotProps?.input,
+								startAdornment: (
+									<>
+										{startIcon && <InputAdornment position="start">{startIcon}</InputAdornment>}
+										{params.InputProps.startAdornment}
+									</>
+								),
+								endAdornment: (
+									<>
+										{params.InputProps.endAdornment}
+										{endIcon && <InputAdornment position="end">{endIcon}</InputAdornment>}
+									</>
+								),
+							},
+						}}
+					/>
+				)}
+			/>
+		</ThemeProvider>
+	);
+};
+
+export default CustomAutocompleteSelect;

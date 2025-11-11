@@ -53,6 +53,8 @@ import CustomSquareImageUploading from '@/components/formikElements/customSquare
 import { useAppSelector } from '@/utils/hooks';
 import { getGroupesState, getProfilState } from '@/store/selectors';
 import { useGetUsersQuery } from '@/store/services/account';
+import CustomAutocompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
+import { DropDownType } from '@/types/accountTypes';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -73,6 +75,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const router = useRouter();
 
 	const [adminUsers, setAdminUsers] = useState(companyData?.admins ?? []);
+	const [selectedUser, setSelectedUser] = useState<DropDownType | null>(null);
 
 	const roleOptions = groupes.map((role) => ({ value: role, code: role }));
 
@@ -121,14 +124,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const managedIds = formik.values.managed_by.map((entry) => entry.pk);
 
-	const availableUsers = (usersData ?? [])
+	const availableUsers: DropDownType[] = (usersData ?? [])
 		.filter((user): user is { id: number; first_name: string; last_name: string } => typeof user.id === 'number')
 		.filter((user) => !managedIds.includes(user.id))
 		.map((user) => ({
 			value: user.id.toString(),
 			code: `${user.first_name} ${user.last_name}`,
 		}));
-
 	const initializedRef = useRef(false);
 
 	useEffect(() => {
@@ -143,7 +145,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			);
 			initializedRef.current = true;
 		}
-		console.log('errors : ', formik.errors);
 	}, [companyData?.admins, formik]);
 
 	return (
@@ -482,27 +483,30 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									{isUsersLoading ? (
 										<Skeleton variant="rectangular" width={250} height={40} />
 									) : (
-										<CustomDropDownSelect
+										<CustomAutocompleteSelect
 											id="new_user_select"
 											label="Ajouter un utilisateur"
+											fullWidth={true}
 											items={availableUsers}
-											value=""
-											onChange={(e) => {
-												const userId = parseInt(e.target.value);
-												const selectedUser = usersData?.find((u) => u.id === userId);
-												if (selectedUser?.id && selectedUser.first_name && selectedUser.last_name) {
-													const newAdmin = {
-														id: selectedUser.id,
-														first_name: selectedUser.first_name,
-														last_name: selectedUser.last_name,
-														role: 'Lecture',
-													};
-
-													setAdminUsers([...adminUsers, newAdmin]);
-													formik.setFieldValue('managed_by', [
-														...formik.values.managed_by,
-														{ pk: selectedUser.id, role: 'Lecture' },
-													]);
+											value={selectedUser}
+											onChange={(_e, newUser) => {
+												if (newUser) {
+													setSelectedUser(null); // reset dropdown
+													const userId = parseInt(newUser.value);
+													const userData = usersData?.find((u) => u.id === userId);
+													if (userData?.id && userData.first_name && userData.last_name) {
+														const newAdmin = {
+															id: userData.id,
+															first_name: userData.first_name,
+															last_name: userData.last_name,
+															role: 'Lecture',
+														};
+														setAdminUsers([...adminUsers, newAdmin]);
+														formik.setFieldValue('managed_by', [
+															...formik.values.managed_by,
+															{ pk: newAdmin.id, role: 'Lecture' },
+														]);
+													}
 												}
 											}}
 											theme={customDropdownTheme()}
