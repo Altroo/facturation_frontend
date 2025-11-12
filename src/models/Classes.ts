@@ -1,4 +1,4 @@
-import type { NbrEmployeType, CiviliteType, managedByType, ManagedByWriteOnlyType } from '@/types/companyTypes';
+import type { NbrEmployeType, CiviliteType, ManagedByType, ManagedByWriteOnlyType } from '@/types/companyTypes';
 
 export class UserClass {
 	constructor(
@@ -41,7 +41,7 @@ export class CompanyClass {
 		public identifiant_fiscal: string | null,
 		public tax_professionnelle: string | null,
 		public CNSS: string | null,
-		public managed_by: ManagedByWriteOnlyType,
-		public admins: managedByType,
+		public managed_by: Array<ManagedByWriteOnlyType>,
+		public admins: Array<ManagedByType>,
 	) {}
 }
