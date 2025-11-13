@@ -56,6 +56,7 @@ import { useGetUsersQuery } from '@/store/services/account';
 import CustomAutocompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import type { DropDownType } from '@/types/accountTypes';
 import type { CompanyFormValuesType, ManagedByType } from '@/types/companyTypes';
+import { UserClass } from '@/models/Classes';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -79,8 +80,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	} = useGetCompanyQuery({ token, id: id! }, { skip: !token || !isEditMode });
 	const [addCompany, { isLoading: isAddLoading, error: addError }] = useAddCompanyMutation();
 	const [updateCompany, { isLoading: isUpdateLoading, error: updateError }] = useEditCompanyMutation();
-	const { data: usersData, isLoading: isUsersLoading } = useGetUsersQuery(token, { skip: !token });
-
+	const { data: rawUsersData, isLoading: isUsersLoading } = useGetUsersQuery(
+		{ token, with_pagination: false },
+		{ skip: !token },
+	);
+	// enforce the type of the users data
+	const usersData = rawUsersData as Array<Partial<UserClass>> | undefined;
 	const error = isEditMode ? companyError || updateError : addError;
 	const [axiosError, setAxiosError] = useState<ResponseDataInterface<ApiErrorResponseType>>(
 		error as ResponseDataInterface<ApiErrorResponseType>,
@@ -143,13 +148,19 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	});
 
 	const managedIds = formik.values.managed_by.map((entry) => entry.pk);
-	const availableUsers: DropDownType[] = (usersData ?? [])
-		.filter((user): user is { id: number; first_name: string; last_name: string } => typeof user.id === 'number')
-		.filter((user) => !managedIds.includes(user.id))
-		.map((user) => ({
-			value: user.id.toString(),
-			code: `${user.first_name} ${user.last_name}`,
-		}));
+	// TODO fix : error here
+	const availableUsers: DropDownType[] = Array.isArray(usersData)
+		? usersData
+				.filter(
+					(user): user is { id: number; first_name: string; last_name: string; role: string } =>
+						typeof user.id === 'number',
+				)
+				.filter((user) => !managedIds.includes(user.id))
+				.map((user) => ({
+					value: user.id.toString(),
+					code: `${user.first_name} ${user.last_name}`,
+				}))
+		: [];
 
 	const initializedRef = useRef(false);
 

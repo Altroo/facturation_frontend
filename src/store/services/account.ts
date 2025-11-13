@@ -1,7 +1,7 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { allowAnyInstance, isAuthenticatedInstance } from '@/utils/helpers';
 import { axiosBaseQuery } from '@/utils/axiosBaseQuery';
-import type { SuccessResponseType } from '@/types/_initTypes';
+import type { PaginationResponseType, SuccessResponseType } from '@/types/_initTypes';
 import { store } from '@/store/store';
 import { getInitStateToken } from '@/store/selectors';
 import { GroupClass, UserClass } from '@/models/Classes';
@@ -51,11 +51,17 @@ export const groupApi = createApi({
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 		}),
-		getUsers: builder.query<Array<Partial<UserClass>>, string | undefined>({
-			query: (token) => ({
-				url: process.env.NEXT_PUBLIC_ACCOUNT_USERS as string,
+		getUsers: builder.query<
+			Array<Partial<UserClass>> | PaginationResponseType<Partial<UserClass>>,
+			{ token?: string; with_pagination?: boolean; page?: number; pageSize?: number; search?: string }
+		>({
+			query: ({ token, with_pagination, page, pageSize, search }) => ({
+				url: with_pagination
+					? `${process.env.NEXT_PUBLIC_ACCOUNT_USERS}?search=${search}&page=${page}&page_size=${pageSize}`
+					: (process.env.NEXT_PUBLIC_ACCOUNT_USERS as string),
 				method: 'GET',
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+				params: with_pagination ? { pagination: 'true' } : undefined,
 			}),
 		}),
 	}),

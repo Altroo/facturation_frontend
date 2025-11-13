@@ -18,8 +18,8 @@ export const companyApi = createApi({
 			PaginationResponseType<CompanyClass>,
 			{ token: string | undefined; page: number; pageSize: number; search?: string }
 		>({
-			query: ({ token, page, pageSize }) => ({
-				url: `${process.env.NEXT_PUBLIC_COMPANY_LIST}?page=${page}&page_size=${pageSize}`,
+			query: ({ token, page, pageSize, search }) => ({
+				url: `${process.env.NEXT_PUBLIC_COMPANY_LIST}?search=${search}&page=${page}&page_size=${pageSize}`,
 				method: 'GET',
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),

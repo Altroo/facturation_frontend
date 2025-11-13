@@ -8,7 +8,7 @@ export class UserClass {
 		public gender: string,
 		public avatar: string | ArrayBuffer | null,
 		public date_joined: string | null,
-		public is_superuser: boolean,
+		public is_staff: boolean,
 		// public group: string,
 	) {}
 }

@@ -57,7 +57,7 @@ import DomainIcon from '@mui/icons-material/Domain';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
 
-const getNavigationMenu = (isSuperUser: boolean) => {
+const getNavigationMenu = (isStaff: boolean) => {
 	return {
 		dashboard: {
 			title: 'Tableau de bord',
@@ -115,7 +115,7 @@ const getNavigationMenu = (isSuperUser: boolean) => {
 			icon: <PaymentIcon />,
 			items: [{ title: 'Liste des règlements', label: 'Liste des règlements', path: '/reglements/list' }],
 		},
-		...(isSuperUser && {
+		...(isStaff && {
 			societe: {
 				title: 'Entreprises',
 				icon: <DomainIcon />,
@@ -203,8 +203,8 @@ const NavigationBar = (props: Props) => {
 	const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 	const [open, setOpen] = React.useState(!isMobile);
 	const { data: session, status } = useSession();
-	const { avatar, first_name, last_name, gender, is_superuser } = useAppSelector(getProfilState);
-	const navigationMenu = useMemo(() => getNavigationMenu(is_superuser), [is_superuser]);
+	const { avatar, first_name, last_name, gender, is_staff } = useAppSelector(getProfilState);
+	const navigationMenu = useMemo(() => getNavigationMenu(is_staff), [is_staff]);
 
 	const loading = status === 'loading';
 
