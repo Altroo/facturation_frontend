@@ -148,7 +148,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	});
 
 	const managedIds = formik.values.managed_by.map((entry) => entry.pk);
-	// TODO fix : error here
 	const availableUsers: DropDownType[] = Array.isArray(usersData)
 		? usersData
 				.filter(
