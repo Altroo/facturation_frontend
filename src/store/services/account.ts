@@ -51,6 +51,16 @@ export const groupApi = createApi({
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 		}),
+	}),
+});
+
+export const usersApi = createApi({
+	reducerPath: 'usersApi',
+	baseQuery: axiosBaseQuery(() => {
+		// pass function which will be used by the interceptor to read the latest token from redux
+		return isAuthenticatedInstance(() => getInitStateToken(store.getState()));
+	}),
+	endpoints: (builder) => ({
 		getUsers: builder.query<
 			Array<Partial<UserClass>> | PaginationResponseType<Partial<UserClass>>,
 			{ token?: string; with_pagination?: boolean; page?: number; pageSize?: number; search?: string }
@@ -102,4 +112,5 @@ export const profilApi = createApi({
 
 export const { useSendPasswordResetCodeMutation, usePasswordResetMutation, useSetPasswordMutation } = accountApi;
 export const { useGetProfilQuery, useEditProfilMutation, useEditPasswordMutation } = profilApi;
-export const { useGetGroupsQuery, useGetUsersQuery } = groupApi;
+export const { useGetGroupsQuery } = groupApi;
+export const { useGetUsersQuery } = usersApi;
