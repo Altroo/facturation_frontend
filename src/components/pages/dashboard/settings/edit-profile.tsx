@@ -209,10 +209,6 @@ const EditProfilClient: React.FC<SessionProps> = (props: SessionProps) => {
 	const token = getAccessTokenFromSession(session);
 	const [showDataUpdated, setShowDataUpdated] = useState<boolean>(false);
 
-	useEffect(() => {
-		console.log('showDataUpdated', showDataUpdated);
-	}, [showDataUpdated]);
-
 	return (
 		<Stack direction="column" sx={{ position: 'relative' }}>
 			<NavigationBar title="Éditer le profil">
