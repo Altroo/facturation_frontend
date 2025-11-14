@@ -29,6 +29,8 @@ import {
 	DASHBOARD_EDIT_PROFILE,
 	DASHBOARD_PASSWORD,
 	SITE_ROOT,
+	USERS_ADD,
+	USERS_LIST,
 } from '@/utils/routes';
 import { signOut, useSession } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
@@ -128,8 +130,8 @@ const getNavigationMenu = (isStaff: boolean) => {
 				title: 'Utilisateurs',
 				icon: <PeopleIcon />,
 				items: [
-					{ title: 'Liste des utilisateurs', label: 'Liste des utilisateurs', path: '/dashboard/users' },
-					{ title: 'Nouvel utilisateur', label: 'Nouvel utilisateur', path: '/dashboard/users/new' },
+					{ title: 'Liste des utilisateurs', label: 'Liste des utilisateurs', path: USERS_LIST },
+					{ title: 'Nouvel utilisateur', label: 'Nouvel utilisateur', path: USERS_ADD },
 				],
 			},
 			parametres: {

@@ -52,7 +52,7 @@ import { useRouter } from 'next/navigation';
 import CustomSquareImageUploading from '@/components/formikElements/customSquareImageUploading/customSquareImageUploading';
 import { useAppSelector } from '@/utils/hooks';
 import { getGroupesState, getProfilState } from '@/store/selectors';
-import { useGetUsersQuery } from '@/store/services/account';
+import { useGetUsersListQuery } from '@/store/services/account';
 import CustomAutocompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import type { DropDownType } from '@/types/accountTypes';
 import { UserClass } from '@/models/Classes';
@@ -71,7 +71,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const [axiosError, setAxiosError] = useState<ResponseDataInterface<ApiErrorResponseType>>(
 		error as ResponseDataInterface<ApiErrorResponseType>,
 	);
-	const { data: rawUsersData, isLoading: isUsersLoading } = useGetUsersQuery(
+	const { data: rawUsersData, isLoading: isUsersLoading } = useGetUsersListQuery(
 		{ token, with_pagination: false },
 		{ skip: !token },
 	);

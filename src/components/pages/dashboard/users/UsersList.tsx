@@ -2,24 +2,24 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Button, Stack, Typography, Avatar, Chip, IconButton, Tooltip } from '@mui/material';
-import { Edit, Delete, Visibility } from '@mui/icons-material';
+import { Box, Button, Stack, Typography, Avatar, IconButton, Tooltip } from '@mui/material';
+import { Edit, Delete, Visibility, CheckCircle, Cancel } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/companies/companies.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import { useDeleteCompanyMutation, useGetCompaniesListQuery } from '@/store/services/company';
-import { COMPANIES_ADD, COMPANIES_VIEW, COMPANIES_EDIT } from '@/utils/routes';
+import { useDeleteUserMutation, useGetUsersListQuery } from '@/store/services/account';
+import { COMPANIES_ADD, USERS_VIEW, USERS_EDIT } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import CustomToast from '@/components/portals/customToast/customToast';
 import Portal from '@/contexts/Portal';
-import { CompanyClass, UserClass } from '@/models/Classes';
+import { UserClass } from '@/models/Classes';
 import { formatDate } from '@/utils/helpers';
 
-const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
+const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 	const router = useRouter();
 	const token = getAccessTokenFromSession(session);
 
@@ -29,13 +29,13 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 	});
 	const [searchTerm, setSearchTerm] = useState<string>('');
 	const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
-	const [selectedId, setSelectedId] = useState<number | null>(null);
+	const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
 	const {
 		data: rawData,
 		isLoading,
 		refetch,
-	} = useGetCompaniesListQuery(
+	} = useGetUsersListQuery(
 		{
 			token,
 			with_pagination: true,
@@ -46,8 +46,8 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		{ skip: !token },
 	);
 	// enforce the type of the users data
-	const data = rawData as PaginationResponseType<CompanyClass> | undefined;
-	const [deleteRecord] = useDeleteCompanyMutation();
+	const data = rawData as PaginationResponseType<UserClass> | undefined;
+	const [deleteRecord] = useDeleteUserMutation();
 
 	const [showToast, setShowToast] = useState(false);
 	const [toastMessage, setToastMessage] = useState<string>('');
@@ -55,16 +55,16 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 
 	const deleteHandler = async () => {
 		try {
-			await deleteRecord({ token, id: selectedId! }).unwrap();
+			await deleteRecord({ token, id: selectedUserId! }).unwrap();
 			// success toast
-			setToastMessage('Entreprise supprimée avec succès');
+			setToastMessage('Utilisateur supprimée avec succès');
 			setToastType('success');
 			setShowToast(true);
 			// refresh the page / data
 			refetch();
 		} catch (err) {
 			// error toast
-			setToastMessage('Erreur lors de la suppression de l’entreprise');
+			setToastMessage('Erreur lors de la suppression de l’utilisateur');
 			setToastType('error');
 			setShowToast(true);
 
@@ -88,26 +88,26 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 	];
 
 	const showDeleteModalCall = (id: number) => {
-		setSelectedId(id);
+		setSelectedUserId(id);
 		setShowDeleteModal(true);
 	};
 
 	const columns: GridColDef[] = [
 		{
-			field: 'logo',
-			headerName: 'Logo',
-			width: 60,
-			renderCell: (params: GridRenderCellParams<CompanyClass>) => (
-				<Avatar src={params.value} alt={params.row.raison_sociale} variant="rounded" sx={{ width: 40, height: 40 }} />
+			field: 'avatar',
+			headerName: 'Avatar',
+			width: 70,
+			renderCell: (params: GridRenderCellParams<UserClass>) => (
+				<Avatar src={params.value} alt={params.row.first_name} variant="rounded" sx={{ width: 40, height: 40 }} />
 			),
 			sortable: false,
 			filterable: false,
 		},
 		{
-			field: 'raison_sociale',
-			headerName: 'Raison Sociale',
-			width: 180,
-			renderCell: (params: GridRenderCellParams<CompanyClass>) => (
+			field: 'first_name',
+			headerName: 'Nom',
+			width: 150,
+			renderCell: (params: GridRenderCellParams<UserClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
 						{params.value}
@@ -116,10 +116,10 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 			),
 		},
 		{
-			field: 'ICE',
-			headerName: 'ICE',
-			width: 180,
-			renderCell: (params: GridRenderCellParams<CompanyClass>) => (
+			field: 'last_name',
+			headerName: 'Prénom',
+			width: 150,
+			renderCell: (params: GridRenderCellParams<UserClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
 						{params.value}
@@ -128,57 +128,74 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 			),
 		},
 		{
-			field: 'nom_responsable',
-			headerName: 'Responsable',
-			width: 220,
-			renderCell: (params: GridRenderCellParams<CompanyClass>) => {
+			field: 'email',
+			headerName: 'Email',
+			width: 200,
+			renderCell: (params: GridRenderCellParams<UserClass>) => (
+				<DarkTooltip title={params.value}>
+					<Typography variant="body2" noWrap>
+						{params.value}
+					</Typography>
+				</DarkTooltip>
+			),
+		},
+		{
+			field: 'gender',
+			headerName: 'Sexe',
+			width: 80,
+			renderCell: (params: GridRenderCellParams<UserClass>) => (
+				<DarkTooltip title={params.value}>
+					<Typography variant="body2" noWrap>
+						{params.value}
+					</Typography>
+				</DarkTooltip>
+			),
+		},
+		{
+			field: 'is_staff',
+			headerName: 'Admin',
+			width: 70,
+			renderCell: (params: GridRenderCellParams<UserClass>) => {
+				const isAdmin = Boolean(params.value);
 				return (
-					<DarkTooltip title={params.value}>
+					<DarkTooltip title={isAdmin ? 'Oui' : 'Non'}>
+						{isAdmin ? <CheckCircle color="success" fontSize="small" /> : <Cancel color="error" fontSize="small" />}
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'is_active',
+			headerName: 'Active',
+			width: 70,
+			renderCell: (params: GridRenderCellParams<UserClass>) => {
+				const isActive = Boolean(params.value);
+				return (
+					<DarkTooltip title={isActive ? 'Oui' : 'Non'}>
+						{isActive ? <CheckCircle color="success" fontSize="small" /> : <Cancel color="error" fontSize="small" />}
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'date_joined',
+			headerName: "Date d'inscription",
+			width: 200,
+			renderCell: (params: GridRenderCellParams<UserClass>) => {
+				const formatted = formatDate(params.value as string | null);
+				return (
+					<DarkTooltip title={formatted}>
 						<Typography variant="body2" noWrap>
-							{params.value}
+							{formatted}
 						</Typography>
 					</DarkTooltip>
 				);
 			},
 		},
 		{
-			field: 'email',
-			headerName: 'Email',
-			width: 240,
-			renderCell: (params: GridRenderCellParams<CompanyClass>) => (
-				<DarkTooltip title={params.value}>
-					<Typography variant="body2" noWrap>
-						{params.value}
-					</Typography>
-				</DarkTooltip>
-			),
-		},
-		{
-			field: 'telephone',
-			headerName: 'Téléphone',
-			width: 180,
-			renderCell: (params: GridRenderCellParams<CompanyClass>) => (
-				<DarkTooltip title={params.value}>
-					<Typography variant="body2" noWrap>
-						{params.value}
-					</Typography>
-				</DarkTooltip>
-			),
-		},
-		{
-			field: 'nbr_employe',
-			headerName: 'Employés',
-			width: 120,
-			renderCell: (params: GridRenderCellParams<CompanyClass>) => (
-				<DarkTooltip title={params.value}>
-					<Chip label={params.value} size="small" variant="outlined" />
-				</DarkTooltip>
-			),
-		},
-		{
-			field: 'date_created',
-			headerName: 'Date de création',
-			width: 180,
+			field: 'last_login',
+			headerName: 'Dernière connexion',
+			width: 200,
 			renderCell: (params: GridRenderCellParams<UserClass>) => {
 				const formatted = formatDate(params.value as string | null);
 				return (
@@ -196,16 +213,16 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 			width: 200,
 			sortable: false,
 			filterable: false,
-			renderCell: (params: GridRenderCellParams<CompanyClass>) => (
+			renderCell: (params) => (
 				<Box sx={{ display: 'flex', gap: 1 }}>
 					<Tooltip title="Voir">
-						<IconButton size="small" color="info" onClick={() => router.push(COMPANIES_VIEW(params.row.id))}>
+						<IconButton size="small" color="info" onClick={() => router.push(USERS_VIEW(params.row.id))}>
 							<Visibility />
 						</IconButton>
 					</Tooltip>
 
 					<Tooltip title="Modifier">
-						<IconButton size="small" color="primary" onClick={() => router.push(COMPANIES_EDIT(params.row.id))}>
+						<IconButton size="small" color="primary" onClick={() => router.push(USERS_EDIT(params.row.id))}>
 							<Edit />
 						</IconButton>
 					</Tooltip>
@@ -228,7 +245,7 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 			mt="32px"
 			sx={{ overflowX: 'auto', overflowY: 'hidden' }}
 		>
-			<NavigationBar title="Liste des entreprises">
+			<NavigationBar title="Liste des utilisateurs">
 				<Box
 					sx={{
 						width: '100%',
@@ -249,7 +266,7 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 							fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
 						}}
 					>
-						Nouvelle entreprise
+						Nouveau utilisateur
 					</Button>
 				</Box>
 
@@ -264,8 +281,8 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 				/>
 				{showDeleteModal && (
 					<ActionModals
-						title="Supprimer cette entreprise ?"
-						body="Êtes‑vous sûr de vouloir supprimer cette entreprise?"
+						title="Supprimer ce utilisateur ?"
+						body="Êtes‑vous sûr de vouloir supprimer ce utilisateur?"
 						actions={deleteModalActions}
 					/>
 				)}
@@ -277,4 +294,4 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 	);
 };
 
-export default CompaniesListClient;
+export default UsersListClient;

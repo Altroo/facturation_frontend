@@ -5,10 +5,13 @@ export class UserClass {
 		public id: number,
 		public first_name: string,
 		public last_name: string,
+		public email: string,
 		public gender: string,
 		public avatar: string | ArrayBuffer | null,
-		public date_joined: string | null,
 		public is_staff: boolean,
+		public is_active: boolean,
+		public date_joined: string | null,
+		public last_login: string | null,
 		// public group: string,
 	) {}
 }
@@ -21,7 +24,7 @@ export class CompanyClass {
 	constructor(
 		public id: number,
 		public date_created: string | null,
-		public raison_sociale: string | null,
+		public raison_sociale: string,
 		public email: string | null,
 		public logo: string | ArrayBuffer | null,
 		public logo_cropped: string | ArrayBuffer | null,

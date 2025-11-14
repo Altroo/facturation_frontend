@@ -52,7 +52,7 @@ import { useRouter } from 'next/navigation';
 import CustomSquareImageUploading from '@/components/formikElements/customSquareImageUploading/customSquareImageUploading';
 import { useAppSelector } from '@/utils/hooks';
 import { getGroupesState, getProfilState } from '@/store/selectors';
-import { useGetUsersQuery } from '@/store/services/account';
+import { useGetUsersListQuery } from '@/store/services/account';
 import CustomAutocompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import type { DropDownType } from '@/types/accountTypes';
 import type { CompanyFormValuesType, ManagedByType } from '@/types/companyTypes';
@@ -80,7 +80,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	} = useGetCompanyQuery({ token, id: id! }, { skip: !token || !isEditMode });
 	const [addCompany, { isLoading: isAddLoading, error: addError }] = useAddCompanyMutation();
 	const [updateCompany, { isLoading: isUpdateLoading, error: updateError }] = useEditCompanyMutation();
-	const { data: rawUsersData, isLoading: isUsersLoading } = useGetUsersQuery(
+	const { data: rawUsersData, isLoading: isUsersLoading } = useGetUsersListQuery(
 		{ token, with_pagination: false },
 		{ skip: !token },
 	);

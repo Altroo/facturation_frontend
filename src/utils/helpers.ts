@@ -9,7 +9,7 @@ import type { APIContentTypeInterface, ApiErrorResponseType, InitStateToken } fr
  * Handles unauthorized response by clearing cookies, signing out, and resetting token.
  */
 const handleUnauthorized = async () => {
-	await signOut({ redirect: false, callbackUrl: SITE_ROOT });
+	await signOut({ redirect: false, redirectTo: SITE_ROOT });
 	store.dispatch(initToken());
 };
 
@@ -200,4 +200,18 @@ export const hexToRGB = (hex: string, alpha?: number): string => {
 	const b = parseInt(hex.slice(5, 7), 16);
 
 	return alpha !== undefined ? `rgba(${r}, ${g}, ${b}, ${alpha})` : `rgb(${r}, ${g}, ${b})`;
+};
+
+export const formatDate = (value: string | null) => {
+	if (!value) return '—'; // display a placeholder for null
+	const date = new Date(value);
+	if (Number.isNaN(date.getTime())) return '—';
+	return new Intl.DateTimeFormat('fr-FR', {
+		year: 'numeric',
+		month: 'short',
+		day: '2-digit',
+		hour: '2-digit',
+		minute: '2-digit',
+		second: '2-digit',
+	}).format(date);
 };
