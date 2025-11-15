@@ -10,7 +10,6 @@ import {
 	Box,
 	Button,
 	IconButton,
-	Skeleton,
 	Stack,
 	Table,
 	TableBody,
@@ -18,8 +17,16 @@ import {
 	TableHead,
 	TableRow,
 	Typography,
+	Card,
+	CardContent,
+	Divider,
+	Paper,
+	Chip,
+	TableContainer,
+	useTheme,
+	useMediaQuery,
 } from '@mui/material';
-import { ArrowBack, Delete } from '@mui/icons-material';
+import { ArrowBack, Delete, Add } from '@mui/icons-material';
 import BusinessIcon from '@mui/icons-material/Business';
 import EmailIcon from '@mui/icons-material/Email';
 import GroupsIcon from '@mui/icons-material/Groups';
@@ -34,6 +41,10 @@ import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import FingerprintIcon from '@mui/icons-material/Fingerprint';
 import BadgeIcon from '@mui/icons-material/Badge';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
+import ImageIcon from '@mui/icons-material/Image';
+import ContactsIcon from '@mui/icons-material/Contacts';
+import DescriptionIcon from '@mui/icons-material/Description';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -64,15 +75,16 @@ type FormikContentProps = {
 	token: string | undefined;
 	first_name: string | null;
 	last_name: string | null;
-	id?: number; // Optional - if provided, we're editing
+	id?: number;
 	onSuccess: () => void;
 };
 
 const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
 	const { token, first_name, last_name, id, onSuccess } = props;
 	const isEditMode = id !== undefined;
+	const theme = useTheme();
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-	// Queries and mutations
 	const {
 		data: companyData,
 		isLoading: isCompanyLoading,
@@ -97,6 +109,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const router = useRouter();
 	const [adminUsers, setAdminUsers] = useState<Array<ManagedByType>>(companyData?.admins ?? []);
 	const [selectedUser, setSelectedUser] = useState<DropDownType | null>(null);
+	const [selectedRole, setSelectedRole] = useState<string>('');
 	const roleOptions = groupes.map((role) => ({ value: role, code: role }));
 
 	const formik = useFormik<CompanyFormValuesType>({
@@ -168,9 +181,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		if (!initializedRef.current && isEditMode && companyData?.admins && Array.isArray(companyData.admins)) {
 			setAdminUsers(companyData.admins);
 			initializedRef.current = true;
-		}
-		// Initialize admin users for create mode
-		else if (!initializedRef.current && !isEditMode && groupes.length && userID) {
+		} else if (!initializedRef.current && !isEditMode && groupes.length && userID) {
 			const defaultAdmin = {
 				id: userID,
 				first_name: first_name ?? 'Moi',
@@ -197,365 +208,520 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		);
 	}, [adminUsers]);
 
+	const handleAddCompany = () => {
+		if (selectedUser && selectedRole) {
+			const userId = parseInt(selectedUser.value);
+			const userData = usersData?.find((u) => u.id === userId);
+			if (userData?.id && userData.first_name && userData.last_name) {
+				const newAdmin = {
+					id: userData.id,
+					first_name: userData.first_name,
+					last_name: userData.last_name,
+					role: selectedRole,
+				};
+				setAdminUsers([...adminUsers, newAdmin]);
+				setSelectedUser(null);
+				setSelectedRole('');
+			}
+		}
+	};
+
 	const isLoading = isUsersLoading || isAddLoading || isUpdateLoading || isPending || (isEditMode && isCompanyLoading);
 
 	return (
-		<Box padding={2}>
-			<Stack spacing={4}>
-				<Stack direction="row" alignItems="center" spacing={2}>
-					<Stack direction="column" spacing={2} pt={2} width="100%">
-						<Stack direction="row" justifyContent="space-between">
-							<Button variant="outlined" startIcon={<ArrowBack />} onClick={() => router.push(COMPANIES_LIST)}>
-								Liste des entreprises
-							</Button>
-						</Stack>
-					</Stack>
-				</Stack>
+		<Stack spacing={3} sx={{ p: { xs: 2, md: 3 } }}>
+			<Stack direction={isMobile ? 'column' : 'row'} pt={2} justifyContent="space-between" spacing={2}>
+				<Button
+					variant="outlined"
+					startIcon={<ArrowBack />}
+					onClick={() => router.push(COMPANIES_LIST)}
+					sx={{ width: isMobile ? '100%' : 'auto' }}
+				>
+					Liste des entreprises
+				</Button>
+			</Stack>
 
-				{isLoading ? (
-					<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
-				) : axiosError?.status === 404 ? (
-					<Typography color="error" variant="h6">
+			{isLoading ? (
+				<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
+			) : axiosError?.status === 404 ? (
+				<Paper
+					elevation={0}
+					sx={{
+						p: 3,
+						backgroundColor: 'error.light',
+						borderRadius: 2,
+						border: '1px solid',
+						borderColor: 'error.main',
+					}}
+				>
+					<Typography color="error.main" variant="h6">
 						{axiosError.data?.message}
 					</Typography>
-				) : (
-					<form className={Styles.form}>
-						<Stack direction="column" spacing={2}>
-							<Stack direction="row" gap={4} className={Styles.mobileStack}>
-								<Box>
-									<label>Logo</label>
-									<CustomSquareImageUploading
-										image={formik.values.logo}
-										croppedImage={formik.values.logo_cropped}
-										onChange={(img) => formik.setFieldValue('logo', img)}
-										onCrop={(cropped) => formik.setFieldValue('logo_cropped', cropped)}
+				</Paper>
+			) : (
+				<form>
+					<Stack spacing={3}>
+						{/* Logo and Stamp Card */}
+						<Card elevation={2} sx={{ borderRadius: 2 }}>
+							<CardContent sx={{ p: 3 }}>
+								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<ImageIcon color="primary" />
+									<Typography variant="h6" fontWeight={700}>
+										Logo et Cachet
+									</Typography>
+								</Stack>
+								<Divider sx={{ mb: 3 }} />
+								<Stack direction={isMobile ? 'column' : 'row'} spacing={3}>
+									<Box sx={{ flex: 1 }}>
+										<Typography variant="subtitle2" fontWeight={600} gutterBottom>
+											Logo de l&#39;entreprise
+										</Typography>
+										<Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+											<CustomSquareImageUploading
+												image={formik.values.logo}
+												croppedImage={formik.values.logo_cropped}
+												onChange={(img) => formik.setFieldValue('logo', img)}
+												onCrop={(cropped) => formik.setFieldValue('logo_cropped', cropped)}
+											/>
+										</Box>
+									</Box>
+									<Box sx={{ flex: 1 }}>
+										<Typography variant="subtitle2" fontWeight={600} gutterBottom>
+											Cachet
+										</Typography>
+										<Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+											<CustomSquareImageUploading
+												image={formik.values.cachet}
+												croppedImage={formik.values.cachet_cropped}
+												onChange={(img) => formik.setFieldValue('cachet', img)}
+												onCrop={(cropped) => formik.setFieldValue('cachet_cropped', cropped)}
+											/>
+										</Box>
+									</Box>
+								</Stack>
+							</CardContent>
+						</Card>
+
+						{/* General Information Card */}
+						<Card elevation={2} sx={{ borderRadius: 2 }}>
+							<CardContent sx={{ p: 3 }}>
+								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<BusinessIcon color="primary" />
+									<Typography variant="h6" fontWeight={700}>
+										Informations générales
+									</Typography>
+								</Stack>
+								<Divider sx={{ mb: 3 }} />
+								<Stack spacing={2.5}>
+									<CustomTextInput
+										id="raison_sociale"
+										type="text"
+										value={formik.values.raison_sociale}
+										onChange={formik.handleChange('raison_sociale')}
+										onBlur={formik.handleBlur('raison_sociale')}
+										helperText={formik.touched.raison_sociale ? formik.errors.raison_sociale : ''}
+										error={formik.touched.raison_sociale && Boolean(formik.errors.raison_sociale)}
+										fullWidth={false}
+										size="small"
+										label="Raison sociale"
+										theme={inputTheme}
+										startIcon={<BusinessIcon fontSize="small" />}
 									/>
-								</Box>
-								<Box>
-									<label>Cachet</label>
-									<CustomSquareImageUploading
-										image={formik.values.cachet}
-										croppedImage={formik.values.cachet_cropped}
-										onChange={(img) => formik.setFieldValue('cachet', img)}
-										onCrop={(cropped) => formik.setFieldValue('cachet_cropped', cropped)}
+									<CustomTextInput
+										id="email"
+										type="email"
+										label="Email"
+										value={formik.values.email}
+										onChange={formik.handleChange('email')}
+										onBlur={formik.handleBlur('email')}
+										error={formik.touched.email && Boolean(formik.errors.email)}
+										helperText={formik.touched.email ? formik.errors.email : ''}
+										fullWidth={false}
+										size="small"
+										theme={inputTheme}
+										startIcon={<EmailIcon fontSize="small" />}
 									/>
-								</Box>
-							</Stack>
-							<CustomTextInput
-								id="raison_sociale"
-								type="text"
-								value={formik.values.raison_sociale}
-								onChange={formik.handleChange('raison_sociale')}
-								onBlur={formik.handleBlur('raison_sociale')}
-								helperText={formik.touched.raison_sociale ? formik.errors.raison_sociale : ''}
-								error={formik.touched.raison_sociale && Boolean(formik.errors.raison_sociale)}
-								fullWidth={false}
-								size="small"
-								label="Raison sociale"
-								theme={inputTheme}
-								startIcon={<BusinessIcon fontSize="small" />}
-							/>
-							<CustomTextInput
-								id="email"
-								type="email"
-								label="Email"
-								value={formik.values.email}
-								onChange={formik.handleChange('email')}
-								onBlur={formik.handleBlur('email')}
-								error={formik.touched.email && Boolean(formik.errors.email)}
-								helperText={formik.touched.email ? formik.errors.email : ''}
-								fullWidth={false}
-								size="small"
-								theme={inputTheme}
-								startIcon={<EmailIcon fontSize="small" />}
-							/>
-							<CustomDropDownSelect
-								id="nbr_employe"
-								label="Nombre d'employés"
-								items={nbrEmployeItemsList}
-								value={formik.values.nbr_employe}
-								onChange={(e) => formik.setFieldValue('nbr_employe', e.target.value)}
-								theme={customDropdownTheme()}
-								startIcon={<GroupsIcon fontSize="small" />}
-							/>
-							<CustomDropDownSelect
-								id="civilite_responsable"
-								label="Civilité du responsable"
-								items={civiliteItemsList}
-								value={formik.values.civilite_responsable}
-								onChange={(e) => formik.setFieldValue('civilite_responsable', e.target.value)}
-								theme={customDropdownTheme()}
-								startIcon={<PersonIcon fontSize="small" />}
-							/>
-							<CustomTextInput
-								id="nom_responsable"
-								type="text"
-								label="Nom du responsable"
-								value={formik.values.nom_responsable}
-								onChange={formik.handleChange('nom_responsable')}
-								onBlur={formik.handleBlur('nom_responsable')}
-								error={formik.touched.nom_responsable && Boolean(formik.errors.nom_responsable)}
-								helperText={formik.touched.nom_responsable ? formik.errors.nom_responsable : ''}
-								fullWidth={false}
-								size="small"
-								theme={inputTheme}
-								startIcon={<PersonOutlineIcon fontSize="small" />}
-							/>
-							<CustomTextInput
-								id="gsm_responsable"
-								type="tel"
-								label="GSM du responsable"
-								value={formik.values.gsm_responsable}
-								onChange={formik.handleChange('gsm_responsable')}
-								onBlur={formik.handleBlur('gsm_responsable')}
-								error={formik.touched.gsm_responsable && Boolean(formik.errors.gsm_responsable)}
-								helperText={formik.touched.gsm_responsable ? formik.errors.gsm_responsable : ''}
-								fullWidth={false}
-								size="small"
-								theme={inputTheme}
-								startIcon={<SmartphoneIcon fontSize="small" />}
-							/>
-							<CustomTextInput
-								id="adresse"
-								type="text"
-								label="Adresse"
-								value={formik.values.adresse}
-								onChange={formik.handleChange('adresse')}
-								onBlur={formik.handleBlur('adresse')}
-								error={formik.touched.adresse && Boolean(formik.errors.adresse)}
-								helperText={formik.touched.adresse ? formik.errors.adresse : ''}
-								fullWidth={false}
-								size="small"
-								theme={inputTheme}
-								startIcon={<LocationOnIcon fontSize="small" />}
-							/>
-							<CustomTextInput
-								id="telephone"
-								type="tel"
-								label="Téléphone"
-								value={formik.values.telephone}
-								onChange={formik.handleChange('telephone')}
-								onBlur={formik.handleBlur('telephone')}
-								error={formik.touched.telephone && Boolean(formik.errors.telephone)}
-								helperText={formik.touched.telephone ? formik.errors.telephone : ''}
-								fullWidth={false}
-								size="small"
-								theme={inputTheme}
-								startIcon={<PhoneIcon fontSize="small" />}
-							/>
-							<CustomTextInput
-								id="fax"
-								type="tel"
-								label="Fax"
-								value={formik.values.fax}
-								onChange={formik.handleChange('fax')}
-								onBlur={formik.handleBlur('fax')}
-								error={formik.touched.fax && Boolean(formik.errors.fax)}
-								helperText={formik.touched.fax ? formik.errors.fax : ''}
-								fullWidth={false}
-								size="small"
-								theme={inputTheme}
-								startIcon={<PrintIcon fontSize="small" />}
-							/>
-							<CustomTextInput
-								id="site_web"
-								type="url"
-								label="Site web"
-								value={formik.values.site_web}
-								onChange={formik.handleChange('site_web')}
-								onBlur={formik.handleBlur('site_web')}
-								error={formik.touched.site_web && Boolean(formik.errors.site_web)}
-								helperText={formik.touched.site_web ? formik.errors.site_web : ''}
-								fullWidth={false}
-								size="small"
-								theme={inputTheme}
-								startIcon={<LanguageIcon fontSize="small" />}
-							/>
-							<CustomTextInput
-								id="numero_du_compte"
-								type="text"
-								label="Numéro du compte"
-								value={formik.values.numero_du_compte}
-								onChange={formik.handleChange('numero_du_compte')}
-								onBlur={formik.handleBlur('numero_du_compte')}
-								error={formik.touched.numero_du_compte && Boolean(formik.errors.numero_du_compte)}
-								helperText={formik.touched.numero_du_compte ? formik.errors.numero_du_compte : ''}
-								fullWidth={false}
-								size="small"
-								theme={inputTheme}
-								startIcon={<AccountBalanceIcon fontSize="small" />}
-							/>
-							<CustomTextInput
-								id="ICE"
-								type="text"
-								label="ICE"
-								value={formik.values.ICE}
-								onChange={formik.handleChange('ICE')}
-								onBlur={formik.handleBlur('ICE')}
-								error={formik.touched.ICE && Boolean(formik.errors.ICE)}
-								helperText={formik.touched.ICE ? formik.errors.ICE : ''}
-								fullWidth={false}
-								size="small"
-								theme={inputTheme}
-								startIcon={<FingerprintIcon fontSize="small" />}
-							/>
-							<CustomTextInput
-								id="registre_de_commerce"
-								type="text"
-								label="Registre de commerce"
-								value={formik.values.registre_de_commerce}
-								onChange={formik.handleChange('registre_de_commerce')}
-								onBlur={formik.handleBlur('registre_de_commerce')}
-								error={formik.touched.registre_de_commerce && Boolean(formik.errors.registre_de_commerce)}
-								helperText={formik.touched.registre_de_commerce ? formik.errors.registre_de_commerce : ''}
-								fullWidth={false}
-								size="small"
-								theme={inputTheme}
-								startIcon={<BadgeIcon fontSize="small" />}
-							/>
-							<CustomTextInput
-								id="identifiant_fiscal"
-								type="text"
-								label="Identifiant fiscal"
-								value={formik.values.identifiant_fiscal}
-								onChange={formik.handleChange('identifiant_fiscal')}
-								onBlur={formik.handleBlur('identifiant_fiscal')}
-								error={formik.touched.identifiant_fiscal && Boolean(formik.errors.identifiant_fiscal)}
-								helperText={formik.touched.identifiant_fiscal ? formik.errors.identifiant_fiscal : ''}
-								fullWidth={false}
-								size="small"
-								theme={inputTheme}
-								startIcon={<CreditCardIcon fontSize="small" />}
-							/>
-							<CustomTextInput
-								id="tax_professionnelle"
-								type="text"
-								label="Taxe professionnelle"
-								value={formik.values.tax_professionnelle}
-								onChange={formik.handleChange('tax_professionnelle')}
-								onBlur={formik.handleBlur('tax_professionnelle')}
-								error={formik.touched.tax_professionnelle && Boolean(formik.errors.tax_professionnelle)}
-								helperText={formik.touched.tax_professionnelle ? formik.errors.tax_professionnelle : ''}
-								fullWidth={false}
-								size="small"
-								theme={inputTheme}
-								startIcon={<CreditCardIcon fontSize="small" />}
-							/>
-							<CustomTextInput
-								id="CNSS"
-								type="text"
-								label="CNSS"
-								value={formik.values.CNSS}
-								onChange={formik.handleChange('CNSS')}
-								onBlur={formik.handleBlur('CNSS')}
-								error={formik.touched.CNSS && Boolean(formik.errors.CNSS)}
-								helperText={formik.touched.CNSS ? formik.errors.CNSS : ''}
-								fullWidth={false}
-								size="small"
-								theme={inputTheme}
-								startIcon={<FingerprintIcon fontSize="small" />}
-							/>
-							<Box>
-								<Typography variant="h5" gutterBottom>
-									Utilisateurs gestionnaires
-								</Typography>
-								<Table>
-									<TableHead>
-										<TableRow>
-											<TableCell>Utilisateur</TableCell>
-											<TableCell>Rôle</TableCell>
-											<TableCell align="right">Actions</TableCell>
-										</TableRow>
-									</TableHead>
-									<TableBody>
-										{adminUsers.length === 0 ? (
+									<CustomDropDownSelect
+										id="nbr_employe"
+										label="Nombre d'employés"
+										items={nbrEmployeItemsList}
+										value={formik.values.nbr_employe}
+										onChange={(e) => formik.setFieldValue('nbr_employe', e.target.value)}
+										theme={customDropdownTheme()}
+										startIcon={<GroupsIcon fontSize="small" />}
+									/>
+									<CustomTextInput
+										id="adresse"
+										type="text"
+										label="Adresse"
+										value={formik.values.adresse}
+										onChange={formik.handleChange('adresse')}
+										onBlur={formik.handleBlur('adresse')}
+										error={formik.touched.adresse && Boolean(formik.errors.adresse)}
+										helperText={formik.touched.adresse ? formik.errors.adresse : ''}
+										fullWidth={false}
+										size="small"
+										theme={inputTheme}
+										startIcon={<LocationOnIcon fontSize="small" />}
+									/>
+									<CustomTextInput
+										id="site_web"
+										type="url"
+										label="Site web"
+										value={formik.values.site_web}
+										onChange={formik.handleChange('site_web')}
+										onBlur={formik.handleBlur('site_web')}
+										error={formik.touched.site_web && Boolean(formik.errors.site_web)}
+										helperText={formik.touched.site_web ? formik.errors.site_web : ''}
+										fullWidth={false}
+										size="small"
+										theme={inputTheme}
+										startIcon={<LanguageIcon fontSize="small" />}
+									/>
+								</Stack>
+							</CardContent>
+						</Card>
+
+						{/* Responsible Person Card */}
+						<Card elevation={2} sx={{ borderRadius: 2 }}>
+							<CardContent sx={{ p: 3 }}>
+								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<ContactsIcon color="primary" />
+									<Typography variant="h6" fontWeight={700}>
+										Responsable
+									</Typography>
+								</Stack>
+								<Divider sx={{ mb: 3 }} />
+								<Stack spacing={2.5}>
+									<CustomDropDownSelect
+										id="civilite_responsable"
+										label="Civilité du responsable"
+										items={civiliteItemsList}
+										value={formik.values.civilite_responsable}
+										onChange={(e) => formik.setFieldValue('civilite_responsable', e.target.value)}
+										theme={customDropdownTheme()}
+										startIcon={<PersonIcon fontSize="small" />}
+									/>
+									<CustomTextInput
+										id="nom_responsable"
+										type="text"
+										label="Nom du responsable"
+										value={formik.values.nom_responsable}
+										onChange={formik.handleChange('nom_responsable')}
+										onBlur={formik.handleBlur('nom_responsable')}
+										error={formik.touched.nom_responsable && Boolean(formik.errors.nom_responsable)}
+										helperText={formik.touched.nom_responsable ? formik.errors.nom_responsable : ''}
+										fullWidth={false}
+										size="small"
+										theme={inputTheme}
+										startIcon={<PersonOutlineIcon fontSize="small" />}
+									/>
+									<CustomTextInput
+										id="gsm_responsable"
+										type="tel"
+										label="GSM du responsable"
+										value={formik.values.gsm_responsable}
+										onChange={formik.handleChange('gsm_responsable')}
+										onBlur={formik.handleBlur('gsm_responsable')}
+										error={formik.touched.gsm_responsable && Boolean(formik.errors.gsm_responsable)}
+										helperText={formik.touched.gsm_responsable ? formik.errors.gsm_responsable : ''}
+										fullWidth={false}
+										size="small"
+										theme={inputTheme}
+										startIcon={<SmartphoneIcon fontSize="small" />}
+									/>
+								</Stack>
+							</CardContent>
+						</Card>
+
+						{/* Contact Information Card */}
+						<Card elevation={2} sx={{ borderRadius: 2 }}>
+							<CardContent sx={{ p: 3 }}>
+								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<PhoneIcon color="primary" />
+									<Typography variant="h6" fontWeight={700}>
+										Contact
+									</Typography>
+								</Stack>
+								<Divider sx={{ mb: 3 }} />
+								<Stack spacing={2.5}>
+									<CustomTextInput
+										id="telephone"
+										type="tel"
+										label="Téléphone"
+										value={formik.values.telephone}
+										onChange={formik.handleChange('telephone')}
+										onBlur={formik.handleBlur('telephone')}
+										error={formik.touched.telephone && Boolean(formik.errors.telephone)}
+										helperText={formik.touched.telephone ? formik.errors.telephone : ''}
+										fullWidth={false}
+										size="small"
+										theme={inputTheme}
+										startIcon={<PhoneIcon fontSize="small" />}
+									/>
+									<CustomTextInput
+										id="fax"
+										type="tel"
+										label="Fax"
+										value={formik.values.fax}
+										onChange={formik.handleChange('fax')}
+										onBlur={formik.handleBlur('fax')}
+										error={formik.touched.fax && Boolean(formik.errors.fax)}
+										helperText={formik.touched.fax ? formik.errors.fax : ''}
+										fullWidth={false}
+										size="small"
+										theme={inputTheme}
+										startIcon={<PrintIcon fontSize="small" />}
+									/>
+								</Stack>
+							</CardContent>
+						</Card>
+
+						{/* Administrative Information Card */}
+						<Card elevation={2} sx={{ borderRadius: 2 }}>
+							<CardContent sx={{ p: 3 }}>
+								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<DescriptionIcon color="primary" />
+									<Typography variant="h6" fontWeight={700}>
+										Informations administratives
+									</Typography>
+								</Stack>
+								<Divider sx={{ mb: 3 }} />
+								<Stack spacing={2.5}>
+									<CustomTextInput
+										id="numero_du_compte"
+										type="text"
+										label="Numéro du compte"
+										value={formik.values.numero_du_compte}
+										onChange={formik.handleChange('numero_du_compte')}
+										onBlur={formik.handleBlur('numero_du_compte')}
+										error={formik.touched.numero_du_compte && Boolean(formik.errors.numero_du_compte)}
+										helperText={formik.touched.numero_du_compte ? formik.errors.numero_du_compte : ''}
+										fullWidth={false}
+										size="small"
+										theme={inputTheme}
+										startIcon={<AccountBalanceIcon fontSize="small" />}
+									/>
+									<CustomTextInput
+										id="ICE"
+										type="text"
+										label="ICE"
+										value={formik.values.ICE}
+										onChange={formik.handleChange('ICE')}
+										onBlur={formik.handleBlur('ICE')}
+										error={formik.touched.ICE && Boolean(formik.errors.ICE)}
+										helperText={formik.touched.ICE ? formik.errors.ICE : ''}
+										fullWidth={false}
+										size="small"
+										theme={inputTheme}
+										startIcon={<FingerprintIcon fontSize="small" />}
+									/>
+									<CustomTextInput
+										id="registre_de_commerce"
+										type="text"
+										label="Registre de commerce"
+										value={formik.values.registre_de_commerce}
+										onChange={formik.handleChange('registre_de_commerce')}
+										onBlur={formik.handleBlur('registre_de_commerce')}
+										error={formik.touched.registre_de_commerce && Boolean(formik.errors.registre_de_commerce)}
+										helperText={formik.touched.registre_de_commerce ? formik.errors.registre_de_commerce : ''}
+										fullWidth={false}
+										size="small"
+										theme={inputTheme}
+										startIcon={<BadgeIcon fontSize="small" />}
+									/>
+									<CustomTextInput
+										id="identifiant_fiscal"
+										type="text"
+										label="Identifiant fiscal"
+										value={formik.values.identifiant_fiscal}
+										onChange={formik.handleChange('identifiant_fiscal')}
+										onBlur={formik.handleBlur('identifiant_fiscal')}
+										error={formik.touched.identifiant_fiscal && Boolean(formik.errors.identifiant_fiscal)}
+										helperText={formik.touched.identifiant_fiscal ? formik.errors.identifiant_fiscal : ''}
+										fullWidth={false}
+										size="small"
+										theme={inputTheme}
+										startIcon={<CreditCardIcon fontSize="small" />}
+									/>
+									<CustomTextInput
+										id="tax_professionnelle"
+										type="text"
+										label="Taxe professionnelle"
+										value={formik.values.tax_professionnelle}
+										onChange={formik.handleChange('tax_professionnelle')}
+										onBlur={formik.handleBlur('tax_professionnelle')}
+										error={formik.touched.tax_professionnelle && Boolean(formik.errors.tax_professionnelle)}
+										helperText={formik.touched.tax_professionnelle ? formik.errors.tax_professionnelle : ''}
+										fullWidth={false}
+										size="small"
+										theme={inputTheme}
+										startIcon={<CreditCardIcon fontSize="small" />}
+									/>
+									<CustomTextInput
+										id="CNSS"
+										type="text"
+										label="CNSS"
+										value={formik.values.CNSS}
+										onChange={formik.handleChange('CNSS')}
+										onBlur={formik.handleBlur('CNSS')}
+										error={formik.touched.CNSS && Boolean(formik.errors.CNSS)}
+										helperText={formik.touched.CNSS ? formik.errors.CNSS : ''}
+										fullWidth={false}
+										size="small"
+										theme={inputTheme}
+										startIcon={<FingerprintIcon fontSize="small" />}
+									/>
+								</Stack>
+							</CardContent>
+						</Card>
+
+						{/* Managers Card */}
+						<Card elevation={2} sx={{ borderRadius: 2 }}>
+							<CardContent sx={{ p: 3 }}>
+								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<AdminPanelSettingsIcon color="primary" />
+									<Typography variant="h6" fontWeight={700}>
+										Utilisateurs gestionnaires {adminUsers.length > 0 && `(${adminUsers.length})`}
+									</Typography>
+								</Stack>
+								<Divider sx={{ mb: 3 }} />
+
+								<TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'grey.200' }}>
+									<Table>
+										<TableHead sx={{ backgroundColor: 'grey.50' }}>
 											<TableRow>
-												<TableCell colSpan={3} align="center">
-													<Typography variant="body2" color="text.secondary">
-														Aucun utilisateur gestionnaire n’a été ajouté.
-													</Typography>
+												<TableCell sx={{ fontWeight: 700 }}>
+													<Stack direction="row" spacing={1} alignItems="center">
+														<PersonIcon fontSize="small" />
+														<span>Utilisateur</span>
+													</Stack>
+												</TableCell>
+												<TableCell sx={{ fontWeight: 700 }}>
+													<Stack direction="row" spacing={1} alignItems="center">
+														<GroupsIcon fontSize="small" />
+														<span>Rôle</span>
+													</Stack>
+												</TableCell>
+												<TableCell align="right" sx={{ fontWeight: 700 }}>
+													Actions
 												</TableCell>
 											</TableRow>
-										) : (
-											adminUsers.map((user, index) => (
-												<TableRow key={`${user.id}-${index}`}>
-													<TableCell>
-														{user.first_name} {user.last_name}
-														{user.id === userID && (
-															<Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
-																(vous)
+										</TableHead>
+										<TableBody>
+											{adminUsers.length === 0 ? (
+												<TableRow>
+													<TableCell colSpan={3} align="center" sx={{ py: 4 }}>
+														<Stack spacing={1} alignItems="center">
+															<AdminPanelSettingsIcon sx={{ fontSize: 48, color: 'grey.400' }} />
+															<Typography variant="body2" color="text.secondary">
+																Aucun utilisateur gestionnaire
 															</Typography>
-														)}
-													</TableCell>
-													<TableCell>
-														<Box sx={{ maxWidth: 180 }}>
-															<CustomDropDownSelect
-																id={`managed_by_role_${index}`}
-																label="Rôle"
-																value={user.role}
-																onChange={(e) => {
-																	const newRole = e.target.value;
-																	const updatedAdmins = adminUsers.map((u, i) =>
-																		i === index ? { ...u, role: newRole } : u,
-																	);
-																	setAdminUsers(updatedAdmins);
-																}}
-																items={roleOptions}
-																theme={customDropdownTheme()}
-																disabled={user.id === userID}
-															/>
-														</Box>
-													</TableCell>
-													<TableCell align="right">
-														<IconButton
-															disabled={user.id === userID}
-															color="error"
-															onClick={() => {
-																setAdminUsers(adminUsers.filter((u) => u.id !== user.id));
-															}}
-														>
-															<Delete />
-														</IconButton>
+														</Stack>
 													</TableCell>
 												</TableRow>
-											))
-										)}
-									</TableBody>
-								</Table>
+											) : (
+												adminUsers.map((user, index) => (
+													<TableRow
+														key={`${user.id}-${index}`}
+														sx={{
+															'&:hover': {
+																backgroundColor: 'grey.50',
+															},
+														}}
+													>
+														<TableCell>
+															<Stack direction="row" spacing={1} alignItems="center">
+																<Typography fontWeight={600}>
+																	{user.first_name} {user.last_name}
+																</Typography>
+																{user.id === userID && (
+																	<Chip label="vous" size="small" color="primary" variant="outlined" />
+																)}
+															</Stack>
+														</TableCell>
+														<TableCell>
+															<Box sx={{ maxWidth: 200 }}>
+																<CustomDropDownSelect
+																	id={`managed_by_role_${index}`}
+																	label="Rôle"
+																	value={user.role}
+																	onChange={(e) => {
+																		const newRole = e.target.value;
+																		const updatedAdmins = adminUsers.map((u, i) =>
+																			i === index ? { ...u, role: newRole } : u,
+																		);
+																		setAdminUsers(updatedAdmins);
+																	}}
+																	items={roleOptions}
+																	theme={customDropdownTheme()}
+																	disabled={user.id === userID}
+																/>
+															</Box>
+														</TableCell>
+														<TableCell align="right">
+															<IconButton
+																disabled={user.id === userID}
+																color="error"
+																size="small"
+																onClick={() => {
+																	setAdminUsers(adminUsers.filter((u) => u.id !== user.id));
+																}}
+															>
+																<Delete />
+															</IconButton>
+														</TableCell>
+													</TableRow>
+												))
+											)}
+										</TableBody>
+									</Table>
+								</TableContainer>
 
-								<Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 2 }}>
-									{isUsersLoading ? (
-										<Skeleton variant="rectangular" width={250} height={40} />
-									) : (
-										<CustomAutocompleteSelect
-											id="new_user_select"
-											label="Ajouter un utilisateur"
-											fullWidth={true}
-											items={availableUsers}
-											value={selectedUser}
-											onChange={(_e, newUser) => {
-												if (newUser) {
-													setSelectedUser(null);
-													const userId = parseInt(newUser.value);
-													const userData = usersData?.find((u) => u.id === userId);
-													if (userData?.id && userData.first_name && userData.last_name) {
-														const newAdmin = {
-															id: userData.id,
-															first_name: userData.first_name,
-															last_name: userData.last_name,
-															role: 'Lecture',
-														};
-														setAdminUsers([...adminUsers, newAdmin]);
-													}
-												}
-											}}
-											theme={customDropdownTheme()}
-											startIcon={<GroupsIcon fontSize="small" />}
-										/>
-									)}
-								</Stack>
-							</Box>
+								<Box sx={{ mt: 3 }}>
+									<Typography variant="subtitle1" fontWeight={600} gutterBottom>
+										Ajouter un gestionnaire
+									</Typography>
+									<Stack direction={isMobile ? 'column' : 'row'} spacing={2} sx={{ mt: 2 }}>
+										<Box sx={{ flex: 1 }}>
+											<CustomAutocompleteSelect
+												id="new_user_select"
+												label="Sélectionner un utilisateur"
+												fullWidth
+												items={availableUsers}
+												value={selectedUser}
+												onChange={(_e, newUser) => setSelectedUser(newUser)}
+												theme={customDropdownTheme()}
+												startIcon={<PersonIcon fontSize="small" />}
+											/>
+										</Box>
+										<Box sx={{ flex: 1 }}>
+											<CustomDropDownSelect
+												id="new_user_role"
+												label="Rôle"
+												items={roleOptions}
+												value={selectedRole}
+												onChange={(e) => setSelectedRole(e.target.value)}
+												theme={customDropdownTheme()}
+												startIcon={<GroupsIcon fontSize="small" />}
+											/>
+										</Box>
+										<Button
+											variant="contained"
+											startIcon={<Add />}
+											onClick={handleAddCompany}
+											disabled={!selectedUser || !selectedRole}
+											sx={{ minWidth: 120, height: 'fit-content' }}
+										>
+											Ajouter
+										</Button>
+									</Stack>
+								</Box>
+							</CardContent>
+						</Card>
 
+						{/* Submit Button */}
+						<Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 2 }}>
 							<PrimaryLoadingButton
 								buttonText={isEditMode ? 'Mettre à jour' : "Ajouter l'entreprise"}
 								active={formik.isValid && !isPending}
@@ -563,16 +729,16 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								loading={isPending}
 								cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}
 							/>
-						</Stack>
-					</form>
-				)}
-			</Stack>
-		</Box>
+						</Box>
+					</Stack>
+				</form>
+			)}
+		</Stack>
 	);
 };
 
 interface Props extends SessionProps {
-	id?: number; // Optional - if provided, we're in edit mode
+	id?: number;
 }
 
 const CompaniesForm: React.FC<Props> = ({ session, id }) => {
