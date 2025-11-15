@@ -9,24 +9,16 @@ import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import {
 	Box,
 	Button,
-	IconButton,
 	Stack,
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableRow,
 	Typography,
 	Card,
 	CardContent,
 	Divider,
 	Paper,
-	Chip,
-	TableContainer,
 	useTheme,
 	useMediaQuery,
 } from '@mui/material';
-import { ArrowBack, Delete } from '@mui/icons-material';
+import { ArrowBack } from '@mui/icons-material';
 import BusinessIcon from '@mui/icons-material/Business';
 import EmailIcon from '@mui/icons-material/Email';
 import GroupsIcon from '@mui/icons-material/Groups';
@@ -67,7 +59,7 @@ import { useGetUsersListQuery } from '@/store/services/account';
 import type { DropDownType } from '@/types/accountTypes';
 import type { CompanyFormValuesType, ManagedByType } from '@/types/companyTypes';
 import { UserClass } from '@/models/Classes';
-import AddManagedBySection from '@/components/shared/addManagedBySection/addManagedBySection';
+import ManagedByTableSection from '@/components/shared/addManagedByTable/addManagedByTable';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -578,124 +570,43 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 						{/* Managers Card */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
-							<CardContent sx={{ p: 3 }}>
-								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-									<AdminPanelSettingsIcon color="primary" />
-									<Typography variant="h6" fontWeight={700}>
-										Utilisateurs gestionnaires {adminUsers.length > 0 && `(${adminUsers.length})`}
-									</Typography>
-								</Stack>
-								<Divider sx={{ mb: 3 }} />
-
-								<TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'grey.200' }}>
-									<Table>
-										<TableHead sx={{ backgroundColor: 'grey.50' }}>
-											<TableRow>
-												<TableCell sx={{ fontWeight: 700 }}>
-													<Stack direction="row" spacing={1} alignItems="center">
-														<PersonIcon fontSize="small" />
-														<span>Utilisateur</span>
-													</Stack>
-												</TableCell>
-												<TableCell sx={{ fontWeight: 700 }}>
-													<Stack direction="row" spacing={1} alignItems="center">
-														<GroupsIcon fontSize="small" />
-														<span>Rôle</span>
-													</Stack>
-												</TableCell>
-												<TableCell align="right" sx={{ fontWeight: 700 }}>
-													Actions
-												</TableCell>
-											</TableRow>
-										</TableHead>
-										<TableBody>
-											{adminUsers.length === 0 ? (
-												<TableRow>
-													<TableCell colSpan={3} align="center" sx={{ py: 4 }}>
-														<Stack spacing={1} alignItems="center">
-															<AdminPanelSettingsIcon sx={{ fontSize: 48, color: 'grey.400' }} />
-															<Typography variant="body2" color="text.secondary">
-																Aucun utilisateur gestionnaire
-															</Typography>
-														</Stack>
-													</TableCell>
-												</TableRow>
-											) : (
-												adminUsers.map((user, index) => (
-													<TableRow
-														key={`${user.id}-${index}`}
-														sx={{
-															'&:hover': {
-																backgroundColor: 'grey.50',
-															},
-														}}
-													>
-														<TableCell>
-															<Stack direction="row" spacing={1} alignItems="center">
-																<Typography fontWeight={600}>
-																	{user.first_name} {user.last_name}
-																</Typography>
-																{user.id === userID && (
-																	<Chip label="vous" size="small" color="primary" variant="outlined" />
-																)}
-															</Stack>
-														</TableCell>
-														<TableCell>
-															<Box sx={{ maxWidth: 200 }}>
-																<CustomDropDownSelect
-																	id={`managed_by_role_${index}`}
-																	label="Rôle"
-																	value={user.role}
-																	onChange={(e) => {
-																		const newRole = e.target.value;
-																		const updatedAdmins = adminUsers.map((u, i) =>
-																			i === index ? { ...u, role: newRole } : u,
-																		);
-																		setAdminUsers(updatedAdmins);
-																	}}
-																	items={roleOptions}
-																	theme={customDropdownTheme()}
-																	disabled={user.id === userID}
-																/>
-															</Box>
-														</TableCell>
-														<TableCell align="right">
-															<IconButton
-																disabled={user.id === userID}
-																color="error"
-																size="small"
-																onClick={() => {
-																	setAdminUsers(adminUsers.filter((u) => u.id !== user.id));
-																}}
-															>
-																<Delete />
-															</IconButton>
-														</TableCell>
-													</TableRow>
-												))
-											)}
-										</TableBody>
-									</Table>
-								</TableContainer>
-								<AddManagedBySection
-									title="Ajouter une société"
-									isMobile={isMobile}
-									selectId="new_company_select"
-									selectLabel="Sélectionner une société"
-									selectItems={availableUsers}
-									selectValue={selectedUser}
-									onSelectChange={(_e, newCompany) => setSelectedUser(newCompany)}
-									selectIcon={<BusinessIcon fontSize="small" />}
-									roleId="new_company_role"
-									roleLabel="Rôle"
-									roleOptions={roleOptions}
-									roleValue={selectedRole}
-									onRoleChange={(e) => setSelectedRole(e.target.value as string)}
-									roleIcon={<GroupsIcon fontSize="small" />}
-									onAdd={handleAddCompany}
-									isAddDisabled={!selectedUser || !selectedRole}
-								/>
-							</CardContent>
+							<ManagedByTableSection
+								title="Utilisateurs gestionnaires"
+								icon={<AdminPanelSettingsIcon color="primary" />}
+								emptyIcon={<AdminPanelSettingsIcon sx={{ fontSize: 48, color: 'grey.400' }} />}
+								emptyMessage="Aucun utilisateur gestionnaire"
+								headers={['Utilisateur', 'Rôle']}
+								data={adminUsers}
+								isUserTable={true}
+								currentUserId={userID}
+								roleOptions={roleOptions}
+								onRoleChange={(index, newRole) => {
+									const updatedAdmins = adminUsers.map((user, i) => (i === index ? { ...user, role: newRole } : user));
+									setAdminUsers(updatedAdmins);
+								}}
+								onDelete={(index) => {
+									const userId = adminUsers[index].id;
+									setAdminUsers(adminUsers.filter((u) => u.id !== userId));
+								}}
+								addSectionProps={{
+									title: 'Ajouter une société',
+									isMobile,
+									selectId: 'new_company_select',
+									selectLabel: 'Sélectionner une société',
+									selectItems: availableUsers,
+									selectValue: selectedUser,
+									onSelectChange: (_e, newUser) => setSelectedUser(newUser),
+									selectIcon: <BusinessIcon fontSize="small" />,
+									roleId: 'new_company_role',
+									roleLabel: 'Rôle',
+									roleOptions,
+									roleValue: selectedRole,
+									onRoleChange: (e) => setSelectedRole(e.target.value as string),
+									roleIcon: <GroupsIcon fontSize="small" />,
+									onAdd: handleAddCompany,
+									isAddDisabled: !selectedUser || !selectedRole,
+								}}
+							/>
 						</Card>
 
 						{/* Submit Button */}

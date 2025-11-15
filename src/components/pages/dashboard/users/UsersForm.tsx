@@ -10,23 +10,16 @@ import {
 	Button,
 	FormControlLabel,
 	Checkbox,
-	IconButton,
 	Stack,
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableRow,
 	Typography,
 	Card,
 	CardContent,
 	Divider,
 	Paper,
-	TableContainer,
 	useTheme,
 	useMediaQuery,
 } from '@mui/material';
-import { ArrowBack, Delete } from '@mui/icons-material';
+import { ArrowBack } from '@mui/icons-material';
 import BusinessIcon from '@mui/icons-material/Business';
 import EmailIcon from '@mui/icons-material/Email';
 import GroupsIcon from '@mui/icons-material/Groups';
@@ -61,8 +54,8 @@ import type { DropDownType } from '@/types/accountTypes';
 import { UserCompaniesType, UsersFormValuesType } from '@/types/usersTypes';
 import { useGetCompaniesListQuery } from '@/store/services/company';
 import { CompanyClass } from '@/models/Classes';
-import AddManagedBySection from '@/components/shared/addManagedBySection/addManagedBySection';
 import PersonIcon from '@mui/icons-material/Person';
+import ManagedByTableSection from '@/components/shared/addManagedByTable/addManagedByTable';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -384,159 +377,44 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 						{/* Managed Companies Card */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
-							<CardContent sx={{ p: 3 }}>
-								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-									<BusinessIcon color="primary" />
-									<Typography variant="h6" fontWeight={700}>
-										Sociétés gérées {companiesAdmin.length > 0 && `(${companiesAdmin.length})`}
-									</Typography>
-								</Stack>
-								<Divider sx={{ mb: 3 }} />
-
-								<TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'grey.200' }}>
-									<Table>
-										<TableHead sx={{ backgroundColor: 'grey.50' }}>
-											<TableRow>
-												<TableCell sx={{ fontWeight: 700 }}>
-													<Stack direction="row" spacing={1} alignItems="center">
-														<BusinessIcon fontSize="small" />
-														<span>Raison Sociale</span>
-													</Stack>
-												</TableCell>
-												<TableCell sx={{ fontWeight: 700 }}>
-													<Stack direction="row" spacing={1} alignItems="center">
-														<GroupsIcon fontSize="small" />
-														<span>Rôle</span>
-													</Stack>
-												</TableCell>
-												<TableCell align="right" sx={{ fontWeight: 700 }}>
-													Actions
-												</TableCell>
-											</TableRow>
-										</TableHead>
-										<TableBody>
-											{companiesAdmin.length === 0 ? (
-												<TableRow>
-													<TableCell colSpan={4} align="center" sx={{ py: 4 }}>
-														<Stack spacing={1} alignItems="center">
-															<BusinessIcon sx={{ fontSize: 48, color: 'grey.400' }} />
-															<Typography variant="body2" color="text.secondary">
-																Aucune société assignée
-															</Typography>
-														</Stack>
-													</TableCell>
-												</TableRow>
-											) : (
-												companiesAdmin.map((company, index) => (
-													<TableRow
-														key={`company-${company.company_id}-${index}`}
-														sx={{
-															'&:hover': {
-																backgroundColor: 'grey.50',
-															},
-														}}
-													>
-														<TableCell>
-															<Typography fontWeight={600}>{company.raison_sociale}</Typography>
-														</TableCell>
-														<TableCell>
-															<Box sx={{ maxWidth: 200 }}>
-																<CustomDropDownSelect
-																	id={`company_role_${index}`}
-																	label="Rôle"
-																	value={company.role}
-																	onChange={(e) => {
-																		const newRole = e.target.value;
-																		const updatedCompanies = companiesAdmin.map((c, i) =>
-																			i === index ? { ...c, role: newRole } : c,
-																		);
-																		setCompaniesAdmin(updatedCompanies);
-																	}}
-																	items={roleOptions}
-																	theme={customDropdownTheme()}
-																/>
-															</Box>
-														</TableCell>
-														<TableCell align="right">
-															<IconButton
-																color="error"
-																size="small"
-																onClick={() => {
-																	setCompaniesAdmin(
-																		companiesAdmin.filter((c) => c.membership_id !== company.membership_id),
-																	);
-																}}
-															>
-																<Delete />
-															</IconButton>
-														</TableCell>
-													</TableRow>
-												))
-											)}
-										</TableBody>
-									</Table>
-								</TableContainer>
-
-								{/*<Box sx={{ mt: 3 }}>*/}
-								{/*	<Typography variant="subtitle1" fontWeight={600} gutterBottom>*/}
-								{/*		Ajouter une société*/}
-								{/*	</Typography>*/}
-								{/*	<Stack direction={isMobile ? 'column' : 'row'} spacing={2} sx={{ mt: 2 }}>*/}
-								{/*		<Box sx={{ flex: 1 }}>*/}
-								{/*			<CustomAutocompleteSelect*/}
-								{/*				id="new_company_select"*/}
-								{/*				label="Sélectionner une société"*/}
-								{/*				fullWidth={true}*/}
-								{/*				items={availableCompanies}*/}
-								{/*				value={selectedCompany}*/}
-								{/*				onChange={(_e, newCompany) => {*/}
-								{/*					setSelectedCompany(newCompany);*/}
-								{/*				}}*/}
-								{/*				theme={customDropdownTheme()}*/}
-								{/*				startIcon={<BusinessIcon fontSize="small" />}*/}
-								{/*			/>*/}
-								{/*		</Box>*/}
-								{/*		<Box sx={{ flex: 1 }}>*/}
-								{/*			<CustomDropDownSelect*/}
-								{/*				id="new_company_role"*/}
-								{/*				label="Rôle"*/}
-								{/*				items={roleOptions}*/}
-								{/*				value={selectedRole}*/}
-								{/*				onChange={(e) => setSelectedRole(e.target.value)}*/}
-								{/*				theme={customDropdownTheme()}*/}
-								{/*				startIcon={<GroupsIcon fontSize="small" />}*/}
-								{/*			/>*/}
-								{/*		</Box>*/}
-								{/*		<Button*/}
-								{/*			variant="contained"*/}
-								{/*			startIcon={<Add />}*/}
-								{/*			onClick={handleAddCompany}*/}
-								{/*			disabled={!selectedCompany || !selectedRole}*/}
-								{/*			sx={{ minWidth: 120, height: 'fit-content' }}*/}
-								{/*		>*/}
-								{/*			Ajouter*/}
-								{/*		</Button>*/}
-								{/*	</Stack>*/}
-								{/*</Box>*/}
-								<AddManagedBySection
-									title="Ajouter un gestionnaire"
-									isMobile={isMobile}
-									selectId="new_user_select"
-									selectLabel="Sélectionner un utilisateur"
-									selectItems={availableCompanies}
-									selectValue={selectedCompany}
-									onSelectChange={(_e, newUser) => setSelectedCompany(newUser)}
-									selectIcon={<PersonIcon fontSize="small" />}
-									roleId="new_user_role"
-									roleLabel="Rôle"
-									roleOptions={roleOptions}
-									roleValue={selectedRole}
-									onRoleChange={(e) => setSelectedRole(e.target.value as string)}
-									roleIcon={<GroupsIcon fontSize="small" />}
-									onAdd={handleAddCompany}
-									isAddDisabled={!selectedCompany || !selectedRole}
-								/>
-							</CardContent>
+							<ManagedByTableSection
+								title="Sociétés gérées"
+								icon={<BusinessIcon color="primary" />}
+								emptyIcon={<BusinessIcon sx={{ fontSize: 48, color: 'grey.400' }} />}
+								emptyMessage="Aucune société assignée"
+								headers={['Raison Sociale', 'Rôle']}
+								data={companiesAdmin}
+								isUserTable={false}
+								roleOptions={roleOptions}
+								onRoleChange={(index, newRole) => {
+									const updatedCompanies = companiesAdmin.map((company, i) =>
+										i === index ? { ...company, role: newRole } : company,
+									);
+									setCompaniesAdmin(updatedCompanies);
+								}}
+								onDelete={(index) => {
+									const membershipId = companiesAdmin[index].membership_id;
+									setCompaniesAdmin(companiesAdmin.filter((c) => c.membership_id !== membershipId));
+								}}
+								addSectionProps={{
+									title: 'Ajouter un gestionnaire',
+									isMobile,
+									selectId: 'new_user_select',
+									selectLabel: 'Sélectionner un utilisateur',
+									selectItems: availableCompanies,
+									selectValue: selectedCompany,
+									onSelectChange: (_e, newCompany) => setSelectedCompany(newCompany),
+									selectIcon: <PersonIcon fontSize="small" />,
+									roleId: 'new_user_role',
+									roleLabel: 'Rôle',
+									roleOptions,
+									roleValue: selectedRole,
+									onRoleChange: (e) => setSelectedRole(e.target.value as string),
+									roleIcon: <GroupsIcon fontSize="small" />,
+									onAdd: handleAddCompany,
+									isAddDisabled: !selectedCompany || !selectedRole,
+								}}
+							/>
 						</Card>
 
 						{/* Submit Button */}
