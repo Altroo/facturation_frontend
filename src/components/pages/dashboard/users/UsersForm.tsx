@@ -26,7 +26,7 @@ import {
 	useTheme,
 	useMediaQuery,
 } from '@mui/material';
-import { ArrowBack, Delete, Add } from '@mui/icons-material';
+import { ArrowBack, Delete } from '@mui/icons-material';
 import BusinessIcon from '@mui/icons-material/Business';
 import EmailIcon from '@mui/icons-material/Email';
 import GroupsIcon from '@mui/icons-material/Groups';
@@ -57,11 +57,12 @@ import {
 	useEditUserMutation,
 	useGetUserQuery,
 } from '@/store/services/account';
-import CustomAutocompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import type { DropDownType } from '@/types/accountTypes';
 import { UserCompaniesType, UsersFormValuesType } from '@/types/usersTypes';
 import { useGetCompaniesListQuery } from '@/store/services/company';
 import { CompanyClass } from '@/models/Classes';
+import AddManagedBySection from '@/components/shared/addManagedBySection/addManagedBySection';
+import PersonIcon from '@mui/icons-material/Person';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -476,47 +477,65 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									</Table>
 								</TableContainer>
 
-								<Box sx={{ mt: 3 }}>
-									<Typography variant="subtitle1" fontWeight={600} gutterBottom>
-										Ajouter une société
-									</Typography>
-									<Stack direction={isMobile ? 'column' : 'row'} spacing={2} sx={{ mt: 2 }}>
-										<Box sx={{ flex: 1 }}>
-											<CustomAutocompleteSelect
-												id="new_company_select"
-												label="Sélectionner une société"
-												fullWidth={true}
-												items={availableCompanies}
-												value={selectedCompany}
-												onChange={(_e, newCompany) => {
-													setSelectedCompany(newCompany);
-												}}
-												theme={customDropdownTheme()}
-												startIcon={<BusinessIcon fontSize="small" />}
-											/>
-										</Box>
-										<Box sx={{ flex: 1 }}>
-											<CustomDropDownSelect
-												id="new_company_role"
-												label="Rôle"
-												items={roleOptions}
-												value={selectedRole}
-												onChange={(e) => setSelectedRole(e.target.value)}
-												theme={customDropdownTheme()}
-												startIcon={<GroupsIcon fontSize="small" />}
-											/>
-										</Box>
-										<Button
-											variant="contained"
-											startIcon={<Add />}
-											onClick={handleAddCompany}
-											disabled={!selectedCompany || !selectedRole}
-											sx={{ minWidth: 120, height: 'fit-content' }}
-										>
-											Ajouter
-										</Button>
-									</Stack>
-								</Box>
+								{/*<Box sx={{ mt: 3 }}>*/}
+								{/*	<Typography variant="subtitle1" fontWeight={600} gutterBottom>*/}
+								{/*		Ajouter une société*/}
+								{/*	</Typography>*/}
+								{/*	<Stack direction={isMobile ? 'column' : 'row'} spacing={2} sx={{ mt: 2 }}>*/}
+								{/*		<Box sx={{ flex: 1 }}>*/}
+								{/*			<CustomAutocompleteSelect*/}
+								{/*				id="new_company_select"*/}
+								{/*				label="Sélectionner une société"*/}
+								{/*				fullWidth={true}*/}
+								{/*				items={availableCompanies}*/}
+								{/*				value={selectedCompany}*/}
+								{/*				onChange={(_e, newCompany) => {*/}
+								{/*					setSelectedCompany(newCompany);*/}
+								{/*				}}*/}
+								{/*				theme={customDropdownTheme()}*/}
+								{/*				startIcon={<BusinessIcon fontSize="small" />}*/}
+								{/*			/>*/}
+								{/*		</Box>*/}
+								{/*		<Box sx={{ flex: 1 }}>*/}
+								{/*			<CustomDropDownSelect*/}
+								{/*				id="new_company_role"*/}
+								{/*				label="Rôle"*/}
+								{/*				items={roleOptions}*/}
+								{/*				value={selectedRole}*/}
+								{/*				onChange={(e) => setSelectedRole(e.target.value)}*/}
+								{/*				theme={customDropdownTheme()}*/}
+								{/*				startIcon={<GroupsIcon fontSize="small" />}*/}
+								{/*			/>*/}
+								{/*		</Box>*/}
+								{/*		<Button*/}
+								{/*			variant="contained"*/}
+								{/*			startIcon={<Add />}*/}
+								{/*			onClick={handleAddCompany}*/}
+								{/*			disabled={!selectedCompany || !selectedRole}*/}
+								{/*			sx={{ minWidth: 120, height: 'fit-content' }}*/}
+								{/*		>*/}
+								{/*			Ajouter*/}
+								{/*		</Button>*/}
+								{/*	</Stack>*/}
+								{/*</Box>*/}
+								<AddManagedBySection
+									title="Ajouter un gestionnaire"
+									isMobile={isMobile}
+									selectId="new_user_select"
+									selectLabel="Sélectionner un utilisateur"
+									selectItems={availableCompanies}
+									selectValue={selectedCompany}
+									onSelectChange={(_e, newUser) => setSelectedCompany(newUser)}
+									selectIcon={<PersonIcon fontSize="small" />}
+									roleId="new_user_role"
+									roleLabel="Rôle"
+									roleOptions={roleOptions}
+									roleValue={selectedRole}
+									onRoleChange={(e) => setSelectedRole(e.target.value as string)}
+									roleIcon={<GroupsIcon fontSize="small" />}
+									onAdd={handleAddCompany}
+									isAddDisabled={!selectedCompany || !selectedRole}
+								/>
 							</CardContent>
 						</Card>
 

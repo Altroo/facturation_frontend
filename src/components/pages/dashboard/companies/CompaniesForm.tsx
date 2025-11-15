@@ -26,7 +26,7 @@ import {
 	useTheme,
 	useMediaQuery,
 } from '@mui/material';
-import { ArrowBack, Delete, Add } from '@mui/icons-material';
+import { ArrowBack, Delete } from '@mui/icons-material';
 import BusinessIcon from '@mui/icons-material/Business';
 import EmailIcon from '@mui/icons-material/Email';
 import GroupsIcon from '@mui/icons-material/Groups';
@@ -64,10 +64,10 @@ import CustomSquareImageUploading from '@/components/formikElements/customSquare
 import { useAppSelector } from '@/utils/hooks';
 import { getGroupesState, getProfilState } from '@/store/selectors';
 import { useGetUsersListQuery } from '@/store/services/account';
-import CustomAutocompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import type { DropDownType } from '@/types/accountTypes';
 import type { CompanyFormValuesType, ManagedByType } from '@/types/companyTypes';
 import { UserClass } from '@/models/Classes';
+import AddManagedBySection from '@/components/shared/addManagedBySection/addManagedBySection';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -677,46 +677,24 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										</TableBody>
 									</Table>
 								</TableContainer>
-
-								<Box sx={{ mt: 3 }}>
-									<Typography variant="subtitle1" fontWeight={600} gutterBottom>
-										Ajouter un gestionnaire
-									</Typography>
-									<Stack direction={isMobile ? 'column' : 'row'} spacing={2} sx={{ mt: 2 }}>
-										<Box sx={{ flex: 1 }}>
-											<CustomAutocompleteSelect
-												id="new_user_select"
-												label="Sélectionner un utilisateur"
-												fullWidth
-												items={availableUsers}
-												value={selectedUser}
-												onChange={(_e, newUser) => setSelectedUser(newUser)}
-												theme={customDropdownTheme()}
-												startIcon={<PersonIcon fontSize="small" />}
-											/>
-										</Box>
-										<Box sx={{ flex: 1 }}>
-											<CustomDropDownSelect
-												id="new_user_role"
-												label="Rôle"
-												items={roleOptions}
-												value={selectedRole}
-												onChange={(e) => setSelectedRole(e.target.value)}
-												theme={customDropdownTheme()}
-												startIcon={<GroupsIcon fontSize="small" />}
-											/>
-										</Box>
-										<Button
-											variant="contained"
-											startIcon={<Add />}
-											onClick={handleAddCompany}
-											disabled={!selectedUser || !selectedRole}
-											sx={{ minWidth: 120, height: 'fit-content' }}
-										>
-											Ajouter
-										</Button>
-									</Stack>
-								</Box>
+								<AddManagedBySection
+									title="Ajouter une société"
+									isMobile={isMobile}
+									selectId="new_company_select"
+									selectLabel="Sélectionner une société"
+									selectItems={availableUsers}
+									selectValue={selectedUser}
+									onSelectChange={(_e, newCompany) => setSelectedUser(newCompany)}
+									selectIcon={<BusinessIcon fontSize="small" />}
+									roleId="new_company_role"
+									roleLabel="Rôle"
+									roleOptions={roleOptions}
+									roleValue={selectedRole}
+									onRoleChange={(e) => setSelectedRole(e.target.value as string)}
+									roleIcon={<GroupsIcon fontSize="small" />}
+									onAdd={handleAddCompany}
+									isAddDisabled={!selectedUser || !selectedRole}
+								/>
 							</CardContent>
 						</Card>
 
