@@ -84,12 +84,13 @@ export const usersApi = createApi({
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 		}),
-		checkEmail: builder.query<void | ApiErrorResponseType, { token: string | undefined; email: string }>({
+		checkEmail: builder.mutation<void | ApiErrorResponseType, { token: string | undefined; email: string }>({
 			query: ({ token, email }) => ({
 				// this is using Account app endpoint
-				url: `${process.env.NEXT_PUBLIC_ACCOUNT_CHECK_EMAIL}${email}/`,
-				method: 'GET',
+				url: `${process.env.NEXT_PUBLIC_ACCOUNT_CHECK_EMAIL}`,
+				method: 'POST',
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+				data: { email },
 			}),
 		}),
 		deleteUser: builder.mutation<void | ApiErrorResponseType, { token: string | undefined; id: number }>({
@@ -161,5 +162,5 @@ export const {
 	useEditUserMutation,
 	useGetUserQuery,
 	useAddUserMutation,
-	useCheckEmailQuery,
+	useCheckEmailMutation,
 } = usersApi;

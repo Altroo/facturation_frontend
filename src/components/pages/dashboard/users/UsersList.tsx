@@ -9,7 +9,7 @@ import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/companies/companies.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { useDeleteUserMutation, useGetUsersListQuery } from '@/store/services/account';
-import { COMPANIES_ADD, USERS_VIEW, USERS_EDIT } from '@/utils/routes';
+import { USERS_VIEW, USERS_EDIT, USERS_ADD } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
@@ -258,7 +258,7 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 				>
 					<Button
 						variant="contained"
-						onClick={() => router.push(COMPANIES_ADD)}
+						onClick={() => router.push(USERS_ADD)}
 						sx={{
 							whiteSpace: 'nowrap',
 							px: { xs: 1.5, sm: 2, md: 3 },

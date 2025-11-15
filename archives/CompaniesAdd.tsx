@@ -556,7 +556,7 @@ const CompaniesAdd: React.FC<SessionProps> = ({ session }) => {
 
 	return (
 		<Stack direction="column" sx={{ position: 'relative' }}>
-			<NavigationBar title="Créer une entreprise">
+			<NavigationBar title="Ajouter une entreprise">
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
 					<Box sx={{ width: '100%' }}>
 						<FormikContent
@@ -571,7 +571,7 @@ const CompaniesAdd: React.FC<SessionProps> = ({ session }) => {
 			<Portal id="snackbar_portal">
 				<CustomToast
 					type="success"
-					message="Entreprise créée avec succès."
+					message="Entreprise ajouter avec succès."
 					setShow={setShowDataUpdated}
 					show={showDataUpdated}
 				/>

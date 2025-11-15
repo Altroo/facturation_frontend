@@ -14,9 +14,10 @@ type Props = {
 	croppedImage?: string | ArrayBuffer | null;
 	onChange: (image: string | ArrayBuffer | null) => void;
 	onCrop: (data: string | null) => void;
+	cssClasse?: string;
 };
 
-const CustomSquareImageUploading: React.FC<Props> = ({ image, croppedImage, onChange, onCrop }) => {
+const CustomSquareImageUploading: React.FC<Props> = ({ image, croppedImage, onChange, onCrop, cssClasse }) => {
 	const cropperRef = useRef<ReactCropperElement>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -79,7 +80,7 @@ const CustomSquareImageUploading: React.FC<Props> = ({ image, croppedImage, onCh
 	const displayImage = showCropper ? image : croppedImage;
 
 	return (
-		<Stack className={Styles.rootStackWrapper} direction="row" alignItems="center">
+		<Stack className={`${Styles.rootStackWrapper} ${cssClasse}`} direction="row" alignItems="center">
 			<input
 				type="file"
 				accept="image/jpeg,image/png"

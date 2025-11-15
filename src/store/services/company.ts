@@ -16,7 +16,7 @@ export const companyApi = createApi({
 	endpoints: (builder) => ({
 		getCompaniesList: builder.query<
 			Array<Partial<CompanyClass>> | PaginationResponseType<CompanyClass>,
-			{ token: string | undefined; with_pagination?: boolean; page: number; pageSize: number; search?: string }
+			{ token: string | undefined; with_pagination?: boolean; page?: number; pageSize?: number; search?: string }
 		>({
 			query: ({ token, with_pagination, page, pageSize, search }) => ({
 				url: with_pagination

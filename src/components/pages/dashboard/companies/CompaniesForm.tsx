@@ -575,14 +575,14 @@ interface Props extends SessionProps {
 	id?: number; // Optional - if provided, we're in edit mode
 }
 
-const CompanyForm: React.FC<Props> = ({ session, id }) => {
+const CompaniesForm: React.FC<Props> = ({ session, id }) => {
 	const token = getAccessTokenFromSession(session);
 	const [showDataUpdated, setShowDataUpdated] = useState<boolean>(false);
 	const isEditMode = id !== undefined;
 
 	return (
 		<Stack direction="column" sx={{ position: 'relative' }}>
-			<NavigationBar title={isEditMode ? "Modifier l'entreprise" : 'Créer une entreprise'}>
+			<NavigationBar title={isEditMode ? "Modifier l'entreprise" : 'Ajouter une entreprise'}>
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
 					<Box sx={{ width: '100%' }}>
 						<FormikContent
@@ -598,7 +598,7 @@ const CompanyForm: React.FC<Props> = ({ session, id }) => {
 			<Portal id="snackbar_portal">
 				<CustomToast
 					type="success"
-					message={isEditMode ? 'Entreprise mise à jour' : 'Entreprise créée avec succès.'}
+					message={isEditMode ? 'Entreprise mise à jour' : 'Entreprise ajouter avec succès.'}
 					setShow={setShowDataUpdated}
 					show={showDataUpdated}
 				/>
@@ -607,4 +607,4 @@ const CompanyForm: React.FC<Props> = ({ session, id }) => {
 	);
 };
 
-export default CompanyForm;
+export default CompaniesForm;

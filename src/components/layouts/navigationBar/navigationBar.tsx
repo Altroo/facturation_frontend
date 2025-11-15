@@ -205,7 +205,7 @@ const NavigationBar = (props: Props) => {
 	const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 	const [open, setOpen] = React.useState(!isMobile);
 	const { data: session, status } = useSession();
-	const { avatar, first_name, last_name, gender, is_staff } = useAppSelector(getProfilState);
+	const { avatar_cropped, first_name, last_name, gender, is_staff } = useAppSelector(getProfilState);
 	const navigationMenu = useMemo(() => getNavigationMenu(is_staff), [is_staff]);
 
 	const loading = status === 'loading';
@@ -362,7 +362,7 @@ const NavigationBar = (props: Props) => {
 							gap: 2,
 						}}
 					>
-						{!avatar ? (
+						{!avatar_cropped ? (
 							<Skeleton variant="circular" width={80} height={80} />
 						) : (
 							<Box
@@ -374,7 +374,7 @@ const NavigationBar = (props: Props) => {
 								}}
 							>
 								<Image
-									src={avatar as string}
+									src={avatar_cropped as string}
 									alt={`${first_name} ${last_name}`}
 									width={80}
 									height={80}
@@ -386,7 +386,7 @@ const NavigationBar = (props: Props) => {
 						{/* Text block next to avatar */}
 						<Box sx={{ display: 'flex', flexDirection: 'column' }}>
 							<Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-								{gender === 'H' ? 'Bienvenu' : gender === 'F' ? 'Bienvenue' : 'Bienvenu(e)'}
+								{gender === 'Homme' ? 'Bienvenu' : gender === 'Femme' ? 'Bienvenue' : 'Bienvenu(e)'}
 							</Typography>
 							<Typography variant="body2" sx={{ color: 'text.secondary' }}>
 								{first_name} {last_name}

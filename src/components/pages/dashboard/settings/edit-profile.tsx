@@ -1,24 +1,18 @@
 'use client';
 
-import React, { useEffect, useRef, useState, useTransition } from 'react';
+import React, { useState, useTransition } from 'react';
 import Styles from '@/styles/dashboard/settings/edit-profil.module.sass';
 import { TabletAndMobile, Desktop } from '@/utils/clientHelpers';
 import { Box, Stack } from '@mui/material';
 import { useFormik } from 'formik';
 import { profilSchema } from '@/utils/formValidationSchemas';
-import CircularAvatarInputFile from '@/components/htmlElements/buttons/circularAvatarInputFile/circularAvatarInputFile';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
-import PrimaryButton from '@/components/htmlElements/buttons/primaryButton/primaryButton';
 import { coordonneeTextInputTheme, customDropdownTheme } from '@/utils/themes';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import { genderItemsList } from '@/utils/rawData';
 import { useAppDispatch } from '@/utils/hooks';
 import CustomToast from '@/components/portals/customToast/customToast';
 import Portal from '@/contexts/Portal';
-import { customActionsModalTheme } from '@/utils/themes';
-import 'cropperjs/dist/cropper.css';
-import Cropper, { ReactCropperElement } from 'react-cropper';
-import CustomSwipeModal from '@/components/desktop/modals/rightSwipeModal/customSwipeModal';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import { setFormikAutoErrors } from '@/utils/helpers';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
@@ -28,6 +22,7 @@ import { getAccessTokenFromSession } from '@/store/session';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { accountEditProfilAction } from '@/store/actions/accountActions';
+import CustomSquareImageUploading from '@/components/formikElements/customSquareImageUploading/customSquareImageUploading';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -43,33 +38,22 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 	const dispatch = useAppDispatch();
 	const [isPending, startTransition] = useTransition();
 
-	let avatarInitial: string | ArrayBuffer | null = null;
-	if (profilData?.avatar) {
-		avatarInitial = profilData.avatar;
-	}
-	const [preview, setPreview] = useState<string | ArrayBuffer | null>(avatarInitial);
-	const [avatar, setAvatar] = useState<File | null>(null);
-
 	const formik = useFormik({
 		initialValues: {
 			first_name: profilData?.first_name ?? '',
 			last_name: profilData?.last_name ?? '',
 			gender: profilData?.gender ? (profilData.gender === 'H' ? 'Homme' : 'Femme') : '',
+			avatar: profilData?.avatar ?? '',
+			avatar_cropped: profilData?.avatar_cropped ?? '',
 			globalError: '',
 		},
 		enableReinitialize: true,
 		validateOnMount: true,
 		validationSchema: toFormikValidationSchema(profilSchema),
-		onSubmit: async (values, { setFieldError }) => {
+		onSubmit: async (data, { setFieldError }) => {
 			startTransition(async () => {
-				const payload = {
-					avatar: preview,
-					first_name: values.first_name,
-					last_name: values.last_name,
-					gender: values.gender,
-				};
 				try {
-					const response = await editProfil({ token, data: payload }).unwrap();
+					const response = await editProfil({ token, data }).unwrap();
 					if (response) {
 						dispatch(accountEditProfilAction(response));
 						onSuccess();
@@ -80,32 +64,6 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 			});
 		},
 	});
-	const [openCropModal, setOpenCropModal] = useState<boolean>(false);
-
-	useEffect(() => {
-		if (avatar) {
-			const reader = new FileReader();
-			reader.onloadend = () => {
-				setPreview(reader.result);
-				setOpenCropModal(true);
-			};
-			reader.readAsDataURL(avatar);
-		} else {
-			setPreview(avatarInitial);
-			setOpenCropModal(false);
-		}
-	}, [avatarInitial, avatar, dispatch]);
-
-	const cropperRef = useRef<ReactCropperElement>(null);
-
-	const onSaveCropImage = () => {
-		const imageElement: ReactCropperElement | null = cropperRef?.current;
-		const cropper = imageElement?.cropper;
-		if (cropper) {
-			setPreview(cropper.getCroppedCanvas().toDataURL());
-			setOpenCropModal(false);
-		}
-	};
 
 	return (
 		<Stack direction="column" alignItems="center" spacing={2} className={`${Styles.flexRootStack}`} mt="32px">
@@ -113,9 +71,15 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 				<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
 			)}
 			<h2 className={Styles.pageTitle}>Profil</h2>
-			<CircularAvatarInputFile setAvatar={setAvatar} preview={preview} active={true} showText />
 			<form className={Styles.form} onSubmit={(e) => e.preventDefault()}>
 				<Stack direction="column" spacing={2}>
+					<CustomSquareImageUploading
+						cssClasse={Styles.centerAvatar}
+						image={formik.values.avatar}
+						croppedImage={formik.values.avatar_cropped}
+						onChange={(img) => formik.setFieldValue('avatar', img)}
+						onCrop={(cropped) => formik.setFieldValue('avatar_cropped', cropped)}
+					/>
 					<CustomTextInput
 						id="first_name"
 						type="text"
@@ -162,44 +126,6 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 					/>
 				</Stack>
 			</form>
-			<CustomSwipeModal
-				keepMounted={false}
-				direction="up"
-				fullScreen={false}
-				showCloseIcon={false}
-				onBackdrop={() => {}}
-				theme={customActionsModalTheme()}
-				transition
-				open={openCropModal}
-				handleClose={() => setOpenCropModal(false)}
-				cssClasse={Styles.centerModal}
-			>
-				<Stack direction="column" spacing="24px" id="userAvatarCropper">
-					<Cropper
-						src={preview as string}
-						style={{ height: '100%', width: '100%' }}
-						cropBoxResizable={false}
-						initialAspectRatio={4 / 4}
-						minCropBoxWidth={98}
-						minCropBoxHeight={98}
-						minCanvasWidth={98}
-						minCanvasHeight={98}
-						minContainerHeight={98}
-						minContainerWidth={98}
-						dragMode="move"
-						ref={cropperRef}
-						viewMode={3}
-					/>
-					<Stack direction="row" width="100%" justifyContent="center" pb="24px">
-						<PrimaryButton
-							buttonText="Enregistrer"
-							active={true}
-							onClick={onSaveCropImage}
-							cssClass={Styles.cropButton}
-						/>
-					</Stack>
-				</Stack>
-			</CustomSwipeModal>
 		</Stack>
 	);
 };

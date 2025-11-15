@@ -8,6 +8,7 @@ export class UserClass {
 		public email: string,
 		public gender: string,
 		public avatar: string | ArrayBuffer | null,
+		public avatar_cropped: string | ArrayBuffer | null,
 		public is_staff: boolean,
 		public is_active: boolean,
 		public date_joined: string | null,

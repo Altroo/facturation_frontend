@@ -9,6 +9,8 @@ import {
 	SHORT_INPUT_REQUIRED,
 } from '@/utils/formValidationErrorMessages';
 
+const base64ImageField = z.url().or(z.string().startsWith('data:image/')).nullable().optional();
+
 const passwordField = z.preprocess(
 	(val) => (val === undefined ? '' : val),
 	z
@@ -71,6 +73,9 @@ export const passwordResetCodeSchema = z.object({
 export const profilSchema = z.object({
 	first_name: requiredTextField(2, 30),
 	last_name: requiredTextField(2, 30),
+	gender: z.string().optional(),
+	avatar: base64ImageField,
+	avatar_cropped: base64ImageField,
 });
 
 export const changePasswordSchema = z.object({
@@ -78,8 +83,6 @@ export const changePasswordSchema = z.object({
 	new_password: passwordField,
 	new_password2: passwordField,
 });
-
-const base64ImageField = z.url().or(z.string().startsWith('data:image/')).nullable().optional();
 
 const optionalEmailField = z.preprocess(
 	(val) => (val === undefined || val === null || val === '' ? undefined : val),
@@ -131,5 +134,29 @@ export const companySchema = z.object({
 	logo_cropped: base64ImageField,
 	cachet: base64ImageField,
 	cachet_cropped: base64ImageField,
+	globalError: z.string().optional(),
+});
+
+export const userSchema = z.object({
+	// REQUIRED FIELDS
+	first_name: requiredTextField(2, 255),
+	last_name: requiredTextField(2, 255),
+	email: z.email({ error: MINI_INPUT_EMAIL }),
+	gender: z.string().min(1, { error: INPUT_REQUIRED }),
+	is_active: z.boolean(),
+	is_staff: z.boolean(),
+	// OPTIONAL FIELDS
+	companies: z
+		.array(
+			z.object({
+				membership_id: z.number(),
+				company_id: z.number(),
+				raison_sociale: z.string(),
+				role: z.string(),
+			}),
+		)
+		.optional(),
+	avatar: base64ImageField,
+	avatar_cropped: base64ImageField,
 	globalError: z.string().optional(),
 });

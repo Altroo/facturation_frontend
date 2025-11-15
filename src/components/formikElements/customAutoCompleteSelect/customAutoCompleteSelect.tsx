@@ -39,6 +39,7 @@ const CustomAutocompleteSelect: React.FC<Props> = ({
 				noOptionsText="Aucun utilisateur trouvé"
 				options={items}
 				getOptionLabel={(option) => option.code}
+				getOptionKey={(option) => option.value}
 				filterOptions={(options, state) =>
 					options.filter((opt) => opt.code.toLowerCase().includes(state.inputValue.toLowerCase()))
 				}
