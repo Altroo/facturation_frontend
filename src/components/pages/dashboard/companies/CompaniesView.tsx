@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, isValidElement } from 'react';
 import { useRouter } from 'next/navigation';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
@@ -53,17 +53,48 @@ interface InfoRowProps {
 }
 
 const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
-	const displayValue = React.isValidElement(value) ? value : value && value.toString().length > 1 ? value : '-';
+	const theme = useTheme();
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+	const displayValue = isValidElement(value) ? value : value && value.toString().length > 1 ? value : '-';
 
 	return (
-		<Stack direction="row" spacing={2} alignItems="center" sx={{ py: 1.5 }}>
-			<Box sx={{ color: 'primary.main', display: 'flex', alignItems: 'center', minWidth: 40 }}>{icon}</Box>
-			<Stack direction="row" spacing={2} alignItems="center" sx={{ flex: 1, flexWrap: 'wrap' }}>
-				<Typography fontWeight={600} color="text.secondary" sx={{ minWidth: { xs: '100%', sm: 180 } }}>
+		<Stack direction="row" alignItems="center" sx={{ py: 1.5 }}>
+			{/* Icon */}
+			<Box
+				sx={{
+					color: 'primary.main',
+					display: 'flex',
+					alignItems: 'center',
+					minWidth: 40,
+				}}
+			>
+				{icon}
+			</Box>
+
+			{/* Label + Value */}
+			<Stack
+				direction="row"
+				alignItems="center"
+				spacing={isMobile ? 0 : 2}
+				sx={{
+					flex: 1,
+					flexWrap: 'wrap',
+				}}
+			>
+				<Typography
+					fontWeight={600}
+					color="text.secondary"
+					sx={{
+						minWidth: { xs: '100%', sm: 180 },
+						wordBreak: 'break-word',
+					}}
+				>
 					{label}
 				</Typography>
+
 				<Box sx={{ flex: 1 }}>
-					{React.isValidElement(displayValue) ? (
+					{isValidElement(displayValue) ? (
 						displayValue
 					) : (
 						<Typography sx={{ color: 'text.primary' }}>{displayValue}</Typography>
@@ -158,8 +189,13 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 											}}
 										/>
 										<Stack spacing={2} sx={{ flex: 1, width: '100%' }}>
-											<Stack spacing={1}>
-												<Typography variant="h4" fontWeight={700}>
+											<Stack spacing={1} alignItems={isMobile ? 'center' : 'flex-start'}>
+												<Typography
+													variant="h4"
+													textAlign={isMobile ? 'center' : 'inherit'}
+													fontSize={isMobile ? '20px' : '2.125rem'}
+													fontWeight={700}
+												>
 													{companyData?.raison_sociale ?? "Nom de l'entreprise"}
 												</Typography>
 												<Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">

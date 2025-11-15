@@ -43,23 +43,63 @@ interface InfoRowProps {
 }
 
 const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
+	const theme = useTheme();
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
 	const displayValue = React.isValidElement(value) ? value : value && value.toString().length > 1 ? value : '-';
 
 	return (
-		<Stack direction="row" spacing={2} alignItems="center" sx={{ py: 1.5 }}>
-			<Box sx={{ color: 'primary.main', display: 'flex', alignItems: 'center', minWidth: 40 }}>{icon}</Box>
-			<Stack direction="row" spacing={2} alignItems="center" sx={{ flex: 1, flexWrap: 'wrap' }}>
-				<Typography fontWeight={600} color="text.secondary" sx={{ minWidth: { xs: '100%', sm: 160 } }}>
-					{label}
-				</Typography>
-				<Box sx={{ flex: 1 }}>
-					{React.isValidElement(displayValue) ? (
-						displayValue
-					) : (
-						<Typography sx={{ color: 'text.primary' }}>{displayValue}</Typography>
-					)}
-				</Box>
-			</Stack>
+		<Stack
+			direction="row"
+			alignItems="flex-start"
+			spacing={2}
+			sx={{
+				py: 1.5,
+				flexWrap: 'wrap',
+			}}
+		>
+			{/* Icon */}
+			<Box
+				sx={{
+					color: 'primary.main',
+					display: 'flex',
+					alignItems: 'center',
+					minWidth: 40,
+				}}
+			>
+				{icon}
+			</Box>
+
+			{/* Label */}
+			<Typography
+				fontWeight={600}
+				color="text.secondary"
+				sx={{
+					width: isMobile ? 80 : 'auto', // force wrapping on mobile
+					wordBreak: isMobile ? 'break-word' : 'normal',
+					whiteSpace: isMobile ? 'normal' : 'nowrap',
+					flexShrink: 0,
+				}}
+			>
+				{label}
+			</Typography>
+
+			{/* Value */}
+			<Box
+				sx={{
+					flex: 1,
+					minWidth: 0,
+					wordBreak: 'break-word',
+					display: 'flex',
+					alignItems: 'center',
+				}}
+			>
+				{React.isValidElement(displayValue) ? (
+					displayValue
+				) : (
+					<Typography sx={{ color: 'text.primary' }}>{displayValue}</Typography>
+				)}
+			</Box>
 		</Stack>
 	);
 };
@@ -147,8 +187,13 @@ const UsersViewClient: React.FC<Props> = ({ session, id }) => {
 											}}
 										/>
 										<Stack spacing={2} sx={{ flex: 1, width: '100%' }}>
-											<Stack spacing={1}>
-												<Typography variant="h4" fontWeight={700}>
+											<Stack spacing={1} alignItems={isMobile ? 'center' : 'flex-start'}>
+												<Typography
+													variant="h4"
+													textAlign={isMobile ? 'center' : 'inherit'}
+													fontSize={isMobile ? '20px' : '2.125rem'}
+													fontWeight={700}
+												>
 													{userData?.email ?? "Nom de l'utilisateur"}
 												</Typography>
 												<Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
@@ -174,11 +219,23 @@ const UsersViewClient: React.FC<Props> = ({ session, id }) => {
 							</Card>
 
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
-								<CardContent sx={{ p: 3 }}>
-									<Typography variant="h6" fontWeight={700} gutterBottom sx={{ mb: 2 }}>
+								<CardContent
+									sx={{
+										px: { xs: 2, md: 3 },
+										py: { xs: 2, md: 3 },
+									}}
+								>
+									<Typography
+										variant="h6"
+										fontWeight={700}
+										gutterBottom
+										sx={{ mb: { xs: 1.5, md: 2 }, fontSize: { xs: '1rem', md: '1.25rem' } }}
+									>
 										Informations générales
 									</Typography>
-									<Divider sx={{ mb: 2 }} />
+
+									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
+
 									<Stack spacing={0}>
 										<InfoRow icon={<EmailIcon />} label="Email" value={userData?.email} />
 										<Divider />
