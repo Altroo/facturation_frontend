@@ -88,7 +88,7 @@ const EnterCodePageContent = ({ email }: EnterCodePageContentProps) => {
 		digits.forEach((ch, idx) => formik.setFieldValue(fields[idx], ch));
 		formik.setFieldValue('code', digits.join(''));
 		setTimeout(() => {
-			formik.validateForm();
+			formik.validateForm().then();
 			const focusIndex = Math.min(digits.length, fields.length - 1);
 			inputRefs[fields[focusIndex]].current?.focus();
 		}, 0);
