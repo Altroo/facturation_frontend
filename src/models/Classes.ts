@@ -1,4 +1,5 @@
 import type { NbrEmployeType, CiviliteType, ManagedByType, ManagedByWriteOnlyType } from '@/types/companyTypes';
+import { client_type } from '@/types/clientTypes';
 
 export class UserClass {
 	constructor(
@@ -47,5 +48,32 @@ export class CompanyClass {
 		public CNSS: string | null,
 		public managed_by: Array<ManagedByWriteOnlyType>,
 		public admins: Array<ManagedByType>,
+	) {}
+}
+
+export class ClientClass {
+	constructor(
+		public id: number,
+		public code_client: string,
+		public client_type: client_type,
+		public company: number,
+		public adresse: string | null,
+		public ville: number | null,
+		public tel: string | null,
+		public email: string | null,
+		public delai_de_paiement: number | null,
+		public remarque: string | null,
+		public date_created: string | null,
+		public archived: boolean,
+		public raison_sociale: string | null,
+		public numero_du_compte: string | null,
+		public ICE: string | null,
+		public registre_de_commerce: string | null,
+		public identifiant_fiscal: string | null,
+		public taxe_professionnelle: string | null,
+		public CNSS: string | null,
+		public fax: string | null,
+		public nom: string | null,
+		public prenom: string | null,
 	) {}
 }

@@ -1,5 +1,5 @@
 import { accountApi, profilApi, groupApi, usersApi } from '@/store/services/account';
-import { setupApiStore } from '@/store/store.test';
+import { setupApiStore } from '@/store/setupApiStore';
 
 beforeAll(() => {
 	process.env.NEXT_PUBLIC_ACCOUNT_SEND_PASSWORD_RESET ||= 'https://example.com/account/password-reset/send/';

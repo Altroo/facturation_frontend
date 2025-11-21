@@ -1,5 +1,5 @@
 import { companyApi } from '@/store/services/company';
-import { setupApiStore } from '@/store/store.test';
+import { setupApiStore } from '@/store/setupApiStore';
 
 beforeAll(() => {
 	process.env.NEXT_PUBLIC_COMPANY_LIST ||= 'https://example.com/companies/';
