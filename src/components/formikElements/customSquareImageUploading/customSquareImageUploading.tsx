@@ -109,7 +109,7 @@ const CustomSquareImageUploading: React.FC<Props> = ({ image, croppedImage, onCh
 								ready={handleReady}
 								cropend={handleCrop}
 							/>
-							<Box className={Styles.closeButtonWrapper} onClick={handleClear}>
+							<Box className={Styles.closeButtonWrapper} onClick={handleClear} data-testid="clear-button">
 								<Image src={CircularRemoveBlack} alt="" width="32" height="32" sizes="100vw" />
 							</Box>
 						</>

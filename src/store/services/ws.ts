@@ -1,11 +1,14 @@
-import { eventChannel } from 'redux-saga';
+import { EventChannel, eventChannel } from 'redux-saga';
 import type { WSEvent, WSEventType, WSUserAvatar } from '@/types/wsTypes';
 import { WSUserAvatarAction } from '@/store/actions/wsActions';
 
+// Add multiple WS action types as needed
+type WSAction = ReturnType<typeof WSUserAvatarAction>;
+
 let ws: WebSocket;
 
-export function initWebsocket(token: string) {
-	return eventChannel((emitter) => {
+export function initWebsocket(token: string): EventChannel<WSAction> {
+	return eventChannel<WSAction>((emitter) => {
 		function createWs() {
 			const wsUrl = `${process.env.NEXT_PUBLIC_ROOT_WS_URL}`;
 			if (typeof window !== 'undefined') {
@@ -22,9 +25,8 @@ export function initWebsocket(token: string) {
 						const { message } = msg;
 						const signalType: WSEventType = message.type;
 						if (signalType === 'USER_AVATAR') {
-							const { message } = msg as WSEvent<WSUserAvatar>;
-							const { pk, avatar } = message;
-							return emitter(WSUserAvatarAction(pk, avatar));
+							const { pk, avatar } = (msg as WSEvent<WSUserAvatar>).message;
+							emitter(WSUserAvatarAction(pk, avatar));
 						}
 					}
 				}; // unsubscribe function

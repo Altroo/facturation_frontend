@@ -1,18 +1,21 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { isAuthenticatedInstance } from '@/utils/helpers';
 import { axiosBaseQuery } from '@/utils/axiosBaseQuery';
-import { store } from '@/store/store';
 import { getInitStateToken } from '@/store/selectors';
 import { CompanyClass } from '@/models/Classes';
 import type { ApiErrorResponseType, PaginationResponseType, SuccessResponseType } from '@/types/_initTypes';
+import type { RootState } from '@/store/store';
+import { initToken } from '@/store/slices/_initSlice';
 
 export const companyApi = createApi({
 	reducerPath: 'companyApi',
 	tagTypes: ['Company'],
-	baseQuery: axiosBaseQuery(() => {
-		// pass function which will be used by the interceptor to read the latest token from redux
-		return isAuthenticatedInstance(() => getInitStateToken(store.getState()));
-	}),
+	baseQuery: axiosBaseQuery((api) =>
+		isAuthenticatedInstance(
+			() => getInitStateToken(api.getState() as RootState),
+			() => api.dispatch(initToken()),
+		),
+	),
 	endpoints: (builder) => ({
 		getCompaniesList: builder.query<
 			Array<Partial<CompanyClass>> | PaginationResponseType<CompanyClass>,

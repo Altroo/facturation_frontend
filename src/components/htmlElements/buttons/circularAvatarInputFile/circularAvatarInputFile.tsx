@@ -50,6 +50,7 @@ const CircularAvatarInputFile: React.FC<Props> = (props: Props) => {
 					className={Styles.hiddenFile}
 					ref={fileInputRef}
 					accept="image/*"
+					data-testid="avatar-file-input"
 					onChange={(e) => avatarInputOnChangeHandler(e)}
 				/>
 				<div
@@ -63,7 +64,7 @@ const CircularAvatarInputFile: React.FC<Props> = (props: Props) => {
 					{props.preview && (
 						<Image
 							src={props.preview as string}
-							alt=""
+							alt="avatar preview"
 							width={100}
 							height={100}
 							loading="eager"
@@ -72,7 +73,7 @@ const CircularAvatarInputFile: React.FC<Props> = (props: Props) => {
 					)}
 					<Image
 						src={AvatarIconSVG}
-						alt=""
+						alt="avatar icon"
 						width="30"
 						height="27"
 						loading="eager"

@@ -4,11 +4,11 @@ import type { InitStateInterface, InitStateToken } from '@/types/_initTypes';
 import { setInitState } from '../slices/_initSlice';
 import { Session } from 'next-auth';
 
-function* initAppSaga() {
+export function* initAppSaga() {
 	// empty for now, but later will be needed to initialise the app
 }
 
-function* initAppSessionTokensSaga(payload: { type: string; session: Session }) {
+export function* initAppSessionTokensSaga(payload: { type: string; session: Session }) {
 	const stateToken = {
 		user: payload.session.user,
 		access: payload.session.accessToken,
@@ -22,7 +22,7 @@ function* initAppSessionTokensSaga(payload: { type: string; session: Session }) 
 	yield put(setInitState(appToken));
 }
 
-function* refreshAppTokenStatesSaga(payload: { type: string; session: Record<string, unknown> }) {
+export function* refreshAppTokenStatesSaga(payload: { type: string; session: Record<string, unknown> }) {
 	const accessToken: string = payload.session['accessToken'] as string;
 	const refreshToken: string = payload.session['refreshToken'] as string;
 	const accessTokenExpiration = payload.session['accessTokenExpiration'] as string;

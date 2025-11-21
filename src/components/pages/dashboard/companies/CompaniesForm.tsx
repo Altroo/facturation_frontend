@@ -641,8 +641,8 @@ const CompaniesForm: React.FC<Props> = ({ session, id }) => {
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
 					<Box sx={{ width: '100%' }}>
 						<FormikContent
-							first_name={session?.user.first_name}
-							last_name={session?.user.last_name}
+							first_name={session?.user.first_name ?? ''}
+							last_name={session?.user.last_name ?? ''}
 							token={token}
 							id={id}
 							onSuccess={() => setShowDataUpdated(true)}

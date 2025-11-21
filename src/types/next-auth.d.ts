@@ -1,27 +1,20 @@
-import type { tokenUser } from './_initTypes';
 import type { ProviderType } from 'next-auth/providers';
-import type { DefaultSession } from 'next-auth';
 
-// Extend the NextAuth types to include your custom types
 declare module 'next-auth' {
-	/**
-	 * Extends the default session with additional properties.
-	 */
-	export interface Session extends DefaultSession {
+	interface Session {
 		user: tokenUser;
 		accessToken: string;
 		refreshToken: string;
 		accessTokenExpiration: string;
 		refreshTokenExpiration: string;
+		expires: string;
 	}
 
-	/**
-	 * Represents the user object returned by the `authorize` function
-	 * or included in the JWT token.
-	 */
-	export interface User {
+	interface User {
+		id: string;
 		name: string;
 		email: string;
+		image?: string | null;
 		user: tokenUser;
 		access: string;
 		refresh: string;
@@ -29,10 +22,7 @@ declare module 'next-auth' {
 		refresh_expiration: string;
 	}
 
-	/**
-	 * Represents an account returned by the OAuth providers.
-	 */
-	export interface Account {
+	interface Account {
 		providerAccountId: string | undefined;
 		type: ProviderType;
 		provider: string;
@@ -45,10 +35,7 @@ declare module 'next-auth' {
 }
 
 declare module 'next-auth/jwt' {
-	/**
-	 * Extends the JWT object with additional properties.
-	 */
-	export interface JWT {
+	interface JWT {
 		user: tokenUser;
 		access: string;
 		refresh: string;
@@ -57,10 +44,13 @@ declare module 'next-auth/jwt' {
 	}
 }
 
-export interface AuthInterface {
-	user: tokenUser;
-	access: string;
-	refresh: string;
-	access_expiration: string;
-	refresh_expiration: string;
-}
+export type tokenUser = {
+	id: string;
+	pk: number;
+	email: string;
+	emailVerified: Date | null;
+	name: string;
+	first_name: string;
+	last_name: string;
+	image?: string | null;
+};

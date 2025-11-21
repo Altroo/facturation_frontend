@@ -1,23 +1,25 @@
 import axios, { AxiosHeaders, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { signOut } from 'next-auth/react';
-import { store } from '@/store/store';
-import { initToken } from '@/store/slices/_initSlice';
 import { SITE_ROOT } from '@/utils/routes';
 import type { APIContentTypeInterface, ApiErrorResponseType, InitStateToken } from '@/types/_initTypes';
 
 /**
  * Handles unauthorized response by clearing cookies, signing out, and resetting token.
  */
-const handleUnauthorized = async () => {
+export const handleUnauthorized = async (onResetToken?: () => void) => {
 	await signOut({ redirect: false, redirectTo: SITE_ROOT });
-	store.dispatch(initToken());
+	if (onResetToken) {
+		onResetToken();
+	}
 };
 
 /**
  * Creates an Axios instance with authentication headers.
+ * The getToken callback should read the latest token from Redux state (via api.getState()).
  */
 export const isAuthenticatedInstance = (
 	getToken?: () => InitStateToken | undefined,
+	onUnauthorized?: () => void,
 	contentType: APIContentTypeInterface = 'application/json',
 ): AxiosInstance => {
 	const instance = axios.create({
@@ -47,11 +49,9 @@ export const isAuthenticatedInstance = (
 	instance.interceptors.response.use(
 		(response: AxiosResponse) => response,
 		async (error) => {
-			// Handle responses with error data
 			if (error.response?.data) {
 				const errorData = error.response.data as ApiErrorResponseType;
 
-				// Handle server errors (500+)
 				if (error.response.status >= 500) {
 					return Promise.reject({
 						error: {
@@ -66,11 +66,8 @@ export const isAuthenticatedInstance = (
 					});
 				}
 
-				// Handle unauthorized (401)
 				if (error.response.status === 401) {
-					// Assuming handleUnauthorized is defined elsewhere
-					await handleUnauthorized();
-
+					await handleUnauthorized(onUnauthorized);
 					return Promise.reject({
 						error: {
 							status_code: 401,
@@ -80,8 +77,6 @@ export const isAuthenticatedInstance = (
 					});
 				}
 
-				// Handle all other error responses (400, 403, 404, etc.)
-				// Django always returns a single error object
 				if (errorData.status_code !== undefined && errorData.message !== undefined) {
 					return Promise.reject({
 						error: {
@@ -93,14 +88,11 @@ export const isAuthenticatedInstance = (
 				}
 			}
 
-			// Handle network errors (no response)
 			return Promise.reject({
 				error: {
 					status_code: 0,
 					message: error.message || 'Erreur réseau',
-					details: {
-						error: ['Impossible de se connecter au serveur'],
-					},
+					details: { error: ['Impossible de se connecter au serveur'] },
 				},
 			});
 		},
@@ -123,11 +115,8 @@ export const allowAnyInstance = (contentType: APIContentTypeInterface = 'applica
 	instance.interceptors.response.use(
 		(response: AxiosResponse) => response,
 		(error) => {
-			// Handle response errors
 			if (error.response?.data) {
 				const errorData = error.response.data as ApiErrorResponseType;
-
-				// Django always returns a single error object with this structure
 				if (errorData.status_code !== undefined && errorData.message !== undefined) {
 					return Promise.reject({
 						error: {
@@ -139,14 +128,11 @@ export const allowAnyInstance = (contentType: APIContentTypeInterface = 'applica
 				}
 			}
 
-			// Handle network errors or malformed responses
 			return Promise.reject({
 				error: {
 					status_code: error.response?.status || 0,
 					message: error.message || 'Erreur réseau',
-					details: {
-						error: ['Impossible de se connecter au serveur'],
-					},
+					details: { error: ['Impossible de se connecter au serveur'] },
 				},
 			});
 		},
@@ -172,16 +158,10 @@ export const setFormikAutoErrors = ({ e, setFieldError }: FormikAutoErrorsProps)
 	if (!payload?.details) return;
 
 	for (const [field, messages] of Object.entries(payload.details)) {
-		if (field === 'error') {
-			// Handle global errors
-			const errorMsg = Array.isArray(messages) ? messages[0] : messages;
-			setFieldError('globalError', errorMsg);
-		} else if (field === 'detail') {
-			// Handle DRF 'detail' errors as global errors
-			const errorMsg = Array.isArray(messages) ? messages[0] : messages;
+		const errorMsg = Array.isArray(messages) ? messages[0] : messages;
+		if (field === 'error' || field === 'detail') {
 			setFieldError('globalError', errorMsg);
 		} else {
-			// Handle field-specific errors
 			if (Array.isArray(messages)) {
 				messages.forEach((msg) => setFieldError(field, msg));
 			} else {

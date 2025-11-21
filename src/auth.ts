@@ -37,16 +37,27 @@ export const { handlers, auth } = NextAuth({
 					});
 
 					if (response.status === 200) {
+						const { user, access, refresh, access_expiration, refresh_expiration } = response.data;
+
 						return {
-							pk: response.data.user.pk,
-							email: response.data.user.email,
-							name: response.data.user.first_name + ' ' + response.data.user.last_name,
+							id: String(user.pk), // Convert pk to string
+							email: user.email,
+							name: `${user.first_name} ${user.last_name}`, // Construct full name
 							image: null,
-							user: response.data.user,
-							access: response.data.access,
-							access_expiration: response.data.access_expiration,
-							refresh: response.data.refresh,
-							refresh_expiration: response.data.refresh_expiration,
+							user: {
+								id: String(user.pk),
+								pk: user.pk,
+								email: user.email,
+								emailVerified: null, // Backend doesn't provide this
+								name: `${user.first_name} ${user.last_name}`,
+								first_name: user.first_name,
+								last_name: user.last_name,
+								image: null,
+							},
+							access,
+							access_expiration,
+							refresh,
+							refresh_expiration,
 						};
 					} else {
 						return null;
@@ -127,7 +138,7 @@ export const { handlers, auth } = NextAuth({
 			session.refreshToken = token.refresh as string;
 			session.accessTokenExpiration = token.access_expiration as string;
 			session.refreshTokenExpiration = token.refresh_expiration as string;
-			session.user = token.user;
+			session.user = token.user as never;
 			return session;
 		},
 	},

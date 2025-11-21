@@ -3,19 +3,19 @@ import * as Types from '../actions';
 import { setProfil, setGroupes, setWSUserAvatar } from '../slices/accountSlice';
 import type { setGroupesPayloadType, setProfilPayloadType } from '@/types/accountTypes';
 
-function* accountSetProfilSaga(payload: setProfilPayloadType) {
+export function* accountSetProfilSaga(payload: setProfilPayloadType) {
 	yield put(setProfil(payload.data));
 }
 
-function* accountEditProfilSaga(payload: setProfilPayloadType) {
+export function* accountEditProfilSaga(payload: setProfilPayloadType) {
 	yield put(setProfil(payload.data));
 }
 
-function* accountSetGroupesSaga(payload: setGroupesPayloadType) {
+export function* accountSetGroupesSaga(payload: setGroupesPayloadType) {
 	yield put(setGroupes(payload.data));
 }
 
-function* wsUserAvatarSaga(payload: { type: string; pk: number; avatar: string }) {
+export function* wsUserAvatarSaga(payload: { type: string; pk: number; avatar: string }) {
 	yield put(setWSUserAvatar({ avatar: payload.avatar }));
 }
 

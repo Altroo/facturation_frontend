@@ -1,9 +1,11 @@
-import React, { CSSProperties } from 'react';
+import React from 'react';
 import { Alert } from '@mui/material';
+import { SxProps } from '@mui/system';
+import { Theme } from '@mui/material/styles';
 
 type Props = {
 	errorDetails?: Record<string, string[]> | { error: string[] } | null;
-	cssStyle?: CSSProperties;
+	cssStyle?: SxProps<Theme>;
 	children?: React.ReactNode;
 };
 

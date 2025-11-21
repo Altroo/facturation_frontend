@@ -9,7 +9,7 @@ import { Add } from '@mui/icons-material';
 import { DropDownType } from '@/types/accountTypes';
 import { SelectChangeEvent } from '@mui/material/Select';
 
-interface AddManagedBySectionProps {
+export interface AddManagedBySectionProps {
 	title: string;
 	isMobile: boolean;
 	selectId: string;

@@ -2,11 +2,12 @@ import { createApi } from '@reduxjs/toolkit/query/react';
 import { allowAnyInstance, isAuthenticatedInstance } from '@/utils/helpers';
 import { axiosBaseQuery } from '@/utils/axiosBaseQuery';
 import type { ApiErrorResponseType, PaginationResponseType, SuccessResponseType } from '@/types/_initTypes';
-import { store } from '@/store/store';
+import type { RootState } from '@/store/store';
 import { getInitStateToken } from '@/store/selectors';
 import { GroupClass, UserClass } from '@/models/Classes';
 import type { EditProfilResponse, PasswordResetResponse } from '@/types/accountTypes';
-import { UserWithCompaniesResponseType } from '@/types/usersTypes';
+import type { UserWithCompaniesResponseType } from '@/types/usersTypes';
+import { initToken } from '@/store/slices/_initSlice';
 
 export const accountApi = createApi({
 	reducerPath: 'accountApi',
@@ -40,10 +41,12 @@ export const accountApi = createApi({
 
 export const groupApi = createApi({
 	reducerPath: 'groupApi',
-	baseQuery: axiosBaseQuery(() => {
-		// pass function which will be used by the interceptor to read the latest token from redux
-		return isAuthenticatedInstance(() => getInitStateToken(store.getState()));
-	}),
+	baseQuery: axiosBaseQuery((api) =>
+		isAuthenticatedInstance(
+			() => getInitStateToken(api.getState() as RootState),
+			() => api.dispatch(initToken()),
+		),
+	),
 	endpoints: (builder) => ({
 		getGroups: builder.query<GroupClass, string | undefined>({
 			query: (token) => ({
@@ -58,10 +61,12 @@ export const groupApi = createApi({
 export const usersApi = createApi({
 	reducerPath: 'usersApi',
 	tagTypes: ['Users'],
-	baseQuery: axiosBaseQuery(() => {
-		// pass function which will be used by the interceptor to read the latest token from redux
-		return isAuthenticatedInstance(() => getInitStateToken(store.getState()));
-	}),
+	baseQuery: axiosBaseQuery((api) =>
+		isAuthenticatedInstance(
+			() => getInitStateToken(api.getState() as RootState),
+			() => api.dispatch(initToken()),
+		),
+	),
 	endpoints: (builder) => ({
 		getUsersList: builder.query<
 			SuccessResponseType<Array<Partial<UserClass>>> | PaginationResponseType<Partial<UserClass>>,
@@ -122,10 +127,12 @@ export const usersApi = createApi({
 
 export const profilApi = createApi({
 	reducerPath: 'profilApi',
-	baseQuery: axiosBaseQuery(() => {
-		// pass function which will be used by the interceptor to read the latest token from redux
-		return isAuthenticatedInstance(() => getInitStateToken(store.getState()));
-	}),
+	baseQuery: axiosBaseQuery((api) =>
+		isAuthenticatedInstance(
+			() => getInitStateToken(api.getState() as RootState),
+			() => api.dispatch(initToken()),
+		),
+	),
 	endpoints: (builder) => ({
 		getProfil: builder.query<UserClass, string | undefined>({
 			query: (token) => ({

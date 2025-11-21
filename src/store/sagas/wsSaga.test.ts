@@ -1,0 +1,47 @@
+import { runSaga } from 'redux-saga';
+import { watchWS } from './wsSaga';
+import { initWebsocket } from '@/store/services/ws';
+import { getAccessToken } from '@/store/selectors';
+import { Action } from 'redux';
+import { eventChannel } from 'redux-saga';
+
+jest.mock('@/store/services/ws', () => ({
+	initWebsocket: jest.fn(),
+}));
+
+jest.mock('@/store/selectors', () => ({
+	getAccessToken: jest.fn(),
+}));
+
+describe('watchWS saga', () => {
+	it('should initialize websocket and dispatch actions from the channel', async () => {
+		const dispatched: Action[] = [];
+		const mockToken = 'mock-token';
+		const mockAction: Action = { type: 'MOCK_ACTION' };
+
+		(getAccessToken as jest.Mock).mockReturnValue(mockToken);
+
+		const mockChannel = eventChannel((emit) => {
+			const timer = setTimeout(() => emit(mockAction), 10); // emit after saga starts
+			return () => clearTimeout(timer);
+		});
+
+		(initWebsocket as jest.Mock).mockReturnValue(mockChannel);
+
+		const task = runSaga(
+			{
+				dispatch: (action: Action) => dispatched.push(action),
+				getState: () => ({ auth: { token: mockToken } }),
+			},
+			watchWS,
+		);
+
+		// Cancel after short delay to break infinite loop
+		setTimeout(() => task.cancel(), 100);
+
+		await task.toPromise();
+
+		expect(initWebsocket).toHaveBeenCalledWith(mockToken);
+		expect(dispatched).toContainEqual(mockAction);
+	}, 10000); // Optional: increase timeout to 10s
+});

@@ -1,0 +1,85 @@
+describe('routes constants', () => {
+	const ORIG_ENV = process.env.NEXT_PUBLIC_DOMAIN_URL_PREFIX;
+
+	beforeEach(() => {
+		jest.resetModules();
+		process.env.NEXT_PUBLIC_DOMAIN_URL_PREFIX = 'https://example.com';
+	});
+
+	afterEach(() => {
+		process.env.NEXT_PUBLIC_DOMAIN_URL_PREFIX = ORIG_ENV;
+		jest.resetModules();
+	});
+
+	it('constructs SITE_ROOT from NEXT_PUBLIC_DOMAIN_URL_PREFIX with trailing slash', () => {
+		// require relative path to routes file
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		const routes = require('./routes');
+		expect(routes.SITE_ROOT).toBe('https://example.com/');
+	});
+
+	it('exports auth routes based on SITE_ROOT', () => {
+		const {
+			SITE_ROOT,
+			AUTH_LOGIN,
+			AUTH_RESET_PASSWORD,
+			AUTH_RESET_PASSWORD_ENTER_CODE,
+			AUTH_RESET_PASSWORD_SET_PASSWORD,
+			AUTH_RESET_PASSWORD_COMPLETE,
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
+		} = require('./routes');
+
+		expect(AUTH_LOGIN).toBe(`${SITE_ROOT}/login`);
+		expect(AUTH_RESET_PASSWORD).toBe(`${SITE_ROOT}/reset-password`);
+		expect(AUTH_RESET_PASSWORD_ENTER_CODE).toBe(`${SITE_ROOT}/reset-password/enter-code`);
+		expect(AUTH_RESET_PASSWORD_SET_PASSWORD).toBe(`${SITE_ROOT}/reset-password/set-password`);
+		expect(AUTH_RESET_PASSWORD_COMPLETE).toBe(`${SITE_ROOT}/reset-password/set-password-complete`);
+	});
+
+	it('exports dashboard and profile routes', () => {
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		const { SITE_ROOT, DASHBOARD, DASHBOARD_EDIT_PROFILE, DASHBOARD_PASSWORD } = require('./routes');
+
+		expect(DASHBOARD).toBe(`${SITE_ROOT}dashboard`);
+		expect(DASHBOARD_EDIT_PROFILE).toBe(`${SITE_ROOT}dashboard/settings/edit-profile`);
+		expect(DASHBOARD_PASSWORD).toBe(`${SITE_ROOT}dashboard/settings/password`);
+	});
+
+	it('exports companies routes and functions', () => {
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		const { SITE_ROOT, COMPANIES_LIST, COMPANIES_ADD, COMPANIES_VIEW, COMPANIES_EDIT } = require('./routes');
+
+		expect(COMPANIES_LIST).toBe(`${SITE_ROOT}dashboard/companies`);
+		expect(COMPANIES_ADD).toBe(`${SITE_ROOT}dashboard/companies/new`);
+
+		expect(typeof COMPANIES_VIEW).toBe('function');
+		expect(typeof COMPANIES_EDIT).toBe('function');
+
+		expect(COMPANIES_VIEW(5)).toBe(`${SITE_ROOT}dashboard/companies/5`);
+		expect(COMPANIES_EDIT(12)).toBe(`${SITE_ROOT}dashboard/companies/12/edit`);
+	});
+
+	it('exports users routes and functions', () => {
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		const { SITE_ROOT, USERS_LIST, USERS_ADD, USERS_VIEW, USERS_EDIT } = require('./routes');
+
+		expect(USERS_LIST).toBe(`${SITE_ROOT}dashboard/users`);
+		expect(USERS_ADD).toBe(`${SITE_ROOT}dashboard/users/new`);
+
+		expect(typeof USERS_VIEW).toBe('function');
+		expect(typeof USERS_EDIT).toBe('function');
+
+		expect(USERS_VIEW(3)).toBe(`${SITE_ROOT}dashboard/users/3`);
+		expect(USERS_EDIT(7)).toBe(`${SITE_ROOT}dashboard/users/7/edit`);
+	});
+
+	it('reacts to different NEXT_PUBLIC_DOMAIN_URL_PREFIX values', () => {
+		process.env.NEXT_PUBLIC_DOMAIN_URL_PREFIX = 'http://localhost:3000/base';
+		jest.resetModules();
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		const { SITE_ROOT, DASHBOARD } = require('./routes');
+
+		expect(SITE_ROOT).toBe('http://localhost:3000/base/');
+		expect(DASHBOARD).toBe('http://localhost:3000/base/dashboard');
+	});
+});

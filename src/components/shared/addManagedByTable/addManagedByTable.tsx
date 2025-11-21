@@ -128,6 +128,7 @@ const ManagedByTableSection: React.FC<ManagedByTableSectionProps> = ({
 									</TableCell>
 									<TableCell align="right">
 										<IconButton
+											aria-label="delete"
 											color="error"
 											size="small"
 											onClick={() => onDelete(index)}

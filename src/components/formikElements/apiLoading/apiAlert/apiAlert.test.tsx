@@ -1,0 +1,44 @@
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import ApiAlert from './apiAlert';
+import type { SxProps } from '@mui/system';
+import type { Theme } from '@mui/material/styles';
+
+describe('ApiAlert', () => {
+	it('renders error messages when errorDetails contains an "error" array', () => {
+		const errorDetails = { error: ['Invalid request', 'Missing fields'] };
+
+		render(<ApiAlert errorDetails={errorDetails} />);
+
+		// whole string is concatenated
+		expect(screen.getByText('error : Invalid request,Missing fields')).toBeInTheDocument();
+
+		const alert = screen.getByRole('alert');
+		expect(alert).toHaveTextContent(/Invalid request/);
+		expect(alert).toHaveTextContent(/Missing fields/);
+	});
+
+	it('applies custom sx style to the Alert component', () => {
+		const customStyle: SxProps<Theme> = { backgroundColor: 'rgb(255, 0, 0)' };
+		const errorDetails = { error: ['Something went wrong'] };
+
+		const { container } = render(<ApiAlert errorDetails={errorDetails} cssStyle={customStyle} />);
+
+		const alert = container.querySelector('.MuiAlert-root');
+		expect(alert).toBeInTheDocument();
+		expect(alert).toHaveStyle('background-color: rgb(255, 0, 0)');
+	});
+
+	it('renders an empty message when errorDetails is null or undefined', () => {
+		const { container } = render(<ApiAlert />);
+
+		const alert = container.querySelector('.MuiAlert-root');
+		expect(alert).toBeInTheDocument();
+
+		// The message part should be empty, the icon remains
+		const message = container.querySelector('.MuiAlert-message');
+		expect(message).toBeInTheDocument();
+		expect(message).toBeEmptyDOMElement();
+	});
+});
