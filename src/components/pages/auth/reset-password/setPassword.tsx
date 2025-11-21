@@ -4,7 +4,7 @@ import React, { useTransition } from 'react';
 import Styles from '@/styles/auth/reset-password/set-password.module.sass';
 import { setFormikAutoErrors } from '@/utils/helpers';
 import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
-import { cookiesPoster } from '@/store/services/_initAPI';
+import { cookiesPoster } from '@/utils/apiHelpers';
 import { AUTH_RESET_PASSWORD_COMPLETE } from '@/utils/routes';
 import AuthLayout from '@/components/layouts/auth/authLayout';
 import { toFormikValidationSchema } from 'zod-formik-adapter';

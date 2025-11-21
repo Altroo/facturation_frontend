@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN } from '@/utils/routes';
-import CompaniesForm from '@/components/pages/dashboard/companies/CompaniesForm';
+import CompaniesForm from '@/components/pages/dashboard/companies/companiesForm';
 
 const CompaniesEditPage = async ({ params }: { params: Promise<{ id: number }> }) => {
 	const session = await auth();

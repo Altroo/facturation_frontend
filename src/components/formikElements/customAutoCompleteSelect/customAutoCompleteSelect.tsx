@@ -18,7 +18,7 @@ type Props = {
 	slotProps?: TextFieldProps['slotProps'];
 };
 
-const CustomAutocompleteSelect: React.FC<Props> = ({
+const CustomAutoCompleteSelect: React.FC<Props> = ({
 	id,
 	label,
 	items,
@@ -77,4 +77,4 @@ const CustomAutocompleteSelect: React.FC<Props> = ({
 	);
 };
 
-export default CustomAutocompleteSelect;
+export default CustomAutoCompleteSelect;

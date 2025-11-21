@@ -2,12 +2,12 @@ import React from 'react';
 import { Box, Typography, Stack, Button } from '@mui/material';
 import { SxProps, Theme } from '@mui/system';
 import { ReactNode } from 'react';
-import CustomAutocompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import { customDropdownTheme } from '@/utils/themes';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import { Add } from '@mui/icons-material';
 import { DropDownType } from '@/types/accountTypes';
 import { SelectChangeEvent } from '@mui/material/Select';
+import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 
 export interface AddManagedBySectionProps {
 	title: string;
@@ -56,7 +56,7 @@ const AddManagedBySection: React.FC<AddManagedBySectionProps> = ({
 		</Typography>
 		<Stack direction={isMobile ? 'column' : 'row'} spacing={2} sx={{ mt: 2 }}>
 			<Box sx={{ flex: 1 }}>
-				<CustomAutocompleteSelect
+				<CustomAutoCompleteSelect
 					id={selectId}
 					label={selectLabel}
 					fullWidth

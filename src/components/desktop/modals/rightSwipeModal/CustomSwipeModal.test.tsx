@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import CustomSwipeModal from './customSwipeModal';
+import CustomSwipeModal from './CustomSwipeModal';
 
 // Mock next/image
 jest.mock('next/image', () => ({

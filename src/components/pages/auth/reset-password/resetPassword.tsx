@@ -5,7 +5,7 @@ import Styles from '@/styles/auth/reset-password/reset-password.module.sass';
 import { setFormikAutoErrors } from '@/utils/helpers';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
-import { cookiesPoster } from '@/store/services/_initAPI';
+import { cookiesPoster } from '@/utils/apiHelpers';
 import { AUTH_RESET_PASSWORD_ENTER_CODE, DASHBOARD } from '@/utils/routes';
 import AuthLayout from '@/components/layouts/auth/authLayout';
 import { Stack, Divider } from '@mui/material';

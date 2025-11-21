@@ -18,7 +18,7 @@ jest.mock('next/navigation', () => ({
 	redirect: mockRedirect,
 }));
 
-jest.mock('@/components/pages/dashboard/users/UsersList', () => ({
+jest.mock('@/components/pages/dashboard/users/usersList', () => ({
 	__esModule: true,
 	default: (props: { session?: Session }) => {
 		// eslint-disable-next-line @typescript-eslint/no-require-imports

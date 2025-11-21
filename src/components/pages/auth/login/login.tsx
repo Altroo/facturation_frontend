@@ -8,7 +8,7 @@ import { allowAnyInstance, setFormikAutoErrors } from '@/utils/helpers';
 import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import type { AccountPostLoginResponseType } from '@/types/accountTypes';
-import { postApi } from '@/store/services/_initAPI';
+import { postApi } from '@/utils/apiHelpers';
 import { AUTH_RESET_PASSWORD, DASHBOARD } from '@/utils/routes';
 import { signIn, useSession } from 'next-auth/react';
 import { useSearchParams, useRouter } from 'next/navigation';

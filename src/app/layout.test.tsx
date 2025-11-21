@@ -49,7 +49,7 @@ jest.mock('@mui/material-nextjs/v15-appRouter', () => ({
 	},
 }));
 
-jest.mock('@/providers/ThemeProvider', () => ({
+jest.mock('@/providers/themeProvider', () => ({
 	__esModule: true,
 	default: (props: { children?: React.ReactNode }) => {
 		// eslint-disable-next-line @typescript-eslint/no-require-imports

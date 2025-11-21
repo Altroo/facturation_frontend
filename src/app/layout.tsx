@@ -8,7 +8,7 @@ import { AppProps } from 'next/app';
 import { InitContextProvider } from '@/contexts/InitContext';
 import { auth } from '@/auth';
 import type { Viewport } from 'next';
-import ThemeProvider from '@/providers/ThemeProvider';
+import ThemeProvider from '@/providers/themeProvider';
 
 export const metadata: Metadata = {
 	title: 'Facturation - Casa Di Lusso',

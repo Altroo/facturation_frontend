@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Styles from './customSwipeModal.module.sass';
+import Styles from './CustomSwipeModal.module.sass';
 import { Dialog, Box, Slide, ThemeProvider } from '@mui/material';
 import { TransitionProps } from '@mui/material/transitions';
 import CloseSVG from '../../../../../public/assets/svgs/navigationIcons/close.svg';

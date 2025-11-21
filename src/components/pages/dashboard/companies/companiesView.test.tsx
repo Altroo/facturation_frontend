@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import CompaniesViewClient from './CompaniesView';
+import CompaniesViewClient from './companiesView';
 import { Provider } from 'react-redux';
 import { store } from '@/store/store';
 import { useGetCompanyQuery } from '@/store/services/company';

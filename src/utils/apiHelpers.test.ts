@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { cookiesPoster, cookiesDeleter, postApi } from './_initAPI';
+import { cookiesPoster, cookiesDeleter, postApi } from './apiHelpers';
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;

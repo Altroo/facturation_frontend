@@ -5,12 +5,12 @@ import '@testing-library/jest-dom';
 import { GridColDef } from '@mui/x-data-grid';
 import { createTheme } from '@mui/material/styles';
 
-// ✅ Mock theme
+// Mock theme
 jest.mock('@/utils/themes', () => ({
 	getDefaultTheme: () => createTheme(),
 }));
 
-// ✅ Mock loading spinner
+// Mock loading spinner
 jest.mock('@/components/formikElements/apiLoading/apiProgress/apiProgress', () => ({
 	__esModule: true,
 	default: () => <div data-testid="api-progress">Loading...</div>,

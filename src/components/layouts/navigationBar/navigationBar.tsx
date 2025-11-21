@@ -20,7 +20,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import ListItemText from '@mui/material/ListItemText';
 import { useAppSelector } from '@/utils/hooks';
 import { getProfilState } from '@/store/selectors';
-import { cookiesDeleter } from '@/store/services/_initAPI';
+import { cookiesDeleter } from '@/utils/apiHelpers';
 import {
 	AUTH_LOGIN,
 	COMPANIES_ADD,

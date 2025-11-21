@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN } from '@/utils/routes';
-import CompaniesViewClient from '@/components/pages/dashboard/companies/CompaniesView';
+import CompaniesViewClient from '@/components/pages/dashboard/companies/companiesView';
 
 const CompaniesViewPage = async ({ params }: { params: Promise<{ id: number }> }) => {
 	const session = await auth();

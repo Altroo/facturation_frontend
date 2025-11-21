@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { createTheme } from '@mui/material/styles';
-import CustomAutocompleteSelect from './customAutoCompleteSelect';
+import CustomAutoCompleteSelect from './customAutoCompleteSelect';
 import type { DropDownType } from '@/types/accountTypes';
 
 const theme = createTheme();
@@ -15,7 +15,7 @@ const items: DropDownType[] = [
 describe('CustomAutocompleteSelect', () => {
 	it('renders label and initial value', () => {
 		render(
-			<CustomAutocompleteSelect
+			<CustomAutoCompleteSelect
 				id="test"
 				label="User"
 				items={items}
@@ -32,7 +32,7 @@ describe('CustomAutocompleteSelect', () => {
 	it('shows options when opened and calls onChange on selection', () => {
 		const handleChange = jest.fn();
 		render(
-			<CustomAutocompleteSelect
+			<CustomAutoCompleteSelect
 				id="test"
 				label="User"
 				items={items}
@@ -59,7 +59,7 @@ describe('CustomAutocompleteSelect', () => {
 		const EndIcon = () => <span data-testid="end-icon">E</span>;
 
 		render(
-			<CustomAutocompleteSelect
+			<CustomAutoCompleteSelect
 				id="test"
 				label="User"
 				items={items}
@@ -78,7 +78,7 @@ describe('CustomAutocompleteSelect', () => {
 	it('disables interaction when disabled prop is true', () => {
 		const handleChange = jest.fn();
 		render(
-			<CustomAutocompleteSelect
+			<CustomAutoCompleteSelect
 				id="test"
 				label="User"
 				items={items}
