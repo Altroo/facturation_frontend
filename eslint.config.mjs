@@ -20,6 +20,8 @@ const eslintConfig = defineConfig([
 		'build/**',
 		'next-env.d.ts',
 		'.next/types/**',
+		'node_modules/*',
+		'.swc/*',
 	]),
 ]);
 
