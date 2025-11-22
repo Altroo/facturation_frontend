@@ -14,14 +14,14 @@ jest.mock('@/store/slices/accountSlice', () => ({
 }));
 
 function makeApiMock(name: string) {
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const dummyMiddleware: Middleware = (_storeAPI) => (next) => (action) => next(action);
+	const dummyMiddleware: Middleware = () => (next) => (action) => next(action);
 	return {
 		reducerPath: name,
 		reducer: (state = {}) => state,
 		middleware: dummyMiddleware,
 	};
 }
+
 jest.mock('@/store/services/account', () => ({
 	__esModule: true,
 	accountApi: makeApiMock('accountApi'),
@@ -33,20 +33,19 @@ jest.mock('@/store/services/company', () => ({
 	__esModule: true,
 	companyApi: makeApiMock('companyApi'),
 }));
-
 jest.mock('@/store/services/client', () => ({
 	__esModule: true,
 	clientApi: makeApiMock('clientApi'),
+}));
+jest.mock('@/store/services/parameter', () => ({
+	__esModule: true,
+	citiesApi: makeApiMock('citiesApi'),
 }));
 
 // --- Mock rootSaga only (use a lightweight generator) ---
 jest.mock('@/store/sagas', () => ({
 	__esModule: true,
-	// minimal generator that yields nothing important
 	rootSaga: function* rootSaga() {
-		// yield nothing heavy; single synchronous yield so middleware.run returns a Task
-		// If your real rootSaga forks or blocks, mocking it prevents heavy side effects
-		// Keep yields simple so run() still returns a Task object created by real middleware
 		yield 'MOCK_ROOT';
 	},
 }));
@@ -56,7 +55,6 @@ let store: SagaStore;
 
 beforeEach(() => {
 	jest.resetModules();
-	// require the store fresh so jest.mock above takes effect
 	// eslint-disable-next-line @typescript-eslint/no-require-imports
 	store = require('./store').store as SagaStore;
 });
@@ -72,14 +70,11 @@ describe('Redux Saga Store', () => {
 		expect(state).toHaveProperty('usersApi');
 		expect(state).toHaveProperty('companyApi');
 		expect(state).toHaveProperty('clientApi');
+		expect(state).toHaveProperty('citiesApi');
 	});
 
 	it('attaches sagaTask after running rootSaga', () => {
-		// The real saga middleware sets sagaTask when run is invoked in your store file.
-		// Because we used the real middleware and mocked the rootSaga to be lightweight,
-		// sagaTask should be a real Task provided by redux-saga and therefore defined.
 		expect(store.sagaTask).toBeDefined();
-		// Task provides isRunning(); TypeScript knows the real Task shape from redux-saga types.
 		expect(store.sagaTask?.isRunning()).toBeDefined();
 	});
 

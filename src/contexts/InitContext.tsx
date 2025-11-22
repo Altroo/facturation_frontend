@@ -3,12 +3,14 @@
 import React, { createContext, PropsWithChildren, useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/utils/hooks';
 import type { InitStateInterface, InitStateToken } from '@/types/_initTypes';
-import { initAppAction, initAppSessionTokensAction } from '@/store/actions/_initActions';
+import { initAppSessionTokensAction } from '@/store/actions/_initActions';
 import { emptyInitStateToken } from '@/store/slices/_initSlice';
 import { getInitStateToken } from '@/store/selectors';
 import { useSession } from 'next-auth/react';
 import { useGetProfilQuery, useGetGroupsQuery } from '@/store/services/account';
 import { accountSetGroupesAction, accountSetProfilAction } from '@/store/actions/accountActions';
+import { useGetCitiesListQuery } from '@/store/services/parameter';
+import { parameterSetCitiesAction } from '@/store/actions/parameterActions';
 
 const InitContext = createContext<InitStateInterface<InitStateToken>>({
 	initStateToken: emptyInitStateToken,
@@ -25,16 +27,16 @@ export const InitContextProvider: React.FC<PropsWithChildren<Record<string, unkn
 		skip: !token || status !== 'authenticated',
 	});
 	// add get cities
-	// const {data: cities} = useGetCitiesQuery(token, {
-	// 	skip: !token || status !== 'authenticated',
-	// });
+	const { data: cities } = useGetCitiesListQuery(token, {
+		skip: !token || status !== 'authenticated',
+	});
 	const [appTokenSessionLoaded, setAppTokenSessionLoaded] = useState<boolean>(false);
 
 	useEffect(() => {
 		// When next-auth session is known and authenticated, initialize store tokens once
 		if (!appTokenSessionLoaded && status === 'authenticated' && session) {
 			dispatch(initAppSessionTokensAction(session));
-			dispatch(initAppAction());
+			// dispatch(initAppAction());
 			setAppTokenSessionLoaded(true);
 		}
 
@@ -52,10 +54,10 @@ export const InitContextProvider: React.FC<PropsWithChildren<Record<string, unkn
 		if (groupes) {
 			dispatch(accountSetGroupesAction(groupes));
 		}
-		// if (cities) {
-		// 	dispatch(initSetCitiesAction(cities));
-		// }
-	}, [dispatch, user, groupes]);
+		if (cities) {
+			dispatch(parameterSetCitiesAction(cities));
+		}
+	}, [dispatch, user, groupes, cities]);
 
 	// Do not render children until we've attempted to initialize the token state
 	if (!appTokenSessionLoaded) {

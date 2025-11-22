@@ -1,6 +1,6 @@
-import { getInitStateToken, getAccessToken, getProfilState, getGroupesState } from './index';
+import { getInitStateToken, getAccessToken, getProfilState, getGroupesState, getCitiesState } from './index';
 
-import { UserClass } from '@/models/Classes';
+import { UserClass, CitiesClass } from '@/models/Classes';
 
 describe('Redux selectors', () => {
 	const mockState = {
@@ -26,6 +26,9 @@ describe('Redux selectors', () => {
 			),
 			groupes: ['admin', 'editor'],
 		},
+		parameter: {
+			cities: [new CitiesClass(1, 'Tanger'), new CitiesClass(2, 'Tetouan')],
+		},
 	};
 
 	it('getInitStateToken should return the initStateToken object', () => {
@@ -48,5 +51,12 @@ describe('Redux selectors', () => {
 
 	it('getGroupesState should return the groupes array', () => {
 		expect(getGroupesState(mockState)).toEqual(['admin', 'editor']);
+	});
+
+	it('getCitiesState should return the cities array', () => {
+		const cities = getCitiesState(mockState);
+		expect(Array.isArray(cities)).toBe(true);
+		expect(cities[0]).toBeInstanceOf(CitiesClass);
+		expect(cities.map((c) => c.nom)).toEqual(['Tanger', 'Tetouan']);
 	});
 });

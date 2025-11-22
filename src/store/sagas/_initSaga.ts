@@ -4,10 +4,6 @@ import type { InitStateInterface, InitStateToken } from '@/types/_initTypes';
 import { setInitState } from '../slices/_initSlice';
 import { Session } from 'next-auth';
 
-export function* initAppSaga() {
-	// empty for now, but later will be needed to initialise the app
-}
-
 export function* initAppSessionTokensSaga(payload: { type: string; session: Session }) {
 	const stateToken = {
 		user: payload.session.user,
@@ -58,7 +54,6 @@ export function* refreshAppTokenStatesSaga(payload: { type: string; session: Rec
 }
 
 export function* watchInit() {
-	yield takeLatest(Types.INIT_APP, initAppSaga);
 	yield takeLatest(Types.INIT_APP_SESSION_TOKENS, initAppSessionTokensSaga);
 	yield takeLatest(Types.REFRESH_APP_TOKEN_STATES, refreshAppTokenStatesSaga);
 }

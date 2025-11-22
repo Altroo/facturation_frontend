@@ -77,3 +77,10 @@ export class ClientClass {
 		public prenom: string | null,
 	) {}
 }
+
+export class CitiesClass {
+	constructor(
+		public id: number,
+		public nom: string,
+	) {}
+}

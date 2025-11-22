@@ -1,23 +1,12 @@
 import { runSaga } from 'redux-saga';
 import * as Types from '../actions';
-import { initAppSaga, initAppSessionTokensSaga, refreshAppTokenStatesSaga, watchInit } from './_initSaga';
+import { initAppSessionTokensSaga, refreshAppTokenStatesSaga, watchInit } from './_initSaga';
 import { setInitState } from '../slices/_initSlice';
 import type { Session } from 'next-auth';
 import type { InitStateInterface, InitStateToken } from '@/types/_initTypes';
 import { takeLatest } from 'redux-saga/effects';
 
 describe('init sagas', () => {
-	it('initAppSaga should run without errors', async () => {
-		const dispatched: unknown[] = [];
-		await runSaga(
-			{
-				dispatch: (action: unknown) => dispatched.push(action),
-			},
-			initAppSaga,
-		).toPromise();
-		expect(dispatched).toEqual([]);
-	});
-
 	it('initAppSessionTokensSaga should dispatch setInitState with correct payload', async () => {
 		const mockSession: Session = {
 			user: {
@@ -106,7 +95,6 @@ describe('init sagas', () => {
 
 	it('watchInit should register sagas with takeLatest', () => {
 		const gen = watchInit();
-		expect(gen.next().value).toEqual(takeLatest(Types.INIT_APP, initAppSaga));
 		expect(gen.next().value).toEqual(takeLatest(Types.INIT_APP_SESSION_TOKENS, initAppSessionTokensSaga));
 		expect(gen.next().value).toEqual(takeLatest(Types.REFRESH_APP_TOKEN_STATES, refreshAppTokenStatesSaga));
 	});

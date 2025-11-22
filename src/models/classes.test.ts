@@ -1,4 +1,4 @@
-import { UserClass, GroupClass, CompanyClass } from './Classes';
+import { UserClass, GroupClass, CompanyClass, CitiesClass } from './Classes';
 
 describe('UserClass', () => {
 	it('creates a user instance with given properties', () => {
@@ -76,5 +76,13 @@ describe('CompanyClass', () => {
 		expect(company.nom_responsable).toBe('Boss');
 		expect(company.managed_by).toEqual([{ pk: 1, role: 'Manager' }]);
 		expect(company.admins).toEqual([{ id: 1, first_name: 'Jane', last_name: 'Doe', role: 'Admin' }]);
+	});
+});
+
+describe('CitiesClass', () => {
+	it('creates a city instance with given properties', () => {
+		const city = new CitiesClass(1, 'Tanger');
+		expect(city.id).toBe(1);
+		expect(city.nom).toBe('Tanger');
 	});
 });
