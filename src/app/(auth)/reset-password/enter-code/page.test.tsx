@@ -8,13 +8,16 @@ type Session = { user: SessionUser } | null;
 
 // mocks
 const mockAuth = jest.fn() as jest.MockedFunction<() => Promise<Session>>;
+
 jest.mock('@/auth', () => ({
 	__esModule: true,
 	auth: mockAuth,
 }));
 
 const REDIRECT_SENTINEL = (to: string) => ({ redirectedTo: to });
+
 const mockRedirect = jest.fn((url: string | URL) => REDIRECT_SENTINEL(String(url)));
+
 jest.mock('next/navigation', () => ({
 	__esModule: true,
 	redirect: mockRedirect,
@@ -23,6 +26,7 @@ jest.mock('next/navigation', () => ({
 const mockCookies = jest.fn() as jest.MockedFunction<
 	() => Promise<{ get: (key: string) => { value: string } | undefined }>
 >;
+
 jest.mock('next/headers', () => ({
 	__esModule: true,
 	cookies: mockCookies,
@@ -39,6 +43,7 @@ jest.mock('@/components/pages/auth/reset-password/enterCode', () => ({
 
 const AUTH_RESET_PASSWORD = '/reset-password';
 const DASHBOARD = '/dashboard';
+
 jest.mock('@/utils/routes', () => ({
 	__esModule: true,
 	AUTH_RESET_PASSWORD,

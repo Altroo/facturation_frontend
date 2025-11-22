@@ -8,6 +8,7 @@ type Session = { user: SessionUser } | null;
 
 // Typed mock for auth: () => Promise<Session>
 const mockAuth = jest.fn() as jest.MockedFunction<() => Promise<Session>>;
+
 jest.mock('@/auth', () => ({
 	__esModule: true,
 	auth: mockAuth,
@@ -17,6 +18,7 @@ jest.mock('@/auth', () => ({
 const mockRedirect = jest.fn(() => {
 	throw new Error('redirect');
 });
+
 jest.mock('next/navigation', () => ({
 	__esModule: true,
 	redirect: mockRedirect,
@@ -34,6 +36,7 @@ jest.mock('@/components/pages/auth/reset-password/resetPassword', () => ({
 
 // Mock routes constant
 const DASHBOARD = '/dashboard';
+
 jest.mock('@/utils/routes', () => ({
 	__esModule: true,
 	DASHBOARD,
@@ -50,7 +53,7 @@ describe('ResetPasswordPage server component', () => {
 
 		// require after mocks so module picks them up
 		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const mod = require('./page'); // adjust path if the file is elsewhere
+		const mod = require('./page');
 		const Page = mod.default as () => Promise<unknown>;
 
 		await expect(Page()).rejects.toThrow('redirect');
@@ -61,7 +64,7 @@ describe('ResetPasswordPage server component', () => {
 		mockAuth.mockResolvedValueOnce(null);
 
 		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const mod = require('./page'); // adjust path if the file is elsewhere
+		const mod = require('./page');
 		const Page = mod.default as () => Promise<unknown>;
 
 		const result = await Page();

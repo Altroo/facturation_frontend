@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom';
 import { TextEncoder } from 'util';
 
-// Mock next-auth
+// --- Mock next-auth ---
 jest.mock('next-auth/react', () => ({
 	useSession: jest.fn(() => ({
 		data: null,
@@ -11,6 +11,7 @@ jest.mock('next-auth/react', () => ({
 	signOut: jest.fn(),
 }));
 
+// --- Mock MUI TouchRipple ---
 jest.mock('@mui/material/ButtonBase/TouchRipple', () => {
 	return {
 		__esModule: true,
@@ -18,4 +19,5 @@ jest.mock('@mui/material/ButtonBase/TouchRipple', () => {
 	};
 });
 
+// --- TextEncoder polyfill ---
 global.TextEncoder = TextEncoder;

@@ -24,6 +24,10 @@ export const InitContextProvider: React.FC<PropsWithChildren<Record<string, unkn
 	const { data: groupes } = useGetGroupsQuery(token, {
 		skip: !token || status !== 'authenticated',
 	});
+	// add get cities
+	// const {data: cities} = useGetCitiesQuery(token, {
+	// 	skip: !token || status !== 'authenticated',
+	// });
 	const [appTokenSessionLoaded, setAppTokenSessionLoaded] = useState<boolean>(false);
 
 	useEffect(() => {
@@ -48,6 +52,9 @@ export const InitContextProvider: React.FC<PropsWithChildren<Record<string, unkn
 		if (groupes) {
 			dispatch(accountSetGroupesAction(groupes));
 		}
+		// if (cities) {
+		// 	dispatch(initSetCitiesAction(cities));
+		// }
 	}, [dispatch, user, groupes]);
 
 	// Do not render children until we've attempted to initialize the token state

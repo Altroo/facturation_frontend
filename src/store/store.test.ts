@@ -58,7 +58,7 @@ beforeEach(() => {
 	jest.resetModules();
 	// require the store fresh so jest.mock above takes effect
 	// eslint-disable-next-line @typescript-eslint/no-require-imports
-	store = require('./store').store as SagaStore; // adjust path to your actual store
+	store = require('./store').store as SagaStore;
 });
 
 describe('Redux Saga Store', () => {
