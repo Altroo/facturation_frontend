@@ -10,6 +10,7 @@ type Props = {
 	items: Array<DropDownType>;
 	theme: Theme;
 	value: DropDownType | null;
+	noOptionsText: string;
 	fullWidth?: boolean;
 	onChange?: (event: React.SyntheticEvent, newValue: DropDownType | null) => void;
 	disabled?: boolean;
@@ -30,13 +31,14 @@ const CustomAutoCompleteSelect: React.FC<Props> = ({
 	slotProps,
 	startIcon,
 	endIcon,
+	noOptionsText,
 }) => {
 	return (
 		<ThemeProvider theme={theme}>
 			<Autocomplete
 				id={id}
 				fullWidth={fullWidth}
-				noOptionsText="Aucun utilisateur trouvé"
+				noOptionsText={noOptionsText}
 				options={items}
 				getOptionLabel={(option) => option.code}
 				getOptionKey={(option) => option.value}

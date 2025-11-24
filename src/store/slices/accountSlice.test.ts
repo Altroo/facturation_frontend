@@ -37,7 +37,7 @@ describe('account slice', () => {
 	});
 
 	it('setWSUserAvatar updates profil.avatar when profil is a UserClass', () => {
-		const stateWithProfil = { profil: sampleUser, groupes: [] };
+		const stateWithProfil = { profil: { ...sampleUser }, groupes: [] };
 		const updated = reducer(stateWithProfil, setWSUserAvatar({ avatar: 'avatar-updated' }));
 		expect((updated.profil as UserClass).avatar).toBe('avatar-updated');
 	});

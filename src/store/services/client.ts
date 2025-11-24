@@ -21,6 +21,7 @@ export const clientApi = createApi({
 			Array<Partial<ClientClass>> | PaginationResponseType<ClientClass>,
 			{
 				token: string | undefined;
+				company_id: number;
 				with_pagination?: boolean;
 				page?: number;
 				pageSize?: number;
@@ -28,19 +29,32 @@ export const clientApi = createApi({
 				archived?: boolean;
 			}
 		>({
-			query: ({ token, with_pagination, page, pageSize, search, archived }) => ({
-				url: with_pagination
-					? `${process.env.NEXT_PUBLIC_CLIENT_LIST}?search=${search}&page=${page}&page_size=${pageSize}&archived=${archived}`
-					: (process.env.NEXT_PUBLIC_CLIENT_LIST as string),
+			query: ({ token, company_id, with_pagination, page, pageSize, search, archived }) => ({
+				url: process.env.NEXT_PUBLIC_CLIENT_LIST as string,
 				method: 'GET',
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-				params: with_pagination ? { pagination: true } : undefined,
+				params: {
+					company_id,
+					pagination: !!with_pagination,
+					page: with_pagination ? page : undefined,
+					page_size: with_pagination ? pageSize : undefined,
+					search,
+					archived,
+				},
 			}),
 			providesTags: ['Client'],
 		}),
+
 		getClient: builder.query<ClientClass, { token: string | undefined; id: number }>({
 			query: ({ token, id }) => ({
 				url: `${process.env.NEXT_PUBLIC_CLIENT_ROOT}/${id}/`,
+				method: 'GET',
+				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+			}),
+		}),
+		getCodeClient: builder.query<Pick<ClientClass, 'code_client'>, { token: string | undefined }>({
+			query: ({ token }) => ({
+				url: `${process.env.NEXT_PUBLIC_CLIENT_GENERATE_CODE_CLIENT}`,
 				method: 'GET',
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
@@ -80,11 +94,12 @@ export const clientApi = createApi({
 			{ token: string | undefined; id: number; data: { archived: boolean } }
 		>({
 			query: ({ token, id, data }) => ({
-				url: `${process.env.NEXT_PUBLIC_ARCHIVE_CLIENT}/${id}/`,
-				method: 'PUT',
+				url: `${process.env.NEXT_PUBLIC_ARCHIVE_CLIENT}${id}/`,
+				method: 'PATCH',
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 				data,
 			}),
+			invalidatesTags: ['Client'],
 		}),
 	}),
 });
@@ -93,6 +108,7 @@ export const {
 	useGetClientsListQuery,
 	useDeleteClientMutation,
 	useEditClientMutation,
+	useGetCodeClientQuery,
 	useGetClientQuery,
 	useAddClientMutation,
 	usePatchArchiveMutation,

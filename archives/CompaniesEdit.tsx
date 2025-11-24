@@ -502,6 +502,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										<CustomAutocompleteSelect
 											id="new_user_select"
 											label="Ajouter un utilisateur"
+											noOptionsText="Aucun utilisateur trouvé"
 											fullWidth={true}
 											items={availableUsers}
 											value={selectedUser}

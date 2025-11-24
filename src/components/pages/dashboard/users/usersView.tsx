@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, isValidElement } from 'react';
 import { useRouter } from 'next/navigation';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
@@ -70,36 +70,34 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 				{icon}
 			</Box>
 
-			{/* Label */}
-			<Typography
-				fontWeight={600}
-				color="text.secondary"
-				sx={{
-					width: isMobile ? 80 : 'auto', // force wrapping on mobile
-					wordBreak: isMobile ? 'break-word' : 'normal',
-					whiteSpace: isMobile ? 'normal' : 'nowrap',
-					flexShrink: 0,
-				}}
-			>
-				{label}
-			</Typography>
-
-			{/* Value */}
-			<Box
+			<Stack
+				direction="row"
+				alignItems="center"
+				spacing={isMobile ? 0 : 2}
 				sx={{
 					flex: 1,
-					minWidth: 0,
-					wordBreak: 'break-word',
-					display: 'flex',
-					alignItems: 'center',
+					flexWrap: 'wrap',
 				}}
 			>
-				{React.isValidElement(displayValue) ? (
-					displayValue
-				) : (
-					<Typography sx={{ color: 'text.primary' }}>{displayValue}</Typography>
-				)}
-			</Box>
+				<Typography
+					fontWeight={600}
+					color="text.secondary"
+					sx={{
+						minWidth: { xs: '100%', sm: 200 },
+						wordBreak: 'break-word',
+					}}
+				>
+					{label}
+				</Typography>
+
+				<Box sx={{ flex: 1 }}>
+					{isValidElement(displayValue) ? (
+						displayValue
+					) : (
+						<Typography sx={{ color: 'text.primary' }}>{displayValue}</Typography>
+					)}
+				</Box>
+			</Stack>
 		</Stack>
 	);
 };

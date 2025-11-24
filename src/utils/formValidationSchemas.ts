@@ -8,6 +8,7 @@ import {
 	MINI_INPUT_EMAIL,
 	SHORT_INPUT_REQUIRED,
 } from '@/utils/formValidationErrorMessages';
+import { ClientSchemaType } from '@/types/clientTypes';
 
 const base64ImageField = z.url().or(z.string().startsWith('data:image/')).nullable().optional();
 
@@ -160,3 +161,91 @@ export const userSchema = z.object({
 	avatar_cropped: base64ImageField,
 	globalError: z.string().optional(),
 });
+
+export const pmRequired = ['raison_sociale', 'ville', 'ICE', 'registre_de_commerce', 'delai_de_paiement'] as const;
+export const ppRequired = ['nom', 'prenom', 'adresse', 'ville', 'tel', 'delai_de_paiement'] as const;
+
+export const clientSchema = z
+	.object({
+		client_type: z.enum(['PM', 'PP']),
+		code_client: requiredTextField(1, 100), // required string with min/max
+		company: z.number(),
+
+		// optional fields
+		raison_sociale: optionalTextField(2, 255),
+		nom: optionalTextField(2, 255),
+		prenom: optionalTextField(2, 255),
+		adresse: optionalTextField(2, 255).nullable(),
+		ville: z.number().nullable().optional(),
+		tel: optionalPhoneField,
+		email: optionalEmailField,
+		delai_de_paiement: z.preprocess(
+			(val) => (val === '' || val === null || val === undefined ? null : Number(val)),
+			z.number().int().positive().nullable().optional(),
+		),
+		remarque: optionalTextField(2, 500).nullable(),
+
+		numero_du_compte: optionalTextField(2, 100).nullable(),
+		ICE: optionalTextField(2, 100).nullable(),
+		registre_de_commerce: optionalTextField(2, 100).nullable(),
+		identifiant_fiscal: optionalTextField(2, 100).nullable(),
+		taxe_professionnelle: optionalTextField(2, 100).nullable(),
+		CNSS: optionalTextField(2, 100).nullable(),
+
+		globalError: z.string().optional(),
+	})
+	.superRefine((data: ClientSchemaType, ctx) => {
+		if (data.client_type === 'PM') {
+			pmRequired.forEach((key) => {
+				const val = data[key];
+				const isEmpty =
+					val === undefined ||
+					val === null ||
+					(typeof val === 'string' && val.trim() === '') ||
+					(typeof val === 'number' && Number.isNaN(val));
+				if (isEmpty) {
+					ctx.addIssue({
+						path: [key],
+						code: 'custom',
+						message:
+							key === 'raison_sociale'
+								? 'Raison sociale requise'
+								: key === 'ville'
+									? 'Ville requise'
+									: key === 'ICE'
+										? 'ICE requis'
+										: key === 'registre_de_commerce'
+											? 'Registre de commerce requis'
+											: 'Délai de paiement requis',
+					});
+				}
+			});
+		} else {
+			ppRequired.forEach((key) => {
+				const val = data[key];
+				const isEmpty =
+					val === undefined ||
+					val === null ||
+					(typeof val === 'string' && val.trim() === '') ||
+					(typeof val === 'number' && Number.isNaN(val));
+				if (isEmpty) {
+					ctx.addIssue({
+						path: [key],
+						code: 'custom',
+						message:
+							key === 'nom'
+								? 'Nom requis'
+								: key === 'prenom'
+									? 'Prénom requis'
+									: key === 'adresse'
+										? 'Adresse requise'
+										: key === 'ville'
+											? 'Ville requise'
+											: key === 'tel'
+												? 'Téléphone requis'
+												: 'Délai de paiement requis',
+					});
+				}
+			});
+		}
+	});

@@ -19,6 +19,7 @@ describe('clientApi', () => {
 		const result = await storeRef.store.dispatch(
 			clientApi.endpoints.getClientsList.initiate({
 				token: 'test-token',
+				company_id: 123,
 				with_pagination: true,
 				page: 1,
 				pageSize: 10,

@@ -18,6 +18,7 @@ describe('CustomAutocompleteSelect', () => {
 			<CustomAutoCompleteSelect
 				id="test"
 				label="User"
+				noOptionsText="Aucun utilisateur trouvé"
 				items={items}
 				theme={theme}
 				value={items[0]}
@@ -35,6 +36,7 @@ describe('CustomAutocompleteSelect', () => {
 			<CustomAutoCompleteSelect
 				id="test"
 				label="User"
+				noOptionsText="Aucun utilisateur trouvé"
 				items={items}
 				theme={theme}
 				value={null}
@@ -62,6 +64,7 @@ describe('CustomAutocompleteSelect', () => {
 			<CustomAutoCompleteSelect
 				id="test"
 				label="User"
+				noOptionsText="Aucun utilisateur trouvé"
 				items={items}
 				theme={theme}
 				value={null}
@@ -81,6 +84,7 @@ describe('CustomAutocompleteSelect', () => {
 			<CustomAutoCompleteSelect
 				id="test"
 				label="User"
+				noOptionsText="Aucun utilisateur trouvé"
 				items={items}
 				theme={theme}
 				value={null}

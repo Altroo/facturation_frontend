@@ -86,7 +86,7 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 					fontWeight={600}
 					color="text.secondary"
 					sx={{
-						minWidth: { xs: '100%', sm: 180 },
+						minWidth: { xs: '100%', sm: 200 },
 						wordBreak: 'break-word',
 					}}
 				>

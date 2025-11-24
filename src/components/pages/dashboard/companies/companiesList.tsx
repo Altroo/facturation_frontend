@@ -16,7 +16,7 @@ import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDa
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import CustomToast from '@/components/portals/customToast/customToast';
 import Portal from '@/contexts/Portal';
-import { CompanyClass, UserClass } from '@/models/Classes';
+import { CompanyClass } from '@/models/Classes';
 import { formatDate } from '@/utils/helpers';
 
 const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
@@ -179,7 +179,7 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 			field: 'date_created',
 			headerName: 'Date de création',
 			width: 180,
-			renderCell: (params: GridRenderCellParams<UserClass>) => {
+			renderCell: (params: GridRenderCellParams<CompanyClass>) => {
 				const formatted = formatDate(params.value as string | null);
 				return (
 					<DarkTooltip title={formatted}>

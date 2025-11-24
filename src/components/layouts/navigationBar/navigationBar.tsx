@@ -23,6 +23,8 @@ import { getProfilState } from '@/store/selectors';
 import { cookiesDeleter } from '@/utils/apiHelpers';
 import {
 	AUTH_LOGIN,
+	CLIENTS_ARCHIVED,
+	CLIENTS_LIST,
 	COMPANIES_ADD,
 	COMPANIES_LIST,
 	DASHBOARD,
@@ -79,9 +81,8 @@ const getNavigationMenu = (isStaff: boolean) => {
 			title: 'Client',
 			icon: <PeopleIcon />,
 			items: [
-				{ title: 'Liste des clients', label: 'Liste des clients', path: '/clients/list' },
-				{ title: 'Clients archivés', label: 'Clients archivés', path: '/clients/archived' },
-				{ title: 'Nouveau client', label: 'Nouveau client', path: '/clients/new' },
+				{ title: 'Liste des clients', label: 'Liste des clients', path: CLIENTS_LIST },
+				{ title: 'Clients archivés', label: 'Clients archivés', path: CLIENTS_ARCHIVED },
 			],
 		},
 		devis: {

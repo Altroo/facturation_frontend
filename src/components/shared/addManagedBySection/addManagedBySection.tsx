@@ -60,6 +60,7 @@ const AddManagedBySection: React.FC<AddManagedBySectionProps> = ({
 					id={selectId}
 					label={selectLabel}
 					fullWidth
+					noOptionsText="Aucun utilisateur trouvé"
 					items={selectItems}
 					value={selectValue}
 					onChange={onSelectChange}

@@ -31,6 +31,14 @@ export const companyApi = createApi({
 			}),
 			providesTags: ['Company'],
 		}),
+		getUserCompanies: builder.query<Array<Pick<CompanyClass, 'id' | 'raison_sociale'>>, { token: string | undefined }>({
+			query: ({ token }) => ({
+				url: process.env.NEXT_PUBLIC_USER_COMPANIES_LIST as string,
+				method: 'GET',
+				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+			}),
+			providesTags: ['Company'],
+		}),
 		getCompany: builder.query<CompanyClass, { token: string | undefined; id: number }>({
 			query: ({ token, id }) => ({
 				url: `${process.env.NEXT_PUBLIC_COMPANY_ROOT}/${id}/`,
@@ -77,4 +85,5 @@ export const {
 	useEditCompanyMutation,
 	useGetCompanyQuery,
 	useAddCompanyMutation,
+	useGetUserCompaniesQuery,
 } = companyApi;
