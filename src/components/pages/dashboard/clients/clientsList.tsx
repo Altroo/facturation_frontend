@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, Stack, Typography, Chip, IconButton, Tooltip, Tabs, Tab, Paper, Container } from '@mui/material';
 import { Edit, Delete, Visibility, BusinessOutlined, Archive, Unarchive } from '@mui/icons-material';
@@ -9,7 +9,7 @@ import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/clients/clients.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { useDeleteClientMutation, useGetClientsListQuery, usePatchArchiveMutation } from '@/store/services/client';
-import { CLIENTS_ADD, CLIENTS_EDIT, CLIENTS_VIEW } from '@/utils/routes';
+import { CLIENTS_ADD, CLIENTS_EDIT, CLIENTS_VIEW, COMPANIES_ADD } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
@@ -344,8 +344,11 @@ interface Props extends SessionProps {
 
 const ClientsListClient: React.FC<Props> = ({ session, archived }) => {
 	const token = getAccessTokenFromSession(session);
-	const { data: companies, isLoading } = useGetUserCompaniesQuery({ token }, { skip: !token });
+	const router = useRouter();
+	const { data: companiesData, isLoading } = useGetUserCompaniesQuery({ token }, { skip: !token });
+	const [companies, setCompanies] = useState(companiesData);
 	const [selectedIndex, setSelectedIndex] = useState(0);
+	const [selectedCompany, setSelectedCompany] = useState(companies ? companies[selectedIndex] : null);
 	const [showToast, setShowToast] = useState(false);
 	const [toastMessage, setToastMessage] = useState<string>('');
 	const [toastType, setToastType] = useState<'success' | 'error'>('success');
@@ -360,52 +363,16 @@ const ClientsListClient: React.FC<Props> = ({ session, archived }) => {
 		setSelectedIndex(newValue);
 	};
 
+	useEffect(() => {
+		if (companiesData) {
+			setCompanies(companiesData);
+			setSelectedCompany(companiesData[selectedIndex]);
+		}
+	}, [companiesData, selectedIndex]);
+
 	if (isLoading) {
 		return <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />;
 	}
-
-	if (!companies || companies.length === 0) {
-		return (
-			<Container maxWidth="sm" sx={{ mt: 8 }}>
-				<Paper
-					elevation={3}
-					sx={{
-						p: 6,
-						textAlign: 'center',
-						borderRadius: 3,
-						background: 'linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%)',
-					}}
-				>
-					<Box
-						sx={{
-							width: 80,
-							height: 80,
-							borderRadius: '50%',
-							backgroundColor: 'rgba(13, 7, 11, 0.08)',
-							display: 'flex',
-							alignItems: 'center',
-							justifyContent: 'center',
-							margin: '0 auto 24px',
-						}}
-					>
-						<BusinessOutlined sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
-					</Box>
-					<Typography variant="h5" fontWeight={600} color="text.primary" gutterBottom>
-						Aucune entreprise trouvée
-					</Typography>
-					<Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 3 }}>
-						Vous n&#39;avez pas encore d&#39;entreprises associées à votre compte. Veuillez contacter votre
-						administrateur ou créer une nouvelle entreprise.
-					</Typography>
-					<Button variant="contained" size="large" sx={{ mt: 2, borderRadius: 2, px: 4 }}>
-						Créer une entreprise
-					</Button>
-				</Paper>
-			</Container>
-		);
-	}
-
-	const selectedCompany = companies[selectedIndex];
 
 	return (
 		<>
@@ -417,62 +384,117 @@ const ClientsListClient: React.FC<Props> = ({ session, archived }) => {
 				sx={{ overflowX: 'auto', overflowY: 'hidden' }}
 			>
 				<NavigationBar title={archived ? 'Clients Archivés' : 'Liste des Clients'}>
-					<Paper
-						elevation={0}
-						sx={{
-							width: '100%',
-							borderBottom: 1,
-							borderColor: 'divider',
-							mb: 2,
-							bgcolor: 'background.paper',
-							borderRadius: '8px 8px 0 0',
-						}}
-					>
-						<Tabs
-							value={selectedIndex}
-							onChange={handleChange}
-							variant="scrollable"
-							allowScrollButtonsMobile
-							scrollButtons="auto"
-							aria-label="companies tabs"
-							sx={{
-								'& .MuiTabs-indicator': {
-									height: 3,
-									borderRadius: '3px 3px 0 0',
-								},
-								'& .MuiTab-root': {
-									textTransform: 'none',
-									fontSize: '0.95rem',
-									fontWeight: 500,
-									minHeight: 56,
-									px: 3,
-									transition: 'all 0.2s ease',
-									'&:hover': {
-										backgroundColor: 'action.hover',
-									},
-									'&.Mui-selected': {
-										fontWeight: 600,
-									},
-								},
-								'& .MuiTabs-scrollButtons': {
-									'&.Mui-disabled': {
-										opacity: 0.3,
-									},
-								},
-							}}
-						>
-							{companies.length > 0 &&
-								companies.map((company) => <Tab key={company.id} label={company.raison_sociale} />)}
-						</Tabs>
-					</Paper>
-					{selectedCompany && (
-						<ClientsListContent
-							archived={archived}
-							session={session}
-							company_id={selectedCompany.id}
-							role={selectedCompany.role}
-							onToast={handleToast}
-						/>
+					{!companies || companies.length === 0 ? (
+						<Container maxWidth="sm" sx={{ mt: 8 }}>
+							<Paper
+								elevation={3}
+								sx={{
+									p: 6,
+									textAlign: 'center',
+									borderRadius: 3,
+									background: 'linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%)',
+								}}
+							>
+								<Box
+									sx={{
+										width: 80,
+										height: 80,
+										borderRadius: '50%',
+										backgroundColor: 'rgba(13, 7, 11, 0.08)',
+										display: 'flex',
+										alignItems: 'center',
+										justifyContent: 'center',
+										margin: '0 auto 24px',
+									}}
+								>
+									<BusinessOutlined sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
+								</Box>
+								<Typography variant="h5" fontWeight={600} color="text.primary" gutterBottom>
+									Aucune entreprise trouvée
+								</Typography>
+								{selectedCompany?.role === 'Admin' ? (
+									<>
+										<Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 3 }}>
+											Vous n&#39;avez pas encore d&#39;entreprises associées à votre compte. Veuillez créer une nouvelle
+											entreprise.
+										</Typography>
+										<Button
+											variant="contained"
+											size="large"
+											sx={{ mt: 2, borderRadius: 2, px: 4 }}
+											onClick={() => router.push(COMPANIES_ADD)}
+										>
+											Créer une entreprise
+										</Button>
+									</>
+								) : (
+									<Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 3 }}>
+										Vous n&#39;avez pas encore d&#39;entreprises associées à votre compte. Veuillez contacter votre
+										administrateur.
+									</Typography>
+								)}
+							</Paper>
+						</Container>
+					) : (
+						<>
+							<Paper
+								elevation={0}
+								sx={{
+									width: '100%',
+									borderBottom: 1,
+									borderColor: 'divider',
+									mb: 2,
+									bgcolor: 'background.paper',
+									borderRadius: '8px 8px 0 0',
+								}}
+							>
+								<Tabs
+									value={selectedIndex}
+									onChange={handleChange}
+									variant="scrollable"
+									allowScrollButtonsMobile
+									scrollButtons="auto"
+									aria-label="companies tabs"
+									sx={{
+										'& .MuiTabs-indicator': {
+											height: 3,
+											borderRadius: '3px 3px 0 0',
+										},
+										'& .MuiTab-root': {
+											textTransform: 'none',
+											fontSize: '0.95rem',
+											fontWeight: 500,
+											minHeight: 56,
+											px: 3,
+											transition: 'all 0.2s ease',
+											'&:hover': {
+												backgroundColor: 'action.hover',
+											},
+											'&.Mui-selected': {
+												fontWeight: 600,
+											},
+										},
+										'& .MuiTabs-scrollButtons': {
+											'&.Mui-disabled': {
+												opacity: 0.3,
+											},
+										},
+									}}
+								>
+									{companies.length > 0 &&
+										companies.map((company) => <Tab key={company.id} label={company.raison_sociale} />)}
+								</Tabs>
+							</Paper>
+							{selectedCompany && (
+								<ClientsListContent
+									archived={archived}
+									session={session}
+									company_id={selectedCompany.id}
+									role={selectedCompany.role}
+									onToast={handleToast}
+								/>
+							)}
+						</>
 					)}
 				</NavigationBar>
 			</Stack>

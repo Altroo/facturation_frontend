@@ -277,13 +277,13 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 										<InfoRow
 											icon={<LocationOnIcon />}
 											label="Ville"
-											value={client?.ville_name ? String(client?.ville_name) : null} // map to city name if available
+											value={client?.ville_name ? String(client?.ville_name) : ''}
 										/>
 										<Divider />
 										<InfoRow
 											icon={<CreditCardIcon />}
 											label="Délai de paiement (j)"
-											value={client?.delai_de_paiement !== null ? String(client?.delai_de_paiement ?? '') : null}
+											value={client?.delai_de_paiement !== null ? String(client?.delai_de_paiement ?? '') : ''}
 										/>
 										<Divider />
 										<InfoRow icon={<DescriptionIcon />} label="Remarque" value={client?.remarque} />
