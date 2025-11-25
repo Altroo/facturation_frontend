@@ -1,14 +1,14 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, CLIENTS_LIST } from '@/utils/routes';
-import ClientsViewClient from '@/components/pages/dashboard/clients/clientsView';
+import ClientsForm from '@/components/pages/dashboard/clients/clientsForm';
 
 type PageProps = {
 	params: Promise<{ id: string }>;
 	searchParams: Promise<{ company_id: string }>;
 };
 
-const ClientsViewPage = async (props: PageProps) => {
+const ClientsEditPage = async (props: PageProps) => {
 	const session = await auth();
 	const { params, searchParams } = props;
 	const { id } = await params;
@@ -22,7 +22,7 @@ const ClientsViewPage = async (props: PageProps) => {
 		redirect(CLIENTS_LIST);
 	}
 
-	return <ClientsViewClient session={session} id={Number(id)} company_id={Number(company_id)} />;
+	return <ClientsForm session={session} id={Number(id)} company_id={Number(company_id)} />;
 };
 
-export default ClientsViewPage;
+export default ClientsEditPage;

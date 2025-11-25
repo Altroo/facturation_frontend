@@ -4,6 +4,7 @@ import { setupApiStore } from '@/store/setupApiStore';
 beforeAll(() => {
 	process.env.NEXT_PUBLIC_COMPANY_LIST ||= 'https://example.com/companies/';
 	process.env.NEXT_PUBLIC_COMPANY_ROOT ||= 'https://example.com/company';
+	process.env.NEXT_PUBLIC_USER_COMPANIES_LIST ||= 'https://example.com/user-companies/';
 });
 
 jest.mock('@/utils/axiosBaseQuery', () => ({
@@ -29,6 +30,13 @@ describe('companyApi', () => {
 	it('getCompany query should complete without error', async () => {
 		const result = await storeRef.store.dispatch(
 			companyApi.endpoints.getCompany.initiate({ token: 'test-token', id: 1 }),
+		);
+		expect('error' in result).toBe(false);
+	});
+
+	it('getUserCompanies query should complete without error', async () => {
+		const result = await storeRef.store.dispatch(
+			companyApi.endpoints.getUserCompanies.initiate({ token: 'test-token' }),
 		);
 		expect('error' in result).toBe(false);
 	});

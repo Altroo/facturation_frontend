@@ -1,14 +1,22 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
-import { AUTH_LOGIN } from '@/utils/routes';
+import { AUTH_LOGIN, COMPANIES_LIST } from '@/utils/routes';
 import CompaniesViewClient from '@/components/pages/dashboard/companies/companiesView';
 
-const CompaniesViewPage = async ({ params }: { params: Promise<{ id: number }> }) => {
+type CompaniesViewPageProps = {
+	params: Promise<{ id: number }>;
+};
+
+const CompaniesViewPage = async (props: CompaniesViewPageProps) => {
 	const session = await auth();
-	const { id } = await params;
+	const { id } = await props.params;
 
 	if (!session) {
 		redirect(AUTH_LOGIN);
+	}
+
+	if (!id || isNaN(Number(id))) {
+		redirect(COMPANIES_LIST);
 	}
 
 	return <CompaniesViewClient session={session} id={id} />;

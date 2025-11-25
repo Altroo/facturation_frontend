@@ -5,6 +5,7 @@ beforeAll(() => {
 	process.env.NEXT_PUBLIC_CLIENT_LIST ||= 'https://example.com/clients/';
 	process.env.NEXT_PUBLIC_CLIENT_ROOT ||= 'https://example.com/client';
 	process.env.NEXT_PUBLIC_ARCHIVE_CLIENT ||= 'https://example.com/client/archive';
+	process.env.NEXT_PUBLIC_CLIENT_GENERATE_CODE_CLIENT ||= 'https://example.com/client/code';
 });
 
 // Mock axiosBaseQuery so all endpoints succeed
@@ -34,6 +35,11 @@ describe('clientApi', () => {
 		const result = await storeRef.store.dispatch(
 			clientApi.endpoints.getClient.initiate({ token: 'test-token', id: 123 }),
 		);
+		expect('error' in result).toBe(false);
+	});
+
+	it('getCodeClient query should complete without error', async () => {
+		const result = await storeRef.store.dispatch(clientApi.endpoints.getCodeClient.initiate({ token: 'test-token' }));
 		expect('error' in result).toBe(false);
 	});
 

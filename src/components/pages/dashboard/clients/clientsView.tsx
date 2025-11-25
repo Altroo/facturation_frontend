@@ -123,8 +123,7 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 			const axiosError = error as ResponseDataInterface<ApiErrorResponseType>;
 			setAxiosError(axiosError);
 		}
-		console.log(client?.ville_name);
-	}, [error, client]);
+	}, [error]);
 
 	return (
 		<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">

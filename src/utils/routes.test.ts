@@ -82,4 +82,20 @@ describe('routes constants', () => {
 		expect(SITE_ROOT).toBe('http://localhost:3000/base/');
 		expect(DASHBOARD).toBe('http://localhost:3000/base/dashboard');
 	});
+	it('exports clients routes and functions', () => {
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		const { SITE_ROOT, CLIENTS_LIST, CLIENTS_ADD, CLIENTS_ARCHIVED, CLIENTS_VIEW, CLIENTS_EDIT } = require('./routes');
+
+		expect(CLIENTS_LIST).toBe(`${SITE_ROOT}dashboard/clients`);
+		expect(typeof CLIENTS_ADD).toBe('function');
+		expect(CLIENTS_ADD(42)).toBe(`${SITE_ROOT}dashboard/clients/new/?company_id=42`);
+
+		expect(CLIENTS_ARCHIVED).toBe(`${SITE_ROOT}dashboard/clients/archived`);
+
+		expect(typeof CLIENTS_VIEW).toBe('function');
+		expect(typeof CLIENTS_EDIT).toBe('function');
+
+		expect(CLIENTS_VIEW(5, 99)).toBe(`${SITE_ROOT}dashboard/clients/5/?company_id=99`);
+		expect(CLIENTS_EDIT(7, 123)).toBe(`${SITE_ROOT}dashboard/clients/7/edit/?company_id=123`);
+	});
 });

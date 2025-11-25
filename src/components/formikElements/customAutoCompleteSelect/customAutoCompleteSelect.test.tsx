@@ -99,4 +99,22 @@ describe('CustomAutocompleteSelect', () => {
 		expect(screen.queryByText('Alice')).not.toBeInTheDocument();
 		expect(handleChange).not.toHaveBeenCalled();
 	});
+	it('renders noOptionsText when there are no items', () => {
+		render(
+			<CustomAutoCompleteSelect
+				id="test"
+				label="User"
+				noOptionsText="Aucun utilisateur trouvé"
+				items={[]} // empty list
+				theme={theme}
+				value={null}
+				onChange={() => {}}
+			/>,
+		);
+		// open the dropdown
+		const input = screen.getByRole('combobox');
+		fireEvent.mouseDown(input);
+		// expect the noOptionsText to be shown
+		expect(screen.getByText('Aucun utilisateur trouvé')).toBeInTheDocument();
+	});
 });

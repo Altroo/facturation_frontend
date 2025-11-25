@@ -62,12 +62,12 @@ const inputTheme = coordonneeTextInputTheme();
 
 type FormikContentProps = {
 	token: string | undefined;
-	company: number;
+	company_id: number;
 	id?: number;
 	onSuccess: () => void;
 };
 
-const FormikContent: React.FC<FormikContentProps> = ({ token, company, id, onSuccess }) => {
+const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, onSuccess }) => {
 	const isEditMode = id !== undefined;
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -111,7 +111,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company, id, onSuc
 		initialValues: {
 			client_type: clientData?.client_type ?? 'PM',
 			code_client: initialCodeClient,
-			company,
+			company: company_id,
 			raison_sociale: clientData?.raison_sociale ?? '',
 			nom: clientData?.nom ?? '',
 			prenom: clientData?.prenom ?? '',
@@ -684,11 +684,11 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company, id, onSuc
 };
 
 interface Props extends SessionProps {
-	company: number;
+	company_id: number;
 	id?: number;
 }
 
-const ClientsForm: React.FC<Props> = ({ session, company, id }) => {
+const ClientsForm: React.FC<Props> = ({ session, company_id, id }) => {
 	const token = getAccessTokenFromSession(session);
 	const [showDataUpdated, setShowDataUpdated] = useState<boolean>(false);
 	const isEditMode = id !== undefined;
@@ -698,7 +698,7 @@ const ClientsForm: React.FC<Props> = ({ session, company, id }) => {
 			<NavigationBar title={isEditMode ? 'Modifier le client' : 'Ajouter un client'}>
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
 					<Box sx={{ width: '100%' }}>
-						<FormikContent token={token} id={id} company={company} onSuccess={() => setShowDataUpdated(true)} />
+						<FormikContent token={token} id={id} company_id={company_id} onSuccess={() => setShowDataUpdated(true)} />
 					</Box>
 				</main>
 			</NavigationBar>

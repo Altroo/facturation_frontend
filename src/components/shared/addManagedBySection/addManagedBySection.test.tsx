@@ -30,11 +30,12 @@ interface DropdownProps {
 jest.mock('@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect', () => {
 	return {
 		__esModule: true,
-		default: (props: AutocompleteProps) => (
+		default: (props: AutocompleteProps & { noOptionsText?: string }) => (
 			<div data-testid="custom-autocomplete">
 				{props.startIcon}
 				<label htmlFor={props.id}>{props.label}</label>
 				<input id={props.id} value={props.value?.value ?? ''} onChange={() => {}} />
+				{props.items.length === 0 && <span data-testid="no-options">{props.noOptionsText}</span>}
 			</div>
 		),
 	};
@@ -124,5 +125,15 @@ describe('AddManagedBySection', () => {
 		render(<AddManagedBySection {...defaultProps} />);
 		fireEvent.click(screen.getByRole('button', { name: 'Ajouter' }));
 		expect(mockAddClick).toHaveBeenCalled();
+	});
+	it('renders noOptionsText when there are no selectItems', () => {
+		render(
+			<AddManagedBySection
+				{...defaultProps}
+				selectItems={[]} // empty list
+				selectValue={null}
+			/>,
+		);
+		expect(screen.getByTestId('no-options')).toHaveTextContent('Aucun utilisateur trouvé');
 	});
 });
