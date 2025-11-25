@@ -34,7 +34,8 @@ describe('rootSaga', () => {
 				}),
 			]),
 		});
-		// 4 sagas currently: watchInit, watchAccount, watchWS, watchParameter
-		expect(effect.payload).toHaveLength(4);
+		// 5 sagas currently:
+		// watchInit, watchAccount, watchWS, watchParameter, watchCompanies
+		expect(effect.payload).toHaveLength(5);
 	});
 });
