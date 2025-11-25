@@ -17,7 +17,12 @@ const remotePatterns: RemotePattern[] = [
 
 const nextConfig: NextConfig = {
 	reactCompiler: true,
-
+	typedRoutes: true,
+	// cacheComponents: true,
+	experimental: {
+		typedEnv: true,
+		turbopackFileSystemCacheForDev: true,
+	},
 	sassOptions: {
 		includePaths: [path.join(__dirname, 'src', 'styles'), path.join(__dirname, 'public')],
 	},

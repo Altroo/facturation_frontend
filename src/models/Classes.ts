@@ -14,7 +14,6 @@ export class UserClass {
 		public is_active: boolean,
 		public date_joined: string | null,
 		public last_login: string | null,
-		// public group: string,
 	) {}
 }
 
