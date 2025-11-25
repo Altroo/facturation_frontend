@@ -35,6 +35,9 @@ import { getAccessTokenFromSession } from '@/store/session';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import Styles from '@/styles/dashboard/clients/clients.module.sass';
+import { useAppSelector } from '@/utils/hooks';
+import { getUserCompaniesState } from '@/store/selectors';
+import { CompaniesUserCompaniesType } from '@/types/companyTypes';
 
 interface InfoRowProps {
 	icon: React.ReactNode;
@@ -108,6 +111,8 @@ interface Props extends SessionProps {
 
 const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const token = getAccessTokenFromSession(session);
+	const companies = useAppSelector(getUserCompaniesState);
+	const [company, setCompany] = useState<CompaniesUserCompaniesType | undefined>(undefined);
 	const router = useRouter();
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -123,7 +128,10 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 			const axiosError = error as ResponseDataInterface<ApiErrorResponseType>;
 			setAxiosError(axiosError);
 		}
-	}, [error]);
+		if (companies && companies.length > 0) {
+			setCompany(companies.find((comp) => comp.id === company_id));
+		}
+	}, [companies, company_id, error]);
 
 	return (
 		<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
@@ -138,7 +146,7 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 						>
 							Liste des clients
 						</Button>
-						{!isLoading && !error && (
+						{!isLoading && !error && company?.role === 'Admin' && (
 							<Button
 								variant="contained"
 								startIcon={<Edit />}

@@ -110,7 +110,7 @@ describe('ClientClass', () => {
 
 		expect(client.id).toBe(1);
 		expect(client.code_client).toBe('CL001');
-		expect(client.client_type).toBe('prospect');
+		expect(client.client_type).toBe('PP');
 		expect(client.company).toBe(10);
 		expect(client.company_name).toBe('MyCompany');
 		expect(client.ville).toBe(5);

@@ -4,6 +4,7 @@ import { rootSaga } from '@/store/sagas';
 import _initReducer from '@/store/slices/_initSlice';
 import accountReducer from '@/store/slices/accountSlice';
 import parameterReducer from '@/store/slices/parameterSlice';
+import companiesReducer from '@/store/slices/companiesSlice';
 import { accountApi, profilApi, groupApi, usersApi } from '@/store/services/account';
 import { companyApi } from '@/store/services/company';
 import { clientApi } from '@/store/services/client';
@@ -15,6 +16,7 @@ const rootReducer = combineReducers({
 	_init: _initReducer,
 	account: accountReducer,
 	parameter: parameterReducer,
+	companies: companiesReducer,
 	[accountApi.reducerPath]: accountApi.reducer,
 	[profilApi.reducerPath]: profilApi.reducer,
 	[groupApi.reducerPath]: groupApi.reducer,

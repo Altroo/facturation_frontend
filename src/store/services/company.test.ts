@@ -1,3 +1,4 @@
+// companyApi.test.ts
 import { companyApi } from '@/store/services/company';
 import { setupApiStore } from '@/store/setupApiStore';
 
@@ -7,14 +8,15 @@ beforeAll(() => {
 	process.env.NEXT_PUBLIC_USER_COMPANIES_LIST ||= 'https://example.com/user-companies/';
 });
 
+// Mock axiosBaseQuery to always succeed
 jest.mock('@/utils/axiosBaseQuery', () => ({
 	axiosBaseQuery: () => async () => ({ data: { ok: true } }),
 }));
 
-describe('companyApi', () => {
+describe('companyApi endpoints', () => {
 	const storeRef = setupApiStore(companyApi);
 
-	it('getCompaniesList query should complete without error', async () => {
+	it('getCompaniesList query should return mocked data', async () => {
 		const result = await storeRef.store.dispatch(
 			companyApi.endpoints.getCompaniesList.initiate({
 				token: 'test-token',
@@ -24,31 +26,35 @@ describe('companyApi', () => {
 				search: '',
 			}),
 		);
-		expect('error' in result).toBe(false);
+		expect(result.error).toBeUndefined();
+		expect(result.data).toEqual({ ok: true });
 	});
 
-	it('getCompany query should complete without error', async () => {
+	it('getCompany query should return mocked data', async () => {
 		const result = await storeRef.store.dispatch(
 			companyApi.endpoints.getCompany.initiate({ token: 'test-token', id: 1 }),
 		);
-		expect('error' in result).toBe(false);
+		expect(result.error).toBeUndefined();
+		expect(result.data).toEqual({ ok: true });
 	});
 
-	it('getUserCompanies query should complete without error', async () => {
+	it('getUserCompanies query should return mocked data', async () => {
 		const result = await storeRef.store.dispatch(
 			companyApi.endpoints.getUserCompanies.initiate({ token: 'test-token' }),
 		);
-		expect('error' in result).toBe(false);
+		expect(result.error).toBeUndefined();
+		expect(result.data).toEqual({ ok: true });
 	});
 
-	it('deleteCompany mutation should complete without error', async () => {
+	it('deleteCompany mutation should return mocked data', async () => {
 		const result = await storeRef.store.dispatch(
 			companyApi.endpoints.deleteCompany.initiate({ token: 'test-token', id: 1 }),
 		);
-		expect('error' in result).toBe(false);
+		expect(result.error).toBeUndefined();
+		expect(result.data).toEqual({ ok: true });
 	});
 
-	it('editCompany mutation should complete without error', async () => {
+	it('editCompany mutation should return mocked data', async () => {
 		const result = await storeRef.store.dispatch(
 			companyApi.endpoints.editCompany.initiate({
 				token: 'test-token',
@@ -56,16 +62,18 @@ describe('companyApi', () => {
 				data: { raison_sociale: 'Updated Co' },
 			}),
 		);
-		expect('error' in result).toBe(false);
+		expect(result.error).toBeUndefined();
+		expect(result.data).toEqual({ ok: true });
 	});
 
-	it('addCompany mutation should complete without error', async () => {
+	it('addCompany mutation should return mocked data', async () => {
 		const result = await storeRef.store.dispatch(
 			companyApi.endpoints.addCompany.initiate({
 				token: 'test-token',
 				data: { raison_sociale: 'New Co' },
 			}),
 		);
-		expect('error' in result).toBe(false);
+		expect(result.error).toBeUndefined();
+		expect(result.data).toEqual({ ok: true });
 	});
 });

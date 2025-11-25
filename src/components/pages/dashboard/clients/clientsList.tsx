@@ -25,14 +25,11 @@ interface ClientsListContentProps extends SessionProps {
 	company_id: number;
 	onToast: (message: string, type: 'success' | 'error') => void;
 	archived: boolean;
+	role: string;
 }
 
-const ClientsListContent: React.FC<ClientsListContentProps> = ({
-	session,
-	company_id,
-	onToast,
-	archived,
-}: ClientsListContentProps) => {
+const ClientsListContent: React.FC<ClientsListContentProps> = (props: ClientsListContentProps) => {
+	const { session, company_id, onToast, archived, role } = props;
 	const router = useRouter();
 	const token = getAccessTokenFromSession(session);
 
@@ -244,33 +241,40 @@ const ClientsListContent: React.FC<ClientsListContentProps> = ({
 			filterable: false,
 			renderCell: (params: GridRenderCellParams<ClientClass>) => (
 				<Box sx={{ display: 'flex', gap: 1 }}>
-					<Tooltip title="Voir">
-						<IconButton size="small" color="info" onClick={() => router.push(CLIENTS_VIEW(params.row.id, company_id))}>
-							<Visibility />
-						</IconButton>
-					</Tooltip>
-
-					<Tooltip title="Modifier">
-						<IconButton
-							size="small"
-							color="primary"
-							onClick={() => router.push(CLIENTS_EDIT(params.row.id, company_id))}
-						>
-							<Edit />
-						</IconButton>
-					</Tooltip>
-
-					<Tooltip title="Supprimer">
-						<IconButton size="small" color="error" onClick={() => showDeleteModalCall(params.row.id)}>
-							<Delete />
-						</IconButton>
-					</Tooltip>
-
-					<Tooltip title={archived ? 'Désarchiver' : 'Archiver'}>
-						<IconButton size="small" color="warning" onClick={() => showArchiveModalCall(params.row.id)}>
-							{archived ? <Unarchive /> : <Archive />}
-						</IconButton>
-					</Tooltip>
+					{(role === 'Admin' || role === 'Lecture') && (
+						<Tooltip title="Voir">
+							<IconButton
+								size="small"
+								color="info"
+								onClick={() => router.push(CLIENTS_VIEW(params.row.id, company_id))}
+							>
+								<Visibility />
+							</IconButton>
+						</Tooltip>
+					)}
+					{role === 'Admin' && (
+						<>
+							<Tooltip title="Modifier">
+								<IconButton
+									size="small"
+									color="primary"
+									onClick={() => router.push(CLIENTS_EDIT(params.row.id, company_id))}
+								>
+									<Edit />
+								</IconButton>
+							</Tooltip>
+							<Tooltip title="Supprimer">
+								<IconButton size="small" color="error" onClick={() => showDeleteModalCall(params.row.id)}>
+									<Delete />
+								</IconButton>
+							</Tooltip>
+							<Tooltip title={archived ? 'Désarchiver' : 'Archiver'}>
+								<IconButton size="small" color="warning" onClick={() => showArchiveModalCall(params.row.id)}>
+									{archived ? <Unarchive /> : <Archive />}
+								</IconButton>
+							</Tooltip>
+						</>
+					)}
 				</Box>
 			),
 		},
@@ -278,7 +282,7 @@ const ClientsListContent: React.FC<ClientsListContentProps> = ({
 
 	return (
 		<>
-			{!archived && (
+			{!archived && role === 'Admin' && (
 				<Box
 					sx={{
 						width: '100%',
@@ -457,9 +461,8 @@ const ClientsListClient: React.FC<Props> = ({ session, archived }) => {
 								},
 							}}
 						>
-							{companies.map((company) => (
-								<Tab key={company.id} label={company.raison_sociale} />
-							))}
+							{companies.length > 0 &&
+								companies.map((company) => <Tab key={company.id} label={company.raison_sociale} />)}
 						</Tabs>
 					</Paper>
 					{selectedCompany && (
@@ -467,6 +470,7 @@ const ClientsListClient: React.FC<Props> = ({ session, archived }) => {
 							archived={archived}
 							session={session}
 							company_id={selectedCompany.id}
+							role={selectedCompany.role}
 							onToast={handleToast}
 						/>
 					)}

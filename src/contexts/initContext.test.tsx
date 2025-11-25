@@ -1,15 +1,18 @@
+// InitContext.test.tsx
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { InitContextProvider } from './InitContext';
 import { useSession } from 'next-auth/react';
 import { useGetProfilQuery, useGetGroupsQuery } from '@/store/services/account';
 import { useGetCitiesListQuery } from '@/store/services/parameter';
+import { useGetUserCompaniesQuery } from '@/store/services/company';
 import { useAppDispatch, useAppSelector } from '@/utils/hooks';
 import { getInitStateToken } from '@/store/selectors';
 
 jest.mock('next-auth/react');
 jest.mock('@/store/services/account');
 jest.mock('@/store/services/parameter');
+jest.mock('@/store/services/company');
 jest.mock('@/utils/hooks');
 jest.mock('@/store/selectors');
 
@@ -28,6 +31,7 @@ describe('InitContextProvider', () => {
 		(useGetProfilQuery as jest.Mock).mockReturnValue({ data: undefined });
 		(useGetGroupsQuery as jest.Mock).mockReturnValue({ data: undefined });
 		(useGetCitiesListQuery as jest.Mock).mockReturnValue({ data: undefined });
+		(useGetUserCompaniesQuery as jest.Mock).mockReturnValue({ data: undefined });
 	});
 
 	it('does not render children while session is loading', () => {
@@ -68,7 +72,6 @@ describe('InitContextProvider', () => {
 
 		await waitFor(() => {
 			expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'INIT_APP_SESSION_TOKENS' }));
-			// expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'INIT_APP' }));
 		});
 	});
 
@@ -127,9 +130,34 @@ describe('InitContextProvider', () => {
 
 			expect(cityAction).toBeDefined();
 
+			// Normalize in case the action creator wraps array into an object with numeric keys
 			const normalizedCities = Array.isArray(cityAction!.data) ? cityAction!.data : Object.values(cityAction!.data);
 
 			expect(normalizedCities).toEqual(mockCities);
+		});
+	});
+
+	it('dispatches companies action when companies data is available', async () => {
+		(useSession as jest.Mock).mockReturnValue({ data: { user: {} }, status: 'authenticated' });
+
+		const mockCompanies = [
+			{ id: 1, raison_sociale: 'Alpha Corp', role: 'Admin' },
+			{ id: 2, raison_sociale: 'Beta LLC', role: 'Manager' },
+		];
+		(useGetUserCompaniesQuery as jest.Mock).mockReturnValue({ data: mockCompanies });
+
+		render(
+			<InitContextProvider>
+				<div data-testid="child">Child</div>
+			</InitContextProvider>,
+		);
+
+		await waitFor(() => {
+			const calls = mockDispatch.mock.calls.map(([action]) => action);
+			const companiesAction = calls.find((a) => a.type === 'COMPANIES_SET_USER_COMPANIES');
+
+			expect(companiesAction).toBeDefined();
+			expect(companiesAction!.data).toEqual(mockCompanies);
 		});
 	});
 });

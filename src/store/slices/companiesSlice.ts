@@ -1,0 +1,20 @@
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { CompaniesStateInterface, CompaniesUserCompaniesType } from '@/types/companyTypes';
+
+const initialState: CompaniesStateInterface = {
+	user_companies: [],
+};
+
+const companiesSlice = createSlice({
+	name: 'companies',
+	initialState: initialState,
+	reducers: {
+		setUserCompanies: (state, action: PayloadAction<Array<CompaniesUserCompaniesType>>) => {
+			state.user_companies = action.payload;
+		},
+	},
+});
+
+export const { setUserCompanies } = companiesSlice.actions;
+
+export default companiesSlice.reducer;

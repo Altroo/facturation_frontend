@@ -6,6 +6,7 @@ import { CompanyClass } from '@/models/Classes';
 import type { ApiErrorResponseType, PaginationResponseType, SuccessResponseType } from '@/types/_initTypes';
 import type { RootState } from '@/store/store';
 import { initToken } from '@/store/slices/_initSlice';
+import { CompaniesUserCompaniesType } from '@/types/companyTypes';
 
 export const companyApi = createApi({
 	reducerPath: 'companyApi',
@@ -31,7 +32,7 @@ export const companyApi = createApi({
 			}),
 			providesTags: ['Company'],
 		}),
-		getUserCompanies: builder.query<Array<Pick<CompanyClass, 'id' | 'raison_sociale'>>, { token: string | undefined }>({
+		getUserCompanies: builder.query<Array<CompaniesUserCompaniesType>, { token: string | undefined }>({
 			query: ({ token }) => ({
 				url: process.env.NEXT_PUBLIC_USER_COMPANIES_LIST as string,
 				method: 'GET',

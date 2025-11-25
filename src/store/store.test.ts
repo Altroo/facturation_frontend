@@ -1,9 +1,9 @@
+// store.test.ts
 import { jest } from '@jest/globals';
 import type { Middleware } from '@reduxjs/toolkit';
 import type { SagaStore, RootState, AppDispatch } from './store';
 
 // --- Mocks for reducers and RTK Query services ---
-
 jest.mock('@/store/slices/_initSlice', () => ({
 	__esModule: true,
 	default: (state = { init: true }) => state,
@@ -11,6 +11,14 @@ jest.mock('@/store/slices/_initSlice', () => ({
 jest.mock('@/store/slices/accountSlice', () => ({
 	__esModule: true,
 	default: (state = { account: true }) => state,
+}));
+jest.mock('@/store/slices/parameterSlice', () => ({
+	__esModule: true,
+	default: (state = { parameter: true }) => state,
+}));
+jest.mock('@/store/slices/companiesSlice', () => ({
+	__esModule: true,
+	default: (state = { companies: true }) => state,
 }));
 
 function makeApiMock(name: string) {
@@ -64,6 +72,8 @@ describe('Redux Saga Store', () => {
 		const state: RootState = store.getState();
 		expect(state).toHaveProperty('_init');
 		expect(state).toHaveProperty('account');
+		expect(state).toHaveProperty('parameter');
+		expect(state).toHaveProperty('companies');
 		expect(state).toHaveProperty('accountApi');
 		expect(state).toHaveProperty('profilApi');
 		expect(state).toHaveProperty('groupApi');

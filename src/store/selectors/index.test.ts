@@ -1,8 +1,21 @@
-import { getInitStateToken, getAccessToken, getProfilState, getGroupesState, getCitiesState } from './index';
+import {
+	getInitStateToken,
+	getAccessToken,
+	getProfilState,
+	getGroupesState,
+	getCitiesState,
+	getUserCompaniesState,
+} from './index';
 
 import { UserClass, CitiesClass } from '@/models/Classes';
+import type { CompaniesUserCompaniesType } from '@/types/companyTypes';
 
 describe('Redux selectors', () => {
+	const mockCompanies: CompaniesUserCompaniesType[] = [
+		{ id: 1, raison_sociale: 'Alpha Corp', role: 'Admin' },
+		{ id: 2, raison_sociale: 'Beta LLC', role: 'Manager' },
+	];
+
 	const mockState = {
 		_init: {
 			initStateToken: {
@@ -28,6 +41,9 @@ describe('Redux selectors', () => {
 		},
 		parameter: {
 			cities: [new CitiesClass(1, 'Tanger'), new CitiesClass(2, 'Tetouan')],
+		},
+		companies: {
+			user_companies: mockCompanies,
 		},
 	};
 
@@ -58,5 +74,13 @@ describe('Redux selectors', () => {
 		expect(Array.isArray(cities)).toBe(true);
 		expect(cities[0]).toBeInstanceOf(CitiesClass);
 		expect(cities.map((c) => c.nom)).toEqual(['Tanger', 'Tetouan']);
+	});
+
+	it('getUserCompaniesState should return the user_companies array', () => {
+		const companies = getUserCompaniesState(mockState);
+		expect(Array.isArray(companies)).toBe(true);
+		expect(companies).toEqual(mockCompanies);
+		expect(companies[0].raison_sociale).toBe('Alpha Corp');
+		expect(companies[1].role).toBe('Manager');
 	});
 });

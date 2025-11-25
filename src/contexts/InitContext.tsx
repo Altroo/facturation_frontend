@@ -11,6 +11,8 @@ import { useGetProfilQuery, useGetGroupsQuery } from '@/store/services/account';
 import { accountSetGroupesAction, accountSetProfilAction } from '@/store/actions/accountActions';
 import { useGetCitiesListQuery } from '@/store/services/parameter';
 import { parameterSetCitiesAction } from '@/store/actions/parameterActions';
+import { useGetUserCompaniesQuery } from '@/store/services/company';
+import { companiesSetUserCompaniesAction } from '@/store/actions/companiesActions';
 
 const InitContext = createContext<InitStateInterface<InitStateToken>>({
 	initStateToken: emptyInitStateToken,
@@ -30,6 +32,8 @@ export const InitContextProvider: React.FC<PropsWithChildren<Record<string, unkn
 	const { data: cities } = useGetCitiesListQuery(token, {
 		skip: !token || status !== 'authenticated',
 	});
+	// get user companies
+	const { data: companies } = useGetUserCompaniesQuery({ token }, { skip: !token || status !== 'authenticated' });
 	const [appTokenSessionLoaded, setAppTokenSessionLoaded] = useState<boolean>(false);
 
 	useEffect(() => {
@@ -57,7 +61,10 @@ export const InitContextProvider: React.FC<PropsWithChildren<Record<string, unkn
 		if (cities) {
 			dispatch(parameterSetCitiesAction(cities));
 		}
-	}, [dispatch, user, groupes, cities]);
+		if (companies) {
+			dispatch(companiesSetUserCompaniesAction(companies));
+		}
+	}, [dispatch, user, groupes, cities, companies]);
 
 	// Do not render children until we've attempted to initialize the token state
 	if (!appTokenSessionLoaded) {

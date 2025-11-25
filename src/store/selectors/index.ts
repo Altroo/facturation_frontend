@@ -1,5 +1,6 @@
 import type { RootState } from '@/store/store';
 import { UserClass, CitiesClass } from '@/models/Classes';
+import { CompaniesUserCompaniesType } from '@/types/companyTypes';
 
 // _Init
 export const getInitStateToken = (state: RootState) => state._init.initStateToken;
@@ -11,3 +12,7 @@ export const getGroupesState = (state: RootState): Array<string> => state.accoun
 
 // Parameter
 export const getCitiesState = (state: RootState): Array<CitiesClass> => state.parameter.cities;
+
+// Companies
+export const getUserCompaniesState = (state: RootState): Array<CompaniesUserCompaniesType> =>
+	state.companies.user_companies;

@@ -3,8 +3,9 @@ import { watchInit } from '@/store/sagas/_initSaga';
 import { watchWS } from '@/store/sagas/wsSaga';
 import { watchAccount } from '@/store/sagas/accountSaga';
 import { watchParameter } from '@/store/sagas/parameterSaga';
+import { watchCompanies } from '@/store/sagas/companiesSaga';
 
-const sagas = [watchInit, watchAccount, watchParameter];
+const sagas = [watchInit, watchAccount, watchParameter, watchCompanies];
 
 // spawn : whenever a watcher get's crashed somehow,
 // we use spawn to respawn it back. (except it's unblocking)

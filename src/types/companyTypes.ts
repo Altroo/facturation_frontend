@@ -1,5 +1,12 @@
+import type { SagaPayloadType } from '@/types/_initTypes';
+
 export type NbrEmployeType = '' | '1 à 5' | '5 à 10' | '10 à 50' | '50 à 100' | 'plus que 100';
 export type CiviliteType = '' | 'Mme' | 'Mlle' | 'M.';
+
+//!- Companies State
+export interface CompaniesStateInterface {
+	user_companies: Array<CompaniesUserCompaniesType>;
+}
 
 export type ManagedByType = {
 	id: number;
@@ -43,3 +50,11 @@ export type CompanyFormValuesType = {
 	cachet_cropped: string | ArrayBuffer;
 	managed_by: ManagedByEntry[];
 };
+
+export type CompaniesUserCompaniesType = {
+	id: number;
+	raison_sociale: string;
+	role: string;
+};
+
+export type setCompaniesUserSagatype = SagaPayloadType<Array<CompaniesUserCompaniesType>>;
