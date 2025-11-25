@@ -1,24 +1,30 @@
 'use client';
 
-import { useMediaQuery } from 'react-responsive';
-import { useComponentHydrated } from 'react-hydration-provider';
 import { ReactNode } from 'react';
+import { useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 type MediaQueryProps = {
 	children: ReactNode;
 };
 
-export const Desktop = (props: MediaQueryProps) => {
-	const hydrated = useComponentHydrated();
-	// 'only screen and (min-width: 992px)'
-	// const isResponsive = useMediaQuery({ minWidth: 992 });
-	const isResponsive = useMediaQuery({ minWidth: 992 }, hydrated ? undefined : { deviceWidth: 992 });
-	return isResponsive ? props.children : null;
+/**
+ * Desktop: only screen and (min-width: 992px)
+ * Matches your original Desktop component.
+ */
+export const Desktop = ({ children }: MediaQueryProps) => {
+	const theme = useTheme();
+	// noSsr avoids hydration mismatch
+	const isDesktop = useMediaQuery(theme.breakpoints.up('md'), { noSsr: true });
+	return isDesktop ? children : null;
 };
-export const TabletAndMobile = (props: MediaQueryProps) => {
-	const hydrated = useComponentHydrated();
-	// only screen and (max-width: 991px)'
-	// const isResponsive = useMediaQuery({ maxWidth: 991 })
-	const isResponsive = useMediaQuery({ maxWidth: 991 }, hydrated ? undefined : { deviceWidth: 767 });
-	return isResponsive ? props.children : null;
+
+/**
+ * TabletAndMobile: only screen and (max-width: 991px)
+ * Matches your original TabletAndMobile component.
+ */
+export const TabletAndMobile = ({ children }: MediaQueryProps) => {
+	const theme = useTheme();
+	const isTabletMobile = useMediaQuery(theme.breakpoints.down('md'), { noSsr: true });
+	return isTabletMobile ? children : null;
 };

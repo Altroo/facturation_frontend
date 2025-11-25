@@ -41,10 +41,10 @@ export const CustomTheme = (primaryColor: string | undefined = undefined) => {
 		breakpoints: {
 			values: {
 				xs: 0,
-				sm: 767,
-				md: 991,
+				sm: 600,
+				md: 992,
 				lg: 1200,
-				xl: 1920,
+				xl: 1536,
 			},
 		},
 		typography: {

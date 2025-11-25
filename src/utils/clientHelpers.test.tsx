@@ -1,83 +1,76 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { Desktop, TabletAndMobile } from './clientHelpers';
-import { useMediaQuery } from 'react-responsive';
-import { useComponentHydrated } from 'react-hydration-provider';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 
-// Mock react-responsive
-jest.mock('react-responsive', () => ({
-	useMediaQuery: jest.fn(),
-}));
+// Mock MUI useMediaQuery
+jest.mock('@mui/material/useMediaQuery');
 
-// Mock react-hydration-provider
-jest.mock('react-hydration-provider', () => ({
-	useComponentHydrated: jest.fn(),
-}));
+const theme = createTheme({
+	breakpoints: {
+		values: { xs: 0, sm: 600, md: 992, lg: 1200, xl: 1536 },
+	},
+});
 
-describe('MediaQueryComponents', () => {
+describe('MediaQueryComponents (MUI)', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
 	});
 
-	test('renders Desktop children when hydrated and media query matches', () => {
-		(useComponentHydrated as jest.Mock).mockReturnValue(true);
+	test('renders Desktop children when media query matches', () => {
 		(useMediaQuery as jest.Mock).mockReturnValue(true);
 
 		render(
-			<Desktop>
-				<div>Desktop Content</div>
-			</Desktop>,
+			<ThemeProvider theme={theme}>
+				<Desktop>
+					<div>Desktop Content</div>
+				</Desktop>
+			</ThemeProvider>,
 		);
+
 		expect(screen.getByText('Desktop Content')).toBeInTheDocument();
 	});
 
 	test('does not render Desktop children when media query does not match', () => {
-		(useComponentHydrated as jest.Mock).mockReturnValue(true);
 		(useMediaQuery as jest.Mock).mockReturnValue(false);
 
 		render(
-			<Desktop>
-				<div>Desktop Content</div>
-			</Desktop>,
+			<ThemeProvider theme={theme}>
+				<Desktop>
+					<div>Desktop Content</div>
+				</Desktop>
+			</ThemeProvider>,
 		);
+
 		expect(screen.queryByText('Desktop Content')).toBeNull();
 	});
 
-	test('renders TabletAndMobile children when hydrated and media query matches', () => {
-		(useComponentHydrated as jest.Mock).mockReturnValue(true);
+	test('renders TabletAndMobile children when media query matches', () => {
 		(useMediaQuery as jest.Mock).mockReturnValue(true);
 
 		render(
-			<TabletAndMobile>
-				<div>Mobile Content</div>
-			</TabletAndMobile>,
+			<ThemeProvider theme={theme}>
+				<TabletAndMobile>
+					<div>Mobile Content</div>
+				</TabletAndMobile>
+			</ThemeProvider>,
 		);
+
 		expect(screen.getByText('Mobile Content')).toBeInTheDocument();
 	});
 
 	test('does not render TabletAndMobile children when media query does not match', () => {
-		(useComponentHydrated as jest.Mock).mockReturnValue(true);
 		(useMediaQuery as jest.Mock).mockReturnValue(false);
 
 		render(
-			<TabletAndMobile>
-				<div>Mobile Content</div>
-			</TabletAndMobile>,
+			<ThemeProvider theme={theme}>
+				<TabletAndMobile>
+					<div>Mobile Content</div>
+				</TabletAndMobile>
+			</ThemeProvider>,
 		);
+
 		expect(screen.queryByText('Mobile Content')).toBeNull();
-	});
-
-	test('uses fallback deviceWidth when not hydrated', () => {
-		(useComponentHydrated as jest.Mock).mockReturnValue(false);
-		(useMediaQuery as jest.Mock).mockImplementation((_, fallback) => {
-			return fallback?.deviceWidth === 992; // Simulate Desktop match
-		});
-
-		render(
-			<Desktop>
-				<div>Desktop Fallback</div>
-			</Desktop>,
-		);
-		expect(screen.getByText('Desktop Fallback')).toBeInTheDocument();
 	});
 });
