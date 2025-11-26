@@ -31,6 +31,7 @@ export const citiesApi = createApi({
 				method: 'GET',
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
+			providesTags: ['Cities'],
 		}),
 		deleteCity: builder.mutation<void | ApiErrorResponseType, { token: string | undefined; id: number }>({
 			query: ({ token, id }) => ({
@@ -38,6 +39,7 @@ export const citiesApi = createApi({
 				method: 'DELETE',
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
+			invalidatesTags: ['Cities'],
 		}),
 		editCity: builder.mutation<
 			SuccessResponseType<CitiesClass>,
@@ -49,6 +51,7 @@ export const citiesApi = createApi({
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 				data,
 			}),
+			invalidatesTags: ['Cities'],
 		}),
 		addCity: builder.mutation<
 			SuccessResponseType<CitiesClass>,

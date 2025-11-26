@@ -88,6 +88,7 @@ export const usersApi = createApi({
 				method: 'GET',
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
+			providesTags: ['Users'],
 		}),
 		checkEmail: builder.mutation<void | ApiErrorResponseType, { token: string | undefined; email: string }>({
 			query: ({ token, email }) => ({
@@ -104,6 +105,7 @@ export const usersApi = createApi({
 				method: 'DELETE',
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
+			invalidatesTags: ['Users'],
 		}),
 		editUser: builder.mutation<UserClass, { token: string | undefined; id: number; data: Partial<UserClass> }>({
 			query: ({ token, id, data }) => ({
@@ -112,6 +114,7 @@ export const usersApi = createApi({
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 				data,
 			}),
+			invalidatesTags: ['Users'],
 		}),
 		addUser: builder.mutation<UserClass, { token: string | undefined; data: Partial<UserClass> }>({
 			query: ({ token, data }) => ({
@@ -127,6 +130,7 @@ export const usersApi = createApi({
 
 export const profilApi = createApi({
 	reducerPath: 'profilApi',
+	tagTypes: ['Profil'],
 	baseQuery: axiosBaseQuery((api) =>
 		isAuthenticatedInstance(
 			() => getInitStateToken(api.getState() as RootState),
@@ -140,6 +144,7 @@ export const profilApi = createApi({
 				method: 'GET',
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
+			providesTags: ['Profil'],
 		}),
 		editProfil: builder.mutation<UserClass, EditProfilResponse>({
 			query: ({ token, data }) => ({
@@ -148,6 +153,7 @@ export const profilApi = createApi({
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 				data,
 			}),
+			invalidatesTags: ['Profil'],
 		}),
 		editPassword: builder.mutation<void | ApiErrorResponseType, PasswordResetResponse>({
 			query: ({ token, data }) => ({

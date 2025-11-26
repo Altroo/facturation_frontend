@@ -46,6 +46,7 @@ export const companyApi = createApi({
 				method: 'GET',
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
+			providesTags: ['Company'],
 		}),
 		deleteCompany: builder.mutation<void | ApiErrorResponseType, { token: string | undefined; id: number }>({
 			query: ({ token, id }) => ({
@@ -53,6 +54,7 @@ export const companyApi = createApi({
 				method: 'DELETE',
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
+			invalidatesTags: ['Company'],
 		}),
 		editCompany: builder.mutation<
 			SuccessResponseType<CompanyClass>,
@@ -64,6 +66,7 @@ export const companyApi = createApi({
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 				data,
 			}),
+			invalidatesTags: ['Company'],
 		}),
 		addCompany: builder.mutation<
 			SuccessResponseType<CompanyClass>,

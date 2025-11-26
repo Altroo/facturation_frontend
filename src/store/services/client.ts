@@ -51,6 +51,7 @@ export const clientApi = createApi({
 				method: 'GET',
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
+			providesTags: ['Client'],
 		}),
 		getCodeClient: builder.query<Pick<ClientClass, 'code_client'>, { token: string | undefined }>({
 			query: ({ token }) => ({
@@ -65,6 +66,7 @@ export const clientApi = createApi({
 				method: 'DELETE',
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
+			invalidatesTags: ['Client'],
 		}),
 		editClient: builder.mutation<
 			SuccessResponseType<ClientClass>,
@@ -76,6 +78,7 @@ export const clientApi = createApi({
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 				data,
 			}),
+			invalidatesTags: ['Client'],
 		}),
 		addClient: builder.mutation<
 			SuccessResponseType<ClientClass>,
