@@ -173,7 +173,7 @@ const EnterCodePageContent = ({ email }: EnterCodePageContentProps) => {
 						<Stack direction="column" justifyContent="center" alignItems="center" spacing={2}>
 							<PrimaryLoadingButton
 								buttonText="Confirmer le code"
-								active={formik.isValid && !isPasswordResetLoading}
+								active={!isPasswordResetLoading}
 								onClick={formik.handleSubmit}
 								cssClass={Styles.emailRegisterButton}
 								type="submit"

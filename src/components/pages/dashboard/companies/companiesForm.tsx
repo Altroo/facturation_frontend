@@ -317,7 +317,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										error={formik.touched.raison_sociale && Boolean(formik.errors.raison_sociale)}
 										fullWidth={false}
 										size="small"
-										label="Raison sociale"
+										label="Raison sociale *"
 										theme={inputTheme}
 										startIcon={<BusinessIcon fontSize="small" />}
 									/>
@@ -337,9 +337,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									/>
 									<CustomDropDownSelect
 										id="nbr_employe"
-										label="Nombre d'employés"
+										label="Nombre d'employés *"
 										items={nbrEmployeItemsList}
 										value={formik.values.nbr_employe}
+										onBlur={formik.handleBlur('nbr_employe')}
+										error={formik.touched.nbr_employe && Boolean(formik.errors.nbr_employe)}
+										helperText={formik.touched.nbr_employe ? formik.errors.nbr_employe : ''}
 										onChange={(e) => formik.setFieldValue('nbr_employe', e.target.value)}
 										theme={customDropdownTheme()}
 										startIcon={<GroupsIcon fontSize="small" />}
@@ -499,7 +502,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="ICE"
 										type="text"
-										label="ICE"
+										label="ICE *"
 										value={formik.values.ICE}
 										onChange={formik.handleChange('ICE')}
 										onBlur={formik.handleBlur('ICE')}
@@ -617,7 +620,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						<Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 2 }}>
 							<PrimaryLoadingButton
 								buttonText={isEditMode ? 'Mettre à jour' : "Ajouter l'entreprise"}
-								active={formik.isValid && !isPending}
+								active={!isPending}
 								onClick={formik.handleSubmit}
 								loading={isPending}
 								cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}

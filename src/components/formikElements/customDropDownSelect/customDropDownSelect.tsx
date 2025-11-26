@@ -68,7 +68,6 @@ const CustomDropDownSelect: React.FC<Props> = (props: Props) => {
 					onBlur={props.onBlur}
 					error={props.error}
 				>
-					{props.helperText ? <FormHelperText>{props.helperText}</FormHelperText> : null}
 					{props.items.map((item, index) => {
 						const isObject = typeof item === 'object' && item !== null && 'value' in item;
 						const value = isObject ? item?.value : item;
@@ -82,6 +81,9 @@ const CustomDropDownSelect: React.FC<Props> = (props: Props) => {
 						);
 					})}
 				</Select>
+				{props.helperText ? (
+					<FormHelperText sx={{ color: 'rgb(229, 115, 115)' }}>{props.helperText}</FormHelperText>
+				) : null}
 			</FormControl>
 		</ThemeProvider>
 	);

@@ -118,7 +118,7 @@ const LoginPageContent = () => {
 					/>
 					<PrimaryLoadingButton
 						buttonText="Me connecter"
-						active={formik.isValid && !isPending}
+						active={!isPending}
 						onClick={formik.handleSubmit}
 						cssClass={Styles.emailRegisterButton}
 						type="submit"

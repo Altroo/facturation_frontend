@@ -107,7 +107,7 @@ const FormikContenChangePassword: React.FC<formikContentType> = (props: formikCo
 					/>
 					<PrimaryLoadingButton
 						buttonText="Modifier"
-						active={formik.isValid && !isPending}
+						active={!isPending}
 						onClick={formik.handleSubmit}
 						cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}
 						type="submit"

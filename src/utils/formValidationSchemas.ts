@@ -30,6 +30,9 @@ const requiredTextField = (min: number, max: number) =>
 			.nonempty({ error: INPUT_REQUIRED }),
 	);
 
+const requiredChoiceField = () =>
+	z.preprocess((val) => (val === undefined ? '' : val), z.string().nonempty({ error: INPUT_REQUIRED }));
+
 const optionalTextField = (min: number, max: number) =>
 	z.preprocess(
 		(val) => (val === undefined || val === null || val === '' ? undefined : val),
@@ -107,7 +110,7 @@ export const companySchema = z.object({
 	// REQUIRED FIELDS
 	raison_sociale: requiredTextField(2, 255),
 	ICE: requiredTextField(2, 100),
-	nbr_employe: z.string().min(1, { error: INPUT_REQUIRED }),
+	nbr_employe: requiredChoiceField(),
 
 	// OPTIONAL FIELDS
 	email: optionalEmailField,
@@ -143,7 +146,7 @@ export const userSchema = z.object({
 	first_name: requiredTextField(2, 255),
 	last_name: requiredTextField(2, 255),
 	email: z.email({ error: MINI_INPUT_EMAIL }),
-	gender: z.string().min(1, { error: INPUT_REQUIRED }),
+	gender: requiredChoiceField(),
 	is_active: z.boolean(),
 	is_staff: z.boolean(),
 	// OPTIONAL FIELDS

@@ -76,7 +76,7 @@ const ResetPasswordPageContent = () => {
 					/>
 					<PrimaryLoadingButton
 						buttonText="Modifier mot de passe"
-						active={formik.isValid && !isResendLoading && !isPending}
+						active={!isResendLoading && !isPending}
 						onClick={formik.handleSubmit}
 						cssClass={Styles.emailRegisterButton}
 						type="submit"

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState, useTransition } from 'react';
+import React, { useEffect, useMemo, useState, useTransition } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/companies/companies.module.sass';
@@ -206,6 +206,10 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, on
 	const isPM = formik.values.client_type === 'PM';
 	const isRequiredPM = (field: (typeof pmRequired)[number]) => isPM && pmRequired.includes(field);
 	const isRequiredPP = (field: (typeof ppRequired)[number]) => !isPM && ppRequired.includes(field);
+
+	useEffect(() => {
+		console.log(formik.errors);
+	}, [formik.errors]);
 
 	return (
 		<Stack spacing={3} sx={{ p: { xs: 2, md: 3 } }}>
@@ -537,6 +541,9 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, on
 										onChange={(_, newVal) => {
 											formik.setFieldValue('ville', newVal ? Number(newVal.value) : null);
 										}}
+										onBlur={formik.handleBlur('nbr_employe')}
+										error={formik.touched.ville && Boolean(formik.errors.ville)}
+										helperText={formik.touched.ville ? formik.errors.ville : ''}
 										endIcon={
 											<Button size="small" variant="outlined" onClick={() => setOpenCityModal(true)} sx={{ ml: 1 }}>
 												Ajouter
@@ -591,7 +598,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, on
 						<Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 2 }}>
 							<PrimaryLoadingButton
 								buttonText={isEditMode ? 'Mettre à jour' : 'Ajouter le client'}
-								active={formik.isValid && !isPending}
+								active={!isPending}
 								onClick={formik.handleSubmit}
 								loading={isPending}
 								cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}

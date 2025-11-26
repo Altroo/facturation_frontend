@@ -118,7 +118,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 					/>
 					<PrimaryLoadingButton
 						buttonText="Mettre à jour"
-						active={formik.isValid && !isPending}
+						active={!isPending}
 						onClick={formik.handleSubmit}
 						cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}
 						type="submit"

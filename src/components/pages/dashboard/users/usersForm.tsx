@@ -274,7 +274,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="email"
 										type="email"
-										label="Email"
+										label="Email *"
 										disabled={isEditMode}
 										value={formik.values.email}
 										onChange={formik.handleChange('email')}
@@ -289,7 +289,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="first_name"
 										type="text"
-										label="Nom"
+										label="Nom *"
 										value={formik.values.first_name}
 										onChange={formik.handleChange('first_name')}
 										onBlur={formik.handleBlur('first_name')}
@@ -303,7 +303,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="last_name"
 										type="text"
-										label="Prénom"
+										label="Prénom *"
 										value={formik.values.last_name}
 										onChange={formik.handleChange('last_name')}
 										onBlur={formik.handleBlur('last_name')}
@@ -316,12 +316,15 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									/>
 									<CustomDropDownSelect
 										id="gender"
-										label="Sexe"
+										label="Sexe *"
 										items={genderItemsList}
 										value={formik.values.gender}
 										onChange={(e) => formik.setFieldValue('gender', e.target.value)}
 										theme={customDropdownTheme()}
 										startIcon={<GroupsIcon fontSize="small" />}
+										onBlur={formik.handleBlur('gender')}
+										error={formik.touched.gender && Boolean(formik.errors.gender)}
+										helperText={formik.touched.gender ? formik.errors.gender : ''}
 									/>
 								</Stack>
 							</CardContent>
@@ -423,7 +426,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						<Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 2 }}>
 							<PrimaryLoadingButton
 								buttonText={isEditMode ? 'Mettre à jour' : "Ajouter l'utilisateur"}
-								active={formik.isValid && !isPending}
+								active={!isPending}
 								onClick={formik.handleSubmit}
 								loading={isPending}
 								cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}

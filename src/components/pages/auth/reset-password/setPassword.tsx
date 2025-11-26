@@ -98,7 +98,7 @@ const SetPasswordPageContent: React.FC<SetPasswordPageContentProps> = ({ email, 
 					{formik.errors.globalError && <span className={Styles.errorMessage}>{formik.errors.globalError}</span>}
 					<PrimaryLoadingButton
 						buttonText="Modifier mot de passe"
-						active={formik.isValid && !isSetPasswordLoading && !isPending}
+						active={!isSetPasswordLoading && !isPending}
 						onClick={formik.handleSubmit}
 						cssClass={Styles.emailRegisterButton}
 						type="submit"

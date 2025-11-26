@@ -13,6 +13,9 @@ type Props = {
 	noOptionsText: string;
 	fullWidth?: boolean;
 	onChange?: (event: React.SyntheticEvent, newValue: DropDownType | null) => void;
+	onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
+	helperText?: string;
+	error?: boolean;
 	disabled?: boolean;
 	startIcon?: React.ReactNode;
 	endIcon?: React.ReactNode;
@@ -32,6 +35,9 @@ const CustomAutoCompleteSelect: React.FC<Props> = ({
 	startIcon,
 	endIcon,
 	noOptionsText,
+	onBlur,
+	error,
+	helperText,
 }) => {
 	return (
 		<ThemeProvider theme={theme}>
@@ -49,10 +55,13 @@ const CustomAutoCompleteSelect: React.FC<Props> = ({
 				onChange={onChange}
 				disabled={disabled}
 				isOptionEqualToValue={(option, val) => option.value === val.value}
+				onBlur={onBlur}
 				renderInput={(params) => (
 					<TextField
 						{...params}
 						label={label}
+						error={error}
+						helperText={helperText}
 						slotProps={{
 							...slotProps,
 							input: {
