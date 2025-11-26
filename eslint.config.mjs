@@ -22,6 +22,7 @@ const eslintConfig = defineConfig([
 		'.next/types/**',
 		'node_modules/*',
 		'.swc/*',
+		'coverage',
 	]),
 ]);
 
