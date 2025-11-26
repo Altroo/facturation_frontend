@@ -1,6 +1,6 @@
 'use client';
 
-import React, { ForwardedRef, forwardRef, useEffect, useState } from 'react';
+import React, { ForwardedRef, forwardRef, useState } from 'react';
 import Styles from './authLayout.module.sass';
 import { Box, Stack } from '@mui/material';
 import TeeshirtSVG from '../../../../public/assets/images/auth_illu/teeshirt.svg';
@@ -18,28 +18,23 @@ export type svgImageType = {
 };
 
 const AuthLayout = forwardRef<HTMLAnchorElement, Props>((props: Props, ref: ForwardedRef<HTMLAnchorElement>) => {
-	const [authIlluRandom, setAuthIlluRandom] = useState<{ image: svgImageType; color: string } | null>(null);
-
-	useEffect(() => {
-		if (authIlluRandom === null) {
-			const availableAuthBgImages: Array<{ image: svgImageType; color: string }> = [
-				{
-					image: TeeshirtSVG.src,
-					color: '#DBF4EA',
-				},
-				{
-					image: WatchSVG.src,
-					color: '#DBE8F4',
-				},
-				{
-					image: MessagesSVG.src,
-					color: '#F3DCDC',
-				},
-			];
-			const randomElement = availableAuthBgImages[Math.floor(Math.random() * availableAuthBgImages.length)];
-			setAuthIlluRandom(randomElement);
-		}
-	}, [authIlluRandom]);
+	const [authIlluRandom] = useState<{ image: svgImageType; color: string }>(() => {
+		const availableAuthBgImages: Array<{ image: svgImageType; color: string }> = [
+			{
+				image: TeeshirtSVG.src,
+				color: '#DBF4EA',
+			},
+			{
+				image: WatchSVG.src,
+				color: '#DBE8F4',
+			},
+			{
+				image: MessagesSVG.src,
+				color: '#F3DCDC',
+			},
+		];
+		return availableAuthBgImages[Math.floor(Math.random() * availableAuthBgImages.length)];
+	});
 
 	return (
 		<main className={Styles.main} ref={ref}>
