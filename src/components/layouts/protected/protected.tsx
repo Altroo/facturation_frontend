@@ -1,0 +1,69 @@
+import { ReactNode } from 'react';
+import { Typography, Paper, Box } from '@mui/material';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import { usePermission } from '@/utils/hooks';
+
+interface ProtectedProps {
+	children: ReactNode;
+}
+
+export const Protected = (props: ProtectedProps) => {
+	const { is_staff } = usePermission();
+
+	if (!is_staff) {
+		return (
+			<Box
+				sx={{
+					display: 'flex',
+					justifyContent: 'center',
+					alignItems: 'center',
+					minHeight: '60vh',
+					px: 2,
+				}}
+			>
+				<Paper
+					elevation={3}
+					sx={{
+						p: 6,
+						maxWidth: 500,
+						width: '100%',
+						textAlign: 'center',
+						borderRadius: 3,
+						background: 'linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%)',
+					}}
+				>
+					{/* Icon container */}
+					<Box
+						sx={{
+							display: 'inline-flex',
+							p: 2,
+							borderRadius: '50%',
+							backgroundColor: 'error.lighter',
+							mb: 2,
+						}}
+					>
+						<LockOutlinedIcon
+							sx={{
+								fontSize: 48,
+								color: 'error.main',
+							}}
+						/>
+					</Box>
+
+					{/* Title */}
+					<Typography variant="h5" fontWeight={600} gutterBottom color="text.primary">
+						Accès Refusé
+					</Typography>
+
+					{/* Description */}
+					<Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+						Vous n&#39;avez pas la permission d&#39;accéder à cette page. Veuillez contacter un administrateur si vous
+						pensez qu&#39;il s&#39;agit d&#39;une erreur.
+					</Typography>
+				</Paper>
+			</Box>
+		);
+	}
+
+	return <>{props.children}</>;
+};

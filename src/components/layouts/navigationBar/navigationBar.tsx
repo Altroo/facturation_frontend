@@ -160,6 +160,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
 		duration: theme.transitions.duration.leavingScreen,
 	}),
 	marginLeft: 0, // default: no shift
+	paddingBottom: '5px',
 
 	[theme.breakpoints.up('md')]: {
 		marginLeft: open ? 0 : `-${drawerWidth}px`,

@@ -56,6 +56,7 @@ import { useGetCompaniesListQuery } from '@/store/services/company';
 import { CompanyClass } from '@/models/Classes';
 import PersonIcon from '@mui/icons-material/Person';
 import ManagedByTableSection from '@/components/shared/addManagedByTable/addManagedByTable';
+import { Protected } from '@/components/layouts/protected/protected';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -447,9 +448,11 @@ const UsersForm: React.FC<Props> = ({ session, id }) => {
 		<Stack direction="column" sx={{ position: 'relative' }}>
 			<NavigationBar title={isEditMode ? "Modifier l'utilisateur" : 'Ajouter un utilisateur'}>
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
-					<Box sx={{ width: '100%' }}>
-						<FormikContent token={token} id={id} onSuccess={() => setShowDataUpdated(true)} />
-					</Box>
+					<Protected>
+						<Box sx={{ width: '100%' }}>
+							<FormikContent token={token} id={id} onSuccess={() => setShowDataUpdated(true)} />
+						</Box>
+					</Protected>
 				</main>
 			</NavigationBar>
 			<Portal id="snackbar_portal">

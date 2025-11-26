@@ -18,6 +18,7 @@ import CustomToast from '@/components/portals/customToast/customToast';
 import Portal from '@/contexts/Portal';
 import { UserClass } from '@/models/Classes';
 import { formatDate } from '@/utils/helpers';
+import { Protected } from '@/components/layouts/protected/protected';
 
 const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 	const router = useRouter();
@@ -246,50 +247,54 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 			sx={{ overflowX: 'auto', overflowY: 'hidden' }}
 		>
 			<NavigationBar title="Liste des utilisateurs">
-				<Box
-					sx={{
-						width: '100%',
-						display: 'flex',
-						justifyContent: 'flex-start',
-						px: { xs: 1, sm: 2, md: 3 },
-						mt: { xs: 1, sm: 2, md: 3 },
-						mb: { xs: 1, sm: 2, md: 3 },
-					}}
-				>
-					<Button
-						variant="contained"
-						onClick={() => router.push(USERS_ADD)}
-						sx={{
-							whiteSpace: 'nowrap',
-							px: { xs: 1.5, sm: 2, md: 3 },
-							py: { xs: 0.8, sm: 1, md: 1 },
-							fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
-						}}
-					>
-						Nouveau utilisateur
-					</Button>
-				</Box>
+				<Protected>
+					<>
+						<Box
+							sx={{
+								width: '100%',
+								display: 'flex',
+								justifyContent: 'flex-start',
+								px: { xs: 1, sm: 2, md: 3 },
+								mt: { xs: 1, sm: 2, md: 3 },
+								mb: { xs: 1, sm: 2, md: 3 },
+							}}
+						>
+							<Button
+								variant="contained"
+								onClick={() => router.push(USERS_ADD)}
+								sx={{
+									whiteSpace: 'nowrap',
+									px: { xs: 1.5, sm: 2, md: 3 },
+									py: { xs: 0.8, sm: 1, md: 1 },
+									fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
+								}}
+							>
+								Nouveau utilisateur
+							</Button>
+						</Box>
 
-				<PaginatedDataGrid
-					queryHook={() => ({ data, isLoading })}
-					columns={columns}
-					paginationModel={paginationModel}
-					setPaginationModel={setPaginationModel}
-					searchTerm={searchTerm}
-					setSearchTerm={setSearchTerm}
-					toolbar={{ quickFilter: true, debounceMs: 500 }}
-				/>
-				{showDeleteModal && (
-					<ActionModals
-						title="Supprimer ce utilisateur ?"
-						body="Êtes‑vous sûr de vouloir supprimer ce utilisateur?"
-						actions={deleteModalActions}
-					/>
-				)}
-				<Portal id="snackbar_portal">
-					<CustomToast type={toastType} message={toastMessage} setShow={setShowToast} show={showToast} />
-				</Portal>
+						<PaginatedDataGrid
+							queryHook={() => ({ data, isLoading })}
+							columns={columns}
+							paginationModel={paginationModel}
+							setPaginationModel={setPaginationModel}
+							searchTerm={searchTerm}
+							setSearchTerm={setSearchTerm}
+							toolbar={{ quickFilter: true, debounceMs: 500 }}
+						/>
+						{showDeleteModal && (
+							<ActionModals
+								title="Supprimer ce utilisateur ?"
+								body="Êtes‑vous sûr de vouloir supprimer ce utilisateur?"
+								actions={deleteModalActions}
+							/>
+						)}
+					</>
+				</Protected>
 			</NavigationBar>
+			<Portal id="snackbar_portal">
+				<CustomToast type={toastType} message={toastMessage} setShow={setShowToast} show={showToast} />
+			</Portal>
 		</Stack>
 	);
 };

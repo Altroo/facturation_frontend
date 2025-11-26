@@ -18,11 +18,11 @@ import CustomToast from '@/components/portals/customToast/customToast';
 import Portal from '@/contexts/Portal';
 import { CompanyClass } from '@/models/Classes';
 import { formatDate } from '@/utils/helpers';
+import { Protected } from '@/components/layouts/protected/protected';
 
 const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 	const router = useRouter();
 	const token = getAccessTokenFromSession(session);
-
 	const [paginationModel, setPaginationModel] = useState<{ page: number; pageSize: number }>({
 		page: 0,
 		pageSize: 10,
@@ -229,50 +229,53 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 			sx={{ overflowX: 'auto', overflowY: 'hidden' }}
 		>
 			<NavigationBar title="Liste des entreprises">
-				<Box
-					sx={{
-						width: '100%',
-						display: 'flex',
-						justifyContent: 'flex-start',
-						px: { xs: 1, sm: 2, md: 3 },
-						mt: { xs: 1, sm: 2, md: 3 },
-						mb: { xs: 1, sm: 2, md: 3 },
-					}}
-				>
-					<Button
-						variant="contained"
-						onClick={() => router.push(COMPANIES_ADD)}
-						sx={{
-							whiteSpace: 'nowrap',
-							px: { xs: 1.5, sm: 2, md: 3 },
-							py: { xs: 0.8, sm: 1, md: 1 },
-							fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
-						}}
-					>
-						Nouvelle entreprise
-					</Button>
-				</Box>
-
-				<PaginatedDataGrid
-					queryHook={() => ({ data, isLoading })}
-					columns={columns}
-					paginationModel={paginationModel}
-					setPaginationModel={setPaginationModel}
-					searchTerm={searchTerm}
-					setSearchTerm={setSearchTerm}
-					toolbar={{ quickFilter: true, debounceMs: 500 }}
-				/>
-				{showDeleteModal && (
-					<ActionModals
-						title="Supprimer cette entreprise ?"
-						body="Êtes‑vous sûr de vouloir supprimer cette entreprise?"
-						actions={deleteModalActions}
-					/>
-				)}
-				<Portal id="snackbar_portal">
-					<CustomToast type={toastType} message={toastMessage} setShow={setShowToast} show={showToast} />
-				</Portal>
+				<Protected>
+					<>
+						<Box
+							sx={{
+								width: '100%',
+								display: 'flex',
+								justifyContent: 'flex-start',
+								px: { xs: 1, sm: 2, md: 3 },
+								mt: { xs: 1, sm: 2, md: 3 },
+								mb: { xs: 1, sm: 2, md: 3 },
+							}}
+						>
+							<Button
+								variant="contained"
+								onClick={() => router.push(COMPANIES_ADD)}
+								sx={{
+									whiteSpace: 'nowrap',
+									px: { xs: 1.5, sm: 2, md: 3 },
+									py: { xs: 0.8, sm: 1, md: 1 },
+									fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
+								}}
+							>
+								Nouvelle entreprise
+							</Button>
+						</Box>
+						<PaginatedDataGrid
+							queryHook={() => ({ data, isLoading })}
+							columns={columns}
+							paginationModel={paginationModel}
+							setPaginationModel={setPaginationModel}
+							searchTerm={searchTerm}
+							setSearchTerm={setSearchTerm}
+							toolbar={{ quickFilter: true, debounceMs: 500 }}
+						/>
+						{showDeleteModal && (
+							<ActionModals
+								title="Supprimer cette entreprise ?"
+								body="Êtes‑vous sûr de vouloir supprimer cette entreprise?"
+								actions={deleteModalActions}
+							/>
+						)}
+					</>
+				</Protected>
 			</NavigationBar>
+			<Portal id="snackbar_portal">
+				<CustomToast type={toastType} message={toastMessage} setShow={setShowToast} show={showToast} />
+			</Portal>
 		</Stack>
 	);
 };

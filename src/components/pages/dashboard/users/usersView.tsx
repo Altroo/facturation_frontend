@@ -35,6 +35,7 @@ import BadgeIcon from '@mui/icons-material/Badge';
 import { USERS_LIST, USERS_EDIT } from '@/utils/routes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { formatDate } from '@/utils/helpers';
+import { Protected } from '@/components/layouts/protected/protected';
 
 interface InfoRowProps {
 	icon: React.ReactNode;
@@ -126,222 +127,223 @@ const UsersViewClient: React.FC<Props> = ({ session, id }) => {
 	return (
 		<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
 			<NavigationBar title="Détails de l'utilisateur">
-				<Stack spacing={3} sx={{ p: { xs: 2, md: 3 } }}>
-					<Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between" spacing={2}>
-						<Button
-							variant="outlined"
-							startIcon={<ArrowBackIcon />}
-							onClick={() => router.push(USERS_LIST)}
-							sx={{ width: isMobile ? '100%' : 'auto' }}
-						>
-							Liste des utilisateurs
-						</Button>
-						{!isLoading && !error && (
+				<Protected>
+					<Stack spacing={3} sx={{ p: { xs: 2, md: 3 } }}>
+						<Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between" spacing={2}>
 							<Button
-								variant="contained"
-								startIcon={<Edit />}
-								onClick={() => router.push(USERS_EDIT(id))}
+								variant="outlined"
+								startIcon={<ArrowBackIcon />}
+								onClick={() => router.push(USERS_LIST)}
 								sx={{ width: isMobile ? '100%' : 'auto' }}
 							>
-								Modifier
+								Liste des utilisateurs
 							</Button>
-						)}
-					</Stack>
-
-					{isLoading ? (
-						<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
-					) : axiosError ? (
-						<Paper
-							elevation={0}
-							sx={{
-								p: 3,
-								backgroundColor: 'error.light',
-								borderRadius: 2,
-								border: '1px solid',
-								borderColor: 'error.main',
-							}}
-						>
-							<Typography color="error.main" variant="h6">
-								{axiosError.data?.message}
-							</Typography>
-						</Paper>
-					) : (
-						<Stack spacing={3}>
-							<Card elevation={2} sx={{ borderRadius: 2 }}>
-								<CardContent sx={{ p: 3 }}>
-									<Stack
-										direction={isMobile ? 'column' : 'row'}
-										spacing={3}
-										alignItems={isMobile ? 'center' : 'flex-start'}
-									>
-										<Avatar
-											src={`${userData?.avatar}`}
-											sx={{
-												width: isMobile ? 100 : 120,
-												height: isMobile ? 100 : 120,
-												border: '4px solid',
-												borderColor: 'primary.light',
-												boxShadow: 3,
-											}}
-										/>
-										<Stack spacing={2} sx={{ flex: 1, width: '100%' }}>
-											<Stack spacing={1} alignItems={isMobile ? 'center' : 'flex-start'}>
-												<Typography
-													variant="h4"
-													textAlign={isMobile ? 'center' : 'inherit'}
-													fontSize={isMobile ? '20px' : '2.125rem'}
-													fontWeight={700}
-												>
-													{userData?.email ?? "Nom de l'utilisateur"}
-												</Typography>
-												<Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-													<Chip icon={<BadgeIcon />} label={`ID: ${userData?.id}`} size="small" variant="outlined" />
-													{userData?.is_staff && (
-														<Chip
-															icon={<AdminPanelSettingsIcon />}
-															label="Administrateur"
-															color="primary"
-															size="small"
-														/>
-													)}
-													{userData?.is_active ? (
-														<Chip icon={<CheckCircleIcon />} label="Actif" color="success" size="small" />
-													) : (
-														<Chip icon={<CancelIcon />} label="Inactif" color="error" size="small" />
-													)}
+							{!isLoading && !error && (
+								<Button
+									variant="contained"
+									startIcon={<Edit />}
+									onClick={() => router.push(USERS_EDIT(id))}
+									sx={{ width: isMobile ? '100%' : 'auto' }}
+								>
+									Modifier
+								</Button>
+							)}
+						</Stack>
+						{isLoading ? (
+							<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
+						) : axiosError ? (
+							<Paper
+								elevation={0}
+								sx={{
+									p: 3,
+									backgroundColor: 'error.light',
+									borderRadius: 2,
+									border: '1px solid',
+									borderColor: 'error.main',
+								}}
+							>
+								<Typography color="error.main" variant="h6">
+									{axiosError.data?.message}
+								</Typography>
+							</Paper>
+						) : (
+							<Stack spacing={3}>
+								<Card elevation={2} sx={{ borderRadius: 2 }}>
+									<CardContent sx={{ p: 3 }}>
+										<Stack
+											direction={isMobile ? 'column' : 'row'}
+											spacing={3}
+											alignItems={isMobile ? 'center' : 'flex-start'}
+										>
+											<Avatar
+												src={`${userData?.avatar}`}
+												sx={{
+													width: isMobile ? 100 : 120,
+													height: isMobile ? 100 : 120,
+													border: '4px solid',
+													borderColor: 'primary.light',
+													boxShadow: 3,
+												}}
+											/>
+											<Stack spacing={2} sx={{ flex: 1, width: '100%' }}>
+												<Stack spacing={1} alignItems={isMobile ? 'center' : 'flex-start'}>
+													<Typography
+														variant="h4"
+														textAlign={isMobile ? 'center' : 'inherit'}
+														fontSize={isMobile ? '20px' : '2.125rem'}
+														fontWeight={700}
+													>
+														{userData?.email ?? "Nom de l'utilisateur"}
+													</Typography>
+													<Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+														<Chip icon={<BadgeIcon />} label={`ID: ${userData?.id}`} size="small" variant="outlined" />
+														{userData?.is_staff && (
+															<Chip
+																icon={<AdminPanelSettingsIcon />}
+																label="Administrateur"
+																color="primary"
+																size="small"
+															/>
+														)}
+														{userData?.is_active ? (
+															<Chip icon={<CheckCircleIcon />} label="Actif" color="success" size="small" />
+														) : (
+															<Chip icon={<CancelIcon />} label="Inactif" color="error" size="small" />
+														)}
+													</Stack>
 												</Stack>
 											</Stack>
 										</Stack>
-									</Stack>
-								</CardContent>
-							</Card>
+									</CardContent>
+								</Card>
 
-							<Card elevation={2} sx={{ borderRadius: 2 }}>
-								<CardContent
-									sx={{
-										px: { xs: 2, md: 3 },
-										py: { xs: 2, md: 3 },
-									}}
-								>
-									<Typography
-										variant="h6"
-										fontWeight={700}
-										gutterBottom
-										sx={{ mb: { xs: 1.5, md: 2 }, fontSize: { xs: '1rem', md: '1.25rem' } }}
-									>
-										Informations générales
-									</Typography>
-
-									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
-
-									<Stack spacing={0}>
-										<InfoRow icon={<EmailIcon />} label="Email" value={userData?.email} />
-										<Divider />
-										<InfoRow icon={<PersonIcon />} label="Sexe" value={userData?.gender} />
-										<Divider />
-										<InfoRow
-											icon={<AdminPanelSettingsIcon />}
-											label="Admin"
-											value={
-												userData?.is_staff ? (
-													<Chip icon={<CheckCircleIcon />} label="Oui" color="primary" size="small" />
-												) : (
-													<Chip icon={<CancelIcon />} label="Non" size="small" variant="outlined" />
-												)
-											}
-										/>
-										<Divider />
-										<InfoRow
-											icon={<CheckCircleIcon />}
-											label="Active"
-											value={
-												userData?.is_active ? (
-													<Chip icon={<CheckCircleIcon />} label="Oui" color="success" size="small" />
-												) : (
-													<Chip icon={<CancelIcon />} label="Non" color="error" size="small" />
-												)
-											}
-										/>
-										<Divider />
-										<InfoRow
-											icon={<CalendarTodayIcon />}
-											label="Date d'inscription"
-											value={userData?.date_joined && formatDate(userData?.date_joined)}
-										/>
-										<Divider />
-										<InfoRow
-											icon={<LoginIcon />}
-											label="Dernière connexion"
-											value={userData?.last_login && formatDate(userData?.last_login)}
-										/>
-									</Stack>
-								</CardContent>
-							</Card>
-
-							{userData?.companies && userData.companies.length > 0 && (
 								<Card elevation={2} sx={{ borderRadius: 2 }}>
-									<CardContent sx={{ p: 3 }}>
-										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-											<BusinessIcon color="primary" />
-											<Typography variant="h6" fontWeight={700}>
-												Sociétés gérées ({userData.companies.length})
-											</Typography>
-										</Stack>
-										<Divider sx={{ mb: 2 }} />
-										<Stack spacing={2}>
-											{userData.companies.map((companie) => (
-												<Paper
-													key={companie.membership_id}
-													elevation={0}
-													sx={{
-														p: 2,
-														backgroundColor: 'grey.50',
-														borderRadius: 2,
-														border: '1px solid',
-														borderColor: 'grey.200',
-														'&:hover': {
-															backgroundColor: 'grey.100',
-															borderColor: 'primary.main',
-															transition: 'all 0.3s ease',
-														},
-													}}
-												>
-													<Stack
-														direction={isMobile ? 'column' : 'row'}
-														justifyContent="space-between"
-														alignItems={isMobile ? 'flex-start' : 'center'}
-														spacing={2}
-													>
-														<Stack direction="row" spacing={2} alignItems="center">
-															<Avatar
-																sx={{
-																	bgcolor: 'primary.main',
-																	width: 40,
-																	height: 40,
-																}}
-															>
-																<BusinessIcon />
-															</Avatar>
-															<Stack>
-																<Typography fontWeight={600} variant="body1">
-																	{companie.raison_sociale}
-																</Typography>
-																<Typography variant="caption" color="text.secondary">
-																	ID: {companie.membership_id}
-																</Typography>
-															</Stack>
-														</Stack>
-														<Chip label={companie.role} color="primary" variant="outlined" size="small" />
-													</Stack>
-												</Paper>
-											))}
+									<CardContent
+										sx={{
+											px: { xs: 2, md: 3 },
+											py: { xs: 2, md: 3 },
+										}}
+									>
+										<Typography
+											variant="h6"
+											fontWeight={700}
+											gutterBottom
+											sx={{ mb: { xs: 1.5, md: 2 }, fontSize: { xs: '1rem', md: '1.25rem' } }}
+										>
+											Informations générales
+										</Typography>
+
+										<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
+
+										<Stack spacing={0}>
+											<InfoRow icon={<EmailIcon />} label="Email" value={userData?.email} />
+											<Divider />
+											<InfoRow icon={<PersonIcon />} label="Sexe" value={userData?.gender} />
+											<Divider />
+											<InfoRow
+												icon={<AdminPanelSettingsIcon />}
+												label="Admin"
+												value={
+													userData?.is_staff ? (
+														<Chip icon={<CheckCircleIcon />} label="Oui" color="primary" size="small" />
+													) : (
+														<Chip icon={<CancelIcon />} label="Non" size="small" variant="outlined" />
+													)
+												}
+											/>
+											<Divider />
+											<InfoRow
+												icon={<CheckCircleIcon />}
+												label="Active"
+												value={
+													userData?.is_active ? (
+														<Chip icon={<CheckCircleIcon />} label="Oui" color="success" size="small" />
+													) : (
+														<Chip icon={<CancelIcon />} label="Non" color="error" size="small" />
+													)
+												}
+											/>
+											<Divider />
+											<InfoRow
+												icon={<CalendarTodayIcon />}
+												label="Date d'inscription"
+												value={userData?.date_joined && formatDate(userData?.date_joined)}
+											/>
+											<Divider />
+											<InfoRow
+												icon={<LoginIcon />}
+												label="Dernière connexion"
+												value={userData?.last_login && formatDate(userData?.last_login)}
+											/>
 										</Stack>
 									</CardContent>
 								</Card>
-							)}
-						</Stack>
-					)}
-				</Stack>
+
+								{userData?.companies && userData.companies.length > 0 && (
+									<Card elevation={2} sx={{ borderRadius: 2 }}>
+										<CardContent sx={{ p: 3 }}>
+											<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+												<BusinessIcon color="primary" />
+												<Typography variant="h6" fontWeight={700}>
+													Sociétés gérées ({userData.companies.length})
+												</Typography>
+											</Stack>
+											<Divider sx={{ mb: 2 }} />
+											<Stack spacing={2}>
+												{userData.companies.map((companie) => (
+													<Paper
+														key={companie.membership_id}
+														elevation={0}
+														sx={{
+															p: 2,
+															backgroundColor: 'grey.50',
+															borderRadius: 2,
+															border: '1px solid',
+															borderColor: 'grey.200',
+															'&:hover': {
+																backgroundColor: 'grey.100',
+																borderColor: 'primary.main',
+																transition: 'all 0.3s ease',
+															},
+														}}
+													>
+														<Stack
+															direction={isMobile ? 'column' : 'row'}
+															justifyContent="space-between"
+															alignItems={isMobile ? 'flex-start' : 'center'}
+															spacing={2}
+														>
+															<Stack direction="row" spacing={2} alignItems="center">
+																<Avatar
+																	sx={{
+																		bgcolor: 'primary.main',
+																		width: 40,
+																		height: 40,
+																	}}
+																>
+																	<BusinessIcon />
+																</Avatar>
+																<Stack>
+																	<Typography fontWeight={600} variant="body1">
+																		{companie.raison_sociale}
+																	</Typography>
+																	<Typography variant="caption" color="text.secondary">
+																		ID: {companie.membership_id}
+																	</Typography>
+																</Stack>
+															</Stack>
+															<Chip label={companie.role} color="primary" variant="outlined" size="small" />
+														</Stack>
+													</Paper>
+												))}
+											</Stack>
+										</CardContent>
+									</Card>
+								)}
+							</Stack>
+						)}
+					</Stack>
+				</Protected>
 			</NavigationBar>
 		</Stack>
 	);

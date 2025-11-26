@@ -19,8 +19,9 @@ import {
 	ToggleButtonGroup,
 	ToggleButton,
 	Modal,
+	Container,
 } from '@mui/material';
-import { ArrowBack } from '@mui/icons-material';
+import { ArrowBack, BusinessOutlined } from '@mui/icons-material';
 import BusinessIcon from '@mui/icons-material/Business';
 import EmailIcon from '@mui/icons-material/Email';
 import PersonIcon from '@mui/icons-material/Person';
@@ -44,7 +45,7 @@ import { CLIENTS_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import type { DropDownType } from '@/types/accountTypes';
 import { useAppSelector } from '@/utils/hooks';
-import { getCitiesState } from '@/store/selectors';
+import { getCitiesState, getUserCompaniesState } from '@/store/selectors';
 import {
 	useAddClientMutation,
 	useEditClientMutation,
@@ -57,6 +58,7 @@ import type { ClientSchemaType } from '@/types/clientTypes';
 import { useAddCityMutation, useGetCitiesListQuery } from '@/store/services/parameter';
 import type { CitiesClass } from '@/models/Classes';
 import { clientSchema, pmRequired, ppRequired } from '@/utils/formValidationSchemas';
+import { CompaniesUserCompaniesType } from '@/types/companyTypes';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -691,15 +693,58 @@ interface Props extends SessionProps {
 const ClientsForm: React.FC<Props> = ({ session, company_id, id }) => {
 	const token = getAccessTokenFromSession(session);
 	const [showDataUpdated, setShowDataUpdated] = useState<boolean>(false);
+	const companies = useAppSelector(getUserCompaniesState);
+	const [company, setCompany] = useState<CompaniesUserCompaniesType | undefined>(undefined);
+
 	const isEditMode = id !== undefined;
+
+	useEffect(() => {
+		if (companies && companies.length > 0) {
+			setCompany(companies.find((comp) => comp.id === company_id));
+		}
+	}, [companies, company_id]);
 
 	return (
 		<Stack direction="column" sx={{ position: 'relative' }}>
 			<NavigationBar title={isEditMode ? 'Modifier le client' : 'Ajouter un client'}>
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
-					<Box sx={{ width: '100%' }}>
-						<FormikContent token={token} id={id} company_id={company_id} onSuccess={() => setShowDataUpdated(true)} />
-					</Box>
+					{company?.role === 'Admin' ? (
+						<Box sx={{ width: '100%' }}>
+							<FormikContent token={token} id={id} company_id={company_id} onSuccess={() => setShowDataUpdated(true)} />
+						</Box>
+					) : (
+						<Container maxWidth="sm" sx={{ mt: 8 }}>
+							<Paper
+								elevation={3}
+								sx={{
+									p: 6,
+									textAlign: 'center',
+									borderRadius: 3,
+									background: 'linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%)',
+								}}
+							>
+								<Box
+									sx={{
+										width: 80,
+										height: 80,
+										borderRadius: '50%',
+										backgroundColor: 'rgba(13, 7, 11, 0.08)',
+										display: 'flex',
+										alignItems: 'center',
+										justifyContent: 'center',
+										margin: '0 auto 24px',
+									}}
+								>
+									<BusinessOutlined sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
+								</Box>
+								<Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 3 }}>
+									{isEditMode
+										? "Vous n'avez pas le droit de modifier ce client. Veuillez contacter votre administrateur."
+										: "Vous n'avez pas le droit d'ajouter un client. Veuillez contacter votre administrateur."}
+								</Typography>
+							</Paper>
+						</Container>
+					)}
 				</main>
 			</NavigationBar>
 			<Portal id="snackbar_portal">

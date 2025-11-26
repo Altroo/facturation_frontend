@@ -60,6 +60,7 @@ import type { DropDownType } from '@/types/accountTypes';
 import type { CompanyFormValuesType, ManagedByType } from '@/types/companyTypes';
 import { UserClass } from '@/models/Classes';
 import ManagedByTableSection from '@/components/shared/addManagedByTable/addManagedByTable';
+import { Protected } from '@/components/layouts/protected/protected';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -639,15 +640,17 @@ const CompaniesForm: React.FC<Props> = ({ session, id }) => {
 		<Stack direction="column" sx={{ position: 'relative' }}>
 			<NavigationBar title={isEditMode ? "Modifier l'entreprise" : 'Ajouter une entreprise'}>
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
-					<Box sx={{ width: '100%' }}>
-						<FormikContent
-							first_name={session?.user.first_name ?? ''}
-							last_name={session?.user.last_name ?? ''}
-							token={token}
-							id={id}
-							onSuccess={() => setShowDataUpdated(true)}
-						/>
-					</Box>
+					<Protected>
+						<Box sx={{ width: '100%' }}>
+							<FormikContent
+								first_name={session?.user.first_name ?? ''}
+								last_name={session?.user.last_name ?? ''}
+								token={token}
+								id={id}
+								onSuccess={() => setShowDataUpdated(true)}
+							/>
+						</Box>
+					</Protected>
 				</main>
 			</NavigationBar>
 			<Portal id="snackbar_portal">
