@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState, useTransition } from 'react';
+import React, { useMemo, useState, useTransition } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/companies/companies.module.sass';
@@ -58,7 +58,6 @@ import type { client_type, ClientSchemaType } from '@/types/clientTypes';
 import { useAddCityMutation, useGetCitiesListQuery } from '@/store/services/parameter';
 import type { CitiesClass } from '@/models/Classes';
 import { clientSchema, pmRequired, ppRequired } from '@/utils/formValidationSchemas';
-import { CompaniesUserCompaniesType } from '@/types/companyTypes';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -97,7 +96,6 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, on
 	const [addCity, { isLoading: isAddCityLoading }] = useAddCityMutation();
 
 	// Local state
-	const [axiosError, setAxiosError] = useState<ResponseDataInterface<ApiErrorResponseType> | undefined>(undefined);
 	const [openCityModal, setOpenCityModal] = useState(false);
 	const [newCityName, setNewCityName] = useState('');
 	const [cityError, setCityError] = useState<string | null>(null);
@@ -176,15 +174,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, on
 
 	// Error handling
 	const error = isEditMode ? clientError || updateError : addError;
-
-	useEffect(() => {
-		if (error) {
-			const axiosErr = error as ResponseDataInterface<ApiErrorResponseType>;
-			setAxiosError(axiosErr);
-		} else {
-			setAxiosError(undefined);
-		}
-	}, [error]);
+	const axiosError = error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined;
 
 	// Stable cityItems
 	const cityItems: DropDownType[] = useMemo(
@@ -695,15 +685,9 @@ const ClientsForm: React.FC<Props> = ({ session, company_id, id }) => {
 	const token = getAccessTokenFromSession(session);
 	const [showDataUpdated, setShowDataUpdated] = useState<boolean>(false);
 	const companies = useAppSelector(getUserCompaniesState);
-	const [company, setCompany] = useState<CompaniesUserCompaniesType | undefined>(undefined);
+	const company = companies?.find((comp) => comp.id === company_id);
 
 	const isEditMode = id !== undefined;
-
-	useEffect(() => {
-		if (companies && companies.length > 0) {
-			setCompany(companies.find((comp) => comp.id === company_id));
-		}
-	}, [companies, company_id]);
 
 	return (
 		<Stack direction="column" sx={{ position: 'relative' }}>
