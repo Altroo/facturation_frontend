@@ -127,6 +127,7 @@ const CustomSwipeModal: React.FC<Props> = (props: Props) => {
 	return (
 		<ThemeProvider theme={theme ? theme : customModalTheme()}>
 			<Dialog
+				data-testid="custom-swipe-modal"
 				keepMounted={mountDialog}
 				open={open}
 				slots={{ transition: transition ? Transition : undefined }}
