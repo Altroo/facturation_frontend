@@ -19,4 +19,5 @@ export type ClientSchemaType = {
 	identifiant_fiscal?: string | null;
 	taxe_professionnelle?: string | null;
 	CNSS?: string | null;
+	globalError?: string;
 };

@@ -128,6 +128,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			cachet: companyData?.cachet ?? '',
 			cachet_cropped: companyData?.cachet_cropped ?? '',
 			managed_by: [],
+			globalError: '',
 		},
 		enableReinitialize: true,
 		validateOnMount: true,
@@ -233,7 +234,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					Liste des entreprises
 				</Button>
 			</Stack>
-
+			{formik.errors.globalError && <span className={Styles.errorMessage}>{formik.errors.globalError}</span>}
 			{isLoading ? (
 				<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
 			) : axiosError?.status === 404 ? (

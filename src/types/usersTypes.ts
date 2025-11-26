@@ -21,4 +21,5 @@ export type UsersFormValuesType = {
 	avatar: string | ArrayBuffer;
 	avatar_cropped: string | ArrayBuffer;
 	companies: Array<UserCompaniesType>;
+	globalError: string;
 };

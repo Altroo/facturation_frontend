@@ -130,6 +130,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, on
 			identifiant_fiscal: clientData?.identifiant_fiscal ?? null,
 			taxe_professionnelle: clientData?.taxe_professionnelle ?? null,
 			CNSS: clientData?.CNSS ?? null,
+			globalError: '',
 		},
 		enableReinitialize: true,
 		validateOnMount: true,
@@ -228,7 +229,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, on
 					Liste des clients
 				</Button>
 			</Stack>
-
+			{formik.errors.globalError && <span className={Styles.errorMessage}>{formik.errors.globalError}</span>}
 			{isLoading ? (
 				<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
 			) : axiosError?.status === 404 ? (
