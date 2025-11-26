@@ -2,12 +2,12 @@ import React from 'react';
 import { render, screen, within } from '@testing-library/react';
 import UsersViewClient from './usersView';
 import { Provider } from 'react-redux';
-import { store } from '@/store/store';
+import { configureStore } from '@reduxjs/toolkit';
 import { useGetUserQuery } from '@/store/services/account';
 import '@testing-library/jest-dom';
 import { AppSession } from '@/types/_initTypes';
 
-// Mock Next.js App Router
+// 🧩 Mock Next.js App Router
 jest.mock('next/navigation', () => ({
 	useRouter: () => ({
 		push: jest.fn(),
@@ -20,7 +20,7 @@ jest.mock('next/navigation', () => ({
 	usePathname: () => '/mock-path',
 }));
 
-// Mock RTK Query hook (keep other exports from the real module)
+// 🧩 Mock RTK Query hook
 jest.mock('@/store/services/account', () => {
 	const actual = jest.requireActual('@/store/services/account');
 	return {
@@ -29,8 +29,7 @@ jest.mock('@/store/services/account', () => {
 	};
 });
 
-// Use the real helpers module, but override formatDate to be deterministic for tests.
-// This preserves hexToRGB and other helpers used during render.
+// 🧩 Mock helpers (make formatDate deterministic)
 jest.mock('@/utils/helpers', () => {
 	const actual = jest.requireActual('@/utils/helpers');
 	return {
@@ -38,6 +37,32 @@ jest.mock('@/utils/helpers', () => {
 		formatDate: () => '01/01/2023',
 	};
 });
+
+// 🧩 Mock hooks module
+jest.mock('@/utils/hooks', () => ({
+	useAppSelector: jest.fn().mockImplementation((selector) =>
+		selector({
+			profil: { is_staff: true },
+		}),
+	),
+	usePermission: () => ({ is_staff: true }),
+}));
+
+// 🧩 Mock selectors
+jest.mock('@/store/selectors', () => ({
+	getProfilState: jest.fn(() => ({ is_staff: true })),
+}));
+
+// 🧩 Minimal test store (no sagas, avoids DOMException noise)
+const makeTestStore = () =>
+	configureStore({
+		reducer: {
+			profil: (state = { is_staff: true }) => state,
+		},
+		middleware: (getDefaultMiddleware) => getDefaultMiddleware({ thunk: true, serializableCheck: false }),
+	});
+
+const renderWithProviders = (ui: React.ReactElement) => render(<Provider store={makeTestStore()}>{ui}</Provider>);
 
 // Mock session
 const mockSession: AppSession = {
@@ -57,9 +82,6 @@ const mockSession: AppSession = {
 		name: '',
 	},
 };
-
-// Render helper using your real store
-const renderWithProviders = (ui: React.ReactElement) => render(<Provider store={store}>{ui}</Provider>);
 
 // Component props
 const defaultProps = {
@@ -132,26 +154,23 @@ describe('UsersViewClient', () => {
 		expect(screen.getByText('BizGroup')).toBeInTheDocument();
 		expect(screen.getByText('ID: 123')).toBeInTheDocument();
 		expect(screen.getByText('ID: 456')).toBeInTheDocument();
-		const adminElements = screen.getAllByText((content, element) => {
+
+		const adminElements = screen.getAllByText((_, element) => {
 			return element?.textContent === 'Admin';
 		});
 		expect(adminElements.length).toBeGreaterThan(0);
 
 		expect(screen.getByText('Manager')).toBeInTheDocument();
 
-		// There are multiple identical date nodes; scope the assertions to the correct labeled rows.
-
-		// Find the "Date d'inscription" label element, then search within its closest row/container for the date
+		// Scope date assertions to correct labeled rows
 		const dateJoinedLabel = screen.getByText("Date d'inscription");
 		const dateJoinedContainer = dateJoinedLabel.closest('div') ?? dateJoinedLabel.parentElement!;
 		expect(within(dateJoinedContainer).getByText('01/01/2023')).toBeInTheDocument();
 
-		// Find the "Dernière connexion" label element, then search within its closest row/container for the date
 		const lastLoginLabel = screen.getByText('Dernière connexion');
 		const lastLoginContainer = lastLoginLabel.closest('div') ?? lastLoginLabel.parentElement!;
 		expect(within(lastLoginContainer).getByText('01/01/2023')).toBeInTheDocument();
 
-		// Additionally assert both date nodes exist somewhere (optional)
 		const allDates = screen.getAllByText('01/01/2023');
 		expect(allDates.length).toBeGreaterThanOrEqual(2);
 	});

@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import CompaniesViewClient from './companiesView';
 import { Provider } from 'react-redux';
-import { store } from '@/store/store';
+import { configureStore } from '@reduxjs/toolkit';
 import { useGetCompanyQuery } from '@/store/services/company';
 import '@testing-library/jest-dom';
 import { AppSession } from '@/types/_initTypes';
@@ -29,6 +29,32 @@ jest.mock('@/store/services/company', () => {
 	};
 });
 
+// 🧩 Mock hooks module
+jest.mock('@/utils/hooks', () => ({
+	useAppSelector: jest.fn().mockImplementation((selector) =>
+		selector({
+			profil: { is_staff: true },
+		}),
+	),
+	usePermission: () => ({ is_staff: true }),
+}));
+
+// 🧩 Mock selectors
+jest.mock('@/store/selectors', () => ({
+	getProfilState: jest.fn(() => ({ is_staff: true })),
+}));
+
+// 🧩 Minimal test store (no sagas, avoids DOMException noise)
+const makeTestStore = () =>
+	configureStore({
+		reducer: {
+			profil: (state = { is_staff: true }) => state,
+		},
+		middleware: (getDefaultMiddleware) => getDefaultMiddleware({ thunk: true, serializableCheck: false }),
+	});
+
+const renderWithProviders = (ui: React.ReactElement) => render(<Provider store={makeTestStore()}>{ui}</Provider>);
+
 const mockSession: AppSession = {
 	accessToken: 'mock-token',
 	refreshToken: 'mock-refresh-token',
@@ -46,8 +72,6 @@ const mockSession: AppSession = {
 		name: '',
 	},
 };
-
-const renderWithProviders = (ui: React.ReactElement) => render(<Provider store={store}>{ui}</Provider>);
 
 describe('CompaniesViewClient', () => {
 	const defaultProps = {
