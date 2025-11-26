@@ -54,7 +54,7 @@ import {
 } from '@/store/services/client';
 import { setFormikAutoErrors } from '@/utils/helpers';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
-import type { ClientSchemaType } from '@/types/clientTypes';
+import type { client_type, ClientSchemaType } from '@/types/clientTypes';
 import { useAddCityMutation, useGetCitiesListQuery } from '@/store/services/parameter';
 import type { CitiesClass } from '@/models/Classes';
 import { clientSchema, pmRequired, ppRequired } from '@/utils/formValidationSchemas';
@@ -111,7 +111,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, on
 	// Formik
 	const formik = useFormik<ClientSchemaType>({
 		initialValues: {
-			client_type: clientData?.client_type ?? 'PM',
+			client_type: (clientData?.client_type as client_type) ?? 'PM',
 			code_client: initialCodeClient,
 			company: company_id,
 			raison_sociale: clientData?.raison_sociale ?? '',

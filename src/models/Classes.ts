@@ -54,7 +54,7 @@ export class ClientClass {
 	constructor(
 		public id: number,
 		public code_client: string,
-		public client_type: client_type,
+		public client_type: client_type | string,
 		public company: number,
 		public readonly company_name: string | null,
 		public adresse: string | null,

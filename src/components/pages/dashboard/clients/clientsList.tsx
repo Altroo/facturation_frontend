@@ -162,10 +162,9 @@ const ClientsListContent: React.FC<ClientsListContentProps> = (props: ClientsLis
 			headerName: 'Type',
 			width: 160,
 			renderCell: (params: GridRenderCellParams<ClientClass>) => {
-				const label = params.value === 'PM' ? 'Personne Morale' : 'Personne Physique';
 				return (
-					<DarkTooltip title={label}>
-						<Chip label={label} size="small" variant="outlined" />
+					<DarkTooltip title={params.value}>
+						<Chip label={params.value} size="small" variant="outlined" />
 					</DarkTooltip>
 				);
 			},
