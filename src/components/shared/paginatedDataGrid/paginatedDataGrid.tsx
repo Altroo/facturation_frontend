@@ -34,7 +34,6 @@ const PaginatedDataGrid = <T,>({
 }: PaginatedDataGridProps<T>) => {
 	const [filterModel, setFilterModel] = React.useState<GridFilterModel>({
 		items: [],
-		quickFilterValues: [],
 	});
 
 	const { data, isLoading } = queryHook({
@@ -44,6 +43,18 @@ const PaginatedDataGrid = <T,>({
 	});
 
 	const rows = data?.results ?? [];
+
+	const handleFilterChange = (model: GridFilterModel) => {
+		// Separate quickFilter from column filters
+		const quickFilterValue = model.quickFilterValues?.[0] ?? '';
+		// Update search term for server-side search (from quickFilter only)
+		setSearchTerm(quickFilterValue);
+		// Keep only column filters (items), remove quickFilter for client-side
+		setFilterModel({
+			items: model.items,
+			// Don't pass quickFilterValues to avoid client-side quickFilter
+		});
+	};
 
 	return (
 		<ThemeProvider theme={getDefaultTheme()}>
@@ -92,11 +103,7 @@ const PaginatedDataGrid = <T,>({
 									},
 								}}
 								filterModel={filterModel}
-								onFilterModelChange={(model) => {
-									setFilterModel(model);
-									const value = model.quickFilterValues?.[0] ?? '';
-									setSearchTerm(value);
-								}}
+								onFilterModelChange={handleFilterChange}
 								sx={{
 									height: '100%',
 									'& .MuiDataGrid-cell': { display: 'flex', alignItems: 'center' },
