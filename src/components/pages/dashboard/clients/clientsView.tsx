@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, isValidElement } from 'react';
+import React, { useMemo, isValidElement } from 'react';
 import {
 	Box,
 	Stack,
@@ -37,7 +37,6 @@ import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiP
 import Styles from '@/styles/dashboard/clients/clients.module.sass';
 import { useAppSelector } from '@/utils/hooks';
 import { getUserCompaniesState } from '@/store/selectors';
-import { CompaniesUserCompaniesType } from '@/types/companyTypes';
 
 interface InfoRowProps {
 	icon: React.ReactNode;
@@ -112,26 +111,20 @@ interface Props extends SessionProps {
 const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const token = getAccessTokenFromSession(session);
 	const companies = useAppSelector(getUserCompaniesState);
-	const [company, setCompany] = useState<CompaniesUserCompaniesType | undefined>(undefined);
 	const router = useRouter();
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
 	const { data: client, isLoading, error } = useGetClientQuery({ token, id }, { skip: !token });
-	const [axiosError, setAxiosError] = useState<ResponseDataInterface<ApiErrorResponseType>>(
-		error as ResponseDataInterface<ApiErrorResponseType>,
+	const axiosError = useMemo(
+		() => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),
+		[error],
 	);
-	const isPM = client?.client_type === 'PM';
+	const company = useMemo(() => {
+		return companies?.find((comp) => comp.id === company_id);
+	}, [companies, company_id]);
 
-	useEffect(() => {
-		if (error) {
-			const axiosError = error as ResponseDataInterface<ApiErrorResponseType>;
-			setAxiosError(axiosError);
-		}
-		if (companies && companies.length > 0) {
-			setCompany(companies.find((comp) => comp.id === company_id));
-		}
-	}, [companies, company_id, error]);
+	const isPM = client?.client_type === 'PM';
 
 	return (
 		<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">

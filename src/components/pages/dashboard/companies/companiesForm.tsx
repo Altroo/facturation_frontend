@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useTransition, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useTransition } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
 import { useAddCompanyMutation, useEditCompanyMutation, useGetCompanyQuery } from '@/store/services/company';
@@ -92,19 +92,42 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	// enforce the type of the users data
 	const usersData = rawUsersData as Array<Partial<UserClass>> | undefined;
 	const error = isEditMode ? companyError || updateError : addError;
-	const [axiosError, setAxiosError] = useState<ResponseDataInterface<ApiErrorResponseType>>(
-		error as ResponseDataInterface<ApiErrorResponseType>,
+	const axiosError = useMemo(
+		() => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),
+		[error],
 	);
-
 	const { id: userID } = useAppSelector(getProfilState);
 	const groupes = useAppSelector(getGroupesState);
 	const [isPending, startTransition] = useTransition();
 	const router = useRouter();
-	const [adminUsers, setAdminUsers] = useState<Array<ManagedByType>>(companyData?.admins ?? []);
+	const computedManagedBy = useMemo(() => {
+		let admins: Array<ManagedByType> = [];
+
+		if (isEditMode && companyData?.admins && Array.isArray(companyData.admins)) {
+			admins = companyData.admins;
+		} else if (!isEditMode && groupes.length && userID) {
+			admins = [
+				{
+					id: userID,
+					first_name: first_name ?? 'Moi',
+					last_name: last_name ?? '',
+					role: 'Admin',
+				},
+			];
+		}
+
+		// Return the correct type with first_name and last_name
+		return admins.map((u) => ({
+			pk: u.id,
+			role: u.role,
+			first_name: u.first_name,
+			last_name: u.last_name,
+		}));
+	}, [isEditMode, companyData, groupes.length, userID, first_name, last_name]);
+
 	const [selectedUser, setSelectedUser] = useState<DropDownType | null>(null);
 	const [selectedRole, setSelectedRole] = useState<string>('');
 	const roleOptions = groupes.map((role) => ({ value: role, code: role }));
-
 	const formik = useFormik<CompanyFormValuesType>({
 		initialValues: {
 			raison_sociale: companyData?.raison_sociale ?? '',
@@ -127,7 +150,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			logo_cropped: companyData?.logo_cropped ?? '',
 			cachet: companyData?.cachet ?? '',
 			cachet_cropped: companyData?.cachet_cropped ?? '',
-			managed_by: [],
+			managed_by: computedManagedBy,
 			globalError: '',
 		},
 		enableReinitialize: true,
@@ -154,6 +177,15 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		},
 	});
 
+	const adminUsers: Array<ManagedByType> = useMemo(() => {
+		return formik.values.managed_by.map((entry) => ({
+			id: entry.pk,
+			first_name: entry.first_name || '',
+			last_name: entry.last_name || '',
+			role: entry.role || '',
+		}));
+	}, [formik.values.managed_by]);
+
 	const managedIds = formik.values.managed_by.map((entry) => entry.pk);
 	const availableUsers: DropDownType[] = Array.isArray(usersData)
 		? usersData
@@ -168,52 +200,20 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				}))
 		: [];
 
-	const initializedRef = useRef(false);
-
-	useEffect(() => {
-		// Initialize admin users for edit mode
-		if (!initializedRef.current && isEditMode && companyData?.admins && Array.isArray(companyData.admins)) {
-			setAdminUsers(companyData.admins);
-			initializedRef.current = true;
-		} else if (!initializedRef.current && !isEditMode && groupes.length && userID) {
-			const defaultAdmin = {
-				id: userID,
-				first_name: first_name ?? 'Moi',
-				last_name: last_name ?? '',
-				role: 'Admin',
-			};
-			setAdminUsers([defaultAdmin]);
-			initializedRef.current = true;
-		}
-
-		if (error) {
-			const axiosError = error as ResponseDataInterface<ApiErrorResponseType>;
-			setAxiosError(axiosError);
-		}
-	}, [isEditMode, companyData?.admins, groupes, userID, first_name, last_name, error]);
-
-	// Sync adminUsers to formik.values.managed_by whenever adminUsers changes
-	const setManagedBy = useRef(formik.setFieldValue);
-
-	useEffect(() => {
-		setManagedBy.current(
-			'managed_by',
-			adminUsers.map((u) => ({ pk: u.id, role: u.role })),
-		);
-	}, [adminUsers]);
-
 	const handleAddCompany = () => {
 		if (selectedUser && selectedRole) {
 			const userId = parseInt(selectedUser.value);
 			const userData = usersData?.find((u) => u.id === userId);
 			if (userData?.id && userData.first_name && userData.last_name) {
-				const newAdmin = {
-					id: userData.id,
-					first_name: userData.first_name,
-					last_name: userData.last_name,
-					role: selectedRole,
-				};
-				setAdminUsers([...adminUsers, newAdmin]);
+				formik.setFieldValue('managed_by', [
+					...formik.values.managed_by,
+					{
+						pk: userData.id,
+						role: selectedRole,
+						first_name: userData.first_name,
+						last_name: userData.last_name,
+					},
+				]);
 				setSelectedUser(null);
 				setSelectedRole('');
 			}
@@ -583,12 +583,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								currentUserId={userID}
 								roleOptions={roleOptions}
 								onRoleChange={(index, newRole) => {
-									const updatedAdmins = adminUsers.map((user, i) => (i === index ? { ...user, role: newRole } : user));
-									setAdminUsers(updatedAdmins);
+									const updated = formik.values.managed_by.map((entry, i) =>
+										i === index ? { ...entry, role: newRole } : entry,
+									);
+									formik.setFieldValue('managed_by', updated);
 								}}
 								onDelete={(index) => {
-									const userId = adminUsers[index].id;
-									setAdminUsers(adminUsers.filter((u) => u.id !== userId));
+									const filtered = formik.values.managed_by.filter((_, i) => i !== index);
+									formik.setFieldValue('managed_by', filtered);
 								}}
 								addSectionProps={{
 									title: 'Ajouter une société',

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, isValidElement } from 'react';
+import React, { useMemo, isValidElement } from 'react';
 import { useRouter } from 'next/navigation';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
@@ -114,18 +114,12 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 	const router = useRouter();
 	const token = getAccessTokenFromSession(session);
 	const { data: companyData, isLoading, error } = useGetCompanyQuery({ token, id }, { skip: !token });
-	const [axiosError, setAxiosError] = useState<ResponseDataInterface<ApiErrorResponseType>>(
-		error as ResponseDataInterface<ApiErrorResponseType>,
+	const axiosError = useMemo(
+		() => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),
+		[error],
 	);
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
-	useEffect(() => {
-		if (error) {
-			const axiosError = error as ResponseDataInterface<ApiErrorResponseType>;
-			setAxiosError(axiosError);
-		}
-	}, [error]);
 
 	return (
 		<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
@@ -195,7 +189,7 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 													<Typography
 														variant="h4"
 														textAlign={isMobile ? 'center' : 'inherit'}
-														fontSize={isMobile ? '20px' : '2.125rem'}
+														fontSize={isMobile ? '20px' : '25px'}
 														fontWeight={700}
 													>
 														{companyData?.raison_sociale ?? "Nom de l'entreprise"}

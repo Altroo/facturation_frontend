@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, Stack, Typography, Chip, IconButton, Tooltip, Tabs, Tab, Paper, Container } from '@mui/material';
 import { Edit, Delete, Visibility, BusinessOutlined, Archive, Unarchive } from '@mui/icons-material';
@@ -345,9 +345,9 @@ const ClientsListClient: React.FC<Props> = ({ session, archived }) => {
 	const token = getAccessTokenFromSession(session);
 	const router = useRouter();
 	const { data: companiesData, isLoading } = useGetUserCompaniesQuery({ token }, { skip: !token });
-	const [companies, setCompanies] = useState(companiesData);
 	const [selectedIndex, setSelectedIndex] = useState(0);
-	const [selectedCompany, setSelectedCompany] = useState(companies ? companies[selectedIndex] : null);
+	const companies = useMemo(() => companiesData ?? [], [companiesData]);
+	const selectedCompany = useMemo(() => companies?.[selectedIndex] ?? null, [companies, selectedIndex]);
 	const [showToast, setShowToast] = useState(false);
 	const [toastMessage, setToastMessage] = useState<string>('');
 	const [toastType, setToastType] = useState<'success' | 'error'>('success');
@@ -361,13 +361,6 @@ const ClientsListClient: React.FC<Props> = ({ session, archived }) => {
 	const handleChange = (_: React.SyntheticEvent, newValue: number) => {
 		setSelectedIndex(newValue);
 	};
-
-	useEffect(() => {
-		if (companiesData) {
-			setCompanies(companiesData);
-			setSelectedCompany(companiesData[selectedIndex]);
-		}
-	}, [companiesData, selectedIndex]);
 
 	if (isLoading) {
 		return <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />;

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import Styles from './CustomSwipeModal.module.sass';
 import { Dialog, Box, Slide, ThemeProvider } from '@mui/material';
 import { TransitionProps } from '@mui/material/transitions';
@@ -102,27 +102,31 @@ const CustomSwipeModal: React.FC<Props> = (props: Props) => {
 		disableScrollLock,
 		hideBackdrop,
 	} = props;
-	const [mountDialog, setMountDialog] = useState<boolean>(false);
 
-	let Transition = DefaultTransition;
-	if (transition) {
-		if (direction === 'up') {
-			Transition = UpTransition;
-		} else if (direction === 'down') {
-			Transition = DownTransition;
-		} else if (direction === 'right') {
-			Transition = RightTransition;
-		}
-	}
-
-	useEffect(() => {
-		if (typeof keepMounted === 'boolean') {
-			setMountDialog(keepMounted);
-		}
+	// Derive mountDialog directly from props - no state or useEffect needed!
+	const mountDialog = useMemo(() => {
 		if (waitShopSelector) {
-			setMountDialog(true);
+			return true;
 		}
+		if (typeof keepMounted === 'boolean') {
+			return keepMounted;
+		}
+		return false;
 	}, [keepMounted, waitShopSelector]);
+
+	// Derive transition component based on direction
+	const Transition = useMemo(() => {
+		if (!transition) return undefined;
+
+		if (direction === 'up') {
+			return UpTransition;
+		} else if (direction === 'down') {
+			return DownTransition;
+		} else if (direction === 'right') {
+			return RightTransition;
+		}
+		return DefaultTransition;
+	}, [transition, direction]);
 
 	return (
 		<ThemeProvider theme={theme ? theme : customModalTheme()}>
@@ -130,7 +134,7 @@ const CustomSwipeModal: React.FC<Props> = (props: Props) => {
 				data-testid="custom-swipe-modal"
 				keepMounted={mountDialog}
 				open={open}
-				slots={{ transition: transition ? Transition : undefined }}
+				slots={{ transition: Transition }}
 				hideBackdrop={hideBackdrop}
 				disableScrollLock={disableScrollLock}
 				onClose={(_e, reason) => {
