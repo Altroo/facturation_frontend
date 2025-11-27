@@ -68,7 +68,6 @@ describe('axiosBaseQuery (real Axios instance, no any)', () => {
 			message: 'Request failed',
 			response: { status: 500, data: serverError },
 			config: {},
-			toJSON: () => ({}),
 		} as Partial<AxiosError<ApiErrorResponseType>>;
 
 		jest.spyOn(instance, 'request').mockRejectedValueOnce(axiosErr);
