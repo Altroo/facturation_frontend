@@ -33,7 +33,9 @@ export const InitContextProvider: React.FC<PropsWithChildren<Record<string, unkn
 		skip: !token || status !== 'authenticated',
 	});
 	// get user companies
-	const { data: companies } = useGetUserCompaniesQuery({ token }, { skip: !token || status !== 'authenticated' });
+	const { data: companies } = useGetUserCompaniesQuery(token, {
+		skip: !token || status !== 'authenticated',
+	});
 	const [appTokenSessionLoaded, setAppTokenSessionLoaded] = useState<boolean>(false);
 
 	useEffect(() => {
