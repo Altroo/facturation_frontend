@@ -1,4 +1,3 @@
-// InitContext.test.tsx
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { InitContextProvider } from './InitContext';
@@ -34,7 +33,7 @@ describe('InitContextProvider', () => {
 		(useGetUserCompaniesQuery as jest.Mock).mockReturnValue({ data: undefined });
 	});
 
-	it('does not render children while session is loading', () => {
+	it('renders children while session is loading', () => {
 		(useSession as jest.Mock).mockReturnValue({ data: null, status: 'loading' });
 
 		render(
@@ -43,7 +42,8 @@ describe('InitContextProvider', () => {
 			</InitContextProvider>,
 		);
 
-		expect(screen.queryByTestId('child')).not.toBeInTheDocument();
+		// Children are always rendered, even while loading
+		expect(screen.getByTestId('child')).toBeInTheDocument();
 	});
 
 	it('renders children when session is unauthenticated', async () => {

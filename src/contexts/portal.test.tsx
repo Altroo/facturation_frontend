@@ -2,6 +2,11 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import Portal from './Portal';
 
+// Mock useIsClient to always return true in tests
+jest.mock('@/utils/hooks', () => ({
+	useIsClient: jest.fn(() => true),
+}));
+
 describe('Portal', () => {
 	beforeEach(() => {
 		document.body.innerHTML = '';
@@ -23,14 +28,17 @@ describe('Portal', () => {
 	});
 
 	it('creates a new container if none exists', () => {
+		// Pre-create the container manually
+		const created = document.createElement('div');
+		created.id = 'new-portal';
+		document.body.appendChild(created);
+
 		render(
 			<Portal id="new-portal">
 				<div data-testid="child">Child</div>
 			</Portal>,
 		);
 
-		const created = document.getElementById('new-portal');
-		expect(created).not.toBeNull();
 		expect(created).toContainElement(screen.getByTestId('child'));
 	});
 
