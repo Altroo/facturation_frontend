@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useTransition } from 'react';
+import React, { useState } from 'react';
 import Styles from '@/styles/dashboard/settings/edit-profil.module.sass';
 import { TabletAndMobile, Desktop } from '@/utils/clientHelpers';
 import { Box, Stack } from '@mui/material';
@@ -36,7 +36,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 	const { data: profilData, isLoading: isProfilLoading } = useGetProfilQuery(token, { skip: !token });
 	const [editProfil, { isLoading: isEditLoading }] = useEditProfilMutation();
 	const dispatch = useAppDispatch();
-	const [isPending, startTransition] = useTransition();
+	const [isPending, setIsPending] = useState(false);
 
 	const formik = useFormik({
 		initialValues: {
@@ -51,17 +51,18 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 		validateOnMount: true,
 		validationSchema: toFormikValidationSchema(profilSchema),
 		onSubmit: async (data, { setFieldError }) => {
-			startTransition(async () => {
-				try {
-					const response = await editProfil({ token, data }).unwrap();
-					if (response) {
-						dispatch(accountEditProfilAction(response));
-						onSuccess();
-					}
-				} catch (e) {
-					setFormikAutoErrors({ e, setFieldError });
+			setIsPending(true);
+			try {
+				const response = await editProfil({ token, data }).unwrap();
+				if (response) {
+					dispatch(accountEditProfilAction(response));
+					onSuccess();
 				}
-			});
+			} catch (e) {
+				setFormikAutoErrors({ e, setFieldError });
+			} finally {
+				setIsPending(false);
+			}
 		},
 	});
 

@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useIsClient } from '@/utils/hooks';
 
 interface PortalProps {
 	id: string;
@@ -9,9 +10,12 @@ interface PortalProps {
 }
 
 const Portal: React.FC<PortalProps> = ({ id, children }) => {
-	const [container, setContainer] = useState<HTMLElement | null>(null);
+	const isClient = useIsClient();
 
 	useEffect(() => {
+		if (!isClient) return;
+
+		// Get or create container
 		let el = document.getElementById(id);
 		if (!el) {
 			el = document.createElement('div');
@@ -30,10 +34,21 @@ const Portal: React.FC<PortalProps> = ({ id, children }) => {
 
 			document.body.appendChild(el);
 		}
-		setContainer(el);
-	}, [id]);
 
+		// Cleanup
+		return () => {
+			if (el && el.childNodes.length === 0 && el.parentNode) {
+				el.parentNode.removeChild(el);
+			}
+		};
+	}, [id, isClient]);
+
+	// Don't render on server or before client hydration
+	if (!isClient) return null;
+
+	const container = document.getElementById(id);
 	if (!container) return null;
+
 	return createPortal(children, container);
 };
 

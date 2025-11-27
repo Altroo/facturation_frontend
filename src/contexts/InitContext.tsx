@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, PropsWithChildren, useEffect, useState } from 'react';
+import React, { createContext, PropsWithChildren, useEffect, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '@/utils/hooks';
 import type { InitStateInterface, InitStateToken } from '@/types/_initTypes';
 import { initAppSessionTokensAction } from '@/store/actions/_initActions';
@@ -22,13 +22,18 @@ export const InitContextProvider: React.FC<PropsWithChildren<Record<string, unkn
 	const dispatch = useAppDispatch();
 	const token = useAppSelector(getInitStateToken);
 	const { data: session, status } = useSession();
+
+	// Use ref to track if tokens have been initialized
+	const tokensInitializedRef = useRef(false);
+	// get user profile
 	const { data: user } = useGetProfilQuery(token, {
 		skip: !token || status !== 'authenticated',
 	});
+	// get groupes
 	const { data: groupes } = useGetGroupsQuery(token, {
 		skip: !token || status !== 'authenticated',
 	});
-	// add get cities
+	// get cities
 	const { data: cities } = useGetCitiesListQuery(token, {
 		skip: !token || status !== 'authenticated',
 	});
@@ -36,44 +41,45 @@ export const InitContextProvider: React.FC<PropsWithChildren<Record<string, unkn
 	const { data: companies } = useGetUserCompaniesQuery(token, {
 		skip: !token || status !== 'authenticated',
 	});
-	const [appTokenSessionLoaded, setAppTokenSessionLoaded] = useState<boolean>(false);
 
+	// Initialize tokens once when session becomes authenticated
 	useEffect(() => {
-		// When next-auth session is known and authenticated, initialize store tokens once
-		if (!appTokenSessionLoaded && status === 'authenticated' && session) {
+		if (status === 'authenticated' && session && !tokensInitializedRef.current) {
 			dispatch(initAppSessionTokensAction(session));
-			// dispatch(initAppAction());
-			setAppTokenSessionLoaded(true);
+			tokensInitializedRef.current = true;
 		}
+	}, [status, session, dispatch]);
 
-		// If session is explicitly unauthenticated, mark loaded so children render without token
-		if (!appTokenSessionLoaded && status === 'unauthenticated') {
-			setAppTokenSessionLoaded(true);
-		}
-	}, [appTokenSessionLoaded, dispatch, session, status]);
-
+	// Dispatch data actions when data is available
 	useEffect(() => {
-		// Dispatch init actions here :
 		if (user) {
 			dispatch(accountSetProfilAction(user));
 		}
+	}, [dispatch, user]);
+
+	useEffect(() => {
 		if (groupes) {
 			dispatch(accountSetGroupesAction(groupes));
 		}
+	}, [dispatch, groupes]);
+
+	useEffect(() => {
 		if (cities) {
 			dispatch(parameterSetCitiesAction(cities));
 		}
+	}, [dispatch, cities]);
+
+	useEffect(() => {
 		if (companies) {
 			dispatch(companiesSetUserCompaniesAction(companies));
 		}
-	}, [dispatch, user, groupes, cities, companies]);
+	}, [dispatch, companies]);
 
-	// Do not render children until we've attempted to initialize the token state
-	if (!appTokenSessionLoaded) {
-		return null;
-	}
-
-	const contextValue: InitStateInterface<InitStateToken> = { initStateToken: token };
+	// CRITICAL: Always render children to avoid hydration mismatch
+	// The context value will be available even if tokens aren't loaded yet
+	const contextValue: InitStateInterface<InitStateToken> = {
+		initStateToken: token || emptyInitStateToken,
+	};
 
 	return <InitContext.Provider value={contextValue}>{props.children}</InitContext.Provider>;
 };

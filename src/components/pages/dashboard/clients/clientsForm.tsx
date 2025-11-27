@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState, useTransition } from 'react';
+import React, { useMemo, useState } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/companies/companies.module.sass';
@@ -100,8 +100,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, on
 	const [newCityName, setNewCityName] = useState('');
 	const [cityError, setCityError] = useState<string | null>(null);
 
-	// Transition
-	const [isPending, startTransition] = useTransition();
+	const [isPending, setIsPending] = useState(false);
 
 	// Compute initial code_client: use server-generated when adding, else from clientData
 	const initialCodeClient = isEditMode ? (clientData?.code_client ?? '') : (generatedCodeData?.code_client ?? '');
@@ -133,42 +132,43 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, on
 		enableReinitialize: true,
 		validateOnMount: true,
 		validationSchema: toFormikValidationSchema(clientSchema),
-		onSubmit: (data, { setFieldError }) => {
-			startTransition(async () => {
-				try {
-					// Build payload with irrelevant fields cleared
-					const payload =
-						data.client_type === 'PM'
-							? {
-									...data,
-									nom: null,
-									prenom: null,
-									adresse: null,
-									tel: null,
-								}
-							: {
-									...data,
-									raison_sociale: null,
-									ICE: null,
-									registre_de_commerce: null,
-								};
+		onSubmit: async (data, { setFieldError }) => {
+			setIsPending(true);
+			try {
+				// Build payload with irrelevant fields cleared
+				const payload =
+					data.client_type === 'PM'
+						? {
+								...data,
+								nom: null,
+								prenom: null,
+								adresse: null,
+								tel: null,
+							}
+						: {
+								...data,
+								raison_sociale: null,
+								ICE: null,
+								registre_de_commerce: null,
+							};
 
-					if (isEditMode) {
-						await updateClient({ token, data: payload, id: id! }).unwrap();
-					} else {
-						await addClient({ token, data: payload }).unwrap();
-					}
-
-					onSuccess();
-					if (!isEditMode) {
-						setTimeout(() => {
-							router.replace(CLIENTS_LIST);
-						}, 1000);
-					}
-				} catch (e) {
-					setFormikAutoErrors({ e, setFieldError });
+				if (isEditMode) {
+					await updateClient({ token, data: payload, id: id! }).unwrap();
+				} else {
+					await addClient({ token, data: payload }).unwrap();
 				}
-			});
+
+				onSuccess();
+				if (!isEditMode) {
+					setTimeout(() => {
+						router.replace(CLIENTS_LIST);
+					}, 1000);
+				}
+			} catch (e) {
+				setFormikAutoErrors({ e, setFieldError });
+			} finally {
+				setIsPending(false);
+			}
 		},
 	});
 
@@ -206,10 +206,6 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, on
 	const isPM = formik.values.client_type === 'PM';
 	const isRequiredPM = (field: (typeof pmRequired)[number]) => isPM && pmRequired.includes(field);
 	const isRequiredPP = (field: (typeof ppRequired)[number]) => !isPM && ppRequired.includes(field);
-
-	useEffect(() => {
-		console.log(formik.errors);
-	}, [formik.errors]);
 
 	return (
 		<Stack spacing={3} sx={{ p: { xs: 2, md: 3 } }}>
@@ -260,10 +256,8 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, on
 									exclusive
 									onChange={(_, val) => {
 										if (val) {
-											startTransition(() => {
-												formik.setFieldValue('client_type', val);
-												formik.setErrors({});
-											});
+											formik.setFieldValue('client_type', val);
+											formik.setErrors({});
 										}
 									}}
 									sx={{ mb: 2 }}

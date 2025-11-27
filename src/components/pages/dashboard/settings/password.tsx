@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useTransition } from 'react';
+import React, { useState } from 'react';
 import Styles from '@/styles/dashboard/settings/password.module.sass';
 import { Box, Stack } from '@mui/material';
 import { setFormikAutoErrors } from '@/utils/helpers';
@@ -29,7 +29,7 @@ type formikContentType = {
 const FormikContenChangePassword: React.FC<formikContentType> = (props: formikContentType) => {
 	const { token, onSuccess } = props;
 	const [changePassword, { isLoading: isChangePasswordLoading }] = useEditPasswordMutation();
-	const [isPending, startTransition] = useTransition();
+	const [isPending, setIsPending] = useState(false);
 
 	const formik = useFormik({
 		initialValues: {
@@ -41,22 +41,23 @@ const FormikContenChangePassword: React.FC<formikContentType> = (props: formikCo
 		validateOnMount: true,
 		validationSchema: toFormikValidationSchema(changePasswordSchema),
 		onSubmit: async (values, { setFieldError, resetForm }) => {
-			startTransition(async () => {
-				try {
-					await changePassword({
-						token,
-						data: {
-							old_password: values.old_password,
-							new_password: values.new_password,
-							new_password2: values.new_password2,
-						},
-					}).unwrap();
-					onSuccess();
-					resetForm();
-				} catch (e) {
-					setFormikAutoErrors({ e, setFieldError });
-				}
-			});
+			setIsPending(true);
+			try {
+				await changePassword({
+					token,
+					data: {
+						old_password: values.old_password,
+						new_password: values.new_password,
+						new_password2: values.new_password2,
+					},
+				}).unwrap();
+				onSuccess();
+				resetForm();
+			} catch (e) {
+				setFormikAutoErrors({ e, setFieldError });
+			} finally {
+				setIsPending(false);
+			}
 		},
 	});
 

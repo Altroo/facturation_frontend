@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState, useTransition } from 'react';
+import React, { useMemo, useState } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
 import { useAddCompanyMutation, useEditCompanyMutation, useGetCompanyQuery } from '@/store/services/company';
@@ -98,7 +98,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	);
 	const { id: userID } = useAppSelector(getProfilState);
 	const groupes = useAppSelector(getGroupesState);
-	const [isPending, startTransition] = useTransition();
+	const [isPending, setIsPending] = useState(false);
 	const router = useRouter();
 	const computedManagedBy = useMemo(() => {
 		let admins: Array<ManagedByType> = [];
@@ -157,23 +157,24 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		validateOnMount: true,
 		validationSchema: toFormikValidationSchema(companySchema),
 		onSubmit: async (data, { setFieldError }) => {
-			startTransition(async () => {
-				try {
-					if (isEditMode) {
-						await updateCompany({ token, data, id }).unwrap();
-					} else {
-						await addCompany({ token, data }).unwrap();
-					}
-					onSuccess();
-					if (!isEditMode) {
-						setTimeout(() => {
-							router.replace(COMPANIES_LIST);
-						}, 1000);
-					}
-				} catch (e) {
-					setFormikAutoErrors({ e, setFieldError });
+			setIsPending(true);
+			try {
+				if (isEditMode) {
+					await updateCompany({ token, data, id }).unwrap();
+				} else {
+					await addCompany({ token, data }).unwrap();
 				}
-			});
+				onSuccess();
+				if (!isEditMode) {
+					setTimeout(() => {
+						router.replace(COMPANIES_LIST);
+					}, 1000);
+				}
+			} catch (e) {
+				setFormikAutoErrors({ e, setFieldError });
+			} finally {
+				setIsPending(false);
+			}
 		},
 	});
 

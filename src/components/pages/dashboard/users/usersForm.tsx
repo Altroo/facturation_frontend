@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useTransition, useEffect, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/companies/companies.module.sass';
@@ -71,6 +71,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const isEditMode = id !== undefined;
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+	const router = useRouter();
 
 	const {
 		data: userData,
@@ -82,27 +83,18 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const [checkEmail, { isLoading: isCheckEmailLoading, error: checkEmailError }] = useCheckEmailMutation();
 	const [updateUser, { isLoading: isUpdateLoading, error: updateError }] = useEditUserMutation();
 
-	const error = checkEmailError || isEditMode ? userError || updateError : addError;
-	const [axiosError, setAxiosError] = useState<ResponseDataInterface<ApiErrorResponseType>>(
-		error as ResponseDataInterface<ApiErrorResponseType>,
-	);
+	// Compose error without local state or effects
+	const error = checkEmailError || (isEditMode ? userError || updateError : addError);
+	const axiosError: ResponseDataInterface<ApiErrorResponseType> | undefined = useMemo(() => {
+		return error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined;
+	}, [error]);
 
 	const groupes = useAppSelector(getGroupesState);
-	const [isPending, startTransition] = useTransition();
-	const router = useRouter();
-	const [companiesAdmin, setCompaniesAdmin] = useState<Array<UserCompaniesType>>(userData?.companies ?? []);
-	const [selectedCompany, setSelectedCompany] = useState<DropDownType | null>(null);
-	const [selectedRole, setSelectedRole] = useState<string>('');
+	const [isPending, setIsPending] = useState(false);
 
-	const roleOptions = groupes.map((role) => ({ value: role, code: role }));
+	const { data: rawData, isLoading: isCompaniesLoading } = useGetCompaniesListQuery({ token }, { skip: !token });
 
-	const { data: rawData, isLoading: isCompaniesLoading } = useGetCompaniesListQuery(
-		{
-			token,
-		},
-		{ skip: !token },
-	);
-	// enforce the type of the users data
+	// Enforce the type of the companies data returned
 	const companiesData = rawData as Array<Partial<CompanyClass>> | undefined;
 
 	const formik = useFormik<UsersFormValuesType>({
@@ -115,69 +107,77 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			is_staff: userData?.is_staff ?? false,
 			avatar: userData?.avatar ?? '',
 			avatar_cropped: userData?.avatar ?? '',
-			companies: [],
+			// Initialize with server companies; Formik will reinitialize when userData changes
+			companies: Array.isArray(userData?.companies) ? (userData!.companies as UserCompaniesType[]) : [],
 			globalError: '',
 		},
 		enableReinitialize: true,
 		validateOnMount: true,
 		validationSchema: toFormikValidationSchema(userSchema),
 		onSubmit: async (data, { setFieldError }) => {
-			startTransition(async () => {
-				try {
-					if (userData?.email !== data.email) {
-						await checkEmail({ token, email: data.email }).unwrap();
-					}
-					if (isEditMode) {
-						await updateUser({ token, data, id }).unwrap();
-					} else {
-						await addUser({ token, data }).unwrap();
-					}
-					onSuccess();
-					if (!isEditMode) {
-						setTimeout(() => {
-							router.replace(USERS_LIST);
-						}, 1000);
-					}
-				} catch (e) {
-					setFormikAutoErrors({ e, setFieldError });
+			setIsPending(true);
+			try {
+				if (userData?.email !== data.email) {
+					await checkEmail({ token, email: data.email }).unwrap();
 				}
-			});
+				if (isEditMode) {
+					await updateUser({ token, data, id }).unwrap();
+				} else {
+					await addUser({ token, data }).unwrap();
+				}
+				onSuccess();
+				if (!isEditMode) {
+					setTimeout(() => {
+						router.replace(USERS_LIST);
+					}, 1000);
+				}
+			} catch (e) {
+				setFormikAutoErrors({ e, setFieldError });
+			} finally {
+				setIsPending(false);
+			}
 		},
 	});
 
-	const managedCompanyIds = companiesAdmin.map((entry) => entry.company_id);
-	const availableCompanies: DropDownType[] = (companiesData ?? [])
-		.filter(
-			(company): company is Partial<CompanyClass> & { id: number; raison_sociale: string } =>
-				typeof company.id === 'number' &&
-				typeof company.raison_sociale === 'string' &&
-				!managedCompanyIds.includes(company.id),
-		)
-		.map((company) => ({
-			value: company.id.toString(),
-			code: company.raison_sociale,
-		}));
+	// Derive role options
+	const roleOptions = useMemo(() => groupes.map((role) => ({ value: role, code: role })), [groupes]);
 
-	useEffect(() => {
-		if (isEditMode && userData?.companies && Array.isArray(userData.companies)) {
-			setCompaniesAdmin(userData.companies);
-		}
+	// Expose companies to your table under the same name, derived from Formik
+	const companiesAdmin: Array<UserCompaniesType> = useMemo(
+		() => formik.values.companies ?? [],
+		[formik.values.companies],
+	);
 
-		if (error) {
-			const axiosError = error as ResponseDataInterface<ApiErrorResponseType>;
-			setAxiosError(axiosError);
-		}
-	}, [isEditMode, userData?.companies, error]);
+	// Expose a setter with the same name that writes back into Formik
+	const setCompaniesAdmin = (next: Array<UserCompaniesType>) => {
+		formik.setFieldValue('companies', next, true);
+	};
 
-	const setManagedBy = useRef(formik.setFieldValue);
+	const managedCompanyIds = useMemo(() => companiesAdmin.map((entry) => entry.company_id), [companiesAdmin]);
 
-	useEffect(() => {
-		setManagedBy.current('companies', companiesAdmin);
-	}, [companiesAdmin]);
+	const availableCompanies: DropDownType[] = useMemo(
+		() =>
+			(companiesData ?? [])
+				.filter(
+					(company): company is Partial<CompanyClass> & { id: number; raison_sociale: string } =>
+						typeof company.id === 'number' &&
+						typeof company.raison_sociale === 'string' &&
+						!managedCompanyIds.includes(company.id),
+				)
+				.map((company) => ({
+					value: company.id.toString(),
+					code: company.raison_sociale,
+				})),
+		[companiesData, managedCompanyIds],
+	);
 
+	const [selectedCompany, setSelectedCompany] = useState<DropDownType | null>(null);
+	const [selectedRole, setSelectedRole] = useState<string>('');
+
+	// Add via Formik-backed setter; no local state effects needed
 	const handleAddCompany = () => {
 		if (selectedCompany && selectedRole) {
-			const companyId = parseInt(selectedCompany.value);
+			const companyId = parseInt(selectedCompany.value, 10);
 			const companyData = companiesData?.find((c) => c.id === companyId);
 			if (
 				companyData &&

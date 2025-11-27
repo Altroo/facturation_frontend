@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useTransition } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Styles from '@/styles/auth/login/login.module.sass';
 import { Stack, Divider } from '@mui/material';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
@@ -29,16 +29,10 @@ const LoginPageContent = () => {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const error = searchParams.get('error') as string;
-	const [errorState, setErrorState] = useState<string | Array<string> | undefined>(undefined);
-	const [isPending, startTransition] = useTransition();
+	const [isPending, setIsPending] = useState(false);
 
-	useEffect(() => {
-		if (error === 'AccessDenied') {
-			setErrorState('Service non disponible.');
-		} else {
-			setErrorState(error);
-		}
-	}, [error]);
+	// Derive error state from URL param instead of storing in state
+	const errorState = error === 'AccessDenied' ? 'Service non disponible.' : error;
 
 	const formik = useFormik({
 		initialValues: {
@@ -49,25 +43,26 @@ const LoginPageContent = () => {
 		validateOnMount: true,
 		validationSchema: toFormikValidationSchema(loginSchema),
 		onSubmit: async (values, { setFieldError }) => {
-			startTransition(async () => {
-				const url = `${process.env.NEXT_PUBLIC_ACCOUNT_LOGIN}`;
-				try {
-					const instance = allowAnyInstance();
-					const response: AccountPostLoginResponseType = await postApi(url, instance, {
+			setIsPending(true);
+			const url = `${process.env.NEXT_PUBLIC_ACCOUNT_LOGIN}`;
+			try {
+				const instance = allowAnyInstance();
+				const response: AccountPostLoginResponseType = await postApi(url, instance, {
+					email: values.email,
+					password: values.password,
+				});
+				if (response.status === 200) {
+					await signIn('credentials', {
 						email: values.email,
 						password: values.password,
+						redirect: false,
 					});
-					if (response.status === 200) {
-						await signIn('credentials', {
-							email: values.email,
-							password: values.password,
-							redirect: false,
-						});
-					}
-				} catch (e) {
-					setFormikAutoErrors({ e, setFieldError });
 				}
-			});
+			} catch (e) {
+				setFormikAutoErrors({ e, setFieldError });
+			} finally {
+				setIsPending(false);
+			}
 		},
 	});
 
@@ -132,40 +127,46 @@ const LoginPageContent = () => {
 
 const LoginClient: React.FC = () => {
 	const { data: session, status } = useSession();
-	const loading = status === 'loading';
 	const dispatch = useAppDispatch();
 	const router = useRouter();
-	const [sessionUpdated, setSessionUpdated] = useState<boolean>(false);
+
+	// Use ref instead of state to track session update
+	const sessionUpdatedRef = useRef(false);
 
 	useEffect(() => {
-		if (session && !sessionUpdated) {
+		if (session && !sessionUpdatedRef.current) {
 			dispatch(refreshAppTokenStatesAction(session));
-			setSessionUpdated(true);
+			sessionUpdatedRef.current = true;
 			router.replace(DASHBOARD);
 		}
-	}, [dispatch, router, session, sessionUpdated]);
+	}, [dispatch, router, session]);
+
+	// Always render the same structure on initial render
+	if (status === 'loading') {
+		return <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />;
+	}
+
+	// If redirecting to dashboard, keep showing loader
+	if (session) {
+		return <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />;
+	}
 
 	return (
 		<>
-			{loading && <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />}
-			{!loading && !session && (
-				<>
-					<Desktop>
-						<div>
-							<AuthLayout>
-								<LoginPageContent />
-							</AuthLayout>
-						</div>
-					</Desktop>
-					<TabletAndMobile>
-						<div style={{ display: 'flex', width: '100%', height: '100%' }}>
-							<main className={Styles.main}>
-								<LoginPageContent />
-							</main>
-						</div>
-					</TabletAndMobile>
-				</>
-			)}
+			<Desktop>
+				<div>
+					<AuthLayout>
+						<LoginPageContent />
+					</AuthLayout>
+				</div>
+			</Desktop>
+			<TabletAndMobile>
+				<div style={{ display: 'flex', width: '100%', height: '100%' }}>
+					<main className={Styles.main}>
+						<LoginPageContent />
+					</main>
+				</div>
+			</TabletAndMobile>
 		</>
 	);
 };

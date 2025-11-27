@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useTransition, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import Styles from '@/styles/auth/reset-password/enter-code.module.sass';
 import { setFormikAutoErrors } from '@/utils/helpers';
 import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
@@ -33,10 +33,10 @@ const EnterCodePageContent = ({ email }: EnterCodePageContentProps) => {
 	const router = useRouter();
 	const [showDataUpdated, setShowDataUpdated] = useState(false);
 	const [toastMessage, setToastMessage] = useState('');
-	const [isPending, startTransition] = useTransition();
 
 	const [reSendPasswordResetCode, { isLoading: isResendLoading }] = useSendPasswordResetCodeMutation();
 	const [passwordReset, { isLoading: isPasswordResetLoading }] = usePasswordResetMutation();
+	const [isPending, setIsPending] = useState(false);
 
 	const inputRefs: Record<FieldKey, React.RefObject<HTMLInputElement | null>> = {
 		one: useRef<HTMLInputElement | null>(null),
@@ -99,16 +99,17 @@ const EnterCodePageContent = ({ email }: EnterCodePageContentProps) => {
 		validateOnMount: true,
 		validationSchema: toFormikValidationSchema(passwordResetCodeSchema),
 		onSubmit: async (values, { setFieldError }) => {
-			startTransition(async () => {
-				const code = values.one + values.two + values.three + values.four;
-				try {
-					await passwordReset({ email, code }).unwrap();
-					await cookiesPoster('/cookies', { code });
-					router.push(AUTH_RESET_PASSWORD_SET_PASSWORD);
-				} catch (e) {
-					setFormikAutoErrors({ e, setFieldError });
-				}
-			});
+			setIsPending(true);
+			const code = values.one + values.two + values.three + values.four;
+			try {
+				await passwordReset({ email, code }).unwrap();
+				await cookiesPoster('/cookies', { code });
+				router.push(AUTH_RESET_PASSWORD_SET_PASSWORD);
+			} catch (e) {
+				setFormikAutoErrors({ e, setFieldError });
+			} finally {
+				setIsPending(false);
+			}
 		},
 	});
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { styled, ThemeProvider } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
@@ -205,7 +205,7 @@ type Props = {
 const NavigationBar = (props: Props) => {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-	const [open, setOpen] = React.useState(!isMobile);
+	const [open, setOpen] = useState(!isMobile);
 	const { data: session, status } = useSession();
 	const { avatar_cropped, first_name, last_name, gender, is_staff } = useAppSelector(getProfilState);
 	const navigationMenu = useMemo(() => getNavigationMenu(is_staff), [is_staff]);
@@ -221,20 +221,17 @@ const NavigationBar = (props: Props) => {
 		await signOut({ redirect: true, redirectTo: AUTH_LOGIN });
 	};
 
-	const handleDrawerOpen = () => {
-		setOpen(true);
-	};
-
-	const handleDrawerClose = () => {
-		setOpen(false);
-	};
+	const handleDrawerOpen = () => setOpen(true);
+	const handleDrawerClose = () => setOpen(false);
+	const handleDrawerToggle = () => setOpen(!open);
 
 	const pathname = usePathname();
 
-	const [expanded, setExpanded] = React.useState<string | false>(false);
+	// Separate user override from derived default
+	const [userExpanded, setUserExpanded] = useState<string | false>(false);
 
-	useEffect(() => {
-		// First, try to find an exact match
+	// Derive default expanded panel from pathname + navigationMenu
+	const defaultExpanded: string | false = useMemo(() => {
 		const exactMatch = Object.entries(navigationMenu).find(([, section]) =>
 			section.items.some((item) => {
 				const normalizedPath = item.path.replace(/^https?:\/\/[^/]+/, '');
@@ -243,13 +240,10 @@ const NavigationBar = (props: Props) => {
 		);
 
 		if (exactMatch) {
-			setExpanded(`panel-${exactMatch[0]}`);
-			return;
+			return `panel-${exactMatch[0]}`;
 		}
 
-		// If no exact match, find the best parent match
-		// We'll find the section whose items share the longest common path with current pathname
-		let bestMatch = null;
+		let bestMatch: string | null = null;
 		let longestMatchLength = 0;
 
 		Object.entries(navigationMenu).forEach(([key, section]) => {
@@ -279,10 +273,11 @@ const NavigationBar = (props: Props) => {
 			});
 		});
 
-		if (bestMatch) {
-			setExpanded(`panel-${bestMatch}`);
-		}
+		return bestMatch ? `panel-${bestMatch}` : false;
 	}, [pathname, navigationMenu]);
+
+	// Final expanded value: user override wins, else default
+	const expanded = userExpanded !== false ? userExpanded : defaultExpanded;
 
 	const normalizePath = (url: string) => {
 		try {
@@ -293,11 +288,7 @@ const NavigationBar = (props: Props) => {
 	};
 
 	const handleChange = (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
-		setExpanded(isExpanded ? panel : false);
-	};
-
-	const handleDrawerToggle = () => {
-		setOpen(!open);
+		setUserExpanded(isExpanded ? panel : false);
 	};
 
 	return (
@@ -425,14 +416,7 @@ const NavigationBar = (props: Props) => {
 														alignItems: 'center',
 													},
 												},
-												open
-													? {
-															justifyContent: 'initial',
-														}
-													: {
-															justifyContent: 'center',
-															px: 2.5,
-														},
+												open ? { justifyContent: 'initial' } : { justifyContent: 'center', px: 2.5 },
 											]}
 										>
 											<Box
@@ -443,41 +427,25 @@ const NavigationBar = (props: Props) => {
 												}}
 											>
 												<ListItemIcon
-													sx={[
-														{
-															minWidth: 0,
-															justifyContent: 'center',
-														},
-														open
-															? {
-																	mr: 3,
-																}
-															: {
-																	mr: 'auto',
-																},
-													]}
+													sx={[{ minWidth: 0, justifyContent: 'center' }, open ? { mr: 3 } : { mr: 'auto' }]}
 												>
 													{section.icon}
 												</ListItemIcon>
-												<ListItemText
-													primary={section.title}
-													sx={[
-														open
-															? {
-																	opacity: 1,
-																}
-															: {
-																	opacity: 0,
-																},
-													]}
-												/>
+												<ListItemText primary={section.title} sx={[open ? { opacity: 1 } : { opacity: 0 }]} />
 											</Box>
 										</AccordionSummary>
 									</Tooltip>
 									<AccordionDetails sx={{ p: 0, display: open ? 'block' : 'none' }}>
 										{section.items.map((item, idx) => (
 											<ListItem key={idx} disablePadding>
-												<Link href={item.path} style={{ textDecoration: 'none', color: 'inherit', width: '100%' }}>
+												<Link
+													href={item.path}
+													style={{
+														textDecoration: 'none',
+														color: 'inherit',
+														width: '100%',
+													}}
+												>
 													<ListItemButton
 														selected={normalizePath(item.path) === pathname}
 														sx={{
