@@ -22,24 +22,24 @@ export const InitContextProvider: React.FC<PropsWithChildren<Record<string, unkn
 	const dispatch = useAppDispatch();
 	const token = useAppSelector(getInitStateToken);
 	const { data: session, status } = useSession();
-
+	const skip = !token || status !== 'authenticated';
 	// Use ref to track if tokens have been initialized
 	const tokensInitializedRef = useRef(false);
 	// get user profile
 	const { data: user } = useGetProfilQuery(token, {
-		skip: !token || status !== 'authenticated',
+		skip: skip,
 	});
 	// get groupes
 	const { data: groupes } = useGetGroupsQuery(token, {
-		skip: !token || status !== 'authenticated',
+		skip: skip,
 	});
 	// get cities
 	const { data: cities } = useGetCitiesListQuery(token, {
-		skip: !token || status !== 'authenticated',
+		skip: skip,
 	});
 	// get user companies
 	const { data: companies } = useGetUserCompaniesQuery(token, {
-		skip: !token || status !== 'authenticated',
+		skip: skip,
 	});
 
 	// Initialize tokens once when session becomes authenticated
