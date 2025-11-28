@@ -10,7 +10,7 @@
     "upgrade": "yarn upgrade-interactive",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage v8": "jest --coverage --coverageProvider=v8"
+    "test:coverage": "jest --coverage --coverageProvider=v8"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -19,6 +19,7 @@
     "@mui/lab": "^7.0.1-beta.19",
     "@mui/material": "^7.3.5",
     "@mui/material-nextjs": "^7.3.5",
+    "@mui/system": "^7.3.5",
     "@mui/x-data-grid": "^8.20.0",
     "@reduxjs/toolkit": "^2.11.0",
     "axios": "^1.13.2",
@@ -44,6 +45,7 @@
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "@typescript-eslint/eslint-plugin": "^8.48.0",
+    "@typescript-eslint/parser": "^8.48.0",
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "9.39.1",
     "eslint-config-next": "16.0.5",
@@ -56,5 +58,8 @@
     "ts-jest": "^29.4.5",
     "typescript": "5.9.3"
   },
-  "packageManager": "yarn@4.10.3"
+  "packageManager": "yarn@4.10.3",
+  "resolutions": {
+    "baseline-browser-mapping": "2.8.32"
+  }
 }
