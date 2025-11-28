@@ -10,7 +10,7 @@
     "upgrade": "yarn upgrade-interactive",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage v8": "jest --coverage --coverageProvider=v8"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
