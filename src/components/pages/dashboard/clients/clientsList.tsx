@@ -50,7 +50,6 @@ const ClientsListContent: React.FC<ClientsListContentProps> = (props: ClientsLis
 		refetch,
 	} = useGetClientsListQuery(
 		{
-			token,
 			company_id,
 			with_pagination: true,
 			page: paginationModel.page + 1,
@@ -67,7 +66,7 @@ const ClientsListContent: React.FC<ClientsListContentProps> = (props: ClientsLis
 
 	const deleteHandler = async () => {
 		try {
-			await deleteRecord({ token, id: selectedId! }).unwrap();
+			await deleteRecord({ id: selectedId! }).unwrap();
 			onToast('Client supprimé avec succès', 'success');
 			refetch();
 		} catch (err) {
@@ -100,7 +99,6 @@ const ClientsListContent: React.FC<ClientsListContentProps> = (props: ClientsLis
 		if (!archiveTarget) return;
 		try {
 			await patchArchive({
-				token,
 				id: archiveTarget,
 				data: { archived: !archived },
 			}).unwrap();
@@ -344,7 +342,7 @@ interface Props extends SessionProps {
 const ClientsListClient: React.FC<Props> = ({ session, archived }) => {
 	const token = getAccessTokenFromSession(session);
 	const router = useRouter();
-	const { data: companiesData, isLoading } = useGetUserCompaniesQuery(token, { skip: !token });
+	const { data: companiesData, isLoading } = useGetUserCompaniesQuery(undefined, { skip: !token });
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const companies = useMemo(() => companiesData ?? [], [companiesData]);
 	const selectedCompany = useMemo(() => companies?.[selectedIndex] ?? null, [companies, selectedIndex]);

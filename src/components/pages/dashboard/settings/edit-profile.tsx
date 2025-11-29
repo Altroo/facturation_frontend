@@ -33,7 +33,7 @@ type formikContentType = {
 
 const FormikContent: React.FC<formikContentType> = (props: formikContentType) => {
 	const { token, onSuccess } = props;
-	const { data: profilData, isLoading: isProfilLoading } = useGetProfilQuery(token, { skip: !token });
+	const { data: profilData, isLoading: isProfilLoading } = useGetProfilQuery(undefined, { skip: !token });
 	const [editProfil, { isLoading: isEditLoading }] = useEditProfilMutation();
 	const dispatch = useAppDispatch();
 	const [isPending, setIsPending] = useState(false);

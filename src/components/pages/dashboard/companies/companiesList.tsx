@@ -37,7 +37,6 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		refetch,
 	} = useGetCompaniesListQuery(
 		{
-			token,
 			with_pagination: true,
 			page: paginationModel.page + 1,
 			pageSize: paginationModel.pageSize,
@@ -55,7 +54,7 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 
 	const deleteHandler = async () => {
 		try {
-			await deleteRecord({ token, id: selectedId! }).unwrap();
+			await deleteRecord({ id: selectedId! }).unwrap();
 			// success toast
 			setToastMessage('Entreprise supprimée avec succès');
 			setToastType('success');

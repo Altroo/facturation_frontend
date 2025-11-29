@@ -49,7 +49,7 @@ describe('groupApi', () => {
 	const storeRef = setupApiStore(groupApi);
 
 	it('getGroups query should complete without error', async () => {
-		const result = await storeRef.store.dispatch(groupApi.endpoints.getGroups.initiate('test-token'));
+		const result = await storeRef.store.dispatch(groupApi.endpoints.getGroups.initiate());
 		expect('error' in result).toBe(false);
 	});
 });
@@ -60,7 +60,6 @@ describe('usersApi', () => {
 	it('getUsersList query with pagination should complete without error', async () => {
 		const result = await storeRef.store.dispatch(
 			usersApi.endpoints.getUsersList.initiate({
-				token: 'test-token',
 				with_pagination: true,
 				page: 1,
 				pageSize: 10,
@@ -71,28 +70,23 @@ describe('usersApi', () => {
 	});
 
 	it('getUser query should complete without error', async () => {
-		const result = await storeRef.store.dispatch(usersApi.endpoints.getUser.initiate({ token: 'test-token', id: 1 }));
+		const result = await storeRef.store.dispatch(usersApi.endpoints.getUser.initiate({ id: 1 }));
 		expect('error' in result).toBe(false);
 	});
 
 	it('checkEmail mutation should complete without error', async () => {
-		const result = await storeRef.store.dispatch(
-			usersApi.endpoints.checkEmail.initiate({ token: 'test-token', email: 'test@example.com' }),
-		);
+		const result = await storeRef.store.dispatch(usersApi.endpoints.checkEmail.initiate({ email: 'test@example.com' }));
 		expect('error' in result).toBe(false);
 	});
 
 	it('deleteUser mutation should complete without error', async () => {
-		const result = await storeRef.store.dispatch(
-			usersApi.endpoints.deleteUser.initiate({ token: 'test-token', id: 1 }),
-		);
+		const result = await storeRef.store.dispatch(usersApi.endpoints.deleteUser.initiate({ id: 1 }));
 		expect('error' in result).toBe(false);
 	});
 
 	it('editUser mutation should complete without error', async () => {
 		const result = await storeRef.store.dispatch(
 			usersApi.endpoints.editUser.initiate({
-				token: 'test-token',
 				id: 1,
 				data: { first_name: 'Updated' },
 			}),
@@ -103,7 +97,6 @@ describe('usersApi', () => {
 	it('addUser mutation should complete without error', async () => {
 		const result = await storeRef.store.dispatch(
 			usersApi.endpoints.addUser.initiate({
-				token: 'test-token',
 				data: { first_name: 'New' },
 			}),
 		);
@@ -115,7 +108,7 @@ describe('profilApi', () => {
 	const storeRef = setupApiStore(profilApi);
 
 	it('getProfil query should complete without error', async () => {
-		const result = await storeRef.store.dispatch(profilApi.endpoints.getProfil.initiate('test-token'));
+		const result = await storeRef.store.dispatch(profilApi.endpoints.getProfil.initiate());
 		expect('error' in result).toBe(false);
 	});
 

@@ -19,7 +19,6 @@ describe('companyApi endpoints', () => {
 	it('getCompaniesList query should return mocked data', async () => {
 		const result = await storeRef.store.dispatch(
 			companyApi.endpoints.getCompaniesList.initiate({
-				token: 'test-token',
 				with_pagination: true,
 				page: 1,
 				pageSize: 10,
@@ -31,23 +30,19 @@ describe('companyApi endpoints', () => {
 	});
 
 	it('getCompany query should return mocked data', async () => {
-		const result = await storeRef.store.dispatch(
-			companyApi.endpoints.getCompany.initiate({ token: 'test-token', id: 1 }),
-		);
+		const result = await storeRef.store.dispatch(companyApi.endpoints.getCompany.initiate({ id: 1 }));
 		expect(result.error).toBeUndefined();
 		expect(result.data).toEqual({ ok: true });
 	});
 
 	it('getUserCompanies query should return mocked data', async () => {
-		const result = await storeRef.store.dispatch(companyApi.endpoints.getUserCompanies.initiate('test-token'));
+		const result = await storeRef.store.dispatch(companyApi.endpoints.getUserCompanies.initiate());
 		expect(result.error).toBeUndefined();
 		expect(result.data).toEqual({ ok: true });
 	});
 
 	it('deleteCompany mutation should return mocked data', async () => {
-		const result = await storeRef.store.dispatch(
-			companyApi.endpoints.deleteCompany.initiate({ token: 'test-token', id: 1 }),
-		);
+		const result = await storeRef.store.dispatch(companyApi.endpoints.deleteCompany.initiate({ id: 1 }));
 		expect(result.error).toBeUndefined();
 		expect(result.data).toEqual({ ok: true });
 	});
@@ -55,7 +50,6 @@ describe('companyApi endpoints', () => {
 	it('editCompany mutation should return mocked data', async () => {
 		const result = await storeRef.store.dispatch(
 			companyApi.endpoints.editCompany.initiate({
-				token: 'test-token',
 				id: 1,
 				data: { raison_sociale: 'Updated Co' },
 			}),
@@ -67,7 +61,6 @@ describe('companyApi endpoints', () => {
 	it('addCompany mutation should return mocked data', async () => {
 		const result = await storeRef.store.dispatch(
 			companyApi.endpoints.addCompany.initiate({
-				token: 'test-token',
 				data: { raison_sociale: 'New Co' },
 			}),
 		);

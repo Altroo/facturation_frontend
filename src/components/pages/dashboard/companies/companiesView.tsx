@@ -113,7 +113,7 @@ interface Props extends SessionProps {
 const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 	const router = useRouter();
 	const token = getAccessTokenFromSession(session);
-	const { data: companyData, isLoading, error } = useGetCompanyQuery({ token, id }, { skip: !token });
+	const { data: companyData, isLoading, error } = useGetCompanyQuery({ id }, { skip: !token });
 	const axiosError = useMemo(
 		() => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),
 		[error],

@@ -77,7 +77,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		data: userData,
 		isLoading: isUserLoading,
 		error: userError,
-	} = useGetUserQuery({ token, id: id! }, { skip: !token || !isEditMode });
+	} = useGetUserQuery({ id: id! }, { skip: !token || !isEditMode });
 
 	const [addUser, { isLoading: isAddLoading, error: addError }] = useAddUserMutation();
 	const [checkEmail, { isLoading: isCheckEmailLoading, error: checkEmailError }] = useCheckEmailMutation();
@@ -92,7 +92,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const groupes = useAppSelector(getGroupesState);
 	const [isPending, setIsPending] = useState(false);
 
-	const { data: rawData, isLoading: isCompaniesLoading } = useGetCompaniesListQuery({ token }, { skip: !token });
+	const { data: rawData, isLoading: isCompaniesLoading } = useGetCompaniesListQuery(
+		{ with_pagination: false },
+		{ skip: !token },
+	);
 
 	// Enforce the type of the companies data returned
 	const companiesData = rawData as Array<Partial<CompanyClass>> | undefined;
@@ -118,12 +121,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			setIsPending(true);
 			try {
 				if (userData?.email !== data.email) {
-					await checkEmail({ token, email: data.email }).unwrap();
+					await checkEmail({ email: data.email }).unwrap();
 				}
 				if (isEditMode) {
-					await updateUser({ token, data, id }).unwrap();
+					await updateUser({ data, id }).unwrap();
 				} else {
-					await addUser({ token, data }).unwrap();
+					await addUser({ data }).unwrap();
 				}
 				onSuccess();
 				if (!isEditMode) {

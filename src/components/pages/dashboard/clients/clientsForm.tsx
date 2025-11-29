@@ -78,12 +78,11 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, on
 		data: clientData,
 		isLoading: isClientLoading,
 		error: clientError,
-	} = useGetClientQuery({ token, id: id! }, { skip: !token || !isEditMode });
+	} = useGetClientQuery({ id: id! }, { skip: !token || !isEditMode });
 
-	const { data: generatedCodeData, isLoading: isCodeLoading } = useGetCodeClientQuery(
-		{ token },
-		{ skip: !token || isEditMode },
-	);
+	const { data: generatedCodeData, isLoading: isCodeLoading } = useGetCodeClientQuery(undefined, {
+		skip: !token || isEditMode,
+	});
 
 	// Mutations
 	const [addClient, { isLoading: isAddLoading, error: addError }] = useAddClientMutation();
@@ -92,7 +91,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, on
 	// Cities
 	const rawCities = useAppSelector(getCitiesState);
 	const normalizedCities: Array<CitiesClass> = Array.isArray(rawCities) ? rawCities : Object.values(rawCities ?? {});
-	const { isLoading: isCitiesLoading } = useGetCitiesListQuery(token, { skip: !token });
+	const { isLoading: isCitiesLoading } = useGetCitiesListQuery(undefined, { skip: !token });
 	const [addCity, { isLoading: isAddCityLoading }] = useAddCityMutation();
 
 	// Local state
@@ -153,9 +152,9 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, on
 							};
 
 				if (isEditMode) {
-					await updateClient({ token, data: payload, id: id! }).unwrap();
+					await updateClient({ data: payload, id: id! }).unwrap();
 				} else {
-					await addClient({ token, data: payload }).unwrap();
+					await addClient({ data: payload }).unwrap();
 				}
 
 				onSuccess();
@@ -648,7 +647,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, on
 									return;
 								}
 								try {
-									await addCity({ token, data: { nom: newCityName.trim() } }).unwrap();
+									await addCity({ data: { nom: newCityName.trim() } }).unwrap();
 									setOpenCityModal(false);
 									setNewCityName('');
 									setCityError(null);

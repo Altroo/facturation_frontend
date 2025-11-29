@@ -82,11 +82,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		data: companyData,
 		isLoading: isCompanyLoading,
 		error: companyError,
-	} = useGetCompanyQuery({ token, id: id! }, { skip: !token || !isEditMode });
+	} = useGetCompanyQuery({ id: id! }, { skip: !token || !isEditMode });
 	const [addCompany, { isLoading: isAddLoading, error: addError }] = useAddCompanyMutation();
 	const [updateCompany, { isLoading: isUpdateLoading, error: updateError }] = useEditCompanyMutation();
 	const { data: rawUsersData, isLoading: isUsersLoading } = useGetUsersListQuery(
-		{ token, with_pagination: false },
+		{ with_pagination: false },
 		{ skip: !token },
 	);
 	// enforce the type of the users data
@@ -160,9 +160,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			setIsPending(true);
 			try {
 				if (isEditMode) {
-					await updateCompany({ token, data, id }).unwrap();
+					await updateCompany({ data, id }).unwrap();
 				} else {
-					await addCompany({ token, data }).unwrap();
+					await addCompany({ data }).unwrap();
 				}
 				onSuccess();
 				if (!isEditMode) {

@@ -38,7 +38,6 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 		refetch,
 	} = useGetUsersListQuery(
 		{
-			token,
 			with_pagination: true,
 			page: paginationModel.page + 1,
 			pageSize: paginationModel.pageSize,
@@ -56,7 +55,7 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 
 	const deleteHandler = async () => {
 		try {
-			await deleteRecord({ token, id: selectedUserId! }).unwrap();
+			await deleteRecord({ id: selectedUserId! }).unwrap();
 			// success toast
 			setToastMessage('Utilisateur supprimée avec succès');
 			setToastType('success');

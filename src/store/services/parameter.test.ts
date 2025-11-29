@@ -19,26 +19,27 @@ describe('citiesApi', () => {
 	const storeRef = setupApiStore(citiesApi);
 
 	it('getCitiesList query should complete without error', async () => {
-		const result = await storeRef.store.dispatch(citiesApi.endpoints.getCitiesList.initiate('test-token'));
+		const result = await storeRef.store.dispatch(citiesApi.endpoints.getCitiesList.initiate());
 		expect('error' in result).toBe(false);
 	});
 
 	it('getCity query should complete without error', async () => {
-		const result = await storeRef.store.dispatch(citiesApi.endpoints.getCity.initiate({ token: 'test-token', id: 1 }));
+		const result = await storeRef.store.dispatch(
+			citiesApi.endpoints.getCity.initiate({
+				id: 1,
+			}),
+		);
 		expect('error' in result).toBe(false);
 	});
 
 	it('deleteCity mutation should complete without error', async () => {
-		const result = await storeRef.store.dispatch(
-			citiesApi.endpoints.deleteCity.initiate({ token: 'test-token', id: 2 }),
-		);
+		const result = await storeRef.store.dispatch(citiesApi.endpoints.deleteCity.initiate({ id: 2 }));
 		expect('error' in result).toBe(false);
 	});
 
 	it('editCity mutation should complete without error', async () => {
 		const result = await storeRef.store.dispatch(
 			citiesApi.endpoints.editCity.initiate({
-				token: 'test-token',
 				id: 3,
 				data: { nom: 'Updated City' },
 			}),
@@ -49,7 +50,6 @@ describe('citiesApi', () => {
 	it('addCity mutation should complete without error', async () => {
 		const result = await storeRef.store.dispatch(
 			citiesApi.endpoints.addCity.initiate({
-				token: 'test-token',
 				data: { nom: 'New City' },
 			}),
 		);
@@ -61,28 +61,23 @@ describe('marqueApi', () => {
 	const storeRef = setupApiStore(marqueApi);
 
 	it('getMarqueList query should complete without error', async () => {
-		const result = await storeRef.store.dispatch(marqueApi.endpoints.getMarqueList.initiate({ token: 'test-token' }));
+		const result = await storeRef.store.dispatch(marqueApi.endpoints.getMarqueList.initiate());
 		expect('error' in result).toBe(false);
 	});
 
 	it('getMarque query should complete without error', async () => {
-		const result = await storeRef.store.dispatch(
-			marqueApi.endpoints.getMarque.initiate({ token: 'test-token', id: 1 }),
-		);
+		const result = await storeRef.store.dispatch(marqueApi.endpoints.getMarque.initiate({ id: 1 }));
 		expect('error' in result).toBe(false);
 	});
 
 	it('deleteMarque mutation should complete without error', async () => {
-		const result = await storeRef.store.dispatch(
-			marqueApi.endpoints.deleteMarque.initiate({ token: 'test-token', id: 2 }),
-		);
+		const result = await storeRef.store.dispatch(marqueApi.endpoints.deleteMarque.initiate({ id: 2 }));
 		expect('error' in result).toBe(false);
 	});
 
 	it('editMarque mutation should complete without error', async () => {
 		const result = await storeRef.store.dispatch(
 			marqueApi.endpoints.editMarque.initiate({
-				token: 'test-token',
 				id: 3,
 				data: { nom: 'Updated Marque' },
 			}),
@@ -93,7 +88,6 @@ describe('marqueApi', () => {
 	it('addMarque mutation should complete without error', async () => {
 		const result = await storeRef.store.dispatch(
 			marqueApi.endpoints.addMarque.initiate({
-				token: 'test-token',
 				data: { nom: 'New Marque' },
 			}),
 		);
@@ -105,30 +99,23 @@ describe('categorieApi', () => {
 	const storeRef = setupApiStore(categorieApi);
 
 	it('getCategorieList query should complete without error', async () => {
-		const result = await storeRef.store.dispatch(
-			categorieApi.endpoints.getCategorieList.initiate({ token: 'test-token' }),
-		);
+		const result = await storeRef.store.dispatch(categorieApi.endpoints.getCategorieList.initiate());
 		expect('error' in result).toBe(false);
 	});
 
 	it('getCategorie query should complete without error', async () => {
-		const result = await storeRef.store.dispatch(
-			categorieApi.endpoints.getCategorie.initiate({ token: 'test-token', id: 1 }),
-		);
+		const result = await storeRef.store.dispatch(categorieApi.endpoints.getCategorie.initiate({ id: 1 }));
 		expect('error' in result).toBe(false);
 	});
 
 	it('deleteCategorie mutation should complete without error', async () => {
-		const result = await storeRef.store.dispatch(
-			categorieApi.endpoints.deleteCategorie.initiate({ token: 'test-token', id: 2 }),
-		);
+		const result = await storeRef.store.dispatch(categorieApi.endpoints.deleteCategorie.initiate({ id: 2 }));
 		expect('error' in result).toBe(false);
 	});
 
 	it('editCategorie mutation should complete without error', async () => {
 		const result = await storeRef.store.dispatch(
 			categorieApi.endpoints.editCategorie.initiate({
-				token: 'test-token',
 				id: 3,
 				data: { nom: 'Updated Categorie' },
 			}),
@@ -139,7 +126,6 @@ describe('categorieApi', () => {
 	it('addCategorie mutation should complete without error', async () => {
 		const result = await storeRef.store.dispatch(
 			categorieApi.endpoints.addCategorie.initiate({
-				token: 'test-token',
 				data: { nom: 'New Categorie' },
 			}),
 		);
@@ -151,26 +137,23 @@ describe('uniteApi', () => {
 	const storeRef = setupApiStore(uniteApi);
 
 	it('getUniteList query should complete without error', async () => {
-		const result = await storeRef.store.dispatch(uniteApi.endpoints.getUniteList.initiate({ token: 'test-token' }));
+		const result = await storeRef.store.dispatch(uniteApi.endpoints.getUniteList.initiate());
 		expect('error' in result).toBe(false);
 	});
 
 	it('getUnite query should complete without error', async () => {
-		const result = await storeRef.store.dispatch(uniteApi.endpoints.getUnite.initiate({ token: 'test-token', id: 1 }));
+		const result = await storeRef.store.dispatch(uniteApi.endpoints.getUnite.initiate({ id: 1 }));
 		expect('error' in result).toBe(false);
 	});
 
 	it('deleteUnite mutation should complete without error', async () => {
-		const result = await storeRef.store.dispatch(
-			uniteApi.endpoints.deleteUnite.initiate({ token: 'test-token', id: 2 }),
-		);
+		const result = await storeRef.store.dispatch(uniteApi.endpoints.deleteUnite.initiate({ id: 2 }));
 		expect('error' in result).toBe(false);
 	});
 
 	it('editUnite mutation should complete without error', async () => {
 		const result = await storeRef.store.dispatch(
 			uniteApi.endpoints.editUnite.initiate({
-				token: 'test-token',
 				id: 3,
 				data: { nom: 'Updated Unite' },
 			}),
@@ -181,7 +164,6 @@ describe('uniteApi', () => {
 	it('addUnite mutation should complete without error', async () => {
 		const result = await storeRef.store.dispatch(
 			uniteApi.endpoints.addUnite.initiate({
-				token: 'test-token',
 				data: { nom: 'New Unite' },
 			}),
 		);
@@ -193,30 +175,23 @@ describe('emplacementApi', () => {
 	const storeRef = setupApiStore(emplacementApi);
 
 	it('getEmplacementList query should complete without error', async () => {
-		const result = await storeRef.store.dispatch(
-			emplacementApi.endpoints.getEmplacementList.initiate({ token: 'test-token' }),
-		);
+		const result = await storeRef.store.dispatch(emplacementApi.endpoints.getEmplacementList.initiate());
 		expect('error' in result).toBe(false);
 	});
 
 	it('getEmplacement query should complete without error', async () => {
-		const result = await storeRef.store.dispatch(
-			emplacementApi.endpoints.getEmplacement.initiate({ token: 'test-token', id: 1 }),
-		);
+		const result = await storeRef.store.dispatch(emplacementApi.endpoints.getEmplacement.initiate({ id: 1 }));
 		expect('error' in result).toBe(false);
 	});
 
 	it('deleteEmplacement mutation should complete without error', async () => {
-		const result = await storeRef.store.dispatch(
-			emplacementApi.endpoints.deleteEmplacement.initiate({ token: 'test-token', id: 2 }),
-		);
+		const result = await storeRef.store.dispatch(emplacementApi.endpoints.deleteEmplacement.initiate({ id: 2 }));
 		expect('error' in result).toBe(false);
 	});
 
 	it('editEmplacement mutation should complete without error', async () => {
 		const result = await storeRef.store.dispatch(
 			emplacementApi.endpoints.editEmplacement.initiate({
-				token: 'test-token',
 				id: 3,
 				data: { nom: 'Updated Emplacement' },
 			}),
@@ -227,7 +202,6 @@ describe('emplacementApi', () => {
 	it('addEmplacement mutation should complete without error', async () => {
 		const result = await storeRef.store.dispatch(
 			emplacementApi.endpoints.addEmplacement.initiate({
-				token: 'test-token',
 				data: { nom: 'New Emplacement' },
 			}),
 		);

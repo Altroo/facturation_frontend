@@ -19,7 +19,6 @@ describe('clientApi', () => {
 	it('getClientsList query with pagination should complete without error', async () => {
 		const result = await storeRef.store.dispatch(
 			clientApi.endpoints.getClientsList.initiate({
-				token: 'test-token',
 				company_id: 123,
 				with_pagination: true,
 				page: 1,
@@ -32,28 +31,23 @@ describe('clientApi', () => {
 	});
 
 	it('getClient query should complete without error', async () => {
-		const result = await storeRef.store.dispatch(
-			clientApi.endpoints.getClient.initiate({ token: 'test-token', id: 123 }),
-		);
+		const result = await storeRef.store.dispatch(clientApi.endpoints.getClient.initiate({ id: 123 }));
 		expect('error' in result).toBe(false);
 	});
 
 	it('getCodeClient query should complete without error', async () => {
-		const result = await storeRef.store.dispatch(clientApi.endpoints.getCodeClient.initiate({ token: 'test-token' }));
+		const result = await storeRef.store.dispatch(clientApi.endpoints.getCodeClient.initiate());
 		expect('error' in result).toBe(false);
 	});
 
 	it('deleteClient mutation should complete without error', async () => {
-		const result = await storeRef.store.dispatch(
-			clientApi.endpoints.deleteClient.initiate({ token: 'test-token', id: 456 }),
-		);
+		const result = await storeRef.store.dispatch(clientApi.endpoints.deleteClient.initiate({ id: 456 }));
 		expect('error' in result).toBe(false);
 	});
 
 	it('editClient mutation should complete without error', async () => {
 		const result = await storeRef.store.dispatch(
 			clientApi.endpoints.editClient.initiate({
-				token: 'test-token',
 				id: 789,
 				data: { nom: 'Updated Client' },
 			}),
@@ -64,7 +58,6 @@ describe('clientApi', () => {
 	it('addClient mutation should complete without error', async () => {
 		const result = await storeRef.store.dispatch(
 			clientApi.endpoints.addClient.initiate({
-				token: 'test-token',
 				data: { nom: 'New Client' },
 			}),
 		);
@@ -74,7 +67,6 @@ describe('clientApi', () => {
 	it('patchArchive mutation should complete without error', async () => {
 		const result = await storeRef.store.dispatch(
 			clientApi.endpoints.patchArchive.initiate({
-				token: 'test-token',
 				id: 321,
 				data: { archived: true },
 			}),

@@ -27,13 +27,13 @@ export const InitContextProvider: React.FC<PropsWithChildren<Record<string, unkn
 	// Use ref to track if tokens have been initialized
 	const tokensInitializedRef = useRef(false);
 	// get user profile
-	const { data: user } = useGetProfilQuery(accessToken, { skip: skip });
+	const { data: user } = useGetProfilQuery(undefined, { skip: skip });
 	// get groupes
-	const { data: groupes } = useGetGroupsQuery(accessToken, { skip: skip });
+	const { data: groupes } = useGetGroupsQuery(undefined, { skip: skip });
 	// get cities
-	const { data: cities } = useGetCitiesListQuery(accessToken, { skip: skip });
+	const { data: cities } = useGetCitiesListQuery(undefined, { skip: skip });
 	// get user companies
-	const { data: companies } = useGetUserCompaniesQuery(accessToken, { skip: skip });
+	const { data: companies } = useGetUserCompaniesQuery(undefined, { skip: skip });
 
 	// Initialize tokens once when session becomes authenticated
 	useEffect(() => {

@@ -115,7 +115,7 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-	const { data: client, isLoading, error } = useGetClientQuery({ token, id }, { skip: !token });
+	const { data: client, isLoading, error } = useGetClientQuery({ id }, { skip: !token });
 	const axiosError = useMemo(
 		() => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),
 		[error],

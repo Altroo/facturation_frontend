@@ -17,50 +17,39 @@ export const citiesApi = createApi({
 		),
 	),
 	endpoints: (builder) => ({
-		getCitiesList: builder.query<Array<CitiesClass>, string | undefined>({
-			query: (token) => ({
+		getCitiesList: builder.query<Array<CitiesClass>, void>({
+			query: () => ({
 				url: process.env.NEXT_PUBLIC_PARAMETER_VILLE as string,
 				method: 'GET',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 			providesTags: ['Cities'],
 		}),
-		getCity: builder.query<CitiesClass, { token: string | undefined; id: number }>({
-			query: ({ token, id }) => ({
+		getCity: builder.query<CitiesClass, { id: number }>({
+			query: ({ id }) => ({
 				url: `${process.env.NEXT_PUBLIC_PARAMETER_VILLE}/${id}/`,
 				method: 'GET',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 			providesTags: ['Cities'],
 		}),
-		deleteCity: builder.mutation<void | ApiErrorResponseType, { token: string | undefined; id: number }>({
-			query: ({ token, id }) => ({
+		deleteCity: builder.mutation<void | ApiErrorResponseType, { id: number }>({
+			query: ({ id }) => ({
 				url: `${process.env.NEXT_PUBLIC_PARAMETER_VILLE}/${id}/`,
 				method: 'DELETE',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 			invalidatesTags: ['Cities'],
 		}),
-		editCity: builder.mutation<
-			SuccessResponseType<CitiesClass>,
-			{ token: string | undefined; id: number; data: Partial<CitiesClass> }
-		>({
-			query: ({ token, id, data }) => ({
+		editCity: builder.mutation<SuccessResponseType<CitiesClass>, { id: number; data: Partial<CitiesClass> }>({
+			query: ({ id, data }) => ({
 				url: `${process.env.NEXT_PUBLIC_PARAMETER_VILLE}/${id}/`,
 				method: 'PUT',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 				data,
 			}),
 			invalidatesTags: ['Cities'],
 		}),
-		addCity: builder.mutation<
-			SuccessResponseType<CitiesClass>,
-			{ token: string | undefined; data: Partial<CitiesClass> }
-		>({
-			query: ({ token, data }) => ({
+		addCity: builder.mutation<SuccessResponseType<CitiesClass>, { data: Partial<CitiesClass> }>({
+			query: ({ data }) => ({
 				url: `${process.env.NEXT_PUBLIC_PARAMETER_VILLE}/`,
 				method: 'POST',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 				data,
 			}),
 			invalidatesTags: ['Cities'],
@@ -78,50 +67,39 @@ export const marqueApi = createApi({
 		),
 	),
 	endpoints: (builder) => ({
-		getMarqueList: builder.query<Array<MarqueClass>, { token: string | undefined }>({
-			query: ({ token }) => ({
+		getMarqueList: builder.query<Array<MarqueClass>, void>({
+			query: () => ({
 				url: process.env.NEXT_PUBLIC_PARAMETER_MARQUE as string,
 				method: 'GET',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 			providesTags: ['Marque'],
 		}),
-		getMarque: builder.query<MarqueClass, { token: string | undefined; id: number }>({
-			query: ({ token, id }) => ({
+		getMarque: builder.query<MarqueClass, { id: number }>({
+			query: ({ id }) => ({
 				url: `${process.env.NEXT_PUBLIC_PARAMETER_MARQUE}/${id}/`,
 				method: 'GET',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 			providesTags: ['Marque'],
 		}),
-		deleteMarque: builder.mutation<void | ApiErrorResponseType, { token: string | undefined; id: number }>({
-			query: ({ token, id }) => ({
+		deleteMarque: builder.mutation<void | ApiErrorResponseType, { id: number }>({
+			query: ({ id }) => ({
 				url: `${process.env.NEXT_PUBLIC_PARAMETER_MARQUE}/${id}/`,
 				method: 'DELETE',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 			invalidatesTags: ['Marque'],
 		}),
-		editMarque: builder.mutation<
-			SuccessResponseType<MarqueClass>,
-			{ token: string | undefined; id: number; data: Partial<MarqueClass> }
-		>({
-			query: ({ token, id, data }) => ({
+		editMarque: builder.mutation<SuccessResponseType<MarqueClass>, { id: number; data: Partial<MarqueClass> }>({
+			query: ({ id, data }) => ({
 				url: `${process.env.NEXT_PUBLIC_PARAMETER_MARQUE}/${id}/`,
 				method: 'PUT',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 				data,
 			}),
 			invalidatesTags: ['Marque'],
 		}),
-		addMarque: builder.mutation<
-			SuccessResponseType<MarqueClass>,
-			{ token: string | undefined; data: Partial<MarqueClass> }
-		>({
-			query: ({ token, data }) => ({
+		addMarque: builder.mutation<SuccessResponseType<MarqueClass>, { data: Partial<MarqueClass> }>({
+			query: ({ data }) => ({
 				url: `${process.env.NEXT_PUBLIC_PARAMETER_MARQUE}/`,
 				method: 'POST',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 				data,
 			}),
 			invalidatesTags: ['Marque'],
@@ -139,50 +117,41 @@ export const categorieApi = createApi({
 		),
 	),
 	endpoints: (builder) => ({
-		getCategorieList: builder.query<Array<CategorieClass>, { token: string | undefined }>({
-			query: ({ token }) => ({
+		getCategorieList: builder.query<Array<CategorieClass>, void>({
+			query: () => ({
 				url: process.env.NEXT_PUBLIC_PARAMETER_CATEGORIE as string,
 				method: 'GET',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 			providesTags: ['Categorie'],
 		}),
-		getCategorie: builder.query<CategorieClass, { token: string | undefined; id: number }>({
-			query: ({ token, id }) => ({
+		getCategorie: builder.query<CategorieClass, { id: number }>({
+			query: ({ id }) => ({
 				url: `${process.env.NEXT_PUBLIC_PARAMETER_CATEGORIE}/${id}/`,
 				method: 'GET',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 			providesTags: ['Categorie'],
 		}),
-		deleteCategorie: builder.mutation<void | ApiErrorResponseType, { token: string | undefined; id: number }>({
-			query: ({ token, id }) => ({
+		deleteCategorie: builder.mutation<void | ApiErrorResponseType, { id: number }>({
+			query: ({ id }) => ({
 				url: `${process.env.NEXT_PUBLIC_PARAMETER_CATEGORIE}/${id}/`,
 				method: 'DELETE',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 			invalidatesTags: ['Categorie'],
 		}),
-		editCategorie: builder.mutation<
-			SuccessResponseType<CategorieClass>,
-			{ token: string | undefined; id: number; data: Partial<CategorieClass> }
-		>({
-			query: ({ token, id, data }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_CATEGORIE}/${id}/`,
-				method: 'PUT',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-				data,
-			}),
-			invalidatesTags: ['Categorie'],
-		}),
-		addCategorie: builder.mutation<
-			SuccessResponseType<CategorieClass>,
-			{ token: string | undefined; data: Partial<CategorieClass> }
-		>({
-			query: ({ token, data }) => ({
+		editCategorie: builder.mutation<SuccessResponseType<CategorieClass>, { id: number; data: Partial<CategorieClass> }>(
+			{
+				query: ({ id, data }) => ({
+					url: `${process.env.NEXT_PUBLIC_PARAMETER_CATEGORIE}/${id}/`,
+					method: 'PUT',
+					data,
+				}),
+				invalidatesTags: ['Categorie'],
+			},
+		),
+		addCategorie: builder.mutation<SuccessResponseType<CategorieClass>, { data: Partial<CategorieClass> }>({
+			query: ({ data }) => ({
 				url: `${process.env.NEXT_PUBLIC_PARAMETER_CATEGORIE}/`,
 				method: 'POST',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 				data,
 			}),
 			invalidatesTags: ['Categorie'],
@@ -200,50 +169,39 @@ export const uniteApi = createApi({
 		),
 	),
 	endpoints: (builder) => ({
-		getUniteList: builder.query<Array<UniteClass>, { token: string | undefined }>({
-			query: ({ token }) => ({
+		getUniteList: builder.query<Array<UniteClass>, void>({
+			query: () => ({
 				url: process.env.NEXT_PUBLIC_PARAMETER_UNITE as string,
 				method: 'GET',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 			providesTags: ['Unite'],
 		}),
-		getUnite: builder.query<UniteClass, { token: string | undefined; id: number }>({
-			query: ({ token, id }) => ({
+		getUnite: builder.query<UniteClass, { id: number }>({
+			query: ({ id }) => ({
 				url: `${process.env.NEXT_PUBLIC_PARAMETER_UNITE}/${id}/`,
 				method: 'GET',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 			providesTags: ['Unite'],
 		}),
-		deleteUnite: builder.mutation<void | ApiErrorResponseType, { token: string | undefined; id: number }>({
-			query: ({ token, id }) => ({
+		deleteUnite: builder.mutation<void | ApiErrorResponseType, { id: number }>({
+			query: ({ id }) => ({
 				url: `${process.env.NEXT_PUBLIC_PARAMETER_UNITE}/${id}/`,
 				method: 'DELETE',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 			invalidatesTags: ['Unite'],
 		}),
-		editUnite: builder.mutation<
-			SuccessResponseType<UniteClass>,
-			{ token: string | undefined; id: number; data: Partial<UniteClass> }
-		>({
-			query: ({ token, id, data }) => ({
+		editUnite: builder.mutation<SuccessResponseType<UniteClass>, { id: number; data: Partial<UniteClass> }>({
+			query: ({ id, data }) => ({
 				url: `${process.env.NEXT_PUBLIC_PARAMETER_UNITE}/${id}/`,
 				method: 'PUT',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 				data,
 			}),
 			invalidatesTags: ['Unite'],
 		}),
-		addUnite: builder.mutation<
-			SuccessResponseType<UniteClass>,
-			{ token: string | undefined; data: Partial<UniteClass> }
-		>({
-			query: ({ token, data }) => ({
+		addUnite: builder.mutation<SuccessResponseType<UniteClass>, { data: Partial<UniteClass> }>({
+			query: ({ data }) => ({
 				url: `${process.env.NEXT_PUBLIC_PARAMETER_UNITE}/`,
 				method: 'POST',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 				data,
 			}),
 			invalidatesTags: ['Unite'],
@@ -261,50 +219,42 @@ export const emplacementApi = createApi({
 		),
 	),
 	endpoints: (builder) => ({
-		getEmplacementList: builder.query<Array<EmplacementClass>, { token: string | undefined }>({
-			query: ({ token }) => ({
+		getEmplacementList: builder.query<Array<EmplacementClass>, void>({
+			query: () => ({
 				url: process.env.NEXT_PUBLIC_PARAMETER_EMPLACEMENT as string,
 				method: 'GET',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 			providesTags: ['Emplacement'],
 		}),
-		getEmplacement: builder.query<EmplacementClass, { token: string | undefined; id: number }>({
-			query: ({ token, id }) => ({
+		getEmplacement: builder.query<EmplacementClass, { id: number }>({
+			query: ({ id }) => ({
 				url: `${process.env.NEXT_PUBLIC_PARAMETER_EMPLACEMENT}/${id}/`,
 				method: 'GET',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 			providesTags: ['Emplacement'],
 		}),
-		deleteEmplacement: builder.mutation<void | ApiErrorResponseType, { token: string | undefined; id: number }>({
-			query: ({ token, id }) => ({
+		deleteEmplacement: builder.mutation<void | ApiErrorResponseType, { id: number }>({
+			query: ({ id }) => ({
 				url: `${process.env.NEXT_PUBLIC_PARAMETER_EMPLACEMENT}/${id}/`,
 				method: 'DELETE',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 			invalidatesTags: ['Emplacement'],
 		}),
 		editEmplacement: builder.mutation<
 			SuccessResponseType<EmplacementClass>,
-			{ token: string | undefined; id: number; data: Partial<EmplacementClass> }
+			{ id: number; data: Partial<EmplacementClass> }
 		>({
-			query: ({ token, id, data }) => ({
+			query: ({ id, data }) => ({
 				url: `${process.env.NEXT_PUBLIC_PARAMETER_EMPLACEMENT}/${id}/`,
 				method: 'PUT',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 				data,
 			}),
 			invalidatesTags: ['Emplacement'],
 		}),
-		addEmplacement: builder.mutation<
-			SuccessResponseType<EmplacementClass>,
-			{ token: string | undefined; data: Partial<EmplacementClass> }
-		>({
-			query: ({ token, data }) => ({
+		addEmplacement: builder.mutation<SuccessResponseType<EmplacementClass>, { data: Partial<EmplacementClass> }>({
+			query: ({ data }) => ({
 				url: `${process.env.NEXT_PUBLIC_PARAMETER_EMPLACEMENT}/`,
 				method: 'POST',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 				data,
 			}),
 			invalidatesTags: ['Emplacement'],

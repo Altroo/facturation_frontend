@@ -20,62 +20,50 @@ export const companyApi = createApi({
 	endpoints: (builder) => ({
 		getCompaniesList: builder.query<
 			Array<Partial<CompanyClass>> | PaginationResponseType<CompanyClass>,
-			{ token: string | undefined; with_pagination?: boolean; page?: number; pageSize?: number; search?: string }
+			{ with_pagination?: boolean; page?: number; pageSize?: number; search?: string }
 		>({
-			query: ({ token, with_pagination, page, pageSize, search }) => ({
+			query: ({ with_pagination, page, pageSize, search }) => ({
 				url: with_pagination
 					? `${process.env.NEXT_PUBLIC_COMPANY_LIST}?search=${search}&page=${page}&page_size=${pageSize}`
 					: (process.env.NEXT_PUBLIC_COMPANY_LIST as string),
 				method: 'GET',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 				params: with_pagination ? { pagination: true } : undefined,
 			}),
 			providesTags: ['Company'],
 		}),
-		getUserCompanies: builder.query<Array<CompaniesUserCompaniesType>, string | undefined>({
-			query: (token) => ({
+		getUserCompanies: builder.query<Array<CompaniesUserCompaniesType>, void>({
+			query: () => ({
 				url: process.env.NEXT_PUBLIC_USER_COMPANIES_LIST as string,
 				method: 'GET',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 			providesTags: ['Company'],
 		}),
-		getCompany: builder.query<CompanyClass, { token: string | undefined; id: number }>({
-			query: ({ token, id }) => ({
+		getCompany: builder.query<CompanyClass, { id: number }>({
+			query: ({ id }) => ({
 				url: `${process.env.NEXT_PUBLIC_COMPANY_ROOT}/${id}/`,
 				method: 'GET',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 			providesTags: ['Company'],
 		}),
-		deleteCompany: builder.mutation<void | ApiErrorResponseType, { token: string | undefined; id: number }>({
-			query: ({ token, id }) => ({
+		deleteCompany: builder.mutation<void | ApiErrorResponseType, { id: number }>({
+			query: ({ id }) => ({
 				url: `${process.env.NEXT_PUBLIC_COMPANY_ROOT}/${id}/`,
 				method: 'DELETE',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 			}),
 			invalidatesTags: ['Company'],
 		}),
-		editCompany: builder.mutation<
-			SuccessResponseType<CompanyClass>,
-			{ token: string | undefined; id: number; data: Partial<CompanyClass> }
-		>({
-			query: ({ token, id, data }) => ({
+		editCompany: builder.mutation<SuccessResponseType<CompanyClass>, { id: number; data: Partial<CompanyClass> }>({
+			query: ({ id, data }) => ({
 				url: `${process.env.NEXT_PUBLIC_COMPANY_ROOT}/${id}/`,
 				method: 'PUT',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 				data,
 			}),
 			invalidatesTags: ['Company'],
 		}),
-		addCompany: builder.mutation<
-			SuccessResponseType<CompanyClass>,
-			{ token: string | undefined; data: Partial<CompanyClass> }
-		>({
-			query: ({ token, data }) => ({
+		addCompany: builder.mutation<SuccessResponseType<CompanyClass>, { data: Partial<CompanyClass> }>({
+			query: ({ data }) => ({
 				url: `${process.env.NEXT_PUBLIC_COMPANY_ROOT}/`,
 				method: 'POST',
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 				data,
 			}),
 			invalidatesTags: ['Company'],
