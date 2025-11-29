@@ -39,9 +39,7 @@ describe('companyApi endpoints', () => {
 	});
 
 	it('getUserCompanies query should return mocked data', async () => {
-		const result = await storeRef.store.dispatch(
-			companyApi.endpoints.getUserCompanies.initiate({ token: 'test-token' }),
-		);
+		const result = await storeRef.store.dispatch(companyApi.endpoints.getUserCompanies.initiate('test-token'));
 		expect(result.error).toBeUndefined();
 		expect(result.data).toEqual({ ok: true });
 	});

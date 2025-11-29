@@ -344,7 +344,7 @@ interface Props extends SessionProps {
 const ClientsListClient: React.FC<Props> = ({ session, archived }) => {
 	const token = getAccessTokenFromSession(session);
 	const router = useRouter();
-	const { data: companiesData, isLoading } = useGetUserCompaniesQuery({ token }, { skip: !token });
+	const { data: companiesData, isLoading } = useGetUserCompaniesQuery(token, { skip: !token });
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const companies = useMemo(() => companiesData ?? [], [companiesData]);
 	const selectedCompany = useMemo(() => companies?.[selectedIndex] ?? null, [companies, selectedIndex]);

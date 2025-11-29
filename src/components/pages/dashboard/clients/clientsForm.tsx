@@ -92,7 +92,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, on
 	// Cities
 	const rawCities = useAppSelector(getCitiesState);
 	const normalizedCities: Array<CitiesClass> = Array.isArray(rawCities) ? rawCities : Object.values(rawCities ?? {});
-	const { isLoading: isCitiesLoading } = useGetCitiesListQuery({ token }, { skip: !token });
+	const { isLoading: isCitiesLoading } = useGetCitiesListQuery(token, { skip: !token });
 	const [addCity, { isLoading: isAddCityLoading }] = useAddCityMutation();
 
 	// Local state

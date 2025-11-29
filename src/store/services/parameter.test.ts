@@ -19,7 +19,7 @@ describe('citiesApi', () => {
 	const storeRef = setupApiStore(citiesApi);
 
 	it('getCitiesList query should complete without error', async () => {
-		const result = await storeRef.store.dispatch(citiesApi.endpoints.getCitiesList.initiate({ token: 'test-token' }));
+		const result = await storeRef.store.dispatch(citiesApi.endpoints.getCitiesList.initiate('test-token'));
 		expect('error' in result).toBe(false);
 	});
 
