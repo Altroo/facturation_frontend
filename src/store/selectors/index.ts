@@ -1,9 +1,10 @@
 import type { RootState } from '@/store/store';
 import { UserClass, CitiesClass } from '@/models/Classes';
 import { CompaniesUserCompaniesType } from '@/types/companyTypes';
+import { InitStateToken } from '@/types/_initTypes';
 
 // _Init
-export const getInitStateToken = (state: RootState) => state._init.initStateToken;
+export const getInitStateToken = (state: RootState): InitStateToken => state._init.initStateToken;
 export const getAccessToken = (state: RootState) => state._init.initStateToken.access;
 
 // Account

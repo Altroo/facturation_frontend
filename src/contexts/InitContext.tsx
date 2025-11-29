@@ -19,28 +19,21 @@ const InitContext = createContext<InitStateInterface<InitStateToken>>({
 });
 
 export const InitContextProvider: React.FC<PropsWithChildren<Record<string, unknown>>> = (props) => {
-	const dispatch = useAppDispatch();
-	const token = useAppSelector(getInitStateToken);
 	const { data: session, status } = useSession();
-	const skip = !token || status !== 'authenticated';
+	const dispatch = useAppDispatch();
+	const initState = useAppSelector(getInitStateToken);
+	const accessToken = initState?.access ?? undefined;
+	const skip = !accessToken || status !== 'authenticated';
 	// Use ref to track if tokens have been initialized
 	const tokensInitializedRef = useRef(false);
 	// get user profile
-	const { data: user } = useGetProfilQuery(token, {
-		skip: skip,
-	});
+	const { data: user } = useGetProfilQuery(accessToken, { skip: skip });
 	// get groupes
-	const { data: groupes } = useGetGroupsQuery(token, {
-		skip: skip,
-	});
+	const { data: groupes } = useGetGroupsQuery(accessToken, { skip: skip });
 	// get cities
-	const { data: cities } = useGetCitiesListQuery(token, {
-		skip: skip,
-	});
+	const { data: cities } = useGetCitiesListQuery(accessToken, { skip: skip });
 	// get user companies
-	const { data: companies } = useGetUserCompaniesQuery(token, {
-		skip: skip,
-	});
+	const { data: companies } = useGetUserCompaniesQuery(accessToken, { skip: skip });
 
 	// Initialize tokens once when session becomes authenticated
 	useEffect(() => {
@@ -78,7 +71,7 @@ export const InitContextProvider: React.FC<PropsWithChildren<Record<string, unkn
 	// CRITICAL: Always render children to avoid hydration mismatch
 	// The context value will be available even if tokens aren't loaded yet
 	const contextValue: InitStateInterface<InitStateToken> = {
-		initStateToken: token || emptyInitStateToken,
+		initStateToken: initState || emptyInitStateToken,
 	};
 
 	return <InitContext.Provider value={contextValue}>{props.children}</InitContext.Provider>;

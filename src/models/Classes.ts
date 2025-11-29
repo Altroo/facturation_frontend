@@ -85,3 +85,31 @@ export class CitiesClass {
 		public nom: string,
 	) {}
 }
+
+export class MarqueClass {
+	constructor(
+		public id: number,
+		public nom: string,
+	) {}
+}
+
+export class CategorieClass {
+	constructor(
+		public id: number,
+		public nom: string,
+	) {}
+}
+
+export class UniteClass {
+	constructor(
+		public id: number,
+		public nom: string,
+	) {}
+}
+
+export class EmplacementClass {
+	constructor(
+		public id: number,
+		public nom: string,
+	) {}
+}

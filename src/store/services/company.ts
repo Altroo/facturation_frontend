@@ -32,8 +32,8 @@ export const companyApi = createApi({
 			}),
 			providesTags: ['Company'],
 		}),
-		getUserCompanies: builder.query<Array<CompaniesUserCompaniesType>, { token: string | undefined }>({
-			query: ({ token }) => ({
+		getUserCompanies: builder.query<Array<CompaniesUserCompaniesType>, string | undefined>({
+			query: (token) => ({
 				url: process.env.NEXT_PUBLIC_USER_COMPANIES_LIST as string,
 				method: 'GET',
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
