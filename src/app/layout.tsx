@@ -9,6 +9,7 @@ import { InitContextProvider } from '@/contexts/InitContext';
 import { auth } from '@/auth';
 import type { Viewport } from 'next';
 import ThemeProvider from '@/providers/themeProvider';
+import { InitEffects } from '@/contexts/initEffects';
 
 export const metadata: Metadata = {
 	title: 'Facturation - Casa Di Lusso',
@@ -66,6 +67,7 @@ const RootLayout: React.FC<EntryPointProps> = async (props) => {
 				<SessionProvider session={session}>
 					<StoreProvider>
 						<InitContextProvider>
+							<InitEffects />
 							<AppRouterCacheProvider>
 								<ThemeProvider>{props.children}</ThemeProvider>
 							</AppRouterCacheProvider>

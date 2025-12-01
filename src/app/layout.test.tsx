@@ -40,6 +40,16 @@ jest.mock('@/contexts/InitContext', () => ({
 	},
 }));
 
+// ✅ New mock for InitEffects
+jest.mock('@/contexts/initEffects', () => ({
+	__esModule: true,
+	InitEffects: () => {
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		const React = require('react');
+		return React.createElement('div', null, 'INIT_EFFECTS');
+	},
+}));
+
 jest.mock('@mui/material-nextjs/v15-appRouter', () => ({
 	__esModule: true,
 	AppRouterCacheProvider: (props: { children?: React.ReactNode }) => {
@@ -82,6 +92,7 @@ describe('RootLayout', () => {
 		expect(decoded).toContain('SESSION_PROVIDER');
 		expect(decoded).toContain('"pk":1');
 		expect(decoded).toContain('"email":"test@site.com"');
+		expect(decoded).toContain('INIT_EFFECTS');
 		expect(decoded).toContain('CHILD_CONTENT');
 	});
 
@@ -99,6 +110,7 @@ describe('RootLayout', () => {
 		const html = renderToStaticMarkup(result as unknown as React.ReactElement);
 
 		expect(html).toContain('SESSION_PROVIDER:null');
+		expect(html).toContain('INIT_EFFECTS');
 		expect(html).toContain('CHILD_CONTENT');
 	});
 });
