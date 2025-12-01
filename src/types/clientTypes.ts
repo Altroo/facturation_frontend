@@ -1,7 +1,7 @@
-export type client_type = 'PM' | 'PP';
+export type TypeClientType = 'PM' | 'PP';
 
 export type ClientSchemaType = {
-	client_type: 'PM' | 'PP';
+	client_type: TypeClientType;
 	code_client: string;
 	company: number;
 	raison_sociale?: string;

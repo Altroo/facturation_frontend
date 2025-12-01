@@ -31,7 +31,7 @@ describe('Account Actions', () => {
 		const action = accountSetGroupesAction(group);
 		expect(action).toEqual({
 			type: types.ACCOUNT_SET_GROUPES,
-			data: { ...group },
+			data: group,
 		});
 	});
 

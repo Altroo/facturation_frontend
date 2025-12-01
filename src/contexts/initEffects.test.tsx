@@ -3,7 +3,13 @@ import { render, waitFor } from '@testing-library/react';
 import { InitEffects } from './initEffects';
 import { useSession } from 'next-auth/react';
 import { useGetProfilQuery, useGetGroupsQuery } from '@/store/services/account';
-import { useGetCitiesListQuery } from '@/store/services/parameter';
+import {
+	useGetCitiesListQuery,
+	useGetCategorieListQuery,
+	useGetEmplacementListQuery,
+	useGetUniteListQuery,
+	useGetMarqueListQuery,
+} from '@/store/services/parameter';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 import { useAppDispatch, useAppSelector } from '@/utils/hooks';
 import { getInitStateToken } from '@/store/selectors';
@@ -30,6 +36,10 @@ describe('InitEffects', () => {
 		(useGetProfilQuery as jest.Mock).mockReturnValue({ data: undefined });
 		(useGetGroupsQuery as jest.Mock).mockReturnValue({ data: undefined });
 		(useGetCitiesListQuery as jest.Mock).mockReturnValue({ data: undefined });
+		(useGetCategorieListQuery as jest.Mock).mockReturnValue({ data: undefined });
+		(useGetEmplacementListQuery as jest.Mock).mockReturnValue({ data: undefined });
+		(useGetUniteListQuery as jest.Mock).mockReturnValue({ data: undefined });
+		(useGetMarqueListQuery as jest.Mock).mockReturnValue({ data: undefined });
 		(useGetUserCompaniesQuery as jest.Mock).mockReturnValue({ data: undefined });
 	});
 
@@ -86,17 +96,68 @@ describe('InitEffects', () => {
 		render(<InitEffects />);
 
 		await waitFor(() => {
-			const calls = mockDispatch.mock.calls.map(([action]) => action);
+			expect(mockDispatch).toHaveBeenCalledWith(
+				expect.objectContaining({ type: 'PARAMETER_SET_CITIES', data: mockCities }),
+			);
+		});
+	});
 
-			const normalizedCalls = calls.map((c) => {
-				if (c.type === 'PARAMETER_SET_CITIES' && !Array.isArray(c.data)) {
-					return { ...c, data: Object.values(c.data) };
-				}
-				return c;
-			});
+	it('dispatches categories action when categories data is available', async () => {
+		(useSession as jest.Mock).mockReturnValue({ data: { user: {} }, status: 'authenticated' });
 
-			expect(normalizedCalls).toEqual(
-				expect.arrayContaining([expect.objectContaining({ type: 'PARAMETER_SET_CITIES', data: mockCities })]),
+		const mockCategories = [{ id: 1, nom: 'Electronics' }];
+		(useGetCategorieListQuery as jest.Mock).mockReturnValue({ data: mockCategories });
+
+		render(<InitEffects />);
+
+		await waitFor(() => {
+			expect(mockDispatch).toHaveBeenCalledWith(
+				expect.objectContaining({ type: 'PARAMETER_SET_CATEGORIES', data: mockCategories }),
+			);
+		});
+	});
+
+	it('dispatches emplacements action when emplacements data is available', async () => {
+		(useSession as jest.Mock).mockReturnValue({ data: { user: {} }, status: 'authenticated' });
+
+		const mockEmplacements = [{ id: 1, nom: 'Warehouse A' }];
+		(useGetEmplacementListQuery as jest.Mock).mockReturnValue({ data: mockEmplacements });
+
+		render(<InitEffects />);
+
+		await waitFor(() => {
+			expect(mockDispatch).toHaveBeenCalledWith(
+				expect.objectContaining({ type: 'PARAMETER_SET_EMPLACEMENTS', data: mockEmplacements }),
+			);
+		});
+	});
+
+	it('dispatches unites action when unites data is available', async () => {
+		(useSession as jest.Mock).mockReturnValue({ data: { user: {} }, status: 'authenticated' });
+
+		const mockUnites = [{ id: 1, nom: 'Kg' }];
+		(useGetUniteListQuery as jest.Mock).mockReturnValue({ data: mockUnites });
+
+		render(<InitEffects />);
+
+		await waitFor(() => {
+			expect(mockDispatch).toHaveBeenCalledWith(
+				expect.objectContaining({ type: 'PARAMETER_SET_UNITES', data: mockUnites }),
+			);
+		});
+	});
+
+	it('dispatches marques action when marques data is available', async () => {
+		(useSession as jest.Mock).mockReturnValue({ data: { user: {} }, status: 'authenticated' });
+
+		const mockMarques = [{ id: 1, nom: 'Brand A' }];
+		(useGetMarqueListQuery as jest.Mock).mockReturnValue({ data: mockMarques });
+
+		render(<InitEffects />);
+
+		await waitFor(() => {
+			expect(mockDispatch).toHaveBeenCalledWith(
+				expect.objectContaining({ type: 'PARAMETER_SET_MARQUES', data: mockMarques }),
 			);
 		});
 	});
@@ -113,11 +174,9 @@ describe('InitEffects', () => {
 		render(<InitEffects />);
 
 		await waitFor(() => {
-			const calls = mockDispatch.mock.calls.map(([action]) => action);
-			const companiesAction = calls.find((a) => a.type === 'COMPANIES_SET_USER_COMPANIES');
-
-			expect(companiesAction).toBeDefined();
-			expect(companiesAction!.data).toEqual(mockCompanies);
+			expect(mockDispatch).toHaveBeenCalledWith(
+				expect.objectContaining({ type: 'COMPANIES_SET_USER_COMPANIES', data: mockCompanies }),
+			);
 		});
 	});
 });

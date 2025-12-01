@@ -22,6 +22,8 @@ import { useAppSelector } from '@/utils/hooks';
 import { getProfilState } from '@/store/selectors';
 import { cookiesDeleter } from '@/utils/apiHelpers';
 import {
+	ARTICLES_ARCHIVED,
+	ARTICLES_LIST,
 	AUTH_LOGIN,
 	CLIENTS_ARCHIVED,
 	CLIENTS_LIST,
@@ -72,9 +74,8 @@ const getNavigationMenu = (isStaff: boolean) => {
 			title: 'Articles',
 			icon: <LibraryBooksIcon />,
 			items: [
-				{ title: 'Liste des articles', label: 'Liste des articles', path: '/articles/list' },
-				{ title: 'Articles archivés', label: 'Articles archivés', path: '/articles/archived' },
-				{ title: 'Nouvel article', label: 'Nouvel article', path: '/articles/new' },
+				{ title: 'Liste des articles', label: 'Liste des articles', path: ARTICLES_LIST },
+				{ title: 'Articles archivés', label: 'Articles archivés', path: ARTICLES_ARCHIVED },
 			],
 		},
 		clients: {

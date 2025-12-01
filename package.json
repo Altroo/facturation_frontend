@@ -24,7 +24,7 @@
     "@reduxjs/toolkit": "^2.11.0",
     "axios": "^1.13.2",
     "formik": "^2.4.9",
-    "next": "16.0.5",
+    "next": "16.0.6",
     "next-auth": "^5.0.0-beta.30",
     "nextjs-cors": "^2.2.1",
     "react": "19.2.0",
@@ -48,17 +48,17 @@
     "@typescript-eslint/parser": "^8.48.0",
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "9.39.1",
-    "eslint-config-next": "16.0.5",
+    "eslint-config-next": "16.0.6",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
     "jest": "^30.2.0",
     "jest-environment-jsdom": "^30.2.0",
-    "prettier": "^3.7.2",
+    "prettier": "^3.7.3",
     "sass": "^1.94.2",
     "ts-jest": "^29.4.5",
     "typescript": "5.9.3"
   },
-  "packageManager": "yarn@4.10.3",
+  "packageManager": "yarn@4.12.0",
   "resolutions": {
     "baseline-browser-mapping": "2.8.32"
   }

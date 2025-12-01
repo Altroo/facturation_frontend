@@ -1,30 +1,72 @@
 import * as types from './index';
-import { parameterSetCitiesAction } from './parameterActions';
-import { CitiesClass } from '@/models/Classes';
+import {
+	parameterSetCitiesAction,
+	parameterSetCategoriesAction,
+	parameterSetEmplacementsAction,
+	parameterSetUnitesAction,
+	parameterSetMarquesAction,
+} from './parameterActions';
+import { CitiesClass, CategorieClass, EmplacementClass, UniteClass, MarqueClass } from '@/models/Classes';
 
-describe('parameterSetCitiesAction', () => {
-	it('should create an action with type PARAMETER_SET_CITIES and spread data', () => {
-		// Arrange: create mock cities
+describe('parameterActions', () => {
+	it('parameterSetCitiesAction should create an action with type PARAMETER_SET_CITIES and array data', () => {
 		const city1 = new CitiesClass(1, 'Paris');
 		const city2 = new CitiesClass(2, 'London');
 		const props = [city1, city2];
 
-		// Act: call the action creator
 		const action = parameterSetCitiesAction(props);
 
-		// Assert: check type and data
 		expect(action.type).toBe(types.PARAMETER_SET_CITIES);
-
-		// Because you’re spreading an array into an object, keys will be indices
-		expect(action.data).toEqual({
-			0: city1,
-			1: city2,
-		});
+		expect(action.data).toEqual([city1, city2]);
 	});
 
-	it('should handle empty array input', () => {
+	it('parameterSetCategoriesAction should create an action with type PARAMETER_SET_CATEGORIES and array data', () => {
+		const cat1 = new CategorieClass(1, 'Electronics');
+		const cat2 = new CategorieClass(2, 'Furniture');
+		const props = [cat1, cat2];
+
+		const action = parameterSetCategoriesAction(props);
+
+		expect(action.type).toBe(types.PARAMETER_SET_CATEGORIES);
+		expect(action.data).toEqual([cat1, cat2]);
+	});
+
+	it('parameterSetEmplacementsAction should create an action with type PARAMETER_SET_EMPLACEMENTS and array data', () => {
+		const emp1 = new EmplacementClass(1, 'Warehouse A');
+		const emp2 = new EmplacementClass(2, 'Warehouse B');
+		const props = [emp1, emp2];
+
+		const action = parameterSetEmplacementsAction(props);
+
+		expect(action.type).toBe(types.PARAMETER_SET_EMPLACEMENTS);
+		expect(action.data).toEqual([emp1, emp2]);
+	});
+
+	it('parameterSetUnitesAction should create an action with type PARAMETER_SET_UNITES and array data', () => {
+		const u1 = new UniteClass(1, 'Kg');
+		const u2 = new UniteClass(2, 'Litre');
+		const props = [u1, u2];
+
+		const action = parameterSetUnitesAction(props);
+
+		expect(action.type).toBe(types.PARAMETER_SET_UNITES);
+		expect(action.data).toEqual([u1, u2]);
+	});
+
+	it('parameterSetMarquesAction should create an action with type PARAMETER_SET_MARQUES and array data', () => {
+		const m1 = new MarqueClass(1, 'Brand A');
+		const m2 = new MarqueClass(2, 'Brand B');
+		const props = [m1, m2];
+
+		const action = parameterSetMarquesAction(props);
+
+		expect(action.type).toBe(types.PARAMETER_SET_MARQUES);
+		expect(action.data).toEqual([m1, m2]);
+	});
+
+	it('should handle empty array input for cities', () => {
 		const action = parameterSetCitiesAction([]);
 		expect(action.type).toBe(types.PARAMETER_SET_CITIES);
-		expect(action.data).toEqual({});
+		expect(action.data).toEqual([]);
 	});
 });

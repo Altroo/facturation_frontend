@@ -18,11 +18,11 @@ import {
 	useMediaQuery,
 	ToggleButtonGroup,
 	ToggleButton,
-	Modal,
 	Container,
 } from '@mui/material';
 import { ArrowBack, BusinessOutlined } from '@mui/icons-material';
 import BusinessIcon from '@mui/icons-material/Business';
+import NotesIcon from '@mui/icons-material/Notes';
 import EmailIcon from '@mui/icons-material/Email';
 import PersonIcon from '@mui/icons-material/Person';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
@@ -54,10 +54,11 @@ import {
 } from '@/store/services/client';
 import { setFormikAutoErrors } from '@/utils/helpers';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
-import type { client_type, ClientSchemaType } from '@/types/clientTypes';
-import { useAddCityMutation, useGetCitiesListQuery } from '@/store/services/parameter';
-import type { CitiesClass } from '@/models/Classes';
+import type { TypeClientType, ClientSchemaType } from '@/types/clientTypes';
+import { useAddCityMutation } from '@/store/services/parameter';
+import { CitiesClass } from '@/models/Classes';
 import { clientSchema, pmRequired, ppRequired } from '@/utils/formValidationSchemas';
+import AddEntityModal from '@/components/desktop/modals/addEntityModal/addEntityModal';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -75,9 +76,9 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, on
 	const router = useRouter();
 
 	const {
-		data: clientData,
-		isLoading: isClientLoading,
-		error: clientError,
+		data: rawData,
+		isLoading: isDataLoading,
+		error: dataError,
 	} = useGetClientQuery({ id: id! }, { skip: !token || !isEditMode });
 
 	const { data: generatedCodeData, isLoading: isCodeLoading } = useGetCodeClientQuery(undefined, {
@@ -91,41 +92,38 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, on
 	// Cities
 	const rawCities = useAppSelector(getCitiesState);
 	const normalizedCities: Array<CitiesClass> = Array.isArray(rawCities) ? rawCities : Object.values(rawCities ?? {});
-	const { isLoading: isCitiesLoading } = useGetCitiesListQuery(undefined, { skip: !token });
 	const [addCity, { isLoading: isAddCityLoading }] = useAddCityMutation();
 
 	// Local state
 	const [openCityModal, setOpenCityModal] = useState(false);
-	const [newCityName, setNewCityName] = useState('');
-	const [cityError, setCityError] = useState<string | null>(null);
 
 	const [isPending, setIsPending] = useState(false);
 
 	// Compute initial code_client: use server-generated when adding, else from clientData
-	const initialCodeClient = isEditMode ? (clientData?.code_client ?? '') : (generatedCodeData?.code_client ?? '');
+	const initialCodeClient = isEditMode ? (rawData?.code_client ?? '') : (generatedCodeData?.code_client ?? '');
 
 	// Formik
 	const formik = useFormik<ClientSchemaType>({
 		initialValues: {
-			client_type: (clientData?.client_type as client_type) ?? 'PM',
+			client_type: (rawData?.client_type as TypeClientType) ?? 'PM',
 			code_client: initialCodeClient,
 			company: company_id,
-			raison_sociale: clientData?.raison_sociale ?? '',
-			nom: clientData?.nom ?? '',
-			prenom: clientData?.prenom ?? '',
-			adresse: clientData?.adresse ?? null,
-			ville: clientData?.ville ?? null,
-			tel: clientData?.tel ?? null,
-			email: clientData?.email ?? '',
+			raison_sociale: rawData?.raison_sociale ?? '',
+			nom: rawData?.nom ?? '',
+			prenom: rawData?.prenom ?? '',
+			adresse: rawData?.adresse ?? null,
+			ville: rawData?.ville ?? null,
+			tel: rawData?.tel ?? null,
+			email: rawData?.email ?? '',
 			// default 60 unless backend gives another value
-			delai_de_paiement: clientData?.delai_de_paiement ?? 60,
-			remarque: clientData?.remarque ?? null,
-			numero_du_compte: clientData?.numero_du_compte ?? null,
-			ICE: clientData?.ICE ?? '',
-			registre_de_commerce: clientData?.registre_de_commerce ?? '',
-			identifiant_fiscal: clientData?.identifiant_fiscal ?? null,
-			taxe_professionnelle: clientData?.taxe_professionnelle ?? null,
-			CNSS: clientData?.CNSS ?? null,
+			delai_de_paiement: rawData?.delai_de_paiement ?? 60,
+			remarque: rawData?.remarque ?? null,
+			numero_du_compte: rawData?.numero_du_compte ?? null,
+			ICE: rawData?.ICE ?? '',
+			registre_de_commerce: rawData?.registre_de_commerce ?? '',
+			identifiant_fiscal: rawData?.identifiant_fiscal ?? null,
+			taxe_professionnelle: rawData?.taxe_professionnelle ?? null,
+			CNSS: rawData?.CNSS ?? null,
 			globalError: '',
 		},
 		enableReinitialize: true,
@@ -172,7 +170,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, on
 	});
 
 	// Error handling
-	const error = isEditMode ? clientError || updateError : addError;
+	const error = isEditMode ? dataError || updateError : addError;
 	const axiosError = error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined;
 
 	// Stable cityItems
@@ -196,9 +194,8 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, on
 		isAddLoading ||
 		isUpdateLoading ||
 		isPending ||
-		isCitiesLoading ||
 		isAddCityLoading ||
-		(isEditMode && isClientLoading) ||
+		(isEditMode && isDataLoading) ||
 		(!isEditMode && isCodeLoading);
 
 	// Required label helpers
@@ -537,6 +534,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, on
 										onBlur={formik.handleBlur('nbr_employe')}
 										error={formik.touched.ville && Boolean(formik.errors.ville)}
 										helperText={formik.touched.ville ? formik.errors.ville : ''}
+										startIcon={<LocationOnIcon fontSize="small" />}
 										endIcon={
 											<Button size="small" variant="outlined" onClick={() => setOpenCityModal(true)} sx={{ ml: 1 }}>
 												Ajouter
@@ -568,7 +566,19 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, on
 										theme={inputTheme}
 										startIcon={<CreditCardIcon fontSize="small" />}
 									/>
-
+								</Stack>
+							</CardContent>
+						</Card>
+						<Card elevation={2} sx={{ borderRadius: 2 }}>
+							<CardContent sx={{ p: 3 }}>
+								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<NotesIcon color="primary" />
+									<Typography variant="h6" fontWeight={700}>
+										Remarque
+									</Typography>
+								</Stack>
+								<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
+								<Stack spacing={2.5}>
 									<CustomTextInput
 										id="remarque"
 										type="text"
@@ -581,12 +591,11 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, on
 										fullWidth={false}
 										size="small"
 										theme={inputTheme}
-										startIcon={<DescriptionIcon fontSize="small" />}
+										startIcon={<NotesIcon fontSize="small" />}
 									/>
 								</Stack>
 							</CardContent>
 						</Card>
-
 						{/* Submit Button */}
 						<Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 2 }}>
 							<PrimaryLoadingButton
@@ -602,76 +611,14 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, on
 			)}
 
 			{/* Add City Modal */}
-			<Modal open={openCityModal} onClose={() => setOpenCityModal(false)}>
-				<Box
-					sx={{
-						p: 3,
-						bgcolor: 'background.paper',
-						borderRadius: 2,
-						maxWidth: 420,
-						width: '90%',
-						mx: 'auto',
-						mt: '15vh',
-						boxShadow: 24,
-					}}
-				>
-					<Typography variant="h6" mb={2}>
-						Ajouter une ville
-					</Typography>
-
-					{/* Use CustomTextInput instead of TextField */}
-					<CustomTextInput
-						id="new_city"
-						type="text"
-						label="Nom de la ville"
-						value={newCityName}
-						onChange={(e) => {
-							setNewCityName(e.target.value);
-							if (cityError) setCityError(null);
-						}}
-						error={Boolean(cityError)}
-						helperText={cityError ?? ''}
-						fullWidth={true}
-						size="small"
-						theme={inputTheme}
-						startIcon={<LocationOnIcon fontSize="small" />}
-					/>
-
-					<Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2, gap: 1 }}>
-						<Button onClick={() => setOpenCityModal(false)}>Annuler</Button>
-						<Button
-							variant="contained"
-							onClick={async () => {
-								if (!newCityName.trim()) {
-									setCityError('Le nom de la ville est requis.');
-									return;
-								}
-								try {
-									await addCity({ data: { nom: newCityName.trim() } }).unwrap();
-									setOpenCityModal(false);
-									setNewCityName('');
-									setCityError(null);
-								} catch (e) {
-									const payload =
-										(e as { error?: ApiErrorResponseType; data?: ApiErrorResponseType }).error ??
-										(e as { error?: ApiErrorResponseType; data?: ApiErrorResponseType }).data ??
-										(e as ApiErrorResponseType);
-
-									if (payload?.details?.city) {
-										const messages = payload.details.city;
-										const errorMsg = Array.isArray(messages) ? messages[0] : messages;
-										setCityError(errorMsg);
-									} else {
-										setCityError('Erreur lors de l’ajout de la ville.');
-									}
-								}
-							}}
-						>
-							Ajouter
-						</Button>
-					</Box>
-				</Box>
-			</Modal>
+			<AddEntityModal
+				open={openCityModal}
+				setOpen={setOpenCityModal}
+				label="ville"
+				icon={<LocationOnIcon fontSize="small" />}
+				inputTheme={inputTheme}
+				mutationFn={addCity}
+			/>
 		</Stack>
 	);
 };

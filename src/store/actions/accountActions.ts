@@ -11,7 +11,7 @@ export const accountSetProfilAction = (props: UserClass) => {
 export const accountSetGroupesAction = (props: GroupClass) => {
 	return {
 		type: types.ACCOUNT_SET_GROUPES,
-		data: { ...props },
+		data: props,
 	};
 };
 

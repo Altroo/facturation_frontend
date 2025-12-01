@@ -25,6 +25,14 @@ export const CLIENTS_VIEW = (id: number, company_id: number) =>
 	`${SITE_ROOT}dashboard/clients/${id}/?company_id=${company_id}`;
 export const CLIENTS_EDIT = (id: number, company_id: number) =>
 	`${SITE_ROOT}dashboard/clients/${id}/edit/?company_id=${company_id}`;
+// Articles
+export const ARTICLES_LIST = `${SITE_ROOT}dashboard/articles`;
+export const ARTICLES_ADD = (company_id: number) => `${SITE_ROOT}dashboard/articles/new/?company_id=${company_id}`;
+export const ARTICLES_ARCHIVED = `${SITE_ROOT}dashboard/articles/archived`;
+export const ARTICLES_VIEW = (id: number, company_id: number) =>
+	`${SITE_ROOT}dashboard/articles/${id}/?company_id=${company_id}`;
+export const ARTICLES_EDIT = (id: number, company_id: number) =>
+	`${SITE_ROOT}dashboard/articles/${id}/edit/?company_id=${company_id}`;
 // Users
 export const USERS_LIST = `${SITE_ROOT}dashboard/users`;
 export const USERS_ADD = `${SITE_ROOT}dashboard/users/new`;

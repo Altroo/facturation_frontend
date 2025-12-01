@@ -98,4 +98,27 @@ describe('routes constants', () => {
 		expect(CLIENTS_VIEW(5, 99)).toBe(`${SITE_ROOT}dashboard/clients/5/?company_id=99`);
 		expect(CLIENTS_EDIT(7, 123)).toBe(`${SITE_ROOT}dashboard/clients/7/edit/?company_id=123`);
 	});
+	it('exports articles routes and functions', () => {
+		const {
+			SITE_ROOT,
+			ARTICLES_LIST,
+			ARTICLES_ADD,
+			ARTICLES_ARCHIVED,
+			ARTICLES_VIEW,
+			ARTICLES_EDIT,
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
+		} = require('./routes');
+
+		expect(ARTICLES_LIST).toBe(`${SITE_ROOT}dashboard/articles`);
+		expect(typeof ARTICLES_ADD).toBe('function');
+		expect(ARTICLES_ADD(42)).toBe(`${SITE_ROOT}dashboard/articles/new/?company_id=42`);
+
+		expect(ARTICLES_ARCHIVED).toBe(`${SITE_ROOT}dashboard/articles/archived`);
+
+		expect(typeof ARTICLES_VIEW).toBe('function');
+		expect(typeof ARTICLES_EDIT).toBe('function');
+
+		expect(ARTICLES_VIEW(5, 99)).toBe(`${SITE_ROOT}dashboard/articles/5/?company_id=99`);
+		expect(ARTICLES_EDIT(7, 123)).toBe(`${SITE_ROOT}dashboard/articles/7/edit/?company_id=123`);
+	});
 });

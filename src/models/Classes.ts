@@ -1,9 +1,10 @@
 import type { NbrEmployeType, CiviliteType, ManagedByType, ManagedByWriteOnlyType } from '@/types/companyTypes';
-import { client_type } from '@/types/clientTypes';
+import { TypeClientType } from '@/types/clientTypes';
+import { TypeArticleType } from '@/types/articleTypes';
 
 export class UserClass {
 	constructor(
-		public id: number,
+		public readonly id: number,
 		public first_name: string,
 		public last_name: string,
 		public email: string,
@@ -23,7 +24,7 @@ export class GroupClass {
 
 export class CompanyClass {
 	constructor(
-		public id: number,
+		public readonly id: number,
 		public date_created: string | null,
 		public raison_sociale: string,
 		public email: string | null,
@@ -52,9 +53,9 @@ export class CompanyClass {
 
 export class ClientClass {
 	constructor(
-		public id: number,
+		public readonly id: number,
 		public code_client: string,
-		public client_type: client_type | string,
+		public client_type: TypeClientType | string,
 		public company: number,
 		public readonly company_name: string | null,
 		public adresse: string | null,
@@ -79,37 +80,63 @@ export class ClientClass {
 	) {}
 }
 
+export class ArticleClass {
+	constructor(
+		public readonly id: number,
+		public reference: string,
+		public type_article: TypeArticleType,
+		public company: number,
+		public readonly company_name: string | null,
+		public marque: number | null,
+		public readonly marque_name: string | null,
+		public categorie: number | null,
+		public readonly categorie_name: string | null,
+		public emplacement: number | null,
+		public readonly emplacement_name: string | null,
+		public unite: number | null,
+		public readonly unite_name: string | null,
+		public designation: string | null,
+		public photo: string | ArrayBuffer | null,
+		public prix_achat: number | null,
+		public prix_vente: number | null,
+		public tva: number,
+		public remarque: string | null,
+		public readonly date_created: string,
+		public archived: boolean,
+	) {}
+}
+
 export class CitiesClass {
 	constructor(
-		public id: number,
+		public readonly id: number,
 		public nom: string,
 	) {}
 }
 
 export class MarqueClass {
 	constructor(
-		public id: number,
+		public readonly id: number,
 		public nom: string,
 	) {}
 }
 
 export class CategorieClass {
 	constructor(
-		public id: number,
+		public readonly id: number,
 		public nom: string,
 	) {}
 }
 
 export class UniteClass {
 	constructor(
-		public id: number,
+		public readonly id: number,
 		public nom: string,
 	) {}
 }
 
 export class EmplacementClass {
 	constructor(
-		public id: number,
+		public readonly id: number,
 		public nom: string,
 	) {}
 }

@@ -7,8 +7,20 @@ import { initAppSessionTokensAction } from '@/store/actions/_initActions';
 import { getInitStateToken } from '@/store/selectors';
 import { useGetProfilQuery, useGetGroupsQuery } from '@/store/services/account';
 import { accountSetGroupesAction, accountSetProfilAction } from '@/store/actions/accountActions';
-import { useGetCitiesListQuery } from '@/store/services/parameter';
-import { parameterSetCitiesAction } from '@/store/actions/parameterActions';
+import {
+	useGetCitiesListQuery,
+	useGetCategorieListQuery,
+	useGetEmplacementListQuery,
+	useGetUniteListQuery,
+	useGetMarqueListQuery,
+} from '@/store/services/parameter';
+import {
+	parameterSetCategoriesAction,
+	parameterSetCitiesAction,
+	parameterSetEmplacementsAction,
+	parameterSetMarquesAction,
+	parameterSetUnitesAction,
+} from '@/store/actions/parameterActions';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 import { companiesSetUserCompaniesAction } from '@/store/actions/companiesActions';
 
@@ -25,6 +37,10 @@ export const InitEffects: React.FC = () => {
 	const { data: user } = useGetProfilQuery(undefined, { skip });
 	const { data: groupes } = useGetGroupsQuery(undefined, { skip });
 	const { data: cities } = useGetCitiesListQuery(undefined, { skip });
+	const { data: categories } = useGetCategorieListQuery(undefined, { skip });
+	const { data: emplacements } = useGetEmplacementListQuery(undefined, { skip });
+	const { data: unites } = useGetUniteListQuery(undefined, { skip });
+	const { data: marques } = useGetMarqueListQuery(undefined, { skip });
 	const { data: companies } = useGetUserCompaniesQuery(undefined, { skip });
 
 	// Initialize tokens once
@@ -47,6 +63,22 @@ export const InitEffects: React.FC = () => {
 	useEffect(() => {
 		if (cities) dispatch(parameterSetCitiesAction(cities));
 	}, [dispatch, cities]);
+
+	useEffect(() => {
+		if (categories) dispatch(parameterSetCategoriesAction(categories));
+	}, [dispatch, categories]);
+
+	useEffect(() => {
+		if (emplacements) dispatch(parameterSetEmplacementsAction(emplacements));
+	}, [dispatch, emplacements]);
+
+	useEffect(() => {
+		if (unites) dispatch(parameterSetUnitesAction(unites));
+	}, [dispatch, unites]);
+
+	useEffect(() => {
+		if (marques) dispatch(parameterSetMarquesAction(marques));
+	}, [dispatch, marques]);
 
 	useEffect(() => {
 		if (companies) dispatch(companiesSetUserCompaniesAction(companies));

@@ -45,16 +45,27 @@ jest.mock('@/store/services/client', () => ({
 	__esModule: true,
 	clientApi: makeApiMock('clientApi'),
 }));
+jest.mock('@/store/services/article', () => ({
+	__esModule: true,
+	articleApi: makeApiMock('articleApi'),
+}));
 jest.mock('@/store/services/parameter', () => ({
 	__esModule: true,
 	citiesApi: makeApiMock('citiesApi'),
+	emplacementApi: makeApiMock('emplacementApi'),
+	categorieApi: makeApiMock('categorieApi'),
+	marqueApi: makeApiMock('marqueApi'),
+	uniteApi: makeApiMock('uniteApi'),
 }));
 
 // --- Mock rootSaga only (use a lightweight generator) ---
 jest.mock('@/store/sagas', () => ({
 	__esModule: true,
 	rootSaga: function* rootSaga() {
-		yield 'MOCK_ROOT';
+		// Infinite loop to keep the task running
+		while (true) {
+			yield 'MOCK_ROOT_TICK';
+		}
 	},
 }));
 
@@ -80,12 +91,17 @@ describe('Redux Saga Store', () => {
 		expect(state).toHaveProperty('usersApi');
 		expect(state).toHaveProperty('companyApi');
 		expect(state).toHaveProperty('clientApi');
+		expect(state).toHaveProperty('articleApi');
 		expect(state).toHaveProperty('citiesApi');
+		expect(state).toHaveProperty('emplacementApi');
+		expect(state).toHaveProperty('categorieApi');
+		expect(state).toHaveProperty('marqueApi');
+		expect(state).toHaveProperty('uniteApi');
 	});
 
 	it('attaches sagaTask after running rootSaga', () => {
 		expect(store.sagaTask).toBeDefined();
-		expect(store.sagaTask?.isRunning()).toBeDefined();
+		expect(typeof store.sagaTask?.isRunning).toBe('function'); // avoids relying on long-running saga
 	});
 
 	it('dispatch works with thunk actions', async () => {
@@ -99,5 +115,11 @@ describe('Redux Saga Store', () => {
 		await dispatch(thunkAction());
 		const result = dispatch({ type: 'CHECK' });
 		expect(result).toEqual({ type: 'CHECK' });
+	});
+
+	it('dispatches plain actions correctly', () => {
+		const action = { type: 'PLAIN_ACTION' };
+		const result = store.dispatch(action);
+		expect(result).toEqual(action);
 	});
 });

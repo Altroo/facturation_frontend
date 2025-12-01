@@ -252,3 +252,22 @@ export const clientSchema = z
 			});
 		}
 	});
+
+export const articleSchema = z.object({
+	type_article: z.enum(['Produit', 'Service']),
+	reference: requiredTextField(1, 100),
+	designation: requiredTextField(1, 500),
+	company: z.number(),
+	// optional fields
+	photo: base64ImageField,
+	photo_cropped: base64ImageField,
+	emplacement: z.number().nullable().optional(),
+	marque: z.number().nullable().optional(),
+	categorie: z.number().nullable().optional(),
+	unite: z.number().nullable().optional(),
+	prix_achat: z.number().nullable().optional(),
+	prix_vente: z.number().nullable().optional(),
+	tva: z.number().nullable().optional(),
+	remarque: optionalTextField(2, 500).nullable(),
+	globalError: z.string().optional(),
+});

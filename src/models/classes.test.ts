@@ -1,4 +1,16 @@
-import { UserClass, GroupClass, CompanyClass, ClientClass, CitiesClass } from './Classes';
+import {
+	UserClass,
+	GroupClass,
+	CompanyClass,
+	ClientClass,
+	CitiesClass,
+	ArticleClass,
+	MarqueClass,
+	CategorieClass,
+	UniteClass,
+	EmplacementClass,
+} from './Classes';
+import { TypeArticleType } from '@/types/articleTypes';
 
 describe('UserClass', () => {
 	it('creates a user instance with given properties', () => {
@@ -129,5 +141,80 @@ describe('CitiesClass', () => {
 		const city = new CitiesClass(1, 'Tanger');
 		expect(city.id).toBe(1);
 		expect(city.nom).toBe('Tanger');
+	});
+});
+
+describe('ArticleClass', () => {
+	it('creates an article instance with given properties', () => {
+		const article = new ArticleClass(
+			1,
+			'REF001',
+			'Produit' as TypeArticleType,
+			10,
+			'MyCompany',
+			2,
+			'BrandX',
+			3,
+			'CategoryY',
+			4,
+			'WarehouseZ',
+			5,
+			'UnitKg',
+			'Designation',
+			null,
+			100,
+			150,
+			20,
+			'Remark',
+			'2023-01-01',
+			false,
+		);
+
+		expect(article.id).toBe(1);
+		expect(article.reference).toBe('REF001');
+		expect(article.company).toBe(10);
+		expect(article.company_name).toBe('MyCompany');
+		expect(article.marque_name).toBe('BrandX');
+		expect(article.categorie_name).toBe('CategoryY');
+		expect(article.emplacement_name).toBe('WarehouseZ');
+		expect(article.unite_name).toBe('UnitKg');
+		expect(article.designation).toBe('Designation');
+		expect(article.prix_achat).toBe(100);
+		expect(article.prix_vente).toBe(150);
+		expect(article.tva).toBe(20);
+		expect(article.date_created).toBe('2023-01-01');
+		expect(article.archived).toBe(false);
+	});
+});
+
+describe('MarqueClass', () => {
+	it('creates a marque instance with given properties', () => {
+		const marque = new MarqueClass(1, 'BrandA');
+		expect(marque.id).toBe(1);
+		expect(marque.nom).toBe('BrandA');
+	});
+});
+
+describe('CategorieClass', () => {
+	it('creates a categorie instance with given properties', () => {
+		const categorie = new CategorieClass(1, 'CategoryA');
+		expect(categorie.id).toBe(1);
+		expect(categorie.nom).toBe('CategoryA');
+	});
+});
+
+describe('UniteClass', () => {
+	it('creates a unite instance with given properties', () => {
+		const unite = new UniteClass(1, 'Kg');
+		expect(unite.id).toBe(1);
+		expect(unite.nom).toBe('Kg');
+	});
+});
+
+describe('EmplacementClass', () => {
+	it('creates an emplacement instance with given properties', () => {
+		const emplacement = new EmplacementClass(1, 'WarehouseA');
+		expect(emplacement.id).toBe(1);
+		expect(emplacement.nom).toBe('WarehouseA');
 	});
 });

@@ -1,19 +1,67 @@
-import reducer, { setCities } from '@/store/slices/parameterSlice';
-import { CitiesClass } from '@/models/Classes';
+import reducer, {
+	setCities,
+	setCategories,
+	setEmplacements,
+	setUnites,
+	setMarques,
+} from '@/store/slices/parameterSlice';
+import { CitiesClass, CategorieClass, EmplacementClass, UniteClass, MarqueClass } from '@/models/Classes';
 
 describe('parameterSlice', () => {
+	const initialState = {
+		cities: [],
+		categories: [],
+		emplacements: [],
+		unites: [],
+		marques: [],
+	};
+
 	it('should return the initial state', () => {
-		const initialState = { cities: [] };
 		expect(reducer(undefined, { type: 'unknown' })).toEqual(initialState);
 	});
 
 	it('should handle setCities', () => {
 		const city1 = new CitiesClass(1, 'Tanger');
 		const city2 = new CitiesClass(2, 'Tetouan');
-		const previousState = { cities: [] };
 
-		const newState = reducer(previousState, setCities([city1, city2]));
+		const newState = reducer(initialState, setCities([city1, city2]));
 
 		expect(newState.cities).toEqual([city1, city2]);
+	});
+
+	it('should handle setCategories', () => {
+		const cat1 = new CategorieClass(1, 'Electronics');
+		const cat2 = new CategorieClass(2, 'Furniture');
+
+		const newState = reducer(initialState, setCategories([cat1, cat2]));
+
+		expect(newState.categories).toEqual([cat1, cat2]);
+	});
+
+	it('should handle setEmplacements', () => {
+		const emp1 = new EmplacementClass(1, 'Warehouse A');
+		const emp2 = new EmplacementClass(2, 'Warehouse B');
+
+		const newState = reducer(initialState, setEmplacements([emp1, emp2]));
+
+		expect(newState.emplacements).toEqual([emp1, emp2]);
+	});
+
+	it('should handle setUnites', () => {
+		const u1 = new UniteClass(1, 'Kg');
+		const u2 = new UniteClass(2, 'Litre');
+
+		const newState = reducer(initialState, setUnites([u1, u2]));
+
+		expect(newState.unites).toEqual([u1, u2]);
+	});
+
+	it('should handle setMarques', () => {
+		const m1 = new MarqueClass(1, 'Brand A');
+		const m2 = new MarqueClass(2, 'Brand B');
+
+		const newState = reducer(initialState, setMarques([m1, m2]));
+
+		expect(newState.marques).toEqual([m1, m2]);
 	});
 });

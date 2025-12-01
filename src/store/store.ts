@@ -8,7 +8,8 @@ import companiesReducer from '@/store/slices/companiesSlice';
 import { accountApi, profilApi, groupApi, usersApi } from '@/store/services/account';
 import { companyApi } from '@/store/services/company';
 import { clientApi } from '@/store/services/client';
-import { citiesApi } from '@/store/services/parameter';
+import { citiesApi, emplacementApi, categorieApi, marqueApi, uniteApi } from '@/store/services/parameter';
+import { articleApi } from '@/store/services/article';
 
 const sagaMiddleware = createSagaMiddleware();
 
@@ -23,7 +24,12 @@ const rootReducer = combineReducers({
 	[usersApi.reducerPath]: usersApi.reducer,
 	[companyApi.reducerPath]: companyApi.reducer,
 	[clientApi.reducerPath]: clientApi.reducer,
+	[articleApi.reducerPath]: articleApi.reducer,
 	[citiesApi.reducerPath]: citiesApi.reducer,
+	[emplacementApi.reducerPath]: emplacementApi.reducer,
+	[categorieApi.reducerPath]: categorieApi.reducer,
+	[marqueApi.reducerPath]: marqueApi.reducer,
+	[uniteApi.reducerPath]: uniteApi.reducer,
 });
 
 export interface SagaStore extends Store {
@@ -48,7 +54,12 @@ export const store: SagaStore = configureStore({
 			.concat(companyApi.middleware)
 			.concat(usersApi.middleware)
 			.concat(clientApi.middleware)
+			.concat(articleApi.middleware)
 			.concat(citiesApi.middleware)
+			.concat(emplacementApi.middleware)
+			.concat(categorieApi.middleware)
+			.concat(marqueApi.middleware)
+			.concat(uniteApi.middleware)
 			.prepend(sagaMiddleware),
 	devTools: process.env.NODE_ENV !== 'production',
 });

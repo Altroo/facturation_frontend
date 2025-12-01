@@ -2,6 +2,7 @@
 
 import React, { useMemo, isValidElement } from 'react';
 import {
+	Avatar,
 	Box,
 	Stack,
 	Typography,
@@ -14,23 +15,22 @@ import {
 	useMediaQuery,
 } from '@mui/material';
 import { ArrowBack, Edit } from '@mui/icons-material';
-import PersonIcon from '@mui/icons-material/Person';
-import BadgeIcon from '@mui/icons-material/Badge';
-import NotesIcon from '@mui/icons-material/Notes';
-import BusinessIcon from '@mui/icons-material/Business';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import PhoneIcon from '@mui/icons-material/Phone';
-import EmailIcon from '@mui/icons-material/Email';
-import CreditCardIcon from '@mui/icons-material/CreditCard';
 import DescriptionIcon from '@mui/icons-material/Description';
-import GavelIcon from '@mui/icons-material/Gavel';
+import CreditCardIcon from '@mui/icons-material/CreditCard';
 import FingerprintIcon from '@mui/icons-material/Fingerprint';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import CategoryIcon from '@mui/icons-material/Category';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import SellIcon from '@mui/icons-material/Sell';
 import ReceiptIcon from '@mui/icons-material/Receipt';
+import BusinessIcon from '@mui/icons-material/Business';
+import StarIcon from '@mui/icons-material/Star';
+import StraightenIcon from '@mui/icons-material/Straighten';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import NotesIcon from '@mui/icons-material/Notes';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import { CLIENTS_LIST, CLIENTS_EDIT } from '@/utils/routes';
+import { ARTICLES_LIST, ARTICLES_EDIT } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
-import { useGetClientQuery } from '@/store/services/client';
+import { useGetArticleQuery } from '@/store/services/article';
 import { getAccessTokenFromSession } from '@/store/session';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
@@ -108,14 +108,14 @@ interface Props extends SessionProps {
 	id: number;
 }
 
-const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
+const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const token = getAccessTokenFromSession(session);
 	const companies = useAppSelector(getUserCompaniesState);
 	const router = useRouter();
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-	const { data: client, isLoading, error } = useGetClientQuery({ id }, { skip: !token });
+	const { data: client, isLoading, error } = useGetArticleQuery({ id }, { skip: !token });
 	const axiosError = useMemo(
 		() => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),
 		[error],
@@ -124,26 +124,24 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 		return companies?.find((comp) => comp.id === company_id);
 	}, [companies, company_id]);
 
-	const isPM = client?.client_type === 'PM';
-
 	return (
 		<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
-			<NavigationBar title="Détails du client">
+			<NavigationBar title="Détails de l'article">
 				<Stack spacing={3} sx={{ p: { xs: 2, md: 3 } }}>
 					<Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between" spacing={2}>
 						<Button
 							variant="outlined"
 							startIcon={<ArrowBack />}
-							onClick={() => router.push(CLIENTS_LIST)}
+							onClick={() => router.push(ARTICLES_LIST)}
 							sx={{ width: isMobile ? '100%' : 'auto' }}
 						>
-							Liste des clients
+							Liste des articles
 						</Button>
 						{!isLoading && !error && company?.role === 'Admin' && (
 							<Button
 								variant="contained"
 								startIcon={<Edit />}
-								onClick={() => router.push(CLIENTS_EDIT(id, company_id))}
+								onClick={() => router.push(ARTICLES_EDIT(id, company_id))}
 								sx={{ width: isMobile ? '100%' : 'auto' }}
 							>
 								Modifier
@@ -170,117 +168,96 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 						</Paper>
 					) : (
 						<Stack spacing={3}>
-							{/* Identité du client */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
 									<Stack direction="row" spacing={3} alignItems="center">
-										<PersonIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
-											Identité du client
-										</Typography>
-									</Stack>
-									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
-									<Stack spacing={0}>
-										<InfoRow icon={<BadgeIcon />} label="Code client" value={client?.code_client} />
-										<Divider />
-										<InfoRow
-											icon={<PersonIcon />}
-											label="Type"
-											value={client?.client_type === 'PM' ? 'Personne morale' : 'Personne physique'}
-										/>
-										<Divider />
-										{isPM ? (
-											<>
-												<InfoRow icon={<BusinessIcon />} label="Raison sociale" value={client?.raison_sociale} />
-												<Divider />
-											</>
-										) : (
-											<>
-												<InfoRow icon={<PersonIcon />} label="Nom" value={client?.nom} />
-												<Divider />
-												<InfoRow icon={<PersonIcon />} label="Prénom" value={client?.prenom} />
-												<Divider />
-												<InfoRow icon={<LocationOnIcon />} label="Adresse" value={client?.adresse} />
-												<Divider />
-											</>
-										)}
-									</Stack>
-								</CardContent>
-							</Card>
-
-							{/* Contact */}
-							<Card elevation={2} sx={{ borderRadius: 2 }}>
-								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-										<PhoneIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
-											Contact
-										</Typography>
-									</Stack>
-									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
-									<Stack spacing={0}>
-										<InfoRow icon={<EmailIcon />} label="Email" value={client?.email} />
-										<Divider />
-										<InfoRow icon={<PhoneIcon />} label="Téléphone" value={client?.tel} />
-									</Stack>
-								</CardContent>
-							</Card>
-
-							{/* Informations administratives */}
-							<Card elevation={2} sx={{ borderRadius: 2 }}>
-								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 										<DescriptionIcon color="primary" />
 										<Typography variant="h6" fontWeight={700}>
-											Informations administratives
+											Photo d&#39;article
+										</Typography>
+									</Stack>
+									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
+									<Stack
+										direction={isMobile ? 'column' : 'row'}
+										spacing={3}
+										alignItems={isMobile ? 'center' : 'flex-start'}
+									>
+										<Avatar
+											variant="square"
+											src={`${client?.photo}`}
+											sx={{
+												width: isMobile ? 200 : 300,
+												height: isMobile ? 200 : 300,
+												border: '4px solid',
+												borderColor: 'primary.light',
+												boxShadow: 3,
+											}}
+										/>
+									</Stack>
+								</CardContent>
+							</Card>
+							{/* Identité de l'article */}
+							<Card elevation={2} sx={{ borderRadius: 2 }}>
+								<CardContent sx={{ p: 3 }}>
+									<Stack direction="row" spacing={3} alignItems="center">
+										<DescriptionIcon color="primary" />
+										<Typography variant="h6" fontWeight={700}>
+											Identité de l&#39;article
 										</Typography>
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 									<Stack spacing={0}>
-										<InfoRow icon={<AccountBalanceIcon />} label="Numéro du compte" value={client?.numero_du_compte} />
+										<InfoRow icon={<FingerprintIcon />} label="Référence" value={client?.reference} />
 										<Divider />
-										<InfoRow icon={<FingerprintIcon />} label="ICE" value={client?.ICE} />
+										<InfoRow icon={<CategoryIcon />} label="Type" value={client?.type_article} />
 										<Divider />
-										<InfoRow icon={<GavelIcon />} label="Registre de commerce" value={client?.registre_de_commerce} />
-										<Divider />
-										<InfoRow icon={<ReceiptIcon />} label="Identifiant fiscal" value={client?.identifiant_fiscal} />
-										<Divider />
-										<InfoRow
-											icon={<CreditCardIcon />}
-											label="Taxe professionnelle"
-											value={client?.taxe_professionnelle}
-										/>
-										<Divider />
-										<InfoRow icon={<FingerprintIcon />} label="CNSS" value={client?.CNSS} />
+										<InfoRow icon={<DescriptionIcon />} label="Désignation" value={client?.designation} />
 									</Stack>
 								</CardContent>
 							</Card>
 
-							{/* Ville et paiement */}
+							{/* Prix et TVA */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
 									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-										<LocationOnIcon color="primary" />
+										<CreditCardIcon color="primary" />
 										<Typography variant="h6" fontWeight={700}>
-											Ville et paiement
+											Prix et TVA
 										</Typography>
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 									<Stack spacing={0}>
-										<InfoRow
-											icon={<LocationOnIcon />}
-											label="Ville"
-											value={client?.ville_name ? String(client?.ville_name) : ''}
-										/>
+										<InfoRow icon={<ShoppingCartIcon />} label="Prix d'achat" value={client?.prix_achat} />
 										<Divider />
-										<InfoRow
-											icon={<CreditCardIcon />}
-											label="Délai de paiement (j)"
-											value={client?.delai_de_paiement !== null ? String(client?.delai_de_paiement ?? '') : ''}
-										/>
+										<InfoRow icon={<SellIcon />} label="Prix de vente" value={client?.prix_vente} />
+										<Divider />
+										<InfoRow icon={<ReceiptIcon />} label="TVA (%)" value={client?.tva} />
 									</Stack>
 								</CardContent>
 							</Card>
+
+							{/* Classification */}
+							<Card elevation={2} sx={{ borderRadius: 2 }}>
+								<CardContent sx={{ p: 3 }}>
+									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<BusinessIcon color="primary" />
+										<Typography variant="h6" fontWeight={700}>
+											Classification
+										</Typography>
+									</Stack>
+									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
+									<Stack spacing={0}>
+										<InfoRow icon={<BusinessIcon />} label="Catégorie" value={client?.categorie_name} />
+										<Divider />
+										<InfoRow icon={<StarIcon />} label="Marque" value={client?.marque_name} />
+										<Divider />
+										<InfoRow icon={<StraightenIcon />} label="Unité" value={client?.unite_name} />
+										<Divider />
+										<InfoRow icon={<LocationOnIcon />} label="Emplacement" value={client?.emplacement_name} />
+									</Stack>
+								</CardContent>
+							</Card>
+
 							{/* Remarque */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
@@ -302,4 +279,4 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	);
 };
 
-export default ClientsViewClient;
+export default ArticlesViewClient;
