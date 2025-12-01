@@ -1,40 +1,36 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import ClientsViewClient from './clientsView';
 import { Provider } from 'react-redux';
 import { store } from '@/store/store';
 import { useGetClientQuery } from '@/store/services/client';
 import '@testing-library/jest-dom';
 import { AppSession } from '@/types/_initTypes';
+import { useRouter } from 'next/navigation';
+import { useAppSelector } from '@/utils/hooks';
 
-// Mock Next.js App Router
+// Router mock
 jest.mock('next/navigation', () => ({
-	useRouter: () => ({
-		push: jest.fn(),
-		replace: jest.fn(),
-		refresh: jest.fn(),
-		back: jest.fn(),
-		forward: jest.fn(),
-		prefetch: jest.fn(),
-	}),
-	usePathname: () => '/mock-path',
+	useRouter: jest.fn(),
+	usePathname: jest.fn(() => '/mock-path'),
 }));
 
-// Mock RTK Query hook (keep other exports from the real module)
+// RTK Query mock
 jest.mock('@/store/services/client', () => {
 	const actual = jest.requireActual('@/store/services/client');
-	return {
-		...actual,
-		useGetClientQuery: jest.fn(),
-	};
+	return { ...actual, useGetClientQuery: jest.fn() };
 });
 
-// Mock session util
+// Session util mock
 jest.mock('@/store/session', () => ({
 	getAccessTokenFromSession: () => 'mock-token',
 }));
 
-// Mock session
+// Selector mock
+jest.mock('@/utils/hooks', () => ({
+	useAppSelector: jest.fn(),
+}));
+
 const mockSession: AppSession = {
 	accessToken: 'mock-token',
 	refreshToken: 'mock-refresh-token',
@@ -53,17 +49,10 @@ const mockSession: AppSession = {
 	},
 };
 
-// Render helper using your real store
 const renderWithProviders = (ui: React.ReactElement) => render(<Provider store={store}>{ui}</Provider>);
 
-// Component props
-const defaultProps = {
-	session: mockSession,
-	company_id: 1,
-	id: 123,
-};
+const defaultProps = { session: mockSession, company_id: 1, id: 123 };
 
-// Mock client data
 const mockClientPM = {
 	client_type: 'PM',
 	code_client: 'C123',
@@ -92,6 +81,26 @@ const mockClientPP = {
 };
 
 describe('ClientsViewClient', () => {
+	const mockPush = jest.fn();
+
+	beforeEach(() => {
+		(useRouter as jest.Mock).mockReturnValue({
+			push: mockPush,
+			replace: jest.fn(),
+			refresh: jest.fn(),
+			back: jest.fn(),
+			forward: jest.fn(),
+			prefetch: jest.fn(),
+		});
+
+		// Default: Admin role
+		(useAppSelector as jest.Mock).mockReturnValue([{ id: 1, role: 'Admin' }]);
+	});
+
+	afterEach(() => {
+		jest.clearAllMocks();
+	});
+
 	it('renders loading state', () => {
 		(useGetClientQuery as jest.Mock).mockReturnValue({
 			isLoading: true,
@@ -145,5 +154,68 @@ describe('ClientsViewClient', () => {
 		expect(screen.getByText('John')).toBeInTheDocument();
 		expect(screen.getByText('Adresse')).toBeInTheDocument();
 		expect(screen.getByText('123 Street')).toBeInTheDocument();
+	});
+
+	// 🔥 Added navigation + permissions tests
+	it('navigates back to list when "Liste des clients" button is clicked', () => {
+		(useGetClientQuery as jest.Mock).mockReturnValue({
+			isLoading: false,
+			error: undefined,
+			data: mockClientPM,
+		});
+
+		renderWithProviders(<ClientsViewClient {...defaultProps} />);
+		fireEvent.click(screen.getByText('Liste des clients', { selector: 'button' }));
+		expect(mockPush).toHaveBeenCalled();
+	});
+
+	it('shows and navigates with "Modifier" button when role is Admin', () => {
+		(useGetClientQuery as jest.Mock).mockReturnValue({
+			isLoading: false,
+			error: undefined,
+			data: mockClientPM,
+		});
+
+		renderWithProviders(<ClientsViewClient {...defaultProps} />);
+		const editBtn = screen.getByText('Modifier', { selector: 'button' });
+		expect(editBtn).toBeInTheDocument();
+
+		fireEvent.click(editBtn);
+		expect(mockPush).toHaveBeenCalled();
+	});
+
+	it('does not show "Modifier" button when role is not Admin', () => {
+		(useAppSelector as jest.Mock).mockReturnValueOnce([{ id: 1, role: 'User' }]);
+
+		(useGetClientQuery as jest.Mock).mockReturnValue({
+			isLoading: false,
+			error: undefined,
+			data: mockClientPM,
+		});
+
+		renderWithProviders(<ClientsViewClient {...defaultProps} />);
+		expect(screen.queryByText('Modifier', { selector: 'button' })).not.toBeInTheDocument();
+	});
+
+	it('does not show "Modifier" button during loading', () => {
+		(useGetClientQuery as jest.Mock).mockReturnValue({
+			isLoading: true,
+			error: undefined,
+			data: undefined,
+		});
+
+		renderWithProviders(<ClientsViewClient {...defaultProps} />);
+		expect(screen.queryByText('Modifier', { selector: 'button' })).not.toBeInTheDocument();
+	});
+
+	it('does not show "Modifier" button on error', () => {
+		(useGetClientQuery as jest.Mock).mockReturnValue({
+			isLoading: false,
+			error: { data: { message: 'Erreur serveur' } },
+			data: undefined,
+		});
+
+		renderWithProviders(<ClientsViewClient {...defaultProps} />);
+		expect(screen.queryByText('Modifier', { selector: 'button' })).not.toBeInTheDocument();
 	});
 });

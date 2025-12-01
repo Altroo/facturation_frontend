@@ -1,26 +1,22 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import CompaniesViewClient from './companiesView';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import { useGetCompanyQuery } from '@/store/services/company';
 import '@testing-library/jest-dom';
 import { AppSession } from '@/types/_initTypes';
+import { useRouter } from 'next/navigation';
+import { useAppSelector } from '@/utils/hooks';
+import { RootState } from '@/store/store';
 
-// 🧩 Mock Next.js App Router
+// Mock Next.js App Router as jest.fn so we can control return values
 jest.mock('next/navigation', () => ({
-	useRouter: () => ({
-		push: jest.fn(),
-		replace: jest.fn(),
-		refresh: jest.fn(),
-		back: jest.fn(),
-		forward: jest.fn(),
-		prefetch: jest.fn(),
-	}),
-	usePathname: () => '/mock-path',
+	useRouter: jest.fn(),
+	usePathname: jest.fn(() => '/mock-path'),
 }));
 
-// 🧩 Mock RTK Query hook
+// Mock RTK Query hook
 jest.mock('@/store/services/company', () => {
 	const actual = jest.requireActual('@/store/services/company');
 	return {
@@ -29,22 +25,18 @@ jest.mock('@/store/services/company', () => {
 	};
 });
 
-// 🧩 Mock hooks module
+// Mock hooks module
 jest.mock('@/utils/hooks', () => ({
-	useAppSelector: jest.fn().mockImplementation((selector) =>
-		selector({
-			profil: { is_staff: true },
-		}),
-	),
+	useAppSelector: jest.fn(),
 	usePermission: () => ({ is_staff: true }),
 }));
 
-// 🧩 Mock selectors
+// Mock selectors
 jest.mock('@/store/selectors', () => ({
 	getProfilState: jest.fn(() => ({ is_staff: true })),
 }));
 
-// 🧩 Minimal test store (no sagas, avoids DOMException noise)
+// Minimal test store
 const makeTestStore = () =>
 	configureStore({
 		reducer: {
@@ -74,10 +66,26 @@ const mockSession: AppSession = {
 };
 
 describe('CompaniesViewClient', () => {
-	const defaultProps = {
-		session: mockSession,
-		id: 123,
-	};
+	const defaultProps = { session: mockSession, id: 123 };
+	const mockPush = jest.fn();
+
+	beforeEach(() => {
+		(useRouter as jest.Mock).mockReturnValue({
+			push: mockPush,
+			replace: jest.fn(),
+			refresh: jest.fn(),
+			back: jest.fn(),
+			forward: jest.fn(),
+			prefetch: jest.fn(),
+		});
+
+		// Default: user is staff/admin so "Modifier" can render when not loading/error
+		(useAppSelector as jest.Mock).mockImplementation((selector: RootState) => selector({ profil: { is_staff: true } }));
+	});
+
+	afterEach(() => {
+		jest.clearAllMocks();
+	});
 
 	it('renders loading state', () => {
 		(useGetCompanyQuery as jest.Mock).mockReturnValue({
@@ -94,11 +102,7 @@ describe('CompaniesViewClient', () => {
 		(useGetCompanyQuery as jest.Mock).mockReturnValue({
 			isLoading: false,
 			data: undefined,
-			error: {
-				data: {
-					message: 'Erreur serveur',
-				},
-			},
+			error: { data: { message: 'Erreur serveur' } },
 		});
 
 		renderWithProviders(<CompaniesViewClient {...defaultProps} />);
@@ -113,14 +117,7 @@ describe('CompaniesViewClient', () => {
 				id: 123,
 				raison_sociale: 'Entreprise Test',
 				logo_cropped: '/logo.png',
-				admins: [
-					{
-						id: 1,
-						first_name: 'Alice',
-						last_name: 'Doe',
-						role: 'Admin',
-					},
-				],
+				admins: [{ id: 1, first_name: 'Alice', last_name: 'Doe', role: 'Admin' }],
 			},
 		});
 
@@ -129,5 +126,64 @@ describe('CompaniesViewClient', () => {
 		expect(screen.getByText('ID: 123')).toBeInTheDocument();
 		expect(screen.getByText('Alice Doe')).toBeInTheDocument();
 		expect(screen.getByText('Admin')).toBeInTheDocument();
+	});
+
+	it('navigates back to list when "Liste des entreprises" button is clicked', () => {
+		(useGetCompanyQuery as jest.Mock).mockReturnValue({
+			isLoading: false,
+			error: undefined,
+			data: {
+				id: 123,
+				raison_sociale: 'Entreprise Test',
+				logo_cropped: '/logo.png',
+				admins: [],
+			},
+		});
+
+		renderWithProviders(<CompaniesViewClient {...defaultProps} />);
+		fireEvent.click(screen.getByText('Liste des entreprises', { selector: 'button' }));
+		expect(mockPush).toHaveBeenCalled();
+	});
+
+	it('shows and navigates with "Modifier" button when not loading and no error', () => {
+		(useGetCompanyQuery as jest.Mock).mockReturnValue({
+			isLoading: false,
+			error: undefined,
+			data: {
+				id: 123,
+				raison_sociale: 'Entreprise Test',
+				logo_cropped: '/logo.png',
+				admins: [],
+			},
+		});
+
+		renderWithProviders(<CompaniesViewClient {...defaultProps} />);
+		const editBtn = screen.getByText('Modifier', { selector: 'button' });
+		expect(editBtn).toBeInTheDocument();
+
+		fireEvent.click(editBtn);
+		expect(mockPush).toHaveBeenCalled();
+	});
+
+	it('does not show "Modifier" button during loading', () => {
+		(useGetCompanyQuery as jest.Mock).mockReturnValue({
+			isLoading: true,
+			error: undefined,
+			data: undefined,
+		});
+
+		renderWithProviders(<CompaniesViewClient {...defaultProps} />);
+		expect(screen.queryByText('Modifier', { selector: 'button' })).not.toBeInTheDocument();
+	});
+
+	it('does not show "Modifier" button on error', () => {
+		(useGetCompanyQuery as jest.Mock).mockReturnValue({
+			isLoading: false,
+			error: { data: { message: 'Erreur serveur' } },
+			data: undefined,
+		});
+
+		renderWithProviders(<CompaniesViewClient {...defaultProps} />);
+		expect(screen.queryByText('Modifier', { selector: 'button' })).not.toBeInTheDocument();
 	});
 });
