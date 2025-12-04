@@ -4,6 +4,8 @@ import {
 	INPUT_MIN,
 	INPUT_PASSWORD_MIN,
 	INPUT_PHONE,
+	INPUT_PRICE_VENTE_ACHAT,
+	INPUT_QUANTITY_INT,
 	INPUT_REQUIRED,
 	MINI_INPUT_EMAIL,
 	SHORT_INPUT_REQUIRED,
@@ -293,21 +295,118 @@ export const articleSchema = z.object({
 	globalError: optionalTextField(1, 500),
 });
 
-export const devisLineSchema = z.object({
-	article: requiredNumberField(1),
-	prix_achat: requiredNumberField(0),
-	prix_vente: requiredNumberField(0),
-	quantity: requiredNumberField(1),
-	pourcentage_remise: requiredNumberField(0),
-});
+export const devisLineSchema = z
+	.object({
+		article: requiredNumberField(1),
+		prix_achat: requiredNumberField(0),
+		prix_vente: requiredNumberField(0),
+		quantity: requiredNumberField(1).refine((val) => Number.isInteger(val), {
+			error: INPUT_QUANTITY_INT,
+		}),
+		remise_type: z.enum(['pourcentage', 'fixe']).optional(),
+		remise: optionalNumberField(0), // now optional
+	})
+	.refine((data) => data.prix_vente >= data.prix_achat, {
+		error: INPUT_PRICE_VENTE_ACHAT,
+		path: ['prix_vente'],
+	})
+	.superRefine((data, ctx) => {
+		const hasRemiseType = data.remise_type !== undefined;
+		const rType = data.remise_type ?? 'pourcentage';
+		const remiseVal = data.remise;
 
-export const deviSchema = z.object({
-	numero_devis: requiredTextField(1, 20),
-	client: requiredNumberField(1),
-	date_devis: requiredTextField(1, 100),
-	numero_demande_prix_client: optionalTextField(1, 100).nullable(),
-	mode_paiement: requiredNumberField(1),
-	remarque: optionalTextField(2, 500).nullable(),
-	lignes: z.array(devisLineSchema).optional(),
-	globalError: optionalTextField(1, 500),
-});
+		if (hasRemiseType && (remiseVal === undefined || remiseVal === null || Number.isNaN(remiseVal))) {
+			ctx.addIssue({
+				path: ['remise'],
+				code: 'custom',
+				error: INPUT_REQUIRED,
+			});
+			return;
+		}
+
+		if (remiseVal !== undefined && remiseVal !== null) {
+			if (!Number.isInteger(remiseVal)) {
+				ctx.addIssue({
+					path: ['remise'],
+					code: 'custom',
+					error: 'La remise doit être un entier.',
+				});
+				return;
+			}
+
+			if (rType === 'pourcentage') {
+				if (remiseVal < 0 || remiseVal > 100) {
+					ctx.addIssue({
+						path: ['remise'],
+						code: 'custom',
+						error: 'La remise en pourcentage doit être entre 0 et 100.',
+					});
+				}
+			} else {
+				if (remiseVal < 0) {
+					ctx.addIssue({
+						path: ['remise'],
+						code: 'custom',
+						error: 'La remise fixe doit être positive ou nulle.',
+					});
+				}
+			}
+		}
+	});
+
+export const deviSchema = z
+	.object({
+		numero_devis: requiredTextField(1, 20),
+		client: requiredNumberField(1),
+		date_devis: requiredTextField(1, 100),
+		numero_demande_prix_client: optionalTextField(1, 100).nullable(),
+		mode_paiement: requiredNumberField(1),
+		remarque: optionalTextField(2, 500).nullable(),
+		remise_type: z.enum(['pourcentage', 'fixe']).optional(),
+		remise: optionalNumberField(0), // now optional
+		lignes: z.array(devisLineSchema).optional(),
+		globalError: optionalTextField(1, 500),
+	})
+	.superRefine((data, ctx) => {
+		const hasRemiseType = data.remise_type !== undefined;
+		const rType = data.remise_type ?? 'pourcentage';
+		const remiseVal = data.remise;
+
+		if (hasRemiseType && (remiseVal === undefined || remiseVal === null || Number.isNaN(remiseVal))) {
+			ctx.addIssue({
+				path: ['remise'],
+				code: 'custom',
+				error: INPUT_REQUIRED,
+			});
+			return;
+		}
+
+		if (remiseVal !== undefined && remiseVal !== null) {
+			if (!Number.isInteger(remiseVal)) {
+				ctx.addIssue({
+					path: ['remise'],
+					code: 'custom',
+					error: 'La remise doit être un entier.',
+				});
+				return;
+			}
+
+			if (rType === 'pourcentage') {
+				if (remiseVal < 0 || remiseVal > 100) {
+					ctx.addIssue({
+						path: ['remise'],
+						code: 'custom',
+						error: 'La remise en pourcentage doit être entre 0 et 100.',
+					});
+				}
+			} else {
+				if (remiseVal < 0) {
+					ctx.addIssue({
+						path: ['remise'],
+						code: 'custom',
+						error: 'La remise fixe doit être positive ou nulle.',
+					});
+				}
+			}
+		}
+	});

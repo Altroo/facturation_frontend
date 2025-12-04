@@ -6,3 +6,5 @@ export const INPUT_PHONE = 'Assurez-vous que ce champ comporte votre téléphone
 export const MINI_INPUT_EMAIL = "l'email doit être un email valide";
 export const INPUT_PASSWORD_MIN = (char: number) =>
 	`Ce mot de passe est trop court. Il doit contenir au moins ${char} caractères`;
+export const INPUT_QUANTITY_INT = 'La quantité doit être un entier';
+export const INPUT_PRICE_VENTE_ACHAT = "Le prix de vente doit être supérieur ou égal au prix d'achat";

@@ -1,5 +1,7 @@
 export type TypeDevisStatus = 'Brouillon' | 'Envoyé' | 'Accepté' | 'Refusé' | 'Annulé' | 'Expiré';
 
+export type TypeRemiseType = 'Pourcentage' | 'Fixe';
+
 export type DeviLineSchemaType = {
 	article: number;
 	prix_achat: number;

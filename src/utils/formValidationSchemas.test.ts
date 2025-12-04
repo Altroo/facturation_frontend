@@ -1,3 +1,4 @@
+// typescript
 import {
 	loginSchema,
 	emailSchema,
@@ -243,10 +244,77 @@ describe('Zod Schema Validation', () => {
 
 	// ✅ deviSchema
 	describe('deviSchema', () => {
-		it('validates required fields', () => {
+		it('validates required fields (with explicit remise)', () => {
 			expect(() =>
 				deviSchema.parse({
 					numero_devis: 'DV001',
+					client: 1,
+					date_devis: '2025-12-04',
+					mode_paiement: 2,
+					remise: 0,
+					lignes: [
+						{
+							article: 1,
+							prix_achat: 100,
+							prix_vente: 150,
+							quantity: 2,
+							remise: 0,
+						},
+					],
+				}),
+			).not.toThrow();
+		});
+
+		it('accepts when remise and remise_type are both omitted', () => {
+			expect(() =>
+				deviSchema.parse({
+					numero_devis: 'DV010',
+					client: 1,
+					date_devis: '2025-12-04',
+					mode_paiement: 2,
+				}),
+			).not.toThrow();
+		});
+
+		it('validates when remise_type provided and remise present (top-level and line)', () => {
+			expect(() =>
+				deviSchema.parse({
+					numero_devis: 'DV012',
+					client: 1,
+					date_devis: '2025-12-04',
+					mode_paiement: 2,
+					remise_type: 'pourcentage',
+					remise: 10,
+					lignes: [
+						{
+							article: 1,
+							prix_achat: 100,
+							prix_vente: 150,
+							quantity: 2,
+							remise_type: 'fixe',
+							remise: 5,
+						},
+					],
+				}),
+			).not.toThrow();
+		});
+
+		it('fails when top-level remise_type is provided but remise is missing', () => {
+			expect(() =>
+				deviSchema.parse({
+					numero_devis: 'DV011',
+					client: 1,
+					date_devis: '2025-12-04',
+					mode_paiement: 2,
+					remise_type: 'pourcentage',
+				}),
+			).toThrow();
+		});
+
+		it('fails when a line has remise_type but missing remise', () => {
+			expect(() =>
+				deviSchema.parse({
+					numero_devis: 'DV013',
 					client: 1,
 					date_devis: '2025-12-04',
 					mode_paiement: 2,
@@ -256,11 +324,11 @@ describe('Zod Schema Validation', () => {
 							prix_achat: 100,
 							prix_vente: 150,
 							quantity: 2,
-							pourcentage_remise: 0,
+							remise_type: 'pourcentage',
 						},
 					],
 				}),
-			).not.toThrow();
+			).toThrow();
 		});
 
 		it('fails with missing client', () => {
@@ -269,6 +337,7 @@ describe('Zod Schema Validation', () => {
 					numero_devis: 'DV002',
 					date_devis: '2025-12-04',
 					mode_paiement: 2,
+					remise: 0,
 				}),
 			).toThrow();
 		});
@@ -279,6 +348,7 @@ describe('Zod Schema Validation', () => {
 					client: 1,
 					date_devis: '2025-12-04',
 					mode_paiement: 2,
+					remise: 0,
 				}),
 			).toThrow();
 		});
@@ -289,6 +359,7 @@ describe('Zod Schema Validation', () => {
 					numero_devis: 'DV003',
 					client: 1,
 					mode_paiement: 2,
+					remise: 0,
 				}),
 			).toThrow();
 		});
@@ -299,6 +370,7 @@ describe('Zod Schema Validation', () => {
 					numero_devis: 'DV004',
 					client: 1,
 					date_devis: '2025-12-04',
+					remise: 0,
 				}),
 			).toThrow();
 		});
@@ -310,13 +382,14 @@ describe('Zod Schema Validation', () => {
 					client: 1,
 					date_devis: '2025-12-04',
 					mode_paiement: 2,
+					remise: 0,
 					lignes: [
 						{
 							article: 1,
 							prix_achat: 100,
 							prix_vente: 150,
 							quantity: -1,
-							pourcentage_remise: 0,
+							remise: 0,
 						},
 					],
 				}),

@@ -1,7 +1,7 @@
 import type { NbrEmployeType, CiviliteType, ManagedByType, ManagedByWriteOnlyType } from '@/types/companyTypes';
 import { TypeClientType } from '@/types/clientTypes';
 import { TypeArticleType } from '@/types/articleTypes';
-import { TypeDevisStatus } from '@/types/devisTypes';
+import { TypeDevisStatus, TypeRemiseType } from '@/types/devisTypes';
 
 export class UserClass {
 	constructor(
@@ -164,7 +164,8 @@ export class DeviLineClass {
 		public prix_achat: number,
 		public prix_vente: number,
 		public quantity: number,
-		public pourcentage_remise: number,
+		public remise_type: TypeRemiseType,
+		public remise: number,
 	) {}
 }
 
@@ -185,6 +186,8 @@ export class DeviClass {
 		public readonly created_by_user_id: number,
 		public readonly created_by_user_name: string | null,
 		public readonly lignes_count: number,
+		public remise_type: TypeRemiseType,
+		public remise: number,
 		public lignes: Array<DeviLineClass>,
 	) {}
 }
