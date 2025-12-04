@@ -1,5 +1,13 @@
 import * as types from './index';
-import { CategorieClass, CitiesClass, EmplacementClass, MarqueClass, UniteClass } from '@/models/Classes';
+import {
+	CategorieClass,
+	CitiesClass,
+	EmplacementClass,
+	MarqueClass,
+	UniteClass,
+	ModePaiementClass,
+	ModeReglementClass,
+} from '@/models/Classes';
 
 export const parameterSetCitiesAction = (props: Array<CitiesClass>) => {
 	return {
@@ -32,6 +40,20 @@ export const parameterSetUnitesAction = (props: Array<UniteClass>) => {
 export const parameterSetMarquesAction = (props: Array<MarqueClass>) => {
 	return {
 		type: types.PARAMETER_SET_MARQUES,
+		data: props,
+	};
+};
+
+export const parameterSetModePaiementAction = (props: Array<ModePaiementClass>) => {
+	return {
+		type: types.PARAMETER_SET_MODE_PAIEMENT,
+		data: props,
+	};
+};
+
+export const parameterSetModeRegelementAction = (props: Array<ModeReglementClass>) => {
+	return {
+		type: types.PARAMETER_SET_MODE_REGELEMENT,
 		data: props,
 	};
 };

@@ -5,9 +5,24 @@ import {
 	getGroupesState,
 	getCitiesState,
 	getUserCompaniesState,
+	getModePaiementState,
+	getModeRegelementState,
+	getCategoriesState,
+	getEmplacementsState,
+	getUnitesState,
+	getMarquesState,
 } from './index';
 
-import { UserClass, CitiesClass } from '@/models/Classes';
+import {
+	UserClass,
+	CitiesClass,
+	ModePaiementClass,
+	ModeReglementClass,
+	CategorieClass,
+	EmplacementClass,
+	UniteClass,
+	MarqueClass,
+} from '@/models/Classes';
 import type { CompaniesUserCompaniesType } from '@/types/companyTypes';
 
 describe('Redux selectors', () => {
@@ -15,7 +30,12 @@ describe('Redux selectors', () => {
 		{ id: 1, raison_sociale: 'Alpha Corp', role: 'Admin' },
 		{ id: 2, raison_sociale: 'Beta LLC', role: 'Manager' },
 	];
-
+	const mockCategories = [new CategorieClass(1, 'Cat1'), new CategorieClass(2, 'Cat2')];
+	const mockEmplacements = [new EmplacementClass(1, 'Emp1'), new EmplacementClass(2, 'Emp2')];
+	const mockUnites = [new UniteClass(1, 'Unit1'), new UniteClass(2, 'Unit2')];
+	const mockMarques = [new MarqueClass(1, 'Brand1'), new MarqueClass(2, 'Brand2')];
+	const mockModePaiement = [new ModePaiementClass(1, 'Cash'), new ModePaiementClass(2, 'Card')];
+	const mockModeRegelement = [new ModeReglementClass(1, 'Immediate'), new ModeReglementClass(2, 'Deferred')];
 	const mockState = {
 		_init: {
 			initStateToken: {
@@ -41,6 +61,12 @@ describe('Redux selectors', () => {
 		},
 		parameter: {
 			cities: [new CitiesClass(1, 'Tanger'), new CitiesClass(2, 'Tetouan')],
+			categories: mockCategories,
+			emplacements: mockEmplacements,
+			unites: mockUnites,
+			marques: mockMarques,
+			modePaiement: mockModePaiement,
+			modeRegelement: mockModeRegelement,
 		},
 		companies: {
 			user_companies: mockCompanies,
@@ -82,5 +108,47 @@ describe('Redux selectors', () => {
 		expect(companies).toEqual(mockCompanies);
 		expect(companies[0].raison_sociale).toBe('Alpha Corp');
 		expect(companies[1].role).toBe('Manager');
+	});
+
+	it('getCategoriesState should return the categories array', () => {
+		const categories = getCategoriesState(mockState);
+		expect(Array.isArray(categories)).toBe(true);
+		expect(categories[0]).toBeInstanceOf(CategorieClass);
+		expect(categories.map((c) => c.nom)).toEqual(['Cat1', 'Cat2']);
+	});
+
+	it('getEmplacementsState should return the emplacements array', () => {
+		const emplacements = getEmplacementsState(mockState);
+		expect(Array.isArray(emplacements)).toBe(true);
+		expect(emplacements[0]).toBeInstanceOf(EmplacementClass);
+		expect(emplacements.map((e) => e.nom)).toEqual(['Emp1', 'Emp2']);
+	});
+
+	it('getUnitesState should return the unites array', () => {
+		const unites = getUnitesState(mockState);
+		expect(Array.isArray(unites)).toBe(true);
+		expect(unites[0]).toBeInstanceOf(UniteClass);
+		expect(unites.map((u) => u.nom)).toEqual(['Unit1', 'Unit2']);
+	});
+
+	it('getMarquesState should return the marques array', () => {
+		const marques = getMarquesState(mockState);
+		expect(Array.isArray(marques)).toBe(true);
+		expect(marques[0]).toBeInstanceOf(MarqueClass);
+		expect(marques.map((m) => m.nom)).toEqual(['Brand1', 'Brand2']);
+	});
+
+	it('getModePaiementState should return the modePaiement array', () => {
+		const modePaiement = getModePaiementState(mockState);
+		expect(Array.isArray(modePaiement)).toBe(true);
+		expect(modePaiement[0]).toBeInstanceOf(ModePaiementClass);
+		expect(modePaiement.map((m) => m.nom)).toEqual(['Cash', 'Card']);
+	});
+
+	it('getModeRegelementState should return the modeRegelement array', () => {
+		const modeRegelement = getModeRegelementState(mockState);
+		expect(Array.isArray(modeRegelement)).toBe(true);
+		expect(modeRegelement[0]).toBeInstanceOf(ModeReglementClass);
+		expect(modeRegelement.map((m) => m.nom)).toEqual(['Immediate', 'Deferred']);
 	});
 });

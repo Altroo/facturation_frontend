@@ -1,5 +1,13 @@
 import { setupApiStore } from '@/store/setupApiStore';
-import { citiesApi, marqueApi, categorieApi, uniteApi, emplacementApi } from '@/store/services/parameter';
+import {
+	citiesApi,
+	marqueApi,
+	categorieApi,
+	uniteApi,
+	emplacementApi,
+	modePaiementApi,
+	modeRegelementApi,
+} from '@/store/services/parameter';
 
 // Set default env vars for each API base URL
 beforeAll(() => {
@@ -8,6 +16,8 @@ beforeAll(() => {
 	process.env.NEXT_PUBLIC_PARAMETER_CATEGORIE ||= 'https://example.com/categories';
 	process.env.NEXT_PUBLIC_PARAMETER_UNITE ||= 'https://example.com/unites';
 	process.env.NEXT_PUBLIC_PARAMETER_EMPLACEMENT ||= 'https://example.com/emplacements';
+	process.env.NEXT_PUBLIC_PARAMETER_MODE_PAIEMENT ||= 'https://example.com/mode-paiement';
+	process.env.NEXT_PUBLIC_PARAMETER_MODE_REGELEMENT ||= 'https://example.com/mode-regelement';
 });
 
 // Mock axiosBaseQuery so all endpoints succeed
@@ -203,6 +213,82 @@ describe('emplacementApi', () => {
 		const result = await storeRef.store.dispatch(
 			emplacementApi.endpoints.addEmplacement.initiate({
 				data: { nom: 'New Emplacement' },
+			}),
+		);
+		expect('error' in result).toBe(false);
+	});
+});
+
+describe('modePaiementApi', () => {
+	const storeRef = setupApiStore(modePaiementApi);
+
+	it('getModePaiementList query should complete without error', async () => {
+		const result = await storeRef.store.dispatch(modePaiementApi.endpoints.getModePaiementList.initiate());
+		expect('error' in result).toBe(false);
+	});
+
+	it('getModePaiement query should complete without error', async () => {
+		const result = await storeRef.store.dispatch(modePaiementApi.endpoints.getModePaiement.initiate({ id: 1 }));
+		expect('error' in result).toBe(false);
+	});
+
+	it('deleteModePaiement mutation should complete without error', async () => {
+		const result = await storeRef.store.dispatch(modePaiementApi.endpoints.deleteModePaiement.initiate({ id: 2 }));
+		expect('error' in result).toBe(false);
+	});
+
+	it('editModePaiement mutation should complete without error', async () => {
+		const result = await storeRef.store.dispatch(
+			modePaiementApi.endpoints.editModePaiement.initiate({
+				id: 3,
+				data: { nom: 'Updated ModePaiement' },
+			}),
+		);
+		expect('error' in result).toBe(false);
+	});
+
+	it('addModePaiement mutation should complete without error', async () => {
+		const result = await storeRef.store.dispatch(
+			modePaiementApi.endpoints.addModePaiement.initiate({
+				data: { nom: 'New ModePaiement' },
+			}),
+		);
+		expect('error' in result).toBe(false);
+	});
+});
+
+describe('modeRegelementApi', () => {
+	const storeRef = setupApiStore(modeRegelementApi);
+
+	it('getModeRegelementList query should complete without error', async () => {
+		const result = await storeRef.store.dispatch(modeRegelementApi.endpoints.getModeRegelementList.initiate());
+		expect('error' in result).toBe(false);
+	});
+
+	it('getModeRegelement query should complete without error', async () => {
+		const result = await storeRef.store.dispatch(modeRegelementApi.endpoints.getModeRegelement.initiate({ id: 1 }));
+		expect('error' in result).toBe(false);
+	});
+
+	it('deleteModeRegelement mutation should complete without error', async () => {
+		const result = await storeRef.store.dispatch(modeRegelementApi.endpoints.deleteModeRegelement.initiate({ id: 2 }));
+		expect('error' in result).toBe(false);
+	});
+
+	it('editModeRegelement mutation should complete without error', async () => {
+		const result = await storeRef.store.dispatch(
+			modeRegelementApi.endpoints.editModeRegelement.initiate({
+				id: 3,
+				data: { nom: 'Updated ModeRegelement' },
+			}),
+		);
+		expect('error' in result).toBe(false);
+	});
+
+	it('addModeRegelement mutation should complete without error', async () => {
+		const result = await storeRef.store.dispatch(
+			modeRegelementApi.endpoints.addModeRegelement.initiate({
+				data: { nom: 'New ModeRegelement' },
 			}),
 		);
 		expect('error' in result).toBe(false);

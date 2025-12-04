@@ -1,6 +1,7 @@
 import type { NbrEmployeType, CiviliteType, ManagedByType, ManagedByWriteOnlyType } from '@/types/companyTypes';
 import { TypeClientType } from '@/types/clientTypes';
 import { TypeArticleType } from '@/types/articleTypes';
+import { TypeDevisStatus } from '@/types/devisTypes';
 
 export class UserClass {
 	constructor(
@@ -138,5 +139,52 @@ export class EmplacementClass {
 	constructor(
 		public readonly id: number,
 		public nom: string,
+	) {}
+}
+
+export class ModePaiementClass {
+	constructor(
+		public readonly id: number,
+		public nom: string,
+	) {}
+}
+
+export class ModeReglementClass {
+	constructor(
+		public readonly id: number,
+		public nom: string,
+	) {}
+}
+
+export class DeviLineClass {
+	constructor(
+		public readonly id: number,
+		public article: number,
+		public readonly article_designation: string | null,
+		public prix_achat: number,
+		public prix_vente: number,
+		public quantity: number,
+		public pourcentage_remise: number,
+	) {}
+}
+
+export class DeviClass {
+	constructor(
+		public readonly id: number,
+		public numero_devis: string,
+		public client: number,
+		public readonly client_name: string | null,
+		public date_devis: string,
+		public numero_demande_prix_client: string,
+		public mode_paiement: number,
+		public readonly mode_paiement_name: string | null,
+		public remarque: string | null,
+		public status: TypeDevisStatus,
+		public readonly date_created: string,
+		public readonly date_updated: string,
+		public readonly created_by_user_id: number,
+		public readonly created_by_user_name: string | null,
+		public readonly lignes_count: number,
+		public lignes: Array<DeviLineClass>,
 	) {}
 }

@@ -4,8 +4,18 @@ import reducer, {
 	setEmplacements,
 	setUnites,
 	setMarques,
+	setModePaiement,
+	setModeRegelement,
 } from '@/store/slices/parameterSlice';
-import { CitiesClass, CategorieClass, EmplacementClass, UniteClass, MarqueClass } from '@/models/Classes';
+import {
+	CitiesClass,
+	CategorieClass,
+	EmplacementClass,
+	UniteClass,
+	MarqueClass,
+	ModePaiementClass,
+	ModeReglementClass,
+} from '@/models/Classes';
 
 describe('parameterSlice', () => {
 	const initialState = {
@@ -14,6 +24,8 @@ describe('parameterSlice', () => {
 		emplacements: [],
 		unites: [],
 		marques: [],
+		modeRegelement: [],
+		modePaiement: [],
 	};
 
 	it('should return the initial state', () => {
@@ -63,5 +75,23 @@ describe('parameterSlice', () => {
 		const newState = reducer(initialState, setMarques([m1, m2]));
 
 		expect(newState.marques).toEqual([m1, m2]);
+	});
+
+	it('should handle setModePaiement', () => {
+		const mp1 = new ModePaiementClass(1, 'Cash');
+		const mp2 = new ModePaiementClass(2, 'Card');
+
+		const newState = reducer(initialState, setModePaiement([mp1, mp2]));
+
+		expect(newState.modePaiement).toEqual([mp1, mp2]);
+	});
+
+	it('should handle setModeRegelement', () => {
+		const mr1 = new ModeReglementClass(1, 'Immediate');
+		const mr2 = new ModeReglementClass(2, 'Deferred');
+
+		const newState = reducer(initialState, setModeRegelement([mr1, mr2]));
+
+		expect(newState.modeRegelement).toEqual([mr1, mr2]);
 	});
 });

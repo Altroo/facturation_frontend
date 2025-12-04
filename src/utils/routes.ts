@@ -33,6 +33,12 @@ export const ARTICLES_VIEW = (id: number, company_id: number) =>
 	`${SITE_ROOT}dashboard/articles/${id}/?company_id=${company_id}`;
 export const ARTICLES_EDIT = (id: number, company_id: number) =>
 	`${SITE_ROOT}dashboard/articles/${id}/edit/?company_id=${company_id}`;
+// Devis
+export const DEVIS_LIST = `${SITE_ROOT}dashboard/devis`;
+export const DEVIS_ADD = `${SITE_ROOT}dashboard/devis/new/`;
+export const DEVIS_LINES_ADD = (id: number) => `${SITE_ROOT}dashboard/devis/${id}/add-lines/`;
+export const DEVIS_VIEW = (id: number) => `${SITE_ROOT}dashboard/devis/${id}/`;
+export const DEVIS_EDIT = (id: number) => `${SITE_ROOT}dashboard/devis/${id}/edit/`;
 // Users
 export const USERS_LIST = `${SITE_ROOT}dashboard/users`;
 export const USERS_ADD = `${SITE_ROOT}dashboard/users/new`;

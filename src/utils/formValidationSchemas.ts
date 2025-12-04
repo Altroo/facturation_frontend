@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import z from 'zod/v4';
 import {
 	INPUT_MAX,
 	INPUT_MIN,
@@ -20,74 +20,6 @@ const passwordField = z.preprocess(
 		.nonempty({ error: INPUT_REQUIRED }),
 );
 
-const requiredTextField = (min: number, max: number) =>
-	z.preprocess(
-		(val) => (val === undefined ? '' : val),
-		z
-			.string()
-			.min(min, { error: INPUT_MIN(min) })
-			.max(max, { error: INPUT_MAX(max) })
-			.nonempty({ error: INPUT_REQUIRED }),
-	);
-
-const requiredChoiceField = () =>
-	z.preprocess((val) => (val === undefined ? '' : val), z.string().nonempty({ error: INPUT_REQUIRED }));
-
-const optionalTextField = (min: number, max: number) =>
-	z.preprocess(
-		(val) => (val === undefined || val === null || val === '' ? undefined : val),
-		z
-			.string()
-			.min(min, { error: INPUT_MIN(min) })
-			.max(max, { error: INPUT_MAX(max) })
-			.optional(),
-	);
-
-export const loginSchema = z.object({
-	email: z.email({ error: MINI_INPUT_EMAIL }),
-	password: passwordField,
-	globalError: z.string().optional(),
-});
-
-export const emailSchema = z.object({
-	email: z.email({ error: MINI_INPUT_EMAIL }),
-	globalError: z.string().optional(),
-});
-
-export const passwordResetConfirmationSchema = z.object({
-	new_password: passwordField,
-	new_password2: passwordField,
-	globalError: z.string().optional(),
-});
-
-const singleDigit = z
-	.string()
-	.min(1, { error: SHORT_INPUT_REQUIRED })
-	.regex(/^\d$/, { error: SHORT_INPUT_REQUIRED })
-	.transform((val) => Number(val));
-
-export const passwordResetCodeSchema = z.object({
-	one: singleDigit,
-	two: singleDigit,
-	three: singleDigit,
-	four: singleDigit,
-	globalError: z.string().optional(),
-});
-
-export const profilSchema = z.object({
-	first_name: requiredTextField(2, 30),
-	last_name: requiredTextField(2, 30),
-	gender: z.string().optional(),
-	avatar: base64ImageField,
-	avatar_cropped: base64ImageField,
-});
-
-export const changePasswordSchema = z.object({
-	old_password: passwordField,
-	new_password: passwordField,
-	new_password2: passwordField,
-});
-
 const optionalEmailField = z.preprocess(
 	(val) => (val === undefined || val === null || val === '' ? undefined : val),
 	z.email({ error: MINI_INPUT_EMAIL }).optional(),
@@ -106,6 +38,98 @@ const optionalPhoneField = z.preprocess(
 		.optional(),
 );
 
+const requiredTextField = (min: number, max: number) =>
+	z.preprocess(
+		(val) => (val === undefined ? '' : val),
+		z
+			.string()
+			.min(min, { error: INPUT_MIN(min) })
+			.max(max, { error: INPUT_MAX(max) })
+			.nonempty({ error: INPUT_REQUIRED }),
+	);
+
+const requiredChoiceField = () =>
+	z.preprocess((val) => (val === undefined ? '' : val), z.string().nonempty({ error: INPUT_REQUIRED }));
+
+const optionalChoiceField = () =>
+	z.preprocess((val) => (val === undefined || val === null || val === '' ? undefined : val), z.string().optional());
+
+const optionalTextField = (min: number, max: number) =>
+	z.preprocess(
+		(val) => (val === undefined || val === null || val === '' ? undefined : val),
+		z
+			.string()
+			.min(min, { error: INPUT_MIN(min) })
+			.max(max, { error: INPUT_MAX(max) })
+			.optional(),
+	);
+
+const requiredNumberField = (min: number = 1, max?: number) =>
+	z.preprocess(
+		(val) => (val === undefined || val === null ? NaN : Number(val)),
+		z
+			.number({ error: INPUT_REQUIRED })
+			.refine((val) => !Number.isNaN(val), { error: INPUT_REQUIRED })
+			.min(min, { error: INPUT_MIN(min) })
+			.max(max ?? Number.MAX_SAFE_INTEGER, { error: INPUT_MAX(max ?? Number.MAX_SAFE_INTEGER) }),
+	);
+
+const optionalNumberField = (min: number = 1, max?: number) =>
+	z.preprocess(
+		(val) => (val === undefined || val === null || val === '' ? undefined : Number(val)),
+		z
+			.number()
+			.refine((val) => !Number.isNaN(val), { error: INPUT_REQUIRED })
+			.min(min, { error: INPUT_MIN(min) })
+			.max(max ?? Number.MAX_SAFE_INTEGER, { error: INPUT_MAX(max ?? Number.MAX_SAFE_INTEGER) })
+			.optional(),
+	);
+
+const singleDigit = z
+	.string()
+	.min(1, { error: SHORT_INPUT_REQUIRED })
+	.regex(/^\d$/, { error: SHORT_INPUT_REQUIRED })
+	.transform((val) => Number(val));
+
+export const loginSchema = z.object({
+	email: z.email({ error: MINI_INPUT_EMAIL }),
+	password: passwordField,
+	globalError: optionalTextField(1, 500),
+});
+
+export const emailSchema = z.object({
+	email: z.email({ error: MINI_INPUT_EMAIL }),
+	globalError: optionalTextField(1, 500),
+});
+
+export const passwordResetConfirmationSchema = z.object({
+	new_password: passwordField,
+	new_password2: passwordField,
+	globalError: optionalTextField(1, 500),
+});
+
+export const passwordResetCodeSchema = z.object({
+	one: singleDigit,
+	two: singleDigit,
+	three: singleDigit,
+	four: singleDigit,
+	globalError: optionalTextField(1, 500),
+});
+
+export const profilSchema = z.object({
+	first_name: requiredTextField(2, 30),
+	last_name: requiredTextField(2, 30),
+	gender: optionalChoiceField(),
+	avatar: base64ImageField,
+	avatar_cropped: base64ImageField,
+});
+
+export const changePasswordSchema = z.object({
+	old_password: passwordField,
+	new_password: passwordField,
+	new_password2: passwordField,
+});
+
 export const companySchema = z.object({
 	// REQUIRED FIELDS
 	raison_sociale: requiredTextField(2, 255),
@@ -114,23 +138,23 @@ export const companySchema = z.object({
 
 	// OPTIONAL FIELDS
 	email: optionalEmailField,
-	civilite_responsable: z.string().optional(),
+	civilite_responsable: optionalChoiceField(),
 	nom_responsable: optionalTextField(2, 255),
 	gsm_responsable: optionalPhoneField,
-	adresse: z.string().optional(),
+	adresse: optionalTextField(2, 255),
 	telephone: optionalPhoneField,
 	fax: optionalPhoneField,
 	site_web: optionalUrlField,
-	numero_du_compte: z.string().optional(),
-	registre_de_commerce: z.string().optional(),
-	identifiant_fiscal: z.string().optional(),
-	tax_professionnelle: z.string().optional(),
-	CNSS: z.string().optional(),
+	numero_du_compte: optionalTextField(2, 100),
+	registre_de_commerce: optionalTextField(2, 100),
+	identifiant_fiscal: optionalTextField(2, 100),
+	tax_professionnelle: optionalTextField(2, 100),
+	CNSS: optionalTextField(2, 100),
 	managed_by: z
 		.array(
 			z.object({
-				pk: z.number(),
-				role: z.string(),
+				pk: requiredNumberField(1),
+				role: requiredTextField(1, 50),
 			}),
 		)
 		.optional(),
@@ -138,7 +162,7 @@ export const companySchema = z.object({
 	logo_cropped: base64ImageField,
 	cachet: base64ImageField,
 	cachet_cropped: base64ImageField,
-	globalError: z.string().optional(),
+	globalError: optionalTextField(1, 500),
 });
 
 export const userSchema = z.object({
@@ -153,16 +177,16 @@ export const userSchema = z.object({
 	companies: z
 		.array(
 			z.object({
-				membership_id: z.number(),
-				company_id: z.number(),
-				raison_sociale: z.string(),
-				role: z.string(),
+				membership_id: requiredNumberField(1),
+				company_id: requiredNumberField(1),
+				raison_sociale: requiredTextField(1, 255),
+				role: requiredTextField(1, 50),
 			}),
 		)
 		.optional(),
 	avatar: base64ImageField,
 	avatar_cropped: base64ImageField,
-	globalError: z.string().optional(),
+	globalError: optionalTextField(1, 500),
 });
 
 export const pmRequired = ['raison_sociale', 'ville', 'ICE', 'registre_de_commerce', 'delai_de_paiement'] as const;
@@ -171,21 +195,18 @@ export const ppRequired = ['nom', 'prenom', 'adresse', 'ville', 'tel', 'delai_de
 export const clientSchema = z
 	.object({
 		client_type: z.enum(['PM', 'PP']),
-		code_client: requiredTextField(1, 100), // required string with min/max
-		company: z.number(),
+		code_client: requiredTextField(1, 100),
+		company: requiredNumberField(1),
 
 		// optional fields
 		raison_sociale: optionalTextField(2, 255),
 		nom: optionalTextField(2, 255),
 		prenom: optionalTextField(2, 255),
 		adresse: optionalTextField(2, 255).nullable(),
-		ville: z.number().nullable().optional(),
-		tel: optionalPhoneField,
+		ville: optionalNumberField(1).nullable(),
+		tel: optionalPhoneField.nullable(),
 		email: optionalEmailField,
-		delai_de_paiement: z.preprocess(
-			(val) => (val === '' || val === null || val === undefined ? null : Number(val)),
-			z.number().int().positive().nullable().optional(),
-		),
+		delai_de_paiement: optionalNumberField(1).nullable(),
 		remarque: optionalTextField(2, 500).nullable(),
 
 		numero_du_compte: optionalTextField(2, 100).nullable(),
@@ -195,7 +216,7 @@ export const clientSchema = z
 		taxe_professionnelle: optionalTextField(2, 100).nullable(),
 		CNSS: optionalTextField(2, 100).nullable(),
 
-		globalError: z.string().optional(),
+		globalError: optionalTextField(1, 500),
 	})
 	.superRefine((data: ClientSchemaType, ctx) => {
 		if (data.client_type === 'PM') {
@@ -257,17 +278,36 @@ export const articleSchema = z.object({
 	type_article: z.enum(['Produit', 'Service']),
 	reference: requiredTextField(1, 100),
 	designation: requiredTextField(1, 500),
-	company: z.number(),
+	company: requiredNumberField(1),
 	// optional fields
 	photo: base64ImageField,
 	photo_cropped: base64ImageField,
-	emplacement: z.number().nullable().optional(),
-	marque: z.number().nullable().optional(),
-	categorie: z.number().nullable().optional(),
-	unite: z.number().nullable().optional(),
-	prix_achat: z.number().nullable().optional(),
-	prix_vente: z.number().nullable().optional(),
-	tva: z.number().nullable().optional(),
+	emplacement: optionalNumberField(1).nullable(),
+	marque: optionalNumberField(1).nullable(),
+	categorie: optionalNumberField(1).nullable(),
+	unite: optionalNumberField(1).nullable(),
+	prix_achat: optionalNumberField(0).nullable(),
+	prix_vente: optionalNumberField(0).nullable(),
+	tva: optionalNumberField(0).nullable(),
 	remarque: optionalTextField(2, 500).nullable(),
-	globalError: z.string().optional(),
+	globalError: optionalTextField(1, 500),
+});
+
+export const devisLineSchema = z.object({
+	article: requiredNumberField(1),
+	prix_achat: requiredNumberField(0),
+	prix_vente: requiredNumberField(0),
+	quantity: requiredNumberField(1),
+	pourcentage_remise: requiredNumberField(0),
+});
+
+export const deviSchema = z.object({
+	numero_devis: requiredTextField(1, 20),
+	client: requiredNumberField(1),
+	date_devis: requiredTextField(1, 100),
+	numero_demande_prix_client: optionalTextField(1, 100).nullable(),
+	mode_paiement: requiredNumberField(1),
+	remarque: optionalTextField(2, 500).nullable(),
+	lignes: z.array(devisLineSchema).optional(),
+	globalError: optionalTextField(1, 500),
 });

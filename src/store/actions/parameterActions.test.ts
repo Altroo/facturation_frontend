@@ -1,12 +1,22 @@
 import * as types from './index';
 import {
+	parameterSetModePaiementAction,
+	parameterSetModeRegelementAction,
 	parameterSetCitiesAction,
 	parameterSetCategoriesAction,
 	parameterSetEmplacementsAction,
 	parameterSetUnitesAction,
 	parameterSetMarquesAction,
 } from './parameterActions';
-import { CitiesClass, CategorieClass, EmplacementClass, UniteClass, MarqueClass } from '@/models/Classes';
+import {
+	CitiesClass,
+	CategorieClass,
+	EmplacementClass,
+	UniteClass,
+	MarqueClass,
+	ModePaiementClass,
+	ModeReglementClass,
+} from '@/models/Classes';
 
 describe('parameterActions', () => {
 	it('parameterSetCitiesAction should create an action with type PARAMETER_SET_CITIES and array data', () => {
@@ -68,5 +78,27 @@ describe('parameterActions', () => {
 		const action = parameterSetCitiesAction([]);
 		expect(action.type).toBe(types.PARAMETER_SET_CITIES);
 		expect(action.data).toEqual([]);
+	});
+
+	it('parameterSetModePaiementAction should create an action with type PARAMETER_SET_MODE_PAIEMENT and array data', () => {
+		const mp1 = new ModePaiementClass(1, 'Cash');
+		const mp2 = new ModePaiementClass(2, 'Card');
+		const props = [mp1, mp2];
+
+		const action = parameterSetModePaiementAction(props);
+
+		expect(action.type).toBe(types.PARAMETER_SET_MODE_PAIEMENT);
+		expect(action.data).toEqual([mp1, mp2]);
+	});
+
+	it('parameterSetModeRegelementAction should create an action with type PARAMETER_SET_MODE_REGELEMENT and array data', () => {
+		const mr1 = new ModeReglementClass(1, 'Immediate');
+		const mr2 = new ModeReglementClass(2, 'Deferred');
+		const props = [mr1, mr2];
+
+		const action = parameterSetModeRegelementAction(props);
+
+		expect(action.type).toBe(types.PARAMETER_SET_MODE_REGELEMENT);
+		expect(action.data).toEqual([mr1, mr2]);
 	});
 });

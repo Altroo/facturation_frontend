@@ -1,5 +1,13 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { CategorieClass, CitiesClass, EmplacementClass, MarqueClass, UniteClass } from '@/models/Classes';
+import {
+	CategorieClass,
+	CitiesClass,
+	EmplacementClass,
+	MarqueClass,
+	ModePaiementClass,
+	ModeReglementClass,
+	UniteClass,
+} from '@/models/Classes';
 import { ParameterStateInterface } from '@/types/parameterTypes';
 
 const initialState: ParameterStateInterface = {
@@ -8,6 +16,8 @@ const initialState: ParameterStateInterface = {
 	emplacements: [],
 	unites: [],
 	marques: [],
+	modePaiement: [],
+	modeRegelement: [],
 };
 
 const parameterSlice = createSlice({
@@ -29,9 +39,16 @@ const parameterSlice = createSlice({
 		setMarques: (state, action: PayloadAction<Array<MarqueClass>>) => {
 			state.marques = action.payload;
 		},
+		setModeRegelement: (state, action: PayloadAction<Array<ModeReglementClass>>) => {
+			state.modeRegelement = action.payload;
+		},
+		setModePaiement: (state, action: PayloadAction<Array<ModePaiementClass>>) => {
+			state.modePaiement = action.payload;
+		},
 	},
 });
 
-export const { setCities, setCategories, setEmplacements, setMarques, setUnites } = parameterSlice.actions;
+export const { setCities, setCategories, setEmplacements, setMarques, setUnites, setModePaiement, setModeRegelement } =
+	parameterSlice.actions;
 
 export default parameterSlice.reducer;

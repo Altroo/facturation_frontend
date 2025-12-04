@@ -1,5 +1,14 @@
 import type { RootState } from '@/store/store';
-import { UserClass, CitiesClass, CategorieClass, EmplacementClass, UniteClass, MarqueClass } from '@/models/Classes';
+import {
+	UserClass,
+	CitiesClass,
+	CategorieClass,
+	EmplacementClass,
+	UniteClass,
+	MarqueClass,
+	ModePaiementClass,
+	ModeReglementClass,
+} from '@/models/Classes';
 import { CompaniesUserCompaniesType } from '@/types/companyTypes';
 import { InitStateToken } from '@/types/_initTypes';
 
@@ -17,7 +26,8 @@ export const getCategoriesState = (state: RootState): Array<CategorieClass> => s
 export const getEmplacementsState = (state: RootState): Array<EmplacementClass> => state.parameter.emplacements;
 export const getUnitesState = (state: RootState): Array<UniteClass> => state.parameter.unites;
 export const getMarquesState = (state: RootState): Array<MarqueClass> => state.parameter.marques;
-
+export const getModePaiementState = (state: RootState): Array<ModePaiementClass> => state.parameter.modePaiement;
+export const getModeRegelementState = (state: RootState): Array<ModeReglementClass> => state.parameter.modeRegelement;
 // Companies
 export const getUserCompaniesState = (state: RootState): Array<CompaniesUserCompaniesType> =>
 	state.companies.user_companies;

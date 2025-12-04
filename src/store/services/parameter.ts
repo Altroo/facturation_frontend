@@ -2,7 +2,15 @@ import { createApi } from '@reduxjs/toolkit/query/react';
 import { isAuthenticatedInstance } from '@/utils/helpers';
 import { axiosBaseQuery } from '@/utils/axiosBaseQuery';
 import { getInitStateToken } from '@/store/selectors';
-import { CitiesClass, MarqueClass, CategorieClass, UniteClass, EmplacementClass } from '@/models/Classes';
+import {
+	CitiesClass,
+	MarqueClass,
+	CategorieClass,
+	UniteClass,
+	EmplacementClass,
+	ModePaiementClass,
+	ModeReglementClass,
+} from '@/models/Classes';
 import type { ApiErrorResponseType, SuccessResponseType } from '@/types/_initTypes';
 import type { RootState } from '@/store/store';
 import { initToken } from '@/store/slices/_initSlice';
@@ -261,6 +269,130 @@ export const emplacementApi = createApi({
 		}),
 	}),
 });
+
+export const modePaiementApi = createApi({
+	reducerPath: 'modePaiementApi',
+	tagTypes: ['ModePaiement'],
+	baseQuery: axiosBaseQuery((api) =>
+		isAuthenticatedInstance(
+			() => getInitStateToken(api.getState() as RootState),
+			() => api.dispatch(initToken()),
+		),
+	),
+	endpoints: (builder) => ({
+		getModePaiementList: builder.query<Array<ModePaiementClass>, void>({
+			query: () => ({
+				url: process.env.NEXT_PUBLIC_PARAMETER_MODE_PAIEMENT as string,
+				method: 'GET',
+			}),
+			providesTags: ['ModePaiement'],
+		}),
+		getModePaiement: builder.query<ModePaiementClass, { id: number }>({
+			query: ({ id }) => ({
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_PAIEMENT}/${id}/`,
+				method: 'GET',
+			}),
+			providesTags: ['ModePaiement'],
+		}),
+		deleteModePaiement: builder.mutation<void | ApiErrorResponseType, { id: number }>({
+			query: ({ id }) => ({
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_PAIEMENT}/${id}/`,
+				method: 'DELETE',
+			}),
+			invalidatesTags: ['ModePaiement'],
+		}),
+		editModePaiement: builder.mutation<
+			SuccessResponseType<ModePaiementClass>,
+			{ id: number; data: Partial<ModePaiementClass> }
+		>({
+			query: ({ id, data }) => ({
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_PAIEMENT}/${id}/`,
+				method: 'PUT',
+				data,
+			}),
+			invalidatesTags: ['ModePaiement'],
+		}),
+		addModePaiement: builder.mutation<SuccessResponseType<ModePaiementClass>, { data: Partial<ModePaiementClass> }>({
+			query: ({ data }) => ({
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_PAIEMENT}/`,
+				method: 'POST',
+				data,
+			}),
+			invalidatesTags: ['ModePaiement'],
+		}),
+	}),
+});
+
+export const modeRegelementApi = createApi({
+	reducerPath: 'modeRegelementApi',
+	tagTypes: ['ModeRegelement'],
+	baseQuery: axiosBaseQuery((api) =>
+		isAuthenticatedInstance(
+			() => getInitStateToken(api.getState() as RootState),
+			() => api.dispatch(initToken()),
+		),
+	),
+	endpoints: (builder) => ({
+		getModeRegelementList: builder.query<Array<ModeReglementClass>, void>({
+			query: () => ({
+				url: process.env.NEXT_PUBLIC_PARAMETER_MODE_REGELEMENT as string,
+				method: 'GET',
+			}),
+			providesTags: ['ModeRegelement'],
+		}),
+		getModeRegelement: builder.query<ModeReglementClass, { id: number }>({
+			query: ({ id }) => ({
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_REGELEMENT}/${id}/`,
+				method: 'GET',
+			}),
+			providesTags: ['ModeRegelement'],
+		}),
+		deleteModeRegelement: builder.mutation<void | ApiErrorResponseType, { id: number }>({
+			query: ({ id }) => ({
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_REGELEMENT}/${id}/`,
+				method: 'DELETE',
+			}),
+			invalidatesTags: ['ModeRegelement'],
+		}),
+		editModeRegelement: builder.mutation<
+			SuccessResponseType<ModeReglementClass>,
+			{ id: number; data: Partial<ModeReglementClass> }
+		>({
+			query: ({ id, data }) => ({
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_REGELEMENT}/${id}/`,
+				method: 'PUT',
+				data,
+			}),
+			invalidatesTags: ['ModeRegelement'],
+		}),
+		addModeRegelement: builder.mutation<SuccessResponseType<ModeReglementClass>, { data: Partial<ModeReglementClass> }>(
+			{
+				query: ({ data }) => ({
+					url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_REGELEMENT}/`,
+					method: 'POST',
+					data,
+				}),
+				invalidatesTags: ['ModeRegelement'],
+			},
+		),
+	}),
+});
+
+export const {
+	useGetModeRegelementListQuery,
+	useDeleteModeRegelementMutation,
+	useEditModeRegelementMutation,
+	useGetModeRegelementQuery,
+	useAddModeRegelementMutation,
+} = modeRegelementApi;
+
+export const {
+	useGetModePaiementListQuery,
+	useDeleteModePaiementMutation,
+	useEditModePaiementMutation,
+	useGetModePaiementQuery,
+	useAddModePaiementMutation,
+} = modePaiementApi;
 
 export const {
 	useGetMarqueListQuery,

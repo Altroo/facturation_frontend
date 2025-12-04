@@ -8,7 +8,15 @@ import companiesReducer from '@/store/slices/companiesSlice';
 import { accountApi, profilApi, groupApi, usersApi } from '@/store/services/account';
 import { companyApi } from '@/store/services/company';
 import { clientApi } from '@/store/services/client';
-import { citiesApi, emplacementApi, categorieApi, marqueApi, uniteApi } from '@/store/services/parameter';
+import {
+	citiesApi,
+	emplacementApi,
+	categorieApi,
+	marqueApi,
+	uniteApi,
+	modeRegelementApi,
+	modePaiementApi,
+} from '@/store/services/parameter';
 import { articleApi } from '@/store/services/article';
 
 const sagaMiddleware = createSagaMiddleware();
@@ -30,6 +38,8 @@ const rootReducer = combineReducers({
 	[categorieApi.reducerPath]: categorieApi.reducer,
 	[marqueApi.reducerPath]: marqueApi.reducer,
 	[uniteApi.reducerPath]: uniteApi.reducer,
+	[modeRegelementApi.reducerPath]: modeRegelementApi.reducer,
+	[modePaiementApi.reducerPath]: modePaiementApi.reducer,
 });
 
 export interface SagaStore extends Store {
@@ -60,6 +70,8 @@ export const store: SagaStore = configureStore({
 			.concat(categorieApi.middleware)
 			.concat(marqueApi.middleware)
 			.concat(uniteApi.middleware)
+			.concat(modeRegelementApi.middleware)
+			.concat(modePaiementApi.middleware)
 			.prepend(sagaMiddleware),
 	devTools: process.env.NODE_ENV !== 'production',
 });

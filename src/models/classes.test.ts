@@ -9,6 +9,8 @@ import {
 	CategorieClass,
 	UniteClass,
 	EmplacementClass,
+	ModePaiementClass,
+	ModeReglementClass,
 } from './Classes';
 import { TypeArticleType } from '@/types/articleTypes';
 
@@ -216,5 +218,21 @@ describe('EmplacementClass', () => {
 		const emplacement = new EmplacementClass(1, 'WarehouseA');
 		expect(emplacement.id).toBe(1);
 		expect(emplacement.nom).toBe('WarehouseA');
+	});
+});
+
+describe('ModePaiementClass', () => {
+	it('creates a mode paiement instance with given properties', () => {
+		const modePaiement = new ModePaiementClass(1, 'Cash');
+		expect(modePaiement.id).toBe(1);
+		expect(modePaiement.nom).toBe('Cash');
+	});
+});
+
+describe('ModeReglementClass', () => {
+	it('creates a mode reglement instance with given properties', () => {
+		const modeReglement = new ModeReglementClass(2, 'Deferred');
+		expect(modeReglement.id).toBe(2);
+		expect(modeReglement.nom).toBe('Deferred');
 	});
 });
