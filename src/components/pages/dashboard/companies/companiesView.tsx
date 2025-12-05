@@ -48,6 +48,7 @@ import { COMPANIES_LIST, COMPANIES_EDIT } from '@/utils/routes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import Image from 'next/image';
 import { Protected } from '@/components/layouts/protected/protected';
+import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 
 interface InfoRowProps {
 	icon: React.ReactNode;
@@ -151,21 +152,16 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 
 						{isLoading ? (
 							<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
-						) : axiosError ? (
-							<Paper
-								elevation={0}
-								sx={{
-									p: 3,
-									backgroundColor: 'error.light',
-									borderRadius: 2,
-									border: '1px solid',
-									borderColor: 'error.main',
+						) : (axiosError?.status as number) > 400 ? (
+							<ApiAlert
+								errorDetails={axiosError?.data.details}
+								cssStyle={{
+									position: 'absolute',
+									top: '50%',
+									left: '50%',
+									transform: 'translate(-50%, -50%)',
 								}}
-							>
-								<Typography color="error.main" variant="h6">
-									{axiosError.data?.message}
-								</Typography>
-							</Paper>
+							/>
 						) : (
 							<Stack spacing={3}>
 								{/* Header Card with Logo and Company Name */}

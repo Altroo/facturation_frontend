@@ -15,7 +15,6 @@ import {
 	Card,
 	CardContent,
 	Divider,
-	Paper,
 	useTheme,
 	useMediaQuery,
 } from '@mui/material';
@@ -59,6 +58,7 @@ import { useGetCompaniesListQuery } from '@/store/services/company';
 import type { CompanyClass } from '@/models/Classes';
 import ManagedByTableSection from '@/components/shared/addManagedByTable/addManagedByTable';
 import { Protected } from '@/components/layouts/protected/protected';
+import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -226,21 +226,16 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			{formik.errors.globalError && <span className={Styles.errorMessage}>{formik.errors.globalError}</span>}
 			{isLoading ? (
 				<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
-			) : axiosError?.status === 404 ? (
-				<Paper
-					elevation={0}
-					sx={{
-						p: 3,
-						backgroundColor: 'error.light',
-						borderRadius: 2,
-						border: '1px solid',
-						borderColor: 'error.main',
+			) : (axiosError?.status as number) > 400 ? (
+				<ApiAlert
+					errorDetails={axiosError?.data.details}
+					cssStyle={{
+						position: 'absolute',
+						top: '50%',
+						left: '50%',
+						transform: 'translate(-50%, -50%)',
 					}}
-				>
-					<Typography color="error.main" variant="h6">
-						{axiosError.data?.message}
-					</Typography>
-				</Paper>
+				/>
 			) : (
 				<form>
 					<Stack spacing={3}>
