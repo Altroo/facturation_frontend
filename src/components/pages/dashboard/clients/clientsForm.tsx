@@ -20,19 +20,22 @@ import {
 	ToggleButton,
 	Container,
 } from '@mui/material';
-import { ArrowBack, BusinessOutlined } from '@mui/icons-material';
-import BusinessIcon from '@mui/icons-material/Business';
-import NotesIcon from '@mui/icons-material/Notes';
-import EmailIcon from '@mui/icons-material/Email';
-import PersonIcon from '@mui/icons-material/Person';
-import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import PhoneIcon from '@mui/icons-material/Phone';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
-import FingerprintIcon from '@mui/icons-material/Fingerprint';
-import BadgeIcon from '@mui/icons-material/Badge';
-import CreditCardIcon from '@mui/icons-material/CreditCard';
-import DescriptionIcon from '@mui/icons-material/Description';
+import {
+	ArrowBack,
+	BusinessOutlined,
+	Business as BusinessIcon,
+	Notes as NotesIcon,
+	Email as EmailIcon,
+	Person as PersonIcon,
+	PersonOutline as PersonOutlineIcon,
+	LocationOn as LocationOnIcon,
+	Phone as PhoneIcon,
+	AccountBalance as AccountBalanceIcon,
+	Fingerprint as FingerprintIcon,
+	Badge as BadgeIcon,
+	CreditCard as CreditCardIcon,
+	Description as DescriptionIcon,
+} from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';

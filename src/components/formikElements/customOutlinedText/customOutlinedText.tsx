@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react';
 import { ThemeProvider } from '@mui/material';
-import TextField, { TextFieldProps } from '@mui/material/TextField';
+import TextField, { type TextFieldProps } from '@mui/material/TextField';
 import type { Theme } from '@mui/material/styles';
 
 type Props = {

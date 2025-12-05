@@ -1,9 +1,8 @@
 import React from 'react';
 import Styles from './squareImageInputFile.module.sass';
 import { Button, Stack, ThemeProvider } from '@mui/material';
-import BlueAdd from '../../../../../public/assets/svgs/globalIcons/blue-add.svg';
+import AddIcon from '@mui/icons-material/Add';
 import { getDefaultTheme } from '@/utils/themes';
-import Image from 'next/image';
 
 const defaultTheme = getDefaultTheme();
 
@@ -17,7 +16,7 @@ const SquareImageInputFile: React.FC<Props> = ({ onImageUpload }) => {
 		<ThemeProvider theme={defaultTheme}>
 			<Button className={Styles.squareImageWrapper} color="primary" onClick={onImageUpload}>
 				<Stack direction="column" justifyContent="center" alignItems="center" spacing={1}>
-					<Image src={BlueAdd} alt="" width="31.5" height="31.5" sizes="100vw" />
+					<AddIcon className={Styles.addIcon} sx={{ fontSize: 31.5 }} color="primary" />
 					<span className={Styles.addImagesSpan}>Ajouter une image</span>
 				</Stack>
 			</Button>

@@ -13,20 +13,23 @@ import {
 	useTheme,
 	useMediaQuery,
 } from '@mui/material';
-import { ArrowBack, Edit } from '@mui/icons-material';
-import PersonIcon from '@mui/icons-material/Person';
-import BadgeIcon from '@mui/icons-material/Badge';
-import NotesIcon from '@mui/icons-material/Notes';
-import BusinessIcon from '@mui/icons-material/Business';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import PhoneIcon from '@mui/icons-material/Phone';
-import EmailIcon from '@mui/icons-material/Email';
-import CreditCardIcon from '@mui/icons-material/CreditCard';
-import DescriptionIcon from '@mui/icons-material/Description';
-import GavelIcon from '@mui/icons-material/Gavel';
-import FingerprintIcon from '@mui/icons-material/Fingerprint';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
-import ReceiptIcon from '@mui/icons-material/Receipt';
+import {
+	ArrowBack,
+	Edit,
+	Person as PersonIcon,
+	Badge as BadgeIcon,
+	Notes as NotesIcon,
+	Business as BusinessIcon,
+	LocationOn as LocationOnIcon,
+	Phone as PhoneIcon,
+	Email as EmailIcon,
+	CreditCard as CreditCardIcon,
+	Description as DescriptionIcon,
+	Gavel as GavelIcon,
+	Fingerprint as FingerprintIcon,
+	AccountBalance as AccountBalanceIcon,
+	Receipt as ReceiptIcon,
+} from '@mui/icons-material';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { CLIENTS_LIST, CLIENTS_EDIT } from '@/utils/routes';
 import { useRouter } from 'next/navigation';

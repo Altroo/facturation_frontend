@@ -3,11 +3,12 @@ import { Stack, Snackbar, ThemeProvider, Slide } from '@mui/material';
 import Styles from './customToast.module.sass';
 import MuiAlert, { AlertProps, AlertColor } from '@mui/material/Alert';
 import { customToastTheme } from '@/utils/themes';
-import ErrorIconSVG from '../../../../public/assets/svgs/portals/error.svg';
-import WarningIconSVG from '../../../../public/assets/svgs/portals/warning.svg';
-import InfoIconSVG from '../../../../public/assets/svgs/portals/info.svg';
-import SuccessIconSVG from '../../../../public/assets/svgs/portals/success.svg';
-import Image from 'next/image';
+import {
+	CheckCircleOutline as CheckCircleOutlineIcon,
+	ErrorOutline as ErrorOutlineIcon,
+	InfoOutline as InfoOutlineIcon,
+	WarningAmberOutlined as WarningAmberOutlinedIcon,
+} from '@mui/icons-material';
 
 type Props = {
 	type: AlertColor;
@@ -45,16 +46,10 @@ const CustomToast: React.FC<Props> = (props) => {
 						severity={type}
 						className={Styles.alert}
 						iconMapping={{
-							success: (
-								<Image src={SuccessIconSVG} alt="" width="0" height="0" sizes="100vw" className={Styles.alertIcon} />
-							),
-							error: (
-								<Image src={ErrorIconSVG} alt="" width="0" height="0" sizes="100vw" className={Styles.alertIcon} />
-							),
-							info: <Image src={InfoIconSVG} alt="" width="0" height="0" sizes="100vw" className={Styles.alertIcon} />,
-							warning: (
-								<Image src={WarningIconSVG} alt="" width="0" height="0" sizes="100vw" className={Styles.alertIcon} />
-							),
+							success: <CheckCircleOutlineIcon className={Styles.alertIcon} color="success" />,
+							error: <ErrorOutlineIcon className={Styles.alertIcon} color="error" />,
+							info: <InfoOutlineIcon className={Styles.alertIcon} color="info" />,
+							warning: <WarningAmberOutlinedIcon className={Styles.alertIcon} color="warning" />,
 						}}
 					>
 						{props.message}

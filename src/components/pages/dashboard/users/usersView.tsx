@@ -21,17 +21,19 @@ import {
 	Box,
 	Paper,
 } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { Edit } from '@mui/icons-material';
-import EmailIcon from '@mui/icons-material/Email';
-import PersonIcon from '@mui/icons-material/Person';
-import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CancelIcon from '@mui/icons-material/Cancel';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import LoginIcon from '@mui/icons-material/Login';
-import BusinessIcon from '@mui/icons-material/Business';
-import BadgeIcon from '@mui/icons-material/Badge';
+import {
+	ArrowBack as ArrowBackIcon,
+	Edit,
+	Email as EmailIcon,
+	Person as PersonIcon,
+	AdminPanelSettings as AdminPanelSettingsIcon,
+	CheckCircle as CheckCircleIcon,
+	Cancel as CancelIcon,
+	CalendarToday as CalendarTodayIcon,
+	Login as LoginIcon,
+	Business as BusinessIcon,
+	Badge as BadgeIcon,
+} from '@mui/icons-material';
 import { USERS_LIST, USERS_EDIT } from '@/utils/routes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { formatDate } from '@/utils/helpers';

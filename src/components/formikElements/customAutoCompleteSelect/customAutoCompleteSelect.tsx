@@ -1,5 +1,5 @@
 import React from 'react';
-import TextField, { TextFieldProps } from '@mui/material/TextField';
+import TextField, { type TextFieldProps } from '@mui/material/TextField';
 import { ThemeProvider } from '@mui/material/styles';
 import type { Theme } from '@mui/material/styles';
 import type { DropDownType } from '@/types/accountTypes';

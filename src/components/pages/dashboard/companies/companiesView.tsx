@@ -21,27 +21,29 @@ import {
 	Box,
 	Paper,
 } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import PersonIcon from '@mui/icons-material/Person';
-import { Edit } from '@mui/icons-material';
-import BusinessIcon from '@mui/icons-material/Business';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import PeopleIcon from '@mui/icons-material/People';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import LanguageIcon from '@mui/icons-material/Language';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
-import ReceiptIcon from '@mui/icons-material/Receipt';
-import BadgeIcon from '@mui/icons-material/Badge';
-import FingerprintIcon from '@mui/icons-material/Fingerprint';
-import GavelIcon from '@mui/icons-material/Gavel';
-import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
-import EmailIcon from '@mui/icons-material/Email';
-import PhoneIcon from '@mui/icons-material/Phone';
-import FaxIcon from '@mui/icons-material/Fax';
-import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid';
-import PersonPinIcon from '@mui/icons-material/PersonPin';
-import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
-import StampIcon from '@mui/icons-material/Verified';
+import {
+	ArrowBack as ArrowBackIcon,
+	Person as PersonIcon,
+	Edit,
+	Business as BusinessIcon,
+	CalendarToday as CalendarTodayIcon,
+	People as PeopleIcon,
+	LocationOn as LocationOnIcon,
+	Language as LanguageIcon,
+	AccountBalance as AccountBalanceIcon,
+	Receipt as ReceiptIcon,
+	Badge as BadgeIcon,
+	Fingerprint as FingerprintIcon,
+	Gavel as GavelIcon,
+	AccountBalanceWallet as AccountBalanceWalletIcon,
+	Email as EmailIcon,
+	Phone as PhoneIcon,
+	Fax as FaxIcon,
+	PhoneAndroid as PhoneAndroidIcon,
+	PersonPin as PersonPinIcon,
+	AdminPanelSettings as AdminPanelSettingsIcon,
+	Verified as StampIcon,
+} from '@mui/icons-material';
 import { COMPANIES_LIST, COMPANIES_EDIT } from '@/utils/routes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import Image from 'next/image';

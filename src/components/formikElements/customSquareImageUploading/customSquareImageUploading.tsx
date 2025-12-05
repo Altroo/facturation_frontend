@@ -4,7 +4,7 @@ import React, { useRef, useCallback, useState } from 'react';
 import Styles from './customSquareImageUploading.module.sass';
 import { Box, Stack } from '@mui/material';
 import Image from 'next/image';
-import CircularRemoveBlack from '../../../../public/assets/svgs/globalIcons/circular-remove-black.svg';
+import HighlightOffOutlinedIcon from '@mui/icons-material/HighlightOffOutlined';
 import SquareImageInputFile from '../../htmlElements/buttons/squareImageInputFile/squareImageInputFile';
 import Cropper, { type ReactCropperElement } from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
@@ -110,7 +110,7 @@ const CustomSquareImageUploading: React.FC<Props> = ({ image, croppedImage, onCh
 								cropend={handleCrop}
 							/>
 							<Box className={Styles.closeButtonWrapper} onClick={handleClear} data-testid="clear-button">
-								<Image src={CircularRemoveBlack} alt="" width="32" height="32" sizes="100vw" />
+								<HighlightOffOutlinedIcon sx={{ fontSize: 32 }} htmlColor="black" aria-hidden="true" />
 							</Box>
 						</>
 					) : (
@@ -148,7 +148,7 @@ const CustomSquareImageUploading: React.FC<Props> = ({ image, croppedImage, onCh
 								</Box>
 							</Box>
 							<Box className={Styles.closeButtonWrapper} onClick={handleClear}>
-								<Image src={CircularRemoveBlack} alt="" width="32" height="32" sizes="100vw" />
+								<HighlightOffOutlinedIcon sx={{ fontSize: 32 }} htmlColor="black" aria-hidden="true" />
 							</Box>
 						</>
 					)}

@@ -25,19 +25,21 @@ import {
 	useTheme,
 	useMediaQuery,
 } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import LogoutIcon from '@mui/icons-material/Logout';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
-import PeopleIcon from '@mui/icons-material/People';
-import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
-import RequestQuoteIcon from '@mui/icons-material/RequestQuote';
-import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import PaymentIcon from '@mui/icons-material/Payment';
-import DomainIcon from '@mui/icons-material/Domain';
-import SettingsIcon from '@mui/icons-material/Settings';
+import {
+	Menu as MenuIcon,
+	ExpandMore as ExpandMoreIcon,
+	ChevronLeft as ChevronLeftIcon,
+	Logout as LogoutIcon,
+	Dashboard as DashboardIcon,
+	LibraryBooks as LibraryBooksIcon,
+	People as PeopleIcon,
+	ReceiptLong as ReceiptLongIcon,
+	RequestQuote as RequestQuoteIcon,
+	LocalShipping as LocalShippingIcon,
+	Payment as PaymentIcon,
+	Domain as DomainIcon,
+	Settings as SettingsIcon,
+} from '@mui/icons-material';
 import { useAppSelector } from '@/utils/hooks';
 import { getProfilState } from '@/store/selectors';
 import { cookiesDeleter } from '@/utils/apiHelpers';

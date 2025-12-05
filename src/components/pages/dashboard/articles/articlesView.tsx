@@ -14,19 +14,22 @@ import {
 	useTheme,
 	useMediaQuery,
 } from '@mui/material';
-import { ArrowBack, Edit } from '@mui/icons-material';
-import DescriptionIcon from '@mui/icons-material/Description';
-import CreditCardIcon from '@mui/icons-material/CreditCard';
-import FingerprintIcon from '@mui/icons-material/Fingerprint';
-import CategoryIcon from '@mui/icons-material/Category';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import SellIcon from '@mui/icons-material/Sell';
-import ReceiptIcon from '@mui/icons-material/Receipt';
-import BusinessIcon from '@mui/icons-material/Business';
-import StarIcon from '@mui/icons-material/Star';
-import StraightenIcon from '@mui/icons-material/Straighten';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import NotesIcon from '@mui/icons-material/Notes';
+import {
+	ArrowBack,
+	Edit,
+	Description as DescriptionIcon,
+	CreditCard as CreditCardIcon,
+	Fingerprint as FingerprintIcon,
+	Category as CategoryIcon,
+	ShoppingCart as ShoppingCartIcon,
+	Sell as SellIcon,
+	Receipt as ReceiptIcon,
+	Business as BusinessIcon,
+	Star as StarIcon,
+	Straighten as StraightenIcon,
+	LocationOn as LocationOnIcon,
+	Notes as NotesIcon,
+} from '@mui/icons-material';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { ARTICLES_LIST, ARTICLES_EDIT } from '@/utils/routes';
 import { useRouter } from 'next/navigation';

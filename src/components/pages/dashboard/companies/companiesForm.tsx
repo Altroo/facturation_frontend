@@ -18,25 +18,27 @@ import {
 	useTheme,
 	useMediaQuery,
 } from '@mui/material';
-import { ArrowBack } from '@mui/icons-material';
-import BusinessIcon from '@mui/icons-material/Business';
-import EmailIcon from '@mui/icons-material/Email';
-import GroupsIcon from '@mui/icons-material/Groups';
-import PersonIcon from '@mui/icons-material/Person';
-import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
-import SmartphoneIcon from '@mui/icons-material/Smartphone';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import PhoneIcon from '@mui/icons-material/Phone';
-import PrintIcon from '@mui/icons-material/Print';
-import LanguageIcon from '@mui/icons-material/Language';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
-import FingerprintIcon from '@mui/icons-material/Fingerprint';
-import BadgeIcon from '@mui/icons-material/Badge';
-import CreditCardIcon from '@mui/icons-material/CreditCard';
-import ImageIcon from '@mui/icons-material/Image';
-import ContactsIcon from '@mui/icons-material/Contacts';
-import DescriptionIcon from '@mui/icons-material/Description';
-import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import {
+	ArrowBack,
+	Business as BusinessIcon,
+	Email as EmailIcon,
+	Groups as GroupsIcon,
+	Person as PersonIcon,
+	PersonOutline as PersonOutlineIcon,
+	Smartphone as SmartphoneIcon,
+	LocationOn as LocationOnIcon,
+	Phone as PhoneIcon,
+	Print as PrintIcon,
+	Language as LanguageIcon,
+	AccountBalance as AccountBalanceIcon,
+	Fingerprint as FingerprintIcon,
+	Badge as BadgeIcon,
+	CreditCard as CreditCardIcon,
+	Image as ImageIcon,
+	Contacts as ContactsIcon,
+	Description as DescriptionIcon,
+	AdminPanelSettings as AdminPanelSettingsIcon,
+} from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';

@@ -3,23 +3,31 @@ import { render, screen, fireEvent, within, cleanup } from '@testing-library/rea
 import CustomToast from './customToast';
 import '@testing-library/jest-dom';
 
-// next/image mock: returns <img> with a data-testid including the src for visibility but tests won't assert exact src
-jest.mock('next/image', () => {
+// Mock MUI icon modules used by the component
+jest.mock('@mui/icons-material/CheckCircleOutline', () => {
 	return {
 		__esModule: true,
-		default: (props: { src: unknown; alt?: string }) => {
-			const { src, alt = '' } = props;
-			// eslint-disable-next-line @next/next/no-img-element
-			return <img src={String(src)} alt={alt} data-testid={`mock-image-${String(src)}`} />;
-		},
+		default: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="CheckCircleOutlineIcon" {...props} />,
 	};
 });
-
-// Mock SVG imports to distinct string paths (kept distinct to help debugging)
-jest.mock('../../../../public/assets/svgs/portals/error.svg', () => '/__mock__/error.svg');
-jest.mock('../../../../public/assets/svgs/portals/warning.svg', () => '/__mock__/warning.svg');
-jest.mock('../../../../public/assets/svgs/portals/info.svg', () => '/__mock__/info.svg');
-jest.mock('../../../../public/assets/svgs/portals/success.svg', () => '/__mock__/success.svg');
+jest.mock('@mui/icons-material/ErrorOutline', () => {
+	return {
+		__esModule: true,
+		default: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="ErrorOutlineIcon" {...props} />,
+	};
+});
+jest.mock('@mui/icons-material/InfoOutlined', () => {
+	return {
+		__esModule: true,
+		default: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="InfoOutlinedIcon" {...props} />,
+	};
+});
+jest.mock('@mui/icons-material/WarningAmberOutlined', () => {
+	return {
+		__esModule: true,
+		default: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="WarningAmberOutlinedIcon" {...props} />,
+	};
+});
 
 // Minimal theme mock so ThemeProvider works
 jest.mock('@/utils/themes', () => {
@@ -93,19 +101,15 @@ describe('CustomToast', () => {
 
 			// Strategy: attempt several selectors inside the alert; succeed if any finds a candidate icon.
 			const findIcon = (): Element | null => {
-				// 1) next/image mocked img test id: any img inside alert
-				const imgByTestId = alertEl.querySelector('img[data-testid^="mock-image-"]');
-				if (imgByTestId) return imgByTestId;
-
-				// 2) any <img> inside alert
+				// 1) any <img> inside alert
 				const imgTag = alertEl.querySelector('img');
 				if (imgTag) return imgTag;
 
-				// 3) inline SVG icon inside alert
+				// 2) inline SVG icon inside alert (MUI icons render as svg)
 				const svgTag = alertEl.querySelector('svg');
 				if (svgTag) return svgTag;
 
-				// 4) element with class name containing alertIcon (as used in component CSS class)
+				// 3) element with class name containing alertIcon (as used in component CSS class)
 				const classMatch = alertEl.querySelector('[class*="alertIcon"]');
 				if (classMatch) return classMatch;
 

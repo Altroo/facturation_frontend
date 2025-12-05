@@ -19,14 +19,17 @@ import {
 	useTheme,
 	useMediaQuery,
 } from '@mui/material';
-import { ArrowBack } from '@mui/icons-material';
-import BusinessIcon from '@mui/icons-material/Business';
-import EmailIcon from '@mui/icons-material/Email';
-import GroupsIcon from '@mui/icons-material/Groups';
-import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
-import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import {
+	ArrowBack,
+	Business as BusinessIcon,
+	Email as EmailIcon,
+	Groups as GroupsIcon,
+	PersonOutline as PersonOutlineIcon,
+	AdminPanelSettings as AdminPanelSettingsIcon,
+	CheckCircle as CheckCircleIcon,
+	AccountCircle as AccountCircleIcon,
+	Person as PersonIcon,
+} from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
@@ -54,7 +57,6 @@ import type { DropDownType } from '@/types/accountTypes';
 import type { UserCompaniesType, UsersFormValuesType } from '@/types/usersTypes';
 import { useGetCompaniesListQuery } from '@/store/services/company';
 import type { CompanyClass } from '@/models/Classes';
-import PersonIcon from '@mui/icons-material/Person';
 import ManagedByTableSection from '@/components/shared/addManagedByTable/addManagedByTable';
 import { Protected } from '@/components/layouts/protected/protected';
 

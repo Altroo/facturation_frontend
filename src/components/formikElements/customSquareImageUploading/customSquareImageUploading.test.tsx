@@ -1,10 +1,39 @@
+import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import CustomSquareImageUploading from './customSquareImageUploading';
 import '@testing-library/jest-dom';
 
-describe('CustomSquareImageUploading (no mocks)', () => {
-	const mockOnChange = jest.fn();
-	const mockOnCrop = jest.fn();
+jest.mock('@mui/icons-material/HighlightOffOutlined', () => {
+	return {
+		__esModule: true,
+		default: (props: React.SVGProps<SVGSVGElement> & { htmlColor?: string }) => {
+			const { htmlColor, ...rest } = props;
+			const svgProps: React.SVGProps<SVGSVGElement> = { ...rest };
+			if (htmlColor) {
+				svgProps.fill = htmlColor;
+			}
+			return React.createElement('svg', svgProps);
+		},
+	};
+});
+jest.mock('next/image', () => {
+	return {
+		__esModule: true,
+		default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => React.createElement('img', props),
+	};
+});
+jest.mock('react-cropper', () => {
+	return {
+		__esModule: true,
+		// Do not forward non-DOM props (prevents warnings like cropBoxResizable)
+		default: (props: React.PropsWithChildren<Record<string, unknown>>) =>
+			React.createElement('div', { role: 'presentation' }, props.children),
+	};
+});
+
+describe('CustomSquareImageUploading (with MUI icon mock)', () => {
+	const mockOnChange: jest.MockedFunction<(image: string | ArrayBuffer | null) => void> = jest.fn();
+	const mockOnCrop: jest.MockedFunction<(data: string | null) => void> = jest.fn();
 
 	beforeEach(() => {
 		jest.clearAllMocks();
@@ -22,7 +51,7 @@ describe('CustomSquareImageUploading (no mocks)', () => {
 			<CustomSquareImageUploading image="data:image/png;base64,test" onChange={mockOnChange} onCrop={mockOnCrop} />,
 		);
 
-		const cropper = screen.getByRole('presentation'); // Cropper renders a canvas inside a div
+		const cropper = screen.getByRole('presentation');
 		expect(cropper).toBeInTheDocument();
 	});
 

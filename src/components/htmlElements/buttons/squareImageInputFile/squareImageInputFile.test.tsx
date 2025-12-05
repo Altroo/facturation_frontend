@@ -1,6 +1,24 @@
+import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import SquareImageInputFile from './squareImageInputFile';
 import '@testing-library/jest-dom';
+
+jest.mock('@mui/icons-material/Add', () => {
+	type AddIconProps = React.SVGProps<SVGSVGElement> & {
+		color?: 'inherit' | 'primary' | 'secondary' | 'action' | 'error' | 'disabled';
+		sx?: Record<string, unknown> | undefined;
+	};
+
+	return {
+		__esModule: true,
+		default: (props: AddIconProps) => {
+			const { className } = props;
+			const svgProps: React.SVGProps<SVGSVGElement> = {};
+			if (className) svgProps.className = className;
+			return React.createElement('svg', svgProps);
+		},
+	};
+});
 
 describe('SquareImageInputFile', () => {
 	const mockUpload = jest.fn();
