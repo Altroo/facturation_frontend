@@ -323,9 +323,9 @@ export const modePaiementApi = createApi({
 	}),
 });
 
-export const modeRegelementApi = createApi({
-	reducerPath: 'modeRegelementApi',
-	tagTypes: ['ModeRegelement'],
+export const modeReglementApi = createApi({
+	reducerPath: 'modeReglementApi',
+	tagTypes: ['ModeReglement'],
 	baseQuery: axiosBaseQuery((api) =>
 		isAuthenticatedInstance(
 			() => getInitStateToken(api.getState() as RootState),
@@ -333,58 +333,56 @@ export const modeRegelementApi = createApi({
 		),
 	),
 	endpoints: (builder) => ({
-		getModeRegelementList: builder.query<Array<ModeReglementClass>, void>({
+		getModeReglementList: builder.query<Array<ModeReglementClass>, void>({
 			query: () => ({
-				url: process.env.NEXT_PUBLIC_PARAMETER_MODE_REGELEMENT as string,
+				url: process.env.NEXT_PUBLIC_PARAMETER_MODE_REGLEMENT as string,
 				method: 'GET',
 			}),
-			providesTags: ['ModeRegelement'],
+			providesTags: ['ModeReglement'],
 		}),
-		getModeRegelement: builder.query<ModeReglementClass, { id: number }>({
+		getModeReglement: builder.query<ModeReglementClass, { id: number }>({
 			query: ({ id }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_REGELEMENT}/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_REGLEMENT}/${id}/`,
 				method: 'GET',
 			}),
-			providesTags: ['ModeRegelement'],
+			providesTags: ['ModeReglement'],
 		}),
-		deleteModeRegelement: builder.mutation<void | ApiErrorResponseType, { id: number }>({
+		deleteModeReglement: builder.mutation<void | ApiErrorResponseType, { id: number }>({
 			query: ({ id }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_REGELEMENT}/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_REGLEMENT}/${id}/`,
 				method: 'DELETE',
 			}),
-			invalidatesTags: ['ModeRegelement'],
+			invalidatesTags: ['ModeReglement'],
 		}),
-		editModeRegelement: builder.mutation<
+		editModeReglement: builder.mutation<
 			SuccessResponseType<ModeReglementClass>,
 			{ id: number; data: Partial<ModeReglementClass> }
 		>({
 			query: ({ id, data }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_REGELEMENT}/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_REGLEMENT}/${id}/`,
 				method: 'PUT',
 				data,
 			}),
-			invalidatesTags: ['ModeRegelement'],
+			invalidatesTags: ['ModeReglement'],
 		}),
-		addModeRegelement: builder.mutation<SuccessResponseType<ModeReglementClass>, { data: Partial<ModeReglementClass> }>(
-			{
-				query: ({ data }) => ({
-					url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_REGELEMENT}/`,
-					method: 'POST',
-					data,
-				}),
-				invalidatesTags: ['ModeRegelement'],
-			},
-		),
+		addModeReglement: builder.mutation<SuccessResponseType<ModeReglementClass>, { data: Partial<ModeReglementClass> }>({
+			query: ({ data }) => ({
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_REGLEMENT}/`,
+				method: 'POST',
+				data,
+			}),
+			invalidatesTags: ['ModeReglement'],
+		}),
 	}),
 });
 
 export const {
-	useGetModeRegelementListQuery,
-	useDeleteModeRegelementMutation,
-	useEditModeRegelementMutation,
-	useGetModeRegelementQuery,
-	useAddModeRegelementMutation,
-} = modeRegelementApi;
+	useGetModeReglementListQuery,
+	useDeleteModeReglementMutation,
+	useEditModeReglementMutation,
+	useGetModeReglementQuery,
+	useAddModeReglementMutation,
+} = modeReglementApi;
 
 export const {
 	useGetModePaiementListQuery,

@@ -104,11 +104,11 @@ describe('ArticlesViewClient navigation and permissions', () => {
 		(useGetArticleQuery as jest.Mock).mockReturnValue({
 			isLoading: false,
 			data: undefined,
-			error: { data: { message: 'Erreur serveur' } },
+			error: { status: 500, data: { details: { message: ['Erreur serveur'] } } },
 		});
 
 		renderWithProviders(<ArticlesViewClient {...defaultProps} />);
-		expect(screen.getByText('Erreur serveur')).toBeInTheDocument();
+		expect(screen.getByText(/Erreur serveur/)).toBeInTheDocument();
 	});
 
 	it('renders article details when data is available', () => {

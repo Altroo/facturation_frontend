@@ -9,6 +9,8 @@ import {
 	useGetEmplacementListQuery,
 	useGetUniteListQuery,
 	useGetMarqueListQuery,
+	useGetModePaiementListQuery,
+	useGetModeReglementListQuery,
 } from '@/store/services/parameter';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 import { useAppDispatch, useAppSelector } from '@/utils/hooks';
@@ -41,6 +43,8 @@ describe('InitEffects', () => {
 		(useGetUniteListQuery as jest.Mock).mockReturnValue({ data: undefined });
 		(useGetMarqueListQuery as jest.Mock).mockReturnValue({ data: undefined });
 		(useGetUserCompaniesQuery as jest.Mock).mockReturnValue({ data: undefined });
+		(useGetModePaiementListQuery as jest.Mock).mockReturnValue({ data: undefined });
+		(useGetModeReglementListQuery as jest.Mock).mockReturnValue({ data: undefined });
 	});
 
 	it('dispatches init tokens when session is authenticated', async () => {
@@ -158,6 +162,36 @@ describe('InitEffects', () => {
 		await waitFor(() => {
 			expect(mockDispatch).toHaveBeenCalledWith(
 				expect.objectContaining({ type: 'PARAMETER_SET_MARQUES', data: mockMarques }),
+			);
+		});
+	});
+
+	it('dispatches modePaiement action when data is available', async () => {
+		(useSession as jest.Mock).mockReturnValue({ data: { user: {} }, status: 'authenticated' });
+
+		const mockModePaiement = [{ id: 1, nom: 'Cash' }];
+		(useGetModePaiementListQuery as jest.Mock).mockReturnValue({ data: mockModePaiement });
+
+		render(<InitEffects />);
+
+		await waitFor(() => {
+			expect(mockDispatch).toHaveBeenCalledWith(
+				expect.objectContaining({ type: 'PARAMETER_SET_MODE_PAIEMENT', data: mockModePaiement }),
+			);
+		});
+	});
+
+	it('dispatches modeReglement action when data is available', async () => {
+		(useSession as jest.Mock).mockReturnValue({ data: { user: {} }, status: 'authenticated' });
+
+		const mockModeReglement = [{ id: 1, nom: 'Monthly' }];
+		(useGetModeReglementListQuery as jest.Mock).mockReturnValue({ data: mockModeReglement });
+
+		render(<InitEffects />);
+
+		await waitFor(() => {
+			expect(mockDispatch).toHaveBeenCalledWith(
+				expect.objectContaining({ type: 'PARAMETER_SET_MODE_REGLEMENT', data: mockModeReglement }),
 			);
 		});
 	});

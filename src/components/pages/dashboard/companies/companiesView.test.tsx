@@ -102,11 +102,11 @@ describe('CompaniesViewClient', () => {
 		(useGetCompanyQuery as jest.Mock).mockReturnValue({
 			isLoading: false,
 			data: undefined,
-			error: { data: { message: 'Erreur serveur' } },
+			error: { status: 500, data: { details: { message: ['Erreur serveur'] } } },
 		});
 
 		renderWithProviders(<CompaniesViewClient {...defaultProps} />);
-		expect(screen.getByText('Erreur serveur')).toBeInTheDocument();
+		expect(screen.getByText(/Erreur serveur/)).toBeInTheDocument();
 	});
 
 	it('renders company details on success', () => {

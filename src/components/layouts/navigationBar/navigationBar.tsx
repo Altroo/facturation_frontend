@@ -54,7 +54,6 @@ import {
 	DASHBOARD,
 	DASHBOARD_EDIT_PROFILE,
 	DASHBOARD_PASSWORD,
-	DEVIS_ADD,
 	DEVIS_LIST,
 	SITE_ROOT,
 	USERS_ADD,
@@ -93,10 +92,7 @@ const getNavigationMenu = (isStaff: boolean) => {
 		devis: {
 			title: 'Devis',
 			icon: <RequestQuoteIcon />,
-			items: [
-				{ title: 'Liste des devis', label: 'Liste des devis', path: DEVIS_LIST },
-				{ title: 'Nouveau devis', label: 'Nouveau devis', path: DEVIS_ADD },
-			],
+			items: [{ title: 'Liste des devis', label: 'Liste des devis', path: DEVIS_LIST }],
 		},
 		factures: {
 			title: 'Factures',

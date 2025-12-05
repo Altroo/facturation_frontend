@@ -15,10 +15,11 @@ import {
 	categorieApi,
 	marqueApi,
 	uniteApi,
-	modeRegelementApi,
+	modeReglementApi,
 	modePaiementApi,
 } from '@/store/services/parameter';
 import { articleApi } from '@/store/services/article';
+import { deviApi } from '@/store/services/devi';
 
 const sagaMiddleware = createSagaMiddleware();
 
@@ -39,8 +40,9 @@ const rootReducer = combineReducers({
 	[categorieApi.reducerPath]: categorieApi.reducer,
 	[marqueApi.reducerPath]: marqueApi.reducer,
 	[uniteApi.reducerPath]: uniteApi.reducer,
-	[modeRegelementApi.reducerPath]: modeRegelementApi.reducer,
+	[modeReglementApi.reducerPath]: modeReglementApi.reducer,
 	[modePaiementApi.reducerPath]: modePaiementApi.reducer,
+	[deviApi.reducerPath]: deviApi.reducer,
 });
 
 export interface SagaStore extends Store {
@@ -71,8 +73,9 @@ export const store: SagaStore = configureStore({
 			.concat(categorieApi.middleware)
 			.concat(marqueApi.middleware)
 			.concat(uniteApi.middleware)
-			.concat(modeRegelementApi.middleware)
+			.concat(modeReglementApi.middleware)
 			.concat(modePaiementApi.middleware)
+			.concat(deviApi.middleware)
 			.prepend(sagaMiddleware),
 	devTools: process.env.NODE_ENV !== 'production',
 });

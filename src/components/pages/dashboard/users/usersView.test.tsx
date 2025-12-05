@@ -118,11 +118,11 @@ describe('UsersViewClient navigation and permissions', () => {
 		(useGetUserQuery as jest.Mock).mockReturnValue({
 			isLoading: false,
 			data: undefined,
-			error: { data: { message: 'Erreur serveur' } },
+			error: { status: 500, data: { details: { message: ['Erreur serveur'] } } },
 		});
 
 		renderWithProviders(<UsersViewClient {...defaultProps} />);
-		expect(screen.getByText('Erreur serveur')).toBeInTheDocument();
+		expect(screen.getByText(/Erreur serveur/)).toBeInTheDocument();
 	});
 
 	it('renders user details on success and scopes date checks to correct labels', () => {

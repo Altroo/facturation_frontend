@@ -8,7 +8,7 @@ import {
 	parameterSetUnitesSaga,
 	parameterSetMarquesSaga,
 	parameterSetModePaiementSaga,
-	parameterSetModeRegelementSaga,
+	parameterSetModeReglementSaga,
 	watchParameter,
 } from '@/store/sagas/parameterSaga';
 import {
@@ -18,7 +18,7 @@ import {
 	setUnites,
 	setMarques,
 	setModePaiement,
-	setModeRegelement,
+	setModeReglement,
 } from '@/store/slices/parameterSlice';
 import {
 	CitiesClass,
@@ -131,16 +131,16 @@ describe('parameter sagas', () => {
 		const mr1 = new ModeReglementClass(1, 'Immediate');
 		const mr2 = new ModeReglementClass(2, 'Deferred');
 
-		const payload = { type: Types.PARAMETER_SET_MODE_REGELEMENT, data: [mr1, mr2] };
+		const payload = { type: Types.PARAMETER_SET_MODE_REGLEMENT, data: [mr1, mr2] };
 
 		const dispatched: unknown[] = [];
 		await runSaga(
 			{ dispatch: (action: unknown) => dispatched.push(action) },
-			parameterSetModeRegelementSaga,
+			parameterSetModeReglementSaga,
 			payload,
 		).toPromise();
 
-		expect(dispatched).toEqual([setModeRegelement([mr1, mr2])]);
+		expect(dispatched).toEqual([setModeReglement([mr1, mr2])]);
 	});
 
 	it('watchParameter should register all sagas with takeLatest', () => {
@@ -152,6 +152,6 @@ describe('parameter sagas', () => {
 		expect(gen.next().value).toEqual(takeLatest(Types.PARAMETER_SET_UNITES, parameterSetUnitesSaga));
 		expect(gen.next().value).toEqual(takeLatest(Types.PARAMETER_SET_MARQUES, parameterSetMarquesSaga));
 		expect(gen.next().value).toEqual(takeLatest(Types.PARAMETER_SET_MODE_PAIEMENT, parameterSetModePaiementSaga));
-		expect(gen.next().value).toEqual(takeLatest(Types.PARAMETER_SET_MODE_REGELEMENT, parameterSetModeRegelementSaga));
+		expect(gen.next().value).toEqual(takeLatest(Types.PARAMETER_SET_MODE_REGLEMENT, parameterSetModeReglementSaga));
 	});
 });

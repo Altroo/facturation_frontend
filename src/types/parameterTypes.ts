@@ -17,7 +17,7 @@ export interface ParameterStateInterface {
 	unites: Array<UniteClass>;
 	marques: Array<MarqueClass>;
 	modePaiement: Array<ModePaiementClass>;
-	modeRegelement: Array<ModeReglementClass>;
+	modeReglement: Array<ModeReglementClass>;
 }
 
 export type setCitiesPayloadType = SagaPayloadType<Array<CitiesClass>>;

@@ -5,7 +5,7 @@ import reducer, {
 	setUnites,
 	setMarques,
 	setModePaiement,
-	setModeRegelement,
+	setModeReglement,
 } from '@/store/slices/parameterSlice';
 import {
 	CitiesClass,
@@ -24,7 +24,7 @@ describe('parameterSlice', () => {
 		emplacements: [],
 		unites: [],
 		marques: [],
-		modeRegelement: [],
+		modeReglement: [],
 		modePaiement: [],
 	};
 
@@ -90,8 +90,8 @@ describe('parameterSlice', () => {
 		const mr1 = new ModeReglementClass(1, 'Immediate');
 		const mr2 = new ModeReglementClass(2, 'Deferred');
 
-		const newState = reducer(initialState, setModeRegelement([mr1, mr2]));
+		const newState = reducer(initialState, setModeReglement([mr1, mr2]));
 
-		expect(newState.modeRegelement).toEqual([mr1, mr2]);
+		expect(newState.modeReglement).toEqual([mr1, mr2]);
 	});
 });

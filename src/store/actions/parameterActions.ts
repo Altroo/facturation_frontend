@@ -51,9 +51,9 @@ export const parameterSetModePaiementAction = (props: Array<ModePaiementClass>) 
 	};
 };
 
-export const parameterSetModeRegelementAction = (props: Array<ModeReglementClass>) => {
+export const parameterSetModeReglementAction = (props: Array<ModeReglementClass>) => {
 	return {
-		type: types.PARAMETER_SET_MODE_REGELEMENT,
+		type: types.PARAMETER_SET_MODE_REGLEMENT,
 		data: props,
 	};
 };

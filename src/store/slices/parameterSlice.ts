@@ -17,7 +17,7 @@ const initialState: ParameterStateInterface = {
 	unites: [],
 	marques: [],
 	modePaiement: [],
-	modeRegelement: [],
+	modeReglement: [],
 };
 
 const parameterSlice = createSlice({
@@ -39,8 +39,8 @@ const parameterSlice = createSlice({
 		setMarques: (state, action: PayloadAction<Array<MarqueClass>>) => {
 			state.marques = action.payload;
 		},
-		setModeRegelement: (state, action: PayloadAction<Array<ModeReglementClass>>) => {
-			state.modeRegelement = action.payload;
+		setModeReglement: (state, action: PayloadAction<Array<ModeReglementClass>>) => {
+			state.modeReglement = action.payload;
 		},
 		setModePaiement: (state, action: PayloadAction<Array<ModePaiementClass>>) => {
 			state.modePaiement = action.payload;
@@ -48,7 +48,7 @@ const parameterSlice = createSlice({
 	},
 });
 
-export const { setCities, setCategories, setEmplacements, setMarques, setUnites, setModePaiement, setModeRegelement } =
+export const { setCities, setCategories, setEmplacements, setMarques, setUnites, setModePaiement, setModeReglement } =
 	parameterSlice.actions;
 
 export default parameterSlice.reducer;

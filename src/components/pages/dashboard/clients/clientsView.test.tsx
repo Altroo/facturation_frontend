@@ -116,11 +116,11 @@ describe('ClientsViewClient', () => {
 		(useGetClientQuery as jest.Mock).mockReturnValue({
 			isLoading: false,
 			data: undefined,
-			error: { data: { message: 'Erreur serveur' } },
+			error: { status: 500, data: { details: { message: ['Erreur serveur'] } } },
 		});
 
 		renderWithProviders(<ClientsViewClient {...defaultProps} />);
-		expect(screen.getByText('Erreur serveur')).toBeInTheDocument();
+		expect(screen.getByText(/Erreur serveur/)).toBeInTheDocument();
 	});
 
 	it('renders PM client details', () => {

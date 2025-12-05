@@ -30,15 +30,15 @@ describe('ApiAlert', () => {
 		expect(alert).toHaveStyle('background-color: rgb(255, 0, 0)');
 	});
 
-	it('renders an empty message when errorDetails is null or undefined', () => {
+	it('renders default message when errorDetails is null or undefined', () => {
 		const { container } = render(<ApiAlert />);
 
 		const alert = container.querySelector('.MuiAlert-root');
 		expect(alert).toBeInTheDocument();
 
-		// The message part should be empty, the icon remains
+		// The message part should contain the default fallback text
 		const message = container.querySelector('.MuiAlert-message');
 		expect(message).toBeInTheDocument();
-		expect(message).toBeEmptyDOMElement();
+		expect(message).toHaveTextContent('Une erreur est survenue. Veuillez réessayer plus tard.');
 	});
 });

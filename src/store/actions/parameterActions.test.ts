@@ -1,7 +1,7 @@
 import * as types from './index';
 import {
 	parameterSetModePaiementAction,
-	parameterSetModeRegelementAction,
+	parameterSetModeReglementAction,
 	parameterSetCitiesAction,
 	parameterSetCategoriesAction,
 	parameterSetEmplacementsAction,
@@ -96,9 +96,9 @@ describe('parameterActions', () => {
 		const mr2 = new ModeReglementClass(2, 'Deferred');
 		const props = [mr1, mr2];
 
-		const action = parameterSetModeRegelementAction(props);
+		const action = parameterSetModeReglementAction(props);
 
-		expect(action.type).toBe(types.PARAMETER_SET_MODE_REGELEMENT);
+		expect(action.type).toBe(types.PARAMETER_SET_MODE_REGLEMENT);
 		expect(action.data).toEqual([mr1, mr2]);
 	});
 });

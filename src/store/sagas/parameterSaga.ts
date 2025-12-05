@@ -15,7 +15,7 @@ import {
 	setMarques,
 	setUnites,
 	setEmplacements,
-	setModeRegelement,
+	setModeReglement,
 	setModePaiement,
 } from '@/store/slices/parameterSlice';
 
@@ -43,8 +43,8 @@ export function* parameterSetModePaiementSaga(payload: setModePaiementPayloadTyp
 	yield put(setModePaiement(payload.data));
 }
 
-export function* parameterSetModeRegelementSaga(payload: setModeRegelementPayloadType) {
-	yield put(setModeRegelement(payload.data));
+export function* parameterSetModeReglementSaga(payload: setModeRegelementPayloadType) {
+	yield put(setModeReglement(payload.data));
 }
 
 export function* watchParameter() {
@@ -54,5 +54,5 @@ export function* watchParameter() {
 	yield takeLatest(Types.PARAMETER_SET_UNITES, parameterSetUnitesSaga);
 	yield takeLatest(Types.PARAMETER_SET_MARQUES, parameterSetMarquesSaga);
 	yield takeLatest(Types.PARAMETER_SET_MODE_PAIEMENT, parameterSetModePaiementSaga);
-	yield takeLatest(Types.PARAMETER_SET_MODE_REGELEMENT, parameterSetModeRegelementSaga);
+	yield takeLatest(Types.PARAMETER_SET_MODE_REGLEMENT, parameterSetModeReglementSaga);
 }

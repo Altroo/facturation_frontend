@@ -6,7 +6,7 @@ import {
 	getCitiesState,
 	getUserCompaniesState,
 	getModePaiementState,
-	getModeRegelementState,
+	getModeReglementState,
 	getCategoriesState,
 	getEmplacementsState,
 	getUnitesState,
@@ -66,7 +66,7 @@ describe('Redux selectors', () => {
 			unites: mockUnites,
 			marques: mockMarques,
 			modePaiement: mockModePaiement,
-			modeRegelement: mockModeRegelement,
+			modeReglement: mockModeRegelement,
 		},
 		companies: {
 			user_companies: mockCompanies,
@@ -146,7 +146,7 @@ describe('Redux selectors', () => {
 	});
 
 	it('getModeRegelementState should return the modeRegelement array', () => {
-		const modeRegelement = getModeRegelementState(mockState);
+		const modeRegelement = getModeReglementState(mockState);
 		expect(Array.isArray(modeRegelement)).toBe(true);
 		expect(modeRegelement[0]).toBeInstanceOf(ModeReglementClass);
 		expect(modeRegelement.map((m) => m.nom)).toEqual(['Immediate', 'Deferred']);

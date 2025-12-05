@@ -13,6 +13,8 @@ import {
 	useGetEmplacementListQuery,
 	useGetUniteListQuery,
 	useGetMarqueListQuery,
+	useGetModePaiementListQuery,
+	useGetModeReglementListQuery,
 } from '@/store/services/parameter';
 import {
 	parameterSetCategoriesAction,
@@ -20,6 +22,8 @@ import {
 	parameterSetEmplacementsAction,
 	parameterSetMarquesAction,
 	parameterSetUnitesAction,
+	parameterSetModeReglementAction,
+	parameterSetModePaiementAction,
 } from '@/store/actions/parameterActions';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 import { companiesSetUserCompaniesAction } from '@/store/actions/companiesActions';
@@ -42,6 +46,8 @@ export const InitEffects: React.FC = () => {
 	const { data: unites } = useGetUniteListQuery(undefined, { skip });
 	const { data: marques } = useGetMarqueListQuery(undefined, { skip });
 	const { data: companies } = useGetUserCompaniesQuery(undefined, { skip });
+	const { data: modePaiement } = useGetModePaiementListQuery(undefined, { skip });
+	const { data: modeReglement } = useGetModeReglementListQuery(undefined, { skip });
 
 	// Initialize tokens once
 	useEffect(() => {
@@ -79,6 +85,14 @@ export const InitEffects: React.FC = () => {
 	useEffect(() => {
 		if (marques) dispatch(parameterSetMarquesAction(marques));
 	}, [dispatch, marques]);
+
+	useEffect(() => {
+		if (modePaiement) dispatch(parameterSetModePaiementAction(modePaiement));
+	}, [dispatch, modePaiement]);
+
+	useEffect(() => {
+		if (modeReglement) dispatch(parameterSetModeReglementAction(modeReglement));
+	}, [dispatch, modeReglement]);
 
 	useEffect(() => {
 		if (companies) dispatch(companiesSetUserCompaniesAction(companies));
