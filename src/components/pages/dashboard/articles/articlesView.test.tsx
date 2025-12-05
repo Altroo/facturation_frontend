@@ -5,7 +5,7 @@ import { Provider } from 'react-redux';
 import { store } from '@/store/store';
 import { useGetArticleQuery } from '@/store/services/article';
 import '@testing-library/jest-dom';
-import { AppSession } from '@/types/_initTypes';
+import type { AppSession } from '@/types/_initTypes';
 import { useRouter } from 'next/navigation';
 import { useAppSelector } from '@/utils/hooks';
 

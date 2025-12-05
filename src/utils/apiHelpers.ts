@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from 'axios';
+import axios, { type AxiosInstance } from 'axios';
 
 axios.defaults.baseURL = `${process.env.NEXT_PUBLIC_ROOT_API_URL}`;
 

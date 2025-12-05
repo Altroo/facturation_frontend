@@ -56,7 +56,7 @@ import { setFormikAutoErrors } from '@/utils/helpers';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import type { TypeClientType, ClientSchemaType } from '@/types/clientTypes';
 import { useAddCityMutation } from '@/store/services/parameter';
-import { CitiesClass } from '@/models/Classes';
+import type { CitiesClass } from '@/models/Classes';
 import { clientSchema, pmRequired, ppRequired } from '@/utils/formValidationSchemas';
 import AddEntityModal from '@/components/desktop/modals/addEntityModal/addEntityModal';
 

@@ -1,7 +1,7 @@
 import React, { forwardRef } from 'react';
 import { ThemeProvider } from '@mui/material';
 import TextField, { TextFieldProps } from '@mui/material/TextField';
-import { Theme } from '@mui/material/styles';
+import type { Theme } from '@mui/material/styles';
 
 type Props = {
 	type: React.HTMLInputTypeAttribute;

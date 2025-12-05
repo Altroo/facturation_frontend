@@ -1,5 +1,5 @@
 import type { RootState } from '@/store/store';
-import {
+import type {
 	UserClass,
 	CitiesClass,
 	CategorieClass,
@@ -9,8 +9,8 @@ import {
 	ModePaiementClass,
 	ModeReglementClass,
 } from '@/models/Classes';
-import { CompaniesUserCompaniesType } from '@/types/companyTypes';
-import { InitStateToken } from '@/types/_initTypes';
+import type { CompaniesUserCompaniesType } from '@/types/companyTypes';
+import type { InitStateToken } from '@/types/_initTypes';
 
 // _Init
 export const getInitStateToken = (state: RootState): InitStateToken => state._init.initStateToken;

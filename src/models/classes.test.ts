@@ -12,7 +12,7 @@ import {
 	ModePaiementClass,
 	ModeReglementClass,
 } from './Classes';
-import { TypeArticleType } from '@/types/articleTypes';
+import type { TypeArticleType } from '@/types/articleTypes';
 
 describe('UserClass', () => {
 	it('creates a user instance with given properties', () => {

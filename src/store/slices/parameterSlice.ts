@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import {
+import type {
 	CategorieClass,
 	CitiesClass,
 	EmplacementClass,
@@ -8,7 +8,7 @@ import {
 	ModeReglementClass,
 	UniteClass,
 } from '@/models/Classes';
-import { ParameterStateInterface } from '@/types/parameterTypes';
+import type { ParameterStateInterface } from '@/types/parameterTypes';
 
 const initialState: ParameterStateInterface = {
 	cities: [],

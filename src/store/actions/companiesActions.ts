@@ -1,5 +1,5 @@
 import * as types from './index';
-import { CompaniesUserCompaniesType } from '@/types/companyTypes';
+import type { CompaniesUserCompaniesType } from '@/types/companyTypes';
 
 export const companiesSetUserCompaniesAction = (props: Array<CompaniesUserCompaniesType>) => {
 	return {

@@ -1,6 +1,6 @@
 import * as Types from '@/store/actions';
 import { put, takeLatest } from 'redux-saga/effects';
-import {
+import type {
 	setCategoriesPayloadType,
 	setCitiesPayloadType,
 	setEmplacementsPayloadType,

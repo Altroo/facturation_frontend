@@ -19,8 +19,8 @@ import { Delete } from '@mui/icons-material';
 import AddManagedBySection from '../addManagedBySection/addManagedBySection';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import { customDropdownTheme } from '@/utils/themes';
-import { ManagedByType } from '@/types/companyTypes';
-import { UserCompaniesType } from '@/types/usersTypes';
+import type { ManagedByType } from '@/types/companyTypes';
+import type { UserCompaniesType } from '@/types/usersTypes';
 
 type ManagedByTableSectionProps = {
 	title: string;

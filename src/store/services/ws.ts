@@ -1,4 +1,5 @@
-import { EventChannel, eventChannel } from 'redux-saga';
+import type { EventChannel } from 'redux-saga';
+import { eventChannel } from 'redux-saga';
 import type { WSEvent, WSEventType, WSUserAvatar } from '@/types/wsTypes';
 import { WSUserAvatarAction } from '@/store/actions/wsActions';
 

@@ -2,10 +2,10 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import ManagedByTableSection from './addManagedByTable';
 import '@testing-library/jest-dom';
-import { ManagedByType } from '@/types/companyTypes';
-import { UserCompaniesType } from '@/types/usersTypes';
-import { AddManagedBySectionProps } from '../addManagedBySection/addManagedBySection';
-import { SelectChangeEvent } from '@mui/material/Select';
+import type { ManagedByType } from '@/types/companyTypes';
+import type { UserCompaniesType } from '@/types/usersTypes';
+import type { AddManagedBySectionProps } from '../addManagedBySection/addManagedBySection';
+import type { SelectChangeEvent } from '@mui/material/Select';
 
 // ✅ Mock AddManagedBySection
 jest.mock('../addManagedBySection/addManagedBySection', () => {

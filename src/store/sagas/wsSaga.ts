@@ -2,8 +2,8 @@ import { take, call, put, select } from 'redux-saga/effects';
 import { initWebsocket } from '@/store/services/ws';
 import { getAccessToken } from '@/store/selectors';
 import type { RootState } from '@/store/store';
-import { Action } from 'redux';
-import { EventChannel, SagaIterator } from 'redux-saga';
+import type { Action } from 'redux';
+import type { EventChannel, SagaIterator } from 'redux-saga';
 
 function* monitorToken(
 	selector: (state: RootState) => string | null,

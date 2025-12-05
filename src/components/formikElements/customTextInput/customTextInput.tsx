@@ -1,5 +1,5 @@
 import React, { ForwardedRef, forwardRef } from 'react';
-import { Theme } from '@mui/material/styles';
+import type { Theme } from '@mui/material/styles';
 import { InputAdornment, ThemeProvider } from '@mui/material';
 import TextField, { TextFieldProps } from '@mui/material/TextField';
 

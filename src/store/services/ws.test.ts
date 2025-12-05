@@ -1,6 +1,6 @@
 import { initWebsocket } from './ws';
 import { WSUserAvatarAction } from '@/store/actions/wsActions';
-import { EventChannel } from 'redux-saga';
+import type { EventChannel } from 'redux-saga';
 
 class MockWebSocket implements WebSocket {
 	url: string;

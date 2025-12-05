@@ -2,22 +2,42 @@
 
 import React, { useState, useMemo } from 'react';
 import { styled, ThemeProvider } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-import Drawer from '@mui/material/Drawer';
-import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import List from '@mui/material/List';
-import Typography from '@mui/material/Typography';
-import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
+import MuiAppBar, { type AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
+import {
+	Box,
+	Drawer,
+	Toolbar,
+	List,
+	Typography,
+	Divider,
+	IconButton,
+	ListItem,
+	ListItemButton,
+	ListItemIcon,
+	ListItemText,
+	Accordion,
+	AccordionDetails,
+	AccordionSummary,
+	Button,
+	Skeleton,
+	Stack,
+	Tooltip,
+	useTheme,
+	useMediaQuery,
+} from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
 import LogoutIcon from '@mui/icons-material/Logout';
-import ListItemText from '@mui/material/ListItemText';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
+import PeopleIcon from '@mui/icons-material/People';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import RequestQuoteIcon from '@mui/icons-material/RequestQuote';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import PaymentIcon from '@mui/icons-material/Payment';
+import DomainIcon from '@mui/icons-material/Domain';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { useAppSelector } from '@/utils/hooks';
 import { getProfilState } from '@/store/selectors';
 import { cookiesDeleter } from '@/utils/apiHelpers';
@@ -41,28 +61,8 @@ import {
 import { signOut, useSession } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
 import { navigationBarTheme } from '@/utils/themes';
-import {
-	Accordion,
-	AccordionDetails,
-	AccordionSummary,
-	Button,
-	Skeleton,
-	Stack,
-	Tooltip,
-	useTheme,
-	useMediaQuery,
-} from '@mui/material';
 import Image from 'next/image';
 import Link from 'next/link';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
-import PeopleIcon from '@mui/icons-material/People';
-import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
-import RequestQuoteIcon from '@mui/icons-material/RequestQuote';
-import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import PaymentIcon from '@mui/icons-material/Payment';
-import DomainIcon from '@mui/icons-material/Domain';
-import SettingsIcon from '@mui/icons-material/Settings';
 import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
 
 const getNavigationMenu = (isStaff: boolean) => {

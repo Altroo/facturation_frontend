@@ -6,7 +6,7 @@ import { Box, Stack } from '@mui/material';
 import Image from 'next/image';
 import CircularRemoveBlack from '../../../../public/assets/svgs/globalIcons/circular-remove-black.svg';
 import SquareImageInputFile from '../../htmlElements/buttons/squareImageInputFile/squareImageInputFile';
-import Cropper, { ReactCropperElement } from 'react-cropper';
+import Cropper, { type ReactCropperElement } from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
 
 type Props = {

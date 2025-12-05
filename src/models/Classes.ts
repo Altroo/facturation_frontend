@@ -1,7 +1,7 @@
 import type { NbrEmployeType, CiviliteType, ManagedByType, ManagedByWriteOnlyType } from '@/types/companyTypes';
-import { TypeClientType } from '@/types/clientTypes';
-import { TypeArticleType } from '@/types/articleTypes';
-import { TypeDevisStatus, TypeRemiseType } from '@/types/devisTypes';
+import type { TypeClientType } from '@/types/clientTypes';
+import type { TypeArticleType } from '@/types/articleTypes';
+import type { TypeDevisStatus, TypeRemiseType } from '@/types/devisTypes';
 
 export class UserClass {
 	constructor(

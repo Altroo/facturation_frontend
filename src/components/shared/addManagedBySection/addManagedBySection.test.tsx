@@ -2,8 +2,8 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import AddManagedBySection, { AddManagedBySectionProps } from './addManagedBySection';
 import '@testing-library/jest-dom';
-import { SelectChangeEvent } from '@mui/material/Select';
-import { DropDownType } from '@/types/accountTypes';
+import type { SelectChangeEvent } from '@mui/material/Select';
+import type { DropDownType } from '@/types/accountTypes';
 
 // ✅ Define minimal prop types for mocked components
 interface AutocompleteProps {

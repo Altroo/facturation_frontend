@@ -1,4 +1,5 @@
-import axios, { AxiosHeaders, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosHeaders } from 'axios';
+import type { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { signOut } from 'next-auth/react';
 import { SITE_ROOT } from '@/utils/routes';
 import type { APIContentTypeInterface, ApiErrorResponseType, InitStateToken } from '@/types/_initTypes';

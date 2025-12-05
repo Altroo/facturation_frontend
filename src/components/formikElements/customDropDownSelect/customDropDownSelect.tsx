@@ -1,6 +1,6 @@
 import React from 'react';
 import Styles from './customDropDownSelect.module.sass';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
+import Select, { type SelectChangeEvent } from '@mui/material/Select';
 import {
 	ThemeProvider,
 	MenuItem,
@@ -11,7 +11,7 @@ import {
 	FormHelperText,
 	InputAdornment,
 } from '@mui/material';
-import { Theme } from '@mui/material/styles';
+import type { Theme } from '@mui/material/styles';
 import ActiveCheckBlue from '../../../../public/assets/svgs/globalIcons/active-check-blue.svg';
 import Image from 'next/image';
 import type { DropDownType } from '@/types/accountTypes';

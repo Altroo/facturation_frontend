@@ -1,4 +1,5 @@
-import { configureStore, combineReducers, Middleware, ThunkDispatch, UnknownAction, Reducer } from '@reduxjs/toolkit';
+import { configureStore, combineReducers, ThunkDispatch } from '@reduxjs/toolkit';
+import type { Middleware, UnknownAction, Reducer } from '@reduxjs/toolkit';
 import createSagaMiddleware from 'redux-saga';
 import _initReducer from '@/store/slices/_initSlice';
 import accountReducer from '@/store/slices/accountSlice';

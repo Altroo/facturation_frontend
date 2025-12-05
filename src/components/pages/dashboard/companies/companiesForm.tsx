@@ -37,7 +37,6 @@ import ImageIcon from '@mui/icons-material/Image';
 import ContactsIcon from '@mui/icons-material/Contacts';
 import DescriptionIcon from '@mui/icons-material/Description';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
-
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
@@ -58,7 +57,7 @@ import { getGroupesState, getProfilState } from '@/store/selectors';
 import { useGetUsersListQuery } from '@/store/services/account';
 import type { DropDownType } from '@/types/accountTypes';
 import type { CompanyFormValuesType, ManagedByType } from '@/types/companyTypes';
-import { UserClass } from '@/models/Classes';
+import type { UserClass } from '@/models/Classes';
 import ManagedByTableSection from '@/components/shared/addManagedByTable/addManagedByTable';
 import { Protected } from '@/components/layouts/protected/protected';
 

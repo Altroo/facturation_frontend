@@ -51,9 +51,9 @@ import {
 	useGetUserQuery,
 } from '@/store/services/account';
 import type { DropDownType } from '@/types/accountTypes';
-import { UserCompaniesType, UsersFormValuesType } from '@/types/usersTypes';
+import type { UserCompaniesType, UsersFormValuesType } from '@/types/usersTypes';
 import { useGetCompaniesListQuery } from '@/store/services/company';
-import { CompanyClass } from '@/models/Classes';
+import type { CompanyClass } from '@/models/Classes';
 import PersonIcon from '@mui/icons-material/Person';
 import ManagedByTableSection from '@/components/shared/addManagedByTable/addManagedByTable';
 import { Protected } from '@/components/layouts/protected/protected';

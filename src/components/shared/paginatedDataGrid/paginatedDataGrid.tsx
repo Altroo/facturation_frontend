@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { Box, ThemeProvider, Stack } from '@mui/material';
-import { DataGrid, GridColDef, GridFilterModel } from '@mui/x-data-grid';
+import { DataGrid } from '@mui/x-data-grid';
+import type { GridColDef, GridFilterModel } from '@mui/x-data-grid';
 import { frFR } from '@mui/x-data-grid/locales';
 import { getDefaultTheme } from '@/utils/themes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';

@@ -1,5 +1,5 @@
 import * as types from './index';
-import {
+import type {
 	CategorieClass,
 	CitiesClass,
 	EmplacementClass,

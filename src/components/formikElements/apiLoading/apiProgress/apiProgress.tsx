@@ -1,4 +1,5 @@
-import React, { CSSProperties } from 'react';
+import React from 'react';
+import type { CSSProperties } from 'react';
 import { CircularProgress, Backdrop } from '@mui/material';
 
 type Props = {

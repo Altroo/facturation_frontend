@@ -1,5 +1,6 @@
-import createSagaMiddleware, { Task } from 'redux-saga';
-import { combineReducers, configureStore, Store, Action, ThunkDispatch } from '@reduxjs/toolkit';
+import createSagaMiddleware, { type Task } from 'redux-saga';
+import { combineReducers, configureStore, ThunkDispatch } from '@reduxjs/toolkit';
+import type { Store, Action } from '@reduxjs/toolkit';
 import { rootSaga } from '@/store/sagas';
 import _initReducer from '@/store/slices/_initSlice';
 import accountReducer from '@/store/slices/accountSlice';

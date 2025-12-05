@@ -1,5 +1,5 @@
 import * as types from './index';
-import { UserClass, GroupClass } from '@/models/Classes';
+import type { UserClass, GroupClass } from '@/models/Classes';
 
 export const accountSetProfilAction = (props: UserClass) => {
 	return {

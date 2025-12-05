@@ -1,6 +1,7 @@
 import React from 'react';
 import TextField, { TextFieldProps } from '@mui/material/TextField';
-import { Theme, ThemeProvider } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
+import type { Theme } from '@mui/material/styles';
 import type { DropDownType } from '@/types/accountTypes';
 import { Autocomplete, InputAdornment } from '@mui/material';
 

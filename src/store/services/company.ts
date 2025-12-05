@@ -2,11 +2,11 @@ import { createApi } from '@reduxjs/toolkit/query/react';
 import { isAuthenticatedInstance } from '@/utils/helpers';
 import { axiosBaseQuery } from '@/utils/axiosBaseQuery';
 import { getInitStateToken } from '@/store/selectors';
-import { CompanyClass } from '@/models/Classes';
+import type { CompanyClass } from '@/models/Classes';
 import type { ApiErrorResponseType, PaginationResponseType, SuccessResponseType } from '@/types/_initTypes';
 import type { RootState } from '@/store/store';
 import { initToken } from '@/store/slices/_initSlice';
-import { CompaniesUserCompaniesType } from '@/types/companyTypes';
+import type { CompaniesUserCompaniesType } from '@/types/companyTypes';
 
 export const companyApi = createApi({
 	reducerPath: 'companyApi',

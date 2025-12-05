@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from 'axios';
+import axios, { type AxiosInstance } from 'axios';
 import type { BaseQueryFn, BaseQueryApi } from '@reduxjs/toolkit/query';
 
 // Backend error response structure

@@ -16,7 +16,7 @@ import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDa
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import CustomToast from '@/components/portals/customToast/customToast';
 import Portal from '@/contexts/Portal';
-import { ClientClass } from '@/models/Classes';
+import type { ClientClass } from '@/models/Classes';
 import { formatDate } from '@/utils/helpers';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';

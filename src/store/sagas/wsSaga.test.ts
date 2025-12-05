@@ -2,7 +2,7 @@ import { runSaga } from 'redux-saga';
 import { watchWS } from './wsSaga';
 import { initWebsocket } from '@/store/services/ws';
 import { getAccessToken } from '@/store/selectors';
-import { Action } from 'redux';
+import type { Action } from 'redux';
 import { eventChannel } from 'redux-saga';
 
 jest.mock('@/store/services/ws', () => ({

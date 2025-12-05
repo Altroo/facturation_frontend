@@ -16,7 +16,7 @@ import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDa
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import CustomToast from '@/components/portals/customToast/customToast';
 import Portal from '@/contexts/Portal';
-import { UserClass } from '@/models/Classes';
+import type { UserClass } from '@/models/Classes';
 import { formatDate } from '@/utils/helpers';
 import { Protected } from '@/components/layouts/protected/protected';
 

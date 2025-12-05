@@ -1,5 +1,5 @@
 import { getAccessTokenFromSession } from './session';
-import { AppSession } from '@/types/_initTypes';
+import type { AppSession } from '@/types/_initTypes';
 
 describe('getAccessTokenFromSession', () => {
 	it('returns undefined when session is undefined', () => {

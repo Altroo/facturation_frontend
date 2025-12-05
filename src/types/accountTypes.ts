@@ -1,5 +1,5 @@
 import type { ResponseDataInterface, SagaPayloadType, TokenType } from '@/types/_initTypes';
-import { GroupClass, UserClass } from '@/models/Classes';
+import type { GroupClass, UserClass } from '@/models/Classes';
 
 //!- Account State
 export interface AccountStateInterface {

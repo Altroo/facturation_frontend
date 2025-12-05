@@ -1,5 +1,5 @@
 import type { SagaPayloadType } from '@/types/_initTypes';
-import {
+import type {
 	CategorieClass,
 	CitiesClass,
 	EmplacementClass,

@@ -4,7 +4,7 @@ import '@/styles/globals.sass';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import SessionProvider from '@/providers/sessionProvider';
 import StoreProvider from '@/providers/storeProvider';
-import { AppProps } from 'next/app';
+import type { AppProps } from 'next/app';
 import { InitContextProvider } from '@/contexts/InitContext';
 import { auth } from '@/auth';
 import type { Viewport } from 'next';

@@ -2,7 +2,7 @@ import { createApi } from '@reduxjs/toolkit/query/react';
 import { isAuthenticatedInstance } from '@/utils/helpers';
 import { axiosBaseQuery } from '@/utils/axiosBaseQuery';
 import { getInitStateToken } from '@/store/selectors';
-import {
+import type {
 	CitiesClass,
 	MarqueClass,
 	CategorieClass,

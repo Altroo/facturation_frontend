@@ -1,6 +1,6 @@
 import React, { ForwardedRef, forwardRef, useState } from 'react';
 import { ThemeProvider, TextField, InputAdornment, IconButton } from '@mui/material';
-import { Theme } from '@mui/material/styles';
+import type { Theme } from '@mui/material/styles';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 type Props = {

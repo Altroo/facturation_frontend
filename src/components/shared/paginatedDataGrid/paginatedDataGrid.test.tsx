@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import PaginatedDataGrid from './paginatedDataGrid';
 import '@testing-library/jest-dom';
-import { GridColDef } from '@mui/x-data-grid';
+import type { GridColDef } from '@mui/x-data-grid';
 import { createTheme } from '@mui/material/styles';
 
 // Mock theme

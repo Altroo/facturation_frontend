@@ -1,6 +1,6 @@
 import * as Types from '@/store/actions';
 import { put, takeLatest } from 'redux-saga/effects';
-import { setCompaniesUserSagatype } from '@/types/companyTypes';
+import type { setCompaniesUserSagatype } from '@/types/companyTypes';
 import { setUserCompanies } from '@/store/slices/companiesSlice';
 
 export function* companiesSetUserCompaniesSaga(payload: setCompaniesUserSagatype) {

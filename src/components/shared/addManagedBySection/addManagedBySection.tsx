@@ -5,8 +5,8 @@ import { ReactNode } from 'react';
 import { customDropdownTheme } from '@/utils/themes';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import { Add } from '@mui/icons-material';
-import { DropDownType } from '@/types/accountTypes';
-import { SelectChangeEvent } from '@mui/material/Select';
+import type { DropDownType } from '@/types/accountTypes';
+import type { SelectChangeEvent } from '@mui/material/Select';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 
 export interface AddManagedBySectionProps {

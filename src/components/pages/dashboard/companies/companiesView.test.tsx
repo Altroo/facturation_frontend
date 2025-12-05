@@ -5,10 +5,10 @@ import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import { useGetCompanyQuery } from '@/store/services/company';
 import '@testing-library/jest-dom';
-import { AppSession } from '@/types/_initTypes';
+import type { AppSession } from '@/types/_initTypes';
 import { useRouter } from 'next/navigation';
 import { useAppSelector } from '@/utils/hooks';
-import { RootState } from '@/store/store';
+import type { RootState } from '@/store/store';
 
 // Mock Next.js App Router as jest.fn so we can control return values
 jest.mock('next/navigation', () => ({
