@@ -7,7 +7,8 @@ export type DeviLineSchemaType = {
 	prix_achat: number;
 	prix_vente: number;
 	quantity: number;
-	pourcentage_remise: number;
+	remise_type: TypeRemiseType;
+	remise: number;
 };
 
 export type DeviSchemaType = {
@@ -17,6 +18,8 @@ export type DeviSchemaType = {
 	numero_demande_prix_client: string | null;
 	mode_paiement: number;
 	remarque: string | null;
+	remise_type: TypeRemiseType;
+	remise: number;
 	lignes: Array<DeviLineSchemaType>;
 	globalError?: string;
 };

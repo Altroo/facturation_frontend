@@ -188,6 +188,9 @@ export class DeviClass {
 		public readonly lignes_count: number,
 		public remise_type: TypeRemiseType,
 		public remise: number,
+		public readonly total_tva: number,
+		public readonly total_ttc: number,
+		public readonly total_ttc_apres_remise: number,
 		public lignes: Array<DeviLineClass>,
 	) {}
 }
