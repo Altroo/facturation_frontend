@@ -55,6 +55,7 @@ export const clientApi = createApi({
 				url: `${process.env.NEXT_PUBLIC_CLIENT_GENERATE_CODE_CLIENT}`,
 				method: 'GET',
 			}),
+			providesTags: ['Client'],
 		}),
 		deleteClient: builder.mutation<void | ApiErrorResponseType, { id: number }>({
 			query: ({ id }) => ({

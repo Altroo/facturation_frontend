@@ -1,9 +1,11 @@
 export type TypeDevisStatus = 'Brouillon' | 'Envoyé' | 'Accepté' | 'Refusé' | 'Annulé' | 'Expiré';
 
-export type TypeRemiseType = 'Pourcentage' | 'Fixe';
+export type TypeRemiseType = '' | 'Pourcentage' | 'Fixe';
 
 export type DeviLineSchemaType = {
+	id: number;
 	article: number;
+	article_designation: string | null;
 	prix_achat: number;
 	prix_vente: number;
 	quantity: number;
@@ -18,8 +20,8 @@ export type DeviSchemaType = {
 	numero_demande_prix_client: string | null;
 	mode_paiement: number;
 	remarque: string | null;
-	remise_type: TypeRemiseType;
-	remise: number;
+	remise_type?: TypeRemiseType;
+	remise?: number;
 	lignes: Array<DeviLineSchemaType>;
 	globalError?: string;
 };

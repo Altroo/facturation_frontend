@@ -55,6 +55,7 @@ export const articleApi = createApi({
 				url: `${process.env.NEXT_PUBLIC_ARTICLE_GENERATE_CODE_REFERENCE}`,
 				method: 'GET',
 			}),
+			providesTags: ['Article'],
 		}),
 		deleteArticle: builder.mutation<void | ApiErrorResponseType, { id: number }>({
 			query: ({ id }) => ({

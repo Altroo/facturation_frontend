@@ -94,6 +94,7 @@ export const usersApi = createApi({
 				method: 'POST',
 				data: { email },
 			}),
+			invalidatesTags: ['Users'],
 		}),
 		deleteUser: builder.mutation<void | ApiErrorResponseType, { id: number }>({
 			query: ({ id }) => ({

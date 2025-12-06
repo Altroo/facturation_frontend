@@ -76,9 +76,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const router = useRouter();
 
 	const {
-		data: userData,
-		isLoading: isUserLoading,
-		error: userError,
+		data: rawData,
+		isLoading: isDataLoading,
+		error: dataError,
 	} = useGetUserQuery({ id: id! }, { skip: !token || !isEditMode });
 
 	const [addUser, { isLoading: isAddLoading, error: addError }] = useAddUserMutation();
@@ -86,7 +86,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const [updateUser, { isLoading: isUpdateLoading, error: updateError }] = useEditUserMutation();
 
 	// Compose error without local state or effects
-	const error = checkEmailError || (isEditMode ? userError || updateError : addError);
+	const error = checkEmailError || (isEditMode ? dataError || updateError : addError);
 	const axiosError: ResponseDataInterface<ApiErrorResponseType> | undefined = useMemo(() => {
 		return error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined;
 	}, [error]);
@@ -94,26 +94,26 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const groupes = useAppSelector(getGroupesState);
 	const [isPending, setIsPending] = useState(false);
 
-	const { data: rawData, isLoading: isCompaniesLoading } = useGetCompaniesListQuery(
+	const { data: companiesRawData, isLoading: isCompaniesLoading } = useGetCompaniesListQuery(
 		{ with_pagination: false },
 		{ skip: !token },
 	);
 
 	// Enforce the type of the companies data returned
-	const companiesData = rawData as Array<Partial<CompanyClass>> | undefined;
+	const companiesData = companiesRawData as Array<Partial<CompanyClass>> | undefined;
 
 	const formik = useFormik<UsersFormValuesType>({
 		initialValues: {
-			first_name: userData?.first_name ?? '',
-			last_name: userData?.last_name ?? '',
-			email: userData?.email ?? '',
-			gender: userData?.gender ?? '',
-			is_active: userData?.is_active ?? true,
-			is_staff: userData?.is_staff ?? false,
-			avatar: userData?.avatar ?? '',
-			avatar_cropped: userData?.avatar ?? '',
-			// Initialize with server companies; Formik will reinitialize when userData changes
-			companies: Array.isArray(userData?.companies) ? (userData!.companies as UserCompaniesType[]) : [],
+			first_name: rawData?.first_name ?? '',
+			last_name: rawData?.last_name ?? '',
+			email: rawData?.email ?? '',
+			gender: rawData?.gender ?? '',
+			is_active: rawData?.is_active ?? true,
+			is_staff: rawData?.is_staff ?? false,
+			avatar: rawData?.avatar ?? '',
+			avatar_cropped: rawData?.avatar ?? '',
+			// Initialize with server companies; Formik will reinitialize when rawData changes
+			companies: Array.isArray(rawData?.companies) ? (rawData!.companies as UserCompaniesType[]) : [],
 			globalError: '',
 		},
 		enableReinitialize: true,
@@ -122,7 +122,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		onSubmit: async (data, { setFieldError }) => {
 			setIsPending(true);
 			try {
-				if (userData?.email !== data.email) {
+				if (rawData?.email !== data.email) {
 					await checkEmail({ email: data.email }).unwrap();
 				}
 				if (isEditMode) {
@@ -209,7 +209,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		isCheckEmailLoading ||
 		isUpdateLoading ||
 		isPending ||
-		(isEditMode && isUserLoading);
+		(isEditMode && isDataLoading);
 
 	return (
 		<Stack spacing={3} sx={{ p: { xs: 2, md: 3 } }}>

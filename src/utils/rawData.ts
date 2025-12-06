@@ -26,3 +26,19 @@ export const civiliteItemsList: Array<DropDownType> = [
 	{ code: 'Mme', value: 'Mme' },
 	{ code: 'Mlle', value: 'Mlle' },
 ];
+
+// 'Brouillon', 'Envoyé', 'Accepté', 'Refusé', 'Annulé', 'Expiré'
+export const devisStatusItemsList: Array<DropDownType> = [
+	{ code: 'Brouillon', value: 'Brouillon' },
+	{ code: 'Envoyé', value: 'Envoyé' },
+	{ code: 'Accepté', value: 'Accepté' },
+	{ code: 'Refusé', value: 'Refusé' },
+	{ code: 'Annulé', value: 'Annulé' },
+	{ code: 'Expiré', value: 'Expiré' },
+];
+
+// 'Pourcentage', 'Fixe'
+export const remiseTypeItemsList: Array<DropDownType> = [
+	{ code: 'Pourcentage', value: 'Pourcentage' },
+	{ code: 'Fixe', value: 'Fixe' },
+];

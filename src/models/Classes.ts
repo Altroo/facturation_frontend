@@ -176,7 +176,7 @@ export class DeviClass {
 		public client: number,
 		public readonly client_name: string | null,
 		public date_devis: string,
-		public numero_demande_prix_client: string,
+		public numero_demande_prix_client: string | null,
 		public mode_paiement: number,
 		public readonly mode_paiement_name: string | null,
 		public remarque: string | null,

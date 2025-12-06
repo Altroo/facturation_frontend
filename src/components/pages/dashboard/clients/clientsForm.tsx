@@ -508,7 +508,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, on
 							</CardContent>
 						</Card>
 
-						{/* City + Payment + Remark */}
+						{/* City + Payment */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
 							<CardContent sx={{ p: 3 }}>
 								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
@@ -568,6 +568,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, on
 								</Stack>
 							</CardContent>
 						</Card>
+						{/* Remark */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
 							<CardContent sx={{ p: 3 }}>
 								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>

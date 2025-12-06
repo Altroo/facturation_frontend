@@ -70,19 +70,19 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
 	const {
-		data: companyData,
-		isLoading: isCompanyLoading,
-		error: companyError,
+		data: rawData,
+		isLoading: isDataLoading,
+		error: dataError,
 	} = useGetCompanyQuery({ id: id! }, { skip: !token || !isEditMode });
-	const [addCompany, { isLoading: isAddLoading, error: addError }] = useAddCompanyMutation();
-	const [updateCompany, { isLoading: isUpdateLoading, error: updateError }] = useEditCompanyMutation();
+	const [addData, { isLoading: isAddLoading, error: addError }] = useAddCompanyMutation();
+	const [updateData, { isLoading: isUpdateLoading, error: updateError }] = useEditCompanyMutation();
 	const { data: rawUsersData, isLoading: isUsersLoading } = useGetUsersListQuery(
 		{ with_pagination: false },
 		{ skip: !token },
 	);
 	// enforce the type of the users data
 	const usersData = rawUsersData as Array<Partial<UserClass>> | undefined;
-	const error = isEditMode ? companyError || updateError : addError;
+	const error = isEditMode ? dataError || updateError : addError;
 	const axiosError = useMemo(
 		() => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),
 		[error],
@@ -94,8 +94,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const computedManagedBy = useMemo(() => {
 		let admins: Array<ManagedByType> = [];
 
-		if (isEditMode && companyData?.admins && Array.isArray(companyData.admins)) {
-			admins = companyData.admins;
+		if (isEditMode && rawData?.admins && Array.isArray(rawData.admins)) {
+			admins = rawData.admins;
 		} else if (!isEditMode && groupes.length && userID) {
 			admins = [
 				{
@@ -114,33 +114,33 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			first_name: u.first_name,
 			last_name: u.last_name,
 		}));
-	}, [isEditMode, companyData, groupes.length, userID, first_name, last_name]);
+	}, [isEditMode, rawData, groupes.length, userID, first_name, last_name]);
 
 	const [selectedUser, setSelectedUser] = useState<DropDownType | null>(null);
 	const [selectedRole, setSelectedRole] = useState<string>('');
 	const roleOptions = groupes.map((role) => ({ value: role, code: role }));
 	const formik = useFormik<CompanyFormValuesType>({
 		initialValues: {
-			raison_sociale: companyData?.raison_sociale ?? '',
-			email: companyData?.email ?? '',
-			nbr_employe: companyData?.nbr_employe ?? '',
-			civilite_responsable: companyData?.civilite_responsable ?? '',
-			nom_responsable: companyData?.nom_responsable ?? '',
-			gsm_responsable: companyData?.gsm_responsable ?? '',
-			adresse: companyData?.adresse ?? '',
-			telephone: companyData?.telephone ?? '',
-			fax: companyData?.fax ?? '',
-			site_web: companyData?.site_web ?? '',
-			numero_du_compte: companyData?.numero_du_compte ?? '',
-			ICE: companyData?.ICE ?? '',
-			registre_de_commerce: companyData?.registre_de_commerce ?? '',
-			identifiant_fiscal: companyData?.identifiant_fiscal ?? '',
-			tax_professionnelle: companyData?.tax_professionnelle ?? '',
-			CNSS: companyData?.CNSS ?? '',
-			logo: companyData?.logo ?? '',
-			logo_cropped: companyData?.logo_cropped ?? '',
-			cachet: companyData?.cachet ?? '',
-			cachet_cropped: companyData?.cachet_cropped ?? '',
+			raison_sociale: rawData?.raison_sociale ?? '',
+			email: rawData?.email ?? '',
+			nbr_employe: rawData?.nbr_employe ?? '',
+			civilite_responsable: rawData?.civilite_responsable ?? '',
+			nom_responsable: rawData?.nom_responsable ?? '',
+			gsm_responsable: rawData?.gsm_responsable ?? '',
+			adresse: rawData?.adresse ?? '',
+			telephone: rawData?.telephone ?? '',
+			fax: rawData?.fax ?? '',
+			site_web: rawData?.site_web ?? '',
+			numero_du_compte: rawData?.numero_du_compte ?? '',
+			ICE: rawData?.ICE ?? '',
+			registre_de_commerce: rawData?.registre_de_commerce ?? '',
+			identifiant_fiscal: rawData?.identifiant_fiscal ?? '',
+			tax_professionnelle: rawData?.tax_professionnelle ?? '',
+			CNSS: rawData?.CNSS ?? '',
+			logo: rawData?.logo ?? '',
+			logo_cropped: rawData?.logo_cropped ?? '',
+			cachet: rawData?.cachet ?? '',
+			cachet_cropped: rawData?.cachet_cropped ?? '',
 			managed_by: computedManagedBy,
 			globalError: '',
 		},
@@ -151,9 +151,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			setIsPending(true);
 			try {
 				if (isEditMode) {
-					await updateCompany({ data, id }).unwrap();
+					await updateData({ data, id }).unwrap();
 				} else {
-					await addCompany({ data }).unwrap();
+					await addData({ data }).unwrap();
 				}
 				onSuccess();
 				if (!isEditMode) {
@@ -212,7 +212,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		}
 	};
 
-	const isLoading = isUsersLoading || isAddLoading || isUpdateLoading || isPending || (isEditMode && isCompanyLoading);
+	const isLoading = isUsersLoading || isAddLoading || isUpdateLoading || isPending || (isEditMode && isDataLoading);
 
 	return (
 		<Stack spacing={3} sx={{ p: { xs: 2, md: 3 } }}>

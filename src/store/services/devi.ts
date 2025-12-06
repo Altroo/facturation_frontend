@@ -53,6 +53,7 @@ export const deviApi = createApi({
 				url: `${process.env.NEXT_PUBLIC_DEVIS_GENERATE_NUM_DEVIS}`,
 				method: 'GET',
 			}),
+			providesTags: ['Devi'],
 		}),
 		deleteDevi: builder.mutation<void | ApiErrorResponseType, { id: number }>({
 			query: ({ id }) => ({

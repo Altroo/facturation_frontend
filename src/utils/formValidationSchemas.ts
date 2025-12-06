@@ -303,7 +303,7 @@ export const devisLineSchema = z
 		quantity: requiredNumberField(1).refine((val) => Number.isInteger(val), {
 			error: INPUT_QUANTITY_INT,
 		}),
-		remise_type: z.enum(['pourcentage', 'fixe']).optional(),
+		remise_type: z.enum(['Pourcentage', 'Fixe']).optional(),
 		remise: optionalNumberField(0), // now optional
 	})
 	.refine((data) => data.prix_vente >= data.prix_achat, {
@@ -312,7 +312,7 @@ export const devisLineSchema = z
 	})
 	.superRefine((data, ctx) => {
 		const hasRemiseType = data.remise_type !== undefined;
-		const rType = data.remise_type ?? 'pourcentage';
+		const rType = data.remise_type ?? 'Pourcentage';
 		const remiseVal = data.remise;
 
 		if (hasRemiseType && (remiseVal === undefined || remiseVal === null || Number.isNaN(remiseVal))) {
@@ -334,7 +334,7 @@ export const devisLineSchema = z
 				return;
 			}
 
-			if (rType === 'pourcentage') {
+			if (rType === 'Pourcentage') {
 				if (remiseVal < 0 || remiseVal > 100) {
 					ctx.addIssue({
 						path: ['remise'],
@@ -362,14 +362,14 @@ export const deviSchema = z
 		numero_demande_prix_client: optionalTextField(1, 100).nullable(),
 		mode_paiement: requiredNumberField(1),
 		remarque: optionalTextField(2, 500).nullable(),
-		remise_type: z.enum(['pourcentage', 'fixe']).optional(),
-		remise: optionalNumberField(0), // now optional
+		remise_type: z.enum(['Pourcentage', 'Fixe']).optional(),
+		remise: optionalNumberField(0),
 		lignes: z.array(devisLineSchema).optional(),
 		globalError: optionalTextField(1, 500),
 	})
 	.superRefine((data, ctx) => {
 		const hasRemiseType = data.remise_type !== undefined;
-		const rType = data.remise_type ?? 'pourcentage';
+		const rType = data.remise_type ?? 'Pourcentage';
 		const remiseVal = data.remise;
 
 		if (hasRemiseType && (remiseVal === undefined || remiseVal === null || Number.isNaN(remiseVal))) {
@@ -391,7 +391,7 @@ export const deviSchema = z
 				return;
 			}
 
-			if (rType === 'pourcentage') {
+			if (rType === 'Pourcentage') {
 				if (remiseVal < 0 || remiseVal > 100) {
 					ctx.addIssue({
 						path: ['remise'],
