@@ -283,7 +283,7 @@ describe('Zod Schema Validation', () => {
 					client: 1,
 					date_devis: '2025-12-04',
 					mode_paiement: 2,
-					remise_type: 'pourcentage',
+					remise_type: 'Pourcentage',
 					remise: 10,
 					lignes: [
 						{
@@ -291,7 +291,7 @@ describe('Zod Schema Validation', () => {
 							prix_achat: 100,
 							prix_vente: 150,
 							quantity: 2,
-							remise_type: 'fixe',
+							remise_type: 'Fixe',
 							remise: 5,
 						},
 					],
@@ -306,7 +306,7 @@ describe('Zod Schema Validation', () => {
 					client: 1,
 					date_devis: '2025-12-04',
 					mode_paiement: 2,
-					remise_type: 'pourcentage',
+					remise_type: 'Pourcentage',
 				}),
 			).toThrow();
 		});
@@ -324,7 +324,7 @@ describe('Zod Schema Validation', () => {
 							prix_achat: 100,
 							prix_vente: 150,
 							quantity: 2,
-							remise_type: 'pourcentage',
+							remise_type: 'Pourcentage',
 						},
 					],
 				}),
