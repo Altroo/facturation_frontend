@@ -3,7 +3,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
-import { useAddDeviMutation, useEditDeviMutation, useGetDeviQuery, useGetNumDevisQuery } from '@/store/services/devi';
+import { useEditDeviMutation, useGetDeviQuery } from '@/store/services/devi';
 import Styles from '@/styles/dashboard/devis/devis.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import {
@@ -46,36 +46,31 @@ import { setFormikAutoErrors } from '@/utils/helpers';
 import { coordonneeTextInputTheme, customDropdownTheme } from '@/utils/themes';
 import { DEVIS_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
-import type { DeviSchemaType } from '@/types/devisTypes';
+import { DeviSchemaType } from '@/types/devisTypes';
 import { Protected } from '@/components/layouts/protected/protected';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
-import { useGetArticlesListQuery } from '@/store/services/article';
 import { ArticleClass, ClientClass } from '@/models/Classes';
 import { useGetClientsListQuery } from '@/store/services/client';
 import { useAppSelector } from '@/utils/hooks';
 import { getModePaiementState } from '@/store/selectors';
-import { DropDownTypeTwo } from '@/types/accountTypes';
+import { DropDownType, DropDownTypeTwo } from '@/types/accountTypes';
+import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
+import { useGetArticlesListQuery } from '@/store/services/article';
 
 const inputTheme = coordonneeTextInputTheme();
 
 type FormikContentProps = {
 	token: string | undefined;
 	company_id: number;
-	id?: number;
+	id: number;
 	onSuccess: () => void;
 };
 
 const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
 	const { token, company_id, id, onSuccess } = props;
-	const isEditMode = id !== undefined;
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-	const {
-		data: rawData,
-		isLoading: isDataLoading,
-		error: dataError,
-	} = useGetDeviQuery({ id: id! }, { skip: !token || !isEditMode });
-	const [addData, { isLoading: isAddLoading, error: addError }] = useAddDeviMutation();
+	const { data: rawData, isLoading: isDataLoading, error: dataError } = useGetDeviQuery({ id: id! }, { skip: !token });
 	const [updateData, { isLoading: isUpdateLoading, error: updateError }] = useEditDeviMutation();
 	const { data: rawArticlesData, isLoading: isArticlesLoading } = useGetArticlesListQuery(
 		{ company_id, with_pagination: false },
@@ -87,7 +82,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{ skip: !token },
 	);
 	const clientsData = rawClientsData as Array<Partial<ClientClass>> | undefined;
-	const error = isEditMode ? dataError || updateError : addError;
+	const error = dataError || updateError;
 	const axiosError = useMemo(
 		() => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),
 		[error],
@@ -95,12 +90,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const [isPending, setIsPending] = useState(false);
 	const router = useRouter();
 
-	const { data: generatedNumDevis, isLoading: isNumDevisLoading } = useGetNumDevisQuery(undefined, {
-		skip: !token || isEditMode,
-	});
-
 	// Split numero_devis into number and year parts
-	const initialNumDevis = isEditMode ? (rawData?.numero_devis ?? '') : (generatedNumDevis?.numero_devis ?? '');
+	const initialNumDevis = rawData?.numero_devis ?? '';
 	const [numDevisNumber, numDevisYear] = initialNumDevis ? initialNumDevis.split('/') : ['', ''];
 
 	// get mode_paiement
@@ -113,34 +104,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			const label =
 				client.client_type === 'PP' ? `${client.nom || ''} ${client.prenom || ''}`.trim() : client.raison_sociale || '';
 			return {
-				value: label,
-				label: label,
+				code: label, // what is shown in the dropdown
+				value: String(client.id), // the id saved in formik
 			};
-		}) as Array<DropDownTypeTwo>;
-	}, [clientsData]);
-
-	// Create a map to get client ID from label
-	const clientLabelToId = useMemo(() => {
-		if (!clientsData) return new Map<string, number>();
-		const map = new Map<string, number>();
-		clientsData.forEach((client) => {
-			const label =
-				client.client_type === 'PP' ? `${client.nom || ''} ${client.prenom || ''}`.trim() : client.raison_sociale || '';
-			map.set(label, client.id!);
-		});
-		return map;
-	}, [clientsData]);
-
-	// Create a map to get client label from ID
-	const clientIdToLabel = useMemo(() => {
-		if (!clientsData) return new Map<number, string>();
-		const map = new Map<number, string>();
-		clientsData.forEach((client) => {
-			const label =
-				client.client_type === 'PP' ? `${client.nom || ''} ${client.prenom || ''}`.trim() : client.raison_sociale || '';
-			map.set(client.id!, label);
-		});
-		return map;
+		}) as Array<DropDownType>;
 	}, [clientsData]);
 
 	// Prepare mode_paiement items for dropdown - show label but value is still the label
@@ -225,17 +192,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					delete submissionData.remise_type;
 					delete submissionData.remise;
 				}
-				if (isEditMode) {
-					await updateData({ data: submissionData as DeviSchemaType, id }).unwrap();
-				} else {
-					await addData({ data: submissionData as DeviSchemaType }).unwrap();
-				}
+				await updateData({ data: submissionData as DeviSchemaType, id }).unwrap();
 				onSuccess();
-				if (!isEditMode) {
-					setTimeout(() => {
-						router.replace(DEVIS_LIST);
-					}, 1000);
-				}
 			} catch (e) {
 				setFormikAutoErrors({ e, setFieldError });
 			} finally {
@@ -244,14 +202,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		},
 	});
 
-	const isLoading =
-		isClientsLoading ||
-		isNumDevisLoading ||
-		isArticlesLoading ||
-		isAddLoading ||
-		isUpdateLoading ||
-		isPending ||
-		(isEditMode && isDataLoading);
+	const isLoading = isClientsLoading || isUpdateLoading || isPending || isDataLoading || isArticlesLoading;
+
+	useEffect(() => {
+		console.log(formik.errors);
+	}, [formik.errors]);
 
 	return (
 		<LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
@@ -266,9 +221,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						Liste des devis
 					</Button>
 				</Stack>
-
 				{formik.errors.globalError && <span className={Styles.errorMessage}>{formik.errors.globalError}</span>}
-
 				{isLoading ? (
 					<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
 				) : (axiosError?.status as number) > 400 ? (
@@ -357,7 +310,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									</Stack>
 								</CardContent>
 							</Card>
-
 							{/* Client Information Card */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
@@ -369,25 +321,24 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									</Stack>
 									<Divider sx={{ mb: 3 }} />
 									<Stack spacing={2.5}>
-										<CustomDropDownSelect
+										<CustomAutoCompleteSelect
 											id="client"
+											noOptionsText="Aucun client trouvée"
 											label="Sélectionner un client *"
 											items={clientItems}
-											value={clientIdToLabel.get(formik.values.client) || null}
+											theme={theme}
+											value={clientItems.find((item) => item.value === String(formik.values.client)) || null}
 											onBlur={formik.handleBlur('client')}
 											error={formik.touched.client && Boolean(formik.errors.client)}
 											helperText={formik.touched.client ? formik.errors.client : ''}
-											onChange={(e) => {
-												const clientId = clientLabelToId.get(e.target.value as string) || 0;
-												formik.setFieldValue('client', clientId);
+											onChange={(_, newValue) => {
+												formik.setFieldValue('client', newValue ? Number(newValue.value) : 0);
 											}}
-											theme={customDropdownTheme()}
 											startIcon={<PersonIcon fontSize="small" color="action" />}
 										/>
 									</Stack>
 								</CardContent>
 							</Card>
-
 							{/* Payment & Terms Card */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
@@ -435,7 +386,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									</Stack>
 								</CardContent>
 							</Card>
-
 							{/* Discount */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
@@ -544,7 +494,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 							{/* Submit Button */}
 							<Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 2 }}>
 								<PrimaryLoadingButton
-									buttonText={isEditMode ? 'Mettre à jour' : 'Ajouter des articles'}
+									buttonText={'Mettre à jour'}
 									active={!isPending}
 									onClick={formik.handleSubmit}
 									loading={isPending}
@@ -561,17 +511,16 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 interface Props extends SessionProps {
 	company_id: number;
-	id?: number;
+	id: number;
 }
 
-const DevisForm: React.FC<Props> = ({ session, company_id, id }) => {
+const DevisEditForm: React.FC<Props> = ({ session, company_id, id }) => {
 	const token = getAccessTokenFromSession(session);
 	const [showDataUpdated, setShowDataUpdated] = useState<boolean>(false);
-	const isEditMode = id !== undefined;
 
 	return (
 		<Stack direction="column" sx={{ position: 'relative' }}>
-			<NavigationBar title={isEditMode ? 'Modifier devis' : 'Ajouter un devis'}>
+			<NavigationBar title={'Modifier devis'}>
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
 					<Protected>
 						<Box sx={{ width: '100%' }}>
@@ -581,15 +530,10 @@ const DevisForm: React.FC<Props> = ({ session, company_id, id }) => {
 				</main>
 			</NavigationBar>
 			<Portal id="snackbar_portal">
-				<CustomToast
-					type="success"
-					message={isEditMode ? 'Devis mise à jour' : 'Devis ajouter avec succès.'}
-					setShow={setShowDataUpdated}
-					show={showDataUpdated}
-				/>
+				<CustomToast type="success" message={'Devis mise à jour'} setShow={setShowDataUpdated} show={showDataUpdated} />
 			</Portal>
 		</Stack>
 	);
 };
 
-export default DevisForm;
+export default DevisEditForm;

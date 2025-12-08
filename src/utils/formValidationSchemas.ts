@@ -199,7 +199,6 @@ export const clientSchema = z
 		client_type: z.enum(['PM', 'PP']),
 		code_client: requiredTextField(1, 100),
 		company: requiredNumberField(1),
-
 		// optional fields
 		raison_sociale: optionalTextField(2, 255),
 		nom: optionalTextField(2, 255),
@@ -210,7 +209,6 @@ export const clientSchema = z
 		email: optionalEmailField,
 		delai_de_paiement: optionalNumberField(1).nullable(),
 		remarque: optionalTextField(2, 500).nullable(),
-
 		numero_du_compte: optionalTextField(2, 100).nullable(),
 		ICE: optionalTextField(2, 100).nullable(),
 		registre_de_commerce: optionalTextField(2, 100).nullable(),
@@ -303,7 +301,7 @@ export const devisLineSchema = z
 		quantity: requiredNumberField(1).refine((val) => Number.isInteger(val), {
 			error: INPUT_QUANTITY_INT,
 		}),
-		remise_type: z.enum(['Pourcentage', 'Fixe']).optional(),
+		remise_type: z.enum(['Pourcentage', 'Fixe']).optional().nullable(),
 		remise: optionalNumberField(0), // now optional
 	})
 	.refine((data) => data.prix_vente >= data.prix_achat, {
@@ -319,7 +317,7 @@ export const devisLineSchema = z
 			ctx.addIssue({
 				path: ['remise'],
 				code: 'custom',
-				error: INPUT_REQUIRED,
+				message: INPUT_REQUIRED,
 			});
 			return;
 		}
@@ -329,7 +327,7 @@ export const devisLineSchema = z
 				ctx.addIssue({
 					path: ['remise'],
 					code: 'custom',
-					error: 'La remise doit être un entier.',
+					message: 'La remise doit être un entier.',
 				});
 				return;
 			}
@@ -339,7 +337,7 @@ export const devisLineSchema = z
 					ctx.addIssue({
 						path: ['remise'],
 						code: 'custom',
-						error: 'La remise en pourcentage doit être entre 0 et 100.',
+						message: 'La remise en pourcentage doit être entre 0 et 100.',
 					});
 				}
 			} else {
@@ -347,7 +345,7 @@ export const devisLineSchema = z
 					ctx.addIssue({
 						path: ['remise'],
 						code: 'custom',
-						error: 'La remise fixe doit être positive ou nulle.',
+						message: 'La remise fixe doit être positive ou nulle.',
 					});
 				}
 			}
@@ -362,7 +360,7 @@ export const deviSchema = z
 		numero_demande_prix_client: optionalTextField(1, 100).nullable(),
 		mode_paiement: requiredNumberField(1),
 		remarque: optionalTextField(2, 500).nullable(),
-		remise_type: z.enum(['Pourcentage', 'Fixe']).optional(),
+		remise_type: z.enum(['Pourcentage', 'Fixe']).optional().nullable(),
 		remise: optionalNumberField(0),
 		lignes: z.array(devisLineSchema).optional(),
 		globalError: optionalTextField(1, 500),
@@ -376,7 +374,7 @@ export const deviSchema = z
 			ctx.addIssue({
 				path: ['remise'],
 				code: 'custom',
-				error: INPUT_REQUIRED,
+				message: INPUT_REQUIRED,
 			});
 			return;
 		}
@@ -386,7 +384,7 @@ export const deviSchema = z
 				ctx.addIssue({
 					path: ['remise'],
 					code: 'custom',
-					error: 'La remise doit être un entier.',
+					message: 'La remise doit être un entier.',
 				});
 				return;
 			}
@@ -396,7 +394,7 @@ export const deviSchema = z
 					ctx.addIssue({
 						path: ['remise'],
 						code: 'custom',
-						error: 'La remise en pourcentage doit être entre 0 et 100.',
+						message: 'La remise en pourcentage doit être entre 0 et 100.',
 					});
 				}
 			} else {
@@ -404,9 +402,19 @@ export const deviSchema = z
 					ctx.addIssue({
 						path: ['remise'],
 						code: 'custom',
-						error: 'La remise fixe doit être positive ou nulle.',
+						message: 'La remise fixe doit être positive ou nulle.',
 					});
 				}
 			}
 		}
 	});
+
+export const deviAddSchema = z.object({
+	numero_devis: requiredTextField(1, 20),
+	client: requiredNumberField(1),
+	date_devis: requiredTextField(1, 100),
+	numero_demande_prix_client: optionalTextField(1, 100).nullable(),
+	mode_paiement: requiredNumberField(1),
+	remarque: optionalTextField(2, 500).nullable(),
+	globalError: optionalTextField(1, 500),
+});

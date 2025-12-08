@@ -25,3 +25,13 @@ export type DeviSchemaType = {
 	lignes: Array<DeviLineSchemaType>;
 	globalError?: string;
 };
+
+export type DeviAddSchemaType = {
+	numero_devis: string;
+	client: number;
+	date_devis: string;
+	numero_demande_prix_client: string | null;
+	mode_paiement: number;
+	remarque: string | null;
+	globalError?: string;
+};

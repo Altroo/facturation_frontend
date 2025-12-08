@@ -1,15 +1,16 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, DEVIS_LIST } from '@/utils/routes';
-import DevisAddForm from '@/components/pages/dashboard/devis/devisAddForm';
+import DevisEditForm from '@/components/pages/dashboard/devis/devisEditForm';
 
-type PageProps = {
+type DevisEditPageProps = {
+	params: Promise<{ id: number }>;
 	searchParams: Promise<{ company_id: string }>;
 };
 
-const DeviNewPage = async (props: PageProps) => {
+const DevisEditPage = async (props: DevisEditPageProps) => {
 	const session = await auth();
-
+	const { id } = await props.params;
 	const { searchParams } = props;
 	const { company_id } = await searchParams;
 
@@ -17,11 +18,15 @@ const DeviNewPage = async (props: PageProps) => {
 		redirect(AUTH_LOGIN);
 	}
 
+	if (!id || isNaN(Number(id))) {
+		redirect(DEVIS_LIST);
+	}
+
 	if (!company_id || isNaN(Number(company_id))) {
 		redirect(DEVIS_LIST);
 	}
 
-	return <DevisAddForm session={session} company_id={Number(company_id)} />;
+	return <DevisEditForm session={session} id={id} company_id={Number(company_id)} />;
 };
 
-export default DeviNewPage;
+export default DevisEditPage;
