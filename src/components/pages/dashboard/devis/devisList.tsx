@@ -55,7 +55,6 @@ const DevisListContent: React.FC<DevisListContentProps> = (props: DevisListConte
 		{ skip: !token },
 	);
 	const data = rawData as PaginationResponseType<DeviClass> | undefined;
-	console.log(data);
 	const [deleteRecord] = useDeleteDeviMutation();
 
 	const deleteHandler = async () => {
@@ -93,7 +92,7 @@ const DevisListContent: React.FC<DevisListContentProps> = (props: DevisListConte
 		{
 			field: 'numero_devis',
 			headerName: 'Numéro devis',
-			width: 160,
+			width: 130,
 			renderCell: (params: GridRenderCellParams<DeviClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -105,9 +104,9 @@ const DevisListContent: React.FC<DevisListContentProps> = (props: DevisListConte
 		{
 			field: 'date_devis',
 			headerName: 'Date devis',
-			width: 200,
+			width: 130,
 			renderCell: (params: GridRenderCellParams<DeviClass>) => {
-				const formatted = formatDate(params.value as string | null);
+				const formatted = formatDate(params.value as string | null).split(',')[0];
 				return (
 					<DarkTooltip title={formatted}>
 						<Typography variant="body2" noWrap>
@@ -152,8 +151,8 @@ const DevisListContent: React.FC<DevisListContentProps> = (props: DevisListConte
 			),
 		},
 		{
-			field: 'total_ttc',
-			headerName: 'Total TTC',
+			field: 'total_ttc_apres_remise',
+			headerName: 'Total TTC après remise',
 			width: 150,
 			renderCell: (params: GridRenderCellParams<DeviClass>) => (
 				<DarkTooltip title={params.value}>

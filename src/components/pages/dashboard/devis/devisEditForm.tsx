@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
-import { useEditDeviMutation, useGetDeviQuery } from '@/store/services/devi';
 import Styles from '@/styles/dashboard/devis/devis.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import {
@@ -17,6 +16,7 @@ import {
 	useTheme,
 	useMediaQuery,
 	InputAdornment,
+	Avatar,
 } from '@mui/material';
 import {
 	ArrowBack,
@@ -28,6 +28,9 @@ import {
 	Numbers as NumbersIcon,
 	Receipt as ReceiptIcon,
 	Notes as NotesIcon,
+	Add as AddIcon,
+	Delete as DeleteIcon,
+	ShoppingCart as ShoppingCartIcon,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -46,7 +49,7 @@ import { setFormikAutoErrors } from '@/utils/helpers';
 import { coordonneeTextInputTheme, customDropdownTheme } from '@/utils/themes';
 import { DEVIS_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
-import { DeviSchemaType } from '@/types/devisTypes';
+import { DeviSchemaType, TypeDevisStatus } from '@/types/devisTypes';
 import { Protected } from '@/components/layouts/protected/protected';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import { ArticleClass, ClientClass } from '@/models/Classes';
@@ -56,6 +59,13 @@ import { getModePaiementState } from '@/store/selectors';
 import { DropDownType, DropDownTypeTwo } from '@/types/accountTypes';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import { useGetArticlesListQuery } from '@/store/services/article';
+import { useEditDeviMutation, useGetDeviQuery, usePatchStatutMutation } from '@/store/services/devi';
+import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
+import { frFR } from '@mui/x-data-grid/locales';
+import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
+import AddArticleModal from '@/components/shared/addArticleModal/addArticleModal';
+import GlobalRemiseModal from '@/components/shared/globalRemiseModal/globalRemiseModal';
+import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -66,14 +76,26 @@ type FormikContentProps = {
 	onSuccess: () => void;
 };
 
+interface DeviLineFormValues {
+	id?: number;
+	article: number;
+	designation: string;
+	prix_achat: number;
+	prix_vente: number;
+	quantity: number;
+	remise_type?: 'Pourcentage' | 'Fixe' | '';
+	remise?: number;
+}
+
 const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
 	const { token, company_id, id, onSuccess } = props;
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 	const { data: rawData, isLoading: isDataLoading, error: dataError } = useGetDeviQuery({ id: id! }, { skip: !token });
 	const [updateData, { isLoading: isUpdateLoading, error: updateError }] = useEditDeviMutation();
+	const [patchStatut, { isLoading: isPatchLoading, error: patchError }] = usePatchStatutMutation();
 	const { data: rawArticlesData, isLoading: isArticlesLoading } = useGetArticlesListQuery(
-		{ company_id, with_pagination: false },
+		{ company_id, with_pagination: false, archived: false },
 		{ skip: !token },
 	);
 	const articlesData = rawArticlesData as Array<Partial<ArticleClass>> | undefined;
@@ -82,13 +104,20 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{ skip: !token },
 	);
 	const clientsData = rawClientsData as Array<Partial<ClientClass>> | undefined;
-	const error = dataError || updateError;
+	const error = dataError || updateError || patchError;
 	const axiosError = useMemo(
 		() => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),
 		[error],
 	);
 	const [isPending, setIsPending] = useState(false);
 	const router = useRouter();
+
+	// Modal states
+	const [showAddArticleModal, setShowAddArticleModal] = useState(false);
+	const [showGlobalRemiseModal, setShowGlobalRemiseModal] = useState(false);
+	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+	const [deleteLineIndex, setDeleteLineIndex] = useState<number | null>(null);
+	const [selectedArticles, setSelectedArticles] = useState<Set<number>>(new Set());
 
 	// Split numero_devis into number and year parts
 	const initialNumDevis = rawData?.numero_devis ?? '';
@@ -97,20 +126,20 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	// get mode_paiement
 	const modePaiement = useAppSelector(getModePaiementState);
 
-	// Prepare client items for dropdown - show label but value is still the label
+	// Prepare client items for dropdown
 	const clientItems = useMemo(() => {
 		if (!clientsData) return [];
 		return clientsData.map((client) => {
 			const label =
 				client.client_type === 'PP' ? `${client.nom || ''} ${client.prenom || ''}`.trim() : client.raison_sociale || '';
 			return {
-				code: label, // what is shown in the dropdown
-				value: String(client.id), // the id saved in formik
+				code: label,
+				value: String(client.id),
 			};
 		}) as Array<DropDownType>;
 	}, [clientsData]);
 
-	// Prepare mode_paiement items for dropdown - show label but value is still the label
+	// Prepare mode_paiement items for dropdown
 	const modePaiementItems = useMemo(() => {
 		if (!modePaiement) return [];
 		return modePaiement.map((mode) => ({
@@ -119,7 +148,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		})) as Array<DropDownTypeTwo>;
 	}, [modePaiement]);
 
-	// Create a map to get mode_paiement ID from label
+	// Create maps for mode_paiement
 	const modePaiementLabelToId = useMemo(() => {
 		if (!modePaiement) return new Map<string, number>();
 		const map = new Map<string, number>();
@@ -129,7 +158,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		return map;
 	}, [modePaiement]);
 
-	// Create a map to get mode_paiement label from ID
 	const modePaiementIdToLabel = useMemo(() => {
 		if (!modePaiement) return new Map<number, string>();
 		const map = new Map<number, string>();
@@ -173,21 +201,18 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			globalError: '',
 		},
 		enableReinitialize: true,
-		validateOnMount: true,
 		validationSchema: toFormikValidationSchema(deviSchema),
+		validateOnMount: true,
 		onSubmit: async (data, { setFieldError }) => {
 			setIsPending(true);
 			try {
-				// Join the numero_devis parts before submitting
 				const submissionData: Partial<DeviSchemaType> = {
 					...data,
 					numero_devis: `${devisNumberPart}/${devisYearPart}`,
 				};
-				// Don't send mode_paiement if it's 0
 				if (submissionData.mode_paiement === 0) {
 					delete submissionData.mode_paiement;
 				}
-				// Only send remise_type and remise if remise_type is defined
 				if (!submissionData.remise_type) {
 					delete submissionData.remise_type;
 					delete submissionData.remise;
@@ -202,11 +227,387 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		},
 	});
 
-	const isLoading = isClientsLoading || isUpdateLoading || isPending || isDataLoading || isArticlesLoading;
+	// Calculate totals
+	const totals = useMemo(() => {
+		let totalHT = 0;
+		let totalTVA = 0;
 
-	useEffect(() => {
-		console.log(formik.errors);
-	}, [formik.errors]);
+		(formik.values.lignes as DeviLineFormValues[]).forEach((ligne) => {
+			const article = articlesData?.find((a) => a.id === ligne.article);
+			if (!article) return;
+
+			const basePrice = ligne.prix_vente * ligne.quantity;
+			const tvaRate = article.tva || 20;
+			const lineTVA = basePrice * (tvaRate / 100);
+			const lineTotalWithTVA = basePrice + lineTVA;
+
+			// Apply remise after TVA
+			let finalLineTotal = lineTotalWithTVA;
+			if (ligne.remise && ligne.remise > 0 && ligne.remise_type) {
+				if (ligne.remise_type === 'Pourcentage') {
+					finalLineTotal -= lineTotalWithTVA * (ligne.remise / 100);
+				} else if (ligne.remise_type === 'Fixe') {
+					finalLineTotal -= ligne.remise;
+				}
+			}
+
+			// Back-calculate HT and TVA from final total
+			const finalHT = finalLineTotal / (1 + tvaRate / 100);
+			const finalTVA = finalLineTotal - finalHT;
+
+			totalHT += finalHT;
+			totalTVA += finalTVA;
+		});
+
+		let finalTotalHT = totalHT;
+		let finalTotalTVA = totalTVA;
+		let finalTotalTTC = totalHT + totalTVA;
+
+		// Apply global remise
+		if (formik.values.remise && formik.values.remise > 0 && formik.values.remise_type) {
+			if (formik.values.remise_type === 'Pourcentage') {
+				const remiseAmount = finalTotalTTC * (formik.values.remise / 100);
+				finalTotalTTC -= remiseAmount;
+				// Proportionally reduce HT and TVA
+				const ratio = finalTotalTTC / (totalHT + totalTVA);
+				finalTotalHT = totalHT * ratio;
+				finalTotalTVA = totalTVA * ratio;
+			} else if (formik.values.remise_type === 'Fixe') {
+				finalTotalTTC -= formik.values.remise;
+				// Proportionally reduce HT and TVA
+				const ratio = finalTotalTTC / (totalHT + totalTVA);
+				finalTotalHT = totalHT * ratio;
+				finalTotalTVA = totalTVA * ratio;
+			}
+		}
+
+		return {
+			totalHT: Math.max(0, finalTotalHT),
+			totalTVA: Math.max(0, finalTotalTVA),
+			totalTTC: Math.max(0, finalTotalTTC),
+		};
+	}, [formik.values.lignes, formik.values.remise, formik.values.remise_type, articlesData]);
+
+	// Handle adding articles
+	const handleAddArticles = () => {
+		const selectedIds = Array.from(selectedArticles ?? new Set());
+		const newLines = selectedIds
+			.map((articleId) => {
+				const article = articlesData?.find((a) => a.id === articleId);
+				if (!article) return null;
+
+				return {
+					article: articleId,
+					designation: article.designation || '',
+					prix_achat: article.prix_achat || 0,
+					prix_vente: article.prix_vente || 0,
+					quantity: 1,
+					remise_type: '' as const,
+					remise: 0,
+				};
+			})
+			.filter((line) => line !== null) as DeviLineFormValues[];
+
+		formik.setFieldValue('lignes', [...formik.values.lignes, ...newLines]);
+		setShowAddArticleModal(false);
+		setSelectedArticles(new Set());
+	};
+
+	// Handle line changes
+	const handleLineChange = (index: number, field: keyof DeviLineFormValues, value: string | number) => {
+		const updatedLines = [...(formik.values.lignes as DeviLineFormValues[])];
+		updatedLines[index] = { ...updatedLines[index], [field]: value };
+		formik.setFieldValue('lignes', updatedLines);
+	};
+
+	// Handle delete line
+	const handleDeleteLine = (index: number) => {
+		setDeleteLineIndex(index);
+		setShowDeleteConfirm(true);
+	};
+
+	const confirmDeleteLine = () => {
+		if (deleteLineIndex !== null) {
+			const updatedLines = formik.values.lignes.filter((_, i) => i !== deleteLineIndex);
+			formik.setFieldValue('lignes', updatedLines);
+		}
+		setShowDeleteConfirm(false);
+		setDeleteLineIndex(null);
+	};
+
+	// Lines DataGrid columns
+	const linesColumns: GridColDef[] = [
+		{
+			field: 'photo',
+			headerName: 'Photo',
+			width: 70,
+			renderCell: (params: GridRenderCellParams) => {
+				const article = articlesData?.find((a) => a.id === params.row.article);
+				return (
+					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+						<Avatar
+							src={article?.photo as string | undefined}
+							alt={article?.reference as string | undefined}
+							variant="rounded"
+							sx={{ width: 40, height: 40 }}
+						/>
+					</Box>
+				);
+			},
+			sortable: false,
+			filterable: false,
+			editable: false,
+		},
+		{
+			field: 'reference',
+			headerName: 'Référence',
+			width: 110,
+			renderCell: (params: GridRenderCellParams) => {
+				const article = articlesData?.find((a) => a.id === params.row.article);
+				const value = article?.reference ?? '';
+				return (
+					<DarkTooltip title={value}>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+								{value}
+							</Typography>
+						</Box>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'designation',
+			headerName: 'Désignation',
+			width: 150,
+			renderCell: (params: GridRenderCellParams) => {
+				const value = params.row.designation ?? '';
+				return (
+					<DarkTooltip title={value}>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+								{value}
+							</Typography>
+						</Box>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'marque',
+			headerName: 'Marque',
+			width: 130,
+			renderCell: (params: GridRenderCellParams) => {
+				const article = articlesData?.find((a) => a.id === params.row.article);
+				const value = article?.marque_name ?? '';
+				return (
+					<DarkTooltip title={value}>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+								{value}
+							</Typography>
+						</Box>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'categorie',
+			headerName: 'Catégorie',
+			width: 130,
+			renderCell: (params: GridRenderCellParams) => {
+				const article = articlesData?.find((a) => a.id === params.row.article);
+				const value = article?.categorie_name ?? '';
+				return (
+					<DarkTooltip title={value}>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+								{value}
+							</Typography>
+						</Box>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'prix_achat',
+			headerName: "Prix d'achat",
+			width: 120,
+			renderCell: (params: GridRenderCellParams) => {
+				const value = Number(params.row.prix_achat ?? 0).toFixed(2) + ' MAD';
+				return (
+					<DarkTooltip title={value}>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%', color: 'grey.500' }}>
+								{value}
+							</Typography>
+						</Box>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'prix_vente',
+			headerName: 'Prix de vente',
+			width: 150,
+			renderCell: (params: GridRenderCellParams) => {
+				const rowIndex = Number(params.id);
+				const value = (formik.values.lignes as DeviLineFormValues[])[rowIndex]?.prix_vente ?? 0;
+				return (
+					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+						<CustomTextInput
+							id={`prix_vente_${rowIndex}`}
+							type="number"
+							value={String(value)}
+							onChange={(e) =>
+								handleLineChange(rowIndex, 'prix_vente', parseFloat((e.target as HTMLInputElement).value) || 0)
+							}
+							fullWidth
+							size="small"
+							theme={inputTheme}
+							slotProps={{ input: { style: { textAlign: 'center' } } }}
+						/>
+					</Box>
+				);
+			},
+		},
+		{
+			field: 'quantity',
+			headerName: 'Quantité',
+			width: 120,
+			renderCell: (params: GridRenderCellParams) => {
+				const rowIndex = Number(params.id);
+				const value = (formik.values.lignes as DeviLineFormValues[])[rowIndex]?.quantity ?? 1;
+				return (
+					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+						<CustomTextInput
+							id={`quantity_${rowIndex}`}
+							type="number"
+							value={String(value)}
+							onChange={(e) =>
+								handleLineChange(rowIndex, 'quantity', parseInt((e.target as HTMLInputElement).value) || 1)
+							}
+							fullWidth
+							size="small"
+							theme={inputTheme}
+							slotProps={{ input: { style: { textAlign: 'center' } } }}
+						/>
+					</Box>
+				);
+			},
+		},
+		{
+			field: 'remise_type',
+			headerName: 'Type remise',
+			width: 210,
+			renderCell: (params: GridRenderCellParams) => {
+				const rowIndex = Number(params.id);
+				const value = (formik.values.lignes as DeviLineFormValues[])[rowIndex]?.remise_type ?? '';
+				return (
+					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+						<CustomDropDownSelect
+							id={`remise_type_${rowIndex}`}
+							label=""
+							size="small"
+							items={remiseTypeItems}
+							value={value}
+							onChange={(e) => handleLineChange(rowIndex, 'remise_type', e.target.value)}
+							theme={customDropdownTheme()}
+						/>
+					</Box>
+				);
+			},
+		},
+		{
+			field: 'remise',
+			headerName: 'Remise',
+			width: 150,
+			renderCell: (params: GridRenderCellParams) => {
+				const rowIndex = Number(params.id);
+				const value = (formik.values.lignes as DeviLineFormValues[])[rowIndex]?.remise ?? 0;
+				return (
+					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+						<CustomTextInput
+							id={`remise_${rowIndex}`}
+							type="number"
+							value={String(value)}
+							onChange={(e) =>
+								handleLineChange(rowIndex, 'remise', parseFloat((e.target as HTMLInputElement).value) || 0)
+							}
+							fullWidth
+							size="small"
+							theme={inputTheme}
+							slotProps={{ input: { style: { textAlign: 'center' } } }}
+						/>
+					</Box>
+				);
+			},
+		},
+		{
+			field: 'actions',
+			headerName: 'Actions',
+			width: 100,
+			sortable: false,
+			filterable: false,
+			renderCell: (params: GridRenderCellParams) => {
+				const rowIndex = Number(params.id);
+				return (
+					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+						<Button size="small" color="error" onClick={() => handleDeleteLine(rowIndex)} startIcon={<DeleteIcon />}>
+							Supprimer
+						</Button>
+					</Box>
+				);
+			},
+		},
+	];
+
+	const isLoading =
+		isPatchLoading || isClientsLoading || isUpdateLoading || isPending || isDataLoading || isArticlesLoading;
+
+	// Get existing article IDs to prevent duplicates
+	const existingArticleIds = useMemo(() => {
+		return new Set((formik.values.lignes as DeviLineFormValues[]).map((l) => l.article));
+	}, [formik.values.lignes]);
+
+	const deleteConfirmActions = [
+		{
+			active: true,
+			text: 'Oui',
+			onClick: confirmDeleteLine,
+		},
+		{
+			active: false,
+			text: 'Non',
+			onClick: () => setShowDeleteConfirm(false),
+		},
+	];
+
+	const statutItems = useMemo(
+		() =>
+			[
+				{ value: '', label: '' },
+				{ value: 'Brouillon', label: 'Brouillon' },
+				{ value: 'Envoyé', label: 'Envoyé' },
+				{ value: 'Accepté', label: 'Accepté' },
+				{ value: 'Refusé', label: 'Refusé' },
+				{ value: 'Annulé', label: 'Annulé' },
+				{ value: 'Expiré', label: 'Expiré' },
+			] as Array<DropDownTypeTwo>,
+		[],
+	);
+
+	const handleStatutChange = async (newValue: string) => {
+		try {
+			if (!newValue) return;
+			await patchStatut({ id: id!, data: { statut: newValue as TypeDevisStatus } }).unwrap();
+			// trigger parent success toast / refresh
+			onSuccess();
+		} catch (e) {
+			// error handling intentionally minimal (existing ApiAlert / toast handles global errors)
+			console.error('Failed to patch statut', e);
+		}
+	};
 
 	return (
 		<LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
@@ -221,6 +622,66 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						Liste des devis
 					</Button>
 				</Stack>
+				{/* Totals Card - At the top */}
+				<Card elevation={3} sx={{ borderRadius: 2, bgcolor: 'primary.50' }}>
+					<CardContent sx={{ p: 3 }}>
+						<Stack
+							direction={isMobile ? 'column' : 'row'}
+							spacing={isMobile ? 2 : 4}
+							alignItems="center"
+							justifyContent="space-between"
+							divider={isMobile ? <Divider /> : <Divider orientation="vertical" flexItem />}
+						>
+							<Box
+								sx={{
+									display: 'flex',
+									flexDirection: 'column',
+									alignItems: isMobile ? 'flex-start' : 'center',
+									minWidth: 120,
+								}}
+							>
+								<Typography variant="subtitle2" fontWeight={600}>
+									TOTAL HT
+								</Typography>
+								<Typography variant="h6" fontWeight={800} color="text.secondary">
+									{totals.totalHT.toFixed(2)} MAD
+								</Typography>
+							</Box>
+
+							<Box
+								sx={{
+									display: 'flex',
+									flexDirection: 'column',
+									alignItems: isMobile ? 'flex-start' : 'center',
+									minWidth: 120,
+								}}
+							>
+								<Typography variant="subtitle2" fontWeight={600}>
+									TOTAL TVA
+								</Typography>
+								<Typography variant="h6" fontWeight={800} color="text.secondary">
+									{totals.totalTVA.toFixed(2)} MAD
+								</Typography>
+							</Box>
+
+							<Box
+								sx={{
+									display: 'flex',
+									flexDirection: 'column',
+									alignItems: isMobile ? 'flex-start' : 'center',
+									minWidth: 140,
+								}}
+							>
+								<Typography variant="subtitle2" fontWeight={600}>
+									TOTAL TTC
+								</Typography>
+								<Typography variant="h5" fontWeight={900} color="primary">
+									{totals.totalTTC.toFixed(2)} MAD
+								</Typography>
+							</Box>
+						</Stack>
+					</CardContent>
+				</Card>
 				{formik.errors.globalError && <span className={Styles.errorMessage}>{formik.errors.globalError}</span>}
 				{isLoading ? (
 					<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
@@ -310,6 +771,30 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									</Stack>
 								</CardContent>
 							</Card>
+							{/* Statut du devis */}
+							<Card elevation={2} sx={{ borderRadius: 2 }}>
+								<CardContent sx={{ p: 3 }}>
+									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<DescriptionIcon color="primary" />
+										<Typography variant="h6" fontWeight={700}>
+											Statut du devis
+										</Typography>
+									</Stack>
+									<Divider sx={{ mb: 3 }} />
+									<Stack spacing={2.5}>
+										<CustomDropDownSelect
+											id="statut_devis"
+											label="Statut"
+											items={statutItems}
+											value={rawData?.statut || ''}
+											onChange={(e) => handleStatutChange(e.target.value)}
+											size="small"
+											theme={customDropdownTheme()}
+											startIcon={<DescriptionIcon fontSize="small" color="action" />}
+										/>
+									</Stack>
+								</CardContent>
+							</Card>
 							{/* Client Information Card */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
@@ -386,79 +871,90 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									</Stack>
 								</CardContent>
 							</Card>
-							{/* Discount */}
+							{/* Lines Card */}
+							<Card elevation={2} sx={{ borderRadius: 2 }}>
+								<CardContent sx={{ p: 3 }}>
+									<Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+										<Stack direction="row" spacing={2} alignItems="center">
+											<ShoppingCartIcon color="primary" />
+											<Typography variant="h6" fontWeight={700}>
+												Lignes du devis
+											</Typography>
+										</Stack>
+										<Button
+											variant="contained"
+											startIcon={<AddIcon />}
+											onClick={() => setShowAddArticleModal(true)}
+											size="small"
+										>
+											Ajouter article
+										</Button>
+									</Stack>
+									<Divider sx={{ mb: 3 }} />
+									<Box sx={{ height: 500 }}>
+										<DataGrid
+											rows={(formik.values.lignes as DeviLineFormValues[]).map((ligne, index) => ({
+												...ligne,
+												id: index,
+											}))}
+											showToolbar={true}
+											slotProps={{
+												toolbar: {
+													showQuickFilter: true,
+													quickFilterProps: { debounceMs: 500 },
+												},
+											}}
+											columns={linesColumns}
+											localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
+											disableRowSelectionOnClick
+											pageSizeOptions={[5, 10, 25, 50, 100]}
+											initialState={{
+												pagination: {
+													paginationModel: { pageSize: 10 },
+												},
+											}}
+										/>
+									</Box>
+								</CardContent>
+							</Card>
+							{/* Discount & Global Remise */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
 									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 										<DiscountIcon color="primary" />
 										<Typography variant="h6" fontWeight={700}>
-											Remise
+											Remise globale
 										</Typography>
 									</Stack>
 									<Divider sx={{ mb: 3 }} />
 									<Stack spacing={2.5}>
-										<CustomDropDownSelect
-											id="remise_type"
-											label="Type de remise"
-											items={remiseTypeItems}
-											value={formik.values.remise_type || ''}
-											onBlur={formik.handleBlur('remise_type')}
-											error={formik.touched.remise_type && Boolean(formik.errors.remise_type)}
-											helperText={formik.touched.remise_type ? formik.errors.remise_type : ''}
-											onChange={(e) => {
-												const value = e.target.value;
-												formik.setFieldValue('remise_type', value === '' ? undefined : value);
-												// Clear remise when remise_type is unset
-												if (value === '') {
-													formik.setFieldValue('remise', undefined);
-												}
+										<Button
+											variant="outlined"
+											startIcon={<DiscountIcon />}
+											onClick={() => setShowGlobalRemiseModal(true)}
+											fullWidth
+										>
+											Appliquer une remise globale
+										</Button>
+										<Button
+											variant="outlined"
+											color="error"
+											startIcon={<DeleteIcon />}
+											onClick={() => {
+												formik.setFieldValue('remise_type', '');
+												formik.setFieldValue('remise', 0);
 											}}
-											theme={customDropdownTheme()}
-											startIcon={<DiscountIcon fontSize="small" color="action" />}
-										/>
-										<CustomTextInput
-											id="remise"
-											type="number"
-											label="Remise"
-											value={
-												formik.values.remise !== undefined && formik.values.remise !== null
-													? String(formik.values.remise)
-													: ''
-											}
-											onChange={(e) => {
-												const value = e.target.value;
-												if (value === '') {
-													formik.setFieldValue('remise', undefined);
-												} else {
-													const numValue = parseInt(value, 10);
-													formik.setFieldValue('remise', isNaN(numValue) ? undefined : numValue);
-												}
-											}}
-											onBlur={formik.handleBlur('remise')}
-											error={formik.touched.remise && Boolean(formik.errors.remise)}
-											helperText={formik.touched.remise ? formik.errors.remise : ''}
-											fullWidth={true}
-											size="small"
-											theme={inputTheme}
-											startIcon={<DiscountIcon fontSize="small" color="action" />}
-											slotProps={{
-												input: {
-													sx: {
-														'& input[type=number]': {
-															MozAppearance: 'textfield',
-														},
-														'& input[type=number]::-webkit-outer-spin-button': {
-															WebkitAppearance: 'none',
-															margin: 0,
-														},
-														'& input[type=number]::-webkit-inner-spin-button': {
-															WebkitAppearance: 'none',
-															margin: 0,
-														},
-													},
-												},
-											}}
-										/>
+											fullWidth
+											disabled={!(formik.values.remise && formik.values.remise > 0)}
+										>
+											Supprimer la remise
+										</Button>
+										{formik.values.remise_type && formik.values.remise && formik.values.remise > 0 && (
+											<Typography variant="body2" color="text.secondary">
+												Remise appliquée: {formik.values.remise}
+												{formik.values.remise_type === 'Pourcentage' ? '%' : ' MAD'}
+											</Typography>
+										)}
 									</Stack>
 								</CardContent>
 							</Card>
@@ -490,7 +986,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									</Stack>
 								</CardContent>
 							</Card>
-
 							{/* Submit Button */}
 							<Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 2 }}>
 								<PrimaryLoadingButton
@@ -505,6 +1000,46 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					</form>
 				)}
 			</Stack>
+			{/* Add Article Modal */}
+			<AddArticleModal
+				open={showAddArticleModal}
+				loading={isArticlesLoading}
+				onClose={() => {
+					setShowAddArticleModal(false);
+					setSelectedArticles(new Set());
+				}}
+				articles={(articlesData || []).map((a) => ({
+					...a,
+					designation: a.designation ?? undefined,
+					reference: a.reference ?? undefined,
+					marque_name: a.marque_name ?? undefined,
+					categorie_name: a.categorie_name ?? undefined,
+				}))}
+				selectedArticles={selectedArticles}
+				setSelectedArticles={setSelectedArticles}
+				onAdd={handleAddArticles}
+				existingArticleIds={existingArticleIds}
+			/>
+			{/* Global Remise Modal */}
+			<GlobalRemiseModal
+				open={showGlobalRemiseModal}
+				onClose={() => setShowGlobalRemiseModal(false)}
+				currentType={formik.values.remise_type || ''}
+				currentValue={formik.values.remise || 0}
+				onApply={(type, value) => {
+					formik.setFieldValue('remise_type', type);
+					formik.setFieldValue('remise', value);
+					setShowGlobalRemiseModal(false);
+				}}
+			/>
+			{/* Delete Confirmation Modal */}
+			{showDeleteConfirm && (
+				<ActionModals
+					title="Supprimer la ligne"
+					body="Êtes-vous sûr de vouloir supprimer cette ligne du devis ?"
+					actions={deleteConfirmActions}
+				/>
+			)}
 		</LocalizationProvider>
 	);
 };
@@ -530,7 +1065,12 @@ const DevisEditForm: React.FC<Props> = ({ session, company_id, id }) => {
 				</main>
 			</NavigationBar>
 			<Portal id="snackbar_portal">
-				<CustomToast type="success" message={'Devis mise à jour'} setShow={setShowDataUpdated} show={showDataUpdated} />
+				<CustomToast
+					type="success"
+					message={'Devis mis à jour avec succès'}
+					setShow={setShowDataUpdated}
+					show={showDataUpdated}
+				/>
 			</Portal>
 		</Stack>
 	);

@@ -23,7 +23,6 @@ import {
 	Description as DescriptionIcon,
 	Person as PersonIcon,
 	Payment as PaymentIcon,
-	// Discount as DiscountIcon,
 	CalendarToday as CalendarTodayIcon,
 	Numbers as NumbersIcon,
 	Receipt as ReceiptIcon,
@@ -44,7 +43,7 @@ import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiP
 import { deviAddSchema } from '@/utils/formValidationSchemas';
 import { setFormikAutoErrors } from '@/utils/helpers';
 import { coordonneeTextInputTheme, customDropdownTheme } from '@/utils/themes';
-import { DEVIS_LIST } from '@/utils/routes';
+import { DEVIS_EDIT, DEVIS_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import { DeviAddSchemaType, DeviSchemaType } from '@/types/devisTypes';
 import { Protected } from '@/components/layouts/protected/protected';
@@ -69,11 +68,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 	const [addData, { isLoading: isAddLoading, error: addError }] = useAddDeviMutation();
-	// const { data: rawArticlesData, isLoading: isArticlesLoading } = useGetArticlesListQuery(
-	// 	{ company_id, with_pagination: false },
-	// 	{ skip: !token },
-	// );
-	// const articlesData = rawArticlesData as Array<Partial<ArticleClass>> | undefined;
 	const { data: rawClientsData, isLoading: isClientsLoading } = useGetClientsListQuery(
 		{ company_id, with_pagination: false },
 		{ skip: !token },
@@ -105,8 +99,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			const label =
 				client.client_type === 'PP' ? `${client.nom || ''} ${client.prenom || ''}`.trim() : client.raison_sociale || '';
 			return {
-				code: label, // what is shown in the dropdown
-				value: String(client.id), // the id saved in formik
+				code: label,
+				value: String(client.id),
 			};
 		}) as Array<DropDownType>;
 	}, [clientsData]);
@@ -139,17 +133,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		});
 		return map;
 	}, [modePaiement]);
-
-	// // Prepare remise type items
-	// const remiseTypeItems = useMemo(
-	// 	() =>
-	// 		[
-	// 			{ value: '', label: '' },
-	// 			{ value: 'Pourcentage', label: 'Pourcentage' },
-	// 			{ value: 'Fixe', label: 'Fixe' },
-	// 		] as Array<DropDownTypeTwo>,
-	// 	[],
-	// );
 
 	const [devisNumberPart, setDevisNumberPart] = useState(numDevisNumber);
 	const [devisYearPart, setDevisYearPart] = useState(numDevisYear);
@@ -185,16 +168,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				if (submissionData.mode_paiement === 0) {
 					delete submissionData.mode_paiement;
 				}
-				// // Only send remise_type and remise if remise_type is defined
-				// if (!submissionData.remise_type) {
-				// 	delete submissionData.remise_type;
-				// 	delete submissionData.remise;
-				// }
-				await addData({ data: submissionData as DeviSchemaType }).unwrap();
+				const response = await addData({ data: submissionData as DeviSchemaType }).unwrap();
 				onSuccess();
-				setTimeout(() => {
-					router.replace(DEVIS_LIST);
-				}, 1000);
+				if (response.id) {
+					setTimeout(() => {
+						router.replace(DEVIS_EDIT(response.id, company_id));
+					}, 500);
+				}
 			} catch (e) {
 				setFormikAutoErrors({ e, setFieldError });
 			} finally {

@@ -159,7 +159,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				if (!isEditMode) {
 					setTimeout(() => {
 						router.replace(COMPANIES_LIST);
-					}, 1000);
+					}, 500);
 				}
 			} catch (e) {
 				setFormikAutoErrors({ e, setFieldError });

@@ -358,7 +358,7 @@ export const deviSchema = z
 		client: requiredNumberField(1),
 		date_devis: requiredTextField(1, 100),
 		numero_demande_prix_client: optionalTextField(1, 100).nullable(),
-		mode_paiement: requiredNumberField(1),
+		mode_paiement: optionalNumberField(0).nullable(),
 		remarque: optionalTextField(2, 500).nullable(),
 		remise_type: z.enum(['Pourcentage', 'Fixe']).optional().nullable(),
 		remise: optionalNumberField(0),
@@ -414,7 +414,7 @@ export const deviAddSchema = z.object({
 	client: requiredNumberField(1),
 	date_devis: requiredTextField(1, 100),
 	numero_demande_prix_client: optionalTextField(1, 100).nullable(),
-	mode_paiement: requiredNumberField(1),
+	mode_paiement: optionalNumberField(0).nullable(),
 	remarque: optionalTextField(2, 500).nullable(),
 	globalError: optionalTextField(1, 500),
 });

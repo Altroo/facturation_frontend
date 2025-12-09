@@ -168,7 +168,7 @@ const ArticlesListContent: React.FC<ArticleListContentProps> = (props: ArticleLi
 		},
 		{
 			field: 'reference',
-			headerName: 'Reference',
+			headerName: 'Réference',
 			width: 150,
 			renderCell: (params: GridRenderCellParams<ArticleClass>) => (
 				<DarkTooltip title={params.value}>

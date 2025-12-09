@@ -6,6 +6,7 @@ import type { DeviClass } from '@/models/Classes';
 import type { ApiErrorResponseType, PaginationResponseType, SuccessResponseType } from '@/types/_initTypes';
 import type { RootState } from '@/store/store';
 import { initToken } from '@/store/slices/_initSlice';
+import { TypeDevisStatus } from '@/types/devisTypes';
 
 export const deviApi = createApi({
 	reducerPath: 'deviApi',
@@ -70,7 +71,7 @@ export const deviApi = createApi({
 			}),
 			invalidatesTags: ['Devi'],
 		}),
-		addDevi: builder.mutation<SuccessResponseType<DeviClass>, { data: Partial<DeviClass> }>({
+		addDevi: builder.mutation<DeviClass, { data: Partial<DeviClass> }>({
 			query: ({ data }) => ({
 				url: `${process.env.NEXT_PUBLIC_DEVIS_ROOT}/`,
 				method: 'POST',
@@ -78,7 +79,7 @@ export const deviApi = createApi({
 			}),
 			invalidatesTags: ['Devi'],
 		}),
-		patchStatut: builder.mutation<SuccessResponseType<DeviClass>, { id: number; data: { archived: boolean } }>({
+		patchStatut: builder.mutation<SuccessResponseType<DeviClass>, { id: number; data: { statut: TypeDevisStatus } }>({
 			query: ({ id, data }) => ({
 				url: `${process.env.NEXT_PUBLIC_DEVIS_SWITCH_STATUT}${id}/`,
 				method: 'PATCH',

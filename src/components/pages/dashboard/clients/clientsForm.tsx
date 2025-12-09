@@ -163,7 +163,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, on
 				if (!isEditMode) {
 					setTimeout(() => {
 						router.replace(CLIENTS_LIST);
-					}, 1000);
+					}, 500);
 				}
 			} catch (e) {
 				setFormikAutoErrors({ e, setFieldError });

@@ -6,6 +6,7 @@ export type DeviLineSchemaType = {
 	id: number;
 	article: number;
 	article_designation: string | null;
+	designation: string | null;
 	prix_achat: number;
 	prix_vente: number;
 	quantity: number;

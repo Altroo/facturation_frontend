@@ -32,6 +32,7 @@ type Props = {
 	items: Array<DropDownType> | Array<string> | Array<DropDownTypeTwo>;
 	theme: Theme;
 	value: string | null;
+	size?: 'small' | 'medium';
 	onChange?: (event: SelectChangeEvent) => void;
 	onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
 	helperText?: string;
@@ -52,6 +53,7 @@ const CustomDropDownSelect: React.FC<Props> = (props: Props) => {
 					labelId={`${props.id}-label`}
 					id={props.id}
 					value={props.value ? props.value : ''}
+					size={props.size ? props.size : undefined}
 					onChange={props.onChange}
 					input={
 						<OutlinedInput

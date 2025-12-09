@@ -134,7 +134,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				if (!isEditMode) {
 					setTimeout(() => {
 						router.replace(USERS_LIST);
-					}, 1000);
+					}, 500);
 				}
 			} catch (e) {
 				setFormikAutoErrors({ e, setFieldError });
