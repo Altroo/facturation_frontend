@@ -14,6 +14,8 @@ export const { handlers, auth } = NextAuth({
 				email: { label: 'Email', type: 'email', placeholder: 'email' },
 				password: { label: 'Password', type: 'password', placeholder: 'password' },
 			},
+			// used in login page ex :
+			// await signIn('credentials', {email: values.email,password: values.password,redirect: false});
 			async authorize(credentials) {
 				const validatedCredentials = z
 					.object({

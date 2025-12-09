@@ -215,7 +215,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						}}
 					/>
 				) : (
-					<form>
+					<form onSubmit={formik.handleSubmit}>
 						<Stack spacing={3}>
 							{/* Document Information Card */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
@@ -399,7 +399,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								<PrimaryLoadingButton
 									buttonText={'Ajouter des articles'}
 									active={!isPending}
-									onClick={formik.handleSubmit}
+									type="submit"
 									loading={isPending}
 									cssClass={Styles.submitButton}
 								/>

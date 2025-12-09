@@ -297,7 +297,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					}}
 				/>
 			) : (
-				<form>
+				<form onSubmit={formik.handleSubmit}>
 					<Stack spacing={3}>
 						{/* Profile Picture Card */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
@@ -576,7 +576,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 							<PrimaryLoadingButton
 								buttonText={isEditMode ? 'Mettre à jour' : "Ajouter l'article"}
 								active={!isPending}
-								onClick={formik.handleSubmit}
+								type="submit"
 								loading={isPending}
 								cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}
 							/>
