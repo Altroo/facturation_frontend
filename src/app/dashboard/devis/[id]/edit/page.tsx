@@ -18,11 +18,7 @@ const DevisEditPage = async (props: DevisEditPageProps) => {
 		redirect(AUTH_LOGIN);
 	}
 
-	if (!id || isNaN(Number(id))) {
-		redirect(DEVIS_LIST);
-	}
-
-	if (!company_id || isNaN(Number(company_id))) {
+	if (!id || isNaN(Number(id)) || !company_id || isNaN(Number(company_id))) {
 		redirect(DEVIS_LIST);
 	}
 
