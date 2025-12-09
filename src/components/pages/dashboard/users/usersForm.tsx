@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/companies/companies.module.sass';
@@ -17,6 +17,7 @@ import {
 	Divider,
 	useTheme,
 	useMediaQuery,
+	AlertColor,
 } from '@mui/material';
 import {
 	ArrowBack,
@@ -65,11 +66,12 @@ const inputTheme = coordonneeTextInputTheme();
 type FormikContentProps = {
 	token: string | undefined;
 	id?: number;
-	onSuccess: () => void;
+	onSuccess: (message: string) => void;
+	onError: (message: string) => void;
 };
 
 const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
-	const { token, id, onSuccess } = props;
+	const { token, id, onSuccess, onError } = props;
 	const isEditMode = id !== undefined;
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -127,16 +129,22 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				}
 				if (isEditMode) {
 					await updateUser({ data, id }).unwrap();
+					onSuccess("L'utilisateur a été mis à jour avec succès.");
 				} else {
 					await addUser({ data }).unwrap();
+					onSuccess("L'utilisateur a été ajouté avec succès.");
 				}
-				onSuccess();
 				if (!isEditMode) {
 					setTimeout(() => {
 						router.replace(USERS_LIST);
 					}, 500);
 				}
 			} catch (e) {
+				if (isEditMode) {
+					onError("Échec de la mise à jour de l'utilisateur.");
+				} else {
+					onError("Échec de l'ajout de l'utilisateur.");
+				}
 				setFormikAutoErrors({ e, setFieldError });
 			} finally {
 				setIsPending(false);
@@ -210,10 +218,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		isUpdateLoading ||
 		isPending ||
 		(isEditMode && isDataLoading);
-
-	useEffect(() => {
-		console.log('Formik Errors:', formik.errors);
-	}, [formik.errors]);
 
 	return (
 		<Stack spacing={3} sx={{ p: { xs: 2, md: 3 } }}>
@@ -449,7 +453,22 @@ interface Props extends SessionProps {
 
 const UsersForm: React.FC<Props> = ({ session, id }) => {
 	const token = getAccessTokenFromSession(session);
-	const [showDataUpdated, setShowDataUpdated] = useState<boolean>(false);
+	const [showToast, setShowToast] = useState<boolean>(false);
+	const [toastType, setToastType] = useState<AlertColor>('success');
+	const [toastMessage, setToastMessage] = useState<string>('');
+
+	const showSuccessToast = (message: string) => {
+		setToastType('success');
+		setToastMessage(message);
+		setShowToast(true);
+	};
+
+	const showErrorToast = (message: string) => {
+		setToastType('error');
+		setToastMessage(message);
+		setShowToast(true);
+	};
+
 	const isEditMode = id !== undefined;
 
 	return (
@@ -458,18 +477,13 @@ const UsersForm: React.FC<Props> = ({ session, id }) => {
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
 					<Protected>
 						<Box sx={{ width: '100%' }}>
-							<FormikContent token={token} id={id} onSuccess={() => setShowDataUpdated(true)} />
+							<FormikContent token={token} id={id} onSuccess={showSuccessToast} onError={showErrorToast} />
 						</Box>
 					</Protected>
 				</main>
 			</NavigationBar>
 			<Portal id="snackbar_portal">
-				<CustomToast
-					type="success"
-					message={isEditMode ? 'Utilisateur mise à jour' : 'Utilisateur ajouter avec succès.'}
-					setShow={setShowDataUpdated}
-					show={showDataUpdated}
-				/>
+				<CustomToast type={toastType} message={toastMessage} setShow={setShowToast} show={showToast} />
 			</Portal>
 		</Stack>
 	);

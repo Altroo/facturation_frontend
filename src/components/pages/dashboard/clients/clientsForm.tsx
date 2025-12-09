@@ -19,6 +19,7 @@ import {
 	ToggleButtonGroup,
 	ToggleButton,
 	Container,
+	AlertColor,
 } from '@mui/material';
 import {
 	ArrowBack,
@@ -70,10 +71,12 @@ type FormikContentProps = {
 	token: string | undefined;
 	company_id: number;
 	id?: number;
-	onSuccess: () => void;
+	onSuccess: (message: string) => void;
+	onError: (message: string) => void;
 };
 
-const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, onSuccess }) => {
+const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
+	const { token, company_id, id, onSuccess, onError } = props;
 	const isEditMode = id !== undefined;
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -155,17 +158,22 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, on
 
 				if (isEditMode) {
 					await updateClient({ data: payload, id: id! }).unwrap();
+					onSuccess('Le client a été mis à jour avec succès.');
 				} else {
 					await addClient({ data: payload }).unwrap();
+					onSuccess('Le client a été ajouté avec succès.');
 				}
-
-				onSuccess();
 				if (!isEditMode) {
 					setTimeout(() => {
 						router.replace(CLIENTS_LIST);
 					}, 500);
 				}
 			} catch (e) {
+				if (isEditMode) {
+					onError('La mise à jour du client a échoué. Veuillez réessayer.');
+				} else {
+					onError("L'ajout du client a échoué. Veuillez réessayer.");
+				}
 				setFormikAutoErrors({ e, setFieldError });
 			} finally {
 				setIsPending(false);
@@ -630,7 +638,21 @@ interface Props extends SessionProps {
 
 const ClientsForm: React.FC<Props> = ({ session, company_id, id }) => {
 	const token = getAccessTokenFromSession(session);
-	const [showDataUpdated, setShowDataUpdated] = useState<boolean>(false);
+	const [showToast, setShowToast] = useState<boolean>(false);
+	const [toastType, setToastType] = useState<AlertColor>('success');
+	const [toastMessage, setToastMessage] = useState<string>('');
+
+	const showSuccessToast = (message: string) => {
+		setToastType('success');
+		setToastMessage(message);
+		setShowToast(true);
+	};
+
+	const showErrorToast = (message: string) => {
+		setToastType('error');
+		setToastMessage(message);
+		setShowToast(true);
+	};
 	const companies = useAppSelector(getUserCompaniesState);
 	const company = companies?.find((comp) => comp.id === company_id);
 
@@ -642,7 +664,13 @@ const ClientsForm: React.FC<Props> = ({ session, company_id, id }) => {
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
 					{company?.role === 'Admin' ? (
 						<Box sx={{ width: '100%' }}>
-							<FormikContent token={token} id={id} company_id={company_id} onSuccess={() => setShowDataUpdated(true)} />
+							<FormikContent
+								token={token}
+								id={id}
+								company_id={company_id}
+								onSuccess={showSuccessToast}
+								onError={showErrorToast}
+							/>
 						</Box>
 					) : (
 						<Container maxWidth="sm" sx={{ mt: 8 }}>
@@ -680,12 +708,7 @@ const ClientsForm: React.FC<Props> = ({ session, company_id, id }) => {
 				</main>
 			</NavigationBar>
 			<Portal id="snackbar_portal">
-				<CustomToast
-					type="success"
-					message={isEditMode ? 'Client mis à jour' : 'Client ajouté avec succès.'}
-					setShow={setShowDataUpdated}
-					show={showDataUpdated}
-				/>
+				<CustomToast type={toastType} message={toastMessage} setShow={setShowToast} show={showToast} />
 			</Portal>
 		</Stack>
 	);

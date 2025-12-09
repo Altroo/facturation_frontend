@@ -6,7 +6,18 @@ import { getAccessTokenFromSession } from '@/store/session';
 import { useAddCompanyMutation, useEditCompanyMutation, useGetCompanyQuery } from '@/store/services/company';
 import Styles from '@/styles/dashboard/companies/companies.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import { Box, Button, Stack, Typography, Card, CardContent, Divider, useTheme, useMediaQuery } from '@mui/material';
+import {
+	Box,
+	Button,
+	Stack,
+	Typography,
+	Card,
+	CardContent,
+	Divider,
+	useTheme,
+	useMediaQuery,
+	AlertColor,
+} from '@mui/material';
 import {
 	ArrowBack,
 	Business as BusinessIcon,
@@ -60,11 +71,12 @@ type FormikContentProps = {
 	first_name: string | null;
 	last_name: string | null;
 	id?: number;
-	onSuccess: () => void;
+	onSuccess: (message: string) => void;
+	onError: (message: string) => void;
 };
 
 const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
-	const { token, first_name, last_name, id, onSuccess } = props;
+	const { token, first_name, last_name, id, onSuccess, onError } = props;
 	const isEditMode = id !== undefined;
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -152,16 +164,22 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			try {
 				if (isEditMode) {
 					await updateData({ data, id }).unwrap();
+					onSuccess("L'entreprise a été mise à jour avec succès.");
 				} else {
 					await addData({ data }).unwrap();
+					onSuccess("L'entreprise a été ajoutée avec succès.");
 				}
-				onSuccess();
 				if (!isEditMode) {
 					setTimeout(() => {
 						router.replace(COMPANIES_LIST);
 					}, 500);
 				}
 			} catch (e) {
+				if (isEditMode) {
+					onError("La mise à jour de l'entreprise a échoué.");
+				} else {
+					onError("L'ajout de l'entreprise a échoué.");
+				}
 				setFormikAutoErrors({ e, setFieldError });
 			} finally {
 				setIsPending(false);
@@ -626,7 +644,22 @@ interface Props extends SessionProps {
 
 const CompaniesForm: React.FC<Props> = ({ session, id }) => {
 	const token = getAccessTokenFromSession(session);
-	const [showDataUpdated, setShowDataUpdated] = useState<boolean>(false);
+	const [showToast, setShowToast] = useState<boolean>(false);
+	const [toastType, setToastType] = useState<AlertColor>('success');
+	const [toastMessage, setToastMessage] = useState<string>('');
+
+	const showSuccessToast = (message: string) => {
+		setToastType('success');
+		setToastMessage(message);
+		setShowToast(true);
+	};
+
+	const showErrorToast = (message: string) => {
+		setToastType('error');
+		setToastMessage(message);
+		setShowToast(true);
+	};
+
 	const isEditMode = id !== undefined;
 
 	return (
@@ -640,19 +673,15 @@ const CompaniesForm: React.FC<Props> = ({ session, id }) => {
 								last_name={session?.user.last_name ?? ''}
 								token={token}
 								id={id}
-								onSuccess={() => setShowDataUpdated(true)}
+								onSuccess={showSuccessToast}
+								onError={showErrorToast}
 							/>
 						</Box>
 					</Protected>
 				</main>
 			</NavigationBar>
 			<Portal id="snackbar_portal">
-				<CustomToast
-					type="success"
-					message={isEditMode ? 'Entreprise mise à jour' : 'Entreprise ajouter avec succès.'}
-					setShow={setShowDataUpdated}
-					show={showDataUpdated}
-				/>
+				<CustomToast type={toastType} message={toastMessage} setShow={setShowToast} show={showToast} />
 			</Portal>
 		</Stack>
 	);

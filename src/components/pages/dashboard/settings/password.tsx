@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Styles from '@/styles/dashboard/settings/password.module.sass';
-import { Box, Stack } from '@mui/material';
+import { AlertColor, Box, Stack } from '@mui/material';
 import { setFormikAutoErrors } from '@/utils/helpers';
 import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
 import { useFormik } from 'formik';
@@ -23,11 +23,12 @@ const inputTheme = coordonneeTextInputTheme();
 
 type formikContentType = {
 	token: string | undefined;
-	onSuccess: () => void;
+	onSuccess: (message: string) => void;
+	onError: (message: string) => void;
 };
 
 const FormikContenChangePassword: React.FC<formikContentType> = (props: formikContentType) => {
-	const { token, onSuccess } = props;
+	const { token, onSuccess, onError } = props;
 	const [changePassword, { isLoading: isChangePasswordLoading }] = useEditPasswordMutation();
 	const [isPending, setIsPending] = useState(false);
 
@@ -51,9 +52,10 @@ const FormikContenChangePassword: React.FC<formikContentType> = (props: formikCo
 						new_password2: values.new_password2,
 					},
 				}).unwrap();
-				onSuccess();
+				onSuccess('Le mot de passe a été modifié avec succès.');
 				resetForm();
 			} catch (e) {
+				onError('Échec de la modification du mot de passe.');
 				setFormikAutoErrors({ e, setFieldError });
 			} finally {
 				setIsPending(false);
@@ -123,7 +125,21 @@ const FormikContenChangePassword: React.FC<formikContentType> = (props: formikCo
 const PasswordClient: React.FC<SessionProps> = (props: SessionProps) => {
 	const { session } = props;
 	const token = getAccessTokenFromSession(session);
-	const [showDataUpdated, setShowDataUpdated] = useState<boolean>(false);
+	const [showToast, setShowToast] = useState<boolean>(false);
+	const [toastType, setToastType] = useState<AlertColor>('success');
+	const [toastMessage, setToastMessage] = useState<string>('');
+
+	const showSuccessToast = (message: string) => {
+		setToastType('success');
+		setToastMessage(message);
+		setShowToast(true);
+	};
+
+	const showErrorToast = (message: string) => {
+		setToastType('error');
+		setToastMessage(message);
+		setShowToast(true);
+	};
 
 	return (
 		<Stack direction="column" sx={{ position: 'relative' }}>
@@ -132,26 +148,21 @@ const PasswordClient: React.FC<SessionProps> = (props: SessionProps) => {
 					<Desktop>
 						<Stack direction="row" className={Styles.flexRootStack}>
 							<Box sx={{ width: '100%' }}>
-								<FormikContenChangePassword token={token} onSuccess={() => setShowDataUpdated(true)} />
+								<FormikContenChangePassword token={token} onSuccess={showSuccessToast} onError={showErrorToast} />
 							</Box>
 						</Stack>
 					</Desktop>
 					<TabletAndMobile>
 						<Stack>
 							<Box sx={{ width: '100%', height: '100%' }}>
-								<FormikContenChangePassword token={token} onSuccess={() => setShowDataUpdated(true)} />
+								<FormikContenChangePassword token={token} onSuccess={showSuccessToast} onError={showErrorToast} />
 							</Box>
 						</Stack>
 					</TabletAndMobile>
 				</main>
 			</NavigationBar>
 			<Portal id="snackbar_portal">
-				<CustomToast
-					type="success"
-					message="Mot de passe mis à jour"
-					setShow={setShowDataUpdated}
-					show={showDataUpdated}
-				/>
+				<CustomToast type={toastType} message={toastMessage} setShow={setShowToast} show={showToast} />
 			</Portal>
 		</Stack>
 	);

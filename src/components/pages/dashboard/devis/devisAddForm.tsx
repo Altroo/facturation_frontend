@@ -17,6 +17,7 @@ import {
 	useTheme,
 	useMediaQuery,
 	InputAdornment,
+	AlertColor,
 } from '@mui/material';
 import {
 	ArrowBack,
@@ -60,11 +61,12 @@ const inputTheme = coordonneeTextInputTheme();
 type FormikContentProps = {
 	token: string | undefined;
 	company_id: number;
-	onSuccess: () => void;
+	onSuccess: (message: string) => void;
+	onError: (message: string) => void;
 };
 
 const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
-	const { token, company_id, onSuccess } = props;
+	const { token, company_id, onSuccess, onError } = props;
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 	const [addData, { isLoading: isAddLoading, error: addError }] = useAddDeviMutation();
@@ -169,7 +171,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					delete submissionData.mode_paiement;
 				}
 				const response = await addData({ data: submissionData as DeviSchemaType }).unwrap();
-				onSuccess();
+				onSuccess('Devis ajouté avec succès.');
 				if (response.id) {
 					setTimeout(() => {
 						router.replace(DEVIS_EDIT(response.id, company_id));
@@ -177,6 +179,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				}
 			} catch (e) {
 				setFormikAutoErrors({ e, setFieldError });
+				onError("Échec de l'ajout du devis. Veuillez réessayer.");
 			} finally {
 				setIsPending(false);
 			}
@@ -363,82 +366,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									</Stack>
 								</CardContent>
 							</Card>
-							{/*/!* Discount *!/*/}
-							{/*<Card elevation={2} sx={{ borderRadius: 2 }}>*/}
-							{/*	<CardContent sx={{ p: 3 }}>*/}
-							{/*		<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>*/}
-							{/*			<DiscountIcon color="primary" />*/}
-							{/*			<Typography variant="h6" fontWeight={700}>*/}
-							{/*				Remise*/}
-							{/*			</Typography>*/}
-							{/*		</Stack>*/}
-							{/*		<Divider sx={{ mb: 3 }} />*/}
-							{/*		<Stack spacing={2.5}>*/}
-							{/*			<CustomDropDownSelect*/}
-							{/*				id="remise_type"*/}
-							{/*				label="Type de remise"*/}
-							{/*				items={remiseTypeItems}*/}
-							{/*				value={formik.values.remise_type || ''}*/}
-							{/*				onBlur={formik.handleBlur('remise_type')}*/}
-							{/*				error={formik.touched.remise_type && Boolean(formik.errors.remise_type)}*/}
-							{/*				helperText={formik.touched.remise_type ? formik.errors.remise_type : ''}*/}
-							{/*				onChange={(e) => {*/}
-							{/*					const value = e.target.value;*/}
-							{/*					formik.setFieldValue('remise_type', value === '' ? undefined : value);*/}
-							{/*					// Clear remise when remise_type is unset*/}
-							{/*					if (value === '') {*/}
-							{/*						formik.setFieldValue('remise', undefined);*/}
-							{/*					}*/}
-							{/*				}}*/}
-							{/*				theme={customDropdownTheme()}*/}
-							{/*				startIcon={<DiscountIcon fontSize="small" color="action" />}*/}
-							{/*			/>*/}
-							{/*			<CustomTextInput*/}
-							{/*				id="remise"*/}
-							{/*				type="number"*/}
-							{/*				label="Remise"*/}
-							{/*				value={*/}
-							{/*					formik.values.remise !== undefined && formik.values.remise !== null*/}
-							{/*						? String(formik.values.remise)*/}
-							{/*						: ''*/}
-							{/*				}*/}
-							{/*				onChange={(e) => {*/}
-							{/*					const value = e.target.value;*/}
-							{/*					if (value === '') {*/}
-							{/*						formik.setFieldValue('remise', undefined);*/}
-							{/*					} else {*/}
-							{/*						const numValue = parseInt(value, 10);*/}
-							{/*						formik.setFieldValue('remise', isNaN(numValue) ? undefined : numValue);*/}
-							{/*					}*/}
-							{/*				}}*/}
-							{/*				onBlur={formik.handleBlur('remise')}*/}
-							{/*				error={formik.touched.remise && Boolean(formik.errors.remise)}*/}
-							{/*				helperText={formik.touched.remise ? formik.errors.remise : ''}*/}
-							{/*				fullWidth={true}*/}
-							{/*				size="small"*/}
-							{/*				theme={inputTheme}*/}
-							{/*				startIcon={<DiscountIcon fontSize="small" color="action" />}*/}
-							{/*				slotProps={{*/}
-							{/*					input: {*/}
-							{/*						sx: {*/}
-							{/*							'& input[type=number]': {*/}
-							{/*								MozAppearance: 'textfield',*/}
-							{/*							},*/}
-							{/*							'& input[type=number]::-webkit-outer-spin-button': {*/}
-							{/*								WebkitAppearance: 'none',*/}
-							{/*								margin: 0,*/}
-							{/*							},*/}
-							{/*							'& input[type=number]::-webkit-inner-spin-button': {*/}
-							{/*								WebkitAppearance: 'none',*/}
-							{/*								margin: 0,*/}
-							{/*							},*/}
-							{/*						},*/}
-							{/*					},*/}
-							{/*				}}*/}
-							{/*			/>*/}
-							{/*		</Stack>*/}
-							{/*	</CardContent>*/}
-							{/*</Card>*/}
 							{/* Remark */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
@@ -491,7 +418,21 @@ interface Props extends SessionProps {
 
 const DevisAddForm: React.FC<Props> = ({ session, company_id }) => {
 	const token = getAccessTokenFromSession(session);
-	const [showDataUpdated, setShowDataUpdated] = useState<boolean>(false);
+	const [showToast, setShowToast] = useState<boolean>(false);
+	const [toastType, setToastType] = useState<AlertColor>('success');
+	const [toastMessage, setToastMessage] = useState<string>('');
+
+	const showSuccessToast = (message: string) => {
+		setToastType('success');
+		setToastMessage(message);
+		setShowToast(true);
+	};
+
+	const showErrorToast = (message: string) => {
+		setToastType('error');
+		setToastMessage(message);
+		setShowToast(true);
+	};
 
 	return (
 		<Stack direction="column" sx={{ position: 'relative' }}>
@@ -499,18 +440,18 @@ const DevisAddForm: React.FC<Props> = ({ session, company_id }) => {
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
 					<Protected>
 						<Box sx={{ width: '100%' }}>
-							<FormikContent company_id={company_id} token={token} onSuccess={() => setShowDataUpdated(true)} />
+							<FormikContent
+								company_id={company_id}
+								token={token}
+								onSuccess={showSuccessToast}
+								onError={showErrorToast}
+							/>
 						</Box>
 					</Protected>
 				</main>
 			</NavigationBar>
 			<Portal id="snackbar_portal">
-				<CustomToast
-					type="success"
-					message={'Devis ajouter avec succès.'}
-					setShow={setShowDataUpdated}
-					show={showDataUpdated}
-				/>
+				<CustomToast type={toastType} message={toastMessage} setShow={setShowToast} show={showToast} />
 			</Portal>
 		</Stack>
 	);

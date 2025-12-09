@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Styles from '@/styles/dashboard/settings/edit-profil.module.sass';
 import { TabletAndMobile, Desktop } from '@/utils/clientHelpers';
-import { Box, Stack } from '@mui/material';
+import { AlertColor, Box, Stack } from '@mui/material';
 import { useFormik } from 'formik';
 import { profilSchema } from '@/utils/formValidationSchemas';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
@@ -28,11 +28,12 @@ const inputTheme = coordonneeTextInputTheme();
 
 type formikContentType = {
 	token: string | undefined;
-	onSuccess: () => void;
+	onSuccess: (message: string) => void;
+	onError: (message: string) => void;
 };
 
 const FormikContent: React.FC<formikContentType> = (props: formikContentType) => {
-	const { token, onSuccess } = props;
+	const { token, onSuccess, onError } = props;
 	const { data: profilData, isLoading: isProfilLoading } = useGetProfilQuery(undefined, { skip: !token });
 	const [editProfil, { isLoading: isEditLoading }] = useEditProfilMutation();
 	const dispatch = useAppDispatch();
@@ -56,9 +57,10 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 				const response = await editProfil({ token, data }).unwrap();
 				if (response) {
 					dispatch(accountEditProfilAction(response));
-					onSuccess();
+					onSuccess('Profil mis à jour avec succès.');
 				}
 			} catch (e) {
+				onError('Une erreur est survenue lors de la mise à jour du profil.');
 				setFormikAutoErrors({ e, setFieldError });
 			} finally {
 				setIsPending(false);
@@ -134,7 +136,21 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 const EditProfilClient: React.FC<SessionProps> = (props: SessionProps) => {
 	const { session } = props;
 	const token = getAccessTokenFromSession(session);
-	const [showDataUpdated, setShowDataUpdated] = useState<boolean>(false);
+	const [showToast, setShowToast] = useState<boolean>(false);
+	const [toastType, setToastType] = useState<AlertColor>('success');
+	const [toastMessage, setToastMessage] = useState<string>('');
+
+	const showSuccessToast = (message: string) => {
+		setToastType('success');
+		setToastMessage(message);
+		setShowToast(true);
+	};
+
+	const showErrorToast = (message: string) => {
+		setToastType('error');
+		setToastMessage(message);
+		setShowToast(true);
+	};
 
 	return (
 		<Stack direction="column" sx={{ position: 'relative' }}>
@@ -143,21 +159,21 @@ const EditProfilClient: React.FC<SessionProps> = (props: SessionProps) => {
 					<Desktop>
 						<Stack direction="row" className={Styles.flexRootStack}>
 							<Box sx={{ width: '100%' }}>
-								<FormikContent token={token} onSuccess={() => setShowDataUpdated(true)} />
+								<FormikContent token={token} onSuccess={showSuccessToast} onError={showErrorToast} />
 							</Box>
 						</Stack>
 					</Desktop>
 					<TabletAndMobile>
 						<Stack>
 							<Box sx={{ width: '100%', height: '100%' }}>
-								<FormikContent token={token} onSuccess={() => setShowDataUpdated(true)} />
+								<FormikContent token={token} onSuccess={showSuccessToast} onError={showErrorToast} />
 							</Box>
 						</Stack>
 					</TabletAndMobile>
 				</main>
 			</NavigationBar>
 			<Portal id="snackbar_portal">
-				<CustomToast type="success" message="Profil mis à jour" setShow={setShowDataUpdated} show={showDataUpdated} />
+				<CustomToast type={toastType} message={toastMessage} setShow={setShowToast} show={showToast} />
 			</Portal>
 		</Stack>
 	);

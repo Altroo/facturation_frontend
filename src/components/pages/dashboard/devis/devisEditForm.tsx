@@ -19,6 +19,7 @@ import {
 	Avatar,
 	Tooltip,
 	IconButton,
+	AlertColor,
 } from '@mui/material';
 import {
 	ArrowBack,
@@ -75,7 +76,8 @@ type FormikContentProps = {
 	token: string | undefined;
 	company_id: number;
 	id: number;
-	onSuccess: () => void;
+	onSuccess: (message: string) => void;
+	onError: (message: string) => void;
 };
 
 interface DeviLineFormValues {
@@ -90,7 +92,7 @@ interface DeviLineFormValues {
 }
 
 const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
-	const { token, company_id, id, onSuccess } = props;
+	const { token, company_id, id, onSuccess, onError } = props;
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 	const { data: rawData, isLoading: isDataLoading, error: dataError } = useGetDeviQuery({ id: id! }, { skip: !token });
@@ -220,8 +222,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					delete submissionData.remise;
 				}
 				await updateData({ data: submissionData as DeviSchemaType, id }).unwrap();
-				onSuccess();
+				onSuccess('Devis mis à jour avec succès.');
 			} catch (e) {
+				onError('Échec de la mise à jour du devis.');
 				setFormikAutoErrors({ e, setFieldError });
 			} finally {
 				setIsPending(false);
@@ -566,9 +569,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		},
 	];
 
-	const isLoading =
-		isPatchLoading || isClientsLoading || isUpdateLoading || isPending || isDataLoading || isArticlesLoading;
-
 	// Get existing article IDs to prevent duplicates
 	const existingArticleIds = useMemo(() => {
 		return new Set((formik.values.lignes as DeviLineFormValues[]).map((l) => l.article));
@@ -606,12 +606,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			if (!newValue) return;
 			await patchStatut({ id: id!, data: { statut: newValue as TypeDevisStatus } }).unwrap();
 			// trigger parent success toast / refresh
-			onSuccess();
-		} catch (e) {
-			// error handling intentionally minimal (existing ApiAlert / toast handles global errors)
-			console.error('Failed to patch statut', e);
+			onSuccess('Statut mis à jour avec succès.');
+		} catch {
+			onError('Échec de la mise à jour du statut du devis.');
 		}
 	};
+
+	const isLoading =
+		isPatchLoading || isClientsLoading || isUpdateLoading || isPending || isDataLoading || isArticlesLoading;
 
 	return (
 		<LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
@@ -1055,7 +1057,22 @@ interface Props extends SessionProps {
 
 const DevisEditForm: React.FC<Props> = ({ session, company_id, id }) => {
 	const token = getAccessTokenFromSession(session);
-	const [showDataUpdated, setShowDataUpdated] = useState<boolean>(false);
+
+	const [showToast, setShowToast] = useState<boolean>(false);
+	const [toastType, setToastType] = useState<AlertColor>('success');
+	const [toastMessage, setToastMessage] = useState<string>('');
+
+	const showSuccessToast = (message: string) => {
+		setToastType('success');
+		setToastMessage(message);
+		setShowToast(true);
+	};
+
+	const showErrorToast = (message: string) => {
+		setToastType('error');
+		setToastMessage(message);
+		setShowToast(true);
+	};
 
 	return (
 		<Stack direction="column" sx={{ position: 'relative' }}>
@@ -1063,18 +1080,19 @@ const DevisEditForm: React.FC<Props> = ({ session, company_id, id }) => {
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
 					<Protected>
 						<Box sx={{ width: '100%' }}>
-							<FormikContent company_id={company_id} token={token} id={id} onSuccess={() => setShowDataUpdated(true)} />
+							<FormikContent
+								company_id={company_id}
+								token={token}
+								id={id}
+								onSuccess={showSuccessToast}
+								onError={showErrorToast}
+							/>
 						</Box>
 					</Protected>
 				</main>
 			</NavigationBar>
 			<Portal id="snackbar_portal">
-				<CustomToast
-					type="success"
-					message={'Devis mis à jour avec succès'}
-					setShow={setShowDataUpdated}
-					show={showDataUpdated}
-				/>
+				<CustomToast type={toastType} message={toastMessage} setShow={setShowToast} show={showToast} />
 			</Portal>
 		</Stack>
 	);
