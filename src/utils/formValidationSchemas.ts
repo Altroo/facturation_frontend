@@ -179,10 +179,10 @@ export const userSchema = z.object({
 	companies: z
 		.array(
 			z.object({
-				membership_id: requiredNumberField(1),
-				company_id: requiredNumberField(1),
-				raison_sociale: requiredTextField(1, 255),
-				role: requiredTextField(1, 50),
+				membership_id: z.number(),
+				company_id: z.number(),
+				raison_sociale: z.string(),
+				role: z.string(),
 			}),
 		)
 		.optional(),

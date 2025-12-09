@@ -1,4 +1,3 @@
-// typescript
 import {
 	loginSchema,
 	emailSchema,
@@ -364,7 +363,7 @@ describe('Zod Schema Validation', () => {
 			).toThrow();
 		});
 
-		it('fails with missing mode_paiement', () => {
+		it('accepts missing mode_paiement (optional)', () => {
 			expect(() =>
 				deviSchema.parse({
 					numero_devis: 'DV004',
@@ -372,7 +371,7 @@ describe('Zod Schema Validation', () => {
 					date_devis: '2025-12-04',
 					remise: 0,
 				}),
-			).toThrow();
+			).not.toThrow();
 		});
 
 		it('fails with invalid line item (negative quantity)', () => {

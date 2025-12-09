@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/companies/companies.module.sass';
@@ -210,6 +210,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		isUpdateLoading ||
 		isPending ||
 		(isEditMode && isDataLoading);
+
+	useEffect(() => {
+		console.log('Formik Errors:', formik.errors);
+	}, [formik.errors]);
 
 	return (
 		<Stack spacing={3} sx={{ p: { xs: 2, md: 3 } }}>
