@@ -76,7 +76,6 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 			>
 				{icon}
 			</Box>
-
 			<Stack
 				direction="row"
 				alignItems="center"
@@ -96,7 +95,6 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 				>
 					{label}
 				</Typography>
-
 				<Box sx={{ flex: 1 }}>
 					{isValidElement(displayValue) ? (
 						displayValue
@@ -161,19 +159,15 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	// Calculate totals
 	const totals = useMemo(() => {
 		if (!devis) return { totalHT: 0, totalTVA: 0, totalTTC: 0 };
-
 		let totalHT = 0;
 		let totalTVA = 0;
-
 		(devis.lignes || []).forEach((ligne) => {
 			const article = articlesData?.find((a) => a.id === ligne.article);
 			if (!article) return;
-
 			const basePrice = ligne.prix_vente * ligne.quantity;
 			const tvaRate = article.tva || 20;
 			const lineTVA = basePrice * (tvaRate / 100);
 			const lineTotalWithTVA = basePrice + lineTVA;
-
 			// Apply line remise after TVA
 			let finalLineTotal = lineTotalWithTVA;
 			if (ligne.remise && ligne.remise > 0 && ligne.remise_type) {
@@ -183,19 +177,15 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 					finalLineTotal -= ligne.remise;
 				}
 			}
-
 			// Back-calculate HT and TVA from final total
 			const finalHT = finalLineTotal / (1 + tvaRate / 100);
 			const finalTVA = finalLineTotal - finalHT;
-
 			totalHT += finalHT;
 			totalTVA += finalTVA;
 		});
-
 		let finalTotalHT = totalHT;
 		let finalTotalTVA = totalTVA;
 		let finalTotalTTC = totalHT + totalTVA;
-
 		// Apply global remise
 		if (devis.remise && devis.remise > 0 && devis.remise_type) {
 			if (devis.remise_type === 'Pourcentage') {
@@ -211,7 +201,6 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 				finalTotalTVA = totalTVA * ratio;
 			}
 		}
-
 		return {
 			totalHT: Math.max(0, finalTotalHT),
 			totalTVA: Math.max(0, finalTotalTVA),
@@ -413,7 +402,6 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 							</Button>
 						)}
 					</Stack>
-
 					{isLoading || isArticlesLoading ? (
 						<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
 					) : (axiosError?.status as number) > 400 ? (
@@ -453,7 +441,6 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 												{totals.totalHT.toFixed(2)} MAD
 											</Typography>
 										</Box>
-
 										<Box
 											sx={{
 												display: 'flex',
@@ -469,7 +456,6 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 												{totals.totalTVA.toFixed(2)} MAD
 											</Typography>
 										</Box>
-
 										<Box
 											sx={{
 												display: 'flex',
@@ -488,7 +474,6 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									</Stack>
 								</CardContent>
 							</Card>
-
 							{/* Document Information Card */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
@@ -510,7 +495,6 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									</Stack>
 								</CardContent>
 							</Card>
-
 							{/* Statut du devis */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
@@ -526,7 +510,6 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									</Box>
 								</CardContent>
 							</Card>
-
 							{/* Client Information Card */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
@@ -540,7 +523,6 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									<InfoRow icon={<PersonIcon />} label="Client" value={devis?.client_name} />
 								</CardContent>
 							</Card>
-
 							{/* Payment & Terms Card */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
@@ -562,7 +544,6 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									</Stack>
 								</CardContent>
 							</Card>
-
 							{/* Lines Card */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
@@ -599,7 +580,6 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									</Box>
 								</CardContent>
 							</Card>
-
 							{/* Global Remise */}
 							{devis?.remise && devis?.remise > 0 && (
 								<Card elevation={2} sx={{ borderRadius: 2 }}>
@@ -619,7 +599,6 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									</CardContent>
 								</Card>
 							)}
-
 							{/* Remark */}
 							{devis?.remarque && (
 								<Card elevation={2} sx={{ borderRadius: 2 }}>
@@ -635,7 +614,6 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									</CardContent>
 								</Card>
 							)}
-
 							{/* Metadata */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
