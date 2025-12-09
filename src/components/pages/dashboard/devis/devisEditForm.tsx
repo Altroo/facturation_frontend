@@ -947,7 +947,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											fullWidth
 											disabled={!(formik.values.remise && formik.values.remise > 0)}
 										>
-											Supprimer la remise
+											Supprimer la remise globale
 										</Button>
 										{formik.values.remise_type && formik.values.remise && formik.values.remise > 0 && (
 											<Typography variant="body2" color="text.secondary">
