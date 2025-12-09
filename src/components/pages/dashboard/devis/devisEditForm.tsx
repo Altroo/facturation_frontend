@@ -17,6 +17,8 @@ import {
 	useMediaQuery,
 	InputAdornment,
 	Avatar,
+	Tooltip,
+	IconButton,
 } from '@mui/material';
 import {
 	ArrowBack,
@@ -553,9 +555,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				const rowIndex = Number(params.id);
 				return (
 					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-						<Button size="small" color="error" onClick={() => handleDeleteLine(rowIndex)} startIcon={<DeleteIcon />}>
-							Supprimer
-						</Button>
+						<Tooltip title="Supprimer">
+							<IconButton size="small" color="error" onClick={() => handleDeleteLine(rowIndex)}>
+								<DeleteIcon />
+							</IconButton>
+						</Tooltip>
 					</Box>
 				);
 			},
