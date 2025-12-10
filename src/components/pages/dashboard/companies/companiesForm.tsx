@@ -6,18 +6,7 @@ import { getAccessTokenFromSession } from '@/store/session';
 import { useAddCompanyMutation, useEditCompanyMutation, useGetCompanyQuery } from '@/store/services/company';
 import Styles from '@/styles/dashboard/companies/companies.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import {
-	Box,
-	Button,
-	Stack,
-	Typography,
-	Card,
-	CardContent,
-	Divider,
-	useTheme,
-	useMediaQuery,
-	AlertColor,
-} from '@mui/material';
+import { Box, Button, Stack, Typography, Card, CardContent, Divider, useTheme, useMediaQuery } from '@mui/material';
 import {
 	ArrowBack,
 	Business as BusinessIcon,
@@ -44,8 +33,6 @@ import { toFormikValidationSchema } from 'zod-formik-adapter';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
-import CustomToast from '@/components/portals/customToast/customToast';
-import Portal from '@/contexts/Portal';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { companySchema } from '@/utils/formValidationSchemas';
 import { civiliteItemsList, nbrEmployeItemsList } from '@/utils/rawData';
@@ -54,7 +41,7 @@ import { coordonneeTextInputTheme, customDropdownTheme } from '@/utils/themes';
 import { COMPANIES_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import CustomSquareImageUploading from '@/components/formikElements/customSquareImageUploading/customSquareImageUploading';
-import { useAppSelector } from '@/utils/hooks';
+import { useAppSelector, useToast } from '@/utils/hooks';
 import { getGroupesState, getProfilState } from '@/store/selectors';
 import { useGetUsersListQuery } from '@/store/services/account';
 import type { DropDownType } from '@/types/accountTypes';
@@ -71,12 +58,11 @@ type FormikContentProps = {
 	first_name: string | null;
 	last_name: string | null;
 	id?: number;
-	onSuccess: (message: string) => void;
-	onError: (message: string) => void;
 };
 
 const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
-	const { token, first_name, last_name, id, onSuccess, onError } = props;
+	const { token, first_name, last_name, id } = props;
+	const { onSuccess, onError } = useToast();
 	const isEditMode = id !== undefined;
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -644,22 +630,6 @@ interface Props extends SessionProps {
 
 const CompaniesForm: React.FC<Props> = ({ session, id }) => {
 	const token = getAccessTokenFromSession(session);
-	const [showToast, setShowToast] = useState<boolean>(false);
-	const [toastType, setToastType] = useState<AlertColor>('success');
-	const [toastMessage, setToastMessage] = useState<string>('');
-
-	const showSuccessToast = (message: string) => {
-		setToastType('success');
-		setToastMessage(message);
-		setShowToast(true);
-	};
-
-	const showErrorToast = (message: string) => {
-		setToastType('error');
-		setToastMessage(message);
-		setShowToast(true);
-	};
-
 	const isEditMode = id !== undefined;
 
 	return (
@@ -673,16 +643,11 @@ const CompaniesForm: React.FC<Props> = ({ session, id }) => {
 								last_name={session?.user.last_name ?? ''}
 								token={token}
 								id={id}
-								onSuccess={showSuccessToast}
-								onError={showErrorToast}
 							/>
 						</Box>
 					</Protected>
 				</main>
 			</NavigationBar>
-			<Portal id="snackbar_portal">
-				<CustomToast type={toastType} message={toastMessage} setShow={setShowToast} show={showToast} />
-			</Portal>
 		</Stack>
 	);
 };

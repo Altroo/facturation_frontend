@@ -10,6 +10,7 @@ import { auth } from '@/auth';
 import type { Viewport } from 'next';
 import ThemeProvider from '@/providers/themeProvider';
 import { InitEffects } from '@/contexts/initEffects';
+import { ToastProvider } from '@/contexts/toastProvider';
 
 export const metadata: Metadata = {
 	title: 'Facturation - Casa Di Lusso',
@@ -69,7 +70,9 @@ const RootLayout: React.FC<EntryPointProps> = async (props) => {
 						<InitContextProvider>
 							<InitEffects />
 							<AppRouterCacheProvider>
-								<ThemeProvider>{props.children}</ThemeProvider>
+								<ThemeProvider>
+									<ToastProvider>{props.children}</ToastProvider>
+								</ThemeProvider>
 							</AppRouterCacheProvider>
 						</InitContextProvider>
 					</StoreProvider>

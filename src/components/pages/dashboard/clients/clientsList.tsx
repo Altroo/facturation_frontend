@@ -14,22 +14,21 @@ import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkToolt
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
-import CustomToast from '@/components/portals/customToast/customToast';
-import Portal from '@/contexts/Portal';
 import type { ClientClass } from '@/models/Classes';
 import { formatDate } from '@/utils/helpers';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
+import { useToast } from '@/utils/hooks';
 
 interface ClientsListContentProps extends SessionProps {
 	company_id: number;
-	onToast: (message: string, type: 'success' | 'error') => void;
 	archived: boolean;
 	role: string;
 }
 
 const ClientsListContent: React.FC<ClientsListContentProps> = (props: ClientsListContentProps) => {
-	const { session, company_id, onToast, archived, role } = props;
+	const { session, company_id, archived, role } = props;
+	const { onSuccess, onError } = useToast();
 	const router = useRouter();
 	const token = getAccessTokenFromSession(session);
 
@@ -67,11 +66,10 @@ const ClientsListContent: React.FC<ClientsListContentProps> = (props: ClientsLis
 	const deleteHandler = async () => {
 		try {
 			await deleteRecord({ id: selectedId! }).unwrap();
-			onToast('Client supprimé avec succès', 'success');
+			onSuccess('Client supprimé avec succès');
 			refetch();
-		} catch (err) {
-			onToast('Erreur lors de la suppression du client', 'error');
-			console.error(err);
+		} catch {
+			onError('Erreur lors de la suppression du client');
 		} finally {
 			setShowDeleteModal(false);
 		}
@@ -103,18 +101,17 @@ const ClientsListContent: React.FC<ClientsListContentProps> = (props: ClientsLis
 				data: { archived: !archived },
 			}).unwrap();
 			if (archived) {
-				onToast('Client désarchivé avec succès', 'success');
+				onSuccess('Client désarchivé avec succès');
 			} else {
-				onToast('Client archivé avec succès', 'success');
+				onSuccess('Client archivé avec succès');
 			}
 			refetch();
-		} catch (err) {
+		} catch {
 			if (archived) {
-				onToast('Erreur lors de la désarchivation du client', 'error');
+				onError('Erreur lors de la désarchivation du client');
 			} else {
-				onToast('Erreur lors de l’archivage du client', 'error');
+				onError('Erreur lors de l’archivage du client');
 			}
-			console.error(err);
 		} finally {
 			setShowArchiveModal(false);
 			setArchiveTarget(null);
@@ -346,15 +343,6 @@ const ClientsListClient: React.FC<Props> = ({ session, archived }) => {
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const companies = useMemo(() => companiesData ?? [], [companiesData]);
 	const selectedCompany = useMemo(() => companies?.[selectedIndex] ?? null, [companies, selectedIndex]);
-	const [showToast, setShowToast] = useState(false);
-	const [toastMessage, setToastMessage] = useState<string>('');
-	const [toastType, setToastType] = useState<'success' | 'error'>('success');
-
-	const handleToast = (message: string, type: 'success' | 'error') => {
-		setToastMessage(message);
-		setToastType(type);
-		setShowToast(true);
-	};
 
 	const handleChange = (_: React.SyntheticEvent, newValue: number) => {
 		setSelectedIndex(newValue);
@@ -481,16 +469,12 @@ const ClientsListClient: React.FC<Props> = ({ session, archived }) => {
 									session={session}
 									company_id={selectedCompany.id}
 									role={selectedCompany.role}
-									onToast={handleToast}
 								/>
 							)}
 						</>
 					)}
 				</NavigationBar>
 			</Stack>
-			<Portal id="snackbar_portal">
-				<CustomToast type={toastType} message={toastMessage} setShow={setShowToast} show={showToast} />
-			</Portal>
 		</>
 	);
 };

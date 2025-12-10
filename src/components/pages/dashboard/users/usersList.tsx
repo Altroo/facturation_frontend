@@ -14,14 +14,14 @@ import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkToolt
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
-import CustomToast from '@/components/portals/customToast/customToast';
-import Portal from '@/contexts/Portal';
 import type { UserClass } from '@/models/Classes';
 import { formatDate } from '@/utils/helpers';
 import { Protected } from '@/components/layouts/protected/protected';
+import { useToast } from '@/utils/hooks';
 
 const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 	const router = useRouter();
+	const { onSuccess, onError } = useToast();
 	const token = getAccessTokenFromSession(session);
 
 	const [paginationModel, setPaginationModel] = useState<{ page: number; pageSize: number }>({
@@ -49,26 +49,16 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 	const data = rawData as PaginationResponseType<UserClass> | undefined;
 	const [deleteRecord] = useDeleteUserMutation();
 
-	const [showToast, setShowToast] = useState(false);
-	const [toastMessage, setToastMessage] = useState<string>('');
-	const [toastType, setToastType] = useState<'success' | 'error'>('success');
-
 	const deleteHandler = async () => {
 		try {
 			await deleteRecord({ id: selectedUserId! }).unwrap();
 			// success toast
-			setToastMessage('Utilisateur supprimée avec succès');
-			setToastType('success');
-			setShowToast(true);
+			onSuccess('Utilisateur supprimée avec succès');
 			// refresh the page / data
 			refetch();
-		} catch (err) {
+		} catch {
 			// error toast
-			setToastMessage('Erreur lors de la suppression de l’utilisateur');
-			setToastType('error');
-			setShowToast(true);
-
-			console.error(err);
+			onError('Erreur lors de la suppression de l’utilisateur');
 		} finally {
 			setShowDeleteModal(false);
 		}
@@ -291,9 +281,6 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 					</>
 				</Protected>
 			</NavigationBar>
-			<Portal id="snackbar_portal">
-				<CustomToast type={toastType} message={toastMessage} setShow={setShowToast} show={showToast} />
-			</Portal>
 		</Stack>
 	);
 };

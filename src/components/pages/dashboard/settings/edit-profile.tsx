@@ -3,16 +3,14 @@
 import React, { useState } from 'react';
 import Styles from '@/styles/dashboard/settings/edit-profil.module.sass';
 import { TabletAndMobile, Desktop } from '@/utils/clientHelpers';
-import { AlertColor, Box, Stack } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 import { useFormik } from 'formik';
 import { profilSchema } from '@/utils/formValidationSchemas';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import { coordonneeTextInputTheme, customDropdownTheme } from '@/utils/themes';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import { genderItemsList } from '@/utils/rawData';
-import { useAppDispatch } from '@/utils/hooks';
-import CustomToast from '@/components/portals/customToast/customToast';
-import Portal from '@/contexts/Portal';
+import { useAppDispatch, useToast } from '@/utils/hooks';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import { setFormikAutoErrors } from '@/utils/helpers';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
@@ -28,12 +26,11 @@ const inputTheme = coordonneeTextInputTheme();
 
 type formikContentType = {
 	token: string | undefined;
-	onSuccess: (message: string) => void;
-	onError: (message: string) => void;
 };
 
 const FormikContent: React.FC<formikContentType> = (props: formikContentType) => {
-	const { token, onSuccess, onError } = props;
+	const { token } = props;
+	const { onSuccess, onError } = useToast();
 	const { data: profilData, isLoading: isProfilLoading } = useGetProfilQuery(undefined, { skip: !token });
 	const [editProfil, { isLoading: isEditLoading }] = useEditProfilMutation();
 	const dispatch = useAppDispatch();
@@ -136,21 +133,6 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 const EditProfilClient: React.FC<SessionProps> = (props: SessionProps) => {
 	const { session } = props;
 	const token = getAccessTokenFromSession(session);
-	const [showToast, setShowToast] = useState<boolean>(false);
-	const [toastType, setToastType] = useState<AlertColor>('success');
-	const [toastMessage, setToastMessage] = useState<string>('');
-
-	const showSuccessToast = (message: string) => {
-		setToastType('success');
-		setToastMessage(message);
-		setShowToast(true);
-	};
-
-	const showErrorToast = (message: string) => {
-		setToastType('error');
-		setToastMessage(message);
-		setShowToast(true);
-	};
 
 	return (
 		<Stack direction="column" sx={{ position: 'relative' }}>
@@ -159,22 +141,19 @@ const EditProfilClient: React.FC<SessionProps> = (props: SessionProps) => {
 					<Desktop>
 						<Stack direction="row" className={Styles.flexRootStack}>
 							<Box sx={{ width: '100%' }}>
-								<FormikContent token={token} onSuccess={showSuccessToast} onError={showErrorToast} />
+								<FormikContent token={token} />
 							</Box>
 						</Stack>
 					</Desktop>
 					<TabletAndMobile>
 						<Stack>
 							<Box sx={{ width: '100%', height: '100%' }}>
-								<FormikContent token={token} onSuccess={showSuccessToast} onError={showErrorToast} />
+								<FormikContent token={token} />
 							</Box>
 						</Stack>
 					</TabletAndMobile>
 				</main>
 			</NavigationBar>
-			<Portal id="snackbar_portal">
-				<CustomToast type={toastType} message={toastMessage} setShow={setShowToast} show={showToast} />
-			</Portal>
 		</Stack>
 	);
 };

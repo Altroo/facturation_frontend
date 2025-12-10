@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Styles from '@/styles/dashboard/settings/password.module.sass';
-import { AlertColor, Box, Stack } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 import { setFormikAutoErrors } from '@/utils/helpers';
 import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
 import { useFormik } from 'formik';
@@ -10,25 +10,23 @@ import { changePasswordSchema } from '@/utils/formValidationSchemas';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import { coordonneeTextInputTheme } from '@/utils/themes';
 import CustomPasswordInput from '@/components/formikElements/customPasswordInput/customPasswordInput';
-import CustomToast from '@/components/portals/customToast/customToast';
-import Portal from '@/contexts/Portal';
 import type { SessionProps } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import { useEditPasswordMutation } from '@/store/services/account';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
+import { useToast } from '@/utils/hooks';
 
 const inputTheme = coordonneeTextInputTheme();
 
 type formikContentType = {
 	token: string | undefined;
-	onSuccess: (message: string) => void;
-	onError: (message: string) => void;
 };
 
 const FormikContenChangePassword: React.FC<formikContentType> = (props: formikContentType) => {
-	const { token, onSuccess, onError } = props;
+	const { token } = props;
+	const { onSuccess, onError } = useToast();
 	const [changePassword, { isLoading: isChangePasswordLoading }] = useEditPasswordMutation();
 	const [isPending, setIsPending] = useState(false);
 
@@ -125,21 +123,6 @@ const FormikContenChangePassword: React.FC<formikContentType> = (props: formikCo
 const PasswordClient: React.FC<SessionProps> = (props: SessionProps) => {
 	const { session } = props;
 	const token = getAccessTokenFromSession(session);
-	const [showToast, setShowToast] = useState<boolean>(false);
-	const [toastType, setToastType] = useState<AlertColor>('success');
-	const [toastMessage, setToastMessage] = useState<string>('');
-
-	const showSuccessToast = (message: string) => {
-		setToastType('success');
-		setToastMessage(message);
-		setShowToast(true);
-	};
-
-	const showErrorToast = (message: string) => {
-		setToastType('error');
-		setToastMessage(message);
-		setShowToast(true);
-	};
 
 	return (
 		<Stack direction="column" sx={{ position: 'relative' }}>
@@ -148,22 +131,19 @@ const PasswordClient: React.FC<SessionProps> = (props: SessionProps) => {
 					<Desktop>
 						<Stack direction="row" className={Styles.flexRootStack}>
 							<Box sx={{ width: '100%' }}>
-								<FormikContenChangePassword token={token} onSuccess={showSuccessToast} onError={showErrorToast} />
+								<FormikContenChangePassword token={token} />
 							</Box>
 						</Stack>
 					</Desktop>
 					<TabletAndMobile>
 						<Stack>
 							<Box sx={{ width: '100%', height: '100%' }}>
-								<FormikContenChangePassword token={token} onSuccess={showSuccessToast} onError={showErrorToast} />
+								<FormikContenChangePassword token={token} />
 							</Box>
 						</Stack>
 					</TabletAndMobile>
 				</main>
 			</NavigationBar>
-			<Portal id="snackbar_portal">
-				<CustomToast type={toastType} message={toastMessage} setShow={setShowToast} show={showToast} />
-			</Portal>
 		</Stack>
 	);
 };

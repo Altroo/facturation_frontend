@@ -19,7 +19,6 @@ import {
 	ToggleButtonGroup,
 	ToggleButton,
 	Container,
-	AlertColor,
 } from '@mui/material';
 import {
 	ArrowBack,
@@ -41,14 +40,12 @@ import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
-import CustomToast from '@/components/portals/customToast/customToast';
-import Portal from '@/contexts/Portal';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { coordonneeTextInputTheme } from '@/utils/themes';
 import { CLIENTS_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import type { DropDownType } from '@/types/accountTypes';
-import { useAppSelector } from '@/utils/hooks';
+import { useAppSelector, useToast } from '@/utils/hooks';
 import { getCitiesState, getUserCompaniesState } from '@/store/selectors';
 import {
 	useAddClientMutation,
@@ -71,12 +68,11 @@ type FormikContentProps = {
 	token: string | undefined;
 	company_id: number;
 	id?: number;
-	onSuccess: (message: string) => void;
-	onError: (message: string) => void;
 };
 
 const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
-	const { token, company_id, id, onSuccess, onError } = props;
+	const { token, company_id, id } = props;
+	const { onSuccess, onError } = useToast();
 	const isEditMode = id !== undefined;
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -638,21 +634,6 @@ interface Props extends SessionProps {
 
 const ClientsForm: React.FC<Props> = ({ session, company_id, id }) => {
 	const token = getAccessTokenFromSession(session);
-	const [showToast, setShowToast] = useState<boolean>(false);
-	const [toastType, setToastType] = useState<AlertColor>('success');
-	const [toastMessage, setToastMessage] = useState<string>('');
-
-	const showSuccessToast = (message: string) => {
-		setToastType('success');
-		setToastMessage(message);
-		setShowToast(true);
-	};
-
-	const showErrorToast = (message: string) => {
-		setToastType('error');
-		setToastMessage(message);
-		setShowToast(true);
-	};
 	const companies = useAppSelector(getUserCompaniesState);
 	const company = companies?.find((comp) => comp.id === company_id);
 
@@ -664,13 +645,7 @@ const ClientsForm: React.FC<Props> = ({ session, company_id, id }) => {
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
 					{company?.role === 'Admin' ? (
 						<Box sx={{ width: '100%' }}>
-							<FormikContent
-								token={token}
-								id={id}
-								company_id={company_id}
-								onSuccess={showSuccessToast}
-								onError={showErrorToast}
-							/>
+							<FormikContent token={token} id={id} company_id={company_id} />
 						</Box>
 					) : (
 						<Container maxWidth="sm" sx={{ mt: 8 }}>
@@ -707,9 +682,6 @@ const ClientsForm: React.FC<Props> = ({ session, company_id, id }) => {
 					)}
 				</main>
 			</NavigationBar>
-			<Portal id="snackbar_portal">
-				<CustomToast type={toastType} message={toastMessage} setShow={setShowToast} show={showToast} />
-			</Portal>
 		</Stack>
 	);
 };

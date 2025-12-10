@@ -16,11 +16,10 @@ import { codeTextInputTheme } from '@/utils/themes';
 import CustomOutlinedText from '@/components/formikElements/customOutlinedText/customOutlinedText';
 import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
-import Portal from '@/contexts/Portal';
-import CustomToast from '@/components/portals/customToast/customToast';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import { useSendPasswordResetCodeMutation, usePasswordResetMutation } from '@/store/services/account';
 import { useSession } from 'next-auth/react';
+import { useToast } from '@/utils/hooks';
 
 type EnterCodePageContentProps = {
 	email: string;
@@ -31,9 +30,7 @@ const fields: FieldKey[] = ['one', 'two', 'three', 'four'];
 
 const EnterCodePageContent = ({ email }: EnterCodePageContentProps) => {
 	const router = useRouter();
-	const [showDataUpdated, setShowDataUpdated] = useState(false);
-	const [toastMessage, setToastMessage] = useState('');
-
+	const { onSuccess, onError } = useToast();
 	const [reSendPasswordResetCode, { isLoading: isResendLoading }] = useSendPasswordResetCodeMutation();
 	const [passwordReset, { isLoading: isPasswordResetLoading }] = usePasswordResetMutation();
 	const [isPending, setIsPending] = useState(false);
@@ -116,9 +113,9 @@ const EnterCodePageContent = ({ email }: EnterCodePageContentProps) => {
 	const renvoyerLeCodeHandler = async () => {
 		try {
 			await reSendPasswordResetCode({ email }).unwrap();
-			setToastMessage('code envoyé.');
-			setShowDataUpdated(true);
+			onSuccess('code envoyé.');
 		} catch (e) {
+			onError('Échec de l’envoi du code.');
 			const setFieldError = formik.setFieldError;
 			setFormikAutoErrors({ e, setFieldError });
 		}
@@ -190,9 +187,6 @@ const EnterCodePageContent = ({ email }: EnterCodePageContentProps) => {
 					</Stack>
 				</form>
 			</Stack>
-			<Portal id="snackbar_portal">
-				<CustomToast type="success" message={toastMessage} setShow={setShowDataUpdated} show={showDataUpdated} />
-			</Portal>
 		</>
 	);
 };

@@ -17,7 +17,6 @@ import {
 	useTheme,
 	useMediaQuery,
 	InputAdornment,
-	AlertColor,
 } from '@mui/material';
 import {
 	ArrowBack,
@@ -38,8 +37,6 @@ import { fr } from 'date-fns/locale';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
-import CustomToast from '@/components/portals/customToast/customToast';
-import Portal from '@/contexts/Portal';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { deviAddSchema } from '@/utils/formValidationSchemas';
 import { setFormikAutoErrors } from '@/utils/helpers';
@@ -51,7 +48,7 @@ import { Protected } from '@/components/layouts/protected/protected';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import { ClientClass } from '@/models/Classes';
 import { useGetClientsListQuery } from '@/store/services/client';
-import { useAppSelector } from '@/utils/hooks';
+import { useAppSelector, useToast } from '@/utils/hooks';
 import { getModePaiementState } from '@/store/selectors';
 import { DropDownType, DropDownTypeTwo } from '@/types/accountTypes';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
@@ -61,12 +58,11 @@ const inputTheme = coordonneeTextInputTheme();
 type FormikContentProps = {
 	token: string | undefined;
 	company_id: number;
-	onSuccess: (message: string) => void;
-	onError: (message: string) => void;
 };
 
 const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
-	const { token, company_id, onSuccess, onError } = props;
+	const { token, company_id } = props;
+	const { onSuccess, onError } = useToast();
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 	const [addData, { isLoading: isAddLoading, error: addError }] = useAddDeviMutation();
@@ -418,21 +414,6 @@ interface Props extends SessionProps {
 
 const DevisAddForm: React.FC<Props> = ({ session, company_id }) => {
 	const token = getAccessTokenFromSession(session);
-	const [showToast, setShowToast] = useState<boolean>(false);
-	const [toastType, setToastType] = useState<AlertColor>('success');
-	const [toastMessage, setToastMessage] = useState<string>('');
-
-	const showSuccessToast = (message: string) => {
-		setToastType('success');
-		setToastMessage(message);
-		setShowToast(true);
-	};
-
-	const showErrorToast = (message: string) => {
-		setToastType('error');
-		setToastMessage(message);
-		setShowToast(true);
-	};
 
 	return (
 		<Stack direction="column" sx={{ position: 'relative' }}>
@@ -440,19 +421,11 @@ const DevisAddForm: React.FC<Props> = ({ session, company_id }) => {
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
 					<Protected>
 						<Box sx={{ width: '100%' }}>
-							<FormikContent
-								company_id={company_id}
-								token={token}
-								onSuccess={showSuccessToast}
-								onError={showErrorToast}
-							/>
+							<FormikContent company_id={company_id} token={token} />
 						</Box>
 					</Protected>
 				</main>
 			</NavigationBar>
-			<Portal id="snackbar_portal">
-				<CustomToast type={toastType} message={toastMessage} setShow={setShowToast} show={showToast} />
-			</Portal>
 		</Stack>
 	);
 };

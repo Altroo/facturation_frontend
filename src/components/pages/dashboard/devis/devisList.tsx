@@ -14,21 +14,20 @@ import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkToolt
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
-import CustomToast from '@/components/portals/customToast/customToast';
-import Portal from '@/contexts/Portal';
 import type { DeviClass } from '@/models/Classes';
 import { formatDate } from '@/utils/helpers';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
+import { useToast } from '@/utils/hooks';
 
 interface DevisListContentProps extends SessionProps {
 	company_id: number;
-	onToast: (message: string, type: 'success' | 'error') => void;
 	role: string;
 }
 
 const DevisListContent: React.FC<DevisListContentProps> = (props: DevisListContentProps) => {
-	const { session, company_id, onToast, role } = props;
+	const { session, company_id, role } = props;
+	const { onSuccess, onError } = useToast();
 	const router = useRouter();
 	const token = getAccessTokenFromSession(session);
 
@@ -60,11 +59,10 @@ const DevisListContent: React.FC<DevisListContentProps> = (props: DevisListConte
 	const deleteHandler = async () => {
 		try {
 			await deleteRecord({ id: selectedId! }).unwrap();
-			onToast('Devis supprimé avec succès', 'success');
+			onSuccess('Devis supprimé avec succès');
 			refetch();
-		} catch (err) {
-			onToast('Erreur lors de la suppression du devis', 'error');
-			console.error(err);
+		} catch {
+			onError('Erreur lors de la suppression du devis');
 		} finally {
 			setShowDeleteModal(false);
 		}
@@ -266,15 +264,6 @@ const DevisListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const companies = useMemo(() => companiesData ?? [], [companiesData]);
 	const selectedCompany = useMemo(() => companies?.[selectedIndex] ?? null, [companies, selectedIndex]);
-	const [showToast, setShowToast] = useState(false);
-	const [toastMessage, setToastMessage] = useState<string>('');
-	const [toastType, setToastType] = useState<'success' | 'error'>('success');
-
-	const handleToast = (message: string, type: 'success' | 'error') => {
-		setToastMessage(message);
-		setToastType(type);
-		setShowToast(true);
-	};
 
 	const handleChange = (_: React.SyntheticEvent, newValue: number) => {
 		setSelectedIndex(newValue);
@@ -396,20 +385,12 @@ const DevisListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 								</Tabs>
 							</Paper>
 							{selectedCompany && (
-								<DevisListContent
-									session={session}
-									company_id={selectedCompany.id}
-									role={selectedCompany.role}
-									onToast={handleToast}
-								/>
+								<DevisListContent session={session} company_id={selectedCompany.id} role={selectedCompany.role} />
 							)}
 						</>
 					)}
 				</NavigationBar>
 			</Stack>
-			<Portal id="snackbar_portal">
-				<CustomToast type={toastType} message={toastMessage} setShow={setShowToast} show={showToast} />
-			</Portal>
 		</>
 	);
 };
