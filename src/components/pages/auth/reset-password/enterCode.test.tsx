@@ -1,4 +1,6 @@
-import { render, screen, fireEvent, act } from '@testing-library/react';
+// typescript
+import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import EnterCodeClient from './enterCode';
 import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
@@ -8,49 +10,58 @@ import React from 'react';
 // Dynamic mock for search params
 let searchParamsMock = new URLSearchParams();
 
-// Mocks
+// controllable mocks
+const mockPush = jest.fn();
+const mockPasswordResetTrigger = jest.fn().mockResolvedValue({});
+const mockSendCodeTrigger = jest.fn().mockResolvedValue({});
+const mockCookiesPoster = jest.fn().mockResolvedValue({});
+const mockSetFormikAutoErrors = jest.fn();
+const mockOnSuccess = jest.fn();
+const mockOnError = jest.fn();
+
 jest.mock('next-auth/react', () => ({
 	useSession: () => ({ data: null, status: 'unauthenticated' }),
 }));
 
-const mockPush = jest.fn();
 jest.mock('next/navigation', () => ({
 	useRouter: () => ({ push: mockPush, replace: jest.fn() }),
 	useSearchParams: () => searchParamsMock,
 }));
 
-jest.mock('@/store/actions/_initActions', () => ({
-	refreshAppTokenStatesAction: jest.fn(),
-}));
-
 jest.mock('@/utils/clientHelpers', () => ({
-	Desktop: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-	TabletAndMobile: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+	Desktop: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
+	TabletAndMobile: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
 }));
 
-// Mock useToast to provide onSuccess / onError hooks used by the component
-const mockOnSuccess = jest.fn();
-const mockOnError = jest.fn();
 jest.mock('@/utils/hooks', () => ({
 	useToast: () => ({ onSuccess: mockOnSuccess, onError: mockOnError }),
 }));
 
 jest.mock('@/store/services/account', () => {
 	const actual = jest.requireActual('@/store/services/account');
-
-	type TriggerFn = (args: unknown) => Promise<unknown>;
-	const mockTrigger: TriggerFn = jest.fn().mockResolvedValue({});
-
 	return {
 		...actual,
-		accountApi: {
-			reducerPath: 'accountApi',
-			reducer: (_state = {}) => _state,
-			middleware: () => (next: (action: unknown) => unknown) => (action: unknown) => next(action),
-		},
-		useSendPasswordResetCodeMutation: (): [TriggerFn, { isLoading: boolean }] => [mockTrigger, { isLoading: false }],
+		useSendPasswordResetCodeMutation: () => [
+			// trigger returns an object with unwrap() that uses your controllable mock
+			(args: unknown) => ({ unwrap: () => mockSendCodeTrigger(args) }),
+			{ isLoading: false },
+		],
+		usePasswordResetMutation: () => [
+			(args: unknown) => ({ unwrap: () => mockPasswordResetTrigger(args) }),
+			{ isLoading: false },
+		],
 	};
 });
+
+jest.mock('@/utils/apiHelpers', () => ({
+	cookiesPoster: (...args: unknown[]) => mockCookiesPoster(...(args as unknown[])),
+}));
+
+jest.mock('@/utils/helpers', () => ({
+	setFormikAutoErrors: (...args: unknown[]) => mockSetFormikAutoErrors(...(args as unknown[])),
+	// simple stub to avoid runtime errors from components that call hexToRGB
+	hexToRGB: (hex: string, alpha = 1) => `rgba(0,0,0,${alpha})`,
+}));
 
 describe('EnterCodeClient', () => {
 	const testEmail = 'test@example.com';
@@ -58,6 +69,8 @@ describe('EnterCodeClient', () => {
 	beforeEach(() => {
 		searchParamsMock = new URLSearchParams();
 		jest.clearAllMocks();
+		mockPasswordResetTrigger.mockResolvedValue({});
+		mockSendCodeTrigger.mockResolvedValue({});
 	});
 
 	it('renders code entry form with inputs and buttons', async () => {
@@ -69,27 +82,129 @@ describe('EnterCodeClient', () => {
 			);
 		});
 
-		const titles = screen.getAllByText('Rentrez le code');
-		expect(titles.length).toBeGreaterThanOrEqual(1);
-
-		const emailNotices = screen.getAllByText(
-			(_, element) => element?.textContent === `Un code a été envoyé à ${testEmail}`,
-		);
-		expect(emailNotices.length).toBeGreaterThanOrEqual(1);
-
-		const inputs = screen.getAllByRole('textbox');
-		expect(inputs.length).toBeGreaterThanOrEqual(4);
-
-		const confirmButtons = screen.getAllByRole('button', {
-			name: /Confirmer le code/i,
-		});
-		expect(confirmButtons.length).toBeGreaterThanOrEqual(1);
-
-		const resendButtons = screen.getAllByText('Renvoyer le code');
-		expect(resendButtons.length).toBeGreaterThanOrEqual(1);
+		expect(screen.getAllByText('Rentrez le code').length).toBeGreaterThanOrEqual(1);
+		expect(
+			screen.getAllByText((_, el) => el?.textContent === `Un code a été envoyé à ${testEmail}`).length,
+		).toBeGreaterThanOrEqual(1);
+		expect(screen.getAllByRole('textbox').length).toBeGreaterThanOrEqual(4);
+		expect(screen.getAllByRole('button', { name: /Confirmer le code/i }).length).toBeGreaterThanOrEqual(1);
+		expect(screen.getAllByText('Renvoyer le code').length).toBeGreaterThanOrEqual(1);
 	});
 
-	it('triggers resend code handler when button is clicked', async () => {
+	it('typing digits moves focus and updates combined code then submits successfully', async () => {
+		await act(async () => {
+			render(
+				<Provider store={store}>
+					<EnterCodeClient email={testEmail} />
+				</Provider>,
+			);
+		});
+
+		const inputs = screen.getAllByRole('textbox') as HTMLInputElement[];
+		// type digits into each input (userEvent ensures onInput/onChange handlers fire)
+		await userEvent.type(inputs[0], '1');
+		await userEvent.type(inputs[1], '2');
+		await userEvent.type(inputs[2], '3');
+		await userEvent.type(inputs[3], '4');
+
+		// click confirm -> should call passwordReset and cookiesPoster and navigate
+		const confirmBtn = screen.getAllByRole('button', { name: /Confirmer le code/i })[0];
+		await act(async () => {
+			fireEvent.click(confirmBtn);
+		});
+
+		await waitFor(() => {
+			expect(mockPasswordResetTrigger).toHaveBeenCalled();
+			expect(mockCookiesPoster).toHaveBeenCalled();
+			expect(mockPush).toHaveBeenCalled();
+		});
+	});
+
+	it('pasting full code fills inputs and validates/focuses appropriately', async () => {
+		await act(async () => {
+			render(
+				<Provider store={store}>
+					<EnterCodeClient email={testEmail} />
+				</Provider>,
+			);
+		});
+
+		const inputs = screen.getAllByRole('textbox') as HTMLInputElement[];
+		// simulate paste into first input
+		const pasteEvent = {
+			clipboardData: { getData: () => '9876' },
+		} as unknown as ClipboardEvent;
+		await act(async () => {
+			fireEvent.paste(inputs[0], pasteEvent);
+		});
+
+		// values should be filled
+		expect((inputs[0] as HTMLInputElement).value).toBe('9');
+		expect((inputs[1] as HTMLInputElement).value).toBe('8');
+		expect((inputs[2] as HTMLInputElement).value).toBe('7');
+		expect((inputs[3] as HTMLInputElement).value).toBe('6');
+	});
+
+	it('calls setFormikAutoErrors when passwordReset throws', async () => {
+		mockPasswordResetTrigger.mockRejectedValue(new Error('network error'));
+
+		await act(async () => {
+			render(
+				<Provider store={store}>
+					<EnterCodeClient email={testEmail} />
+				</Provider>,
+			);
+		});
+
+		const inputs = screen.getAllByRole('textbox') as HTMLInputElement[];
+		await userEvent.type(inputs[0], '1');
+		await userEvent.type(inputs[1], '2');
+		await userEvent.type(inputs[2], '3');
+		await userEvent.type(inputs[3], '4');
+
+		const confirmBtn = screen.getAllByRole('button', { name: /Confirmer le code/i })[0];
+		await act(async () => {
+			fireEvent.click(confirmBtn);
+		});
+
+		await waitFor(() => {
+			expect(mockPasswordResetTrigger).toHaveBeenCalled();
+			expect(mockSetFormikAutoErrors).toHaveBeenCalled();
+		});
+	});
+
+	it('backspace on empty input focuses previous input', async () => {
+		await act(async () => {
+			render(
+				<Provider store={store}>
+					<EnterCodeClient email={testEmail} />
+				</Provider>,
+			);
+		});
+
+		const inputs = screen.getAllByRole('textbox') as HTMLInputElement[];
+		// Type into first two inputs so the second exists
+		await userEvent.type(inputs[0], '1');
+		await userEvent.type(inputs[1], '2');
+
+		// Clear second input to simulate empty current value and focus it
+		await act(async () => {
+			inputs[1].focus();
+			fireEvent.change(inputs[1], { target: { value: '' } });
+		});
+
+		// Trigger Backspace keydown on the empty second input
+		await act(async () => {
+			fireEvent.keyDown(inputs[1], { key: 'Backspace', code: 'Backspace' });
+		});
+
+		// focus movement is done in a setTimeout in the component, wait for it
+		await waitFor(() => {
+			expect(document.activeElement).toBe(inputs[0]);
+		});
+	});
+
+	it('triggers resend code when clicking resend and calls onSuccess', async () => {
 		await act(async () => {
 			render(
 				<Provider store={store}>
@@ -99,8 +214,37 @@ describe('EnterCodeClient', () => {
 		});
 
 		const resendButtons = screen.getAllByText('Renvoyer le code');
-		fireEvent.click(resendButtons[0]);
+		await act(async () => {
+			fireEvent.click(resendButtons[0]);
+		});
 
-		expect(resendButtons[0]).toBeEnabled();
+		await waitFor(() => {
+			expect(mockSendCodeTrigger).toHaveBeenCalled();
+			expect(mockOnSuccess).toHaveBeenCalledWith('code envoyé.');
+		});
+	});
+
+	it('resend code error triggers onError and setFormikAutoErrors', async () => {
+		// make the resend trigger reject to exercise the catch branch
+		mockSendCodeTrigger.mockRejectedValueOnce(new Error('network error'));
+
+		await act(async () => {
+			render(
+				<Provider store={store}>
+					<EnterCodeClient email={testEmail} />
+				</Provider>,
+			);
+		});
+
+		const resendButtons = screen.getAllByText('Renvoyer le code');
+		await act(async () => {
+			fireEvent.click(resendButtons[0]);
+		});
+
+		await waitFor(() => {
+			expect(mockSendCodeTrigger).toHaveBeenCalled();
+			expect(mockOnError).toHaveBeenCalledWith('Échec de l’envoi du code.');
+			expect(mockSetFormikAutoErrors).toHaveBeenCalled();
+		});
 	});
 });
