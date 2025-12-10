@@ -297,21 +297,3 @@ export const customDropdownTheme = (primaryColor: string | undefined = undefined
 		},
 	});
 };
-
-export const customModalTheme = (primaryColor: string | undefined = undefined) => {
-	const defaultTheme = getDefaultTheme(primaryColor);
-	return createTheme({
-		...defaultTheme,
-		components: {
-			MuiDialog: {
-				styleOverrides: {
-					root: {
-						'& .MuiPaper-root': {
-							overflowX: 'hidden',
-						},
-					},
-				},
-			},
-		},
-	});
-};

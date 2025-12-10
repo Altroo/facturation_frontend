@@ -1,4 +1,10 @@
-import { genderItemsList, nbrEmployeItemsList, civiliteItemsList } from './rawData';
+import {
+	genderItemsList,
+	nbrEmployeItemsList,
+	civiliteItemsList,
+	devisStatusItemsList,
+	remiseTypeItemsList,
+} from './rawData';
 
 describe('items lists', () => {
 	describe('genderItemsList', () => {
@@ -60,6 +66,64 @@ describe('items lists', () => {
 
 		it('first item is the empty placeholder', () => {
 			expect(civiliteItemsList[0]).toEqual({ code: '', value: '' });
+		});
+	});
+
+	describe('devisStatusItemsList', () => {
+		it('includes the expected statuses in order with empty placeholder first', () => {
+			const expected = [
+				{ code: '', value: '' },
+				{ code: 'Brouillon', value: 'Brouillon' },
+				{ code: 'Envoyé', value: 'Envoyé' },
+				{ code: 'Accepté', value: 'Accepté' },
+				{ code: 'Refusé', value: 'Refusé' },
+				{ code: 'Annulé', value: 'Annulé' },
+				{ code: 'Expiré', value: 'Expiré' },
+			];
+
+			expect(devisStatusItemsList).toEqual(expected);
+			expect(devisStatusItemsList.map((i) => i.code)).toEqual(expected.map((e) => e.code));
+		});
+
+		it('first item is the empty placeholder', () => {
+			expect(devisStatusItemsList[0]).toEqual({ code: '', value: '' });
+		});
+
+		it('all non-placeholder entries have non-empty code and value strings', () => {
+			for (let i = 1; i < devisStatusItemsList.length; i++) {
+				const it = devisStatusItemsList[i];
+				expect(typeof it.code).toBe('string');
+				expect(it.code.length).toBeGreaterThan(0);
+				expect(typeof it.value).toBe('string');
+				expect(it.value.length).toBeGreaterThan(0);
+			}
+		});
+	});
+
+	describe('remiseTypeItemsList', () => {
+		it('includes expected options and preserves order', () => {
+			const expected = [
+				{ code: '', value: '' },
+				{ code: 'Pourcentage', value: 'Pourcentage' },
+				{ code: 'Fixe', value: 'Fixe' },
+			];
+
+			expect(remiseTypeItemsList).toEqual(expected);
+			expect(remiseTypeItemsList.map((i) => i.code)).toEqual(expected.map((e) => e.code));
+		});
+
+		it('first item is the empty placeholder', () => {
+			expect(remiseTypeItemsList[0]).toEqual({ code: '', value: '' });
+		});
+
+		it('all non-placeholder entries have non-empty code and value strings', () => {
+			for (let i = 1; i < remiseTypeItemsList.length; i++) {
+				const it = remiseTypeItemsList[i];
+				expect(typeof it.code).toBe('string');
+				expect(it.code.length).toBeGreaterThan(0);
+				expect(typeof it.value).toBe('string');
+				expect(it.value.length).toBeGreaterThan(0);
+			}
 		});
 	});
 });

@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { ToastProvider, ToastContext } from './toastProvider';
+import { ToastContext, ToastContextProvider } from './toastContext';
 
 // Mock the Portal used by the provider to avoid DOM/portal complexity
 jest.mock('@/contexts/Portal', () => ({
@@ -36,9 +36,9 @@ const TestConsumer: React.FC<{ action: 'success' | 'error'; message: string }> =
 describe('ToastProvider', () => {
 	it('shows success toast with correct message when onSuccess is called', () => {
 		render(
-			<ToastProvider>
+			<ToastContextProvider>
 				<TestConsumer action="success" message="Success msg" />
-			</ToastProvider>,
+			</ToastContextProvider>,
 		);
 
 		const btn = screen.getByRole('button', { name: /trigger/i });
@@ -51,9 +51,9 @@ describe('ToastProvider', () => {
 
 	it('shows error toast with correct message when onError is called', () => {
 		render(
-			<ToastProvider>
+			<ToastContextProvider>
 				<TestConsumer action="error" message="Error msg" />
-			</ToastProvider>,
+			</ToastContextProvider>,
 		);
 
 		const btn = screen.getByRole('button', { name: /trigger/i });

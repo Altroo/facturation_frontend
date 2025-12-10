@@ -121,4 +121,22 @@ describe('routes constants', () => {
 		expect(ARTICLES_VIEW(5, 99)).toBe(`${SITE_ROOT}dashboard/articles/5/?company_id=99`);
 		expect(ARTICLES_EDIT(7, 123)).toBe(`${SITE_ROOT}dashboard/articles/7/edit/?company_id=123`);
 	});
+
+	it('exports devis routes and functions', () => {
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		const { SITE_ROOT, DEVIS_LIST, DEVIS_ADD, DEVIS_LINES_ADD, DEVIS_VIEW, DEVIS_EDIT } = require('./routes');
+
+		expect(DEVIS_LIST).toBe(`${SITE_ROOT}dashboard/devis`);
+		expect(typeof DEVIS_ADD).toBe('function');
+		expect(DEVIS_ADD(42)).toBe(`${SITE_ROOT}dashboard/devis/new/?company_id=42`);
+
+		expect(typeof DEVIS_LINES_ADD).toBe('function');
+		expect(DEVIS_LINES_ADD(7)).toBe(`${SITE_ROOT}dashboard/devis/7/add-lines/`);
+
+		expect(typeof DEVIS_VIEW).toBe('function');
+		expect(typeof DEVIS_EDIT).toBe('function');
+
+		expect(DEVIS_VIEW(5, 99)).toBe(`${SITE_ROOT}dashboard/devis/5/?company_id=99`);
+		expect(DEVIS_EDIT(7, 123)).toBe(`${SITE_ROOT}dashboard/devis/7/edit/?company_id=123`);
+	});
 });

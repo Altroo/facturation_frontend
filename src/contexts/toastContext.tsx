@@ -12,7 +12,7 @@ export type ToastContextType = {
 
 export const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
-export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ToastContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 	const [show, setShow] = useState<boolean>(false);
 	const [type, setType] = useState<AlertColor>('success');
 	const [message, setMessage] = useState<string>('');

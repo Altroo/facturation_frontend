@@ -66,6 +66,7 @@ import ActionModals from '@/components/htmlElements/modals/actionModal/actionMod
 import AddArticleModal from '@/components/shared/addArticleModal/addArticleModal';
 import GlobalRemiseModal from '@/components/shared/globalRemiseModal/globalRemiseModal';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
+import { devisStatusItemsList, remiseTypeItemsList } from '@/utils/rawData';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -166,17 +167,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		});
 		return map;
 	}, [modePaiement]);
-
-	// Prepare remise type items
-	const remiseTypeItems = useMemo(
-		() =>
-			[
-				{ value: '', label: '' },
-				{ value: 'Pourcentage', label: 'Pourcentage' },
-				{ value: 'Fixe', label: 'Fixe' },
-			] as Array<DropDownTypeTwo>,
-		[],
-	);
 
 	const [devisNumberPart, setDevisNumberPart] = useState(numDevisNumber);
 	const [devisYearPart, setDevisYearPart] = useState(numDevisYear);
@@ -510,7 +500,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 							id={`remise_type_${rowIndex}`}
 							label=""
 							size="small"
-							items={remiseTypeItems}
+							items={remiseTypeItemsList}
 							value={value}
 							onChange={(e) => handleLineChange(rowIndex, 'remise_type', e.target.value)}
 							theme={customDropdownTheme()}
@@ -582,20 +572,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			onClick: () => setShowDeleteConfirm(false),
 		},
 	];
-
-	const statutItems = useMemo(
-		() =>
-			[
-				{ value: '', label: '' },
-				{ value: 'Brouillon', label: 'Brouillon' },
-				{ value: 'Envoyé', label: 'Envoyé' },
-				{ value: 'Accepté', label: 'Accepté' },
-				{ value: 'Refusé', label: 'Refusé' },
-				{ value: 'Annulé', label: 'Annulé' },
-				{ value: 'Expiré', label: 'Expiré' },
-			] as Array<DropDownTypeTwo>,
-		[],
-	);
 
 	const handleStatutChange = async (newValue: string) => {
 		try {
@@ -787,7 +763,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										<CustomDropDownSelect
 											id="statut_devis"
 											label="Statut"
-											items={statutItems}
+											items={devisStatusItemsList}
 											value={rawData?.statut || ''}
 											onChange={(e) => handleStatutChange(e.target.value)}
 											size="small"

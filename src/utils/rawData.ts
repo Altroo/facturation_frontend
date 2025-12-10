@@ -29,6 +29,7 @@ export const civiliteItemsList: Array<DropDownType> = [
 
 // 'Brouillon', 'Envoyé', 'Accepté', 'Refusé', 'Annulé', 'Expiré'
 export const devisStatusItemsList: Array<DropDownType> = [
+	{ code: '', value: '' },
 	{ code: 'Brouillon', value: 'Brouillon' },
 	{ code: 'Envoyé', value: 'Envoyé' },
 	{ code: 'Accepté', value: 'Accepté' },
@@ -39,6 +40,7 @@ export const devisStatusItemsList: Array<DropDownType> = [
 
 // 'Pourcentage', 'Fixe'
 export const remiseTypeItemsList: Array<DropDownType> = [
+	{ code: '', value: '' },
 	{ code: 'Pourcentage', value: 'Pourcentage' },
 	{ code: 'Fixe', value: 'Fixe' },
 ];

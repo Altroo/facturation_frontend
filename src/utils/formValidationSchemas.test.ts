@@ -10,6 +10,8 @@ import {
 	clientSchema,
 	articleSchema,
 	deviSchema,
+	devisLineSchema,
+	deviAddSchema,
 } from './formValidationSchemas';
 
 describe('Zod Schema Validation', () => {
@@ -236,6 +238,126 @@ describe('Zod Schema Validation', () => {
 					type_article: 'Produit',
 					designation: 'Produit Test',
 					company: 1,
+				}),
+			).toThrow();
+		});
+	});
+
+	// ✅ devisLineSchema
+	describe('devisLineSchema', () => {
+		it('validates a correct line', () => {
+			expect(() =>
+				devisLineSchema.parse({
+					article: 1,
+					prix_achat: 100,
+					prix_vente: 150,
+					quantity: 2,
+					remise_type: 'Fixe',
+					remise: 0,
+				}),
+			).not.toThrow();
+		});
+
+		it('fails when prix_vente is less than prix_achat', () => {
+			expect(() =>
+				devisLineSchema.parse({
+					article: 1,
+					prix_achat: 200,
+					prix_vente: 150,
+					quantity: 1,
+					remise: 0,
+				}),
+			).toThrow();
+		});
+
+		it('fails with negative quantity', () => {
+			expect(() =>
+				devisLineSchema.parse({
+					article: 1,
+					prix_achat: 100,
+					prix_vente: 150,
+					quantity: -1,
+					remise: 0,
+				}),
+			).toThrow();
+		});
+
+		it('requires remise when remise_type is provided', () => {
+			expect(() =>
+				devisLineSchema.parse({
+					article: 1,
+					prix_achat: 100,
+					prix_vente: 150,
+					quantity: 1,
+					remise_type: 'Pourcentage',
+				}),
+			).toThrow();
+		});
+
+		it('fails when remise is non-integer or out of bounds for percentage', () => {
+			// non-integer
+			expect(() =>
+				devisLineSchema.parse({
+					article: 1,
+					prix_achat: 100,
+					prix_vente: 150,
+					quantity: 1,
+					remise_type: 'Fixe',
+					remise: 1.5,
+				}),
+			).toThrow();
+
+			// percentage out of bounds
+			expect(() =>
+				devisLineSchema.parse({
+					article: 1,
+					prix_achat: 100,
+					prix_vente: 150,
+					quantity: 1,
+					remise_type: 'Pourcentage',
+					remise: 150,
+				}),
+			).toThrow();
+		});
+	});
+
+	// ✅ deviAddSchema
+	describe('deviAddSchema', () => {
+		it('validates required fields for adding a devis', () => {
+			expect(() =>
+				deviAddSchema.parse({
+					numero_devis: 'DV100',
+					client: 1,
+					date_devis: '2025-12-04',
+				}),
+			).not.toThrow();
+		});
+
+		it('accepts optional fields', () => {
+			expect(() =>
+				deviAddSchema.parse({
+					numero_devis: 'DV101',
+					client: 2,
+					date_devis: '2025-12-04',
+					numero_demande_prix_client: 'REQ123',
+					mode_paiement: 0,
+					remarque: 'note',
+				}),
+			).not.toThrow();
+		});
+
+		it('fails when required fields are missing', () => {
+			expect(() =>
+				deviAddSchema.parse({
+					client: 1,
+					date_devis: '2025-12-04',
+				}),
+			).toThrow();
+
+			expect(() =>
+				deviAddSchema.parse({
+					numero_devis: 'DV102',
+					date_devis: '2025-12-04',
 				}),
 			).toThrow();
 		});

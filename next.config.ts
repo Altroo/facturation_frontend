@@ -2,6 +2,7 @@ import type { NextConfig } from 'next';
 import type { RemotePattern } from 'next/dist/shared/lib/image-config';
 import path from 'path';
 
+// to add in production
 // const isDev = process.env.NODE_ENV === 'development';
 
 type http = 'http' | 'https' | undefined;

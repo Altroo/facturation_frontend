@@ -7,7 +7,7 @@ export const useAppDispatch: () => AppDispatch = useDispatch;
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 
 import { getProfilState } from '@/store/selectors';
-import { ToastContext, ToastContextType } from '@/contexts/toastProvider';
+import { ToastContext, ToastContextType } from '@/contexts/toastContext';
 
 export const usePermission = () => {
 	const { is_staff } = useAppSelector(getProfilState);

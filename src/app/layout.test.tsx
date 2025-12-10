@@ -50,10 +50,10 @@ jest.mock('@/contexts/initEffects', () => ({
 	},
 }));
 
-// ✅ Mock ToastProvider (named export in layout.tsx)
-jest.mock('@/contexts/toastProvider', () => ({
+// ✅ Mock ToastContextProvider
+jest.mock('@/contexts/toastContext', () => ({
 	__esModule: true,
-	ToastProvider: (props: { children?: React.ReactNode }) => {
+	ToastContextProvider: (props: { children?: React.ReactNode }) => {
 		// eslint-disable-next-line @typescript-eslint/no-require-imports
 		const React = require('react');
 		return React.createElement('div', null, 'TOAST_PROVIDER', props.children);
