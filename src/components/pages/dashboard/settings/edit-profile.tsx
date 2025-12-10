@@ -2,8 +2,7 @@
 
 import React, { useState } from 'react';
 import Styles from '@/styles/dashboard/settings/edit-profil.module.sass';
-import { TabletAndMobile, Desktop } from '@/utils/clientHelpers';
-import { Box, Stack } from '@mui/material';
+import { Box, Stack, useMediaQuery, useTheme } from '@mui/material';
 import { useFormik } from 'formik';
 import { profilSchema } from '@/utils/formValidationSchemas';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
@@ -132,26 +131,26 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 
 const EditProfilClient: React.FC<SessionProps> = (props: SessionProps) => {
 	const { session } = props;
+	const theme = useTheme();
+	const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 	const token = getAccessTokenFromSession(session);
 
 	return (
 		<Stack direction="column" sx={{ position: 'relative' }}>
 			<NavigationBar title="Éditer le profil">
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
-					<Desktop>
-						<Stack direction="row" className={Styles.flexRootStack}>
-							<Box sx={{ width: '100%' }}>
-								<FormikContent token={token} />
-							</Box>
-						</Stack>
-					</Desktop>
-					<TabletAndMobile>
-						<Stack>
-							<Box sx={{ width: '100%', height: '100%' }}>
-								<FormikContent token={token} />
-							</Box>
-						</Stack>
-					</TabletAndMobile>
+					<Box
+						sx={{
+							width: '100%',
+							display: 'flex',
+							justifyContent: isMobile ? 'center' : 'flex-start',
+							alignItems: 'flex-start',
+						}}
+					>
+						<Box sx={{ width: '100%' }}>
+							<FormikContent token={token} />
+						</Box>
+					</Box>
 				</main>
 			</NavigationBar>
 		</Stack>

@@ -2,9 +2,8 @@
 
 import React, { useState } from 'react';
 import Styles from '@/styles/dashboard/settings/password.module.sass';
-import { Box, Stack } from '@mui/material';
+import { Box, Stack, useMediaQuery, useTheme } from '@mui/material';
 import { setFormikAutoErrors } from '@/utils/helpers';
-import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
 import { useFormik } from 'formik';
 import { changePasswordSchema } from '@/utils/formValidationSchemas';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -24,7 +23,7 @@ type formikContentType = {
 	token: string | undefined;
 };
 
-const FormikContenChangePassword: React.FC<formikContentType> = (props: formikContentType) => {
+const FormikContent: React.FC<formikContentType> = (props: formikContentType) => {
 	const { token } = props;
 	const { onSuccess, onError } = useToast();
 	const [changePassword, { isLoading: isChangePasswordLoading }] = useEditPasswordMutation();
@@ -122,26 +121,26 @@ const FormikContenChangePassword: React.FC<formikContentType> = (props: formikCo
 
 const PasswordClient: React.FC<SessionProps> = (props: SessionProps) => {
 	const { session } = props;
+	const theme = useTheme();
+	const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 	const token = getAccessTokenFromSession(session);
 
 	return (
 		<Stack direction="column" sx={{ position: 'relative' }}>
-			<NavigationBar title="Changer le mot de passe">
+			<NavigationBar title="Éditer le profil">
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
-					<Desktop>
-						<Stack direction="row" className={Styles.flexRootStack}>
-							<Box sx={{ width: '100%' }}>
-								<FormikContenChangePassword token={token} />
-							</Box>
-						</Stack>
-					</Desktop>
-					<TabletAndMobile>
-						<Stack>
-							<Box sx={{ width: '100%', height: '100%' }}>
-								<FormikContenChangePassword token={token} />
-							</Box>
-						</Stack>
-					</TabletAndMobile>
+					<Box
+						sx={{
+							width: '100%',
+							display: 'flex',
+							justifyContent: isMobile ? 'center' : 'flex-start',
+							alignItems: 'flex-start',
+						}}
+					>
+						<Box sx={{ width: '100%' }}>
+							<FormikContent token={token} />
+						</Box>
+					</Box>
 				</main>
 			</NavigationBar>
 		</Stack>
