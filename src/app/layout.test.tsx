@@ -50,6 +50,16 @@ jest.mock('@/contexts/initEffects', () => ({
 	},
 }));
 
+// ✅ Mock ToastProvider (named export in layout.tsx)
+jest.mock('@/contexts/toastProvider', () => ({
+	__esModule: true,
+	ToastProvider: (props: { children?: React.ReactNode }) => {
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		const React = require('react');
+		return React.createElement('div', null, 'TOAST_PROVIDER', props.children);
+	},
+}));
+
 jest.mock('@mui/material-nextjs/v15-appRouter', () => ({
 	__esModule: true,
 	AppRouterCacheProvider: (props: { children?: React.ReactNode }) => {
@@ -93,6 +103,7 @@ describe('RootLayout', () => {
 		expect(decoded).toContain('"pk":1');
 		expect(decoded).toContain('"email":"test@site.com"');
 		expect(decoded).toContain('INIT_EFFECTS');
+		expect(decoded).toContain('TOAST_PROVIDER');
 		expect(decoded).toContain('CHILD_CONTENT');
 	});
 
@@ -111,6 +122,7 @@ describe('RootLayout', () => {
 
 		expect(html).toContain('SESSION_PROVIDER:null');
 		expect(html).toContain('INIT_EFFECTS');
+		expect(html).toContain('TOAST_PROVIDER');
 		expect(html).toContain('CHILD_CONTENT');
 	});
 });

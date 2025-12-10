@@ -28,6 +28,13 @@ jest.mock('@/utils/clientHelpers', () => ({
 	TabletAndMobile: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
+// Mock useToast to provide onSuccess / onError hooks used by the component
+const mockOnSuccess = jest.fn();
+const mockOnError = jest.fn();
+jest.mock('@/utils/hooks', () => ({
+	useToast: () => ({ onSuccess: mockOnSuccess, onError: mockOnError }),
+}));
+
 jest.mock('@/store/services/account', () => {
 	const actual = jest.requireActual('@/store/services/account');
 

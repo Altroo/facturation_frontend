@@ -11,8 +11,11 @@ import {
 	EmplacementClass,
 	ModePaiementClass,
 	ModeReglementClass,
+	DeviLineClass,
+	DeviClass,
 } from './Classes';
 import type { TypeArticleType } from '@/types/articleTypes';
+import type { TypeRemiseType, TypeDevisStatus } from '@/types/devisTypes';
 
 describe('UserClass', () => {
 	it('creates a user instance with given properties', () => {
@@ -234,5 +237,86 @@ describe('ModeReglementClass', () => {
 		const modeReglement = new ModeReglementClass(2, 'Deferred');
 		expect(modeReglement.id).toBe(2);
 		expect(modeReglement.nom).toBe('Deferred');
+	});
+});
+
+describe('DeviLineClass', () => {
+	it('creates a devi line instance with given properties', () => {
+		const line = new DeviLineClass(
+			1,
+			10,
+			'Article name',
+			'Line designation',
+			50,
+			75,
+			3,
+			'PERCENT' as TypeRemiseType,
+			10,
+		);
+
+		expect(line.id).toBe(1);
+		expect(line.article).toBe(10);
+		expect(line.article_designation).toBe('Article name');
+		expect(line.designation).toBe('Line designation');
+		expect(line.prix_achat).toBe(50);
+		expect(line.prix_vente).toBe(75);
+		expect(line.quantity).toBe(3);
+		expect(line.remise_type).toBe('PERCENT');
+		expect(line.remise).toBe(10);
+	});
+});
+
+describe('DeviClass', () => {
+	it('creates a devi instance with lines, totals and metadata', () => {
+		const line1 = new DeviLineClass(1, 1, 'A', 'Desc A', 20, 30, 1, 'AMOUNT' as TypeRemiseType, 0);
+		const line2 = new DeviLineClass(2, 2, 'B', 'Desc B', 40, 60, 2, 'PERCENT' as TypeRemiseType, 10);
+
+		const devi = new DeviClass(
+			1,
+			'DEV-1',
+			5,
+			'ClientName',
+			'2023-01-01',
+			null,
+			1,
+			'Cash',
+			'Some remark',
+			'DRAFT' as TypeDevisStatus,
+			'2023-01-01',
+			'2023-01-02',
+			10,
+			'Creator',
+			2,
+			'PERCENT' as TypeRemiseType,
+			5,
+			18,
+			480,
+			456,
+			[line1, line2],
+		);
+
+		expect(devi.id).toBe(1);
+		expect(devi.numero_devis).toBe('DEV-1');
+		expect(devi.client).toBe(5);
+		expect(devi.client_name).toBe('ClientName');
+		expect(devi.date_devis).toBe('2023-01-01');
+		expect(devi.mode_paiement).toBe(1);
+		expect(devi.mode_paiement_name).toBe('Cash');
+		expect(devi.remarque).toBe('Some remark');
+		expect(devi.statut).toBe('DRAFT');
+		expect(devi.date_created).toBe('2023-01-01');
+		expect(devi.date_updated).toBe('2023-01-02');
+		expect(devi.created_by_user_id).toBe(10);
+		expect(devi.created_by_user_name).toBe('Creator');
+		expect(devi.lignes_count).toBe(2);
+		expect(devi.remise_type).toBe('PERCENT');
+		expect(devi.remise).toBe(5);
+		expect(devi.total_tva).toBe(18);
+		expect(devi.total_ttc).toBe(480);
+		expect(devi.total_ttc_apres_remise).toBe(456);
+		expect(Array.isArray(devi.lignes)).toBe(true);
+		expect(devi.lignes.length).toBe(2);
+		expect(devi.lignes[0].id).toBe(1);
+		expect(devi.lignes[1].id).toBe(2);
 	});
 });
