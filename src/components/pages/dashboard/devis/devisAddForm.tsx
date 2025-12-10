@@ -417,7 +417,7 @@ const DevisAddForm: React.FC<Props> = ({ session, company_id }) => {
 
 	return (
 		<Stack direction="column" sx={{ position: 'relative' }}>
-			<NavigationBar title={'Ajouter un devis'}>
+			<NavigationBar title="Ajouter un devis">
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
 					<Protected>
 						<Box sx={{ width: '100%' }}>
