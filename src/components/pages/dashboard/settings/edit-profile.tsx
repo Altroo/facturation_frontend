@@ -88,7 +88,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 						helperText={formik.touched.first_name ? formik.errors.first_name : ''}
 						error={formik.touched.first_name && Boolean(formik.errors.first_name)}
 						fullWidth={false}
-						size="medium"
+						size="small"
 						label="Nom"
 						placeholder="Nom"
 						theme={inputTheme}
@@ -102,12 +102,13 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 						helperText={formik.touched.last_name ? formik.errors.last_name : ''}
 						error={formik.touched.last_name && Boolean(formik.errors.last_name)}
 						fullWidth={false}
-						size="medium"
+						size="small"
 						label="Prénom"
 						placeholder="Prénom"
 						theme={inputTheme}
 					/>
 					<CustomDropDownSelect
+						size="small"
 						id="gender"
 						label="Genre"
 						items={genderItemsList}

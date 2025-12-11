@@ -46,9 +46,9 @@ const GlobalRemiseModal: React.FC<GlobalRemiseModalProps> = ({ open, onClose, cu
 						id="global_remise_type"
 						label="Type de remise"
 						items={[
-							{ value: '', label: 'Aucune' },
-							{ value: 'Pourcentage', label: 'Pourcentage (%)' },
-							{ value: 'Fixe', label: 'Montant fixe (MAD)' },
+							{ value: '', code: 'Aucune' },
+							{ value: 'Pourcentage', code: 'Pourcentage (%)' },
+							{ value: 'Fixe', code: 'Montant fixe (MAD)' },
 						]}
 						value={type}
 						onChange={(e) => {

@@ -12,6 +12,7 @@ type Props = {
 	theme: Theme;
 	value: DropDownType | null;
 	noOptionsText: string;
+	size?: 'small' | 'medium';
 	fullWidth?: boolean;
 	onChange?: (event: React.SyntheticEvent, newValue: DropDownType | null) => void;
 	onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
@@ -36,6 +37,7 @@ const CustomAutoCompleteSelect: React.FC<Props> = ({
 	startIcon,
 	endIcon,
 	noOptionsText,
+	size,
 	onBlur,
 	error,
 	helperText,
@@ -44,6 +46,7 @@ const CustomAutoCompleteSelect: React.FC<Props> = ({
 		<ThemeProvider theme={theme}>
 			<Autocomplete
 				id={id}
+				size={size}
 				fullWidth={fullWidth}
 				noOptionsText={noOptionsText}
 				options={items}
@@ -63,6 +66,11 @@ const CustomAutoCompleteSelect: React.FC<Props> = ({
 						label={label}
 						error={error}
 						helperText={helperText}
+						sx={{
+							'& .MuiOutlinedInput-root': {
+								borderRadius: '12px',
+							},
+						}}
 						slotProps={{
 							...slotProps,
 							input: {

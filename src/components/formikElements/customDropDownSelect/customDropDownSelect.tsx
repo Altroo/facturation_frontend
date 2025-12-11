@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import type { Theme } from '@mui/material/styles';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
-import { DropDownType, DropDownTypeTwo } from '@/types/accountTypes';
+import { DropDownType } from '@/types/accountTypes';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -29,7 +29,7 @@ const MenuProps = {
 type Props = {
 	id: string;
 	label: string;
-	items: Array<DropDownType> | Array<string> | Array<DropDownTypeTwo>;
+	items: Array<DropDownType> | Array<string>;
 	theme: Theme;
 	value: string | null;
 	size?: 'small' | 'medium';

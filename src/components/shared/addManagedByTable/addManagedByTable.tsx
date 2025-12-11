@@ -117,6 +117,7 @@ const ManagedByTableSection: React.FC<ManagedByTableSectionProps> = ({
 										<Box sx={{ maxWidth: 200 }}>
 											<CustomDropDownSelect
 												id={`role_${index}`}
+												size="small"
 												label="Rôle"
 												value={item.role}
 												onChange={(e) => onRoleChange(index, e.target.value)}

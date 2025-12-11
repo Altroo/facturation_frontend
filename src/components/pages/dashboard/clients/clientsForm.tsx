@@ -525,6 +525,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								<Stack spacing={2.5}>
 									<CustomAutoCompleteSelect
 										id="ville"
+										size="small"
 										noOptionsText="Aucun ville trouvé"
 										label={`Ville${isPM ? (isRequiredPM('ville') ? ' *' : '') : isRequiredPP('ville') ? ' *' : ''}`}
 										items={cityItems}

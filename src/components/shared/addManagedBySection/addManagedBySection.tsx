@@ -57,6 +57,7 @@ const AddManagedBySection: React.FC<AddManagedBySectionProps> = ({
 		<Stack direction={isMobile ? 'column' : 'row'} spacing={2} sx={{ mt: 2 }}>
 			<Box sx={{ flex: 1 }}>
 				<CustomAutoCompleteSelect
+					size="small"
 					id={selectId}
 					label={selectLabel}
 					fullWidth
@@ -71,6 +72,7 @@ const AddManagedBySection: React.FC<AddManagedBySectionProps> = ({
 			<Box sx={{ flex: 1 }}>
 				<CustomDropDownSelect
 					id={roleId}
+					size="small"
 					label={roleLabel}
 					items={roleOptions}
 					value={roleValue}

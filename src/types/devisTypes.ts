@@ -19,7 +19,7 @@ export type DeviSchemaType = {
 	client: number;
 	date_devis: string;
 	numero_demande_prix_client: string | null;
-	mode_paiement: number;
+	mode_paiement: number | null;
 	remarque: string | null;
 	remise_type?: TypeRemiseType;
 	remise?: number;
@@ -32,7 +32,7 @@ export type DeviAddSchemaType = {
 	client: number;
 	date_devis: string;
 	numero_demande_prix_client: string | null;
-	mode_paiement: number;
+	mode_paiement: number | null;
 	remarque: string | null;
 	globalError?: string;
 };

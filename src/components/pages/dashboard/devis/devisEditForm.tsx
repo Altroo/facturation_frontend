@@ -47,16 +47,16 @@ import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiP
 import { deviSchema } from '@/utils/formValidationSchemas';
 import { setFormikAutoErrors } from '@/utils/helpers';
 import { coordonneeTextInputTheme, customDropdownTheme } from '@/utils/themes';
-import { DEVIS_LIST } from '@/utils/routes';
+import { CLIENTS_ADD, DEVIS_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import { DeviSchemaType, TypeDevisStatus } from '@/types/devisTypes';
 import { Protected } from '@/components/layouts/protected/protected';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
-import { ArticleClass, ClientClass } from '@/models/Classes';
+import { ArticleClass, ClientClass, type ModePaiementClass } from '@/models/Classes';
 import { useGetClientsListQuery } from '@/store/services/client';
 import { useAppSelector, useToast } from '@/utils/hooks';
 import { getModePaiementState } from '@/store/selectors';
-import { DropDownType, DropDownTypeTwo } from '@/types/accountTypes';
+import { DropDownType } from '@/types/accountTypes';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import { useGetArticlesListQuery } from '@/store/services/article';
 import { useEditDeviMutation, useGetDeviQuery, usePatchStatutMutation } from '@/store/services/devi';
@@ -67,6 +67,8 @@ import AddArticleModal from '@/components/shared/addArticleModal/addArticleModal
 import GlobalRemiseModal from '@/components/shared/globalRemiseModal/globalRemiseModal';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import { devisStatusItemsList, remiseTypeItemsList } from '@/utils/rawData';
+import { useAddModePaiementMutation } from '@/store/services/parameter';
+import AddEntityModal from '@/components/desktop/modals/addEntityModal/addEntityModal';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -104,6 +106,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{ company_id, with_pagination: false },
 		{ skip: !token },
 	);
+
+	const [addModePaiement, { isLoading: isAddModePaiementLoading }] = useAddModePaiementMutation();
+	const [openModePaiementModal, setOpenModePaiementModal] = useState(false);
+
 	const clientsData = rawClientsData as Array<Partial<ClientClass>> | undefined;
 	const error = dataError || updateError || patchError;
 	const axiosError = useMemo(
@@ -125,57 +131,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const [numDevisNumber, numDevisYear] = initialNumDevis ? initialNumDevis.split('/') : ['', ''];
 
 	// get mode_paiement
-	const modePaiement = useAppSelector(getModePaiementState);
-
-	// Prepare client items for dropdown
-	const clientItems = useMemo(() => {
-		if (!clientsData) return [];
-		return clientsData.map((client) => {
-			const label =
-				client.client_type === 'PP' ? `${client.nom || ''} ${client.prenom || ''}`.trim() : client.raison_sociale || '';
-			return {
-				code: label,
-				value: String(client.id),
-			};
-		}) as Array<DropDownType>;
-	}, [clientsData]);
-
-	// Prepare mode_paiement items for dropdown
-	const modePaiementItems = useMemo(() => {
-		if (!modePaiement) return [];
-		return modePaiement.map((mode) => ({
-			value: mode.nom || '',
-			label: mode.nom || '',
-		})) as Array<DropDownTypeTwo>;
-	}, [modePaiement]);
-
-	// Create maps for mode_paiement
-	const modePaiementLabelToId = useMemo(() => {
-		if (!modePaiement) return new Map<string, number>();
-		const map = new Map<string, number>();
-		modePaiement.forEach((mode) => {
-			map.set(mode.nom || '', mode.id!);
-		});
-		return map;
-	}, [modePaiement]);
-
-	const modePaiementIdToLabel = useMemo(() => {
-		if (!modePaiement) return new Map<number, string>();
-		const map = new Map<number, string>();
-		modePaiement.forEach((mode) => {
-			map.set(mode.id!, mode.nom || '');
-		});
-		return map;
-	}, [modePaiement]);
-
-	const [devisNumberPart, setDevisNumberPart] = useState(numDevisNumber);
-	const [devisYearPart, setDevisYearPart] = useState(numDevisYear);
-
-	// Update state when numDevisNumber or numDevisYear changes
-	useEffect(() => {
-		setDevisNumberPart(numDevisNumber);
-		setDevisYearPart(numDevisYear);
-	}, [numDevisNumber, numDevisYear]);
+	const rawModePaiement = useAppSelector(getModePaiementState);
+	const normalizedModePaiement: Array<ModePaiementClass> = Array.isArray(rawModePaiement)
+		? rawModePaiement
+		: Object.values(rawModePaiement ?? {});
 
 	const formik = useFormik<DeviSchemaType>({
 		initialValues: {
@@ -183,7 +142,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			client: rawData?.client ?? 0,
 			date_devis: rawData?.date_devis ?? new Date().toISOString().split('T')[0],
 			numero_demande_prix_client: rawData?.numero_demande_prix_client ?? null,
-			mode_paiement: rawData?.mode_paiement ?? 0,
+			mode_paiement: rawData?.mode_paiement ?? null,
 			remarque: rawData?.remarque ?? null,
 			remise_type: rawData?.remise_type,
 			remise: rawData?.remise,
@@ -200,9 +159,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					...data,
 					numero_devis: `${devisNumberPart}/${devisYearPart}`,
 				};
-				if (submissionData.mode_paiement === 0) {
-					delete submissionData.mode_paiement;
-				}
 				if (!submissionData.remise_type) {
 					delete submissionData.remise_type;
 					delete submissionData.remise;
@@ -217,6 +173,43 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			}
 		},
 	});
+
+	// Prepare client items for dropdown
+	const clientItems = useMemo(() => {
+		if (!clientsData) return [];
+		return clientsData.map((client) => {
+			const label =
+				client.client_type === 'PP' ? `${client.nom || ''} ${client.prenom || ''}`.trim() : client.raison_sociale || '';
+			return {
+				code: label,
+				value: String(client.id),
+			};
+		}) as Array<DropDownType>;
+	}, [clientsData]);
+
+	const modePaiementItems: DropDownType[] = useMemo(
+		() =>
+			normalizedModePaiement.map((c) => ({
+				value: String(c.id),
+				code: c.nom,
+			})),
+		[normalizedModePaiement],
+	);
+
+	const selectedModePaiement = useMemo<DropDownType | null>(() => {
+		const v = formik.values.mode_paiement;
+		if (!v || modePaiementItems.length === 0) return null;
+		return modePaiementItems.find((c) => c.value === String(v)) ?? null;
+	}, [formik.values.mode_paiement, modePaiementItems]);
+
+	const [devisNumberPart, setDevisNumberPart] = useState(numDevisNumber);
+	const [devisYearPart, setDevisYearPart] = useState(numDevisYear);
+
+	// Update state when numDevisNumber or numDevisYear changes
+	useEffect(() => {
+		setDevisNumberPart(numDevisNumber);
+		setDevisYearPart(numDevisYear);
+	}, [numDevisNumber, numDevisYear]);
 
 	// Calculate totals
 	const totals = useMemo(() => {
@@ -585,7 +578,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	};
 
 	const isLoading =
-		isPatchLoading || isClientsLoading || isUpdateLoading || isPending || isDataLoading || isArticlesLoading;
+		isAddModePaiementLoading ||
+		isPatchLoading ||
+		isClientsLoading ||
+		isUpdateLoading ||
+		isPending ||
+		isDataLoading ||
+		isArticlesLoading;
 
 	return (
 		<LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
@@ -785,6 +784,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<Divider sx={{ mb: 3 }} />
 									<Stack spacing={2.5}>
 										<CustomAutoCompleteSelect
+											size="small"
 											id="client"
 											noOptionsText="Aucun client trouvée"
 											label="Sélectionner un client *"
@@ -798,6 +798,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												formik.setFieldValue('client', newValue ? Number(newValue.value) : 0);
 											}}
 											startIcon={<PersonIcon fontSize="small" color="action" />}
+											endIcon={
+												<Button size="small" variant="outlined" onClick={() => router.push(CLIENTS_ADD(company_id))}>
+													Ajouter
+												</Button>
+											}
 										/>
 									</Stack>
 								</CardContent>
@@ -813,20 +818,32 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									</Stack>
 									<Divider sx={{ mb: 3 }} />
 									<Stack spacing={2.5}>
-										<CustomDropDownSelect
+										<CustomAutoCompleteSelect
 											id="mode_paiement"
+											size="small"
+											noOptionsText="Aucun mode de paiement trouvé"
 											label="Mode de paiement *"
 											items={modePaiementItems}
-											value={modePaiementIdToLabel.get(formik.values.mode_paiement) || null}
+											theme={theme}
+											value={selectedModePaiement}
+											fullWidth
+											onChange={(_, newVal) => {
+												formik.setFieldValue('mode_paiement', newVal ? Number(newVal.value) : null);
+											}}
 											onBlur={formik.handleBlur('mode_paiement')}
 											error={formik.touched.mode_paiement && Boolean(formik.errors.mode_paiement)}
 											helperText={formik.touched.mode_paiement ? formik.errors.mode_paiement : ''}
-											onChange={(e) => {
-												const modePaiementId = modePaiementLabelToId.get(e.target.value as string) || 0;
-												formik.setFieldValue('mode_paiement', modePaiementId);
-											}}
-											theme={customDropdownTheme()}
 											startIcon={<PaymentIcon fontSize="small" color="action" />}
+											endIcon={
+												<Button
+													size="small"
+													variant="outlined"
+													onClick={() => setOpenModePaiementModal(true)}
+													sx={{ ml: 1 }}
+												>
+													Ajouter
+												</Button>
+											}
 										/>
 										<CustomTextInput
 											id="numero_demande_prix_client"
@@ -907,6 +924,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<Divider sx={{ mb: 3 }} />
 									<Stack spacing={2.5}>
 										<Button
+											disabled={formik.values.lignes.length === 0}
 											variant="outlined"
 											startIcon={<DiscountIcon />}
 											onClick={() => setShowGlobalRemiseModal(true)}
@@ -1018,6 +1036,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					actions={deleteConfirmActions}
 				/>
 			)}
+			<AddEntityModal
+				open={openModePaiementModal}
+				setOpen={setOpenModePaiementModal}
+				label="mode de paiement"
+				icon={<PaymentIcon fontSize="small" />}
+				inputTheme={inputTheme}
+				mutationFn={addModePaiement}
+			/>
 		</LocalizationProvider>
 	);
 };

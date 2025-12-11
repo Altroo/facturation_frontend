@@ -414,7 +414,7 @@ export const deviAddSchema = z.object({
 	client: requiredNumberField(1),
 	date_devis: requiredTextField(1, 100),
 	numero_demande_prix_client: optionalTextField(1, 100).nullable(),
-	mode_paiement: optionalNumberField(0).nullable(),
+	mode_paiement: optionalNumberField(1).nullable(),
 	remarque: optionalTextField(2, 500).nullable(),
 	globalError: optionalTextField(1, 500),
 });

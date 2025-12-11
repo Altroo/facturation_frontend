@@ -74,7 +74,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 						helperText={formik.touched.old_password ? formik.errors.old_password : ''}
 						error={formik.touched.old_password && Boolean(formik.errors.old_password)}
 						fullWidth={false}
-						size="medium"
+						size="small"
 						label="Ancien mot de passe"
 						placeholder="Ancien mot de passe"
 						theme={inputTheme}
@@ -87,7 +87,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 						helperText={formik.touched.new_password ? formik.errors.new_password : ''}
 						error={formik.touched.new_password && Boolean(formik.errors.new_password)}
 						fullWidth={false}
-						size="medium"
+						size="small"
 						label="Nouveau mot de passe"
 						placeholder="Nouveau mot de passe"
 						theme={inputTheme}
@@ -100,7 +100,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 						helperText={formik.touched.new_password2 ? formik.errors.new_password2 : ''}
 						error={formik.touched.new_password2 && Boolean(formik.errors.new_password2)}
 						fullWidth={false}
-						size="medium"
+						size="small"
 						label="Confirmation du nouveau mot de passe"
 						placeholder="Confirmation du nouveau mot de passe"
 						theme={inputTheme}

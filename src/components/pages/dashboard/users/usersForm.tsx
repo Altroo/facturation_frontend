@@ -319,6 +319,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										startIcon={<PersonOutlineIcon fontSize="small" />}
 									/>
 									<CustomDropDownSelect
+										size="small"
 										id="gender"
 										label="Sexe *"
 										items={genderItemsList}

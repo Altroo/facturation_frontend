@@ -444,6 +444,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								<Stack spacing={2.5}>
 									<CustomAutoCompleteSelect
 										id="categorie"
+										size="small"
 										noOptionsText="Aucune catégorie trouvée"
 										label="Catégorie"
 										items={categorieItems}
@@ -470,6 +471,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									/>
 									<CustomAutoCompleteSelect
 										id="emplacement"
+										size="small"
 										noOptionsText="Aucun emplacement trouvé"
 										label="Emplacement"
 										items={emplacementItems}
@@ -496,6 +498,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									/>
 									<CustomAutoCompleteSelect
 										id="unite"
+										size="small"
 										noOptionsText="Aucune unité trouvée"
 										label="Unité"
 										items={uniteItems}
@@ -517,6 +520,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									/>
 									<CustomAutoCompleteSelect
 										id="marque"
+										size="small"
 										noOptionsText="Aucune marque trouvée"
 										label="Marque"
 										items={marqueItems}

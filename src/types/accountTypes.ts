@@ -32,11 +32,6 @@ export type DropDownType = {
 	value: string;
 };
 
-export type DropDownTypeTwo = {
-	value: string | number;
-	label: string | number;
-};
-
 export type setProfilPayloadType = SagaPayloadType<UserClass>;
 export type setGroupesPayloadType = SagaPayloadType<GroupClass>;
 

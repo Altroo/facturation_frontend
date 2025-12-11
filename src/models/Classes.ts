@@ -178,7 +178,7 @@ export class DeviClass {
 		public readonly client_name: string | null,
 		public date_devis: string,
 		public numero_demande_prix_client: string | null,
-		public mode_paiement: number,
+		public mode_paiement: number | null,
 		public readonly mode_paiement_name: string | null,
 		public remarque: string | null,
 		public statut: TypeDevisStatus,

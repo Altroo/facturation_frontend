@@ -328,6 +328,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									/>
 									<CustomDropDownSelect
 										id="nbr_employe"
+										size="small"
 										label="Nombre d'employés *"
 										items={nbrEmployeItemsList}
 										value={formik.values.nbr_employe}
@@ -382,6 +383,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								<Divider sx={{ mb: 3 }} />
 								<Stack spacing={2.5}>
 									<CustomDropDownSelect
+										size="small"
 										id="civilite_responsable"
 										label="Civilité du responsable"
 										items={civiliteItemsList}
