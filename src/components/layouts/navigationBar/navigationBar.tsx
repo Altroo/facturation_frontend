@@ -34,6 +34,7 @@ import {
 	LibraryBooks as LibraryBooksIcon,
 	People as PeopleIcon,
 	ReceiptLong as ReceiptLongIcon,
+	ReceiptLongOutlined as ReceiptLongOutlinedIcon,
 	RequestQuote as RequestQuoteIcon,
 	LocalShipping as LocalShippingIcon,
 	Payment as PaymentIcon,
@@ -95,13 +96,20 @@ const getNavigationMenu = (isStaff: boolean) => {
 			items: [{ title: 'Liste des devis', label: 'Liste des devis', path: DEVIS_LIST }],
 		},
 		factures: {
-			title: 'Factures',
+			title: 'Factures clients',
 			icon: <ReceiptLongIcon />,
 			items: [
 				{ title: 'Liste des factures', label: 'Liste des factures', path: '/factures/list' },
 				{ title: 'Factures impayées', label: 'Factures impayées', path: '/factures/unpaid' },
-				{ title: 'Factures pro-forma', label: 'Factures pro-forma', path: '/factures/proforma' },
 				{ title: 'Nouvelle facture', label: 'Nouvelle facture', path: '/factures/new' },
+			],
+		},
+		factures_proformat: {
+			title: 'Factures Pro-forma',
+			icon: <ReceiptLongOutlinedIcon />,
+			items: [
+				{ title: 'Liste des factures pro-forma', label: 'Liste des factures', path: '/factures-pro-forma/list' },
+				{ title: 'Nouvelle facture pro-forma', label: 'Nouvelle facture', path: '/factures/new' },
 			],
 		},
 		bonsLivraison: {
