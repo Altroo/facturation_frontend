@@ -136,6 +136,28 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	// Calculate totals
 	const totals = useMemo(() => {
 		if (!devis) return { totalHT: 0, totalTVA: 0, totalTTC: 0, totalTTCApresRemise: 0 };
+
+		// backend provides total_ttc, total_tva and total_ttc_apres_remise (no total_ht)
+		const hasServerTotals =
+			devis.total_ttc !== undefined && devis.total_tva !== undefined && devis.total_ttc_apres_remise !== undefined;
+
+		if (hasServerTotals) {
+			const serverTotalTTC = Number(devis.total_ttc ?? 0) || 0;
+			const serverTotalTVA = Number(devis.total_tva ?? 0) || 0;
+			const serverTotalTTCAfter = Number(devis.total_ttc_apres_remise ?? 0) || 0;
+
+			// derive HT from TTC - TVA since backend doesn't provide total_ht
+			const serverTotalHT = Math.max(0, serverTotalTTC - serverTotalTVA);
+
+			return {
+				totalHT: serverTotalHT,
+				totalTVA: Math.max(0, serverTotalTVA),
+				totalTTC: Math.max(0, serverTotalTTC),
+				totalTTCApresRemise: Math.max(0, serverTotalTTCAfter),
+			};
+		}
+
+		// Fallback: compute locally per-lines
 		let rawTotalHT = 0;
 		let rawTotalTVA = 0;
 
@@ -147,7 +169,6 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 			const quantity = Number(ligne.quantity ?? 1);
 			const baseHT = prixVente * (Number.isFinite(quantity) ? quantity : 1);
 
-			// Apply line remise on HT (before TVA)
 			let discountedHT = baseHT;
 			if (ligne.remise && ligne.remise > 0 && ligne.remise_type) {
 				if (ligne.remise_type === 'Pourcentage') {
@@ -165,8 +186,6 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 		});
 
 		const rawTotalTTC = rawTotalHT + rawTotalTVA;
-
-		// compute totals after document-level remise (apply on HT, then scale TVA)
 		let finalTotalHT = rawTotalHT;
 		let finalTotalTVA = rawTotalTVA;
 		let finalTotalTTC = rawTotalTTC;
@@ -177,7 +196,6 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 			} else if (devis.remise_type === 'Fixe') {
 				finalTotalHT = Math.max(0, rawTotalHT - devis.remise);
 			}
-
 			const ratio = rawTotalHT > 0 ? finalTotalHT / rawTotalHT : 0;
 			finalTotalTVA = rawTotalTVA * ratio;
 			finalTotalTTC = finalTotalHT + finalTotalTVA;
@@ -366,7 +384,7 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	return (
 		<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
 			<NavigationBar title="Détails du devis">
-				<Stack spacing={3} sx={{ p: { xs: 2, md: 3 } }}>
+				<Stack spacing={3} sx={{ p: { xs: 2, md: 3 }, mt: 2 }}>
 					<Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between" spacing={2}>
 						<Button
 							variant="outlined"

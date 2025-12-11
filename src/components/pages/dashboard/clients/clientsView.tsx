@@ -122,7 +122,7 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	return (
 		<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
 			<NavigationBar title="Détails du client">
-				<Stack spacing={3} sx={{ p: { xs: 2, md: 3 } }}>
+				<Stack spacing={3} sx={{ p: { xs: 2, md: 3 }, mt: 2 }}>
 					<Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between" spacing={2}>
 						<Button
 							variant="outlined"
