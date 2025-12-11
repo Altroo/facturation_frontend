@@ -20,6 +20,8 @@ import {
 	Tooltip,
 	IconButton,
 	Alert,
+	Paper,
+	Container,
 } from '@mui/material';
 import {
 	ArrowBack,
@@ -35,6 +37,7 @@ import {
 	Delete as DeleteIcon,
 	ShoppingCart as ShoppingCartIcon,
 	Warning as WarningIcon,
+	BusinessOutlined,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -52,12 +55,11 @@ import { coordonneeTextInputTheme, customDropdownTheme } from '@/utils/themes';
 import { CLIENTS_ADD, DEVIS_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import { DeviSchemaType, TypeDevisStatus } from '@/types/devisTypes';
-import { Protected } from '@/components/layouts/protected/protected';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import { ArticleClass, ClientClass, type ModePaiementClass } from '@/models/Classes';
 import { useGetClientsListQuery } from '@/store/services/client';
 import { useAppSelector, useToast } from '@/utils/hooks';
-import { getModePaiementState } from '@/store/selectors';
+import { getModePaiementState, getUserCompaniesState } from '@/store/selectors';
 import { DropDownType } from '@/types/accountTypes';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import { useGetArticlesListQuery } from '@/store/services/article';
@@ -1321,16 +1323,48 @@ interface Props extends SessionProps {
 
 const DevisEditForm: React.FC<Props> = ({ session, company_id, id }) => {
 	const token = getAccessTokenFromSession(session);
+	const companies = useAppSelector(getUserCompaniesState);
+	const company = companies?.find((comp) => comp.id === company_id);
 
 	return (
 		<Stack direction="column" sx={{ position: 'relative' }}>
 			<NavigationBar title={'Modifier devis'}>
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
-					<Protected>
+					{company?.role === 'Admin' ? (
 						<Box sx={{ width: '100%' }}>
 							<FormikContent company_id={company_id} token={token} id={id} />
 						</Box>
-					</Protected>
+					) : (
+						<Container maxWidth="sm" sx={{ mt: 8 }}>
+							<Paper
+								elevation={3}
+								sx={{
+									p: 6,
+									textAlign: 'center',
+									borderRadius: 3,
+									background: 'linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%)',
+								}}
+							>
+								<Box
+									sx={{
+										width: 80,
+										height: 80,
+										borderRadius: '50%',
+										backgroundColor: 'rgba(13, 7, 11, 0.08)',
+										display: 'flex',
+										alignItems: 'center',
+										justifyContent: 'center',
+										margin: '0 auto 24px',
+									}}
+								>
+									<BusinessOutlined sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
+								</Box>
+								<Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 3 }}>
+									Vous n&#39;avez pas le droit de modifier ce devi. Veuillez contacter votre administrateur.
+								</Typography>
+							</Paper>
+						</Container>
+					)}
 				</main>
 			</NavigationBar>
 		</Stack>

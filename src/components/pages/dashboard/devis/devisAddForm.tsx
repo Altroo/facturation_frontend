@@ -17,6 +17,8 @@ import {
 	useTheme,
 	useMediaQuery,
 	InputAdornment,
+	Container,
+	Paper,
 } from '@mui/material';
 import {
 	ArrowBack,
@@ -27,6 +29,7 @@ import {
 	Numbers as NumbersIcon,
 	Receipt as ReceiptIcon,
 	Notes as NotesIcon,
+	BusinessOutlined,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -43,12 +46,11 @@ import { coordonneeTextInputTheme } from '@/utils/themes';
 import { CLIENTS_ADD, DEVIS_EDIT, DEVIS_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import { DeviAddSchemaType, DeviSchemaType } from '@/types/devisTypes';
-import { Protected } from '@/components/layouts/protected/protected';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import type { ClientClass, ModePaiementClass } from '@/models/Classes';
 import { useGetClientsListQuery } from '@/store/services/client';
 import { useAppSelector, useToast } from '@/utils/hooks';
-import { getModePaiementState } from '@/store/selectors';
+import { getModePaiementState, getUserCompaniesState } from '@/store/selectors';
 import { DropDownType } from '@/types/accountTypes';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import AddEntityModal from '@/components/desktop/modals/addEntityModal/addEntityModal';
@@ -429,16 +431,48 @@ interface Props extends SessionProps {
 
 const DevisAddForm: React.FC<Props> = ({ session, company_id }) => {
 	const token = getAccessTokenFromSession(session);
+	const companies = useAppSelector(getUserCompaniesState);
+	const company = companies?.find((comp) => comp.id === company_id);
 
 	return (
 		<Stack direction="column" sx={{ position: 'relative' }}>
 			<NavigationBar title="Ajouter un devis">
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
-					<Protected>
+					{company?.role === 'Admin' ? (
 						<Box sx={{ width: '100%' }}>
 							<FormikContent company_id={company_id} token={token} />
 						</Box>
-					</Protected>
+					) : (
+						<Container maxWidth="sm" sx={{ mt: 8 }}>
+							<Paper
+								elevation={3}
+								sx={{
+									p: 6,
+									textAlign: 'center',
+									borderRadius: 3,
+									background: 'linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%)',
+								}}
+							>
+								<Box
+									sx={{
+										width: 80,
+										height: 80,
+										borderRadius: '50%',
+										backgroundColor: 'rgba(13, 7, 11, 0.08)',
+										display: 'flex',
+										alignItems: 'center',
+										justifyContent: 'center',
+										margin: '0 auto 24px',
+									}}
+								>
+									<BusinessOutlined sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
+								</Box>
+								<Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 3 }}>
+									Vous n&#39;avez pas le droit d&#39;ajouter un devi. Veuillez contacter votre administrateur.
+								</Typography>
+							</Paper>
+						</Container>
+					)}
 				</main>
 			</NavigationBar>
 		</Stack>
