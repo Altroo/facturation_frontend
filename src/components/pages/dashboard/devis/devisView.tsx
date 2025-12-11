@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, isValidElement } from 'react';
+import React, { useMemo } from 'react';
 import {
 	Avatar,
 	Box,
@@ -54,49 +54,26 @@ interface InfoRowProps {
 const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-	const displayValue = React.isValidElement(value) ? value : value && value.toString().length > 1 ? value : '-';
+
+	const displayValue = React.isValidElement(value)
+		? value
+		: value === null || value === undefined || String(value).trim() === ''
+			? '-'
+			: value;
 
 	return (
-		<Stack
-			direction="row"
-			alignItems="flex-start"
-			spacing={2}
-			sx={{
-				py: 1.5,
-				flexWrap: 'wrap',
-			}}
-		>
-			<Box
-				sx={{
-					color: 'primary.main',
-					display: 'flex',
-					alignItems: 'center',
-					minWidth: 40,
-				}}
-			>
-				{icon}
-			</Box>
-			<Stack
-				direction="row"
-				alignItems="center"
-				spacing={isMobile ? 0 : 2}
-				sx={{
-					flex: 1,
-					flexWrap: 'wrap',
-				}}
-			>
+		<Stack direction="row" alignItems="flex-start" spacing={2} sx={{ py: 1.5, flexWrap: 'wrap' }}>
+			<Box sx={{ color: 'primary.main', display: 'flex', alignItems: 'center', minWidth: 40 }}>{icon}</Box>
+			<Stack direction="row" alignItems="center" spacing={isMobile ? 0 : 2} sx={{ flex: 1, flexWrap: 'wrap' }}>
 				<Typography
 					fontWeight={600}
 					color="text.secondary"
-					sx={{
-						minWidth: { xs: '100%', sm: 200 },
-						wordBreak: 'break-word',
-					}}
+					sx={{ minWidth: { xs: '100%', sm: 200 }, wordBreak: 'break-word' }}
 				>
 					{label}
 				</Typography>
 				<Box sx={{ flex: 1 }}>
-					{isValidElement(displayValue) ? (
+					{React.isValidElement(displayValue) ? (
 						displayValue
 					) : (
 						<Typography sx={{ color: 'text.primary' }}>{displayValue}</Typography>
@@ -161,46 +138,50 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 		if (!devis) return { totalHT: 0, totalTVA: 0, totalTTC: 0 };
 		let totalHT = 0;
 		let totalTVA = 0;
+
 		(devis.lignes || []).forEach((ligne) => {
 			const article = articlesData?.find((a) => a.id === ligne.article);
 			if (!article) return;
-			const basePrice = ligne.prix_vente * ligne.quantity;
-			const tvaRate = article.tva || 20;
-			const lineTVA = basePrice * (tvaRate / 100);
-			const lineTotalWithTVA = basePrice + lineTVA;
-			// Apply line remise after TVA
-			let finalLineTotal = lineTotalWithTVA;
+
+			const prixVente = ligne.prix_vente ?? 0;
+			const quantity = ligne.quantity ?? 1;
+			const baseHT = prixVente * quantity;
+
+			// Apply line remise on HT (before TVA)
+			let discountedHT = baseHT;
 			if (ligne.remise && ligne.remise > 0 && ligne.remise_type) {
 				if (ligne.remise_type === 'Pourcentage') {
-					finalLineTotal -= lineTotalWithTVA * (ligne.remise / 100);
+					discountedHT = baseHT * (1 - ligne.remise / 100);
 				} else if (ligne.remise_type === 'Fixe') {
-					finalLineTotal -= ligne.remise;
+					discountedHT = Math.max(0, baseHT - ligne.remise);
 				}
 			}
-			// Back-calculate HT and TVA from final total
-			const finalHT = finalLineTotal / (1 + tvaRate / 100);
-			const finalTVA = finalLineTotal - finalHT;
-			totalHT += finalHT;
-			totalTVA += finalTVA;
+
+			const tvaRate = article.tva ?? 20; // nullish coalescing preserves 0
+			const lineTVA = discountedHT * (tvaRate / 100);
+
+			if (Number.isFinite(discountedHT)) totalHT += discountedHT;
+			if (Number.isFinite(lineTVA)) totalTVA += lineTVA;
 		});
+
+		// Totals before global remise
 		let finalTotalHT = totalHT;
 		let finalTotalTVA = totalTVA;
-		let finalTotalTTC = totalHT + totalTVA;
-		// Apply global remise
+		let finalTotalTTC = finalTotalHT + finalTotalTVA;
+
+		// Apply global remise on HT (before TVA), then scale TVA proportionally
 		if (devis.remise && devis.remise > 0 && devis.remise_type) {
 			if (devis.remise_type === 'Pourcentage') {
-				const remiseAmount = finalTotalTTC * (devis.remise / 100);
-				finalTotalTTC -= remiseAmount;
-				const ratio = finalTotalTTC / (totalHT + totalTVA);
-				finalTotalHT = totalHT * ratio;
-				finalTotalTVA = totalTVA * ratio;
+				finalTotalHT = finalTotalHT * (1 - devis.remise / 100);
 			} else if (devis.remise_type === 'Fixe') {
-				finalTotalTTC -= devis.remise;
-				const ratio = finalTotalTTC / (totalHT + totalTVA);
-				finalTotalHT = totalHT * ratio;
-				finalTotalTVA = totalTVA * ratio;
+				finalTotalHT = Math.max(0, finalTotalHT - devis.remise);
 			}
+
+			const ratio = totalHT > 0 ? finalTotalHT / totalHT : 0;
+			finalTotalTVA = totalTVA * ratio;
+			finalTotalTTC = finalTotalHT + finalTotalTVA;
 		}
+
 		return {
 			totalHT: Math.max(0, finalTotalHT),
 			totalTVA: Math.max(0, finalTotalTVA),
@@ -378,6 +359,8 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 		},
 	];
 
+	const dateDevisLabel = formatDate(devis?.date_devis as string | null) || '-';
+
 	return (
 		<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
 			<NavigationBar title="Détails du devis">
@@ -490,7 +473,7 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 										<InfoRow
 											icon={<CalendarTodayIcon />}
 											label="Date du devis"
-											value={formatDate(devis?.date_devis as string | null).split(',')[0]}
+											value={dateDevisLabel.split(',')[0] || '-'}
 										/>
 									</Stack>
 								</CardContent>

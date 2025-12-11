@@ -6,7 +6,7 @@ import { getDefaultTheme } from '@/utils/themes';
 type Props = {
 	buttonText: string;
 	loading: boolean;
-	onClick?: () => void;
+	onClick?: React.MouseEventHandler<HTMLButtonElement> | (() => void);
 	active?: boolean;
 	type?: 'submit' | 'reset' | 'button' | undefined;
 	cssClass?: string;
