@@ -218,54 +218,68 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	// Calculate totals
 	const totals = useMemo(() => {
-		let totalHT = 0;
-		let totalTVA = 0;
+		let rawTotalHT = 0;
+		let rawTotalTVA = 0;
 
-		(formik.values.lignes as DeviLineFormValues[]).forEach((ligne) => {
+		const lignes = (formik.values.lignes as DeviLineFormValues[]) || [];
+
+		lignes.forEach((ligne) => {
 			const article = articlesData?.find((a) => a.id === ligne.article);
 			if (!article) return;
 
-			const basePrice = ligne.prix_vente * ligne.quantity;
-			const tvaRate = article.tva || 20;
-			let lineHT = basePrice;
-			let lineTVA = basePrice * (tvaRate / 100);
+			const prixVente = Number(ligne.prix_vente ?? 0);
+			const quantity = Number(ligne.quantity ?? 1);
+			const baseHT = prixVente * (isFinite(quantity) ? quantity : 1);
 
-			// Apply line remise to HT before TVA
-			if (ligne.remise && ligne.remise > 0 && ligne.remise_type) {
+			// Apply line remise on HT (before TVA)
+			let discountedHT = baseHT;
+			const remiseVal = Number(ligne.remise ?? 0);
+			if (remiseVal > 0 && ligne.remise_type) {
 				if (ligne.remise_type === 'Pourcentage') {
-					lineHT -= basePrice * (ligne.remise / 100);
-					lineTVA = lineHT * (tvaRate / 100);
+					discountedHT = baseHT * (1 - remiseVal / 100);
 				} else if (ligne.remise_type === 'Fixe') {
-					lineHT -= ligne.remise;
-					lineTVA = lineHT * (tvaRate / 100);
+					discountedHT = Math.max(0, baseHT - remiseVal);
 				}
 			}
 
-			totalHT += lineHT;
-			totalTVA += lineTVA;
+			const tvaRate = Number(article.tva ?? 0); // preserve 0 if present
+			const lineTVA = discountedHT * (tvaRate / 100);
+
+			if (Number.isFinite(discountedHT)) rawTotalHT += discountedHT;
+			if (Number.isFinite(lineTVA)) rawTotalTVA += lineTVA;
 		});
 
-		let finalTotalHT = totalHT;
-		let finalTotalTVA = totalTVA;
+		// raw totals (before global remise)
+		const rawTotalTTC = rawTotalHT + rawTotalTVA;
 
-		// Apply global remise
-		if (formik.values.remise && formik.values.remise > 0 && formik.values.remise_type) {
+		// start final totals as raw values
+		let finalTotalHT = rawTotalHT;
+		let finalTotalTVA = rawTotalTVA;
+		let finalTotalTTC = rawTotalTTC;
+
+		// Apply global remise on HT (before TVA), then scale TVA proportionally
+		const globalRemiseVal = Number(formik.values.remise ?? 0);
+		if (globalRemiseVal > 0 && formik.values.remise_type) {
 			if (formik.values.remise_type === 'Pourcentage') {
-				finalTotalHT -= totalHT * (formik.values.remise / 100);
-				// compute average TVA rate safely (as a decimal, e.g. 0.2)
-				const avgTvaRate = totalHT > 0 ? totalTVA / totalHT : (articlesData?.[0]?.tva ?? 20) / 100;
-				finalTotalTVA = finalTotalHT * avgTvaRate;
+				finalTotalHT = rawTotalHT * (1 - globalRemiseVal / 100);
 			} else if (formik.values.remise_type === 'Fixe') {
-				finalTotalHT -= formik.values.remise;
-				const avgTvaRate = totalHT > 0 ? totalTVA / totalHT : (articlesData?.[0]?.tva ?? 20) / 100;
-				finalTotalTVA = finalTotalHT * avgTvaRate;
+				finalTotalHT = Math.max(0, rawTotalHT - globalRemiseVal);
 			}
+
+			const ratio = rawTotalHT > 0 ? finalTotalHT / rawTotalHT : 0;
+			finalTotalTVA = rawTotalTVA * ratio;
+			finalTotalTTC = finalTotalHT + finalTotalTVA;
 		}
 
 		return {
-			totalHT: Math.max(0, finalTotalHT),
-			totalTVA: Math.max(0, finalTotalTVA),
-			totalTTC: Math.max(0, finalTotalHT + finalTotalTVA),
+			// pre-remise values shown in the first three boxes
+			totalHT: Math.max(0, Number.isFinite(rawTotalHT) ? rawTotalHT : 0),
+			totalTVA: Math.max(0, Number.isFinite(rawTotalTVA) ? rawTotalTVA : 0),
+			totalTTC: Math.max(0, Number.isFinite(rawTotalTTC) ? rawTotalTTC : 0),
+			// post-remise values used for "APRES REMISE"
+			totalHTAfterRemise: Math.max(0, Number.isFinite(finalTotalHT) ? finalTotalHT : 0),
+			totalTVAAfterRemise: Math.max(0, Number.isFinite(finalTotalTVA) ? finalTotalTVA : 0),
+			totalTTCApresRemise: Math.max(0, Number.isFinite(finalTotalTTC) ? finalTotalTTC : 0),
 		};
 	}, [formik.values.lignes, formik.values.remise, formik.values.remise_type, articlesData]);
 
@@ -275,35 +289,35 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		field: keyof DeviLineFormValues,
 		value: string | number,
 	): string | null => {
-		const ligne = (formik.values.lignes as DeviLineFormValues[])[index];
-		const article = articlesData?.find((a) => a.id === ligne.article);
+		const lignes = (formik.values.lignes as DeviLineFormValues[]) || [];
+		const ligne = lignes[index];
+		if (!ligne) return null;
 
 		if (field === 'prix_vente') {
-			const numValue = typeof value === 'string' ? parseFloat(value) : value;
-			if (numValue < ligne.prix_achat) {
-				return `Le prix de vente (${numValue.toFixed(2)} MAD) doit être supérieur ou égal au prix d'achat (${ligne.prix_achat.toFixed(2)} MAD)`;
+			const numValue = typeof value === 'string' ? parseFloat(value) : Number(value);
+			const achat = Number(ligne.prix_achat ?? 0);
+			if (Number.isFinite(numValue) && numValue < achat) {
+				return `Le prix de vente (${numValue.toFixed(2)} MAD) doit être supérieur ou égal au prix d'achat (${achat.toFixed(2)} MAD)`;
 			}
 		}
 
 		if (field === 'remise') {
-			const numValue = typeof value === 'string' ? parseFloat(value) : value;
-			if (numValue < 0) {
+			const numValue = typeof value === 'string' ? parseFloat(value) : Number(value);
+			if (!Number.isFinite(numValue) || numValue < 0) {
 				return 'La remise doit être positive ou nulle';
 			}
 
 			const currentRemiseType = ligne.remise_type;
+			const remiseValue = numValue ?? 0;
 
-			if (currentRemiseType === 'Pourcentage' && numValue > 100) {
+			if (currentRemiseType === 'Pourcentage' && remiseValue > 100) {
 				return 'La remise en pourcentage doit être entre 0 et 100';
 			}
 
 			if (currentRemiseType === 'Fixe') {
-				const basePrice = ligne.prix_vente * ligne.quantity;
-				const tvaRate = article?.tva || 20;
-				const lineTotalWithTVA = basePrice * (1 + tvaRate / 100);
-
-				if (numValue > lineTotalWithTVA) {
-					return `La remise fixe (${numValue.toFixed(2)} MAD) ne peut pas dépasser le total de la ligne (${lineTotalWithTVA.toFixed(2)} MAD)`;
+				const basePrice = Number(ligne.prix_vente ?? 0) * Number(ligne.quantity ?? 1);
+				if (remiseValue > basePrice) {
+					return `La remise fixe (${remiseValue.toFixed(2)} MAD) ne peut pas dépasser le total HT de la ligne (${basePrice.toFixed(2)} MAD)`;
 				}
 			}
 		}
@@ -369,7 +383,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	// Validate global remise
 	const validateGlobalRemise = (type: string, value: number): string | null => {
-		if (value < 0) {
+		if (!Number.isFinite(value) || value < 0) {
 			return 'La remise doit être positive ou nulle';
 		}
 
@@ -378,30 +392,32 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		}
 
 		if (type === 'Fixe') {
-			// Calculate total before global remise
-			let totalTTC = 0;
-			(formik.values.lignes as DeviLineFormValues[]).forEach((ligne) => {
+			// Calculate total HT before global remise (after line remises)
+			let totalHTBeforeGlobal = 0;
+			const lignes = (formik.values.lignes as DeviLineFormValues[]) || [];
+			lignes.forEach((ligne) => {
 				const article = articlesData?.find((a) => a.id === ligne.article);
 				if (!article) return;
 
-				const basePrice = ligne.prix_vente * ligne.quantity;
-				const tvaRate = article.tva || 20;
-				let lineTotalWithTVA = basePrice * (1 + tvaRate / 100);
+				const prixVente = Number(ligne.prix_vente ?? 0);
+				const quantity = Number(ligne.quantity ?? 1);
+				const baseHT = prixVente * (isFinite(quantity) ? quantity : 1);
 
-				// Apply line remise
-				if (ligne.remise && ligne.remise > 0 && ligne.remise_type) {
+				let discountedHT = baseHT;
+				const remiseVal = Number(ligne.remise ?? 0);
+				if (remiseVal > 0 && ligne.remise_type) {
 					if (ligne.remise_type === 'Pourcentage') {
-						lineTotalWithTVA -= lineTotalWithTVA * (ligne.remise / 100);
+						discountedHT = baseHT * (1 - remiseVal / 100);
 					} else if (ligne.remise_type === 'Fixe') {
-						lineTotalWithTVA -= ligne.remise;
+						discountedHT = Math.max(0, baseHT - remiseVal);
 					}
 				}
 
-				totalTTC += lineTotalWithTVA;
+				if (Number.isFinite(discountedHT)) totalHTBeforeGlobal += discountedHT;
 			});
 
-			if (value > totalTTC) {
-				return `La remise fixe globale (${value.toFixed(2)} MAD) ne peut pas dépasser le total du devis (${totalTTC.toFixed(2)} MAD)`;
+			if (value > totalHTBeforeGlobal) {
+				return `La remise fixe globale (${value.toFixed(2)} MAD) ne peut pas dépasser le total HT du devis (${totalHTBeforeGlobal.toFixed(2)} MAD)`;
 			}
 		}
 
@@ -881,6 +897,22 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								</Typography>
 								<Typography variant="h5" fontWeight={900} color="primary">
 									{totals.totalTTC.toFixed(2)} MAD
+								</Typography>
+							</Box>
+
+							<Box
+								sx={{
+									display: 'flex',
+									flexDirection: 'column',
+									alignItems: isMobile ? 'flex-start' : 'center',
+									minWidth: 140,
+								}}
+							>
+								<Typography variant="subtitle2" fontWeight={600}>
+									TOTAL TTC APRES REMISE
+								</Typography>
+								<Typography variant="h5" fontWeight={900} color="primary">
+									{totals.totalTTCApresRemise.toFixed(2)} MAD
 								</Typography>
 							</Box>
 						</Stack>

@@ -135,17 +135,17 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 
 	// Calculate totals
 	const totals = useMemo(() => {
-		if (!devis) return { totalHT: 0, totalTVA: 0, totalTTC: 0 };
-		let totalHT = 0;
-		let totalTVA = 0;
+		if (!devis) return { totalHT: 0, totalTVA: 0, totalTTC: 0, totalTTCApresRemise: 0 };
+		let rawTotalHT = 0;
+		let rawTotalTVA = 0;
 
 		(devis.lignes || []).forEach((ligne) => {
 			const article = articlesData?.find((a) => a.id === ligne.article);
 			if (!article) return;
 
-			const prixVente = ligne.prix_vente ?? 0;
-			const quantity = ligne.quantity ?? 1;
-			const baseHT = prixVente * quantity;
+			const prixVente = Number(ligne.prix_vente ?? 0);
+			const quantity = Number(ligne.quantity ?? 1);
+			const baseHT = prixVente * (Number.isFinite(quantity) ? quantity : 1);
 
 			// Apply line remise on HT (before TVA)
 			let discountedHT = baseHT;
@@ -157,35 +157,37 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 				}
 			}
 
-			const tvaRate = article.tva ?? 20; // nullish coalescing preserves 0
+			const tvaRate = Number(article.tva ?? 0);
 			const lineTVA = discountedHT * (tvaRate / 100);
 
-			if (Number.isFinite(discountedHT)) totalHT += discountedHT;
-			if (Number.isFinite(lineTVA)) totalTVA += lineTVA;
+			if (Number.isFinite(discountedHT)) rawTotalHT += discountedHT;
+			if (Number.isFinite(lineTVA)) rawTotalTVA += lineTVA;
 		});
 
-		// Totals before global remise
-		let finalTotalHT = totalHT;
-		let finalTotalTVA = totalTVA;
-		let finalTotalTTC = finalTotalHT + finalTotalTVA;
+		const rawTotalTTC = rawTotalHT + rawTotalTVA;
 
-		// Apply global remise on HT (before TVA), then scale TVA proportionally
+		// compute totals after document-level remise (apply on HT, then scale TVA)
+		let finalTotalHT = rawTotalHT;
+		let finalTotalTVA = rawTotalTVA;
+		let finalTotalTTC = rawTotalTTC;
+
 		if (devis.remise && devis.remise > 0 && devis.remise_type) {
 			if (devis.remise_type === 'Pourcentage') {
-				finalTotalHT = finalTotalHT * (1 - devis.remise / 100);
+				finalTotalHT = rawTotalHT * (1 - devis.remise / 100);
 			} else if (devis.remise_type === 'Fixe') {
-				finalTotalHT = Math.max(0, finalTotalHT - devis.remise);
+				finalTotalHT = Math.max(0, rawTotalHT - devis.remise);
 			}
 
-			const ratio = totalHT > 0 ? finalTotalHT / totalHT : 0;
-			finalTotalTVA = totalTVA * ratio;
+			const ratio = rawTotalHT > 0 ? finalTotalHT / rawTotalHT : 0;
+			finalTotalTVA = rawTotalTVA * ratio;
 			finalTotalTTC = finalTotalHT + finalTotalTVA;
 		}
 
 		return {
-			totalHT: Math.max(0, finalTotalHT),
-			totalTVA: Math.max(0, finalTotalTVA),
-			totalTTC: Math.max(0, finalTotalTTC),
+			totalHT: Math.max(0, rawTotalHT),
+			totalTVA: Math.max(0, rawTotalTVA),
+			totalTTC: Math.max(0, rawTotalTTC),
+			totalTTCApresRemise: Math.max(0, finalTotalTTC),
 		};
 	}, [devis, articlesData]);
 
@@ -291,7 +293,7 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 				return (
 					<DarkTooltip title={value}>
 						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%', color: 'grey.500' }}>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
 								{value}
 							</Typography>
 						</Box>
@@ -424,6 +426,7 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 												{totals.totalHT.toFixed(2)} MAD
 											</Typography>
 										</Box>
+
 										<Box
 											sx={{
 												display: 'flex',
@@ -439,6 +442,7 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 												{totals.totalTVA.toFixed(2)} MAD
 											</Typography>
 										</Box>
+
 										<Box
 											sx={{
 												display: 'flex',
@@ -452,6 +456,22 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 											</Typography>
 											<Typography variant="h5" fontWeight={900} color="primary">
 												{totals.totalTTC.toFixed(2)} MAD
+											</Typography>
+										</Box>
+
+										<Box
+											sx={{
+												display: 'flex',
+												flexDirection: 'column',
+												alignItems: isMobile ? 'flex-start' : 'center',
+												minWidth: 140,
+											}}
+										>
+											<Typography variant="subtitle2" fontWeight={600}>
+												TOTAL TTC APRES REMISE
+											</Typography>
+											<Typography variant="h5" fontWeight={900} color="primary">
+												{totals.totalTTCApresRemise.toFixed(2)} MAD
 											</Typography>
 										</Box>
 									</Stack>
