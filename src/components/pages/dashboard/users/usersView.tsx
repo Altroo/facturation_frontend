@@ -271,7 +271,7 @@ const UsersViewClient: React.FC<Props> = ({ session, id }) => {
 									</CardContent>
 								</Card>
 
-								{userData?.companies && userData.companies.length > 0 && (
+								{userData?.companies && userData.companies.length > 0 ? (
 									<Card elevation={2} sx={{ borderRadius: 2 }}>
 										<CardContent sx={{ p: 3 }}>
 											<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
@@ -329,6 +329,26 @@ const UsersViewClient: React.FC<Props> = ({ session, id }) => {
 													</Paper>
 												))}
 											</Stack>
+										</CardContent>
+									</Card>
+								) : (
+									<Card elevation={2} sx={{ borderRadius: 2 }}>
+										<CardContent sx={{ p: 3 }}>
+											<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+												<BusinessIcon color="primary" />
+												<Typography variant="h6" fontWeight={700}>
+													Sociétés gérées (0)
+												</Typography>
+											</Stack>
+											<Divider sx={{ mb: 2 }} />
+											<Box sx={{ py: 3, textAlign: 'center' }}>
+												<Stack alignItems="center" justifyContent="center" spacing={1} sx={{ py: 3 }}>
+													<BusinessIcon sx={{ fontSize: 48, color: 'grey.400' }} />
+													<Typography variant="body1" color="text.secondary">
+														Aucune société assignée
+													</Typography>
+												</Stack>
+											</Box>
 										</CardContent>
 									</Card>
 								)}
