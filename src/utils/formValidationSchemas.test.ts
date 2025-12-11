@@ -340,7 +340,7 @@ describe('Zod Schema Validation', () => {
 					client: 2,
 					date_devis: '2025-12-04',
 					numero_demande_prix_client: 'REQ123',
-					mode_paiement: 0,
+					mode_paiement: null,
 					remarque: 'note',
 				}),
 			).not.toThrow();
