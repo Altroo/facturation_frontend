@@ -1,4 +1,3 @@
-// store.test.ts
 import { jest } from '@jest/globals';
 import type { Middleware } from '@reduxjs/toolkit';
 import type { SagaStore, RootState, AppDispatch } from './store';
@@ -59,6 +58,14 @@ jest.mock('@/store/services/parameter', () => ({
 	modeReglementApi: makeApiMock('modeReglementApi'),
 	modePaiementApi: makeApiMock('modePaiementApi'),
 }));
+jest.mock('@/store/services/devi', () => ({
+	__esModule: true,
+	deviApi: makeApiMock('deviApi'),
+}));
+jest.mock('@/store/services/factureProForma', () => ({
+	__esModule: true,
+	factureProFormaApi: makeApiMock('factureProFormaApi'),
+}));
 
 // --- Mock rootSaga only (use a lightweight generator) ---
 jest.mock('@/store/sagas', () => ({
@@ -101,11 +108,13 @@ describe('Redux Saga Store', () => {
 		expect(state).toHaveProperty('uniteApi');
 		expect(state).toHaveProperty('modeReglementApi');
 		expect(state).toHaveProperty('modePaiementApi');
+		expect(state).toHaveProperty('deviApi');
+		expect(state).toHaveProperty('factureProFormaApi');
 	});
 
 	it('attaches sagaTask after running rootSaga', () => {
 		expect(store.sagaTask).toBeDefined();
-		expect(typeof store.sagaTask?.isRunning).toBe('function'); // avoids relying on long-running saga
+		expect(typeof store.sagaTask?.isRunning).toBe('function');
 	});
 
 	it('dispatch works with thunk actions', async () => {

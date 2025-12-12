@@ -1,7 +1,7 @@
 import type { NbrEmployeType, CiviliteType, ManagedByType, ManagedByWriteOnlyType } from '@/types/companyTypes';
 import type { TypeClientType } from '@/types/clientTypes';
 import type { TypeArticleType } from '@/types/articleTypes';
-import type { TypeDevisStatus, TypeRemiseType } from '@/types/devisTypes';
+import type { TypeFactureDevisStatus, TypeRemiseType } from '@/types/devisTypes';
 
 export class UserClass {
 	constructor(
@@ -156,7 +156,7 @@ export class ModeReglementClass {
 	) {}
 }
 
-export class DeviLineClass {
+export class DeviFactureLineClass {
 	constructor(
 		public readonly id: number,
 		public article: number,
@@ -181,7 +181,7 @@ export class DeviClass {
 		public mode_paiement: number | null,
 		public readonly mode_paiement_name: string | null,
 		public remarque: string | null,
-		public statut: TypeDevisStatus,
+		public statut: TypeFactureDevisStatus,
 		public readonly date_created: string,
 		public readonly date_updated: string,
 		public readonly created_by_user_id: number,
@@ -189,9 +189,37 @@ export class DeviClass {
 		public readonly lignes_count: number,
 		public remise_type: TypeRemiseType,
 		public remise: number,
+		public readonly total_ht: number,
 		public readonly total_tva: number,
 		public readonly total_ttc: number,
 		public readonly total_ttc_apres_remise: number,
-		public lignes: Array<DeviLineClass>,
+		public lignes: Array<DeviFactureLineClass>,
+	) {}
+}
+
+export class FactureProFormaClass {
+	constructor(
+		public readonly id: number,
+		public numero_facture: string,
+		public client: number,
+		public readonly client_name: string | null,
+		public date_facture: string,
+		public numero_bon_commande_client: string | null,
+		public mode_paiement: number | null,
+		public readonly mode_paiement_name: string | null,
+		public remarque: string | null,
+		public statut: TypeFactureDevisStatus,
+		public readonly date_created: string,
+		public readonly date_updated: string,
+		public readonly created_by_user_id: number,
+		public readonly created_by_user_name: string | null,
+		public readonly lignes_count: number,
+		public remise_type: TypeRemiseType,
+		public remise: number,
+		public readonly total_ht: number,
+		public readonly total_tva: number,
+		public readonly total_ttc: number,
+		public readonly total_ttc_apres_remise: number,
+		public lignes: Array<DeviFactureLineClass>,
 	) {}
 }

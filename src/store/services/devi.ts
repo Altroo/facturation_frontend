@@ -6,7 +6,7 @@ import type { DeviClass } from '@/models/Classes';
 import type { ApiErrorResponseType, PaginationResponseType, SuccessResponseType } from '@/types/_initTypes';
 import type { RootState } from '@/store/store';
 import { initToken } from '@/store/slices/_initSlice';
-import { TypeDevisStatus } from '@/types/devisTypes';
+import { TypeFactureDevisStatus } from '@/types/devisTypes';
 
 export const deviApi = createApi({
 	reducerPath: 'deviApi',
@@ -79,7 +79,10 @@ export const deviApi = createApi({
 			}),
 			invalidatesTags: ['Devi'],
 		}),
-		patchStatut: builder.mutation<SuccessResponseType<DeviClass>, { id: number; data: { statut: TypeDevisStatus } }>({
+		patchStatut: builder.mutation<
+			SuccessResponseType<DeviClass>,
+			{ id: number; data: { statut: TypeFactureDevisStatus } }
+		>({
 			query: ({ id, data }) => ({
 				url: `${process.env.NEXT_PUBLIC_DEVIS_SWITCH_STATUT}${id}/`,
 				method: 'PATCH',

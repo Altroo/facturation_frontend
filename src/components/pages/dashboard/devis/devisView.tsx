@@ -117,7 +117,7 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-	const { data: devis, isLoading, error } = useGetDeviQuery({ id }, { skip: !token });
+	const { data: rawData, isLoading, error } = useGetDeviQuery({ id }, { skip: !token });
 	const { data: rawArticlesData, isLoading: isArticlesLoading } = useGetArticlesListQuery(
 		{ company_id, with_pagination: false, archived: false },
 		{ skip: !token },
@@ -135,25 +135,46 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 
 	// Calculate totals
 	const totals = useMemo(() => {
-		if (!devis) return { totalHT: 0, totalTVA: 0, totalTTC: 0, totalTTCApresRemise: 0 };
+		if (!rawData) return { totalHT: 0, totalTVA: 0, totalTTC: 0, totalTTCApresRemise: 0 };
 
-		// backend provides total_ttc, total_tva and total_ttc_apres_remise (no total_ht)
-		const hasServerTotals =
-			devis.total_ttc !== undefined && devis.total_tva !== undefined && devis.total_ttc_apres_remise !== undefined;
+		// detect any server-provided totals
+		const hasAnyServerTotal =
+			rawData.total_ht !== undefined ||
+			rawData.total_ttc !== undefined ||
+			rawData.total_tva !== undefined ||
+			rawData.total_ttc_apres_remise !== undefined;
 
-		if (hasServerTotals) {
-			const serverTotalTTC = Number(devis.total_ttc ?? 0) || 0;
-			const serverTotalTVA = Number(devis.total_tva ?? 0) || 0;
-			const serverTotalTTCAfter = Number(devis.total_ttc_apres_remise ?? 0) || 0;
+		if (hasAnyServerTotal) {
+			const serverTotalHTRaw = rawData.total_ht !== undefined ? Number(rawData.total_ht ?? 0) : undefined;
+			const serverTotalTTCRaw = rawData.total_ttc !== undefined ? Number(rawData.total_ttc ?? 0) : undefined;
+			const serverTotalTVARaw = rawData.total_tva !== undefined ? Number(rawData.total_tva ?? 0) : undefined;
+			const serverTotalTTCAfterRaw =
+				rawData.total_ttc_apres_remise !== undefined ? Number(rawData.total_ttc_apres_remise ?? 0) : undefined;
 
-			// derive HT from TTC - TVA since backend doesn't provide total_ht
-			const serverTotalHT = Math.max(0, serverTotalTTC - serverTotalTVA);
+			// derive missing values when possible
+			const serverTotalHT =
+				serverTotalHTRaw !== undefined
+					? serverTotalHTRaw
+					: serverTotalTTCRaw !== undefined && serverTotalTVARaw !== undefined
+						? Math.max(0, serverTotalTTCRaw - serverTotalTVARaw)
+						: 0;
+
+			const serverTotalTTC =
+				serverTotalTTCRaw !== undefined
+					? serverTotalTTCRaw
+					: serverTotalTVARaw !== undefined
+						? serverTotalHT + serverTotalTVARaw
+						: serverTotalHT; // best-effort
+
+			const serverTotalTVA = serverTotalTVARaw !== undefined ? serverTotalTVARaw : serverTotalTTC - serverTotalHT;
+
+			const serverTotalTTCAfter = serverTotalTTCAfterRaw !== undefined ? serverTotalTTCAfterRaw : serverTotalTTC;
 
 			return {
-				totalHT: serverTotalHT,
-				totalTVA: Math.max(0, serverTotalTVA),
-				totalTTC: Math.max(0, serverTotalTTC),
-				totalTTCApresRemise: Math.max(0, serverTotalTTCAfter),
+				totalHT: Math.max(0, Number(serverTotalHT)),
+				totalTVA: Math.max(0, Number(serverTotalTVA)),
+				totalTTC: Math.max(0, Number(serverTotalTTC)),
+				totalTTCApresRemise: Math.max(0, Number(serverTotalTTCAfter)),
 			};
 		}
 
@@ -161,7 +182,7 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 		let rawTotalHT = 0;
 		let rawTotalTVA = 0;
 
-		(devis.lignes || []).forEach((ligne) => {
+		(rawData.lignes || []).forEach((ligne) => {
 			const article = articlesData?.find((a) => a.id === ligne.article);
 			if (!article) return;
 
@@ -190,11 +211,11 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 		let finalTotalTVA = rawTotalTVA;
 		let finalTotalTTC = rawTotalTTC;
 
-		if (devis.remise && devis.remise > 0 && devis.remise_type) {
-			if (devis.remise_type === 'Pourcentage') {
-				finalTotalHT = rawTotalHT * (1 - devis.remise / 100);
-			} else if (devis.remise_type === 'Fixe') {
-				finalTotalHT = Math.max(0, rawTotalHT - devis.remise);
+		if (rawData.remise && rawData.remise > 0 && rawData.remise_type) {
+			if (rawData.remise_type === 'Pourcentage') {
+				finalTotalHT = rawTotalHT * (1 - rawData.remise / 100);
+			} else if (rawData.remise_type === 'Fixe') {
+				finalTotalHT = Math.max(0, rawTotalHT - rawData.remise);
 			}
 			const ratio = rawTotalHT > 0 ? finalTotalHT / rawTotalHT : 0;
 			finalTotalTVA = rawTotalTVA * ratio;
@@ -207,7 +228,7 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 			totalTTC: Math.max(0, rawTotalTTC),
 			totalTTCApresRemise: Math.max(0, finalTotalTTC),
 		};
-	}, [devis, articlesData]);
+	}, [rawData, articlesData]);
 
 	// Lines DataGrid columns (read-only)
 	const linesColumns: GridColDef[] = [
@@ -379,7 +400,7 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 		},
 	];
 
-	const dateDevisLabel = formatDate(devis?.date_devis as string | null) || '-';
+	const dateDevisLabel = formatDate(rawData?.date_devis as string | null) || '-';
 
 	return (
 		<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
@@ -506,7 +527,7 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 									<Stack spacing={0}>
-										<InfoRow icon={<NumbersIcon />} label="Numéro du devis" value={devis?.numero_devis} />
+										<InfoRow icon={<NumbersIcon />} label="Numéro du devis" value={rawData?.numero_devis} />
 										<Divider />
 										<InfoRow
 											icon={<CalendarTodayIcon />}
@@ -516,7 +537,7 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									</Stack>
 								</CardContent>
 							</Card>
-							{/* Statut du devis */}
+							{/* Statut du rawData */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
 									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
@@ -527,7 +548,11 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 									<Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-										<Chip label={devis?.statut || '-'} color={getStatutColor(devis?.statut || '')} variant="outlined" />
+										<Chip
+											label={rawData?.statut || '-'}
+											color={getStatutColor(rawData?.statut || '')}
+											variant="outlined"
+										/>
 									</Box>
 								</CardContent>
 							</Card>
@@ -541,7 +566,7 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 										</Typography>
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
-									<InfoRow icon={<PersonIcon />} label="Client" value={devis?.client_name} />
+									<InfoRow icon={<PersonIcon />} label="Client" value={rawData?.client_name} />
 								</CardContent>
 							</Card>
 							{/* Payment & Terms Card */}
@@ -555,12 +580,12 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 									<Stack spacing={0}>
-										<InfoRow icon={<PaymentIcon />} label="Mode de paiement" value={devis?.mode_paiement_name} />
+										<InfoRow icon={<PaymentIcon />} label="Mode de paiement" value={rawData?.mode_paiement_name} />
 										<Divider />
 										<InfoRow
 											icon={<ReceiptIcon />}
 											label="Numéro demande prix client"
-											value={devis?.numero_demande_prix_client}
+											value={rawData?.numero_demande_prix_client}
 										/>
 									</Stack>
 								</CardContent>
@@ -577,7 +602,7 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									<Divider sx={{ mb: 3 }} />
 									<Box sx={{ height: 500 }}>
 										<DataGrid
-											rows={(devis?.lignes || []).map((ligne, index) => ({
+											rows={(rawData?.lignes || []).map((ligne, index) => ({
 												...ligne,
 												id: index,
 											}))}
@@ -602,7 +627,7 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 								</CardContent>
 							</Card>
 							{/* Global Remise */}
-							{devis?.remise && devis?.remise > 0 && (
+							{rawData?.remise && rawData?.remise > 0 && (
 								<Card elevation={2} sx={{ borderRadius: 2 }}>
 									<CardContent sx={{ p: 3 }}>
 										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
@@ -615,13 +640,13 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 										<InfoRow
 											icon={<DiscountIcon />}
 											label="Remise appliquée"
-											value={`${devis.remise}${devis.remise_type === 'Pourcentage' ? '%' : ' MAD'}`}
+											value={`${rawData.remise}${rawData.remise_type === 'Pourcentage' ? '%' : ' MAD'}`}
 										/>
 									</CardContent>
 								</Card>
 							)}
 							{/* Remark */}
-							{devis?.remarque && (
+							{rawData?.remarque && (
 								<Card elevation={2} sx={{ borderRadius: 2 }}>
 									<CardContent sx={{ p: 3 }}>
 										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
@@ -631,7 +656,7 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 											</Typography>
 										</Stack>
 										<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
-										<InfoRow icon={<NotesIcon />} label="Remarque" value={devis?.remarque} />
+										<InfoRow icon={<NotesIcon />} label="Remarque" value={rawData?.remarque} />
 									</CardContent>
 								</Card>
 							)}
@@ -649,16 +674,16 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 										<InfoRow
 											icon={<CalendarTodayIcon />}
 											label="Date de création"
-											value={formatDate(devis?.date_created as string | null)}
+											value={formatDate(rawData?.date_created as string | null)}
 										/>
 										<Divider />
 										<InfoRow
 											icon={<CalendarTodayIcon />}
 											label="Dernière modification"
-											value={formatDate(devis?.date_updated as string | null)}
+											value={formatDate(rawData?.date_updated as string | null)}
 										/>
 										<Divider />
-										<InfoRow icon={<PersonIcon />} label="Créé par" value={devis?.created_by_user_name} />
+										<InfoRow icon={<PersonIcon />} label="Créé par" value={rawData?.created_by_user_name} />
 									</Stack>
 								</CardContent>
 							</Card>

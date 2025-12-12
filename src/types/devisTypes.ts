@@ -1,4 +1,4 @@
-export type TypeDevisStatus = 'Brouillon' | 'Envoyé' | 'Accepté' | 'Refusé' | 'Annulé' | 'Expiré';
+export type TypeFactureDevisStatus = 'Brouillon' | 'Envoyé' | 'Accepté' | 'Refusé' | 'Annulé' | 'Expiré';
 
 export type TypeRemiseType = '' | 'Pourcentage' | 'Fixe';
 

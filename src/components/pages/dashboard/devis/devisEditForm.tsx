@@ -54,7 +54,7 @@ import { setFormikAutoErrors } from '@/utils/helpers';
 import { coordonneeTextInputTheme, customDropdownTheme } from '@/utils/themes';
 import { CLIENTS_ADD, DEVIS_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
-import { DeviSchemaType, TypeDevisStatus } from '@/types/devisTypes';
+import { DeviSchemaType, TypeFactureDevisStatus } from '@/types/devisTypes';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import { ArticleClass, ClientClass, type ModePaiementClass } from '@/models/Classes';
 import { useGetClientsListQuery } from '@/store/services/client';
@@ -766,7 +766,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const handleStatutChange = async (newValue: string) => {
 		try {
 			if (!newValue) return;
-			await patchStatut({ id: id!, data: { statut: newValue as TypeDevisStatus } }).unwrap();
+			await patchStatut({ id: id!, data: { statut: newValue as TypeFactureDevisStatus } }).unwrap();
 			// trigger parent success toast / refresh
 			onSuccess('Statut mis à jour avec succès.');
 		} catch {

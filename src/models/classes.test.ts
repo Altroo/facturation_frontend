@@ -11,11 +11,12 @@ import {
 	EmplacementClass,
 	ModePaiementClass,
 	ModeReglementClass,
-	DeviLineClass,
+	DeviFactureLineClass,
 	DeviClass,
+	FactureProFormaClass,
 } from './Classes';
 import type { TypeArticleType } from '@/types/articleTypes';
-import type { TypeRemiseType, TypeDevisStatus } from '@/types/devisTypes';
+import type { TypeRemiseType, TypeFactureDevisStatus } from '@/types/devisTypes';
 
 describe('UserClass', () => {
 	it('creates a user instance with given properties', () => {
@@ -240,9 +241,9 @@ describe('ModeReglementClass', () => {
 	});
 });
 
-describe('DeviLineClass', () => {
+describe('DeviFactureLineClass', () => {
 	it('creates a devi line instance with given properties', () => {
-		const line = new DeviLineClass(
+		const line = new DeviFactureLineClass(
 			1,
 			10,
 			'Article name',
@@ -250,7 +251,7 @@ describe('DeviLineClass', () => {
 			50,
 			75,
 			3,
-			'PERCENT' as TypeRemiseType,
+			'Pourcentage' as TypeRemiseType,
 			10,
 		);
 
@@ -261,15 +262,15 @@ describe('DeviLineClass', () => {
 		expect(line.prix_achat).toBe(50);
 		expect(line.prix_vente).toBe(75);
 		expect(line.quantity).toBe(3);
-		expect(line.remise_type).toBe('PERCENT');
+		expect(line.remise_type).toBe('Pourcentage');
 		expect(line.remise).toBe(10);
 	});
 });
 
 describe('DeviClass', () => {
 	it('creates a devi instance with lines, totals and metadata', () => {
-		const line1 = new DeviLineClass(1, 1, 'A', 'Desc A', 20, 30, 1, 'AMOUNT' as TypeRemiseType, 0);
-		const line2 = new DeviLineClass(2, 2, 'B', 'Desc B', 40, 60, 2, 'PERCENT' as TypeRemiseType, 10);
+		const line1 = new DeviFactureLineClass(1, 1, 'A', 'Desc A', 20, 30, 1, 'AMOUNT' as TypeRemiseType, 0);
+		const line2 = new DeviFactureLineClass(2, 2, 'B', 'Desc B', 40, 60, 2, 'PERCENT' as TypeRemiseType, 10);
 
 		const devi = new DeviClass(
 			1,
@@ -281,15 +282,16 @@ describe('DeviClass', () => {
 			1,
 			'Cash',
 			'Some remark',
-			'DRAFT' as TypeDevisStatus,
+			'Brouillon' as TypeFactureDevisStatus,
 			'2023-01-01',
 			'2023-01-02',
 			10,
 			'Creator',
 			2,
-			'PERCENT' as TypeRemiseType,
+			'Pourcentage' as TypeRemiseType,
 			5,
 			18,
+			50,
 			480,
 			456,
 			[line1, line2],
@@ -303,20 +305,78 @@ describe('DeviClass', () => {
 		expect(devi.mode_paiement).toBe(1);
 		expect(devi.mode_paiement_name).toBe('Cash');
 		expect(devi.remarque).toBe('Some remark');
-		expect(devi.statut).toBe('DRAFT');
+		expect(devi.statut).toBe('Brouillon');
 		expect(devi.date_created).toBe('2023-01-01');
 		expect(devi.date_updated).toBe('2023-01-02');
 		expect(devi.created_by_user_id).toBe(10);
 		expect(devi.created_by_user_name).toBe('Creator');
 		expect(devi.lignes_count).toBe(2);
-		expect(devi.remise_type).toBe('PERCENT');
+		expect(devi.remise_type).toBe('Pourcentage');
 		expect(devi.remise).toBe(5);
-		expect(devi.total_tva).toBe(18);
+		expect(devi.total_ht).toBe(18);
+		expect(devi.total_tva).toBe(50);
 		expect(devi.total_ttc).toBe(480);
 		expect(devi.total_ttc_apres_remise).toBe(456);
 		expect(Array.isArray(devi.lignes)).toBe(true);
 		expect(devi.lignes.length).toBe(2);
 		expect(devi.lignes[0].id).toBe(1);
 		expect(devi.lignes[1].id).toBe(2);
+	});
+});
+
+describe('FactureProFormaClass', () => {
+	it('creates a facture pro forma instance with lines, totals and metadata', () => {
+		const line1 = new DeviFactureLineClass(1, 10, 'Article A', 'Desc A', 20, 30, 1, 'AMOUNT' as TypeRemiseType, 0);
+		const line2 = new DeviFactureLineClass(2, 11, 'Article B', 'Desc B', 40, 60, 2, 'PERCENT' as TypeRemiseType, 10);
+
+		const facture = new FactureProFormaClass(
+			1,
+			'FP-1',
+			5,
+			'ClientName',
+			'2023-02-01',
+			null,
+			1,
+			'Cash',
+			'Some remark',
+			'Brouillon' as TypeFactureDevisStatus,
+			'2023-02-01',
+			'2023-02-02',
+			10,
+			'Creator',
+			2,
+			'Pourcentage' as TypeRemiseType,
+			5,
+			100,
+			20,
+			120,
+			114,
+			[line1, line2],
+		);
+
+		expect(facture.id).toBe(1);
+		expect(facture.numero_facture).toBe('FP-1');
+		expect(facture.client).toBe(5);
+		expect(facture.client_name).toBe('ClientName');
+		expect(facture.date_facture).toBe('2023-02-01');
+		expect(facture.mode_paiement).toBe(1);
+		expect(facture.mode_paiement_name).toBe('Cash');
+		expect(facture.remarque).toBe('Some remark');
+		expect(facture.statut).toBe('Brouillon');
+		expect(facture.date_created).toBe('2023-02-01');
+		expect(facture.date_updated).toBe('2023-02-02');
+		expect(facture.created_by_user_id).toBe(10);
+		expect(facture.created_by_user_name).toBe('Creator');
+		expect(facture.lignes_count).toBe(2);
+		expect(facture.remise_type).toBe('Pourcentage');
+		expect(facture.remise).toBe(5);
+		expect(facture.total_ht).toBe(100);
+		expect(facture.total_tva).toBe(20);
+		expect(facture.total_ttc).toBe(120);
+		expect(facture.total_ttc_apres_remise).toBe(114);
+		expect(Array.isArray(facture.lignes)).toBe(true);
+		expect(facture.lignes.length).toBe(2);
+		expect(facture.lignes[0].id).toBe(1);
+		expect(facture.lignes[1].id).toBe(2);
 	});
 });

@@ -1,6 +1,6 @@
 import { deviApi } from '@/store/services/devi';
 import { setupApiStore } from '@/store/setupApiStore';
-import { TypeDevisStatus } from '@/types/devisTypes';
+import { TypeFactureDevisStatus } from '@/types/devisTypes';
 
 beforeAll(() => {
 	process.env.NEXT_PUBLIC_DEVIS_LIST ||= 'https://example.com/devis/';
@@ -74,7 +74,7 @@ describe('deviApi endpoints', () => {
 		const result = await storeRef.store.dispatch(
 			deviApi.endpoints.patchStatut.initiate({
 				id: 1,
-				data: { statut: 'Brouillon' as TypeDevisStatus },
+				data: { statut: 'Brouillon' as TypeFactureDevisStatus },
 			}),
 		);
 		expect(result.error).toBeUndefined();

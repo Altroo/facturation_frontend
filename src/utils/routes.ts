@@ -36,11 +36,18 @@ export const ARTICLES_EDIT = (id: number, company_id: number) =>
 // Devis
 export const DEVIS_LIST = `${SITE_ROOT}dashboard/devis`;
 export const DEVIS_ADD = (company_id: number) => `${SITE_ROOT}dashboard/devis/new/?company_id=${company_id}`;
-export const DEVIS_LINES_ADD = (id: number) => `${SITE_ROOT}dashboard/devis/${id}/add-lines/`;
 export const DEVIS_VIEW = (id: number, company_id: number) =>
 	`${SITE_ROOT}dashboard/devis/${id}/?company_id=${company_id}`;
 export const DEVIS_EDIT = (id: number, company_id: number) =>
 	`${SITE_ROOT}dashboard/devis/${id}/edit/?company_id=${company_id}`;
+// Facture Pro Forma
+export const FACTURE_PRO_FORMA_LIST = `${SITE_ROOT}dashboard/facture-pro-forma`;
+export const FACTURE_PRO_FORMA_ADD = (company_id: number) =>
+	`${SITE_ROOT}dashboard/facture-pro-forma/new/?company_id=${company_id}`;
+export const FACTURE_PRO_FORMA_VIEW = (id: number, company_id: number) =>
+	`${SITE_ROOT}dashboard/facture-pro-forma/${id}/?company_id=${company_id}`;
+export const FACTURE_PRO_FORMA_EDIT = (id: number, company_id: number) =>
+	`${SITE_ROOT}dashboard/facture-pro-forma/${id}/edit/?company_id=${company_id}`;
 // Users
 export const USERS_LIST = `${SITE_ROOT}dashboard/users`;
 export const USERS_ADD = `${SITE_ROOT}dashboard/users/new`;
