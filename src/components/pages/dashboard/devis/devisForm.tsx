@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/devis/devis.module.sass';
@@ -33,9 +33,7 @@ import {
 	Numbers as NumbersIcon,
 	Receipt as ReceiptIcon,
 	Notes as NotesIcon,
-	Add as AddIcon,
 	Delete as DeleteIcon,
-	ShoppingCart as ShoppingCartIcon,
 	Warning as WarningIcon,
 	BusinessOutlined,
 } from '@mui/icons-material';
@@ -54,7 +52,7 @@ import { setFormikAutoErrors } from '@/utils/helpers';
 import { coordonneeTextInputTheme, customDropdownTheme } from '@/utils/themes';
 import { CLIENTS_ADD, DEVIS_LIST, DEVIS_EDIT } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
-import { DeviSchemaType, TypeFactureDevisStatus } from '@/types/devisTypes';
+import { DeviLineFormValues, DeviSchemaType, TypeFactureDevisStatus } from '@/types/devisTypes';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import { ArticleClass, ClientClass, type ModePaiementClass } from '@/models/Classes';
 import { useGetClientsListQuery } from '@/store/services/client';
@@ -70,8 +68,7 @@ import {
 	usePatchStatutMutation,
 	useGetNumDevisQuery,
 } from '@/store/services/devi';
-import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
-import { frFR } from '@mui/x-data-grid/locales';
+import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import AddArticleModal from '@/components/shared/addArticleModal/addArticleModal';
 import GlobalRemiseModal from '@/components/shared/globalRemiseModal/globalRemiseModal';
@@ -80,6 +77,7 @@ import { devisStatusItemsList, remiseTypeItemsList } from '@/utils/rawData';
 import { useAddModePaiementMutation } from '@/store/services/parameter';
 import AddEntityModal from '@/components/desktop/modals/addEntityModal/addEntityModal';
 import FactureDevisTotalsCard from '@/components/shared/factureDevistotalCard/factureDevisTotalsCard';
+import LinesGrid from '@/components/shared/linesGrid/linesGrid';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -89,17 +87,6 @@ type FormikContentProps = {
 	id?: number;
 	isEditMode: boolean;
 };
-
-interface DeviLineFormValues {
-	id?: number;
-	article: number;
-	designation: string;
-	prix_achat: number;
-	prix_vente: number;
-	quantity: number;
-	remise_type?: 'Pourcentage' | 'Fixe' | '';
-	remise?: number;
-}
 
 const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
 	const { token, company_id, id, isEditMode } = props;
@@ -331,102 +318,109 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	}, [formik.values.lignes, formik.values.remise, formik.values.remise_type, getArticleById]);
 
 	// Validation function for line changes
-	const validateLineChange = (
-		index: number,
-		field: keyof DeviLineFormValues,
-		value: string | number,
-	): string | null => {
-		const lignes = (formik.values.lignes as DeviLineFormValues[]) || [];
-		const ligne = lignes[index];
-		if (!ligne) return null;
+	const validateLineChange = useCallback(
+		(index: number, field: keyof DeviLineFormValues, value: string | number): string | null => {
+			const lignes = (formik.values.lignes as DeviLineFormValues[]) || [];
+			const ligne = lignes[index];
+			if (!ligne) return null;
 
-		if (field === 'prix_vente') {
-			const numValue = typeof value === 'string' ? parseFloat(value) : Number(value);
-			const achat = Number(ligne.prix_achat ?? 0);
-			if (Number.isFinite(numValue) && numValue < achat) {
-				return `Le prix de vente (${numValue.toFixed(2)} MAD) doit être supérieur ou égal au prix d'achat (${achat.toFixed(2)} MAD)`;
-			}
-		}
-
-		if (field === 'remise') {
-			const numValue = typeof value === 'string' ? parseFloat(value) : Number(value);
-			if (!Number.isFinite(numValue) || numValue < 0) {
-				return 'La remise doit être positive ou nulle';
-			}
-
-			const currentRemiseType = ligne.remise_type;
-			const remiseValue = numValue ?? 0;
-
-			if (currentRemiseType === 'Pourcentage' && remiseValue > 100) {
-				return 'La remise en pourcentage doit être entre 0 et 100';
-			}
-
-			if (currentRemiseType === 'Fixe') {
-				const basePrice = Number(ligne.prix_vente ?? 0) * Number(ligne.quantity ?? 1);
-				if (remiseValue > basePrice) {
-					return `La remise fixe (${remiseValue.toFixed(2)} MAD) ne peut pas dépasser le total HT de la ligne (${basePrice.toFixed(2)} MAD)`;
+			if (field === 'prix_vente') {
+				const numValue = typeof value === 'string' ? parseFloat(value) : Number(value);
+				const achat = Number(ligne.prix_achat ?? 0);
+				if (Number.isFinite(numValue) && numValue < achat) {
+					return `Le prix de vente (${numValue.toFixed(2)} MAD) doit être supérieur ou égal au prix d'achat (${achat.toFixed(2)} MAD)`;
 				}
 			}
-		}
 
-		return null;
-	};
+			if (field === 'remise') {
+				const numValue = typeof value === 'string' ? parseFloat(value) : Number(value);
+				if (!Number.isFinite(numValue) || numValue < 0) {
+					return 'La remise doit être positive ou nulle';
+				}
+
+				const currentRemiseType = ligne.remise_type;
+				const remiseValue = numValue ?? 0;
+
+				if (currentRemiseType === 'Pourcentage' && remiseValue > 100) {
+					return 'La remise en pourcentage doit être entre 0 et 100';
+				}
+
+				if (currentRemiseType === 'Fixe') {
+					const basePrice = Number(ligne.prix_vente ?? 0) * Number(ligne.quantity ?? 1);
+					if (remiseValue > basePrice) {
+						return `La remise fixe (${remiseValue.toFixed(2)} MAD) ne peut pas dépasser le total HT de la ligne (${basePrice.toFixed(2)} MAD)`;
+					}
+				}
+			}
+
+			return null;
+		},
+		[formik.values.lignes],
+	);
 
 	// Handle line changes with validation
-	const handleLineChange = (index: number, field: keyof DeviLineFormValues, value: string | number) => {
-		const updatedLines = [...(formik.values.lignes as DeviLineFormValues[])];
-		updatedLines[index] = { ...updatedLines[index], [field]: value };
+	const handleLineChange = useCallback(
+		(index: number, field: keyof DeviLineFormValues, value: string | number) => {
+			// Validation logic (unchanged)
+			setValidationErrors((prevErrors) => {
+				const newErrors = { ...prevErrors };
+				const errorKey = `ligne_${index}_${field}`;
+				const remiseErrorKey = `ligne_${index}_remise`;
 
-		const newErrors = { ...validationErrors };
-		const errorKey = `ligne_${index}_${field}`;
-		const remiseErrorKey = `ligne_${index}_remise`;
+				if (field === 'remise_type') {
+					delete newErrors[remiseErrorKey];
+					if (value) {
+						const lignes = formik.values.lignes as DeviLineFormValues[];
+						if (lignes[index]?.remise && lignes[index].remise > 0) {
+							const newRemiseType = value as 'Pourcentage' | 'Fixe' | '';
+							const ligne = lignes[index];
+							const article = articlesData?.find((a) => a.id === ligne.article);
+							let remiseError: string | null = null;
+							const remiseValue = ligne.remise ?? 0;
 
-		if (field === 'remise_type') {
-			// Clear remise error when type changes
-			delete newErrors[remiseErrorKey];
+							if (newRemiseType === 'Pourcentage' && remiseValue > 100) {
+								remiseError = 'La remise en pourcentage doit être entre 0 et 100';
+							} else if (newRemiseType === 'Fixe') {
+								const basePrice = ligne.prix_vente * ligne.quantity;
+								const tvaRate = article?.tva || 20;
+								const lineTotalWithTVA = basePrice * (1 + tvaRate / 100);
+								if (remiseValue > lineTotalWithTVA) {
+									remiseError = `La remise fixe (${remiseValue.toFixed(2)} MAD) ne peut pas dépasser le total de la ligne (${lineTotalWithTVA.toFixed(2)} MAD)`;
+								}
+							}
 
-			if (!value) {
-				updatedLines[index].remise = 0;
-			} else {
-				// When type changes, revalidate remise with the new type
-				if (updatedLines[index].remise && updatedLines[index].remise > 0) {
-					const newRemiseType = value as 'Pourcentage' | 'Fixe' | '';
-					const ligne = updatedLines[index];
-					const article = articlesData?.find((a) => a.id === ligne.article);
-					let remiseError: string | null = null;
-
-					const remiseValue = ligne.remise ?? 0;
-
-					if (newRemiseType === 'Pourcentage' && remiseValue > 100) {
-						remiseError = 'La remise en pourcentage doit être entre 0 et 100';
-					} else if (newRemiseType === 'Fixe') {
-						const basePrice = ligne.prix_vente * ligne.quantity;
-						const tvaRate = article?.tva || 20;
-						const lineTotalWithTVA = basePrice * (1 + tvaRate / 100);
-						if (remiseValue > lineTotalWithTVA) {
-							remiseError = `La remise fixe (${remiseValue.toFixed(2)} MAD) ne peut pas dépasser le total de la ligne (${lineTotalWithTVA.toFixed(2)} MAD)`;
+							if (remiseError) {
+								newErrors[remiseErrorKey] = remiseError;
+							} else {
+								delete newErrors[remiseErrorKey];
+							}
 						}
 					}
-
-					if (remiseError) {
-						newErrors[remiseErrorKey] = remiseError;
+				} else {
+					const validationError = validateLineChange(index, field, value);
+					if (validationError) {
+						newErrors[errorKey] = validationError;
 					} else {
-						delete newErrors[remiseErrorKey];
+						delete newErrors[errorKey];
 					}
 				}
-			}
-		} else {
-			const validationError = validateLineChange(index, field, value);
-			if (validationError) {
-				newErrors[errorKey] = validationError;
-			} else {
-				delete newErrors[errorKey];
-			}
-		}
 
-		setValidationErrors(newErrors);
-		formik.setFieldValue('lignes', updatedLines);
-	};
+				return newErrors;
+			});
+
+			// Update formik state
+			const currentLines = (formik.values.lignes as DeviLineFormValues[]) || [];
+			const updatedLines = [...currentLines];
+			updatedLines[index] = { ...updatedLines[index], [field]: value };
+
+			if (field === 'remise_type' && !value) {
+				updatedLines[index].remise = 0;
+			}
+
+			formik.setFieldValue('lignes', updatedLines);
+		},
+		[articlesData, validateLineChange, formik],
+	);
 
 	// Validate global remise
 	const validateGlobalRemise = (type: string, value: number): string | null => {
@@ -535,257 +529,276 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		setDeleteLineIndex(null);
 	};
 
-	// Lines DataGrid columns
-	const linesColumns: GridColDef[] = [
-		{
-			field: 'photo',
-			headerName: 'Photo',
-			width: 70,
-			renderCell: (params: GridRenderCellParams) => {
-				const article = getArticleById(params.row.article);
-				return (
-					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-						<Avatar
-							src={article?.photo as string | undefined}
-							alt={article?.reference as string | undefined}
-							variant="rounded"
-							sx={{ width: 40, height: 40 }}
-						/>
-					</Box>
-				);
-			},
-			sortable: false,
-			filterable: false,
-			editable: false,
-		},
-		{
-			field: 'reference',
-			headerName: 'Référence',
-			width: 110,
-			renderCell: (params: GridRenderCellParams) => {
-				const article = getArticleById(params.row.article);
-				const value = article?.reference ?? '';
-				return (
-					<DarkTooltip title={value}>
-						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
-								{value}
-							</Typography>
-						</Box>
-					</DarkTooltip>
-				);
-			},
-		},
-		{
-			field: 'designation',
-			headerName: 'Désignation',
-			width: 150,
-			renderCell: (params: GridRenderCellParams) => {
-				const value = params.row.designation ?? '';
-				return (
-					<DarkTooltip title={value}>
-						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
-								{value}
-							</Typography>
-						</Box>
-					</DarkTooltip>
-				);
-			},
-		},
-		{
-			field: 'marque',
-			headerName: 'Marque',
-			width: 130,
-			renderCell: (params: GridRenderCellParams) => {
-				const article = getArticleById(params.row.article);
-				const value = article?.marque_name ?? '';
-				return (
-					<DarkTooltip title={value}>
-						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
-								{value}
-							</Typography>
-						</Box>
-					</DarkTooltip>
-				);
-			},
-		},
-		{
-			field: 'categorie',
-			headerName: 'Catégorie',
-			width: 130,
-			renderCell: (params: GridRenderCellParams) => {
-				const article = getArticleById(params.row.article);
-				const value = article?.categorie_name ?? '';
-				return (
-					<DarkTooltip title={value}>
-						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
-								{value}
-							</Typography>
-						</Box>
-					</DarkTooltip>
-				);
-			},
-		},
-		{
-			field: 'prix_achat',
-			headerName: "Prix d'achat",
-			width: 120,
-			renderCell: (params: GridRenderCellParams) => {
-				const value = Number(params.row.prix_achat ?? 0).toFixed(2) + ' MAD';
-				return (
-					<DarkTooltip title={value}>
-						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%', color: 'grey.500' }}>
-								{value}
-							</Typography>
-						</Box>
-					</DarkTooltip>
-				);
-			},
-		},
-		{
-			field: 'prix_vente',
-			headerName: 'Prix de vente',
-			width: 150,
-			renderCell: (params: GridRenderCellParams) => {
-				const rowIndex = Number(params.id);
-				const value = (formik.values.lignes as DeviLineFormValues[])[rowIndex]?.prix_vente ?? 0;
-				const errorKey = `ligne_${rowIndex}_prix_vente`;
-				const hasError = !!validationErrors[errorKey];
-				return (
-					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-						<Tooltip title={validationErrors[errorKey] || ''} arrow>
-							<Box sx={{ width: '100%' }}>
-								<CustomTextInput
-									id={`prix_vente_${rowIndex}`}
-									type="number"
-									value={String(value)}
-									onChange={(e) =>
-										handleLineChange(rowIndex, 'prix_vente', parseFloat((e.target as HTMLInputElement).value) || 0)
-									}
-									fullWidth
-									size="small"
-									theme={inputTheme}
-									error={hasError}
-									slotProps={{ input: { style: { textAlign: 'center' } } }}
-								/>
-							</Box>
-						</Tooltip>
-					</Box>
-				);
-			},
-		},
-		{
-			field: 'quantity',
-			headerName: 'Quantité',
-			width: 120,
-			renderCell: (params: GridRenderCellParams) => {
-				const rowIndex = Number(params.id);
-				const value = (formik.values.lignes as DeviLineFormValues[])[rowIndex]?.quantity ?? 1;
-				return (
-					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-						<CustomTextInput
-							id={`quantity_${rowIndex}`}
-							type="number"
-							value={String(value)}
-							onChange={(e) =>
-								handleLineChange(rowIndex, 'quantity', parseInt((e.target as HTMLInputElement).value) || 1)
-							}
-							fullWidth
-							size="small"
-							theme={inputTheme}
-							slotProps={{ input: { style: { textAlign: 'center' } } }}
-						/>
-					</Box>
-				);
-			},
-		},
-		{
-			field: 'remise_type',
-			headerName: 'Type remise',
-			width: 210,
-			renderCell: (params: GridRenderCellParams) => {
-				const rowIndex = Number(params.id);
-				const value = (formik.values.lignes as DeviLineFormValues[])[rowIndex]?.remise_type ?? '';
-				return (
-					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-						<CustomDropDownSelect
-							id={`remise_type_${rowIndex}`}
-							label=""
-							size="small"
-							items={remiseTypeItemsList}
-							value={value}
-							onChange={(e) => handleLineChange(rowIndex, 'remise_type', e.target.value)}
-							theme={customDropdownTheme()}
-						/>
-					</Box>
-				);
-			},
-		},
-		{
-			field: 'remise',
-			headerName: 'Remise',
-			width: 170,
-			renderCell: (params: GridRenderCellParams) => {
-				const rowIndex = Number(params.id);
-				const ligne = (formik.values.lignes as DeviLineFormValues[])[rowIndex];
-				const value = ligne?.remise ?? 0;
-				const errorKey = `ligne_${rowIndex}_remise`;
-				const hasError = !!validationErrors[errorKey];
-				const remiseTypeValue = ligne?.remise_type;
+	const handleLineChangeRef = useRef(handleLineChange);
+	useEffect(() => {
+		handleLineChangeRef.current = handleLineChange;
+	}, [handleLineChange]);
 
-				return (
-					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-						<Tooltip title={validationErrors[errorKey] || ''} arrow>
-							<Box sx={{ width: '100%' }}>
-								<CustomTextInput
-									id={`remise_${rowIndex}`}
-									type="number"
-									value={String(value)}
-									onChange={(e) =>
-										handleLineChange(rowIndex, 'remise', parseFloat((e.target as HTMLInputElement).value) || 0)
-									}
-									fullWidth
-									size="small"
-									theme={inputTheme}
-									error={hasError}
-									disabled={!remiseTypeValue}
-									endIcon={
-										remiseTypeValue && (
-											<InputAdornment position="end">{remiseTypeValue === 'Pourcentage' ? '%' : 'MAD'}</InputAdornment>
-										)
-									}
-									slotProps={{ input: { style: { textAlign: 'center' } } }}
-								/>
+	// Lines DataGrid columns
+	const linesColumns: GridColDef[] = useMemo(
+		() => [
+			{
+				field: 'photo',
+				headerName: 'Photo',
+				width: 70,
+				renderCell: (params: GridRenderCellParams) => {
+					const article = getArticleById(params.row.article);
+					return (
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Avatar
+								src={article?.photo as string | undefined}
+								alt={article?.reference as string | undefined}
+								variant="rounded"
+								sx={{ width: 40, height: 40 }}
+							/>
+						</Box>
+					);
+				},
+				sortable: false,
+				filterable: false,
+				editable: false,
+			},
+			{
+				field: 'reference',
+				headerName: 'Référence',
+				width: 110,
+				renderCell: (params: GridRenderCellParams) => {
+					const article = getArticleById(params.row.article);
+					const value = article?.reference ?? '';
+					return (
+						<DarkTooltip title={value}>
+							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+								<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+									{value}
+								</Typography>
 							</Box>
-						</Tooltip>
-					</Box>
-				);
+						</DarkTooltip>
+					);
+				},
 			},
-		},
-		{
-			field: 'actions',
-			headerName: 'Actions',
-			width: 100,
-			sortable: false,
-			filterable: false,
-			renderCell: (params: GridRenderCellParams) => {
-				const rowIndex = Number(params.id);
-				return (
-					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-						<Tooltip title="Supprimer">
-							<IconButton size="small" color="error" onClick={() => handleDeleteLine(rowIndex)}>
-								<DeleteIcon />
-							</IconButton>
-						</Tooltip>
-					</Box>
-				);
+			{
+				field: 'designation',
+				headerName: 'Désignation',
+				width: 150,
+				renderCell: (params: GridRenderCellParams) => {
+					const value = params.row.designation ?? '';
+					return (
+						<DarkTooltip title={value}>
+							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+								<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+									{value}
+								</Typography>
+							</Box>
+						</DarkTooltip>
+					);
+				},
 			},
-		},
-	];
+			{
+				field: 'marque',
+				headerName: 'Marque',
+				width: 130,
+				renderCell: (params: GridRenderCellParams) => {
+					const article = getArticleById(params.row.article);
+					const value = article?.marque_name ?? '';
+					return (
+						<DarkTooltip title={value}>
+							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+								<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+									{value}
+								</Typography>
+							</Box>
+						</DarkTooltip>
+					);
+				},
+			},
+			{
+				field: 'categorie',
+				headerName: 'Catégorie',
+				width: 130,
+				renderCell: (params: GridRenderCellParams) => {
+					const article = getArticleById(params.row.article);
+					const value = article?.categorie_name ?? '';
+					return (
+						<DarkTooltip title={value}>
+							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+								<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+									{value}
+								</Typography>
+							</Box>
+						</DarkTooltip>
+					);
+				},
+			},
+			{
+				field: 'prix_achat',
+				headerName: "Prix d'achat",
+				width: 120,
+				renderCell: (params: GridRenderCellParams) => {
+					const value = Number(params.row.prix_achat ?? 0).toFixed(2) + ' MAD';
+					return (
+						<DarkTooltip title={value}>
+							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+								<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%', color: 'grey.500' }}>
+									{value}
+								</Typography>
+							</Box>
+						</DarkTooltip>
+					);
+				},
+			},
+			{
+				field: 'prix_vente',
+				headerName: 'Prix de vente',
+				width: 150,
+				renderCell: (params: GridRenderCellParams) => {
+					const rowIndex = Number(params.id);
+					const value = (formik.values.lignes as DeviLineFormValues[])[rowIndex]?.prix_vente ?? 0;
+					const errorKey = `ligne_${rowIndex}_prix_vente`;
+					const hasError = !!validationErrors[errorKey];
+					return (
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Tooltip title={validationErrors[errorKey] || ''} arrow>
+								<Box sx={{ width: '100%' }}>
+									<CustomTextInput
+										id={`prix_vente_${rowIndex}`}
+										type="number"
+										value={String(value)}
+										onChange={(e) =>
+											handleLineChangeRef.current(
+												rowIndex,
+												'prix_vente',
+												parseFloat((e.target as HTMLInputElement).value) || 0,
+											)
+										}
+										fullWidth
+										size="small"
+										theme={inputTheme}
+										error={hasError}
+										slotProps={{ input: { style: { textAlign: 'center' } } }}
+									/>
+								</Box>
+							</Tooltip>
+						</Box>
+					);
+				},
+			},
+			{
+				field: 'quantity',
+				headerName: 'Quantité',
+				width: 120,
+				renderCell: (params: GridRenderCellParams) => {
+					const rowIndex = Number(params.id);
+					const value = (formik.values.lignes as DeviLineFormValues[])[rowIndex]?.quantity ?? 1;
+					return (
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<CustomTextInput
+								id={`quantity_${rowIndex}`}
+								type="number"
+								value={String(value)}
+								onChange={(e) =>
+									handleLineChangeRef.current(rowIndex, 'quantity', parseInt((e.target as HTMLInputElement).value) || 1)
+								}
+								fullWidth
+								size="small"
+								theme={inputTheme}
+								slotProps={{ input: { style: { textAlign: 'center' } } }}
+							/>
+						</Box>
+					);
+				},
+			},
+			{
+				field: 'remise_type',
+				headerName: 'Type remise',
+				width: 210,
+				renderCell: (params: GridRenderCellParams) => {
+					const rowIndex = Number(params.id);
+					const value = (formik.values.lignes as DeviLineFormValues[])[rowIndex]?.remise_type ?? '';
+					return (
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<CustomDropDownSelect
+								id={`remise_type_${rowIndex}`}
+								label=""
+								size="small"
+								items={remiseTypeItemsList}
+								value={value}
+								onChange={(e) => handleLineChangeRef.current(rowIndex, 'remise_type', e.target.value)}
+								theme={customDropdownTheme()}
+							/>
+						</Box>
+					);
+				},
+			},
+			{
+				field: 'remise',
+				headerName: 'Remise',
+				width: 170,
+				renderCell: (params: GridRenderCellParams) => {
+					const rowIndex = Number(params.id);
+					const ligne = (formik.values.lignes as DeviLineFormValues[])[rowIndex];
+					const value = ligne?.remise ?? 0;
+					const errorKey = `ligne_${rowIndex}_remise`;
+					const hasError = !!validationErrors[errorKey];
+					const remiseTypeValue = ligne?.remise_type;
+
+					return (
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Tooltip title={validationErrors[errorKey] || ''} arrow>
+								<Box sx={{ width: '100%' }}>
+									<CustomTextInput
+										id={`remise_${rowIndex}`}
+										type="number"
+										value={String(value)}
+										onChange={(e) =>
+											handleLineChangeRef.current(
+												rowIndex,
+												'remise',
+												parseFloat((e.target as HTMLInputElement).value) || 0,
+											)
+										}
+										fullWidth
+										size="small"
+										theme={inputTheme}
+										error={hasError}
+										disabled={!remiseTypeValue}
+										endIcon={
+											remiseTypeValue && (
+												<InputAdornment position="end">
+													{remiseTypeValue === 'Pourcentage' ? '%' : 'MAD'}
+												</InputAdornment>
+											)
+										}
+										slotProps={{ input: { style: { textAlign: 'center' } } }}
+									/>
+								</Box>
+							</Tooltip>
+						</Box>
+					);
+				},
+			},
+			{
+				field: 'actions',
+				headerName: 'Actions',
+				width: 100,
+				sortable: false,
+				filterable: false,
+				renderCell: (params: GridRenderCellParams) => {
+					const rowIndex = Number(params.id);
+					return (
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Tooltip title="Supprimer">
+								<IconButton size="small" color="error" onClick={() => handleDeleteLine(rowIndex)}>
+									<DeleteIcon />
+								</IconButton>
+							</Tooltip>
+						</Box>
+					);
+				},
+			},
+		],
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[getArticleById, validationErrors],
+	);
 
 	// Get existing article IDs to prevent duplicates
 	const existingArticleIds = useMemo(() => {
@@ -855,6 +868,24 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		isNumDevisLoading;
 
 	const hasValidationErrors = Object.keys(validationErrors).length > 0;
+
+	const dataGridRowsRef = useRef<Array<DeviLineFormValues & { id: number }>>([]);
+
+	const dataGridRows = useMemo(() => {
+		const newRows = Array.isArray(formik.values.lignes)
+			? (formik.values.lignes as DeviLineFormValues[]).map((ligne, index) => ({
+					...ligne,
+					id: index,
+				}))
+			: [];
+
+		// Only update ref if content actually changed
+		if (JSON.stringify(dataGridRowsRef.current) !== JSON.stringify(newRows)) {
+			dataGridRowsRef.current = newRows;
+		}
+
+		return dataGridRowsRef.current;
+	}, [formik.values.lignes]);
 
 	return (
 		<LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
@@ -1112,57 +1143,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 							{/* Lines Card - only in edit mode */}
 							{isEditMode && (
-								<Card elevation={2} sx={{ borderRadius: 2 }}>
-									<CardContent sx={{ p: 3 }}>
-										<Stack
-											direction="row"
-											spacing={2}
-											alignItems="center"
-											justifyContent="space-between"
-											sx={{ mb: 2 }}
-										>
-											<Stack direction="row" spacing={2} alignItems="center">
-												<ShoppingCartIcon color="primary" />
-												<Typography variant="h6" fontWeight={700}>
-													Lignes du devis
-												</Typography>
-											</Stack>
-											<Button
-												variant="contained"
-												startIcon={<AddIcon />}
-												onClick={() => setShowAddArticleModal(true)}
-												size="small"
-											>
-												Ajouter article
-											</Button>
-										</Stack>
-										<Divider sx={{ mb: 3 }} />
-										<Box sx={{ height: 500 }}>
-											<DataGrid
-												rows={(formik.values.lignes as DeviLineFormValues[]).map((ligne, index) => ({
-													...ligne,
-													id: index,
-												}))}
-												showToolbar={true}
-												slotProps={{
-													toolbar: {
-														showQuickFilter: true,
-														quickFilterProps: { debounceMs: 500 },
-													},
-												}}
-												columns={linesColumns}
-												localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
-												disableRowSelectionOnClick
-												pageSizeOptions={[5, 10, 25, 50, 100]}
-												initialState={{
-													pagination: {
-														paginationModel: { pageSize: 10 },
-													},
-												}}
-											/>
-										</Box>
-									</CardContent>
-								</Card>
+								<LinesGrid
+									rows={dataGridRows}
+									columns={linesColumns}
+									onAddClick={() => setShowAddArticleModal(true)}
+									isLoading={isArticlesLoading}
+								/>
 							)}
 
 							{/* Discount & Global Remise - only in edit mode */}

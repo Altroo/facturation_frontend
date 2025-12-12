@@ -36,3 +36,14 @@ export type DeviAddSchemaType = {
 	remarque: string | null;
 	globalError?: string;
 };
+
+export interface DeviLineFormValues {
+	id?: number;
+	article: number;
+	designation: string;
+	prix_achat: number;
+	prix_vente: number;
+	quantity: number;
+	remise_type?: 'Pourcentage' | 'Fixe' | '';
+	remise?: number;
+}
