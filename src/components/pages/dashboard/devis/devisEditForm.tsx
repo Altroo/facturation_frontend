@@ -73,6 +73,7 @@ import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkToolt
 import { devisStatusItemsList, remiseTypeItemsList } from '@/utils/rawData';
 import { useAddModePaiementMutation } from '@/store/services/parameter';
 import AddEntityModal from '@/components/desktop/modals/addEntityModal/addEntityModal';
+import FactureDevisTotalsCard from '@/components/shared/factureDevistotalCard/factureDevisTotalsCard';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -844,82 +845,16 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					</Alert>
 				)}
 
-				{/* Totals Card - At the top */}
-				<Card elevation={3} sx={{ borderRadius: 2, bgcolor: 'primary.50' }}>
-					<CardContent sx={{ p: 3 }}>
-						<Stack
-							direction={isMobile ? 'column' : 'row'}
-							spacing={isMobile ? 2 : 4}
-							alignItems="center"
-							justifyContent="space-between"
-							divider={isMobile ? <Divider /> : <Divider orientation="vertical" flexItem />}
-						>
-							<Box
-								sx={{
-									display: 'flex',
-									flexDirection: 'column',
-									alignItems: isMobile ? 'flex-start' : 'center',
-									minWidth: 120,
-								}}
-							>
-								<Typography variant="subtitle2" fontWeight={600}>
-									TOTAL HT
-								</Typography>
-								<Typography variant="h6" fontWeight={800} color="text.secondary">
-									{totals.totalHT.toFixed(2)} MAD
-								</Typography>
-							</Box>
-
-							<Box
-								sx={{
-									display: 'flex',
-									flexDirection: 'column',
-									alignItems: isMobile ? 'flex-start' : 'center',
-									minWidth: 120,
-								}}
-							>
-								<Typography variant="subtitle2" fontWeight={600}>
-									TOTAL TVA
-								</Typography>
-								<Typography variant="h6" fontWeight={800} color="text.secondary">
-									{totals.totalTVA.toFixed(2)} MAD
-								</Typography>
-							</Box>
-
-							<Box
-								sx={{
-									display: 'flex',
-									flexDirection: 'column',
-									alignItems: isMobile ? 'flex-start' : 'center',
-									minWidth: 140,
-								}}
-							>
-								<Typography variant="subtitle2" fontWeight={600}>
-									TOTAL TTC
-								</Typography>
-								<Typography variant="h5" fontWeight={900} color="primary">
-									{totals.totalTTC.toFixed(2)} MAD
-								</Typography>
-							</Box>
-
-							<Box
-								sx={{
-									display: 'flex',
-									flexDirection: 'column',
-									alignItems: isMobile ? 'flex-start' : 'center',
-									minWidth: 140,
-								}}
-							>
-								<Typography variant="subtitle2" fontWeight={600}>
-									TOTAL TTC APRES REMISE
-								</Typography>
-								<Typography variant="h5" fontWeight={900} color="primary">
-									{totals.totalTTCApresRemise.toFixed(2)} MAD
-								</Typography>
-							</Box>
-						</Stack>
-					</CardContent>
-				</Card>
+				{/* Totals Card */}
+				<FactureDevisTotalsCard
+					totals={{
+						totalHT: totals.totalHT,
+						totalTVA: totals.totalTVA,
+						totalTTC: totals.totalTTC,
+						totalTTCApresRemise: totals.totalTTCApresRemise,
+					}}
+					isMobile={isMobile}
+				/>
 				{formik.errors.globalError && <span className={Styles.errorMessage}>{formik.errors.globalError}</span>}
 				{isLoading ? (
 					<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
