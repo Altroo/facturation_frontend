@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, DEVIS_LIST } from '@/utils/routes';
-import DevisEditForm from '@/components/pages/dashboard/devis/devisEditForm';
+// import DevisEditForm from '@/components/pages/dashboard/devis/devisEditForm';
+import DevisForm from '@/components/pages/dashboard/devis/devisForm';
 
 type DevisEditPageProps = {
 	params: Promise<{ id: number }>;
@@ -22,7 +23,7 @@ const DevisEditPage = async (props: DevisEditPageProps) => {
 		redirect(DEVIS_LIST);
 	}
 
-	return <DevisEditForm session={session} id={id} company_id={Number(company_id)} />;
+	return <DevisForm session={session} id={id} company_id={Number(company_id)} />;
 };
 
 export default DevisEditPage;
