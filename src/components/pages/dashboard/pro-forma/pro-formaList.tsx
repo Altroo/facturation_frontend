@@ -127,8 +127,8 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 			),
 		},
 		{
-			field: 'numero_demande_prix_client',
-			headerName: 'N° Dde de prix',
+			field: 'numero_bon_commande_client',
+			headerName: 'N° bon commande client',
 			width: 150,
 			renderCell: (params: GridRenderCellParams<FactureProFormaClass>) => (
 				<DarkTooltip title={params.value}>
