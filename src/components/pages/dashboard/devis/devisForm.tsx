@@ -662,7 +662,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		[getLines],
 	);
 
-	// typescript
 	const [renderPrixVenteCell, renderQuantityCell, renderRemiseCell] = useMemo<
 		[
 			(params: GridRenderCellParams) => React.JSX.Element,
