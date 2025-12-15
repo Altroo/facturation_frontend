@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, Stack, Typography, Avatar, Chip, IconButton, Tooltip } from '@mui/material';
-import { Edit, Delete, Visibility } from '@mui/icons-material';
+import { Edit, Delete, Visibility, AddOutlined } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/companies/companies.module.sass';
@@ -239,6 +239,7 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 									py: { xs: 0.8, sm: 1, md: 1 },
 									fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
 								}}
+								startIcon={<AddOutlined fontSize="small" />}
 							>
 								Nouvelle entreprise
 							</Button>

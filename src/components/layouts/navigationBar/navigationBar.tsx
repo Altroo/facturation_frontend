@@ -56,6 +56,7 @@ import {
 	DASHBOARD_EDIT_PROFILE,
 	DASHBOARD_PASSWORD,
 	DEVIS_LIST,
+	PRO_FORMA_LIST,
 	SITE_ROOT,
 	USERS_ADD,
 	USERS_LIST,
@@ -107,10 +108,7 @@ const getNavigationMenu = (isStaff: boolean) => {
 		factures_proformat: {
 			title: 'Factures Pro-forma',
 			icon: <ReceiptLongOutlinedIcon />,
-			items: [
-				{ title: 'Liste des factures pro-forma', label: 'Liste des factures', path: '/factures-pro-forma/list' },
-				{ title: 'Nouvelle facture pro-forma', label: 'Nouvelle facture', path: '/factures/new' },
-			],
+			items: [{ title: 'Liste des factures pro-forma', label: 'Liste des factures', path: PRO_FORMA_LIST }],
 		},
 		bonsLivraison: {
 			title: 'Bons de livraison',

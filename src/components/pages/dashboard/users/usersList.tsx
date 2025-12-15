@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, Stack, Typography, Avatar, IconButton, Tooltip } from '@mui/material';
-import { Edit, Delete, Visibility, CheckCircle, Cancel } from '@mui/icons-material';
+import { Edit, Delete, Visibility, CheckCircle, Cancel, AddOutlined } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/companies/companies.module.sass';
@@ -257,6 +257,7 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 									py: { xs: 0.8, sm: 1, md: 1 },
 									fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
 								}}
+								startIcon={<AddOutlined fontSize="small" />}
 							>
 								Nouveau utilisateur
 							</Button>

@@ -16,7 +16,7 @@ import {
 	Container,
 	Avatar,
 } from '@mui/material';
-import { Edit, Delete, Visibility, BusinessOutlined, Archive, Unarchive } from '@mui/icons-material';
+import { Edit, Delete, Visibility, BusinessOutlined, Archive, Unarchive, AddOutlined } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/clients/clients.module.sass';
@@ -307,6 +307,7 @@ const ArticlesListContent: React.FC<ArticleListContentProps> = (props: ArticleLi
 							py: { xs: 0.8, sm: 1, md: 1 },
 							fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
 						}}
+						startIcon={<AddOutlined fontSize="small" />}
 					>
 						Nouveau article
 					</Button>
