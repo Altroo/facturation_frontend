@@ -196,3 +196,13 @@ export const formatDate = (value: string | null) => {
 		second: '2-digit',
 	}).format(date);
 };
+
+export const parseNumber = (value: string | number): number | null => {
+	const n = typeof value === 'number' ? value : value.trim() === '' ? NaN : Number(value);
+	return Number.isFinite(n) ? n : null;
+};
+
+export const safeParseForInput = (raw: string): number | string => {
+	const parsed = parseNumber(raw);
+	return parsed === null ? raw : parsed;
+};

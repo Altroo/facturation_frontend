@@ -6,7 +6,7 @@ import { Box, Button, Card, CardContent, Divider, Stack, Typography } from '@mui
 import { Add as AddIcon, ShoppingCart as ShoppingCartIcon } from '@mui/icons-material';
 
 interface LinesGridProps {
-	rows: Array<DeviLineFormValues & { id: number }>;
+	rows: Array<DeviLineFormValues>;
 	columns: GridColDef[];
 	onAddClick: () => void;
 	isLoading: boolean;

@@ -81,6 +81,76 @@ import LinesGrid from '@/components/shared/linesGrid/linesGrid';
 
 const inputTheme = coordonneeTextInputTheme();
 
+// Validation error type
+type ValidationErrors = { [key: string]: string };
+
+// Consolidated validation helper
+const ValidationHelper = {
+	validatePrixVente(prixVente: number, prixAchat: number): string | null {
+		if (prixVente < prixAchat) {
+			return `Le prix de vente (${prixVente.toFixed(2)} MAD) doit être supérieur ou égal au prix d'achat (${prixAchat.toFixed(2)} MAD)`;
+		}
+		return null;
+	},
+
+	validateRemise(
+		remise: number,
+		remiseType: 'Pourcentage' | 'Fixe' | '' | undefined,
+		baseAmount: number,
+	): string | null {
+		if (!Number.isFinite(remise) || remise < 0) {
+			return 'La remise doit être positive ou nulle';
+		}
+
+		if (remiseType === 'Pourcentage' && remise > 100) {
+			return 'La remise en pourcentage doit être entre 0 et 100';
+		}
+
+		if (remiseType === 'Fixe' && remise > baseAmount) {
+			return `La remise fixe (${remise.toFixed(2)} MAD) ne peut pas dépasser le total (${baseAmount.toFixed(2)} MAD)`;
+		}
+
+		return null;
+	},
+
+	validateGlobalRemise(
+		remise: number,
+		remiseType: 'Pourcentage' | 'Fixe' | '',
+		totalHTBeforeGlobal: number,
+	): string | null {
+		if (!Number.isFinite(remise) || remise < 0) {
+			return 'La remise doit être positive ou nulle';
+		}
+
+		if (remiseType === 'Pourcentage' && remise > 100) {
+			return 'La remise en pourcentage doit être entre 0 et 100';
+		}
+
+		if (remiseType === 'Fixe' && remise > totalHTBeforeGlobal) {
+			return `La remise fixe globale (${remise.toFixed(2)} MAD) ne peut pas dépasser le total HT du devis (${totalHTBeforeGlobal.toFixed(2)} MAD)`;
+		}
+
+		return null;
+	},
+};
+
+// Generate stable row ID
+const generateRowId = (articleRef: number | string | Partial<ArticleClass> | undefined, index: number): string => {
+	let id: string | number;
+	if (articleRef == null) {
+		id = 'na';
+	} else if (typeof articleRef === 'number') {
+		id = articleRef;
+	} else if (typeof articleRef === 'string') {
+		const n = Number(articleRef);
+		id = Number.isFinite(n) ? n : articleRef;
+	} else {
+		const maybeId = (articleRef as Partial<ArticleClass>).id;
+		id = maybeId != null ? maybeId : 'na';
+	}
+	return `${id}-${index}`;
+};
+
 type FormikContentProps = {
 	token: string | undefined;
 	company_id: number;
@@ -115,12 +185,40 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	);
 	const articlesData = rawArticlesData as Array<Partial<ArticleClass>> | undefined;
 
+	// Create ref to store map (doesn't trigger re-renders)
+	const articlesMapRef = useRef<Map<number, Partial<ArticleClass>>>(new Map());
+	const [articlesMapSize, setArticlesMapSize] = useState<number>(0);
+
+	// Update ref when data changes
+	useEffect(() => {
+		const m = new Map<number, Partial<ArticleClass>>();
+		(articlesData || []).forEach((a) => {
+			if (a?.id != null) m.set(a.id, a);
+		});
+		articlesMapRef.current = m;
+		setArticlesMapSize(m.size);
+	}, [articlesData]);
+
+	// Use ref in callback - stable reference
 	const getArticleById = useCallback(
-		(articleId: number | undefined) => {
-			if (!articleId || !articlesData) return undefined;
-			return articlesData.find((a) => a.id === articleId);
+		(articleRef: number | string | Partial<ArticleClass> | undefined): Partial<ArticleClass> | undefined => {
+			if (articleRef == null) return undefined;
+
+			let idNum: number | undefined;
+			if (typeof articleRef === 'number') {
+				idNum = articleRef;
+			} else if (typeof articleRef === 'string') {
+				const parsed = Number(articleRef);
+				idNum = Number.isFinite(parsed) ? parsed : undefined;
+			} else {
+				const maybeId = (articleRef as Partial<ArticleClass>).id;
+				idNum = maybeId != null ? Number(maybeId) : undefined;
+			}
+
+			if (idNum == null || !Number.isFinite(idNum)) return undefined;
+			return articlesMapRef.current.get(Number(idNum));
 		},
-		[articlesData],
+		[],
 	);
 
 	const { data: rawClientsData, isLoading: isClientsLoading } = useGetClientsListQuery(
@@ -147,7 +245,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const [selectedArticles, setSelectedArticles] = useState<Set<number>>(new Set());
 
 	// Validation errors state
-	const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
+	const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
 
 	// Split numero_devis into number and year parts
 	const initialNumDevis = isEditMode ? (rawData?.numero_devis ?? '') : (rawNumDevisData?.numero_devis ?? '');
@@ -219,6 +317,39 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		},
 	});
 
+	const getLines = useCallback((): DeviLineFormValues[] => {
+		return Array.isArray(formik.values.lignes) ? (formik.values.lignes as DeviLineFormValues[]) : [];
+	}, [formik.values.lignes]);
+
+	// Calculate total HT before global remise (used in multiple places)
+	const calculateTotalHTBeforeGlobal = useCallback((): number => {
+		let total = 0;
+		const lignes = getLines();
+
+		lignes.forEach((ligne) => {
+			const article = getArticleById(ligne.article);
+			if (!article) return;
+
+			const prixVente = Number(ligne.prix_vente ?? 0);
+			const quantity = Number(ligne.quantity ?? 1);
+			const baseHT = prixVente * (isFinite(quantity) ? quantity : 1);
+
+			let discountedHT = baseHT;
+			const remiseVal = Number(ligne.remise ?? 0);
+			if (remiseVal > 0 && ligne.remise_type) {
+				if (ligne.remise_type === 'Pourcentage') {
+					discountedHT = baseHT * (1 - remiseVal / 100);
+				} else if (ligne.remise_type === 'Fixe') {
+					discountedHT = Math.max(0, baseHT - remiseVal);
+				}
+			}
+
+			if (Number.isFinite(discountedHT)) total += discountedHT;
+		});
+
+		return total;
+	}, [getLines, getArticleById]);
+
 	// Prepare client items for dropdown
 	const clientItems = useMemo(() => {
 		if (!clientsData) return [];
@@ -258,10 +389,22 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	// Calculate totals
 	const totals = useMemo(() => {
+		// If articles are still loading and map is empty, avoid incorrect calculation
+		if (isArticlesLoading && articlesMapRef.current.size === 0) {
+			return {
+				totalHT: 0,
+				totalTVA: 0,
+				totalTTC: 0,
+				totalHTAfterRemise: 0,
+				totalTVAAfterRemise: 0,
+				totalTTCApresRemise: 0,
+			};
+		}
+
 		let rawTotalHT = 0;
 		let rawTotalTVA = 0;
 
-		const lignes = (formik.values.lignes as DeviLineFormValues[]) || [];
+		const lignes = getLines();
 
 		lignes.forEach((ligne) => {
 			const article = getArticleById(ligne.article);
@@ -315,157 +458,106 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			totalTVAAfterRemise: Math.max(0, Number.isFinite(finalTotalTVA) ? finalTotalTVA : 0),
 			totalTTCApresRemise: Math.max(0, Number.isFinite(finalTotalTTC) ? finalTotalTTC : 0),
 		};
-	}, [formik.values.lignes, formik.values.remise, formik.values.remise_type, getArticleById]);
-
-	// Validation function for line changes
-	const validateLineChange = useCallback(
-		(index: number, field: keyof DeviLineFormValues, value: string | number): string | null => {
-			const lignes = (formik.values.lignes as DeviLineFormValues[]) || [];
-			const ligne = lignes[index];
-			if (!ligne) return null;
-
-			if (field === 'prix_vente') {
-				const numValue = typeof value === 'string' ? parseFloat(value) : Number(value);
-				const achat = Number(ligne.prix_achat ?? 0);
-				if (Number.isFinite(numValue) && numValue < achat) {
-					return `Le prix de vente (${numValue.toFixed(2)} MAD) doit être supérieur ou égal au prix d'achat (${achat.toFixed(2)} MAD)`;
-				}
-			}
-
-			if (field === 'remise') {
-				const numValue = typeof value === 'string' ? parseFloat(value) : Number(value);
-				if (!Number.isFinite(numValue) || numValue < 0) {
-					return 'La remise doit être positive ou nulle';
-				}
-
-				const currentRemiseType = ligne.remise_type;
-				const remiseValue = numValue ?? 0;
-
-				if (currentRemiseType === 'Pourcentage' && remiseValue > 100) {
-					return 'La remise en pourcentage doit être entre 0 et 100';
-				}
-
-				if (currentRemiseType === 'Fixe') {
-					const basePrice = Number(ligne.prix_vente ?? 0) * Number(ligne.quantity ?? 1);
-					if (remiseValue > basePrice) {
-						return `La remise fixe (${remiseValue.toFixed(2)} MAD) ne peut pas dépasser le total HT de la ligne (${basePrice.toFixed(2)} MAD)`;
-					}
-				}
-			}
-
-			return null;
-		},
-		[formik.values.lignes],
-	);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [isArticlesLoading, getLines, formik.values.remise, formik.values.remise_type, getArticleById, articlesMapSize]);
 
 	// Handle line changes with validation
 	const handleLineChange = useCallback(
 		(index: number, field: keyof DeviLineFormValues, value: string | number) => {
-			// Validation logic (unchanged)
+			const lignes = getLines();
+			const ligne = lignes[index];
+			if (!ligne) return;
+
+			// Update validation errors
 			setValidationErrors((prevErrors) => {
 				const newErrors = { ...prevErrors };
 				const errorKey = `ligne_${index}_${field}`;
 				const remiseErrorKey = `ligne_${index}_remise`;
 
 				if (field === 'remise_type') {
+					// Clear remise error when type changes
 					delete newErrors[remiseErrorKey];
-					if (value) {
-						const lignes = formik.values.lignes as DeviLineFormValues[];
-						if (lignes[index]?.remise && lignes[index].remise > 0) {
-							const newRemiseType = value as 'Pourcentage' | 'Fixe' | '';
-							const ligne = lignes[index];
-							const article = articlesData?.find((a) => a.id === ligne.article);
-							let remiseError: string | null = null;
-							const remiseValue = ligne.remise ?? 0;
 
-							if (newRemiseType === 'Pourcentage' && remiseValue > 100) {
-								remiseError = 'La remise en pourcentage doit être entre 0 et 100';
-							} else if (newRemiseType === 'Fixe') {
-								const basePrice = ligne.prix_vente * ligne.quantity;
-								const tvaRate = article?.tva || 20;
-								const lineTotalWithTVA = basePrice * (1 + tvaRate / 100);
-								if (remiseValue > lineTotalWithTVA) {
-									remiseError = `La remise fixe (${remiseValue.toFixed(2)} MAD) ne peut pas dépasser le total de la ligne (${lineTotalWithTVA.toFixed(2)} MAD)`;
-								}
-							}
+					// Re-validate remise with new type if remise exists
+					if (value && ligne.remise && ligne.remise > 0) {
+						const newRemiseType = value as 'Pourcentage' | 'Fixe' | '';
+						const baseAmount = Number(ligne.prix_vente ?? 0) * Number(ligne.quantity ?? 1);
+						const remiseError = ValidationHelper.validateRemise(ligne.remise, newRemiseType, baseAmount);
 
-							if (remiseError) {
-								newErrors[remiseErrorKey] = remiseError;
-							} else {
-								delete newErrors[remiseErrorKey];
-							}
+						if (remiseError) {
+							newErrors[remiseErrorKey] = remiseError;
 						}
 					}
-				} else {
-					const validationError = validateLineChange(index, field, value);
-					if (validationError) {
-						newErrors[errorKey] = validationError;
+				} else if (field === 'prix_vente') {
+					// Validate prix_vente
+					const numValue = typeof value === 'string' ? parseFloat(value) : Number(value);
+					const prixAchat = Number(ligne.prix_achat ?? 0);
+					const error = ValidationHelper.validatePrixVente(numValue, prixAchat);
+
+					if (error) {
+						newErrors[errorKey] = error;
 					} else {
 						delete newErrors[errorKey];
 					}
+
+					// Re-validate line remise if it exists (base amount changed)
+					if (ligne.remise && ligne.remise > 0 && ligne.remise_type) {
+						const newBaseAmount = numValue * Number(ligne.quantity ?? 1);
+						const remiseError = ValidationHelper.validateRemise(ligne.remise, ligne.remise_type, newBaseAmount);
+
+						if (remiseError) {
+							newErrors[remiseErrorKey] = remiseError;
+						} else {
+							delete newErrors[remiseErrorKey];
+						}
+					}
+				} else if (field === 'quantity') {
+					// Re-validate line remise if it exists (base amount changed)
+					if (ligne.remise && ligne.remise > 0 && ligne.remise_type) {
+						const numValue = typeof value === 'string' ? parseInt(value) : Number(value);
+						const newBaseAmount = Number(ligne.prix_vente ?? 0) * numValue;
+						const remiseError = ValidationHelper.validateRemise(ligne.remise, ligne.remise_type, newBaseAmount);
+
+						if (remiseError) {
+							newErrors[remiseErrorKey] = remiseError;
+						} else {
+							delete newErrors[remiseErrorKey];
+						}
+					}
+				} else if (field === 'remise') {
+					// Validate remise value
+					const numValue = typeof value === 'string' ? parseFloat(value) : Number(value);
+					const baseAmount = Number(ligne.prix_vente ?? 0) * Number(ligne.quantity ?? 1);
+					const error = ValidationHelper.validateRemise(numValue, ligne.remise_type, baseAmount);
+
+					if (error) {
+						newErrors[errorKey] = error;
+					} else {
+						delete newErrors[errorKey];
+					}
+				} else {
+					delete newErrors[errorKey];
 				}
 
 				return newErrors;
 			});
 
 			// Update formik state
-			const currentLines = (formik.values.lignes as DeviLineFormValues[]) || [];
-			const updatedLines = [...currentLines];
+			const updatedLines = [...lignes];
 			updatedLines[index] = { ...updatedLines[index], [field]: value };
 
+			// Reset remise if remise_type is cleared
 			if (field === 'remise_type' && !value) {
 				updatedLines[index].remise = 0;
 			}
 
 			formik.setFieldValue('lignes', updatedLines);
 		},
-		[articlesData, validateLineChange, formik],
+		[getLines, formik],
 	);
 
-	// Validate global remise
-	const validateGlobalRemise = (type: string, value: number): string | null => {
-		if (!Number.isFinite(value) || value < 0) {
-			return 'La remise doit être positive ou nulle';
-		}
-
-		if (type === 'Pourcentage' && value > 100) {
-			return 'La remise en pourcentage doit être entre 0 et 100';
-		}
-
-		if (type === 'Fixe') {
-			let totalHTBeforeGlobal = 0;
-			const lignes = (formik.values.lignes as DeviLineFormValues[]) || [];
-			lignes.forEach((ligne) => {
-				const article = getArticleById(ligne.article);
-				if (!article) return;
-
-				const prixVente = Number(ligne.prix_vente ?? 0);
-				const quantity = Number(ligne.quantity ?? 1);
-				const baseHT = prixVente * (isFinite(quantity) ? quantity : 1);
-
-				let discountedHT = baseHT;
-				const remiseVal = Number(ligne.remise ?? 0);
-				if (remiseVal > 0 && ligne.remise_type) {
-					if (ligne.remise_type === 'Pourcentage') {
-						discountedHT = baseHT * (1 - remiseVal / 100);
-					} else if (ligne.remise_type === 'Fixe') {
-						discountedHT = Math.max(0, baseHT - remiseVal);
-					}
-				}
-
-				if (Number.isFinite(discountedHT)) totalHTBeforeGlobal += discountedHT;
-			});
-
-			if (value > totalHTBeforeGlobal) {
-				return `La remise fixe globale (${value.toFixed(2)} MAD) ne peut pas dépasser le total HT du devis (${totalHTBeforeGlobal.toFixed(2)} MAD)`;
-			}
-		}
-
-		return null;
-	};
-
 	// Handle adding articles
-	const handleAddArticles = () => {
+	const handleAddArticles = useCallback(() => {
 		const selectedIds = Array.from(selectedArticles ?? new Set());
 		const newLines = selectedIds
 			.map((articleId) => {
@@ -478,56 +570,62 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					prix_achat: article.prix_achat || 0,
 					prix_vente: article.prix_vente || 0,
 					quantity: 1,
-					remise_type: '' as const,
+					remise_type: '' as '' | 'Pourcentage' | 'Fixe' | undefined, // Fix type
 					remise: 0,
-				};
+				} as DeviLineFormValues; // Explicit cast
 			})
-			.filter((line) => line !== null) as DeviLineFormValues[];
+			.filter((line): line is DeviLineFormValues => line !== null);
 
-		formik.setFieldValue('lignes', [...formik.values.lignes, ...newLines]);
+		const currentLines = getLines();
+		formik.setFieldValue('lignes', [...currentLines, ...newLines]);
 		setShowAddArticleModal(false);
 		setSelectedArticles(new Set());
-	};
+	}, [selectedArticles, getArticleById, getLines, formik]);
 
 	// Handle delete line
-	const handleDeleteLine = (index: number) => {
+	const handleDeleteLine = useCallback((index: number) => {
 		setDeleteLineIndex(index);
 		setShowDeleteConfirm(true);
-	};
+	}, []);
 
-	const confirmDeleteLine = () => {
-		if (deleteLineIndex !== null) {
-			const updatedLines = formik.values.lignes.filter((_, i) => i !== deleteLineIndex);
-			formik.setFieldValue('lignes', updatedLines);
+	const confirmDeleteLine = useCallback(() => {
+		if (deleteLineIndex === null) return;
 
-			const newErrors = { ...validationErrors };
-			Object.keys(newErrors).forEach((key) => {
-				if (key.startsWith(`ligne_${deleteLineIndex}_`)) {
-					delete newErrors[key];
-				}
-			});
+		const currentLines = getLines();
+		const updatedLines = currentLines.filter((_, i) => i !== deleteLineIndex);
+		formik.setFieldValue('lignes', updatedLines);
 
-			const reindexedErrors: { [key: string]: string } = {};
-			Object.entries(newErrors).forEach(([key, value]) => {
+		// Clean up validation errors
+		setValidationErrors((prevErrors) => {
+			const newErrors: ValidationErrors = {};
+
+			Object.entries(prevErrors).forEach(([key, value]) => {
 				const match = key.match(/^ligne_(\d+)_(.+)$/);
 				if (match) {
 					const lineIndex = parseInt(match[1]);
 					const field = match[2];
+
+					// Skip errors for deleted line
+					if (lineIndex === deleteLineIndex) return;
+
+					// Re-index errors for lines after deleted one
 					if (lineIndex > deleteLineIndex) {
-						reindexedErrors[`ligne_${lineIndex - 1}_${field}`] = value;
+						newErrors[`ligne_${lineIndex - 1}_${field}`] = value;
 					} else {
-						reindexedErrors[key] = value;
+						newErrors[key] = value;
 					}
 				} else {
-					reindexedErrors[key] = value;
+					// Keep non-line errors
+					newErrors[key] = value;
 				}
 			});
 
-			setValidationErrors(reindexedErrors);
-		}
+			return newErrors;
+		});
+
 		setShowDeleteConfirm(false);
 		setDeleteLineIndex(null);
-	};
+	}, [deleteLineIndex, getLines, formik]);
 
 	const handleLineChangeRef = useRef(handleLineChange);
 	useEffect(() => {
@@ -651,8 +749,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				headerName: 'Prix de vente',
 				width: 150,
 				renderCell: (params: GridRenderCellParams) => {
-					const rowIndex = Number(params.id);
-					const value = (formik.values.lignes as DeviLineFormValues[])[rowIndex]?.prix_vente ?? 0;
+					const rowIndex = params.row.rowIndex;
+					const value = getLines()[rowIndex]?.prix_vente ?? 0;
 					const errorKey = `ligne_${rowIndex}_prix_vente`;
 					const hasError = !!validationErrors[errorKey];
 					return (
@@ -687,8 +785,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				headerName: 'Quantité',
 				width: 120,
 				renderCell: (params: GridRenderCellParams) => {
-					const rowIndex = Number(params.id);
-					const value = (formik.values.lignes as DeviLineFormValues[])[rowIndex]?.quantity ?? 1;
+					const rowIndex = params.row.rowIndex;
+					const value = getLines()[rowIndex]?.quantity ?? 1;
 					return (
 						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
 							<CustomTextInput
@@ -712,8 +810,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				headerName: 'Type remise',
 				width: 210,
 				renderCell: (params: GridRenderCellParams) => {
-					const rowIndex = Number(params.id);
-					const value = (formik.values.lignes as DeviLineFormValues[])[rowIndex]?.remise_type ?? '';
+					const rowIndex = params.row.rowIndex;
+					const value = getLines()[rowIndex]?.remise_type ?? '';
 					return (
 						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
 							<CustomDropDownSelect
@@ -734,8 +832,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				headerName: 'Remise',
 				width: 170,
 				renderCell: (params: GridRenderCellParams) => {
-					const rowIndex = Number(params.id);
-					const ligne = (formik.values.lignes as DeviLineFormValues[])[rowIndex];
+					const rowIndex = params.row.rowIndex;
+					const ligne = getLines()[rowIndex];
 					const value = ligne?.remise ?? 0;
 					const errorKey = `ligne_${rowIndex}_remise`;
 					const hasError = !!validationErrors[errorKey];
@@ -783,7 +881,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				sortable: false,
 				filterable: false,
 				renderCell: (params: GridRenderCellParams) => {
-					const rowIndex = Number(params.id);
+					const rowIndex = params.row.rowIndex;
 					return (
 						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
 							<Tooltip title="Supprimer">
@@ -796,14 +894,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				},
 			},
 		],
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-		[getArticleById, validationErrors],
+		[getArticleById, getLines, validationErrors, handleDeleteLine],
 	);
 
 	// Get existing article IDs to prevent duplicates
 	const existingArticleIds = useMemo(() => {
-		return new Set((formik.values.lignes as DeviLineFormValues[]).map((l) => l.article));
-	}, [formik.values.lignes]);
+		return new Set(getLines().map((l) => l.article));
+	}, [getLines]);
 
 	const deleteConfirmActions = [
 		{
@@ -829,32 +926,42 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	};
 
 	// Handle global remise apply with validation
-	const handleApplyGlobalRemise = (type: 'Pourcentage' | 'Fixe' | '', value: number) => {
-		if (!type || value === 0) {
-			formik.setFieldValue('remise_type', '');
-			formik.setFieldValue('remise', 0);
-			const newErrors = { ...validationErrors };
-			delete newErrors['global_remise'];
-			setValidationErrors(newErrors);
-			setShowGlobalRemiseModal(false);
-			return;
-		}
+	const handleApplyGlobalRemise = useCallback(
+		(type: 'Pourcentage' | 'Fixe' | '', value: number) => {
+			if (!type || value === 0) {
+				formik.setFieldValue('remise_type', '');
+				formik.setFieldValue('remise', 0);
+				setValidationErrors((prev) => {
+					const newErrors = { ...prev };
+					delete newErrors['global_remise'];
+					return newErrors;
+				});
+				setShowGlobalRemiseModal(false);
+				return;
+			}
 
-		const validationError = validateGlobalRemise(type, value);
-		const newErrors = { ...validationErrors };
+			const totalHTBeforeGlobal = calculateTotalHTBeforeGlobal();
+			const validationError = ValidationHelper.validateGlobalRemise(value, type, totalHTBeforeGlobal);
 
-		if (validationError) {
-			newErrors['global_remise'] = validationError;
-			setValidationErrors(newErrors);
-			onError(validationError);
-		} else {
-			delete newErrors['global_remise'];
-			setValidationErrors(newErrors);
-			formik.setFieldValue('remise_type', type);
-			formik.setFieldValue('remise', value);
-			setShowGlobalRemiseModal(false);
-		}
-	};
+			if (validationError) {
+				setValidationErrors((prev) => ({
+					...prev,
+					global_remise: validationError,
+				}));
+				onError(validationError);
+			} else {
+				setValidationErrors((prev) => {
+					const newErrors = { ...prev };
+					delete newErrors['global_remise'];
+					return newErrors;
+				});
+				formik.setFieldValue('remise_type', type);
+				formik.setFieldValue('remise', value);
+				setShowGlobalRemiseModal(false);
+			}
+		},
+		[formik, calculateTotalHTBeforeGlobal, onError],
+	);
 
 	const isLoading =
 		isAddModePaiementLoading ||
@@ -869,23 +976,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const hasValidationErrors = Object.keys(validationErrors).length > 0;
 
-	const dataGridRowsRef = useRef<Array<DeviLineFormValues & { id: number }>>([]);
-
 	const dataGridRows = useMemo(() => {
-		const newRows = Array.isArray(formik.values.lignes)
-			? (formik.values.lignes as DeviLineFormValues[]).map((ligne, index) => ({
-					...ligne,
-					id: index,
-				}))
-			: [];
-
-		// Only update ref if content actually changed
-		if (JSON.stringify(dataGridRowsRef.current) !== JSON.stringify(newRows)) {
-			dataGridRowsRef.current = newRows;
-		}
-
-		return dataGridRowsRef.current;
-	}, [formik.values.lignes]);
+		const lignes = getLines();
+		return lignes.map((ligne, index) => ({
+			...ligne,
+			id: generateRowId(ligne.article, index), // Stable ID using article + index
+			rowIndex: index, // Keep actual index for operations
+		}));
+	}, [getLines]);
 
 	return (
 		<LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
@@ -1164,7 +1262,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										<Divider sx={{ mb: 3 }} />
 										<Stack spacing={2.5}>
 											<Button
-												disabled={formik.values.lignes.length === 0}
+												disabled={getLines().length === 0}
 												variant="outlined"
 												startIcon={<DiscountIcon />}
 												onClick={() => setShowGlobalRemiseModal(true)}

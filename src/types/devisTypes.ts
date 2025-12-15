@@ -38,7 +38,7 @@ export type DeviAddSchemaType = {
 };
 
 export interface DeviLineFormValues {
-	id?: number;
+	id?: string | number;
 	article: number;
 	designation: string;
 	prix_achat: number;
