@@ -206,3 +206,53 @@ export const safeParseForInput = (raw: string): number | string => {
 	const parsed = parseNumber(raw);
 	return parsed === null ? raw : parsed;
 };
+
+// Consolidated validation helper
+export const ValidatePricesHelper = {
+	validatePrixVente(prixVente: number, prixAchat: number): string | null {
+		if (prixVente < prixAchat) {
+			return `Le prix de vente (${prixVente.toFixed(2)} MAD) doit être supérieur ou égal au prix d'achat (${prixAchat.toFixed(2)} MAD)`;
+		}
+		return null;
+	},
+
+	validateRemise(
+		remise: number,
+		remiseType: 'Pourcentage' | 'Fixe' | '' | undefined,
+		baseAmount: number,
+	): string | null {
+		if (!Number.isFinite(remise) || remise < 0) {
+			return 'La remise doit être positive ou nulle';
+		}
+
+		if (remiseType === 'Pourcentage' && remise > 100) {
+			return 'La remise en pourcentage doit être entre 0 et 100';
+		}
+
+		if (remiseType === 'Fixe' && remise > baseAmount) {
+			return `La remise fixe (${remise.toFixed(2)} MAD) ne peut pas dépasser le total (${baseAmount.toFixed(2)} MAD)`;
+		}
+
+		return null;
+	},
+
+	validateGlobalRemise(
+		remise: number,
+		remiseType: 'Pourcentage' | 'Fixe' | '',
+		totalHTBeforeGlobal: number,
+	): string | null {
+		if (!Number.isFinite(remise) || remise < 0) {
+			return 'La remise doit être positive ou nulle';
+		}
+
+		if (remiseType === 'Pourcentage' && remise > 100) {
+			return 'La remise en pourcentage doit être entre 0 et 100';
+		}
+
+		if (remiseType === 'Fixe' && remise > totalHTBeforeGlobal) {
+			return `La remise fixe globale (${remise.toFixed(2)} MAD) ne peut pas dépasser le total HT du devis (${totalHTBeforeGlobal.toFixed(2)} MAD)`;
+		}
+
+		return null;
+	},
+};

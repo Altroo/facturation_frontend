@@ -27,16 +27,6 @@ export type DeviSchemaType = {
 	globalError?: string;
 };
 
-export type DeviAddSchemaType = {
-	numero_devis: string;
-	client: number;
-	date_devis: string;
-	numero_demande_prix_client: string | null;
-	mode_paiement: number | null;
-	remarque: string | null;
-	globalError?: string;
-};
-
 export interface DeviLineFormValues {
 	id?: string | number;
 	article: number;
@@ -47,3 +37,5 @@ export interface DeviLineFormValues {
 	remise_type?: 'Pourcentage' | 'Fixe' | '';
 	remise?: number;
 }
+
+export type ValidateArticleLinesErrorType = { [key: string]: string };

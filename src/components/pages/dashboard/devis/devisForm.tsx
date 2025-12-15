@@ -48,17 +48,22 @@ import CustomDropDownSelect from '@/components/formikElements/customDropDownSele
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { deviAddSchema, deviSchema } from '@/utils/formValidationSchemas';
-import { parseNumber, safeParseForInput, setFormikAutoErrors } from '@/utils/helpers';
+import { parseNumber, safeParseForInput, setFormikAutoErrors, ValidatePricesHelper } from '@/utils/helpers';
 import { coordonneeTextInputTheme, customDropdownTheme } from '@/utils/themes';
 import { CLIENTS_ADD, DEVIS_LIST, DEVIS_EDIT } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
-import { DeviLineFormValues, DeviSchemaType, TypeFactureDevisStatus } from '@/types/devisTypes';
+import type {
+	DeviLineFormValues,
+	DeviSchemaType,
+	TypeFactureDevisStatus,
+	ValidateArticleLinesErrorType,
+} from '@/types/devisTypes';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
-import { ArticleClass, ClientClass, type ModePaiementClass } from '@/models/Classes';
+import type { ArticleClass, ClientClass, ModePaiementClass } from '@/models/Classes';
 import { useGetClientsListQuery } from '@/store/services/client';
 import { useAppSelector, useToast } from '@/utils/hooks';
 import { getModePaiementState, getUserCompaniesState } from '@/store/selectors';
-import { DropDownType } from '@/types/accountTypes';
+import type { DropDownType } from '@/types/accountTypes';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import { useGetArticlesListQuery } from '@/store/services/article';
 import {
@@ -80,59 +85,6 @@ import FactureDevisTotalsCard from '@/components/shared/factureDevistotalCard/fa
 import LinesGrid from '@/components/shared/linesGrid/linesGrid';
 
 const inputTheme = coordonneeTextInputTheme();
-
-// Validation error type
-type ValidationErrors = { [key: string]: string };
-
-// Consolidated validation helper
-const ValidationHelper = {
-	validatePrixVente(prixVente: number, prixAchat: number): string | null {
-		if (prixVente < prixAchat) {
-			return `Le prix de vente (${prixVente.toFixed(2)} MAD) doit être supérieur ou égal au prix d'achat (${prixAchat.toFixed(2)} MAD)`;
-		}
-		return null;
-	},
-
-	validateRemise(
-		remise: number,
-		remiseType: 'Pourcentage' | 'Fixe' | '' | undefined,
-		baseAmount: number,
-	): string | null {
-		if (!Number.isFinite(remise) || remise < 0) {
-			return 'La remise doit être positive ou nulle';
-		}
-
-		if (remiseType === 'Pourcentage' && remise > 100) {
-			return 'La remise en pourcentage doit être entre 0 et 100';
-		}
-
-		if (remiseType === 'Fixe' && remise > baseAmount) {
-			return `La remise fixe (${remise.toFixed(2)} MAD) ne peut pas dépasser le total (${baseAmount.toFixed(2)} MAD)`;
-		}
-
-		return null;
-	},
-
-	validateGlobalRemise(
-		remise: number,
-		remiseType: 'Pourcentage' | 'Fixe' | '',
-		totalHTBeforeGlobal: number,
-	): string | null {
-		if (!Number.isFinite(remise) || remise < 0) {
-			return 'La remise doit être positive ou nulle';
-		}
-
-		if (remiseType === 'Pourcentage' && remise > 100) {
-			return 'La remise en pourcentage doit être entre 0 et 100';
-		}
-
-		if (remiseType === 'Fixe' && remise > totalHTBeforeGlobal) {
-			return `La remise fixe globale (${remise.toFixed(2)} MAD) ne peut pas dépasser le total HT du devis (${totalHTBeforeGlobal.toFixed(2)} MAD)`;
-		}
-
-		return null;
-	},
-};
 
 // Generate stable row ID
 const generateRowId = (articleRef: number | string | Partial<ArticleClass> | undefined, index: number): string => {
@@ -245,7 +197,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const [selectedArticles, setSelectedArticles] = useState<Set<number>>(new Set());
 
 	// Validation errors state
-	const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
+	const [validationErrors, setValidationErrors] = useState<ValidateArticleLinesErrorType>({});
 
 	// Split numero_devis into number and year parts
 	const initialNumDevis = isEditMode ? (rawData?.numero_devis ?? '') : (rawNumDevisData?.numero_devis ?? '');
@@ -484,7 +436,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						const prixVente = parseNumber(ligne.prix_vente ?? '') ?? 0;
 						const quantity = parseNumber(ligne.quantity ?? '') ?? 1;
 						const baseAmount = prixVente * (isFinite(quantity) ? quantity : 1);
-						const remiseError = ValidationHelper.validateRemise(
+						const remiseError = ValidatePricesHelper.validateRemise(
 							parseNumber(ligne.remise ?? '') ?? NaN,
 							newRemiseType,
 							baseAmount,
@@ -499,7 +451,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					const pv = parseNumber(value);
 					const prixAchat = parseNumber(ligne.prix_achat ?? '') ?? 0;
 					const numValue = pv === null ? NaN : pv;
-					const error = ValidationHelper.validatePrixVente(numValue, prixAchat);
+					const error = ValidatePricesHelper.validatePrixVente(numValue, prixAchat);
 
 					if (error) {
 						newErrors[errorKey] = error;
@@ -511,7 +463,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					if ((parseNumber(ligne.remise ?? '') ?? 0) > 0 && ligne.remise_type) {
 						const quantity = parseNumber(ligne.quantity ?? '') ?? 1;
 						const baseAmount = (pv === null ? 0 : pv) * (isFinite(quantity) ? quantity : 1);
-						const remiseError = ValidationHelper.validateRemise(
+						const remiseError = ValidatePricesHelper.validateRemise(
 							parseNumber(ligne.remise ?? '') ?? NaN,
 							ligne.remise_type,
 							baseAmount,
@@ -530,7 +482,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						const prixVente = parseNumber(ligne.prix_vente ?? '') ?? 0;
 						const quantity = q === null ? NaN : q;
 						const baseAmount = prixVente * (isFinite(quantity) ? quantity : 1);
-						const remiseError = ValidationHelper.validateRemise(
+						const remiseError = ValidatePricesHelper.validateRemise(
 							parseNumber(ligne.remise ?? '') ?? NaN,
 							ligne.remise_type,
 							baseAmount,
@@ -548,7 +500,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					const prixVente = parseNumber(ligne.prix_vente ?? '') ?? 0;
 					const quantity = parseNumber(ligne.quantity ?? '') ?? 1;
 					const baseAmount = prixVente * (isFinite(quantity) ? quantity : 1);
-					const error = ValidationHelper.validateRemise(r ?? NaN, ligne.remise_type, baseAmount);
+					const error = ValidatePricesHelper.validateRemise(r ?? NaN, ligne.remise_type, baseAmount);
 
 					if (error) {
 						newErrors[errorKey] = error;
@@ -590,9 +542,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					prix_achat: article.prix_achat || 0,
 					prix_vente: article.prix_vente || 0,
 					quantity: 1,
-					remise_type: '' as '' | 'Pourcentage' | 'Fixe' | undefined, // Fix type
+					remise_type: '' as '' | 'Pourcentage' | 'Fixe' | undefined,
 					remise: 0,
-				} as DeviLineFormValues; // Explicit cast
+				} as DeviLineFormValues;
 			})
 			.filter((line): line is DeviLineFormValues => line !== null);
 
@@ -617,7 +569,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 		// Clean up validation errors
 		setValidationErrors((prevErrors) => {
-			const newErrors: ValidationErrors = {};
+			const newErrors: ValidateArticleLinesErrorType = {};
 
 			Object.entries(prevErrors).forEach(([key, value]) => {
 				const match = key.match(/^ligne_(\d+)_(.+)$/);
@@ -1011,7 +963,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			}
 
 			const totalHTBeforeGlobal = calculateTotalHTBeforeGlobal();
-			const validationError = ValidationHelper.validateGlobalRemise(value, type, totalHTBeforeGlobal);
+			const validationError = ValidatePricesHelper.validateGlobalRemise(value, type, totalHTBeforeGlobal);
 
 			if (validationError) {
 				setValidationErrors((prev) => ({
