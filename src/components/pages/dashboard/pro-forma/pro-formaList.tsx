@@ -230,7 +230,7 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 						}}
 						startIcon={<AddOutlined fontSize="small" />}
 					>
-						Nouveau facture proforma
+						Nouvelle facture proforma
 					</Button>
 				</Box>
 			)}

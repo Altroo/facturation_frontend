@@ -314,7 +314,7 @@ const ArticlesListContent: React.FC<ArticleListContentProps> = (props: ArticleLi
 						}}
 						startIcon={<AddOutlined fontSize="small" />}
 					>
-						Nouveau article
+						Nouvel article
 					</Button>
 				</Box>
 			)}
