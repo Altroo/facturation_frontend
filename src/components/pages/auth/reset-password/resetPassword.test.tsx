@@ -75,7 +75,7 @@ describe('ResetPasswordClient', () => {
 		expect(emailInputs.length).toBeGreaterThanOrEqual(1);
 
 		const submitButtons = screen.getAllByRole('button', {
-			name: /Modifier mot de passe/i,
+			name: /Renvoyer le code/i,
 		});
 		expect(submitButtons.length).toBeGreaterThanOrEqual(1);
 	});
@@ -91,7 +91,7 @@ describe('ResetPasswordClient', () => {
 
 		const emailInputs = screen.getAllByPlaceholderText('Adresse email');
 		const submitButtons = screen.getAllByRole('button', {
-			name: /Modifier mot de passe/i,
+			name: /Renvoyer le code/i,
 		});
 
 		await act(async () => {
