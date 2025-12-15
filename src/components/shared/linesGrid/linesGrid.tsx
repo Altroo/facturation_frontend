@@ -29,7 +29,7 @@ const LinesGrid = React.memo(
 						</Button>
 					</Stack>
 					<Divider sx={{ mb: 3 }} />
-					<Box sx={{ height: 500 }}>
+					<Box sx={{ height: '100%' }}>
 						<DataGrid
 							rows={rows}
 							showToolbar={true}
