@@ -48,7 +48,7 @@ import CustomDropDownSelect from '@/components/formikElements/customDropDownSele
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { deviAddSchema, deviSchema } from '@/utils/formValidationSchemas';
-import { setFormikAutoErrors } from '@/utils/helpers';
+import { parseNumber, safeParseForInput, setFormikAutoErrors } from '@/utils/helpers';
 import { coordonneeTextInputTheme, customDropdownTheme } from '@/utils/themes';
 import { CLIENTS_ADD, DEVIS_LIST, DEVIS_EDIT } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
@@ -330,12 +330,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			const article = getArticleById(ligne.article);
 			if (!article) return;
 
-			const prixVente = Number(ligne.prix_vente ?? 0);
-			const quantity = Number(ligne.quantity ?? 1);
+			const prixVente = parseNumber(ligne.prix_vente ?? '') ?? 0;
+			const quantity = parseNumber(ligne.quantity ?? '') ?? 1;
 			const baseHT = prixVente * (isFinite(quantity) ? quantity : 1);
 
 			let discountedHT = baseHT;
-			const remiseVal = Number(ligne.remise ?? 0);
+			const remiseVal = parseNumber(ligne.remise ?? '') ?? 0;
 			if (remiseVal > 0 && ligne.remise_type) {
 				if (ligne.remise_type === 'Pourcentage') {
 					discountedHT = baseHT * (1 - remiseVal / 100);
@@ -410,12 +410,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			const article = getArticleById(ligne.article);
 			if (!article) return;
 
-			const prixVente = Number(ligne.prix_vente ?? 0);
-			const quantity = Number(ligne.quantity ?? 1);
+			const prixVente = parseNumber(ligne.prix_vente ?? '') ?? 0;
+			const quantity = parseNumber(ligne.quantity ?? '') ?? 1;
 			const baseHT = prixVente * (isFinite(quantity) ? quantity : 1);
 
 			let discountedHT = baseHT;
-			const remiseVal = Number(ligne.remise ?? 0);
+			const remiseVal = parseNumber(ligne.remise ?? '') ?? 0;
 			if (remiseVal > 0 && ligne.remise_type) {
 				if (ligne.remise_type === 'Pourcentage') {
 					discountedHT = baseHT * (1 - remiseVal / 100);
@@ -424,7 +424,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				}
 			}
 
-			const tvaRate = Number(article.tva ?? 0);
+			const tvaRate = parseNumber(article.tva ?? '') ?? 0;
 			const lineTVA = discountedHT * (tvaRate / 100);
 
 			if (Number.isFinite(discountedHT)) rawTotalHT += discountedHT;
@@ -437,7 +437,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		let finalTotalTVA = rawTotalTVA;
 		let finalTotalTTC = rawTotalTTC;
 
-		const globalRemiseVal = Number(formik.values.remise ?? 0);
+		const globalRemiseVal = parseNumber(formik.values.remise ?? '') ?? 0;
 		if (globalRemiseVal > 0 && formik.values.remise_type) {
 			if (formik.values.remise_type === 'Pourcentage') {
 				finalTotalHT = rawTotalHT * (1 - globalRemiseVal / 100);
@@ -468,10 +468,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			const ligne = lignes[index];
 			if (!ligne) return;
 
-			// Update validation errors
+			// Update validation errors using parseNumber for all numeric reads
 			setValidationErrors((prevErrors) => {
 				const newErrors = { ...prevErrors };
-				const errorKey = `ligne_${index}_${field}`;
+				const errorKey = `ligne_${index}_${String(field)}`;
 				const remiseErrorKey = `ligne_${index}_remise`;
 
 				if (field === 'remise_type') {
@@ -479,19 +479,26 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					delete newErrors[remiseErrorKey];
 
 					// Re-validate remise with new type if remise exists
-					if (value && ligne.remise && ligne.remise > 0) {
+					if (value && (parseNumber(ligne.remise ?? '') ?? 0) > 0) {
 						const newRemiseType = value as 'Pourcentage' | 'Fixe' | '';
-						const baseAmount = Number(ligne.prix_vente ?? 0) * Number(ligne.quantity ?? 1);
-						const remiseError = ValidationHelper.validateRemise(ligne.remise, newRemiseType, baseAmount);
+						const prixVente = parseNumber(ligne.prix_vente ?? '') ?? 0;
+						const quantity = parseNumber(ligne.quantity ?? '') ?? 1;
+						const baseAmount = prixVente * (isFinite(quantity) ? quantity : 1);
+						const remiseError = ValidationHelper.validateRemise(
+							parseNumber(ligne.remise ?? '') ?? NaN,
+							newRemiseType,
+							baseAmount,
+						);
 
 						if (remiseError) {
 							newErrors[remiseErrorKey] = remiseError;
 						}
 					}
 				} else if (field === 'prix_vente') {
-					// Validate prix_vente
-					const numValue = typeof value === 'string' ? parseFloat(value) : Number(value);
-					const prixAchat = Number(ligne.prix_achat ?? 0);
+					// Validate prix_vente using parseNumber
+					const pv = parseNumber(value);
+					const prixAchat = parseNumber(ligne.prix_achat ?? '') ?? 0;
+					const numValue = pv === null ? NaN : pv;
 					const error = ValidationHelper.validatePrixVente(numValue, prixAchat);
 
 					if (error) {
@@ -501,9 +508,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					}
 
 					// Re-validate line remise if it exists (base amount changed)
-					if (ligne.remise && ligne.remise > 0 && ligne.remise_type) {
-						const newBaseAmount = numValue * Number(ligne.quantity ?? 1);
-						const remiseError = ValidationHelper.validateRemise(ligne.remise, ligne.remise_type, newBaseAmount);
+					if ((parseNumber(ligne.remise ?? '') ?? 0) > 0 && ligne.remise_type) {
+						const quantity = parseNumber(ligne.quantity ?? '') ?? 1;
+						const baseAmount = (pv === null ? 0 : pv) * (isFinite(quantity) ? quantity : 1);
+						const remiseError = ValidationHelper.validateRemise(
+							parseNumber(ligne.remise ?? '') ?? NaN,
+							ligne.remise_type,
+							baseAmount,
+						);
 
 						if (remiseError) {
 							newErrors[remiseErrorKey] = remiseError;
@@ -513,10 +525,16 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					}
 				} else if (field === 'quantity') {
 					// Re-validate line remise if it exists (base amount changed)
-					if (ligne.remise && ligne.remise > 0 && ligne.remise_type) {
-						const numValue = typeof value === 'string' ? parseInt(value) : Number(value);
-						const newBaseAmount = Number(ligne.prix_vente ?? 0) * numValue;
-						const remiseError = ValidationHelper.validateRemise(ligne.remise, ligne.remise_type, newBaseAmount);
+					if ((parseNumber(ligne.remise ?? '') ?? 0) > 0 && ligne.remise_type) {
+						const q = parseNumber(value);
+						const prixVente = parseNumber(ligne.prix_vente ?? '') ?? 0;
+						const quantity = q === null ? NaN : q;
+						const baseAmount = prixVente * (isFinite(quantity) ? quantity : 1);
+						const remiseError = ValidationHelper.validateRemise(
+							parseNumber(ligne.remise ?? '') ?? NaN,
+							ligne.remise_type,
+							baseAmount,
+						);
 
 						if (remiseError) {
 							newErrors[remiseErrorKey] = remiseError;
@@ -525,10 +543,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						}
 					}
 				} else if (field === 'remise') {
-					// Validate remise value
-					const numValue = typeof value === 'string' ? parseFloat(value) : Number(value);
-					const baseAmount = Number(ligne.prix_vente ?? 0) * Number(ligne.quantity ?? 1);
-					const error = ValidationHelper.validateRemise(numValue, ligne.remise_type, baseAmount);
+					// Validate remise using parseNumber
+					const r = parseNumber(value);
+					const prixVente = parseNumber(ligne.prix_vente ?? '') ?? 0;
+					const quantity = parseNumber(ligne.quantity ?? '') ?? 1;
+					const baseAmount = prixVente * (isFinite(quantity) ? quantity : 1);
+					const error = ValidationHelper.validateRemise(r ?? NaN, ligne.remise_type, baseAmount);
 
 					if (error) {
 						newErrors[errorKey] = error;
@@ -542,7 +562,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				return newErrors;
 			});
 
-			// Update formik state
+			// Update formik state (preserve raw string when caller passed it)
 			const updatedLines = [...lignes];
 			updatedLines[index] = { ...updatedLines[index], [field]: value };
 
@@ -631,6 +651,132 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	useEffect(() => {
 		handleLineChangeRef.current = handleLineChange;
 	}, [handleLineChange]);
+
+	const getRowIndexFromParams = useCallback(
+		(params: GridRenderCellParams): number => {
+			const idStr = String(params.id);
+			const lines = getLines();
+			const idx = lines.findIndex((l, i) => generateRowId(l.article, i) === idStr);
+			return idx >= 0 ? idx : 0;
+		},
+		[getLines],
+	);
+
+	// typescript
+	const [renderPrixVenteCell, renderQuantityCell, renderRemiseCell] = useMemo<
+		[
+			(params: GridRenderCellParams) => React.JSX.Element,
+			(params: GridRenderCellParams) => React.JSX.Element,
+			(params: GridRenderCellParams) => React.JSX.Element,
+		]
+	>(() => {
+		const prix = (params: GridRenderCellParams) => {
+			const rowIndex = getRowIndexFromParams(params);
+			const rawValue = getLines()[rowIndex]?.prix_vente ?? '';
+			const inputValue = String(safeParseForInput(String(rawValue ?? '')));
+			const errorKey = `ligne_${rowIndex}_prix_vente`;
+			const helperText = validationErrors[errorKey] || '';
+			const hasError = !!validationErrors[errorKey];
+
+			return (
+				<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+					<Tooltip title={helperText} arrow>
+						<Box sx={{ width: '100%' }}>
+							<CustomTextInput
+								id={`prix_vente_${rowIndex}`}
+								type="number"
+								value={inputValue}
+								onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+									const raw = (e.target as HTMLInputElement).value;
+									const parsed = parseNumber(raw);
+									handleLineChangeRef.current(rowIndex, 'prix_vente', parsed === null ? raw : parsed);
+								}}
+								fullWidth
+								size="small"
+								theme={inputTheme}
+								error={hasError}
+								slotProps={{ input: { style: { textAlign: 'center' } } }}
+							/>
+						</Box>
+					</Tooltip>
+				</Box>
+			);
+		};
+
+		const quantity = (params: GridRenderCellParams) => {
+			const rowIndex = getRowIndexFromParams(params);
+			const rawValue = getLines()[rowIndex]?.quantity ?? '';
+			const inputValue = String(safeParseForInput(String(rawValue ?? '')));
+			const errorKey = `ligne_${rowIndex}_quantity`;
+			const hasError = !!validationErrors[errorKey];
+
+			return (
+				<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+					<Tooltip title={validationErrors[errorKey] || ''} arrow>
+						<Box sx={{ width: '100%' }}>
+							<CustomTextInput
+								id={`quantity_${rowIndex}`}
+								type="number"
+								value={inputValue}
+								onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+									const raw = (e.target as HTMLInputElement).value;
+									const parsed = parseNumber(raw);
+									handleLineChangeRef.current(rowIndex, 'quantity', parsed === null ? raw : parsed);
+								}}
+								fullWidth
+								size="small"
+								theme={inputTheme}
+								slotProps={{ input: { style: { textAlign: 'center' } } }}
+								error={hasError}
+							/>
+						</Box>
+					</Tooltip>
+				</Box>
+			);
+		};
+
+		const remise = (params: GridRenderCellParams) => {
+			const rowIndex = getRowIndexFromParams(params);
+			const rawValue = getLines()[rowIndex]?.remise ?? '';
+			const inputValue = String(safeParseForInput(String(rawValue ?? '')));
+			const errorKey = `ligne_${rowIndex}_remise`;
+			const helperText = validationErrors[errorKey] || '';
+			const hasError = !!validationErrors[errorKey];
+			const remiseTypeValue = getLines()[rowIndex]?.remise_type;
+
+			return (
+				<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+					<Tooltip title={helperText} arrow>
+						<Box sx={{ width: '100%' }}>
+							<CustomTextInput
+								id={`remise_${rowIndex}`}
+								type="number"
+								value={inputValue}
+								onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+									const raw = (e.target as HTMLInputElement).value;
+									const parsed = parseNumber(raw);
+									handleLineChangeRef.current(rowIndex, 'remise', parsed === null ? raw : parsed);
+								}}
+								fullWidth
+								size="small"
+								theme={inputTheme}
+								error={hasError}
+								disabled={!remiseTypeValue}
+								endIcon={
+									remiseTypeValue && (
+										<InputAdornment position="end">{remiseTypeValue === 'Pourcentage' ? '%' : 'MAD'}</InputAdornment>
+									)
+								}
+								slotProps={{ input: { style: { textAlign: 'center' } } }}
+							/>
+						</Box>
+					</Tooltip>
+				</Box>
+			);
+		};
+
+		return [prix, quantity, remise];
+	}, [getLines, getRowIndexFromParams, validationErrors, handleLineChangeRef]);
 
 	// Lines DataGrid columns
 	const linesColumns: GridColDef[] = useMemo(
@@ -748,62 +894,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				field: 'prix_vente',
 				headerName: 'Prix de vente',
 				width: 150,
-				renderCell: (params: GridRenderCellParams) => {
-					const rowIndex = params.row.rowIndex;
-					const value = getLines()[rowIndex]?.prix_vente ?? 0;
-					const errorKey = `ligne_${rowIndex}_prix_vente`;
-					const hasError = !!validationErrors[errorKey];
-					return (
-						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-							<Tooltip title={validationErrors[errorKey] || ''} arrow>
-								<Box sx={{ width: '100%' }}>
-									<CustomTextInput
-										id={`prix_vente_${rowIndex}`}
-										type="number"
-										value={String(value)}
-										onChange={(e) =>
-											handleLineChangeRef.current(
-												rowIndex,
-												'prix_vente',
-												parseFloat((e.target as HTMLInputElement).value) || 0,
-											)
-										}
-										fullWidth
-										size="small"
-										theme={inputTheme}
-										error={hasError}
-										slotProps={{ input: { style: { textAlign: 'center' } } }}
-									/>
-								</Box>
-							</Tooltip>
-						</Box>
-					);
-				},
+				renderCell: renderPrixVenteCell,
 			},
 			{
 				field: 'quantity',
 				headerName: 'Quantité',
 				width: 120,
-				renderCell: (params: GridRenderCellParams) => {
-					const rowIndex = params.row.rowIndex;
-					const value = getLines()[rowIndex]?.quantity ?? 1;
-					return (
-						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-							<CustomTextInput
-								id={`quantity_${rowIndex}`}
-								type="number"
-								value={String(value)}
-								onChange={(e) =>
-									handleLineChangeRef.current(rowIndex, 'quantity', parseInt((e.target as HTMLInputElement).value) || 1)
-								}
-								fullWidth
-								size="small"
-								theme={inputTheme}
-								slotProps={{ input: { style: { textAlign: 'center' } } }}
-							/>
-						</Box>
-					);
-				},
+				renderCell: renderQuantityCell,
 			},
 			{
 				field: 'remise_type',
@@ -812,17 +909,23 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				renderCell: (params: GridRenderCellParams) => {
 					const rowIndex = params.row.rowIndex;
 					const value = getLines()[rowIndex]?.remise_type ?? '';
+					const errorKey = `ligne_${rowIndex}_remise`;
+					const helperText = validationErrors[errorKey] || '';
+					const hasError = !!validationErrors[errorKey];
 					return (
 						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-							<CustomDropDownSelect
-								id={`remise_type_${rowIndex}`}
-								label=""
-								size="small"
-								items={remiseTypeItemsList}
-								value={value}
-								onChange={(e) => handleLineChangeRef.current(rowIndex, 'remise_type', e.target.value)}
-								theme={customDropdownTheme()}
-							/>
+							<Tooltip title={helperText} arrow>
+								<CustomDropDownSelect
+									id={`remise_type_${rowIndex}`}
+									label=""
+									size="small"
+									error={hasError}
+									items={remiseTypeItemsList}
+									value={value}
+									onChange={(e) => handleLineChangeRef.current(rowIndex, 'remise_type', e.target.value)}
+									theme={customDropdownTheme()}
+								/>
+							</Tooltip>
 						</Box>
 					);
 				},
@@ -831,48 +934,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				field: 'remise',
 				headerName: 'Remise',
 				width: 170,
-				renderCell: (params: GridRenderCellParams) => {
-					const rowIndex = params.row.rowIndex;
-					const ligne = getLines()[rowIndex];
-					const value = ligne?.remise ?? 0;
-					const errorKey = `ligne_${rowIndex}_remise`;
-					const hasError = !!validationErrors[errorKey];
-					const remiseTypeValue = ligne?.remise_type;
-
-					return (
-						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-							<Tooltip title={validationErrors[errorKey] || ''} arrow>
-								<Box sx={{ width: '100%' }}>
-									<CustomTextInput
-										id={`remise_${rowIndex}`}
-										type="number"
-										value={String(value)}
-										onChange={(e) =>
-											handleLineChangeRef.current(
-												rowIndex,
-												'remise',
-												parseFloat((e.target as HTMLInputElement).value) || 0,
-											)
-										}
-										fullWidth
-										size="small"
-										theme={inputTheme}
-										error={hasError}
-										disabled={!remiseTypeValue}
-										endIcon={
-											remiseTypeValue && (
-												<InputAdornment position="end">
-													{remiseTypeValue === 'Pourcentage' ? '%' : 'MAD'}
-												</InputAdornment>
-											)
-										}
-										slotProps={{ input: { style: { textAlign: 'center' } } }}
-									/>
-								</Box>
-							</Tooltip>
-						</Box>
-					);
-				},
+				renderCell: renderRemiseCell,
 			},
 			{
 				field: 'actions',
@@ -894,7 +956,15 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				},
 			},
 		],
-		[getArticleById, getLines, validationErrors, handleDeleteLine],
+		[
+			renderPrixVenteCell,
+			renderQuantityCell,
+			renderRemiseCell,
+			getArticleById,
+			getLines,
+			validationErrors,
+			handleDeleteLine,
+		],
 	);
 
 	// Get existing article IDs to prevent duplicates
