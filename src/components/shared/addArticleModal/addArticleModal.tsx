@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react';
 import { Box, Button, Stack, Typography, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
-import { ArticleClass } from '@/models/Classes';
+import type { ArticleClass } from '@/models/Classes';
 import { DataGrid, GridColDef, GridRowId, GridRowSelectionModel } from '@mui/x-data-grid';
 import { frFR } from '@mui/x-data-grid/locales';
 

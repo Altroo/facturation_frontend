@@ -41,7 +41,7 @@ import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { frFR } from '@mui/x-data-grid/locales';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
-import { ArticleClass } from '@/models/Classes';
+import type { ArticleClass } from '@/models/Classes';
 import { useGetArticlesListQuery } from '@/store/services/article';
 import { formatDate } from '@/utils/helpers';
 import FactureDevisTotalsCard from '@/components/shared/factureDevistotalCard/factureDevisTotalsCard';
