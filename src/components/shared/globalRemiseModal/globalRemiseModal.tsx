@@ -34,17 +34,17 @@ interface ModalState {
 const GlobalRemiseModal: React.FC<GlobalRemiseModalProps> = ({ open, onClose, currentType, currentValue, onApply }) => {
 	const [state, setState] = useState<ModalState>({
 		type: (currentType as 'Pourcentage' | 'Fixe' | '') || '',
-		value: currentValue || 0,
+		value: currentType ? Math.max(1, currentValue) : 0,
 		error: '',
 	});
 
 	const validateValue = (remiseType: string, remiseValue: number): string => {
-		if (remiseValue < 0) {
-			return 'La remise doit être positive ou nulle';
+		if (remiseValue < 1) {
+			return 'La remise doit être au moins 1';
 		}
 
 		if (remiseType === 'Pourcentage' && remiseValue > 100) {
-			return 'La remise en pourcentage doit être entre 0 et 100';
+			return 'La remise en pourcentage doit être entre 1 et 100';
 		}
 
 		return '';
@@ -59,16 +59,19 @@ const GlobalRemiseModal: React.FC<GlobalRemiseModalProps> = ({ open, onClose, cu
 	};
 
 	const handleTypeChange = (newType: 'Pourcentage' | 'Fixe' | '') => {
-		setState((prev) => ({
-			...prev,
-			type: newType,
-			value: newType === '' ? 0 : prev.value,
-			error: newType === '' ? '' : prev.value > 0 ? validateValue(newType, prev.value) : '',
-		}));
+		setState((prev) => {
+			const newValue = newType === '' ? 0 : prev.value < 1 ? 1 : prev.value;
+			return {
+				...prev,
+				type: newType,
+				value: newValue,
+				error: newType === '' ? '' : validateValue(newType, newValue),
+			};
+		});
 	};
 
 	const handleApply = () => {
-		if (!state.type || state.value === 0) {
+		if (!state.type || state.value < 1) {
 			onApply('', 0);
 			onClose();
 			return;
@@ -87,7 +90,7 @@ const GlobalRemiseModal: React.FC<GlobalRemiseModalProps> = ({ open, onClose, cu
 	const handleClose = () => {
 		setState({
 			type: (currentType as 'Pourcentage' | 'Fixe' | '') || '',
-			value: currentValue || 0,
+			value: currentType ? Math.max(1, currentValue) : 0,
 			error: '',
 		});
 		onClose();
@@ -134,7 +137,7 @@ const GlobalRemiseModal: React.FC<GlobalRemiseModalProps> = ({ open, onClose, cu
 							theme={coordonneeTextInputTheme()}
 							endIcon={<InputAdornment position="end">{state.type === 'Pourcentage' ? '%' : 'MAD'}</InputAdornment>}
 							error={!!state.error}
-							helperText={state.error || (state.type === 'Pourcentage' ? 'Entre 0 et 100' : 'Montant positif')}
+							helperText={state.error || (state.type === 'Pourcentage' ? 'Entre 1 et 100' : 'Montant positif (min 1)')}
 						/>
 					)}
 				</Stack>
