@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, Stack, Typography, Avatar, IconButton, Tooltip } from '@mui/material';
-import { Edit, Delete, Visibility, CheckCircle, Cancel, AddOutlined } from '@mui/icons-material';
+import { Edit, Delete, Visibility, CheckCircle, Cancel, AddOutlined, Close } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/companies/companies.module.sass';
@@ -65,16 +65,8 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 	};
 
 	const deleteModalActions = [
-		{
-			active: true,
-			text: 'Oui',
-			onClick: deleteHandler,
-		},
-		{
-			active: false,
-			text: 'Non',
-			onClick: () => setShowDeleteModal(false),
-		},
+		{ text: 'Annuler', active: false, onClick: () => setShowDeleteModal(false), icon: <Close />, color: '#6B6B6B' },
+		{ text: 'Supprimer', active: true, onClick: deleteHandler, icon: <Delete />, color: '#D32F2F' },
 	];
 
 	const showDeleteModalCall = (id: number) => {
@@ -277,6 +269,8 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 								title="Supprimer ce utilisateur ?"
 								body="Êtes‑vous sûr de vouloir supprimer ce utilisateur?"
 								actions={deleteModalActions}
+								titleIcon={<Delete />}
+								titleIconColor="#D32F2F"
 							/>
 						)}
 					</>

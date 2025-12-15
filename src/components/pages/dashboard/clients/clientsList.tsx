@@ -3,7 +3,16 @@
 import React, { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, Stack, Typography, Chip, IconButton, Tooltip, Tabs, Tab, Paper, Container } from '@mui/material';
-import { Edit, Delete, Visibility, BusinessOutlined, Archive, Unarchive, AddOutlined } from '@mui/icons-material';
+import {
+	Edit,
+	Delete,
+	Visibility,
+	BusinessOutlined,
+	Archive,
+	Unarchive,
+	AddOutlined,
+	Close,
+} from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/clients/clients.module.sass';
@@ -76,16 +85,8 @@ const ClientsListContent: React.FC<ClientsListContentProps> = (props: ClientsLis
 	};
 
 	const deleteModalActions = [
-		{
-			active: true,
-			text: 'Oui',
-			onClick: deleteHandler,
-		},
-		{
-			active: false,
-			text: 'Non',
-			onClick: () => setShowDeleteModal(false),
-		},
+		{ text: 'Annuler', active: false, onClick: () => setShowDeleteModal(false), icon: <Close />, color: '#6B6B6B' },
+		{ text: 'Supprimer', active: true, onClick: deleteHandler, icon: <Delete />, color: '#D32F2F' },
 	];
 
 	const showDeleteModalCall = (id: number) => {
@@ -120,17 +121,21 @@ const ClientsListContent: React.FC<ClientsListContentProps> = (props: ClientsLis
 
 	const archiveModalActions = [
 		{
-			active: true,
-			text: 'Oui',
-			onClick: archiveHandler,
-		},
-		{
+			text: 'Annuler',
 			active: false,
-			text: 'Non',
 			onClick: () => {
 				setShowArchiveModal(false);
 				setArchiveTarget(null);
 			},
+			icon: <Close />,
+			color: '#6B6B6B',
+		},
+		{
+			text: archived ? 'Désarchiver' : 'Archiver',
+			active: true,
+			onClick: archiveHandler,
+			icon: <Archive />,
+			color: '#ED6C02',
 		},
 	];
 
@@ -314,6 +319,8 @@ const ClientsListContent: React.FC<ClientsListContentProps> = (props: ClientsLis
 			{showDeleteModal && (
 				<ActionModals
 					title="Supprimer ce client ?"
+					titleIcon={<Delete />}
+					titleIconColor="#D32F2F"
 					body="Êtes‑vous sûr de vouloir supprimer ce client?"
 					actions={deleteModalActions}
 				/>
@@ -321,6 +328,8 @@ const ClientsListContent: React.FC<ClientsListContentProps> = (props: ClientsLis
 			{showArchiveModal && (
 				<ActionModals
 					title={archived ? 'Désarchiver ce client ?' : 'Archiver ce client ?'}
+					titleIcon={<Archive />}
+					titleIconColor="#ED6C02"
 					body={
 						archived
 							? 'Êtes‑vous sûr de vouloir désarchiver ce client?'

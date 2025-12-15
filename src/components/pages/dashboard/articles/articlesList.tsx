@@ -16,7 +16,16 @@ import {
 	Container,
 	Avatar,
 } from '@mui/material';
-import { Edit, Delete, Visibility, BusinessOutlined, Archive, Unarchive, AddOutlined } from '@mui/icons-material';
+import {
+	Edit,
+	Delete,
+	Visibility,
+	BusinessOutlined,
+	Archive,
+	Unarchive,
+	AddOutlined,
+	Close,
+} from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/clients/clients.module.sass';
@@ -89,16 +98,8 @@ const ArticlesListContent: React.FC<ArticleListContentProps> = (props: ArticleLi
 	};
 
 	const deleteModalActions = [
-		{
-			active: true,
-			text: 'Oui',
-			onClick: deleteHandler,
-		},
-		{
-			active: false,
-			text: 'Non',
-			onClick: () => setShowDeleteModal(false),
-		},
+		{ text: 'Annuler', active: false, onClick: () => setShowDeleteModal(false), icon: <Close />, color: '#6B6B6B' },
+		{ text: 'Supprimer', active: true, onClick: deleteHandler, icon: <Delete />, color: '#D32F2F' },
 	];
 
 	const showDeleteModalCall = (id: number) => {
@@ -133,17 +134,21 @@ const ArticlesListContent: React.FC<ArticleListContentProps> = (props: ArticleLi
 
 	const archiveModalActions = [
 		{
-			active: true,
-			text: 'Oui',
-			onClick: archiveHandler,
-		},
-		{
+			text: 'Annuler',
 			active: false,
-			text: 'Non',
 			onClick: () => {
 				setShowArchiveModal(false);
 				setArchiveTarget(null);
 			},
+			icon: <Close />,
+			color: '#6B6B6B',
+		},
+		{
+			text: archived ? 'Désarchiver' : 'Archiver',
+			active: true,
+			onClick: archiveHandler,
+			icon: <Archive />,
+			color: '#ED6C02',
 		},
 	];
 
@@ -325,6 +330,8 @@ const ArticlesListContent: React.FC<ArticleListContentProps> = (props: ArticleLi
 			{showDeleteModal && (
 				<ActionModals
 					title="Supprimer cette article ?"
+					titleIcon={<Delete />}
+					titleIconColor="#D32F2F"
 					body="Êtes‑vous sûr de vouloir supprimer cette article?"
 					actions={deleteModalActions}
 				/>
@@ -332,6 +339,8 @@ const ArticlesListContent: React.FC<ArticleListContentProps> = (props: ArticleLi
 			{showArchiveModal && (
 				<ActionModals
 					title={archived ? 'Désarchiver cette article ?' : 'Archiver cette article ?'}
+					titleIcon={<Archive />}
+					titleIconColor="#ED6C02"
 					body={
 						archived
 							? 'Êtes‑vous sûr de vouloir désarchiver cette article?'

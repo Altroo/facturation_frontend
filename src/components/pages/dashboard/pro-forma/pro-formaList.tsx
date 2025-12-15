@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, Stack, Typography, Chip, IconButton, Tooltip, Tabs, Tab, Paper, Container } from '@mui/material';
-import { Edit, Delete, Visibility, BusinessOutlined, AddOutlined } from '@mui/icons-material';
+import { Edit, Delete, Visibility, BusinessOutlined, AddOutlined, Close } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/pro-forma/pro-forma.module.sass';
@@ -69,16 +69,8 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 	};
 
 	const deleteModalActions = [
-		{
-			active: true,
-			text: 'Oui',
-			onClick: deleteHandler,
-		},
-		{
-			active: false,
-			text: 'Non',
-			onClick: () => setShowDeleteModal(false),
-		},
+		{ text: 'Annuler', active: false, onClick: () => setShowDeleteModal(false), icon: <Close />, color: '#6B6B6B' },
+		{ text: 'Supprimer', active: true, onClick: deleteHandler, icon: <Delete />, color: '#D32F2F' },
 	];
 
 	const showDeleteModalCall = (id: number) => {
@@ -256,6 +248,8 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 					title="Supprimer ce devi ?"
 					body="Êtes‑vous sûr de vouloir supprimer ce devi?"
 					actions={deleteModalActions}
+					titleIcon={<Delete />}
+					titleIconColor="#D32F2F"
 				/>
 			)}
 		</>

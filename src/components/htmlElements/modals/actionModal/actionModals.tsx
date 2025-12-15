@@ -1,10 +1,13 @@
 import React from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Stack, Avatar } from '@mui/material';
 
 type Action = {
 	active: boolean;
 	text: string;
 	onClick: () => void;
+	color?: string;
+	icon?: React.ReactNode;
+	disabled?: boolean;
 };
 
 type Props = {
@@ -13,12 +16,31 @@ type Props = {
 	actionsStyle?: string[];
 	body?: string;
 	children?: React.ReactNode;
+	titleIcon?: React.ReactNode;
+	titleIconColor?: string;
 };
 
-const ActionModals: React.FC<Props> = ({ title, actions, actionsStyle, body, children }) => {
+const ActionModals: React.FC<Props> = ({ title, actions, actionsStyle, body, children, titleIcon, titleIconColor }) => {
 	return (
 		<Dialog open onClose={() => {}}>
-			<DialogTitle>{title}</DialogTitle>
+			<DialogTitle>
+				<Stack direction="row" alignItems="center" spacing={1}>
+					{titleIcon && (
+						<Avatar
+							variant="rounded"
+							sx={{
+								bgcolor: titleIconColor ?? 'transparent',
+								color: titleIconColor ? '#fff' : 'inherit',
+								width: 36,
+								height: 36,
+							}}
+						>
+							{titleIcon}
+						</Avatar>
+					)}
+					<Typography variant="h6">{title}</Typography>
+				</Stack>
+			</DialogTitle>
 
 			<DialogContent dividers>
 				{body && <Typography variant="body2">{body}</Typography>}
@@ -26,22 +48,37 @@ const ActionModals: React.FC<Props> = ({ title, actions, actionsStyle, body, chi
 			</DialogContent>
 
 			<DialogActions className={actionsStyle?.join(' ') ?? undefined} sx={{ padding: 2 }}>
-				{actions.map((action, index) => (
-					<Button
-						key={index}
-						variant={action.active ? 'contained' : 'outlined'}
-						onClick={action.onClick}
-						sx={{
-							backgroundColor: action.active ? '#0D070B' : '#FFFFFF',
-							color: action.active ? '#FFFFFF' : '#0D070B',
-							'&:hover': {
-								backgroundColor: action.active ? '#0D070B' : '#F5F5F5',
-							},
-						}}
-					>
-						{action.text}
-					</Button>
-				))}
+				{actions.map((action, index) => {
+					const bg = action.active ? (action.color ?? '#0D070B') : '#FFFFFF';
+					const textColor = action.active ? '#FFFFFF' : (action.color ?? '#0D070B');
+					const hoverBg = action.active ? (action.color ?? '#0D070B') : '#F5F5F5';
+
+					return (
+						<Button
+							key={index}
+							variant={action.active ? 'contained' : 'outlined'}
+							onClick={action.onClick}
+							disabled={action.disabled}
+							startIcon={action.icon}
+							aria-label={action.text}
+							sx={{
+								backgroundColor: bg,
+								color: textColor,
+								borderColor: action.active ? (action.color ?? '#0D070B') : undefined,
+								textTransform: 'none',
+								'&:hover': {
+									backgroundColor: hoverBg,
+								},
+								// ensure good contrast for outlined state
+								'&.MuiButton-outlined': {
+									borderColor: action.color ?? '#0D070B',
+								},
+							}}
+						>
+							{action.text}
+						</Button>
+					);
+				})}
 			</DialogActions>
 		</Dialog>
 	);
