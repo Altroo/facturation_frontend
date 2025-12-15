@@ -27,6 +27,8 @@ import {
 	Contacts as ContactsIcon,
 	Description as DescriptionIcon,
 	AdminPanelSettings as AdminPanelSettingsIcon,
+	EditOutlined,
+	AddOutlined,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -616,6 +618,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								active={!isPending}
 								type="submit"
 								loading={isPending}
+								startIcon={isEditMode ? <EditOutlined /> : <AddOutlined />}
 								cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}
 							/>
 						</Box>

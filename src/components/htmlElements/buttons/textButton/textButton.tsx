@@ -4,6 +4,7 @@ import Styles from './textButton.module.sass';
 
 type Props = {
 	buttonText: string;
+	startIcon?: React.ReactNode;
 	onClick?: () => void;
 	cssClass?: string;
 	disabled?: boolean;
@@ -17,6 +18,7 @@ const TextButton: React.FC<Props> = (props: Props) => {
 			disabled={props.disabled}
 			onClick={props.onClick}
 			variant="text"
+			startIcon={props.startIcon}
 		>
 			{props.buttonText}
 		</Button>

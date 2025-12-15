@@ -16,6 +16,7 @@ import { useEditPasswordMutation } from '@/store/services/account';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { useToast } from '@/utils/hooks';
+import { EditOutlined } from '@mui/icons-material';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -111,6 +112,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 						onClick={formik.handleSubmit}
 						cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}
 						type="submit"
+						startIcon={<EditOutlined />}
 						loading={isPending}
 					/>
 				</Stack>

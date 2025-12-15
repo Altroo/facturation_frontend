@@ -7,6 +7,7 @@ import SuccessIlluSVG from '../../../../../public/assets/images/success-illu.svg
 import PrimaryAnchorButton from '@/components/htmlElements/buttons/primaryAnchorButton/primaryAnchorButton';
 import { AUTH_LOGIN } from '@/utils/routes';
 import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
+import { LoginOutlined } from '@mui/icons-material';
 
 const SetPasswordCompleteClient: React.FC = () => {
 	return (
@@ -18,7 +19,12 @@ const SetPasswordCompleteClient: React.FC = () => {
 							<Image src={SuccessIlluSVG} alt="" width="0" height="0" sizes="100vw" className={Styles.logo} />
 							<h2 className={Styles.header}>Mot de passe modifié</h2>
 							<p className={Styles.subHeader}>Votre mot de passe a été modifier, connectez-vous</p>
-							<PrimaryAnchorButton buttonText="Me connecter" active={true} nextPage={AUTH_LOGIN} />
+							<PrimaryAnchorButton
+								startIcon={<LoginOutlined />}
+								buttonText="Me connecter"
+								active={true}
+								nextPage={AUTH_LOGIN}
+							/>
 						</Stack>
 					</AuthLayout>
 				</div>
@@ -32,7 +38,12 @@ const SetPasswordCompleteClient: React.FC = () => {
 							<p className={Styles.subHeader}>Votre mot de passe a été modifier, connectez-vous</p>
 						</Stack>
 						<div className={Styles.primaryButtonWrapper}>
-							<PrimaryAnchorButton buttonText="Me connecter" active={true} nextPage={AUTH_LOGIN} />
+							<PrimaryAnchorButton
+								startIcon={<LoginOutlined />}
+								buttonText="Me connecter"
+								active={true}
+								nextPage={AUTH_LOGIN}
+							/>
 						</div>
 					</main>
 				</div>

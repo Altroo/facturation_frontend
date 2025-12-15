@@ -35,6 +35,8 @@ import {
 	Badge as BadgeIcon,
 	CreditCard as CreditCardIcon,
 	Description as DescriptionIcon,
+	EditOutlined,
+	AddOutlined,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -608,6 +610,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								active={!isPending}
 								type="submit"
 								loading={isPending}
+								startIcon={isEditMode ? <EditOutlined /> : <AddOutlined />}
 								cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}
 							/>
 						</Box>

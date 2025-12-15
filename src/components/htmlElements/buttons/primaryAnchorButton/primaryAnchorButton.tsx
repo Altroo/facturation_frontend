@@ -11,6 +11,7 @@ type Props = {
 	buttonText: string;
 	active: boolean;
 	nextPage: string | UrlObject;
+	startIcon?: React.ReactNode;
 	onClick?: () => void;
 	anchorcssClass?: string;
 	cssClass?: string;
@@ -41,6 +42,7 @@ const PrimaryAnchorButton = forwardRef<HTMLAnchorElement, Props>(
 						disabled={!props.active}
 						type={props.type}
 						color="primary"
+						startIcon={props.startIcon}
 					>
 						{props.buttonText}
 					</Button>

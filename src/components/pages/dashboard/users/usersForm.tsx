@@ -28,6 +28,8 @@ import {
 	CheckCircle as CheckCircleIcon,
 	AccountCircle as AccountCircleIcon,
 	Person as PersonIcon,
+	EditOutlined,
+	AddOutlined,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -434,6 +436,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								buttonText={isEditMode ? 'Mettre à jour' : "Ajouter l'utilisateur"}
 								active={!isPending}
 								loading={isPending}
+								startIcon={isEditMode ? <EditOutlined /> : <AddOutlined />}
 								cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}
 							/>
 						</Box>

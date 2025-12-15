@@ -18,6 +18,7 @@ import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadi
 import { useSendPasswordResetCodeMutation } from '@/store/services/account';
 import { useSession } from 'next-auth/react';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
+import { SendOutlined } from '@mui/icons-material';
 
 const inputTheme = coordonneeTextInputTheme();
 const ResetPasswordPageContent = () => {
@@ -76,11 +77,12 @@ const ResetPasswordPageContent = () => {
 						theme={inputTheme}
 					/>
 					<PrimaryLoadingButton
-						buttonText="Modifier mot de passe"
+						buttonText="Renvoyer le code"
 						active={!isResendLoading && !isPending}
 						onClick={formik.handleSubmit}
 						cssClass={Styles.emailRegisterButton}
 						type="submit"
+						startIcon={<SendOutlined />}
 						loading={isResendLoading || isPending}
 					/>
 				</Stack>

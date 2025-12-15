@@ -9,6 +9,7 @@ type Props = {
 	onClick?: React.MouseEventHandler<HTMLButtonElement> | (() => void);
 	active?: boolean;
 	type?: 'submit' | 'reset' | 'button' | undefined;
+	startIcon?: React.ReactNode;
 	cssClass?: string;
 	children?: React.ReactNode;
 };
@@ -25,6 +26,7 @@ const PrimaryLoadingButton: React.FC<Props> = (props: Props) => {
 				disabled={!props.active}
 				type={props.type}
 				color="primary"
+				startIcon={props.startIcon}
 			>
 				{props.buttonText}
 			</Button>

@@ -36,6 +36,8 @@ import {
 	Delete as DeleteIcon,
 	Warning as WarningIcon,
 	BusinessOutlined,
+	EditOutlined,
+	AddOutlined,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -1355,6 +1357,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									active={!isPending}
 									type="submit"
 									loading={isPending}
+									startIcon={isEditMode ? <EditOutlined /> : <AddOutlined />}
 									onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
 										if (hasValidationErrors && isEditMode) {
 											e.preventDefault();
