@@ -907,7 +907,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				headerName: 'Type remise',
 				width: 210,
 				renderCell: (params: GridRenderCellParams) => {
-					const rowIndex = params.row.rowIndex;
+					const rowIndex = getRowIndexFromParams(params);
 					const value = getLines()[rowIndex]?.remise_type ?? '';
 					const errorKey = `ligne_${rowIndex}_remise`;
 					const helperText = validationErrors[errorKey] || '';
@@ -943,7 +943,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				sortable: false,
 				filterable: false,
 				renderCell: (params: GridRenderCellParams) => {
-					const rowIndex = params.row.rowIndex;
+					const rowIndex = getRowIndexFromParams(params);
 					return (
 						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
 							<Tooltip title="Supprimer">
@@ -961,6 +961,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			renderQuantityCell,
 			renderRemiseCell,
 			getArticleById,
+			getRowIndexFromParams,
 			getLines,
 			validationErrors,
 			handleDeleteLine,
