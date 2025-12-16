@@ -2,13 +2,47 @@
 
 import React, { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Button, Stack, Typography, Chip, IconButton, Tooltip, Tabs, Tab, Paper, Container } from '@mui/material';
-import { Edit, Delete, Visibility, BusinessOutlined, AddOutlined, Close } from '@mui/icons-material';
+import {
+	Box,
+	Button,
+	Stack,
+	Typography,
+	Chip,
+	IconButton,
+	Tooltip,
+	Tabs,
+	Tab,
+	Paper,
+	Container,
+	Menu,
+	MenuItem,
+	ListItemIcon,
+	ListItemText,
+	Divider,
+	CircularProgress,
+} from '@mui/material';
+import {
+	Edit,
+	Delete,
+	Visibility,
+	BusinessOutlined,
+	AddOutlined,
+	Close,
+	ReceiptLong,
+	SwapHoriz,
+	CheckCircle,
+	ReceiptLongOutlined,
+	ReceiptLong as ReceiptLongIcon,
+} from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/devis/devis.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import { useDeleteDeviMutation, useGetDevisListQuery } from '@/store/services/devi';
+import {
+	useDeleteDeviMutation,
+	useGetDevisListQuery,
+	useConvertDeviToFactureProFormaMutation,
+} from '@/store/services/devi';
 import { DEVIS_EDIT, DEVIS_VIEW, COMPANIES_ADD, DEVIS_ADD } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
@@ -46,7 +80,7 @@ interface DevisListContentProps extends SessionProps {
 	role: string;
 }
 
-const DevisListContent: React.FC<DevisListContentProps> = (props: DevisListContentProps) => {
+const DevisListContent: React.FC<DevisListContentProps> = (props) => {
 	const { session, company_id, role } = props;
 	const { onSuccess, onError } = useToast();
 	const router = useRouter();
@@ -56,9 +90,12 @@ const DevisListContent: React.FC<DevisListContentProps> = (props: DevisListConte
 		page: 0,
 		pageSize: 10,
 	});
-	const [searchTerm, setSearchTerm] = useState<string>('');
-	const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
+	const [searchTerm, setSearchTerm] = useState('');
+	const [showDeleteModal, setShowDeleteModal] = useState(false);
+	const [showConvertModal, setShowConvertModal] = useState(false);
 	const [selectedId, setSelectedId] = useState<number | null>(null);
+	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+	const [menuDeviId, setMenuDeviId] = useState<number | null>(null);
 
 	const {
 		data: rawData,
@@ -74,16 +111,18 @@ const DevisListContent: React.FC<DevisListContentProps> = (props: DevisListConte
 		},
 		{ skip: !token },
 	);
+
+	const [convertToProforma, { isLoading: isConvertToProFormaLoading }] = useConvertDeviToFactureProFormaMutation();
 	const data = rawData as PaginationResponseType<DeviClass> | undefined;
 	const [deleteRecord] = useDeleteDeviMutation();
 
 	const deleteHandler = async () => {
 		try {
 			await deleteRecord({ id: selectedId! }).unwrap();
-			onSuccess('Devis supprimé avec succès');
+			onSuccess('Devi supprimé avec succès');
 			refetch();
 		} catch {
-			onError('Erreur lors de la suppression du devis');
+			onError('Erreur lors de la suppression du devi');
 		} finally {
 			setShowDeleteModal(false);
 		}
@@ -94,34 +133,96 @@ const DevisListContent: React.FC<DevisListContentProps> = (props: DevisListConte
 		{ text: 'Supprimer', active: true, onClick: deleteHandler, icon: <Delete />, color: '#D32F2F' },
 	];
 
-	const showDeleteModalCall = (id: number) => {
-		setSelectedId(id);
-		setShowDeleteModal(true);
+	const convertToProformaHandler = async () => {
+		try {
+			await convertToProforma({ id: selectedId! }).unwrap();
+			onSuccess('Devis converti en facture pro-forma avec succès');
+		} catch {
+			onError('Erreur lors de la conversion du devis');
+		} finally {
+			setShowConvertModal(false);
+		}
 	};
+
+	const convertirProFormatModalActions = [
+		{
+			text: 'Annuler',
+			active: false,
+			onClick: () => setShowConvertModal(false),
+			icon: <Close />,
+			color: '#6B6B6B',
+		},
+		{
+			text: 'Convertir',
+			active: true,
+			onClick: convertToProformaHandler,
+			icon: <CheckCircle />,
+			color: '#2E7D32',
+		},
+	];
+
+	const renderActions = (params: GridRenderCellParams<DeviClass>) => (
+		<>
+			<Tooltip title="Modifier">
+				<IconButton size="small" color="primary" onClick={() => router.push(DEVIS_EDIT(params.row.id, company_id))}>
+					<Edit fontSize="small" />
+				</IconButton>
+			</Tooltip>
+			<Tooltip title="Supprimer">
+				<IconButton
+					size="small"
+					color="error"
+					onClick={() => {
+						setSelectedId(params.row.id);
+						setShowDeleteModal(true);
+					}}
+				>
+					<Delete fontSize="small" />
+				</IconButton>
+			</Tooltip>
+			<Tooltip title="Convertir">
+				<IconButton
+					size="small"
+					color="success"
+					onClick={(e) => {
+						setAnchorEl(e.currentTarget);
+						setMenuDeviId(params.row.id);
+					}}
+					disabled={isConvertToProFormaLoading && selectedId === params.row.id}
+				>
+					{isConvertToProFormaLoading && selectedId === params.row.id ? (
+						<CircularProgress size={20} />
+					) : (
+						<SwapHoriz fontSize="small" />
+					)}
+				</IconButton>
+			</Tooltip>
+		</>
+	);
 
 	const columns: GridColDef[] = [
 		{
 			field: 'numero_devis',
-			headerName: 'Numéro devis',
+			headerName: 'Numéro devi',
 			width: 130,
-			renderCell: (params: GridRenderCellParams<DeviClass>) => (
-				<DarkTooltip title={params.value}>
+			renderCell: (p: GridRenderCellParams<DeviClass>) => (
+				<DarkTooltip title={p.value}>
 					<Typography variant="body2" noWrap>
-						{params.value}
+						{p.value}
 					</Typography>
 				</DarkTooltip>
 			),
 		},
 		{
 			field: 'date_devis',
-			headerName: 'Date devis',
+			headerName: 'Date devi',
 			width: 130,
-			renderCell: (params: GridRenderCellParams<DeviClass>) => {
-				const formatted = formatDate(params.value as string | null).split(',')[0];
+			renderCell: (p: GridRenderCellParams<DeviClass>) => {
+				const f = formatDate(p.value as string | null).split(',')[0];
 				return (
-					<DarkTooltip title={formatted}>
+					<DarkTooltip title={f}>
 						<Typography variant="body2" noWrap>
-							{formatted}
+							{f}
 						</Typography>
 					</DarkTooltip>
 				);
@@ -131,10 +232,10 @@ const DevisListContent: React.FC<DevisListContentProps> = (props: DevisListConte
 			field: 'client_name',
 			headerName: 'Client',
 			width: 200,
-			renderCell: (params: GridRenderCellParams<DeviClass>) => (
-				<DarkTooltip title={params.value}>
+			renderCell: (p: GridRenderCellParams<DeviClass>) => (
+				<DarkTooltip title={p.value}>
 					<Typography variant="body2" noWrap>
-						{params.value}
+						{p.value}
 					</Typography>
 				</DarkTooltip>
 			),
@@ -143,10 +244,10 @@ const DevisListContent: React.FC<DevisListContentProps> = (props: DevisListConte
 			field: 'numero_demande_prix_client',
 			headerName: 'N° Dde de prix',
 			width: 150,
-			renderCell: (params: GridRenderCellParams<DeviClass>) => (
-				<DarkTooltip title={params.value}>
+			renderCell: (p: GridRenderCellParams<DeviClass>) => (
+				<DarkTooltip title={p.value}>
 					<Typography variant="body2" noWrap>
-						{params.value}
+						{p.value}
 					</Typography>
 				</DarkTooltip>
 			),
@@ -154,10 +255,10 @@ const DevisListContent: React.FC<DevisListContentProps> = (props: DevisListConte
 		{
 			field: 'statut',
 			headerName: 'Statut',
-			width: 150,
-			renderCell: (params: GridRenderCellParams<DeviClass>) => (
-				<DarkTooltip title={params.value}>
-					<Chip label={params.value || '-'} color={getStatutColor(params.value || '')} variant="outlined" />
+			width: 100,
+			renderCell: (p: GridRenderCellParams<DeviClass>) => (
+				<DarkTooltip title={p.value}>
+					<Chip label={p.value || '-'} color={getStatutColor(p.value || '')} variant="outlined" />
 				</DarkTooltip>
 			),
 		},
@@ -165,10 +266,10 @@ const DevisListContent: React.FC<DevisListContentProps> = (props: DevisListConte
 			field: 'total_ttc_apres_remise',
 			headerName: 'Total TTC après remise',
 			width: 150,
-			renderCell: (params: GridRenderCellParams<DeviClass>) => (
-				<DarkTooltip title={params.value}>
+			renderCell: (p: GridRenderCellParams<DeviClass>) => (
+				<DarkTooltip title={p.value}>
 					<Typography variant="body2" noWrap>
-						{params.value}
+						{p.value}
 					</Typography>
 				</DarkTooltip>
 			),
@@ -177,10 +278,10 @@ const DevisListContent: React.FC<DevisListContentProps> = (props: DevisListConte
 			field: 'lignes_count',
 			headerName: "Nombre d'articles",
 			width: 150,
-			renderCell: (params: GridRenderCellParams<DeviClass>) => (
-				<DarkTooltip title={params.value}>
+			renderCell: (p: GridRenderCellParams<DeviClass>) => (
+				<DarkTooltip title={p.value}>
 					<Typography variant="body2" noWrap>
-						{params.value}
+						{p.value}
 					</Typography>
 				</DarkTooltip>
 			),
@@ -191,33 +292,16 @@ const DevisListContent: React.FC<DevisListContentProps> = (props: DevisListConte
 			width: 200,
 			sortable: false,
 			filterable: false,
-			renderCell: (params: GridRenderCellParams<DeviClass>) => (
+			renderCell: (p: GridRenderCellParams<DeviClass>) => (
 				<Box sx={{ display: 'flex', gap: 1 }}>
 					{(role === 'Admin' || role === 'Lecture') && (
 						<Tooltip title="Voir">
-							<IconButton size="small" color="info" onClick={() => router.push(DEVIS_VIEW(params.row.id, company_id))}>
+							<IconButton size="small" color="info" onClick={() => router.push(DEVIS_VIEW(p.row.id, company_id))}>
 								<Visibility />
 							</IconButton>
 						</Tooltip>
 					)}
-					{role === 'Admin' && (
-						<>
-							<Tooltip title="Modifier">
-								<IconButton
-									size="small"
-									color="primary"
-									onClick={() => router.push(DEVIS_EDIT(params.row.id, company_id))}
-								>
-									<Edit />
-								</IconButton>
-							</Tooltip>
-							<Tooltip title="Supprimer">
-								<IconButton size="small" color="error" onClick={() => showDeleteModalCall(params.row.id)}>
-									<Delete />
-								</IconButton>
-							</Tooltip>
-						</>
-					)}
+					{role === 'Admin' && <>{renderActions(p)}</>}
 				</Box>
 			),
 		},
@@ -247,7 +331,7 @@ const DevisListContent: React.FC<DevisListContentProps> = (props: DevisListConte
 						}}
 						startIcon={<AddOutlined fontSize="small" />}
 					>
-						Nouveau devis
+						Nouveau devi
 					</Button>
 				</Box>
 			)}
@@ -269,6 +353,46 @@ const DevisListContent: React.FC<DevisListContentProps> = (props: DevisListConte
 					titleIconColor="#D32F2F"
 				/>
 			)}
+			{showConvertModal && (
+				<ActionModals
+					title="Convertir en facture pro-forma ?"
+					body="Êtes-vous sûr de vouloir convertir ce devi en facture pro-forma ?"
+					actions={convertirProFormatModalActions}
+					titleIcon={<ReceiptLong />}
+					titleIconColor="#2E7D32"
+				/>
+			)}
+			<Menu
+				anchorEl={anchorEl}
+				open={Boolean(anchorEl)}
+				onClose={() => {
+					setAnchorEl(null);
+					setMenuDeviId(null);
+				}}
+				slotProps={{ paper: { elevation: 3, sx: { minWidth: 220 } } }}
+			>
+				<MenuItem
+					onClick={() => {
+						if (menuDeviId) {
+							setSelectedId(menuDeviId);
+							setShowConvertModal(true);
+						}
+						setAnchorEl(null);
+					}}
+				>
+					<ListItemIcon>
+						<ReceiptLongOutlined fontSize="small" color="success" />
+					</ListItemIcon>
+					<ListItemText>Facture pro-forma</ListItemText>
+				</MenuItem>
+				<Divider />
+				<MenuItem disabled>
+					<ListItemIcon>
+						<ReceiptLongIcon fontSize="small" />
+					</ListItemIcon>
+					<ListItemText>Facture (bientôt)</ListItemText>
+				</MenuItem>
+			</Menu>
 		</>
 	);
 };
