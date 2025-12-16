@@ -20,6 +20,27 @@ import { useGetUserCompaniesQuery } from '@/store/services/company';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { useToast } from '@/utils/hooks';
 
+export const getStatutColor = (
+	statut: string,
+): 'default' | 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success' => {
+	switch (statut) {
+		case 'Brouillon':
+			return 'default';
+		case 'Envoyé':
+			return 'info';
+		case 'Accepté':
+			return 'success';
+		case 'Refusé':
+			return 'error';
+		case 'Annulé':
+			return 'error';
+		case 'Expiré':
+			return 'warning';
+		default:
+			return 'default';
+	}
+};
+
 interface DevisListContentProps extends SessionProps {
 	company_id: number;
 	role: string;
@@ -136,7 +157,7 @@ const DevisListContent: React.FC<DevisListContentProps> = (props: DevisListConte
 			width: 150,
 			renderCell: (params: GridRenderCellParams<DeviClass>) => (
 				<DarkTooltip title={params.value}>
-					<Chip label={params.value} size="small" variant="outlined" />
+					<Chip label={params.value || '-'} color={getStatutColor(params.value || '')} variant="outlined" />
 				</DarkTooltip>
 			),
 		},

@@ -45,6 +45,7 @@ import type { ArticleClass } from '@/models/Classes';
 import { useGetArticlesListQuery } from '@/store/services/article';
 import { formatDate } from '@/utils/helpers';
 import FactureDevisTotalsCard from '@/components/shared/factureDevistotalCard/factureDevisTotalsCard';
+import { getStatutColor } from '@/components/pages/dashboard/devis/devisList';
 
 interface InfoRowProps {
 	icon: React.ReactNode;
@@ -83,27 +84,6 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 			</Stack>
 		</Stack>
 	);
-};
-
-const getStatutColor = (
-	statut: string,
-): 'default' | 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success' => {
-	switch (statut) {
-		case 'Brouillon':
-			return 'default';
-		case 'Envoyé':
-			return 'info';
-		case 'Accepté':
-			return 'success';
-		case 'Refusé':
-			return 'error';
-		case 'Annulé':
-			return 'error';
-		case 'Expiré':
-			return 'warning';
-		default:
-			return 'default';
-	}
 };
 
 interface Props extends SessionProps {

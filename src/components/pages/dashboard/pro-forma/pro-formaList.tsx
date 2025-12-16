@@ -19,6 +19,7 @@ import { formatDate } from '@/utils/helpers';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { useToast } from '@/utils/hooks';
+import { getStatutColor } from '@/components/pages/dashboard/devis/devisList';
 
 interface ProformaListContentProps extends SessionProps {
 	company_id: number;
@@ -136,7 +137,7 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 			width: 150,
 			renderCell: (params: GridRenderCellParams<FactureProFormaClass>) => (
 				<DarkTooltip title={params.value}>
-					<Chip label={params.value} size="small" variant="outlined" />
+					<Chip label={params.value || '-'} color={getStatutColor(params.value || '')} variant="outlined" />
 				</DarkTooltip>
 			),
 		},
