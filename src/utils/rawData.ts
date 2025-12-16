@@ -28,7 +28,7 @@ export const civiliteItemsList: Array<DropDownType> = [
 ];
 
 // 'Brouillon', 'Envoyé', 'Accepté', 'Refusé', 'Annulé', 'Expiré'
-export const devisStatusItemsList: Array<DropDownType> = [
+export const devisFactureStatusItemsList: Array<DropDownType> = [
 	{ code: '', value: '' },
 	{ code: 'Brouillon', value: 'Brouillon' },
 	{ code: 'Envoyé', value: 'Envoyé' },

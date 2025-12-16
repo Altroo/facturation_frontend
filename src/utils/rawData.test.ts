@@ -2,7 +2,7 @@ import {
 	genderItemsList,
 	nbrEmployeItemsList,
 	civiliteItemsList,
-	devisStatusItemsList,
+	devisFactureStatusItemsList,
 	remiseTypeItemsList,
 } from './rawData';
 
@@ -81,17 +81,17 @@ describe('items lists', () => {
 				{ code: 'Expiré', value: 'Expiré' },
 			];
 
-			expect(devisStatusItemsList).toEqual(expected);
-			expect(devisStatusItemsList.map((i) => i.code)).toEqual(expected.map((e) => e.code));
+			expect(devisFactureStatusItemsList).toEqual(expected);
+			expect(devisFactureStatusItemsList.map((i) => i.code)).toEqual(expected.map((e) => e.code));
 		});
 
 		it('first item is the empty placeholder', () => {
-			expect(devisStatusItemsList[0]).toEqual({ code: '', value: '' });
+			expect(devisFactureStatusItemsList[0]).toEqual({ code: '', value: '' });
 		});
 
 		it('all non-placeholder entries have non-empty code and value strings', () => {
-			for (let i = 1; i < devisStatusItemsList.length; i++) {
-				const it = devisStatusItemsList[i];
+			for (let i = 1; i < devisFactureStatusItemsList.length; i++) {
+				const it = devisFactureStatusItemsList[i];
 				expect(typeof it.code).toBe('string');
 				expect(it.code.length).toBeGreaterThan(0);
 				expect(typeof it.value).toBe('string');
