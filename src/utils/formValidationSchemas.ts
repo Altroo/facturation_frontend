@@ -1,4 +1,4 @@
-import z from 'zod/v4';
+import z from 'zod';
 import {
 	INPUT_MAX,
 	INPUT_MIN,
@@ -414,6 +414,73 @@ export const deviAddSchema = z.object({
 	client: requiredNumberField(1),
 	date_devis: requiredTextField(1, 100),
 	numero_demande_prix_client: optionalTextField(1, 100).nullable(),
+	mode_paiement: optionalNumberField(1).nullable(),
+	remarque: optionalTextField(2, 500).nullable(),
+	globalError: optionalTextField(1, 500),
+});
+
+export const proformaSchema = z
+	.object({
+		numero_facture: requiredTextField(1, 20),
+		client: requiredNumberField(1),
+		date_facture: requiredTextField(1, 100),
+		numero_bon_commande_client: optionalTextField(1, 100).nullable(),
+		mode_paiement: optionalNumberField(0).nullable(),
+		remarque: optionalTextField(2, 500).nullable(),
+		remise_type: z.enum(['Pourcentage', 'Fixe']).optional().nullable(),
+		remise: optionalNumberField(0),
+		lignes: z.array(devisLineSchema).optional(),
+		globalError: optionalTextField(1, 500),
+	})
+	.superRefine((data, ctx) => {
+		const hasRemiseType = data.remise_type !== undefined;
+		const rType = data.remise_type ?? 'Pourcentage';
+		const remiseVal = data.remise;
+
+		if (hasRemiseType && (remiseVal === undefined || remiseVal === null || Number.isNaN(remiseVal))) {
+			ctx.addIssue({
+				path: ['remise'],
+				code: 'custom',
+				message: INPUT_REQUIRED,
+			});
+			return;
+		}
+
+		if (remiseVal !== undefined && remiseVal !== null) {
+			if (!Number.isInteger(remiseVal)) {
+				ctx.addIssue({
+					path: ['remise'],
+					code: 'custom',
+					message: 'La remise doit être un entier.',
+				});
+				return;
+			}
+
+			if (rType === 'Pourcentage') {
+				if (remiseVal < 0 || remiseVal > 100) {
+					ctx.addIssue({
+						path: ['remise'],
+						code: 'custom',
+						message: 'La remise en pourcentage doit être entre 0 et 100.',
+					});
+				}
+			} else {
+				if (remiseVal < 0) {
+					ctx.addIssue({
+						path: ['remise'],
+						code: 'custom',
+						message: 'La remise fixe doit être positive ou nulle.',
+					});
+				}
+			}
+		}
+	});
+
+export const proformaAddSchema = z.object({
+	numero_facture: requiredTextField(1, 20),
+	client: requiredNumberField(1),
+	date_facture: requiredTextField(1, 100),
+	numero_bon_commande_client: optionalTextField(1, 100).nullable(),
 	mode_paiement: optionalNumberField(1).nullable(),
 	remarque: optionalTextField(2, 500).nullable(),
 	globalError: optionalTextField(1, 500),

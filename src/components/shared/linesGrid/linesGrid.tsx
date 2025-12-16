@@ -1,19 +1,20 @@
 import React from 'react';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { frFR } from '@mui/x-data-grid/locales';
-import type { DeviLineFormValues } from '@/types/devisTypes';
+import type { DeviFactureLineFormValues } from '@/types/devisTypes';
 import { Box, Button, Card, CardContent, Divider, Stack, Typography } from '@mui/material';
 import { Add as AddIcon, ShoppingCart as ShoppingCartIcon } from '@mui/icons-material';
 
 interface LinesGridProps {
-	rows: Array<DeviLineFormValues>;
+	rows: Array<DeviFactureLineFormValues>;
+	title: string;
 	columns: GridColDef[];
 	onAddClick: () => void;
 	isLoading: boolean;
 }
 
 const LinesGrid = React.memo(
-	({ rows, columns, onAddClick, isLoading }: LinesGridProps) => {
+	({ rows, columns, onAddClick, isLoading, title }: LinesGridProps) => {
 		return (
 			<Card elevation={2} sx={{ borderRadius: 2 }}>
 				<CardContent sx={{ p: 3 }}>
@@ -21,7 +22,7 @@ const LinesGrid = React.memo(
 						<Stack direction="row" spacing={2} alignItems="center">
 							<ShoppingCartIcon color="primary" />
 							<Typography variant="h6" fontWeight={700}>
-								Lignes du devis
+								{title}
 							</Typography>
 						</Stack>
 						<Button variant="contained" startIcon={<AddIcon />} onClick={onAddClick} size="small" disabled={isLoading}>

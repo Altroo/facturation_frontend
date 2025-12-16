@@ -1,14 +1,14 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
-import { AUTH_LOGIN, DEVIS_LIST } from '@/utils/routes';
-import DevisForm from '@/components/pages/dashboard/devis/devisForm';
+import { AUTH_LOGIN, PRO_FORMA_LIST } from '@/utils/routes';
+import FactureProForma from '@/components/pages/dashboard/pro-forma/pro-formaForm';
 
 type PageProps = {
 	params: Promise<{ id: number }>;
 	searchParams: Promise<{ company_id: string }>;
 };
 
-const DevisEditPage = async (props: PageProps) => {
+const FactureProFormaEditPage = async (props: PageProps) => {
 	const session = await auth();
 	const { id } = await props.params;
 	const { searchParams } = props;
@@ -19,10 +19,10 @@ const DevisEditPage = async (props: PageProps) => {
 	}
 
 	if (!id || isNaN(Number(id)) || !company_id || isNaN(Number(company_id))) {
-		redirect(DEVIS_LIST);
+		redirect(PRO_FORMA_LIST);
 	}
 
-	return <DevisForm session={session} id={id} company_id={Number(company_id)} />;
+	return <FactureProForma session={session} id={id} company_id={Number(company_id)} />;
 };
 
-export default DevisEditPage;
+export default FactureProFormaEditPage;

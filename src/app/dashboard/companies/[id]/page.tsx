@@ -3,11 +3,11 @@ import { auth } from '@/auth';
 import { AUTH_LOGIN, COMPANIES_LIST } from '@/utils/routes';
 import CompaniesViewClient from '@/components/pages/dashboard/companies/companiesView';
 
-type CompaniesViewPageProps = {
+type PageProps = {
 	params: Promise<{ id: number }>;
 };
 
-const CompaniesViewPage = async (props: CompaniesViewPageProps) => {
+const CompaniesViewPage = async (props: PageProps) => {
 	const session = await auth();
 	const { id } = await props.params;
 
