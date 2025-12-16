@@ -1,6 +1,6 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
-import { z } from 'zod/v4';
+import z from 'zod';
 import { allowAnyInstance } from '@/utils/helpers';
 import { postApi } from '@/utils/apiHelpers';
 import type { AccountPostLoginResponseType } from '@/types/accountTypes';
