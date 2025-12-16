@@ -102,7 +102,6 @@ const getNavigationMenu = (isStaff: boolean) => {
 			items: [
 				{ title: 'Liste des factures', label: 'Liste des factures', path: '/factures/list' },
 				{ title: 'Factures impayées', label: 'Factures impayées', path: '/factures/unpaid' },
-				{ title: 'Nouvelle facture', label: 'Nouvelle facture', path: '/factures/new' },
 			],
 		},
 		factures_proformat: {
@@ -116,7 +115,6 @@ const getNavigationMenu = (isStaff: boolean) => {
 			items: [
 				{ title: 'Liste des BLs', label: 'Liste des BLs', path: '/bls/list' },
 				{ title: 'BLs non facturés', label: 'BLs non facturés', path: '/bls/uninvoiced' },
-				{ title: 'Nouveau BL', label: 'Nouveau bon de livraison', path: '/bls/new' },
 				{ title: 'État de livraison', label: 'État de livraison', path: '/bls/status' },
 			],
 		},
