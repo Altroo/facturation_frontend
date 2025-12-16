@@ -55,7 +55,7 @@ import { coordonneeTextInputTheme, customDropdownTheme } from '@/utils/themes';
 import { CLIENTS_ADD, DEVIS_LIST, DEVIS_EDIT } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import type {
-	DeviLineFormValues,
+	DeviFactureLineFormValues,
 	DeviSchemaType,
 	TypeFactureDevisStatus,
 	ValidateArticleLinesErrorType,
@@ -80,7 +80,7 @@ import ActionModals from '@/components/htmlElements/modals/actionModal/actionMod
 import AddArticleModal from '@/components/shared/addArticleModal/addArticleModal';
 import GlobalRemiseModal from '@/components/shared/globalRemiseModal/globalRemiseModal';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
-import { devisStatusItemsList, remiseTypeItemsList } from '@/utils/rawData';
+import { devisFactureStatusItemsList, remiseTypeItemsList } from '@/utils/rawData';
 import { useAddModePaiementMutation } from '@/store/services/parameter';
 import AddEntityModal from '@/components/desktop/modals/addEntityModal/addEntityModal';
 import FactureDevisTotalsCard from '@/components/shared/factureDevistotalCard/factureDevisTotalsCard';
@@ -89,7 +89,10 @@ import LinesGrid from '@/components/shared/linesGrid/linesGrid';
 const inputTheme = coordonneeTextInputTheme();
 
 // Generate stable row ID
-const generateRowId = (articleRef: number | string | Partial<ArticleClass> | undefined, index: number): string => {
+export const generateRowId = (
+	articleRef: number | string | Partial<ArticleClass> | undefined,
+	index: number,
+): string => {
 	let id: string | number;
 	if (articleRef == null) {
 		id = 'na';
@@ -126,7 +129,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		error: dataError,
 	} = useGetDeviQuery({ id: id! }, { skip: !token || !isEditMode });
 
-	const { data: rawNumDevisData, isLoading: isNumDevisLoading } = useGetNumDevisQuery(undefined, {
+	const { data: rawNumData, isLoading: isNumLoading } = useGetNumDevisQuery(undefined, {
 		skip: !token || isEditMode,
 	});
 
@@ -201,9 +204,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	// Validation errors state
 	const [validationErrors, setValidationErrors] = useState<ValidateArticleLinesErrorType>({});
 
-	// Split numero_devis into number and year parts
-	const initialNumDevis = isEditMode ? (rawData?.numero_devis ?? '') : (rawNumDevisData?.numero_devis ?? '');
-	const [numDevisNumberPart = '', numDevisYearPart = ''] = initialNumDevis.split('/');
+	// Split numero into number and year parts
+	const initialNum = isEditMode ? (rawData?.numero_devis ?? '') : (rawNumData?.numero_devis ?? '');
+	const [numNumberPart = '', numYearPart = ''] = initialNum.split('/');
 
 	// get mode_paiement
 	const rawModePaiement = useAppSelector(getModePaiementState);
@@ -213,7 +216,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const formik = useFormik<DeviSchemaType>({
 		initialValues: {
-			numero_devis: initialNumDevis,
+			numero_devis: initialNum,
 			client: isEditMode ? (rawData?.client ?? 0) : 0,
 			date_devis: isEditMode
 				? (rawData?.date_devis ?? new Date().toISOString().split('T')[0])
@@ -236,7 +239,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					// Edit mode
 					const submissionData: Partial<DeviSchemaType> = {
 						...data,
-						numero_devis: `${devisNumberPart}/${devisYearPart}`,
+						numero_devis: `${numberPart}/${yearPart}`,
 					};
 					if (!submissionData.remise_type) {
 						delete submissionData.remise_type;
@@ -248,7 +251,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					// Add mode
 					const submissionData: Partial<DeviSchemaType> = {
 						...data,
-						numero_devis: `${devisNumberPart}/${devisYearPart}`,
+						numero_devis: `${numberPart}/${yearPart}`,
 					};
 					const response = await addData({ data: submissionData as DeviSchemaType }).unwrap();
 					onSuccess('Devis ajouté avec succès.');
@@ -271,8 +274,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		},
 	});
 
-	const getLines = useCallback((): DeviLineFormValues[] => {
-		return Array.isArray(formik.values.lignes) ? (formik.values.lignes as DeviLineFormValues[]) : [];
+	const getLines = useCallback((): DeviFactureLineFormValues[] => {
+		return Array.isArray(formik.values.lignes) ? (formik.values.lignes as DeviFactureLineFormValues[]) : [];
 	}, [formik.values.lignes]);
 
 	// Calculate total HT before global remise (used in multiple places)
@@ -332,14 +335,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		return modePaiementItems.find((c) => c.value === String(v)) ?? null;
 	}, [formik.values.mode_paiement, modePaiementItems]);
 
-	const [devisNumberPart, setDevisNumberPart] = useState(numDevisNumberPart);
-	const [devisYearPart, setDevisYearPart] = useState(numDevisYearPart);
+	const [numberPart, setNumberPart] = useState(numNumberPart);
+	const [yearPart, setYearPart] = useState(numYearPart);
 
-	// Update state when num devis changes
+	// Update state when num changes
 	useEffect(() => {
-		setDevisNumberPart(numDevisNumberPart);
-		setDevisYearPart(numDevisYearPart);
-	}, [numDevisNumberPart, numDevisYearPart]);
+		setNumberPart(numNumberPart);
+		setYearPart(numYearPart);
+	}, [numNumberPart, numYearPart]);
 
 	// Calculate totals
 	const totals = useMemo(() => {
@@ -417,7 +420,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	// Handle line changes with validation
 	const handleLineChange = useCallback(
-		(index: number, field: keyof DeviLineFormValues, value: string | number) => {
+		(index: number, field: keyof DeviFactureLineFormValues, value: string | number) => {
 			const lignes = getLines();
 			const ligne = lignes[index];
 			if (!ligne) return;
@@ -546,9 +549,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					quantity: 1,
 					remise_type: '' as '' | 'Pourcentage' | 'Fixe' | undefined,
 					remise: 0,
-				} as DeviLineFormValues;
+				} as DeviFactureLineFormValues;
 			})
-			.filter((line): line is DeviLineFormValues => line !== null);
+			.filter((line): line is DeviFactureLineFormValues => line !== null);
 
 		const currentLines = getLines();
 		formik.setFieldValue('lignes', [...currentLines, ...newLines]);
@@ -945,7 +948,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			await patchStatut({ id: id!, data: { statut: newValue as TypeFactureDevisStatus } }).unwrap();
 			onSuccess('Statut mis à jour avec succès.');
 		} catch {
-			onError('Échec de la mise à jour du statut du devis.');
+			onError('Échec de la mise à jour du statut.');
 		}
 	};
 
@@ -996,7 +999,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		isPending ||
 		isDataLoading ||
 		isArticlesLoading ||
-		isNumDevisLoading;
+		isNumLoading;
 
 	const hasValidationErrors = Object.keys(validationErrors).length > 0;
 
@@ -1083,8 +1086,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 													id="numero_devis_number"
 													type="text"
 													label="Numéro *"
-													value={devisNumberPart}
-													onChange={(e) => setDevisNumberPart(e.target.value)}
+													value={numberPart}
+													onChange={(e) => setNumberPart(e.target.value)}
 													onBlur={formik.handleBlur('numero_devis')}
 													error={formik.touched.numero_devis && Boolean(formik.errors.numero_devis)}
 													helperText={
@@ -1104,8 +1107,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 													id="numero_devis_year"
 													type="text"
 													label="Année *"
-													value={devisYearPart}
-													onChange={(e) => setDevisYearPart(e.target.value)}
+													value={yearPart}
+													onChange={(e) => setYearPart(e.target.value)}
 													fullWidth={true}
 													size="small"
 													theme={inputTheme}
@@ -1140,7 +1143,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								</CardContent>
 							</Card>
 
-							{/* Statut du devis - only in edit mode */}
+							{/* Statut - only in edit mode */}
 							{isEditMode && (
 								<Card elevation={2} sx={{ borderRadius: 2 }}>
 									<CardContent sx={{ p: 3 }}>
@@ -1153,9 +1156,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										<Divider sx={{ mb: 3 }} />
 										<Stack spacing={2.5}>
 											<CustomDropDownSelect
-												id="statut_devis"
+												id="statut"
 												label="Statut"
-												items={devisStatusItemsList}
+												items={devisFactureStatusItemsList}
 												value={rawData?.statut || ''}
 												onChange={(e) => handleStatutChange(e.target.value)}
 												size="small"
@@ -1266,6 +1269,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 							{/* Lines Card - only in edit mode */}
 							{isEditMode && (
 								<LinesGrid
+									title="Lignes du devis"
 									rows={dataGridRows}
 									columns={linesColumns}
 									onAddClick={() => setShowAddArticleModal(true)}
