@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
 	Box,
@@ -32,7 +32,6 @@ import {
 	SwapHoriz,
 	CheckCircle,
 	ReceiptLongOutlined,
-	ReceiptLong as ReceiptLongIcon,
 } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
@@ -43,7 +42,7 @@ import {
 	useGetDevisListQuery,
 	useConvertDeviToFactureProFormaMutation,
 } from '@/store/services/devi';
-import { DEVIS_EDIT, DEVIS_VIEW, COMPANIES_ADD, DEVIS_ADD } from '@/utils/routes';
+import { DEVIS_EDIT, DEVIS_VIEW, COMPANIES_ADD, DEVIS_ADD, PRO_FORMA_EDIT } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
@@ -90,10 +89,11 @@ const DevisListContent: React.FC<DevisListContentProps> = (props) => {
 		page: 0,
 		pageSize: 10,
 	});
+
 	const [searchTerm, setSearchTerm] = useState('');
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
-	const [showConvertModal, setShowConvertModal] = useState(false);
 	const [selectedId, setSelectedId] = useState<number | null>(null);
+	const [showConvertModal, setShowConvertModal] = useState(false);
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const [menuDeviId, setMenuDeviId] = useState<number | null>(null);
 
@@ -116,7 +116,7 @@ const DevisListContent: React.FC<DevisListContentProps> = (props) => {
 	const data = rawData as PaginationResponseType<DeviClass> | undefined;
 	const [deleteRecord] = useDeleteDeviMutation();
 
-	const deleteHandler = async () => {
+	const deleteHandler = useCallback(async () => {
 		try {
 			await deleteRecord({ id: selectedId! }).unwrap();
 			onSuccess('Devi supprimé avec succès');
@@ -126,40 +126,59 @@ const DevisListContent: React.FC<DevisListContentProps> = (props) => {
 		} finally {
 			setShowDeleteModal(false);
 		}
+	}, [selectedId, deleteRecord, onSuccess, onError, refetch]);
+
+	const deleteModalActions = useMemo(
+		() => [
+			{ text: 'Annuler', active: false, onClick: () => setShowDeleteModal(false), icon: <Close />, color: '#6B6B6B' },
+			{ text: 'Supprimer', active: true, onClick: deleteHandler, icon: <Delete />, color: '#D32F2F' },
+		],
+		[deleteHandler],
+	);
+
+	const showDeleteModalCall = (id: number) => {
+		setSelectedId(id);
+		setShowDeleteModal(true);
 	};
 
-	const deleteModalActions = [
-		{ text: 'Annuler', active: false, onClick: () => setShowDeleteModal(false), icon: <Close />, color: '#6B6B6B' },
-		{ text: 'Supprimer', active: true, onClick: deleteHandler, icon: <Delete />, color: '#D32F2F' },
-	];
-
-	const convertToProformaHandler = async () => {
+	const convertToProformaHandler = useCallback(async () => {
 		try {
 			await convertToProforma({ id: selectedId! }).unwrap();
 			onSuccess('Devis converti en facture pro-forma avec succès');
+			setTimeout(() => {
+				router.push(PRO_FORMA_EDIT(selectedId!, company_id));
+			}, 500);
 		} catch {
 			onError('Erreur lors de la conversion du devis');
 		} finally {
 			setShowConvertModal(false);
 		}
-	};
+	}, [convertToProforma, selectedId, onSuccess, router, company_id, onError]);
 
-	const convertirProFormatModalActions = [
-		{
-			text: 'Annuler',
-			active: false,
-			onClick: () => setShowConvertModal(false),
-			icon: <Close />,
-			color: '#6B6B6B',
-		},
-		{
-			text: 'Convertir',
-			active: true,
-			onClick: convertToProformaHandler,
-			icon: <CheckCircle />,
-			color: '#2E7D32',
-		},
-	];
+	const convertirProFormatModalActions = useMemo(
+		() => [
+			{
+				text: 'Annuler',
+				active: false,
+				onClick: () => setShowConvertModal(false),
+				icon: <Close />,
+				color: '#6B6B6B',
+			},
+			{
+				text: 'Convertir',
+				active: true,
+				onClick: convertToProformaHandler,
+				icon: <CheckCircle />,
+				color: '#2E7D32',
+			},
+		],
+		[convertToProformaHandler],
+	);
+
+	const showConvertModalCall = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, id: number) => {
+		setAnchorEl(e.currentTarget);
+		setMenuDeviId(id);
+	};
 
 	const renderActions = (params: GridRenderCellParams<DeviClass>) => (
 		<>
@@ -169,14 +188,7 @@ const DevisListContent: React.FC<DevisListContentProps> = (props) => {
 				</IconButton>
 			</Tooltip>
 			<Tooltip title="Supprimer">
-				<IconButton
-					size="small"
-					color="error"
-					onClick={() => {
-						setSelectedId(params.row.id);
-						setShowDeleteModal(true);
-					}}
-				>
+				<IconButton size="small" color="error" onClick={() => showDeleteModalCall(params.row.id)}>
 					<Delete fontSize="small" />
 				</IconButton>
 			</Tooltip>
@@ -184,10 +196,7 @@ const DevisListContent: React.FC<DevisListContentProps> = (props) => {
 				<IconButton
 					size="small"
 					color="success"
-					onClick={(e) => {
-						setAnchorEl(e.currentTarget);
-						setMenuDeviId(params.row.id);
-					}}
+					onClick={(e) => showConvertModalCall(e, params.row.id)}
 					disabled={isConvertToProFormaLoading && selectedId === params.row.id}
 				>
 					{isConvertToProFormaLoading && selectedId === params.row.id ? (
@@ -198,6 +207,26 @@ const DevisListContent: React.FC<DevisListContentProps> = (props) => {
 				</IconButton>
 			</Tooltip>
 		</>
+	);
+
+	const modalsConfig = useMemo(
+		() => ({
+			delete: {
+				title: 'Supprimer ce devi ?',
+				body: 'Êtes‑vous sûr de vouloir supprimer ce devi ?',
+				actions: deleteModalActions,
+				titleIcon: <Delete />,
+				titleIconColor: '#D32F2F',
+			},
+			convert: {
+				title: 'Convertir en facture pro-forma ?',
+				body: 'Êtes-vous sûr de vouloir convertir ce devi en facture pro-forma ?',
+				actions: convertirProFormatModalActions,
+				titleIcon: <ReceiptLong />,
+				titleIconColor: '#2E7D32',
+			},
+		}),
+		[deleteModalActions, convertirProFormatModalActions],
 	);
 
 	const columns: GridColDef[] = [
@@ -344,24 +373,10 @@ const DevisListContent: React.FC<DevisListContentProps> = (props) => {
 				setSearchTerm={setSearchTerm}
 				toolbar={{ quickFilter: true, debounceMs: 500 }}
 			/>
-			{showDeleteModal && (
-				<ActionModals
-					title="Supprimer ce devi ?"
-					body="Êtes‑vous sûr de vouloir supprimer ce devi?"
-					actions={deleteModalActions}
-					titleIcon={<Delete />}
-					titleIconColor="#D32F2F"
-				/>
-			)}
-			{showConvertModal && (
-				<ActionModals
-					title="Convertir en facture pro-forma ?"
-					body="Êtes-vous sûr de vouloir convertir ce devi en facture pro-forma ?"
-					actions={convertirProFormatModalActions}
-					titleIcon={<ReceiptLong />}
-					titleIconColor="#2E7D32"
-				/>
-			)}
+
+			{showDeleteModal && <ActionModals {...modalsConfig.delete} />}
+			{showConvertModal && <ActionModals {...modalsConfig.convert} />}
+
 			<Menu
 				anchorEl={anchorEl}
 				open={Boolean(anchorEl)}
@@ -388,7 +403,7 @@ const DevisListContent: React.FC<DevisListContentProps> = (props) => {
 				<Divider />
 				<MenuItem disabled>
 					<ListItemIcon>
-						<ReceiptLongIcon fontSize="small" />
+						<ReceiptLong fontSize="small" />
 					</ListItemIcon>
 					<ListItemText>Facture (bientôt)</ListItemText>
 				</MenuItem>

@@ -1,15 +1,42 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Button, Stack, Typography, Chip, IconButton, Tooltip, Tabs, Tab, Paper, Container } from '@mui/material';
-import { Edit, Delete, Visibility, BusinessOutlined, AddOutlined, Close } from '@mui/icons-material';
+import {
+	Box,
+	Button,
+	Stack,
+	Typography,
+	Chip,
+	IconButton,
+	Tooltip,
+	Tabs,
+	Tab,
+	Paper,
+	Container,
+	CircularProgress,
+	MenuItem,
+	ListItemIcon,
+	ListItemText,
+	Menu,
+} from '@mui/material';
+import {
+	Edit,
+	Delete,
+	Visibility,
+	BusinessOutlined,
+	AddOutlined,
+	Close,
+	CheckCircle,
+	SwapHoriz,
+	ReceiptLong,
+} from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/pro-forma/pro-forma.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { useDeleteFactureProFormaMutation, useGetFactureProFormaListQuery } from '@/store/services/factureProForma';
-import { PRO_FORMA_EDIT, PRO_FORMA_VIEW, COMPANIES_ADD, PRO_FORMA_ADD } from '@/utils/routes';
+import { COMPANIES_ADD, PRO_FORMA_ADD, PRO_FORMA_EDIT, PRO_FORMA_VIEW } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
@@ -20,6 +47,7 @@ import { useGetUserCompaniesQuery } from '@/store/services/company';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { useToast } from '@/utils/hooks';
 import { getStatutColor } from '@/components/pages/dashboard/devis/devisList';
+import { useConvertDeviToFactureProFormaMutation } from '@/store/services/devi';
 
 interface ProformaListContentProps extends SessionProps {
 	company_id: number;
@@ -36,9 +64,13 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 		page: 0,
 		pageSize: 10,
 	});
+
 	const [searchTerm, setSearchTerm] = useState<string>('');
 	const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
 	const [selectedId, setSelectedId] = useState<number | null>(null);
+	const [showConvertModal, setShowConvertModal] = useState(false);
+	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+	const [menuDeviId, setMenuDeviId] = useState<number | null>(null);
 
 	const {
 		data: rawData,
@@ -54,30 +86,125 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 		},
 		{ skip: !token },
 	);
+
+	// TODO : fix convert to facture instead
+	const [convertToProforma, { isLoading: isConvertToProFormaLoading }] = useConvertDeviToFactureProFormaMutation();
 	const data = rawData as PaginationResponseType<FactureProFormaClass> | undefined;
 	const [deleteRecord] = useDeleteFactureProFormaMutation();
 
-	const deleteHandler = async () => {
+	const deleteHandler = useCallback(async () => {
 		try {
 			await deleteRecord({ id: selectedId! }).unwrap();
-			onSuccess('Facture proforma supprimé avec succès');
+			onSuccess('Facture pro-forma supprimé avec succès');
 			refetch();
 		} catch {
-			onError('Erreur lors de la suppression de la facture proforma');
+			onError('Erreur lors de la suppression du facture pro-forma');
 		} finally {
 			setShowDeleteModal(false);
 		}
-	};
+	}, [selectedId, deleteRecord, onSuccess, onError, refetch]);
 
-	const deleteModalActions = [
-		{ text: 'Annuler', active: false, onClick: () => setShowDeleteModal(false), icon: <Close />, color: '#6B6B6B' },
-		{ text: 'Supprimer', active: true, onClick: deleteHandler, icon: <Delete />, color: '#D32F2F' },
-	];
+	const deleteModalActions = useMemo(
+		() => [
+			{ text: 'Annuler', active: false, onClick: () => setShowDeleteModal(false), icon: <Close />, color: '#6B6B6B' },
+			{ text: 'Supprimer', active: true, onClick: deleteHandler, icon: <Delete />, color: '#D32F2F' },
+		],
+		[deleteHandler],
+	);
 
 	const showDeleteModalCall = (id: number) => {
 		setSelectedId(id);
 		setShowDeleteModal(true);
 	};
+
+	const convertToProformaHandler = useCallback(async () => {
+		try {
+			await convertToProforma({ id: selectedId! }).unwrap();
+			onSuccess('Facture pro-forma converti en facture client avec succès');
+			setTimeout(() => {
+				// TODO : redirect to facture client edit instead
+				router.push(PRO_FORMA_EDIT(selectedId!, company_id));
+			}, 500);
+		} catch {
+			onError('Erreur lors de la conversion du facture pro-forma');
+		} finally {
+			setShowConvertModal(false);
+		}
+	}, [convertToProforma, selectedId, onSuccess, router, company_id, onError]);
+
+	const convertirProFormatModalActions = useMemo(
+		() => [
+			{
+				text: 'Annuler',
+				active: false,
+				onClick: () => setShowConvertModal(false),
+				icon: <Close />,
+				color: '#6B6B6B',
+			},
+			{
+				text: 'Convertir',
+				active: true,
+				onClick: convertToProformaHandler,
+				icon: <CheckCircle />,
+				color: '#2E7D32',
+			},
+		],
+		[convertToProformaHandler],
+	);
+
+	const showConvertModalCall = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, id: number) => {
+		setAnchorEl(e.currentTarget);
+		setMenuDeviId(id);
+	};
+
+	const renderActions = (params: GridRenderCellParams<FactureProFormaClass>) => (
+		<>
+			<Tooltip title="Modifier">
+				<IconButton size="small" color="primary" onClick={() => router.push(PRO_FORMA_EDIT(params.row.id, company_id))}>
+					<Edit fontSize="small" />
+				</IconButton>
+			</Tooltip>
+			<Tooltip title="Supprimer">
+				<IconButton size="small" color="error" onClick={() => showDeleteModalCall(params.row.id)}>
+					<Delete fontSize="small" />
+				</IconButton>
+			</Tooltip>
+			<Tooltip title="Convertir">
+				<IconButton
+					size="small"
+					color="success"
+					onClick={(e) => showConvertModalCall(e, params.row.id)}
+					disabled={isConvertToProFormaLoading && selectedId === params.row.id}
+				>
+					{isConvertToProFormaLoading && selectedId === params.row.id ? (
+						<CircularProgress size={20} />
+					) : (
+						<SwapHoriz fontSize="small" />
+					)}
+				</IconButton>
+			</Tooltip>
+		</>
+	);
+
+	const modalsConfig = useMemo(
+		() => ({
+			delete: {
+				title: 'Supprimer cette facture pro-forma ?',
+				body: 'Êtes‑vous sûr de vouloir supprimer cette facture pro-forma ?',
+				actions: deleteModalActions,
+				titleIcon: <Delete />,
+				titleIconColor: '#D32F2F',
+			},
+			convert: {
+				title: 'Convertir en facture client ?',
+				body: 'Êtes-vous sûr de vouloir convertir cette facture pro forma en facture client ?',
+				actions: convertirProFormatModalActions,
+				titleIcon: <ReceiptLong />,
+				titleIconColor: '#2E7D32',
+			},
+		}),
+		[deleteModalActions, convertirProFormatModalActions],
+	);
 
 	const columns: GridColDef[] = [
 		{
@@ -134,7 +261,7 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 		{
 			field: 'statut',
 			headerName: 'Statut',
-			width: 150,
+			width: 100,
 			renderCell: (params: GridRenderCellParams<FactureProFormaClass>) => (
 				<DarkTooltip title={params.value}>
 					<Chip label={params.value || '-'} color={getStatutColor(params.value || '')} variant="outlined" />
@@ -171,37 +298,16 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 			width: 200,
 			sortable: false,
 			filterable: false,
-			renderCell: (params: GridRenderCellParams<FactureProFormaClass>) => (
+			renderCell: (p: GridRenderCellParams<FactureProFormaClass>) => (
 				<Box sx={{ display: 'flex', gap: 1 }}>
 					{(role === 'Admin' || role === 'Lecture') && (
 						<Tooltip title="Voir">
-							<IconButton
-								size="small"
-								color="info"
-								onClick={() => router.push(PRO_FORMA_VIEW(params.row.id, company_id))}
-							>
+							<IconButton size="small" color="info" onClick={() => router.push(PRO_FORMA_VIEW(p.row.id, company_id))}>
 								<Visibility />
 							</IconButton>
 						</Tooltip>
 					)}
-					{role === 'Admin' && (
-						<>
-							<Tooltip title="Modifier">
-								<IconButton
-									size="small"
-									color="primary"
-									onClick={() => router.push(PRO_FORMA_EDIT(params.row.id, company_id))}
-								>
-									<Edit />
-								</IconButton>
-							</Tooltip>
-							<Tooltip title="Supprimer">
-								<IconButton size="small" color="error" onClick={() => showDeleteModalCall(params.row.id)}>
-									<Delete />
-								</IconButton>
-							</Tooltip>
-						</>
-					)}
+					{role === 'Admin' && <>{renderActions(p)}</>}
 				</Box>
 			),
 		},
@@ -244,15 +350,34 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 				setSearchTerm={setSearchTerm}
 				toolbar={{ quickFilter: true, debounceMs: 500 }}
 			/>
-			{showDeleteModal && (
-				<ActionModals
-					title="Supprimer cette facture pro-forma ?"
-					body="Êtes‑vous sûr de vouloir supprimer cette facture pro-forma?"
-					actions={deleteModalActions}
-					titleIcon={<Delete />}
-					titleIconColor="#D32F2F"
-				/>
-			)}
+
+			{showDeleteModal && <ActionModals {...modalsConfig.delete} />}
+			{showConvertModal && <ActionModals {...modalsConfig.convert} />}
+			<Menu
+				anchorEl={anchorEl}
+				open={Boolean(anchorEl)}
+				onClose={() => {
+					setAnchorEl(null);
+					setMenuDeviId(null);
+				}}
+				slotProps={{ paper: { elevation: 3, sx: { minWidth: 220 } } }}
+			>
+				<MenuItem
+					disabled
+					onClick={() => {
+						if (menuDeviId) {
+							setSelectedId(menuDeviId);
+							setShowConvertModal(true);
+						}
+						setAnchorEl(null);
+					}}
+				>
+					<ListItemIcon>
+						<ReceiptLong fontSize="small" />
+					</ListItemIcon>
+					<ListItemText>Facture (bientôt)</ListItemText>
+				</MenuItem>
+			</Menu>
 		</>
 	);
 };
