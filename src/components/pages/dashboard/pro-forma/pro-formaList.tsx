@@ -246,8 +246,8 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 			/>
 			{showDeleteModal && (
 				<ActionModals
-					title="Supprimer ce devi ?"
-					body="Êtes‑vous sûr de vouloir supprimer ce devi?"
+					title="Supprimer cette facture pro-forma ?"
+					body="Êtes‑vous sûr de vouloir supprimer cette facture pro-forma?"
 					actions={deleteModalActions}
 					titleIcon={<Delete />}
 					titleIconColor="#D32F2F"
