@@ -36,12 +36,12 @@ import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/pro-forma/pro-forma.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { useDeleteFactureProFormaMutation, useGetFactureProFormaListQuery } from '@/store/services/factureProForma';
-import { COMPANIES_ADD, PRO_FORMA_ADD, PRO_FORMA_EDIT, PRO_FORMA_VIEW } from '@/utils/routes';
+import { COMPANIES_ADD, FACTURE_PRO_FORMA_ADD, FACTURE_PRO_FORMA_EDIT, FACTURE_PRO_FORMA_VIEW } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
-import type { FactureProFormaClass } from '@/models/classes';
+import type { FactureClass } from '@/models/classes';
 import { formatDate } from '@/utils/helpers';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
@@ -89,7 +89,7 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 
 	// TODO : fix convert to facture instead
 	const [convertToProforma, { isLoading: isConvertToProFormaLoading }] = useConvertDeviToFactureProFormaMutation();
-	const data = rawData as PaginationResponseType<FactureProFormaClass> | undefined;
+	const data = rawData as PaginationResponseType<FactureClass> | undefined;
 	const [deleteRecord] = useDeleteFactureProFormaMutation();
 
 	const deleteHandler = useCallback(async () => {
@@ -123,7 +123,7 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 			onSuccess('Facture pro-forma converti en facture client avec succès');
 			setTimeout(() => {
 				// TODO : redirect to facture client edit instead
-				router.push(PRO_FORMA_EDIT(selectedId!, company_id));
+				router.push(FACTURE_PRO_FORMA_EDIT(selectedId!, company_id));
 			}, 500);
 		} catch {
 			onError('Erreur lors de la conversion du facture pro-forma');
@@ -157,10 +157,14 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 		setMenuDeviId(id);
 	};
 
-	const renderActions = (params: GridRenderCellParams<FactureProFormaClass>) => (
+	const renderActions = (params: GridRenderCellParams<FactureClass>) => (
 		<>
 			<Tooltip title="Modifier">
-				<IconButton size="small" color="primary" onClick={() => router.push(PRO_FORMA_EDIT(params.row.id, company_id))}>
+				<IconButton
+					size="small"
+					color="primary"
+					onClick={() => router.push(FACTURE_PRO_FORMA_EDIT(params.row.id, company_id))}
+				>
 					<Edit fontSize="small" />
 				</IconButton>
 			</Tooltip>
@@ -211,7 +215,7 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 			field: 'numero_facture',
 			headerName: 'Numéro facture',
 			width: 130,
-			renderCell: (params: GridRenderCellParams<FactureProFormaClass>) => (
+			renderCell: (params: GridRenderCellParams<FactureClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
 						{params.value}
@@ -223,7 +227,7 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 			field: 'date_facture',
 			headerName: 'Date facture',
 			width: 130,
-			renderCell: (params: GridRenderCellParams<FactureProFormaClass>) => {
+			renderCell: (params: GridRenderCellParams<FactureClass>) => {
 				const formatted = formatDate(params.value as string | null).split(',')[0];
 				return (
 					<DarkTooltip title={formatted}>
@@ -238,7 +242,7 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 			field: 'client_name',
 			headerName: 'Client',
 			width: 200,
-			renderCell: (params: GridRenderCellParams<FactureProFormaClass>) => (
+			renderCell: (params: GridRenderCellParams<FactureClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
 						{params.value}
@@ -250,7 +254,7 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 			field: 'numero_bon_commande_client',
 			headerName: 'N° bon commande client',
 			width: 150,
-			renderCell: (params: GridRenderCellParams<FactureProFormaClass>) => (
+			renderCell: (params: GridRenderCellParams<FactureClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
 						{params.value}
@@ -262,7 +266,7 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 			field: 'statut',
 			headerName: 'Statut',
 			width: 100,
-			renderCell: (params: GridRenderCellParams<FactureProFormaClass>) => (
+			renderCell: (params: GridRenderCellParams<FactureClass>) => (
 				<DarkTooltip title={params.value}>
 					<Chip label={params.value || '-'} color={getStatutColor(params.value || '')} variant="outlined" />
 				</DarkTooltip>
@@ -272,7 +276,7 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 			field: 'total_ttc_apres_remise',
 			headerName: 'Total TTC après remise',
 			width: 150,
-			renderCell: (params: GridRenderCellParams<FactureProFormaClass>) => (
+			renderCell: (params: GridRenderCellParams<FactureClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
 						{params.value}
@@ -284,7 +288,7 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 			field: 'lignes_count',
 			headerName: "Nombre d'articles",
 			width: 150,
-			renderCell: (params: GridRenderCellParams<FactureProFormaClass>) => (
+			renderCell: (params: GridRenderCellParams<FactureClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
 						{params.value}
@@ -298,11 +302,15 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 			width: 200,
 			sortable: false,
 			filterable: false,
-			renderCell: (p: GridRenderCellParams<FactureProFormaClass>) => (
+			renderCell: (p: GridRenderCellParams<FactureClass>) => (
 				<Box sx={{ display: 'flex', gap: 1 }}>
 					{(role === 'Admin' || role === 'Lecture') && (
 						<Tooltip title="Voir">
-							<IconButton size="small" color="info" onClick={() => router.push(PRO_FORMA_VIEW(p.row.id, company_id))}>
+							<IconButton
+								size="small"
+								color="info"
+								onClick={() => router.push(FACTURE_PRO_FORMA_VIEW(p.row.id, company_id))}
+							>
 								<Visibility />
 							</IconButton>
 						</Tooltip>
@@ -328,7 +336,7 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 				>
 					<Button
 						variant="contained"
-						onClick={() => router.push(PRO_FORMA_ADD(company_id))}
+						onClick={() => router.push(FACTURE_PRO_FORMA_ADD(company_id))}
 						sx={{
 							whiteSpace: 'nowrap',
 							px: { xs: 1.5, sm: 2, md: 3 },

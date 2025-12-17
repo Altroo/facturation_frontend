@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
-import { AUTH_LOGIN, PRO_FORMA_LIST } from '@/utils/routes';
+import { AUTH_LOGIN, FACTURE_PRO_FORMA_LIST } from '@/utils/routes';
 import FactureProFormaViewClient from '@/components/pages/dashboard/facture-pro-forma/facture-pro-forma-view';
 
 type PageProps = {
@@ -19,7 +19,7 @@ const ProFormaViewPage = async (props: PageProps) => {
 	}
 
 	if (!id || isNaN(Number(id)) || !company_id || isNaN(Number(company_id))) {
-		redirect(PRO_FORMA_LIST);
+		redirect(FACTURE_PRO_FORMA_LIST);
 	}
 
 	return <FactureProFormaViewClient session={session} id={Number(id)} company_id={Number(company_id)} />;

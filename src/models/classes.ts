@@ -197,7 +197,7 @@ export class DeviClass {
 	) {}
 }
 
-export class FactureProFormaClass {
+export class FactureClass {
 	constructor(
 		public readonly id: number,
 		public numero_facture: string,

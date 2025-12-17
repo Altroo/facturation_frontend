@@ -42,7 +42,7 @@ import {
 	useGetDevisListQuery,
 	useConvertDeviToFactureProFormaMutation,
 } from '@/store/services/devi';
-import { DEVIS_EDIT, DEVIS_VIEW, COMPANIES_ADD, DEVIS_ADD, PRO_FORMA_EDIT } from '@/utils/routes';
+import { DEVIS_EDIT, DEVIS_VIEW, COMPANIES_ADD, DEVIS_ADD, FACTURE_PRO_FORMA_EDIT } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
@@ -146,7 +146,7 @@ const DevisListContent: React.FC<DevisListContentProps> = (props) => {
 			await convertToProforma({ id: selectedId! }).unwrap();
 			onSuccess('Devis converti en facture pro-forma avec succès');
 			setTimeout(() => {
-				router.push(PRO_FORMA_EDIT(selectedId!, company_id));
+				router.push(FACTURE_PRO_FORMA_EDIT(selectedId!, company_id));
 			}, 500);
 		} catch {
 			onError('Erreur lors de la conversion du devis');

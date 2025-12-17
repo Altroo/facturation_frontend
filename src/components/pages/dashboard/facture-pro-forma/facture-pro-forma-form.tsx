@@ -52,7 +52,7 @@ import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiP
 import { proformaSchema, proformaAddSchema } from '@/utils/formValidationSchemas';
 import { parseNumber, safeParseForInput, setFormikAutoErrors, ValidatePricesHelper } from '@/utils/helpers';
 import { coordonneeTextInputTheme, customDropdownTheme } from '@/utils/themes';
-import { CLIENTS_ADD, PRO_FORMA_LIST, PRO_FORMA_EDIT } from '@/utils/routes';
+import { CLIENTS_ADD, FACTURE_PRO_FORMA_LIST, FACTURE_PRO_FORMA_EDIT } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import type {
 	DeviFactureLineFormValues,
@@ -238,7 +238,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					onSuccess('Facture pro-forma ajouté avec succès.');
 					if (response.id) {
 						setTimeout(() => {
-							router.replace(PRO_FORMA_EDIT(response.id, company_id));
+							router.replace(FACTURE_PRO_FORMA_EDIT(response.id, company_id));
 						}, 500);
 					}
 				}
@@ -1000,7 +1000,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					<Button
 						variant="outlined"
 						startIcon={<ArrowBack />}
-						onClick={() => router.push(PRO_FORMA_LIST)}
+						onClick={() => router.push(FACTURE_PRO_FORMA_LIST)}
 						sx={{ width: isMobile ? '100%' : 'auto' }}
 					>
 						Liste des factures pro-forma

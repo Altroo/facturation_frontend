@@ -13,7 +13,7 @@ import {
 	ModeReglementClass,
 	DeviFactureLineClass,
 	DeviClass,
-	FactureProFormaClass,
+	FactureClass,
 } from './classes';
 import type { TypeArticleType } from '@/types/articleTypes';
 import type { TypeRemiseType, TypeFactureDevisStatus } from '@/types/devisTypes';
@@ -329,7 +329,7 @@ describe('FactureProFormaClass', () => {
 		const line1 = new DeviFactureLineClass(1, 10, 'Article A', 'Desc A', 20, 30, 1, 'AMOUNT' as TypeRemiseType, 0);
 		const line2 = new DeviFactureLineClass(2, 11, 'Article B', 'Desc B', 40, 60, 2, 'PERCENT' as TypeRemiseType, 10);
 
-		const facture = new FactureProFormaClass(
+		const facture = new FactureClass(
 			1,
 			'FP-1',
 			5,

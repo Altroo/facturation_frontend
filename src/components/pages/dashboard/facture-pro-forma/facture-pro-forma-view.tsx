@@ -28,7 +28,7 @@ import {
 	ShoppingCart as ShoppingCartIcon,
 } from '@mui/icons-material';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import { PRO_FORMA_LIST, PRO_FORMA_EDIT } from '@/utils/routes';
+import { FACTURE_PRO_FORMA_LIST, FACTURE_PRO_FORMA_EDIT } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import { useGetFactureProFormaQuery } from '@/store/services/factureProForma';
 import { getAccessTokenFromSession } from '@/store/session';
@@ -391,7 +391,7 @@ const FactureProFormaViewClient: React.FC<Props> = ({ session, company_id, id })
 						<Button
 							variant="outlined"
 							startIcon={<ArrowBack />}
-							onClick={() => router.push(PRO_FORMA_LIST)}
+							onClick={() => router.push(FACTURE_PRO_FORMA_LIST)}
 							sx={{ width: isMobile ? '100%' : 'auto' }}
 						>
 							Liste des factures pro-forma
@@ -400,7 +400,7 @@ const FactureProFormaViewClient: React.FC<Props> = ({ session, company_id, id })
 							<Button
 								variant="contained"
 								startIcon={<Edit />}
-								onClick={() => router.push(PRO_FORMA_EDIT(id, company_id))}
+								onClick={() => router.push(FACTURE_PRO_FORMA_EDIT(id, company_id))}
 								sx={{ width: isMobile ? '100%' : 'auto' }}
 							>
 								Modifier

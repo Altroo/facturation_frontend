@@ -2,11 +2,11 @@ import { createApi } from '@reduxjs/toolkit/query/react';
 import { isAuthenticatedInstance } from '@/utils/helpers';
 import { axiosBaseQuery } from '@/utils/axiosBaseQuery';
 import { getInitStateToken } from '@/store/selectors';
-import type { FactureProFormaClass } from '@/models/classes';
+import type { FactureClass } from '@/models/classes';
 import type { ApiErrorResponseType, PaginationResponseType, SuccessResponseType } from '@/types/_initTypes';
 import type { RootState } from '@/store/store';
 import { initToken } from '@/store/slices/_initSlice';
-import { TypeFactureDevisStatus } from '@/types/devisTypes';
+import type { TypeFactureDevisStatus } from '@/types/devisTypes';
 
 export const factureProFormaApi = createApi({
 	reducerPath: 'factureProFormaApi',
@@ -19,7 +19,7 @@ export const factureProFormaApi = createApi({
 	),
 	endpoints: (builder) => ({
 		getFactureProFormaList: builder.query<
-			Array<Partial<FactureProFormaClass>> | PaginationResponseType<FactureProFormaClass>,
+			Array<Partial<FactureClass>> | PaginationResponseType<FactureClass>,
 			{
 				company_id: number;
 				with_pagination?: boolean;
@@ -42,14 +42,14 @@ export const factureProFormaApi = createApi({
 			providesTags: ['FactureProForma'],
 		}),
 
-		getFactureProForma: builder.query<FactureProFormaClass, { id: number }>({
+		getFactureProForma: builder.query<FactureClass, { id: number }>({
 			query: ({ id }) => ({
 				url: `${process.env.NEXT_PUBLIC_FACTURE_PROFORMA_ROOT}/${id}/`,
 				method: 'GET',
 			}),
 			providesTags: ['FactureProForma'],
 		}),
-		getNumFactureProForma: builder.query<Pick<FactureProFormaClass, 'numero_facture'>, void>({
+		getNumFactureProForma: builder.query<Pick<FactureClass, 'numero_facture'>, void>({
 			query: () => ({
 				url: `${process.env.NEXT_PUBLIC_FACTURE_PROFORMA_GENERATE_NUM_FACTURE}`,
 				method: 'GET',
@@ -64,8 +64,8 @@ export const factureProFormaApi = createApi({
 			invalidatesTags: ['FactureProForma'],
 		}),
 		editFactureProForma: builder.mutation<
-			SuccessResponseType<FactureProFormaClass>,
-			{ id: number; data: Partial<FactureProFormaClass> }
+			SuccessResponseType<FactureClass>,
+			{ id: number; data: Partial<FactureClass> }
 		>({
 			query: ({ id, data }) => ({
 				url: `${process.env.NEXT_PUBLIC_FACTURE_PROFORMA_ROOT}/${id}/`,
@@ -74,7 +74,7 @@ export const factureProFormaApi = createApi({
 			}),
 			invalidatesTags: ['FactureProForma'],
 		}),
-		addFactureProForma: builder.mutation<FactureProFormaClass, { data: Partial<FactureProFormaClass> }>({
+		addFactureProForma: builder.mutation<FactureClass, { data: Partial<FactureClass> }>({
 			query: ({ data }) => ({
 				url: `${process.env.NEXT_PUBLIC_FACTURE_PROFORMA_ROOT}/`,
 				method: 'POST',
@@ -83,7 +83,7 @@ export const factureProFormaApi = createApi({
 			invalidatesTags: ['FactureProForma'],
 		}),
 		patchStatut: builder.mutation<
-			SuccessResponseType<FactureProFormaClass>,
+			SuccessResponseType<FactureClass>,
 			{ id: number; data: { statut: TypeFactureDevisStatus } }
 		>({
 			query: ({ id, data }) => ({
