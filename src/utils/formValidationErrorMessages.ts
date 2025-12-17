@@ -8,3 +8,7 @@ export const INPUT_PASSWORD_MIN = (char: number) =>
 	`Ce mot de passe est trop court. Il doit contenir au moins ${char} caractères`;
 export const INPUT_QUANTITY_INT = 'La quantité doit être un entier';
 export const INPUT_PRICE_VENTE_ACHAT = "Le prix de vente doit être supérieur ou égal au prix d'achat";
+export const INPUT_URL_INVALID = "L'URL doit être une URL valide";
+export const INPUT_REMISE_INT = 'La remise doit être un entier.';
+export const INPUT_REMISE_POURCENTAGE = 'La remise en pourcentage doit être entre 0 et 100.';
+export const INPUT_REMISE_FIX = 'La remise fixe doit être positive ou nulle.';

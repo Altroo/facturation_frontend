@@ -6,7 +6,11 @@ import {
 	INPUT_PHONE,
 	INPUT_PRICE_VENTE_ACHAT,
 	INPUT_QUANTITY_INT,
+	INPUT_REMISE_FIX,
+	INPUT_REMISE_INT,
+	INPUT_REMISE_POURCENTAGE,
 	INPUT_REQUIRED,
+	INPUT_URL_INVALID,
 	MINI_INPUT_EMAIL,
 	SHORT_INPUT_REQUIRED,
 } from '@/utils/formValidationErrorMessages';
@@ -29,7 +33,7 @@ const optionalEmailField = z.preprocess(
 
 const optionalUrlField = z.preprocess(
 	(val) => (val === undefined || val === null || val === '' ? undefined : val),
-	z.url({ error: 'URL invalide' }).optional(),
+	z.url({ error: INPUT_URL_INVALID }).optional(),
 );
 
 const optionalPhoneField = z.preprocess(
@@ -233,14 +237,14 @@ export const clientSchema = z
 						code: 'custom',
 						message:
 							key === 'raison_sociale'
-								? 'Raison sociale requise'
+								? INPUT_REQUIRED
 								: key === 'ville'
-									? 'Ville requise'
+									? INPUT_REQUIRED
 									: key === 'ICE'
-										? 'ICE requis'
+										? INPUT_REQUIRED
 										: key === 'registre_de_commerce'
-											? 'Registre de commerce requis'
-											: 'Délai de paiement requis',
+											? INPUT_REQUIRED
+											: INPUT_REQUIRED,
 					});
 				}
 			});
@@ -258,16 +262,16 @@ export const clientSchema = z
 						code: 'custom',
 						message:
 							key === 'nom'
-								? 'Nom requis'
+								? INPUT_REQUIRED
 								: key === 'prenom'
-									? 'Prénom requis'
+									? INPUT_REQUIRED
 									: key === 'adresse'
-										? 'Adresse requise'
+										? INPUT_REQUIRED
 										: key === 'ville'
-											? 'Ville requise'
+											? INPUT_REQUIRED
 											: key === 'tel'
-												? 'Téléphone requis'
-												: 'Délai de paiement requis',
+												? INPUT_REQUIRED
+												: INPUT_REQUIRED,
 					});
 				}
 			});
@@ -302,7 +306,7 @@ export const devisLineSchema = z
 			error: INPUT_QUANTITY_INT,
 		}),
 		remise_type: z.enum(['Pourcentage', 'Fixe']).optional().nullable(),
-		remise: optionalNumberField(0), // now optional
+		remise: optionalNumberField(0),
 	})
 	.refine((data) => data.prix_vente >= data.prix_achat, {
 		error: INPUT_PRICE_VENTE_ACHAT,
@@ -327,7 +331,7 @@ export const devisLineSchema = z
 				ctx.addIssue({
 					path: ['remise'],
 					code: 'custom',
-					message: 'La remise doit être un entier.',
+					message: INPUT_REMISE_INT,
 				});
 				return;
 			}
@@ -337,7 +341,7 @@ export const devisLineSchema = z
 					ctx.addIssue({
 						path: ['remise'],
 						code: 'custom',
-						message: 'La remise en pourcentage doit être entre 0 et 100.',
+						message: INPUT_REMISE_POURCENTAGE,
 					});
 				}
 			} else {
@@ -345,7 +349,7 @@ export const devisLineSchema = z
 					ctx.addIssue({
 						path: ['remise'],
 						code: 'custom',
-						message: 'La remise fixe doit être positive ou nulle.',
+						message: INPUT_REMISE_FIX,
 					});
 				}
 			}
@@ -384,7 +388,7 @@ export const deviSchema = z
 				ctx.addIssue({
 					path: ['remise'],
 					code: 'custom',
-					message: 'La remise doit être un entier.',
+					message: INPUT_REMISE_INT,
 				});
 				return;
 			}
@@ -394,7 +398,7 @@ export const deviSchema = z
 					ctx.addIssue({
 						path: ['remise'],
 						code: 'custom',
-						message: 'La remise en pourcentage doit être entre 0 et 100.',
+						message: INPUT_REMISE_POURCENTAGE,
 					});
 				}
 			} else {
@@ -402,7 +406,7 @@ export const deviSchema = z
 					ctx.addIssue({
 						path: ['remise'],
 						code: 'custom',
-						message: 'La remise fixe doit être positive ou nulle.',
+						message: INPUT_REMISE_FIX,
 					});
 				}
 			}
@@ -451,7 +455,7 @@ export const proformaSchema = z
 				ctx.addIssue({
 					path: ['remise'],
 					code: 'custom',
-					message: 'La remise doit être un entier.',
+					message: INPUT_REMISE_INT,
 				});
 				return;
 			}
@@ -461,7 +465,7 @@ export const proformaSchema = z
 					ctx.addIssue({
 						path: ['remise'],
 						code: 'custom',
-						message: 'La remise en pourcentage doit être entre 0 et 100.',
+						message: INPUT_REMISE_POURCENTAGE,
 					});
 				}
 			} else {
@@ -469,7 +473,7 @@ export const proformaSchema = z
 					ctx.addIssue({
 						path: ['remise'],
 						code: 'custom',
-						message: 'La remise fixe doit être positive ou nulle.',
+						message: INPUT_REMISE_FIX,
 					});
 				}
 			}
