@@ -5,6 +5,9 @@ import {
 	setFormikAutoErrors,
 	hexToRGB,
 	formatDate,
+	parseNumber,
+	safeParseForInput,
+	ValidatePricesHelper,
 } from './helpers';
 import { signOut } from 'next-auth/react';
 
@@ -47,6 +50,28 @@ describe('API Utilities', () => {
 		});
 	});
 
+	describe('parseNumber', () => {
+		it('parses numeric strings and numbers', () => {
+			expect(parseNumber('123')).toBe(123);
+			expect(parseNumber(' 12.3 ')).toBe(12.3);
+			expect(parseNumber(45)).toBe(45);
+		});
+
+		it('returns null for non-finite or invalid values', () => {
+			expect(parseNumber('')).toBeNull();
+			expect(parseNumber('abc')).toBeNull();
+			expect(parseNumber(NaN as unknown as string)).toBeNull();
+		});
+	});
+
+	describe('safeParseForInput', () => {
+		it('returns number when parseable, otherwise raw string', () => {
+			expect(safeParseForInput('12')).toBe(12);
+			expect(safeParseForInput('')).toBe('');
+			expect(safeParseForInput('not-a-number')).toBe('not-a-number');
+		});
+	});
+
 	describe('setFormikAutoErrors', () => {
 		it('maps error fields to Formik', () => {
 			const mockSetFieldError = jest.fn();
@@ -65,6 +90,66 @@ describe('API Utilities', () => {
 
 			expect(mockSetFieldError).toHaveBeenCalledWith('email', 'Invalid email');
 			expect(mockSetFieldError).toHaveBeenCalledWith('globalError', 'Something went wrong');
+		});
+	});
+
+	describe('ValidatePricesHelper', () => {
+		describe('validatePrixVente', () => {
+			it('returns error when prixVente < prixAchat', () => {
+				const msg = ValidatePricesHelper.validatePrixVente(50, 100);
+				expect(msg).toBe("Le prix de vente (50.00 MAD) doit être supérieur ou égal au prix d'achat (100.00 MAD)");
+			});
+
+			it('returns null when prixVente >= prixAchat', () => {
+				expect(ValidatePricesHelper.validatePrixVente(100, 50)).toBeNull();
+				expect(ValidatePricesHelper.validatePrixVente(100, 100)).toBeNull();
+			});
+		});
+
+		describe('validateRemise', () => {
+			it('rejects negative remise', () => {
+				expect(ValidatePricesHelper.validateRemise(-1, '', 100)).toBe('La remise doit être positive ou nulle');
+			});
+
+			it('rejects percentage > 100', () => {
+				expect(ValidatePricesHelper.validateRemise(150, 'Pourcentage', 100)).toBe(
+					'La remise en pourcentage doit être entre 0 et 100',
+				);
+			});
+
+			it('rejects fixed remise larger than base amount', () => {
+				const msg = ValidatePricesHelper.validateRemise(200, 'Fixe', 150);
+				expect(msg).toBe('La remise fixe (200.00 MAD) ne peut pas dépasser le total (150.00 MAD)');
+			});
+
+			it('accepts valid remise values', () => {
+				expect(ValidatePricesHelper.validateRemise(10, 'Pourcentage', 100)).toBeNull();
+				expect(ValidatePricesHelper.validateRemise(50, 'Fixe', 100)).toBeNull();
+				expect(ValidatePricesHelper.validateRemise(0, '', 100)).toBeNull();
+			});
+		});
+
+		describe('validateGlobalRemise', () => {
+			it('rejects negative global remise', () => {
+				expect(ValidatePricesHelper.validateGlobalRemise(-5, '', 1000)).toBe('La remise doit être positive ou nulle');
+			});
+
+			it('rejects percentage >100', () => {
+				expect(ValidatePricesHelper.validateGlobalRemise(150, 'Pourcentage', 1000)).toBe(
+					'La remise en pourcentage doit être entre 0 et 100',
+				);
+			});
+
+			it('rejects fixed global remise larger than totalHTBeforeGlobal', () => {
+				expect(ValidatePricesHelper.validateGlobalRemise(1100, 'Fixe', 1000)).toBe(
+					'La remise fixe globale (1100.00 MAD) ne peut pas dépasser le total HT du devis (1000.00 MAD)',
+				);
+			});
+
+			it('accepts valid global remise values', () => {
+				expect(ValidatePricesHelper.validateGlobalRemise(10, 'Pourcentage', 1000)).toBeNull();
+				expect(ValidatePricesHelper.validateGlobalRemise(100, 'Fixe', 1000)).toBeNull();
+			});
 		});
 	});
 
@@ -143,6 +228,24 @@ describe('API Utilities', () => {
 
 			const call = (instance.defaults.adapter as jest.Mock).mock.calls[0][0];
 			expect(call.headers?.Authorization).toBe('Bearer abc123');
+		});
+
+		it('does not set Authorization when no token provided', async () => {
+			const instance = isAuthenticatedInstance(undefined);
+
+			instance.defaults.adapter = jest.fn((config) =>
+				Promise.resolve({
+					data: { ok: true },
+					status: 200,
+					statusText: 'OK',
+					headers: config.headers,
+					config,
+				}),
+			);
+
+			await instance.get('/open');
+			const call = (instance.defaults.adapter as jest.Mock).mock.calls[0][0];
+			expect(call.headers?.Authorization).toBeUndefined();
 		});
 
 		it('handles 401 and calls handleUnauthorized', async () => {
