@@ -1,7 +1,7 @@
 import React, { ForwardedRef, forwardRef, useState } from 'react';
 import { ThemeProvider, TextField, InputAdornment, IconButton } from '@mui/material';
 import type { Theme } from '@mui/material/styles';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
 
 type Props = {
 	id: string;
@@ -58,7 +58,7 @@ const CustomPasswordInput = forwardRef<HTMLInputElement, Props>((props: Props, r
 									onMouseDown={(e) => e.preventDefault()}
 									edge="end"
 								>
-									{showpassword ? <VisibilityOff /> : <Visibility />}
+									{showpassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
 								</IconButton>
 							</InputAdornment>
 						),

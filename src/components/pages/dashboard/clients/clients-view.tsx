@@ -3,8 +3,8 @@
 import React, { useMemo, isValidElement } from 'react';
 import { Box, Stack, Typography, Card, CardContent, Divider, Button, useTheme, useMediaQuery } from '@mui/material';
 import {
-	ArrowBack,
-	Edit,
+	ArrowBack as ArrowBackIcon,
+	Edit as EditIcon,
 	Person as PersonIcon,
 	Badge as BadgeIcon,
 	Notes as NotesIcon,
@@ -126,7 +126,7 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 					<Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between" spacing={2}>
 						<Button
 							variant="outlined"
-							startIcon={<ArrowBack />}
+							startIcon={<ArrowBackIcon />}
 							onClick={() => router.push(CLIENTS_LIST)}
 							sx={{ width: isMobile ? '100%' : 'auto' }}
 						>
@@ -135,7 +135,7 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 						{!isLoading && !error && company?.role === 'Admin' && (
 							<Button
 								variant="contained"
-								startIcon={<Edit />}
+								startIcon={<EditIcon />}
 								onClick={() => router.push(CLIENTS_EDIT(id, company_id))}
 								sx={{ width: isMobile ? '100%' : 'auto' }}
 							>

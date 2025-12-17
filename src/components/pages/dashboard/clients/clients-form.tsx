@@ -21,8 +21,8 @@ import {
 	Container,
 } from '@mui/material';
 import {
-	ArrowBack,
-	BusinessOutlined,
+	ArrowBack as ArrowBackIcon,
+	BusinessOutlined as BusinessOutlinedIcon,
 	Business as BusinessIcon,
 	Notes as NotesIcon,
 	Email as EmailIcon,
@@ -35,8 +35,8 @@ import {
 	Badge as BadgeIcon,
 	CreditCard as CreditCardIcon,
 	Description as DescriptionIcon,
-	EditOutlined,
-	AddOutlined,
+	EditOutlined as EditOutlinedIcon,
+	AddOutlined as AddOutlinedIcon,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -218,7 +218,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			<Stack direction={isMobile ? 'column' : 'row'} pt={2} justifyContent="space-between" spacing={2}>
 				<Button
 					variant="outlined"
-					startIcon={<ArrowBack />}
+					startIcon={<ArrowBackIcon />}
 					onClick={() => router.push(CLIENTS_LIST)}
 					sx={{ width: isMobile ? '100%' : 'auto' }}
 				>
@@ -610,7 +610,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								active={!isPending}
 								type="submit"
 								loading={isPending}
-								startIcon={isEditMode ? <EditOutlined /> : <AddOutlined />}
+								startIcon={isEditMode ? <EditOutlinedIcon /> : <AddOutlinedIcon />}
 								cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}
 							/>
 						</Box>
@@ -674,7 +674,7 @@ const ClientsForm: React.FC<Props> = ({ session, company_id, id }) => {
 										margin: '0 auto 24px',
 									}}
 								>
-									<BusinessOutlined sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
+									<BusinessOutlinedIcon sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
 								</Box>
 								<Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 3 }}>
 									{isEditMode

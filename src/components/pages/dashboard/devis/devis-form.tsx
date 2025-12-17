@@ -24,7 +24,7 @@ import {
 	Container,
 } from '@mui/material';
 import {
-	ArrowBack,
+	ArrowBack as ArrowBackIcon,
 	Description as DescriptionIcon,
 	Person as PersonIcon,
 	Payment as PaymentIcon,
@@ -35,9 +35,9 @@ import {
 	Notes as NotesIcon,
 	Delete as DeleteIcon,
 	Warning as WarningIcon,
-	BusinessOutlined,
-	EditOutlined,
-	AddOutlined,
+	BusinessOutlined as BusinessOutlinedIcon,
+	EditOutlined as EditOutlinedIcon,
+	AddOutlined as AddOutlinedIcon,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -1018,7 +1018,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				<Stack direction={isMobile ? 'column' : 'row'} pt={2} justifyContent="space-between" spacing={2}>
 					<Button
 						variant="outlined"
-						startIcon={<ArrowBack />}
+						startIcon={<ArrowBackIcon />}
 						onClick={() => router.push(DEVIS_LIST)}
 						sx={{ width: isMobile ? '100%' : 'auto' }}
 					>
@@ -1361,7 +1361,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									active={!isPending}
 									type="submit"
 									loading={isPending}
-									startIcon={isEditMode ? <EditOutlined /> : <AddOutlined />}
+									startIcon={isEditMode ? <EditOutlinedIcon /> : <AddOutlinedIcon />}
 									onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
 										if (hasValidationErrors && isEditMode) {
 											e.preventDefault();
@@ -1476,7 +1476,7 @@ const DevisForm: React.FC<Props> = ({ session, company_id, id }) => {
 										margin: '0 auto 24px',
 									}}
 								>
-									<BusinessOutlined sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
+									<BusinessOutlinedIcon sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
 								</Box>
 								<Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 3 }}>
 									{isEditMode

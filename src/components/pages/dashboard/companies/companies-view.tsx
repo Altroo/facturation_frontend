@@ -24,7 +24,7 @@ import {
 import {
 	ArrowBack as ArrowBackIcon,
 	Person as PersonIcon,
-	Edit,
+	Edit as EditIcon,
 	Business as BusinessIcon,
 	CalendarToday as CalendarTodayIcon,
 	People as PeopleIcon,
@@ -141,7 +141,7 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 							{!isLoading && !error && (
 								<Button
 									variant="contained"
-									startIcon={<Edit />}
+									startIcon={<EditIcon />}
 									onClick={() => router.push(COMPANIES_EDIT(id))}
 									sx={{ width: isMobile ? '100%' : 'auto' }}
 								>

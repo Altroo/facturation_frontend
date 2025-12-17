@@ -7,7 +7,7 @@ import SuccessIlluSVG from '../../../../../public/assets/images/success-illu.svg
 import PrimaryAnchorButton from '@/components/htmlElements/buttons/primaryAnchorButton/primaryAnchorButton';
 import { AUTH_LOGIN } from '@/utils/routes';
 import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
-import { LoginOutlined } from '@mui/icons-material';
+import { LoginOutlined as LoginOutlinedIcon } from '@mui/icons-material';
 
 const SetPasswordCompleteClient: React.FC = () => {
 	return (
@@ -20,7 +20,7 @@ const SetPasswordCompleteClient: React.FC = () => {
 							<h2 className={Styles.header}>Mot de passe modifié</h2>
 							<p className={Styles.subHeader}>Votre mot de passe a été modifier, connectez-vous</p>
 							<PrimaryAnchorButton
-								startIcon={<LoginOutlined />}
+								startIcon={<LoginOutlinedIcon />}
 								buttonText="Me connecter"
 								active={true}
 								nextPage={AUTH_LOGIN}
@@ -39,7 +39,7 @@ const SetPasswordCompleteClient: React.FC = () => {
 						</Stack>
 						<div className={Styles.primaryButtonWrapper}>
 							<PrimaryAnchorButton
-								startIcon={<LoginOutlined />}
+								startIcon={<LoginOutlinedIcon />}
 								buttonText="Me connecter"
 								active={true}
 								nextPage={AUTH_LOGIN}

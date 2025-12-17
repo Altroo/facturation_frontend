@@ -3,7 +3,7 @@
 import React, { useRef } from 'react';
 import Styles from './circularAvatarInputFile.module.sass';
 import Image from 'next/image';
-import AddAPhotoOutlinedIcon from '@mui/icons-material/AddAPhotoOutlined';
+import { AddAPhotoOutlined as AddAPhotoOutlinedIcon } from '@mui/icons-material';
 import { Stack } from '@mui/material';
 
 type Props = {

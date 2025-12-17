@@ -14,8 +14,8 @@ import {
 	useMediaQuery,
 } from '@mui/material';
 import {
-	ArrowBack,
-	Edit,
+	ArrowBack as ArrowBackIcon,
+	Edit as EditIcon,
 	Description as DescriptionIcon,
 	CreditCard as CreditCardIcon,
 	Fingerprint as FingerprintIcon,
@@ -134,7 +134,7 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 					<Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between" spacing={2}>
 						<Button
 							variant="outlined"
-							startIcon={<ArrowBack />}
+							startIcon={<ArrowBackIcon />}
 							onClick={() => router.push(ARTICLES_LIST)}
 							sx={{ width: isMobile ? '100%' : 'auto' }}
 						>
@@ -143,7 +143,7 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 						{!isLoading && !error && company?.role === 'Admin' && (
 							<Button
 								variant="contained"
-								startIcon={<Edit />}
+								startIcon={<EditIcon />}
 								onClick={() => router.push(ARTICLES_EDIT(id, company_id))}
 								sx={{ width: isMobile ? '100%' : 'auto' }}
 							>

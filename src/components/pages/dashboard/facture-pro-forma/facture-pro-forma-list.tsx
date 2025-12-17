@@ -21,15 +21,15 @@ import {
 	Menu,
 } from '@mui/material';
 import {
-	Edit,
-	Delete,
-	Visibility,
-	BusinessOutlined,
-	AddOutlined,
-	Close,
-	CheckCircle,
-	SwapHoriz,
-	ReceiptLong,
+	Edit as EditIcon,
+	Delete as DeleteIcon,
+	Visibility as VisibilityIcon,
+	BusinessOutlined as BusinessOutlinedIcon,
+	AddOutlined as AddOutlinedIcon,
+	Close as CloseIcon,
+	CheckCircle as CheckCircleIcon,
+	SwapHoriz as SwapHorizIcon,
+	ReceiptLong as ReceiptLongIcon,
 } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
@@ -106,8 +106,14 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 
 	const deleteModalActions = useMemo(
 		() => [
-			{ text: 'Annuler', active: false, onClick: () => setShowDeleteModal(false), icon: <Close />, color: '#6B6B6B' },
-			{ text: 'Supprimer', active: true, onClick: deleteHandler, icon: <Delete />, color: '#D32F2F' },
+			{
+				text: 'Annuler',
+				active: false,
+				onClick: () => setShowDeleteModal(false),
+				icon: <CloseIcon />,
+				color: '#6B6B6B',
+			},
+			{ text: 'Supprimer', active: true, onClick: deleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
 		],
 		[deleteHandler],
 	);
@@ -138,14 +144,14 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 				text: 'Annuler',
 				active: false,
 				onClick: () => setShowConvertModal(false),
-				icon: <Close />,
+				icon: <CloseIcon />,
 				color: '#6B6B6B',
 			},
 			{
 				text: 'Convertir',
 				active: true,
 				onClick: convertToProformaHandler,
-				icon: <CheckCircle />,
+				icon: <CheckCircleIcon />,
 				color: '#2E7D32',
 			},
 		],
@@ -165,12 +171,12 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 					color="primary"
 					onClick={() => router.push(FACTURE_PRO_FORMA_EDIT(params.row.id, company_id))}
 				>
-					<Edit fontSize="small" />
+					<EditIcon fontSize="small" />
 				</IconButton>
 			</Tooltip>
 			<Tooltip title="Supprimer">
 				<IconButton size="small" color="error" onClick={() => showDeleteModalCall(params.row.id)}>
-					<Delete fontSize="small" />
+					<DeleteIcon fontSize="small" />
 				</IconButton>
 			</Tooltip>
 			<Tooltip title="Convertir">
@@ -183,7 +189,7 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 					{isConvertToProFormaLoading && selectedId === params.row.id ? (
 						<CircularProgress size={20} />
 					) : (
-						<SwapHoriz fontSize="small" />
+						<SwapHorizIcon fontSize="small" />
 					)}
 				</IconButton>
 			</Tooltip>
@@ -196,14 +202,14 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 				title: 'Supprimer cette facture pro-forma ?',
 				body: 'Êtes‑vous sûr de vouloir supprimer cette facture pro-forma ?',
 				actions: deleteModalActions,
-				titleIcon: <Delete />,
+				titleIcon: <DeleteIcon />,
 				titleIconColor: '#D32F2F',
 			},
 			convert: {
 				title: 'Convertir en facture client ?',
 				body: 'Êtes-vous sûr de vouloir convertir cette facture pro forma en facture client ?',
 				actions: convertirProFormatModalActions,
-				titleIcon: <ReceiptLong />,
+				titleIcon: <ReceiptLongIcon />,
 				titleIconColor: '#2E7D32',
 			},
 		}),
@@ -311,7 +317,7 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 								color="info"
 								onClick={() => router.push(FACTURE_PRO_FORMA_VIEW(p.row.id, company_id))}
 							>
-								<Visibility />
+								<VisibilityIcon />
 							</IconButton>
 						</Tooltip>
 					)}
@@ -343,7 +349,7 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 							py: { xs: 0.8, sm: 1, md: 1 },
 							fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
 						}}
-						startIcon={<AddOutlined fontSize="small" />}
+						startIcon={<AddOutlinedIcon fontSize="small" />}
 					>
 						Nouvelle facture proforma
 					</Button>
@@ -381,7 +387,7 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 					}}
 				>
 					<ListItemIcon>
-						<ReceiptLong fontSize="small" />
+						<ReceiptLongIcon fontSize="small" />
 					</ListItemIcon>
 					<ListItemText>Facture (bientôt)</ListItemText>
 				</MenuItem>
@@ -439,7 +445,7 @@ const FactureProformaListClient: React.FC<SessionProps> = ({ session }: SessionP
 										margin: '0 auto 24px',
 									}}
 								>
-									<BusinessOutlined sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
+									<BusinessOutlinedIcon sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
 								</Box>
 								<Typography variant="h5" fontWeight={600} color="text.primary" gutterBottom>
 									Aucune entreprise trouvée

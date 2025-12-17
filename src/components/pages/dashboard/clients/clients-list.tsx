@@ -4,14 +4,14 @@ import React, { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, Stack, Typography, Chip, IconButton, Tooltip, Tabs, Tab, Paper, Container } from '@mui/material';
 import {
-	Edit,
-	Delete,
-	Visibility,
-	BusinessOutlined,
-	Archive,
-	Unarchive,
-	AddOutlined,
-	Close,
+	Edit as EditIcon,
+	Delete as DeleteIcon,
+	Visibility as VisibilityIcon,
+	BusinessOutlined as BusinessOutlinedIcon,
+	Archive as ArchiveIcon,
+	Unarchive as UnarchiveIcon,
+	AddOutlined as AddOutlinedIcon,
+	Close as CloseIcon,
 } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
@@ -85,8 +85,8 @@ const ClientsListContent: React.FC<ClientsListContentProps> = (props: ClientsLis
 	};
 
 	const deleteModalActions = [
-		{ text: 'Annuler', active: false, onClick: () => setShowDeleteModal(false), icon: <Close />, color: '#6B6B6B' },
-		{ text: 'Supprimer', active: true, onClick: deleteHandler, icon: <Delete />, color: '#D32F2F' },
+		{ text: 'Annuler', active: false, onClick: () => setShowDeleteModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
+		{ text: 'Supprimer', active: true, onClick: deleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
 	];
 
 	const showDeleteModalCall = (id: number) => {
@@ -127,14 +127,14 @@ const ClientsListContent: React.FC<ClientsListContentProps> = (props: ClientsLis
 				setShowArchiveModal(false);
 				setArchiveTarget(null);
 			},
-			icon: <Close />,
+			icon: <CloseIcon />,
 			color: '#6B6B6B',
 		},
 		{
 			text: archived ? 'Désarchiver' : 'Archiver',
 			active: true,
 			onClick: archiveHandler,
-			icon: <Archive />,
+			icon: <ArchiveIcon />,
 			color: '#ED6C02',
 		},
 	];
@@ -247,7 +247,7 @@ const ClientsListContent: React.FC<ClientsListContentProps> = (props: ClientsLis
 								color="info"
 								onClick={() => router.push(CLIENTS_VIEW(params.row.id, company_id))}
 							>
-								<Visibility />
+								<VisibilityIcon />
 							</IconButton>
 						</Tooltip>
 					)}
@@ -259,17 +259,17 @@ const ClientsListContent: React.FC<ClientsListContentProps> = (props: ClientsLis
 									color="primary"
 									onClick={() => router.push(CLIENTS_EDIT(params.row.id, company_id))}
 								>
-									<Edit />
+									<EditIcon />
 								</IconButton>
 							</Tooltip>
 							<Tooltip title="Supprimer">
 								<IconButton size="small" color="error" onClick={() => showDeleteModalCall(params.row.id)}>
-									<Delete />
+									<DeleteIcon />
 								</IconButton>
 							</Tooltip>
 							<Tooltip title={archived ? 'Désarchiver' : 'Archiver'}>
 								<IconButton size="small" color="warning" onClick={() => showArchiveModalCall(params.row.id)}>
-									{archived ? <Unarchive /> : <Archive />}
+									{archived ? <UnarchiveIcon /> : <ArchiveIcon />}
 								</IconButton>
 							</Tooltip>
 						</>
@@ -301,7 +301,7 @@ const ClientsListContent: React.FC<ClientsListContentProps> = (props: ClientsLis
 							py: { xs: 0.8, sm: 1, md: 1 },
 							fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
 						}}
-						startIcon={<AddOutlined fontSize="small" />}
+						startIcon={<AddOutlinedIcon fontSize="small" />}
 					>
 						Nouveau client
 					</Button>
@@ -319,7 +319,7 @@ const ClientsListContent: React.FC<ClientsListContentProps> = (props: ClientsLis
 			{showDeleteModal && (
 				<ActionModals
 					title="Supprimer ce client ?"
-					titleIcon={<Delete />}
+					titleIcon={<DeleteIcon />}
 					titleIconColor="#D32F2F"
 					body="Êtes‑vous sûr de vouloir supprimer ce client?"
 					actions={deleteModalActions}
@@ -328,7 +328,7 @@ const ClientsListContent: React.FC<ClientsListContentProps> = (props: ClientsLis
 			{showArchiveModal && (
 				<ActionModals
 					title={archived ? 'Désarchiver ce client ?' : 'Archiver ce client ?'}
-					titleIcon={<Archive />}
+					titleIcon={<ArchiveIcon />}
 					titleIconColor="#ED6C02"
 					body={
 						archived
@@ -395,7 +395,7 @@ const ClientsListClient: React.FC<Props> = ({ session, archived }) => {
 										margin: '0 auto 24px',
 									}}
 								>
-									<BusinessOutlined sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
+									<BusinessOutlinedIcon sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
 								</Box>
 								<Typography variant="h5" fontWeight={600} color="text.primary" gutterBottom>
 									Aucune entreprise trouvée

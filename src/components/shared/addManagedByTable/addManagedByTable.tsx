@@ -15,7 +15,7 @@ import {
 	TableRow,
 	Typography,
 } from '@mui/material';
-import { Delete } from '@mui/icons-material';
+import { Delete as DeleteIcon } from '@mui/icons-material';
 import AddManagedBySection from '../addManagedBySection/addManagedBySection';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import { customDropdownTheme } from '@/utils/themes';
@@ -135,7 +135,7 @@ const ManagedByTableSection: React.FC<ManagedByTableSectionProps> = ({
 											onClick={() => onDelete(index)}
 											disabled={isUserTable && (item as ManagedByType).id === currentUserId}
 										>
-											<Delete />
+											<DeleteIcon />
 										</IconButton>
 									</TableCell>
 								</TableRow>

@@ -23,7 +23,7 @@ import {
 } from '@mui/material';
 import {
 	ArrowBack as ArrowBackIcon,
-	Edit,
+	Edit as EditIcon,
 	Email as EmailIcon,
 	Person as PersonIcon,
 	AdminPanelSettings as AdminPanelSettingsIcon,
@@ -138,7 +138,7 @@ const UsersViewClient: React.FC<Props> = ({ session, id }) => {
 							{!isLoading && !error && (
 								<Button
 									variant="contained"
-									startIcon={<Edit />}
+									startIcon={<EditIcon />}
 									onClick={() => router.push(USERS_EDIT(id))}
 									sx={{ width: isMobile ? '100%' : 'auto' }}
 								>

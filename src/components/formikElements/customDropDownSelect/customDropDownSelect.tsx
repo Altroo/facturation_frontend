@@ -12,7 +12,7 @@ import {
 	InputAdornment,
 } from '@mui/material';
 import type { Theme } from '@mui/material/styles';
-import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
+import { CheckCircleOutlined as CheckCircleOutlinedIcon } from '@mui/icons-material';
 import { DropDownType } from '@/types/accountTypes';
 
 const ITEM_HEIGHT = 48;

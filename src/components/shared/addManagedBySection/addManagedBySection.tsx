@@ -4,7 +4,7 @@ import { SxProps, Theme } from '@mui/system';
 import { ReactNode } from 'react';
 import { customDropdownTheme } from '@/utils/themes';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
-import { Add } from '@mui/icons-material';
+import { Add as AddIcon } from '@mui/icons-material';
 import type { DropDownType } from '@/types/accountTypes';
 import type { SelectChangeEvent } from '@mui/material/Select';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
@@ -83,7 +83,7 @@ const AddManagedBySection: React.FC<AddManagedBySectionProps> = ({
 			</Box>
 			<Button
 				variant="contained"
-				startIcon={<Add />}
+				startIcon={<AddIcon />}
 				onClick={onAdd}
 				disabled={isAddDisabled}
 				sx={{ minWidth: 120, height: 'fit-content' }}

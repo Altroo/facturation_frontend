@@ -15,8 +15,8 @@ import {
 	Chip,
 } from '@mui/material';
 import {
-	ArrowBack,
-	Edit,
+	ArrowBack as ArrowBackIcon,
+	Edit as EditIcon,
 	Description as DescriptionIcon,
 	Person as PersonIcon,
 	Payment as PaymentIcon,
@@ -390,7 +390,7 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 					<Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between" spacing={2}>
 						<Button
 							variant="outlined"
-							startIcon={<ArrowBack />}
+							startIcon={<ArrowBackIcon />}
 							onClick={() => router.push(DEVIS_LIST)}
 							sx={{ width: isMobile ? '100%' : 'auto' }}
 						>
@@ -399,7 +399,7 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 						{!isLoading && !error && company?.role === 'Admin' && (
 							<Button
 								variant="contained"
-								startIcon={<Edit />}
+								startIcon={<EditIcon />}
 								onClick={() => router.push(DEVIS_EDIT(id, company_id))}
 								sx={{ width: isMobile ? '100%' : 'auto' }}
 							>

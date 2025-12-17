@@ -1,7 +1,7 @@
 import React from 'react';
 import Styles from './squareImageInputFile.module.sass';
 import { Button, Stack, ThemeProvider } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
+import { Add as AddIcon } from '@mui/icons-material';
 import { getDefaultTheme } from '@/utils/themes';
 
 const defaultTheme = getDefaultTheme();

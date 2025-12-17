@@ -17,14 +17,14 @@ import {
 	Avatar,
 } from '@mui/material';
 import {
-	Edit,
-	Delete,
-	Visibility,
-	BusinessOutlined,
-	Archive,
-	Unarchive,
-	AddOutlined,
-	Close,
+	Edit as EditIcon,
+	Delete as DeleteIcon,
+	Visibility as VisibilityIcon,
+	BusinessOutlined as BusinessOutlinedIcon,
+	Archive as ArchiveIcon,
+	Unarchive as UnarchiveIcon,
+	AddOutlined as AddOutlinedIcon,
+	Close as CloseIcon,
 } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
@@ -98,8 +98,8 @@ const ArticlesListContent: React.FC<ArticleListContentProps> = (props: ArticleLi
 	};
 
 	const deleteModalActions = [
-		{ text: 'Annuler', active: false, onClick: () => setShowDeleteModal(false), icon: <Close />, color: '#6B6B6B' },
-		{ text: 'Supprimer', active: true, onClick: deleteHandler, icon: <Delete />, color: '#D32F2F' },
+		{ text: 'Annuler', active: false, onClick: () => setShowDeleteModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
+		{ text: 'Supprimer', active: true, onClick: deleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
 	];
 
 	const showDeleteModalCall = (id: number) => {
@@ -140,14 +140,14 @@ const ArticlesListContent: React.FC<ArticleListContentProps> = (props: ArticleLi
 				setShowArchiveModal(false);
 				setArchiveTarget(null);
 			},
-			icon: <Close />,
+			icon: <CloseIcon />,
 			color: '#6B6B6B',
 		},
 		{
 			text: archived ? 'Désarchiver' : 'Archiver',
 			active: true,
 			onClick: archiveHandler,
-			icon: <Archive />,
+			icon: <ArchiveIcon />,
 			color: '#ED6C02',
 		},
 	];
@@ -258,7 +258,7 @@ const ArticlesListContent: React.FC<ArticleListContentProps> = (props: ArticleLi
 								color="info"
 								onClick={() => router.push(ARTICLES_VIEW(params.row.id, company_id))}
 							>
-								<Visibility />
+								<VisibilityIcon />
 							</IconButton>
 						</Tooltip>
 					)}
@@ -270,17 +270,17 @@ const ArticlesListContent: React.FC<ArticleListContentProps> = (props: ArticleLi
 									color="primary"
 									onClick={() => router.push(ARTICLES_EDIT(params.row.id, company_id))}
 								>
-									<Edit />
+									<EditIcon />
 								</IconButton>
 							</Tooltip>
 							<Tooltip title="Supprimer">
 								<IconButton size="small" color="error" onClick={() => showDeleteModalCall(params.row.id)}>
-									<Delete />
+									<DeleteIcon />
 								</IconButton>
 							</Tooltip>
 							<Tooltip title={archived ? 'Désarchiver' : 'Archiver'}>
 								<IconButton size="small" color="warning" onClick={() => showArchiveModalCall(params.row.id)}>
-									{archived ? <Unarchive /> : <Archive />}
+									{archived ? <UnarchiveIcon /> : <ArchiveIcon />}
 								</IconButton>
 							</Tooltip>
 						</>
@@ -312,7 +312,7 @@ const ArticlesListContent: React.FC<ArticleListContentProps> = (props: ArticleLi
 							py: { xs: 0.8, sm: 1, md: 1 },
 							fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
 						}}
-						startIcon={<AddOutlined fontSize="small" />}
+						startIcon={<AddOutlinedIcon fontSize="small" />}
 					>
 						Nouvel article
 					</Button>
@@ -330,7 +330,7 @@ const ArticlesListContent: React.FC<ArticleListContentProps> = (props: ArticleLi
 			{showDeleteModal && (
 				<ActionModals
 					title="Supprimer cette article ?"
-					titleIcon={<Delete />}
+					titleIcon={<DeleteIcon />}
 					titleIconColor="#D32F2F"
 					body="Êtes‑vous sûr de vouloir supprimer cette article?"
 					actions={deleteModalActions}
@@ -339,7 +339,7 @@ const ArticlesListContent: React.FC<ArticleListContentProps> = (props: ArticleLi
 			{showArchiveModal && (
 				<ActionModals
 					title={archived ? 'Désarchiver cette article ?' : 'Archiver cette article ?'}
-					titleIcon={<Archive />}
+					titleIcon={<ArchiveIcon />}
 					titleIconColor="#ED6C02"
 					body={
 						archived
@@ -406,7 +406,7 @@ const ArticlesListClient: React.FC<Props> = ({ session, archived }) => {
 										margin: '0 auto 24px',
 									}}
 								>
-									<BusinessOutlined sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
+									<BusinessOutlinedIcon sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
 								</Box>
 								<Typography variant="h5" fontWeight={600} color="text.primary" gutterBottom>
 									Aucune entreprise trouvée

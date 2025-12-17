@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Typography, Paper, Box } from '@mui/material';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import { LockOutlined as LockOutlinedIcon } from '@mui/icons-material';
 import { usePermission } from '@/utils/hooks';
 
 interface ProtectedProps {

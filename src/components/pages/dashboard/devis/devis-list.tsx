@@ -22,16 +22,16 @@ import {
 	CircularProgress,
 } from '@mui/material';
 import {
-	Edit,
-	Delete,
-	Visibility,
-	BusinessOutlined,
-	AddOutlined,
-	Close,
-	ReceiptLong,
-	SwapHoriz,
-	CheckCircle,
-	ReceiptLongOutlined,
+	Edit as EditIcon,
+	Delete as DeleteIcon,
+	Visibility as VisibilityIcon,
+	BusinessOutlined as BusinessOutlinedIcon,
+	AddOutlined as AddOutlinedIcon,
+	Close as CloseIcon,
+	ReceiptLong as ReceiptLongIcon,
+	SwapHoriz as SwapHorizIcon,
+	CheckCircle as CheckCircleIcon,
+	ReceiptLongOutlined as ReceiptLongOutlinedIcon,
 } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
@@ -130,8 +130,14 @@ const DevisListContent: React.FC<DevisListContentProps> = (props) => {
 
 	const deleteModalActions = useMemo(
 		() => [
-			{ text: 'Annuler', active: false, onClick: () => setShowDeleteModal(false), icon: <Close />, color: '#6B6B6B' },
-			{ text: 'Supprimer', active: true, onClick: deleteHandler, icon: <Delete />, color: '#D32F2F' },
+			{
+				text: 'Annuler',
+				active: false,
+				onClick: () => setShowDeleteModal(false),
+				icon: <CloseIcon />,
+				color: '#6B6B6B',
+			},
+			{ text: 'Supprimer', active: true, onClick: deleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
 		],
 		[deleteHandler],
 	);
@@ -161,14 +167,14 @@ const DevisListContent: React.FC<DevisListContentProps> = (props) => {
 				text: 'Annuler',
 				active: false,
 				onClick: () => setShowConvertModal(false),
-				icon: <Close />,
+				icon: <CloseIcon />,
 				color: '#6B6B6B',
 			},
 			{
 				text: 'Convertir',
 				active: true,
 				onClick: convertToProformaHandler,
-				icon: <CheckCircle />,
+				icon: <CheckCircleIcon />,
 				color: '#2E7D32',
 			},
 		],
@@ -184,12 +190,12 @@ const DevisListContent: React.FC<DevisListContentProps> = (props) => {
 		<>
 			<Tooltip title="Modifier">
 				<IconButton size="small" color="primary" onClick={() => router.push(DEVIS_EDIT(params.row.id, company_id))}>
-					<Edit fontSize="small" />
+					<EditIcon fontSize="small" />
 				</IconButton>
 			</Tooltip>
 			<Tooltip title="Supprimer">
 				<IconButton size="small" color="error" onClick={() => showDeleteModalCall(params.row.id)}>
-					<Delete fontSize="small" />
+					<DeleteIcon fontSize="small" />
 				</IconButton>
 			</Tooltip>
 			<Tooltip title="Convertir">
@@ -202,7 +208,7 @@ const DevisListContent: React.FC<DevisListContentProps> = (props) => {
 					{isConvertToProFormaLoading && selectedId === params.row.id ? (
 						<CircularProgress size={20} />
 					) : (
-						<SwapHoriz fontSize="small" />
+						<SwapHorizIcon fontSize="small" />
 					)}
 				</IconButton>
 			</Tooltip>
@@ -215,14 +221,14 @@ const DevisListContent: React.FC<DevisListContentProps> = (props) => {
 				title: 'Supprimer ce devi ?',
 				body: 'Êtes‑vous sûr de vouloir supprimer ce devi ?',
 				actions: deleteModalActions,
-				titleIcon: <Delete />,
+				titleIcon: <DeleteIcon />,
 				titleIconColor: '#D32F2F',
 			},
 			convert: {
 				title: 'Convertir en facture pro-forma ?',
 				body: 'Êtes-vous sûr de vouloir convertir ce devi en facture pro-forma ?',
 				actions: convertirProFormatModalActions,
-				titleIcon: <ReceiptLong />,
+				titleIcon: <ReceiptLongIcon />,
 				titleIconColor: '#2E7D32',
 			},
 		}),
@@ -326,7 +332,7 @@ const DevisListContent: React.FC<DevisListContentProps> = (props) => {
 					{(role === 'Admin' || role === 'Lecture') && (
 						<Tooltip title="Voir">
 							<IconButton size="small" color="info" onClick={() => router.push(DEVIS_VIEW(p.row.id, company_id))}>
-								<Visibility />
+								<VisibilityIcon />
 							</IconButton>
 						</Tooltip>
 					)}
@@ -358,7 +364,7 @@ const DevisListContent: React.FC<DevisListContentProps> = (props) => {
 							py: { xs: 0.8, sm: 1, md: 1 },
 							fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
 						}}
-						startIcon={<AddOutlined fontSize="small" />}
+						startIcon={<AddOutlinedIcon fontSize="small" />}
 					>
 						Nouveau devi
 					</Button>
@@ -396,14 +402,14 @@ const DevisListContent: React.FC<DevisListContentProps> = (props) => {
 					}}
 				>
 					<ListItemIcon>
-						<ReceiptLongOutlined fontSize="small" color="success" />
+						<ReceiptLongOutlinedIcon fontSize="small" color="success" />
 					</ListItemIcon>
 					<ListItemText>Facture pro-forma</ListItemText>
 				</MenuItem>
 				<Divider />
 				<MenuItem disabled>
 					<ListItemIcon>
-						<ReceiptLong fontSize="small" />
+						<ReceiptLongIcon fontSize="small" />
 					</ListItemIcon>
 					<ListItemText>Facture (bientôt)</ListItemText>
 				</MenuItem>
@@ -461,7 +467,7 @@ const DevisListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 										margin: '0 auto 24px',
 									}}
 								>
-									<BusinessOutlined sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
+									<BusinessOutlinedIcon sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
 								</Box>
 								<Typography variant="h5" fontWeight={600} color="text.primary" gutterBottom>
 									Aucune entreprise trouvée

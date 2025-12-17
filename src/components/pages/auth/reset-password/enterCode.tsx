@@ -20,7 +20,7 @@ import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadi
 import { useSendPasswordResetCodeMutation, usePasswordResetMutation } from '@/store/services/account';
 import { useSession } from 'next-auth/react';
 import { useToast } from '@/utils/hooks';
-import { SendOutlined, ThumbUpAltOutlined } from '@mui/icons-material';
+import { SendOutlined as SendOutlinedIcon, ThumbUpAltOutlined as ThumbUpAltOutlinedIcon } from '@mui/icons-material';
 
 type EnterCodePageContentProps = {
 	email: string;
@@ -176,14 +176,14 @@ const EnterCodePageContent = ({ email }: EnterCodePageContentProps) => {
 								onClick={formik.handleSubmit}
 								cssClass={Styles.emailRegisterButton}
 								type="submit"
-								startIcon={<ThumbUpAltOutlined />}
+								startIcon={<ThumbUpAltOutlinedIcon />}
 								loading={isPasswordResetLoading}
 							/>
 							<TextButton
 								buttonText="Renvoyer le code"
 								onClick={renvoyerLeCodeHandler}
 								cssClass={Styles.resendCodeButton}
-								startIcon={<SendOutlined />}
+								startIcon={<SendOutlinedIcon />}
 								disabled={isResendLoading}
 							/>
 						</Stack>

@@ -3,7 +3,15 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, Stack, Typography, Avatar, IconButton, Tooltip } from '@mui/material';
-import { Edit, Delete, Visibility, CheckCircle, Cancel, AddOutlined, Close } from '@mui/icons-material';
+import {
+	Edit as EditIcon,
+	Delete as DeleteIcon,
+	Visibility as VisibilityIcon,
+	CheckCircle as CheckCircleIcon,
+	Cancel as CancelIcon,
+	AddOutlined as AddOutlinedIcon,
+	Close as CloseIcon,
+} from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/companies/companies.module.sass';
@@ -65,8 +73,8 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 	};
 
 	const deleteModalActions = [
-		{ text: 'Annuler', active: false, onClick: () => setShowDeleteModal(false), icon: <Close />, color: '#6B6B6B' },
-		{ text: 'Supprimer', active: true, onClick: deleteHandler, icon: <Delete />, color: '#D32F2F' },
+		{ text: 'Annuler', active: false, onClick: () => setShowDeleteModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
+		{ text: 'Supprimer', active: true, onClick: deleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
 	];
 
 	const showDeleteModalCall = (id: number) => {
@@ -141,7 +149,11 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 				const isAdmin = Boolean(params.value);
 				return (
 					<DarkTooltip title={isAdmin ? 'Oui' : 'Non'}>
-						{isAdmin ? <CheckCircle color="success" fontSize="small" /> : <Cancel color="error" fontSize="small" />}
+						{isAdmin ? (
+							<CheckCircleIcon color="success" fontSize="small" />
+						) : (
+							<CancelIcon color="error" fontSize="small" />
+						)}
 					</DarkTooltip>
 				);
 			},
@@ -154,7 +166,11 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 				const isActive = Boolean(params.value);
 				return (
 					<DarkTooltip title={isActive ? 'Oui' : 'Non'}>
-						{isActive ? <CheckCircle color="success" fontSize="small" /> : <Cancel color="error" fontSize="small" />}
+						{isActive ? (
+							<CheckCircleIcon color="success" fontSize="small" />
+						) : (
+							<CancelIcon color="error" fontSize="small" />
+						)}
 					</DarkTooltip>
 				);
 			},
@@ -199,19 +215,19 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 				<Box sx={{ display: 'flex', gap: 1 }}>
 					<Tooltip title="Voir">
 						<IconButton size="small" color="info" onClick={() => router.push(USERS_VIEW(params.row.id))}>
-							<Visibility />
+							<VisibilityIcon />
 						</IconButton>
 					</Tooltip>
 
 					<Tooltip title="Modifier">
 						<IconButton size="small" color="primary" onClick={() => router.push(USERS_EDIT(params.row.id))}>
-							<Edit />
+							<EditIcon />
 						</IconButton>
 					</Tooltip>
 
 					<Tooltip title="Supprimer">
 						<IconButton size="small" color="error" onClick={() => showDeleteModalCall(params.row.id)}>
-							<Delete />
+							<DeleteIcon />
 						</IconButton>
 					</Tooltip>
 				</Box>
@@ -249,7 +265,7 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 									py: { xs: 0.8, sm: 1, md: 1 },
 									fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
 								}}
-								startIcon={<AddOutlined fontSize="small" />}
+								startIcon={<AddOutlinedIcon fontSize="small" />}
 							>
 								Nouveau utilisateur
 							</Button>
@@ -269,7 +285,7 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 								title="Supprimer ce utilisateur ?"
 								body="Êtes‑vous sûr de vouloir supprimer ce utilisateur?"
 								actions={deleteModalActions}
-								titleIcon={<Delete />}
+								titleIcon={<DeleteIcon />}
 								titleIconColor="#D32F2F"
 							/>
 						)}
