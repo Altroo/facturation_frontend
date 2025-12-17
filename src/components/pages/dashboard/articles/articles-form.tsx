@@ -73,7 +73,7 @@ import {
 } from '@/store/services/parameter';
 import type { CategorieClass, MarqueClass, UniteClass, EmplacementClass } from '@/models/Classes';
 import { articleSchema } from '@/utils/formValidationSchemas';
-import AddEntityModal from '@/components/desktop/modals/addEntityModal/addEntityModal';
+import AddEntityModal from '@/components/shared/addEntityModal/addEntityModal';
 import CustomSquareImageUploading from '@/components/formikElements/customSquareImageUploading/customSquareImageUploading';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 

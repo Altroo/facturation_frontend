@@ -81,7 +81,7 @@ import GlobalRemiseModal from '@/components/shared/globalRemiseModal/globalRemis
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import { devisFactureStatusItemsList, remiseTypeItemsList } from '@/utils/rawData';
 import { useAddModePaiementMutation } from '@/store/services/parameter';
-import AddEntityModal from '@/components/desktop/modals/addEntityModal/addEntityModal';
+import AddEntityModal from '@/components/shared/addEntityModal/addEntityModal';
 import FactureDevisTotalsCard from '@/components/shared/factureDevistotalCard/factureDevisTotalsCard';
 import LinesGrid from '@/components/shared/linesGrid/linesGrid';
 import { generateRowId } from '@/components/pages/dashboard/devis/devis-form';

@@ -61,7 +61,7 @@ import type { TypeClientType, ClientSchemaType } from '@/types/clientTypes';
 import { useAddCityMutation } from '@/store/services/parameter';
 import type { CitiesClass } from '@/models/Classes';
 import { clientSchema, pmRequired, ppRequired } from '@/utils/formValidationSchemas';
-import AddEntityModal from '@/components/desktop/modals/addEntityModal/addEntityModal';
+import AddEntityModal from '@/components/shared/addEntityModal/addEntityModal';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 
 const inputTheme = coordonneeTextInputTheme();
