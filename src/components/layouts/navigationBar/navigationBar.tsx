@@ -56,7 +56,8 @@ import {
 	DASHBOARD_EDIT_PROFILE,
 	DASHBOARD_PASSWORD,
 	DEVIS_LIST,
-	PRO_FORMA_LIST,
+	FACTURE_CLIENT_LIST,
+	FACTURE_PRO_FORMA_LIST,
 	SITE_ROOT,
 	USERS_ADD,
 	USERS_LIST,
@@ -100,14 +101,14 @@ const getNavigationMenu = (isStaff: boolean) => {
 			title: 'Factures clients',
 			icon: <ReceiptLongIcon />,
 			items: [
-				{ title: 'Liste des factures', label: 'Liste des factures', path: '/factures/list' },
-				{ title: 'Factures impayées', label: 'Factures impayées', path: '/factures/unpaid' },
+				{ title: 'Liste des factures', label: 'Liste des factures', path: FACTURE_CLIENT_LIST },
+				// { title: 'Factures impayées', label: 'Factures impayées', path: '/factures/unpaid' },
 			],
 		},
 		factures_proformat: {
 			title: 'Factures Pro-forma',
 			icon: <ReceiptLongOutlinedIcon />,
-			items: [{ title: 'Liste des factures pro-forma', label: 'Liste des factures', path: PRO_FORMA_LIST }],
+			items: [{ title: 'Liste des factures pro-forma', label: 'Liste des factures', path: FACTURE_PRO_FORMA_LIST }],
 		},
 		bonsLivraison: {
 			title: 'Bons de livraison',

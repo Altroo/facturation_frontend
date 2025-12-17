@@ -138,17 +138,23 @@ describe('routes constants', () => {
 	});
 
 	it('exports pro forma routes and functions', () => {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const { SITE_ROOT, PRO_FORMA_LIST, PRO_FORMA_ADD, PRO_FORMA_VIEW, PRO_FORMA_EDIT } = require('./routes');
+		const {
+			SITE_ROOT,
+			FACTURE_PRO_FORMA_LIST,
+			FACTURE_PRO_FORMA_ADD,
+			FACTURE_PRO_FORMA_VIEW,
+			FACTURE_PRO_FORMA_EDIT,
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
+		} = require('./routes');
 
-		expect(PRO_FORMA_LIST).toBe(`${SITE_ROOT}dashboard/facture-pro-forma`);
-		expect(typeof PRO_FORMA_ADD).toBe('function');
-		expect(PRO_FORMA_ADD(42)).toBe(`${SITE_ROOT}dashboard/facture-pro-forma/new/?company_id=42`);
+		expect(FACTURE_PRO_FORMA_LIST).toBe(`${SITE_ROOT}dashboard/facture-pro-forma`);
+		expect(typeof FACTURE_PRO_FORMA_ADD).toBe('function');
+		expect(FACTURE_PRO_FORMA_ADD(42)).toBe(`${SITE_ROOT}dashboard/facture-pro-forma/new/?company_id=42`);
 
-		expect(typeof PRO_FORMA_VIEW).toBe('function');
-		expect(typeof PRO_FORMA_EDIT).toBe('function');
+		expect(typeof FACTURE_PRO_FORMA_VIEW).toBe('function');
+		expect(typeof FACTURE_PRO_FORMA_EDIT).toBe('function');
 
-		expect(PRO_FORMA_VIEW(5, 99)).toBe(`${SITE_ROOT}dashboard/facture-pro-forma/5/?company_id=99`);
-		expect(PRO_FORMA_EDIT(7, 123)).toBe(`${SITE_ROOT}dashboard/facture-pro-forma/7/edit/?company_id=123`);
+		expect(FACTURE_PRO_FORMA_VIEW(5, 99)).toBe(`${SITE_ROOT}dashboard/facture-pro-forma/5/?company_id=99`);
+		expect(FACTURE_PRO_FORMA_EDIT(7, 123)).toBe(`${SITE_ROOT}dashboard/facture-pro-forma/7/edit/?company_id=123`);
 	});
 });

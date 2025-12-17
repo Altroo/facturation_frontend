@@ -41,13 +41,21 @@ export const DEVIS_VIEW = (id: number, company_id: number) =>
 export const DEVIS_EDIT = (id: number, company_id: number) =>
 	`${SITE_ROOT}dashboard/devis/${id}/edit/?company_id=${company_id}`;
 // Facture Pro Forma
-export const PRO_FORMA_LIST = `${SITE_ROOT}dashboard/facture-pro-forma`;
-export const PRO_FORMA_ADD = (company_id: number) =>
+export const FACTURE_PRO_FORMA_LIST = `${SITE_ROOT}dashboard/facture-pro-forma`;
+export const FACTURE_PRO_FORMA_ADD = (company_id: number) =>
 	`${SITE_ROOT}dashboard/facture-pro-forma/new/?company_id=${company_id}`;
-export const PRO_FORMA_VIEW = (id: number, company_id: number) =>
+export const FACTURE_PRO_FORMA_VIEW = (id: number, company_id: number) =>
 	`${SITE_ROOT}dashboard/facture-pro-forma/${id}/?company_id=${company_id}`;
-export const PRO_FORMA_EDIT = (id: number, company_id: number) =>
+export const FACTURE_PRO_FORMA_EDIT = (id: number, company_id: number) =>
 	`${SITE_ROOT}dashboard/facture-pro-forma/${id}/edit/?company_id=${company_id}`;
+// Facture Client
+export const FACTURE_CLIENT_LIST = `${SITE_ROOT}dashboard/facture-client`;
+export const FACTURE_CLIENT_ADD = (company_id: number) =>
+	`${SITE_ROOT}dashboard/facture-client/new/?company_id=${company_id}`;
+export const FACTURE_CLIENT_VIEW = (id: number, company_id: number) =>
+	`${SITE_ROOT}dashboard/facture-client/${id}/?company_id=${company_id}`;
+export const FACTURE_CLIENT_EDIT = (id: number, company_id: number) =>
+	`${SITE_ROOT}dashboard/facture-client/${id}/edit/?company_id=${company_id}`;
 // Users
 export const USERS_LIST = `${SITE_ROOT}dashboard/users`;
 export const USERS_ADD = `${SITE_ROOT}dashboard/users/new`;
