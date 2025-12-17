@@ -1,3 +1,4 @@
+// change on production to specific domains
 const allowedOrigins = process.env.NODE_ENV !== 'production' ? '*' : ['*'];
 
 export const getCorsHeaders = (origin: string | null): HeadersInit => {

@@ -33,7 +33,7 @@ export const cookiesDeleter = async (url: string, body: object) => {
 	};
 };
 
-/*** Base Axios Json Api call [POST] */
+/*** Base Axios JSON Api call [POST] */
 export const postApi = async (url: string | undefined, instance: AxiosInstance, body?: object) => {
 	const response = await instance.post(`${url}`, body);
 	return {
