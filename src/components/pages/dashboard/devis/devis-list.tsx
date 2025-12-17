@@ -41,8 +41,16 @@ import {
 	useDeleteDeviMutation,
 	useGetDevisListQuery,
 	useConvertDeviToFactureProFormaMutation,
+	useConvertDeviToFactureClientMutation,
 } from '@/store/services/devi';
-import { DEVIS_EDIT, DEVIS_VIEW, COMPANIES_ADD, DEVIS_ADD, FACTURE_PRO_FORMA_EDIT } from '@/utils/routes';
+import {
+	DEVIS_EDIT,
+	DEVIS_VIEW,
+	COMPANIES_ADD,
+	DEVIS_ADD,
+	FACTURE_PRO_FORMA_EDIT,
+	FACTURE_CLIENT_EDIT,
+} from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
@@ -93,7 +101,8 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 	const [searchTerm, setSearchTerm] = useState('');
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
 	const [selectedId, setSelectedId] = useState<number | null>(null);
-	const [showConvertModal, setShowConvertModal] = useState(false);
+	const [showConvertProFormaModal, setShowConvertProFormaModal] = useState(false);
+	const [showConvertClientModal, setShowConvertClientModal] = useState(false);
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const [menuDeviId, setMenuDeviId] = useState<number | null>(null);
 
@@ -112,7 +121,10 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 		{ skip: !token },
 	);
 
-	const [convertToProforma, { isLoading: isConvertToProFormaLoading }] = useConvertDeviToFactureProFormaMutation();
+	const [convertToFactureProforma, { isLoading: isConvertToFactureProFormaLoading }] =
+		useConvertDeviToFactureProFormaMutation();
+	const [convertToFactureClient, { isLoading: isConvertToFactureClientLoading }] =
+		useConvertDeviToFactureClientMutation();
 	const data = rawData as PaginationResponseType<DeviClass> | undefined;
 	const [deleteRecord] = useDeleteDeviMutation();
 
@@ -147,38 +159,72 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 		setShowDeleteModal(true);
 	};
 
-	const convertToProformaHandler = useCallback(async () => {
+	const convertToFactureProformaHandler = useCallback(async () => {
 		try {
-			await convertToProforma({ id: selectedId! }).unwrap();
+			const response = await convertToFactureProforma({ id: selectedId! }).unwrap();
 			onSuccess('Devis converti en facture pro-forma avec succès');
 			setTimeout(() => {
-				router.push(FACTURE_PRO_FORMA_EDIT(selectedId!, company_id));
+				router.push(FACTURE_PRO_FORMA_EDIT(response.id, company_id));
 			}, 500);
 		} catch {
 			onError('Erreur lors de la conversion du devis');
 		} finally {
-			setShowConvertModal(false);
+			setShowConvertProFormaModal(false);
 		}
-	}, [convertToProforma, selectedId, onSuccess, router, company_id, onError]);
+	}, [convertToFactureProforma, selectedId, onSuccess, router, company_id, onError]);
 
-	const convertirProFormatModalActions = useMemo(
+	const convertToFactureClientHandler = useCallback(async () => {
+		try {
+			const response = await convertToFactureClient({ id: selectedId! }).unwrap();
+			onSuccess('Devis converti en facture client avec succès');
+			setTimeout(() => {
+				router.push(FACTURE_CLIENT_EDIT(response.id, company_id));
+			}, 500);
+		} catch {
+			onError('Erreur lors de la conversion du devis');
+		} finally {
+			setShowConvertProFormaModal(false);
+		}
+	}, [convertToFactureClient, selectedId, onSuccess, router, company_id, onError]);
+
+	const convertirToFactureProFormatModalActions = useMemo(
 		() => [
 			{
 				text: 'Annuler',
 				active: false,
-				onClick: () => setShowConvertModal(false),
+				onClick: () => setShowConvertProFormaModal(false),
 				icon: <CloseIcon />,
 				color: '#6B6B6B',
 			},
 			{
 				text: 'Convertir',
 				active: true,
-				onClick: convertToProformaHandler,
+				onClick: convertToFactureProformaHandler,
 				icon: <CheckCircleIcon />,
 				color: '#2E7D32',
 			},
 		],
-		[convertToProformaHandler],
+		[convertToFactureProformaHandler],
+	);
+
+	const convertirToFactureClientModalActions = useMemo(
+		() => [
+			{
+				text: 'Annuler',
+				active: false,
+				onClick: () => setShowConvertProFormaModal(false),
+				icon: <CloseIcon />,
+				color: '#6B6B6B',
+			},
+			{
+				text: 'Convertir',
+				active: true,
+				onClick: convertToFactureClientHandler,
+				icon: <CheckCircleIcon />,
+				color: '#2E7D32',
+			},
+		],
+		[convertToFactureClientHandler],
 	);
 
 	const showConvertModalCall = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, id: number) => {
@@ -203,9 +249,11 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 					size="small"
 					color="success"
 					onClick={(e) => showConvertModalCall(e, params.row.id)}
-					disabled={isConvertToProFormaLoading && selectedId === params.row.id}
+					disabled={
+						(isConvertToFactureProFormaLoading || isConvertToFactureClientLoading) && selectedId === params.row.id
+					}
 				>
-					{isConvertToProFormaLoading && selectedId === params.row.id ? (
+					{(isConvertToFactureProFormaLoading || isConvertToFactureClientLoading) && selectedId === params.row.id ? (
 						<CircularProgress size={20} />
 					) : (
 						<SwapHorizIcon fontSize="small" />
@@ -224,15 +272,22 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 				titleIcon: <DeleteIcon />,
 				titleIconColor: '#D32F2F',
 			},
-			convert: {
+			convert_facture_pro_forma: {
 				title: 'Convertir en facture pro-forma ?',
 				body: 'Êtes-vous sûr de vouloir convertir ce devi en facture pro-forma ?',
-				actions: convertirProFormatModalActions,
+				actions: convertirToFactureProFormatModalActions,
+				titleIcon: <ReceiptLongIcon />,
+				titleIconColor: '#2E7D32',
+			},
+			convert_facture_client: {
+				title: 'Convertir en facture client ?',
+				body: 'Êtes-vous sûr de vouloir convertir ce devi en facture client ?',
+				actions: convertirToFactureClientModalActions,
 				titleIcon: <ReceiptLongIcon />,
 				titleIconColor: '#2E7D32',
 			},
 		}),
-		[deleteModalActions, convertirProFormatModalActions],
+		[deleteModalActions, convertirToFactureProFormatModalActions, convertirToFactureClientModalActions],
 	);
 
 	const columns: GridColDef[] = [
@@ -381,7 +436,8 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 			/>
 
 			{showDeleteModal && <ActionModals {...modalsConfig.delete} />}
-			{showConvertModal && <ActionModals {...modalsConfig.convert} />}
+			{showConvertProFormaModal && <ActionModals {...modalsConfig.convert_facture_pro_forma} />}
+			{showConvertClientModal && <ActionModals {...modalsConfig.convert_facture_client} />}
 
 			<Menu
 				anchorEl={anchorEl}
@@ -396,7 +452,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 					onClick={() => {
 						if (menuDeviId) {
 							setSelectedId(menuDeviId);
-							setShowConvertModal(true);
+							setShowConvertProFormaModal(true);
 						}
 						setAnchorEl(null);
 					}}
@@ -407,11 +463,19 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 					<ListItemText>Facture pro-forma</ListItemText>
 				</MenuItem>
 				<Divider />
-				<MenuItem disabled>
+				<MenuItem
+					onClick={() => {
+						if (menuDeviId) {
+							setSelectedId(menuDeviId);
+							setShowConvertClientModal(true);
+						}
+						setAnchorEl(null);
+					}}
+				>
 					<ListItemIcon>
-						<ReceiptLongIcon fontSize="small" />
+						<ReceiptLongIcon fontSize="small" color="success" />
 					</ListItemIcon>
-					<ListItemText>Facture (bientôt)</ListItemText>
+					<ListItemText>Facture client</ListItemText>
 				</MenuItem>
 			</Menu>
 		</>

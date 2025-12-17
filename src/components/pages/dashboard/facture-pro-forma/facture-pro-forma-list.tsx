@@ -77,7 +77,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const [searchTerm, setSearchTerm] = useState<string>('');
 	const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
 	const [selectedId, setSelectedId] = useState<number | null>(null);
-	const [showConvertModal, setShowConvertModal] = useState(false);
+	const [showConvertClientModal, setShowConvertClientModal] = useState(false);
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const [menuDeviId, setMenuDeviId] = useState<number | null>(null);
 
@@ -96,7 +96,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{ skip: !token },
 	);
 
-	const [convertTo, { isLoading: isConvertLoading }] = useConvertFactureProFormaToFactureMutation();
+	const [convertToFactureClient, { isLoading: isConvertToFactureClientLoading }] =
+		useConvertFactureProFormaToFactureMutation();
 	const data = rawData as PaginationResponseType<FactureClass> | undefined;
 	const [deleteRecord] = useDeleteFactureProFormaMutation();
 
@@ -131,38 +132,38 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		setShowDeleteModal(true);
 	};
 
-	const convertToHandler = useCallback(async () => {
+	const convertToFactureClientHandler = useCallback(async () => {
 		try {
-			await convertTo({ id: selectedId! }).unwrap();
+			const response = await convertToFactureClient({ id: selectedId! }).unwrap();
 			onSuccess('Facture pro-forma converti en facture client avec succès');
 			setTimeout(() => {
-				router.push(FACTURE_CLIENT_EDIT(selectedId!, company_id));
+				router.push(FACTURE_CLIENT_EDIT(response.id, company_id));
 			}, 500);
 		} catch {
 			onError('Erreur lors de la conversion du facture pro-forma');
 		} finally {
-			setShowConvertModal(false);
+			setShowConvertClientModal(false);
 		}
-	}, [convertTo, selectedId, onSuccess, router, company_id, onError]);
+	}, [convertToFactureClient, selectedId, onSuccess, router, company_id, onError]);
 
-	const convertirModalActions = useMemo(
+	const convertirFactureClientModalActions = useMemo(
 		() => [
 			{
 				text: 'Annuler',
 				active: false,
-				onClick: () => setShowConvertModal(false),
+				onClick: () => setShowConvertClientModal(false),
 				icon: <CloseIcon />,
 				color: '#6B6B6B',
 			},
 			{
 				text: 'Convertir',
 				active: true,
-				onClick: convertToHandler,
+				onClick: convertToFactureClientHandler,
 				icon: <CheckCircleIcon />,
 				color: '#2E7D32',
 			},
 		],
-		[convertToHandler],
+		[convertToFactureClientHandler],
 	);
 
 	const showConvertModalCall = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, id: number) => {
@@ -191,9 +192,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					size="small"
 					color="success"
 					onClick={(e) => showConvertModalCall(e, params.row.id)}
-					disabled={isConvertLoading && selectedId === params.row.id}
+					disabled={isConvertToFactureClientLoading && selectedId === params.row.id}
 				>
-					{isConvertLoading && selectedId === params.row.id ? (
+					{isConvertToFactureClientLoading && selectedId === params.row.id ? (
 						<CircularProgress size={20} />
 					) : (
 						<SwapHorizIcon fontSize="small" />
@@ -215,12 +216,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			convert: {
 				title: 'Convertir en facture client ?',
 				body: 'Êtes-vous sûr de vouloir convertir cette facture pro forma en facture client ?',
-				actions: convertirModalActions,
+				actions: convertirFactureClientModalActions,
 				titleIcon: <ReceiptLongIcon />,
 				titleIconColor: '#2E7D32',
 			},
 		}),
-		[deleteModalActions, convertirModalActions],
+		[deleteModalActions, convertirFactureClientModalActions],
 	);
 
 	const columns: GridColDef[] = [
@@ -373,7 +374,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			/>
 
 			{showDeleteModal && <ActionModals {...modalsConfig.delete} />}
-			{showConvertModal && <ActionModals {...modalsConfig.convert} />}
+			{showConvertClientModal && <ActionModals {...modalsConfig.convert} />}
 			<Menu
 				anchorEl={anchorEl}
 				open={Boolean(anchorEl)}
@@ -387,13 +388,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					onClick={() => {
 						if (menuDeviId) {
 							setSelectedId(menuDeviId);
-							setShowConvertModal(true);
+							setShowConvertClientModal(true);
 						}
 						setAnchorEl(null);
 					}}
 				>
 					<ListItemIcon>
-						<ReceiptLongIcon fontSize="small" />
+						<ReceiptLongIcon fontSize="small" color="success" />
 					</ListItemIcon>
 					<ListItemText>Facture</ListItemText>
 				</MenuItem>

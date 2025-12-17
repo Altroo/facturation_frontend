@@ -42,7 +42,6 @@ export const factureProFormaApi = createApi({
 			}),
 			providesTags: ['FactureProForma'],
 		}),
-
 		getFactureProForma: builder.query<FactureClass, { id: number }>({
 			query: ({ id }) => ({
 				url: `${process.env.NEXT_PUBLIC_FACTURE_PROFORMA_ROOT}/${id}/`,
@@ -94,7 +93,7 @@ export const factureProFormaApi = createApi({
 			}),
 			invalidatesTags: ['FactureProForma'],
 		}),
-		convertFactureProFormaToFacture: builder.mutation<SuccessResponseType<FactureClass>, { id: number }>({
+		convertFactureProFormaToFacture: builder.mutation<{ id: number }, { id: number }>({
 			query: ({ id }) => ({
 				url: `${process.env.NEXT_PUBLIC_FACTURE_PROFORMAT_CONVERT_TO_FACTURE_CLIENT}${id}/`,
 				method: 'POST',
@@ -103,7 +102,6 @@ export const factureProFormaApi = createApi({
 			async onQueryStarted(arg, { dispatch, queryFulfilled }) {
 				try {
 					await queryFulfilled;
-					// Invalidate the factureProFormaApi tag so its list refetches
 					dispatch(factureClientApi.util.invalidateTags(['FactureClient']));
 				} catch {
 					// ignore

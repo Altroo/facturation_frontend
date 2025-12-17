@@ -8,6 +8,7 @@ import type { RootState } from '@/store/store';
 import { initToken } from '@/store/slices/_initSlice';
 import { TypeFactureDevisStatus } from '@/types/devisTypes';
 import { factureProFormaApi } from '@/store/services/factureProForma';
+import { factureClientApi } from '@/store/services/factureClient';
 
 export const deviApi = createApi({
 	reducerPath: 'deviApi',
@@ -80,7 +81,7 @@ export const deviApi = createApi({
 			}),
 			invalidatesTags: ['Devi'],
 		}),
-		convertDeviToFactureProForma: builder.mutation<SuccessResponseType<DeviClass>, { id: number }>({
+		convertDeviToFactureProForma: builder.mutation<{ id: number }, { id: number }>({
 			query: ({ id }) => ({
 				url: `${process.env.NEXT_PUBLIC_DEVIS_CONVERT_TO_FACTURE_PRO_FORMA}${id}/`,
 				method: 'POST',
@@ -91,6 +92,21 @@ export const deviApi = createApi({
 					await queryFulfilled;
 					// Invalidate the factureProFormaApi tag so its list refetches
 					dispatch(factureProFormaApi.util.invalidateTags(['FactureProForma']));
+				} catch {
+					// ignore
+				}
+			},
+		}),
+		convertDeviToFactureClient: builder.mutation<{ id: number }, { id: number }>({
+			query: ({ id }) => ({
+				url: `${process.env.NEXT_PUBLIC_DEVIS_CONVERT_TO_FACTURE_CLIENT}${id}/`,
+				method: 'POST',
+			}),
+			invalidatesTags: ['Devi'],
+			async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+				try {
+					await queryFulfilled;
+					dispatch(factureClientApi.util.invalidateTags(['FactureClient']));
 				} catch {
 					// ignore
 				}
@@ -119,4 +135,5 @@ export const {
 	useAddDeviMutation,
 	usePatchStatutMutation,
 	useConvertDeviToFactureProFormaMutation,
+	useConvertDeviToFactureClientMutation,
 } = deviApi;
