@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
+import { AUTH_LOGIN, FACTURE_PRO_FORMA_LIST } from '@/utils/routes';
 
 type SessionUser = { pk: number; email: string };
 type Session = { user: SessionUser } | null;
@@ -34,12 +35,10 @@ jest.mock('@/components/pages/dashboard/facture-pro-forma/facture-pro-forma-form
 	},
 }));
 
-const AUTH_LOGIN = '/login';
-const PRO_FORMA_LIST = '/pro-forma';
 jest.mock('@/utils/routes', () => ({
 	__esModule: true,
 	AUTH_LOGIN,
-	PRO_FORMA_LIST,
+	FACTURE_PRO_FORMA_LIST,
 }));
 
 beforeEach(() => {
@@ -79,11 +78,11 @@ describe('ProFormaNewPage server component', () => {
 
 		// missing / empty company_id
 		await Page!({ searchParams: Promise.resolve({ company_id: '' }) });
-		expect(mockRedirect).toHaveBeenCalledWith(PRO_FORMA_LIST);
+		expect(mockRedirect).toHaveBeenCalledWith(FACTURE_PRO_FORMA_LIST);
 
 		// non-numeric company_id
 		await Page!({ searchParams: Promise.resolve({ company_id: 'abc' }) });
-		expect(mockRedirect).toHaveBeenCalledWith(PRO_FORMA_LIST);
+		expect(mockRedirect).toHaveBeenCalledWith(FACTURE_PRO_FORMA_LIST);
 	});
 
 	it('renders ProFormaForm with session and company_id when valid', async () => {

@@ -35,8 +35,18 @@ import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/pro-forma/pro-forma.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import { useDeleteFactureProFormaMutation, useGetFactureProFormaListQuery } from '@/store/services/factureProForma';
-import { COMPANIES_ADD, FACTURE_PRO_FORMA_ADD, FACTURE_PRO_FORMA_EDIT, FACTURE_PRO_FORMA_VIEW } from '@/utils/routes';
+import {
+	useDeleteFactureProFormaMutation,
+	useGetFactureProFormaListQuery,
+	useConvertFactureProFormaToFactureMutation,
+} from '@/store/services/factureProForma';
+import {
+	COMPANIES_ADD,
+	FACTURE_CLIENT_EDIT,
+	FACTURE_PRO_FORMA_ADD,
+	FACTURE_PRO_FORMA_EDIT,
+	FACTURE_PRO_FORMA_VIEW,
+} from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
@@ -47,14 +57,13 @@ import { useGetUserCompaniesQuery } from '@/store/services/company';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { useToast } from '@/utils/hooks';
 import { getStatutColor } from '@/components/pages/dashboard/devis/devis-list';
-import { useConvertDeviToFactureProFormaMutation } from '@/store/services/devi';
 
-interface ProformaListContentProps extends SessionProps {
+interface FormikContentProps extends SessionProps {
 	company_id: number;
 	role: string;
 }
 
-const ProformaListContent: React.FC<ProformaListContentProps> = (props: ProformaListContentProps) => {
+const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
 	const { session, company_id, role } = props;
 	const { onSuccess, onError } = useToast();
 	const router = useRouter();
@@ -87,8 +96,7 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 		{ skip: !token },
 	);
 
-	// TODO : fix convert to facture instead
-	const [convertToProforma, { isLoading: isConvertToProFormaLoading }] = useConvertDeviToFactureProFormaMutation();
+	const [convertTo, { isLoading: isConvertLoading }] = useConvertFactureProFormaToFactureMutation();
 	const data = rawData as PaginationResponseType<FactureClass> | undefined;
 	const [deleteRecord] = useDeleteFactureProFormaMutation();
 
@@ -123,22 +131,21 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 		setShowDeleteModal(true);
 	};
 
-	const convertToProformaHandler = useCallback(async () => {
+	const convertToHandler = useCallback(async () => {
 		try {
-			await convertToProforma({ id: selectedId! }).unwrap();
+			await convertTo({ id: selectedId! }).unwrap();
 			onSuccess('Facture pro-forma converti en facture client avec succès');
 			setTimeout(() => {
-				// TODO : redirect to facture client edit instead
-				router.push(FACTURE_PRO_FORMA_EDIT(selectedId!, company_id));
+				router.push(FACTURE_CLIENT_EDIT(selectedId!, company_id));
 			}, 500);
 		} catch {
 			onError('Erreur lors de la conversion du facture pro-forma');
 		} finally {
 			setShowConvertModal(false);
 		}
-	}, [convertToProforma, selectedId, onSuccess, router, company_id, onError]);
+	}, [convertTo, selectedId, onSuccess, router, company_id, onError]);
 
-	const convertirProFormatModalActions = useMemo(
+	const convertirModalActions = useMemo(
 		() => [
 			{
 				text: 'Annuler',
@@ -150,12 +157,12 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 			{
 				text: 'Convertir',
 				active: true,
-				onClick: convertToProformaHandler,
+				onClick: convertToHandler,
 				icon: <CheckCircleIcon />,
 				color: '#2E7D32',
 			},
 		],
-		[convertToProformaHandler],
+		[convertToHandler],
 	);
 
 	const showConvertModalCall = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, id: number) => {
@@ -184,9 +191,9 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 					size="small"
 					color="success"
 					onClick={(e) => showConvertModalCall(e, params.row.id)}
-					disabled={isConvertToProFormaLoading && selectedId === params.row.id}
+					disabled={isConvertLoading && selectedId === params.row.id}
 				>
-					{isConvertToProFormaLoading && selectedId === params.row.id ? (
+					{isConvertLoading && selectedId === params.row.id ? (
 						<CircularProgress size={20} />
 					) : (
 						<SwapHorizIcon fontSize="small" />
@@ -208,12 +215,12 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 			convert: {
 				title: 'Convertir en facture client ?',
 				body: 'Êtes-vous sûr de vouloir convertir cette facture pro forma en facture client ?',
-				actions: convertirProFormatModalActions,
+				actions: convertirModalActions,
 				titleIcon: <ReceiptLongIcon />,
 				titleIconColor: '#2E7D32',
 			},
 		}),
-		[deleteModalActions, convertirProFormatModalActions],
+		[deleteModalActions, convertirModalActions],
 	);
 
 	const columns: GridColDef[] = [
@@ -377,7 +384,6 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 				slotProps={{ paper: { elevation: 3, sx: { minWidth: 220 } } }}
 			>
 				<MenuItem
-					disabled
 					onClick={() => {
 						if (menuDeviId) {
 							setSelectedId(menuDeviId);
@@ -389,7 +395,7 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 					<ListItemIcon>
 						<ReceiptLongIcon fontSize="small" />
 					</ListItemIcon>
-					<ListItemText>Facture (bientôt)</ListItemText>
+					<ListItemText>Facture</ListItemText>
 				</MenuItem>
 			</Menu>
 		</>
@@ -524,7 +530,7 @@ const FactureProformaListClient: React.FC<SessionProps> = ({ session }: SessionP
 								</Tabs>
 							</Paper>
 							{selectedCompany && (
-								<ProformaListContent session={session} company_id={selectedCompany.id} role={selectedCompany.role} />
+								<FormikContent session={session} company_id={selectedCompany.id} role={selectedCompany.role} />
 							)}
 						</>
 					)}

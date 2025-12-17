@@ -29,13 +29,13 @@ import { useGetUserCompaniesQuery } from '@/store/services/company';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { useToast } from '@/utils/hooks';
 
-interface ClientsListContentProps extends SessionProps {
+interface FormikContentProps extends SessionProps {
 	company_id: number;
 	archived: boolean;
 	role: string;
 }
 
-const ClientsListContent: React.FC<ClientsListContentProps> = (props: ClientsListContentProps) => {
+const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
 	const { session, company_id, archived, role } = props;
 	const { onSuccess, onError } = useToast();
 	const router = useRouter();
@@ -474,7 +474,7 @@ const ClientsListClient: React.FC<Props> = ({ session, archived }) => {
 								</Tabs>
 							</Paper>
 							{selectedCompany && (
-								<ClientsListContent
+								<FormikContent
 									archived={archived}
 									session={session}
 									company_id={selectedCompany.id}

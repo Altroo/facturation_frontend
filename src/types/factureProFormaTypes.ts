@@ -1,6 +1,6 @@
 import { DeviLineSchemaType, TypeRemiseType } from '@/types/devisTypes';
 
-export type FactureProFormaSchemaType = {
+export type FactureClientProFormaSchemaType = {
 	numero_facture: string;
 	client: number;
 	date_facture: string;
@@ -12,14 +12,3 @@ export type FactureProFormaSchemaType = {
 	lignes: Array<DeviLineSchemaType>;
 	globalError?: string;
 };
-
-export interface DeviLineFormValues {
-	id?: string | number;
-	article: number;
-	designation: string;
-	prix_achat: number;
-	prix_vente: number;
-	quantity: number;
-	remise_type?: 'Pourcentage' | 'Fixe' | '';
-	remise?: number;
-}

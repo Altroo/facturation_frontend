@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, FACTURE_PRO_FORMA_LIST } from '@/utils/routes';
-import FactureProForma from '@/components/pages/dashboard/facture-pro-forma/facture-pro-forma-form';
+import FactureProFormaForm from '@/components/pages/dashboard/facture-pro-forma/facture-pro-forma-form';
 
 type PageProps = {
 	params: Promise<{ id: number }>;
@@ -22,7 +22,7 @@ const FactureProFormaEditPage = async (props: PageProps) => {
 		redirect(FACTURE_PRO_FORMA_LIST);
 	}
 
-	return <FactureProForma session={session} id={id} company_id={Number(company_id)} />;
+	return <FactureProFormaForm session={session} id={id} company_id={Number(company_id)} />;
 };
 
 export default FactureProFormaEditPage;

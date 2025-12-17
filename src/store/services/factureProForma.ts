@@ -7,6 +7,7 @@ import type { ApiErrorResponseType, PaginationResponseType, SuccessResponseType 
 import type { RootState } from '@/store/store';
 import { initToken } from '@/store/slices/_initSlice';
 import type { TypeFactureDevisStatus } from '@/types/devisTypes';
+import { factureClientApi } from '@/store/services/factureClient';
 
 export const factureProFormaApi = createApi({
 	reducerPath: 'factureProFormaApi',
@@ -93,6 +94,22 @@ export const factureProFormaApi = createApi({
 			}),
 			invalidatesTags: ['FactureProForma'],
 		}),
+		convertFactureProFormaToFacture: builder.mutation<SuccessResponseType<FactureClass>, { id: number }>({
+			query: ({ id }) => ({
+				url: `${process.env.NEXT_PUBLIC_FACTURE_PROFORMAT_CONVERT_TO_FACTURE_CLIENT}${id}/`,
+				method: 'POST',
+			}),
+			invalidatesTags: ['FactureProForma'],
+			async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+				try {
+					await queryFulfilled;
+					// Invalidate the factureProFormaApi tag so its list refetches
+					dispatch(factureClientApi.util.invalidateTags(['FactureClient']));
+				} catch {
+					// ignore
+				}
+			},
+		}),
 	}),
 });
 
@@ -104,4 +121,5 @@ export const {
 	useGetFactureProFormaQuery,
 	useAddFactureProFormaMutation,
 	usePatchStatutMutation,
+	useConvertFactureProFormaToFactureMutation,
 } = factureProFormaApi;

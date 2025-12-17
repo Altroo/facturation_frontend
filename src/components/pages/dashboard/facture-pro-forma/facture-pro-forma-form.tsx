@@ -49,7 +49,7 @@ import CustomTextInput from '@/components/formikElements/customTextInput/customT
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
-import { proformaSchema, proformaAddSchema } from '@/utils/formValidationSchemas';
+import { factureClientProformaSchema, factureClientProformaAddSchema } from '@/utils/formValidationSchemas';
 import { parseNumber, safeParseForInput, setFormikAutoErrors, ValidatePricesHelper } from '@/utils/helpers';
 import { coordonneeTextInputTheme, customDropdownTheme } from '@/utils/themes';
 import { CLIENTS_ADD, FACTURE_PRO_FORMA_LIST, FACTURE_PRO_FORMA_EDIT } from '@/utils/routes';
@@ -85,7 +85,7 @@ import AddEntityModal from '@/components/shared/addEntityModal/addEntityModal';
 import FactureDevisTotalsCard from '@/components/shared/factureDevistotalCard/factureDevisTotalsCard';
 import LinesGrid from '@/components/shared/linesGrid/linesGrid';
 import { generateRowId } from '@/components/pages/dashboard/devis/devis-form';
-import type { FactureProFormaSchemaType } from '@/types/factureProFormaTypes';
+import type { FactureClientProFormaSchemaType } from '@/types/factureProFormaTypes';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -195,7 +195,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		? rawModePaiement
 		: Object.values(rawModePaiement ?? {});
 
-	const formik = useFormik<FactureProFormaSchemaType>({
+	const formik = useFormik<FactureClientProFormaSchemaType>({
 		initialValues: {
 			numero_facture: initialNum,
 			client: isEditMode ? (rawData?.client ?? 0) : 0,
@@ -211,14 +211,16 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			globalError: '',
 		},
 		enableReinitialize: true,
-		validationSchema: toFormikValidationSchema(isEditMode ? proformaSchema : proformaAddSchema),
+		validationSchema: toFormikValidationSchema(
+			isEditMode ? factureClientProformaSchema : factureClientProformaAddSchema,
+		),
 		validateOnMount: true,
 		onSubmit: async (data, { setFieldError }) => {
 			setIsPending(true);
 			try {
 				if (isEditMode) {
 					// Edit mode
-					const submissionData: Partial<FactureProFormaSchemaType> = {
+					const submissionData: Partial<FactureClientProFormaSchemaType> = {
 						...data,
 						numero_facture: `${numberPart}/${yearPart}`,
 					};
@@ -226,15 +228,15 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						delete submissionData.remise_type;
 						delete submissionData.remise;
 					}
-					await updateData({ data: submissionData as FactureProFormaSchemaType, id: id! }).unwrap();
+					await updateData({ data: submissionData as FactureClientProFormaSchemaType, id: id! }).unwrap();
 					onSuccess('Facture pro-forma mis à jour avec succès.');
 				} else {
 					// Add mode
-					const submissionData: Partial<FactureProFormaSchemaType> = {
+					const submissionData: Partial<FactureClientProFormaSchemaType> = {
 						...data,
 						numero_facture: `${numberPart}/${yearPart}`,
 					};
-					const response = await addData({ data: submissionData as FactureProFormaSchemaType }).unwrap();
+					const response = await addData({ data: submissionData as FactureClientProFormaSchemaType }).unwrap();
 					onSuccess('Facture pro-forma ajouté avec succès.');
 					if (response.id) {
 						setTimeout(() => {

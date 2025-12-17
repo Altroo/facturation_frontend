@@ -3,7 +3,7 @@ import { auth } from '@/auth';
 import { AUTH_LOGIN } from '@/utils/routes';
 import FactureProformaListClient from '@/components/pages/dashboard/facture-pro-forma/facture-pro-forma-list';
 
-const ProFormaListPage = async () => {
+const FactureProFormaListPage = async () => {
 	const session = await auth();
 
 	if (!session) {
@@ -13,4 +13,4 @@ const ProFormaListPage = async () => {
 	return <FactureProformaListClient session={session} />;
 };
 
-export default ProFormaListPage;
+export default FactureProFormaListPage;

@@ -74,12 +74,12 @@ export const getStatutColor = (
 	}
 };
 
-interface DevisListContentProps extends SessionProps {
+interface FormikContentProps extends SessionProps {
 	company_id: number;
 	role: string;
 }
 
-const DevisListContent: React.FC<DevisListContentProps> = (props) => {
+const FormikContent: React.FC<FormikContentProps> = (props) => {
 	const { session, company_id, role } = props;
 	const { onSuccess, onError } = useToast();
 	const router = useRouter();
@@ -546,7 +546,7 @@ const DevisListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 								</Tabs>
 							</Paper>
 							{selectedCompany && (
-								<DevisListContent session={session} company_id={selectedCompany.id} role={selectedCompany.role} />
+								<FormikContent session={session} company_id={selectedCompany.id} role={selectedCompany.role} />
 							)}
 						</>
 					)}

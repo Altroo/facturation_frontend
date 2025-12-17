@@ -423,7 +423,7 @@ export const deviAddSchema = z.object({
 	globalError: optionalTextField(1, 500),
 });
 
-export const proformaSchema = z
+export const factureClientProformaSchema = z
 	.object({
 		numero_facture: requiredTextField(1, 20),
 		client: requiredNumberField(1),
@@ -480,7 +480,7 @@ export const proformaSchema = z
 		}
 	});
 
-export const proformaAddSchema = z.object({
+export const factureClientProformaAddSchema = z.object({
 	numero_facture: requiredTextField(1, 20),
 	client: requiredNumberField(1),
 	date_facture: requiredTextField(1, 100),

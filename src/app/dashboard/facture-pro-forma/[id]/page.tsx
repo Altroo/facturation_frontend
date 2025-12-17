@@ -8,7 +8,7 @@ type PageProps = {
 	searchParams: Promise<{ company_id: string }>;
 };
 
-const ProFormaViewPage = async (props: PageProps) => {
+const FactureProFormaViewPage = async (props: PageProps) => {
 	const session = await auth();
 	const { params, searchParams } = props;
 	const { id } = await params;
@@ -25,4 +25,4 @@ const ProFormaViewPage = async (props: PageProps) => {
 	return <FactureProFormaViewClient session={session} id={Number(id)} company_id={Number(company_id)} />;
 };
 
-export default ProFormaViewPage;
+export default FactureProFormaViewPage;
