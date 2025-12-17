@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, DEVIS_LIST } from '@/utils/routes';
-import DevisForm from '@/components/pages/dashboard/devis/devisForm';
+import DevisForm from '@/components/pages/dashboard/devis/devis-form';
 
 type PageProps = {
 	params: Promise<{ id: number }>;

@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, PRO_FORMA_LIST } from '@/utils/routes';
-import ProFormaViewClient from '@/components/pages/dashboard/pro-forma/pro-formaView';
+import FactureProFormaViewClient from '@/components/pages/dashboard/facture-pro-forma/facture-pro-forma-view';
 
 type PageProps = {
 	params: Promise<{ id: string }>;
@@ -22,7 +22,7 @@ const ProFormaViewPage = async (props: PageProps) => {
 		redirect(PRO_FORMA_LIST);
 	}
 
-	return <ProFormaViewClient session={session} id={Number(id)} company_id={Number(company_id)} />;
+	return <FactureProFormaViewClient session={session} id={Number(id)} company_id={Number(company_id)} />;
 };
 
 export default ProFormaViewPage;

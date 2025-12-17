@@ -28,9 +28,9 @@ import {
 	ShoppingCart as ShoppingCartIcon,
 } from '@mui/icons-material';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import { PRO_FORMA_LIST, PRO_FORMA_EDIT } from '@/utils/routes';
+import { DEVIS_LIST, DEVIS_EDIT } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
-import { useGetFactureProFormaQuery } from '@/store/services/factureProForma';
+import { useGetDeviQuery } from '@/store/services/devi';
 import { getAccessTokenFromSession } from '@/store/session';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
@@ -45,7 +45,7 @@ import type { ArticleClass } from '@/models/Classes';
 import { useGetArticlesListQuery } from '@/store/services/article';
 import { formatDate } from '@/utils/helpers';
 import FactureDevisTotalsCard from '@/components/shared/factureDevistotalCard/factureDevisTotalsCard';
-import { getStatutColor } from '@/components/pages/dashboard/devis/devisList';
+import { getStatutColor } from '@/components/pages/dashboard/devis/devis-list';
 
 interface InfoRowProps {
 	icon: React.ReactNode;
@@ -91,14 +91,14 @@ interface Props extends SessionProps {
 	id: number;
 }
 
-const ProFormaViewClient: React.FC<Props> = ({ session, company_id, id }) => {
+const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const token = getAccessTokenFromSession(session);
 	const companies = useAppSelector(getUserCompaniesState);
 	const router = useRouter();
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-	const { data: rawData, isLoading, error } = useGetFactureProFormaQuery({ id }, { skip: !token });
+	const { data: rawData, isLoading, error } = useGetDeviQuery({ id }, { skip: !token });
 	const { data: rawArticlesData, isLoading: isArticlesLoading } = useGetArticlesListQuery(
 		{ company_id, with_pagination: false, archived: false },
 		{ skip: !token },
@@ -381,26 +381,26 @@ const ProFormaViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 		},
 	];
 
-	const dateFactureLabel = formatDate(rawData?.date_facture as string | null) || '-';
+	const dateDevisLabel = formatDate(rawData?.date_devis as string | null) || '-';
 
 	return (
 		<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
-			<NavigationBar title="Détails du facture pro-forma">
+			<NavigationBar title="Détails du devis">
 				<Stack spacing={3} sx={{ p: { xs: 2, md: 3 }, mt: 2 }}>
 					<Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between" spacing={2}>
 						<Button
 							variant="outlined"
 							startIcon={<ArrowBack />}
-							onClick={() => router.push(PRO_FORMA_LIST)}
+							onClick={() => router.push(DEVIS_LIST)}
 							sx={{ width: isMobile ? '100%' : 'auto' }}
 						>
-							Liste des factures pro-forma
+							Liste des devis
 						</Button>
 						{!isLoading && !error && company?.role === 'Admin' && (
 							<Button
 								variant="contained"
 								startIcon={<Edit />}
-								onClick={() => router.push(PRO_FORMA_EDIT(id, company_id))}
+								onClick={() => router.push(DEVIS_EDIT(id, company_id))}
 								sx={{ width: isMobile ? '100%' : 'auto' }}
 							>
 								Modifier
@@ -442,12 +442,12 @@ const ProFormaViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 									<Stack spacing={0}>
-										<InfoRow icon={<NumbersIcon />} label="Numéro de facture" value={rawData?.numero_facture} />
+										<InfoRow icon={<NumbersIcon />} label="Numéro du devis" value={rawData?.numero_devis} />
 										<Divider />
 										<InfoRow
 											icon={<CalendarTodayIcon />}
-											label="Date de facture"
-											value={dateFactureLabel.split(',')[0] || '-'}
+											label="Date du devis"
+											value={dateDevisLabel.split(',')[0] || '-'}
 										/>
 									</Stack>
 								</CardContent>
@@ -458,7 +458,7 @@ const ProFormaViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 										<DescriptionIcon color="primary" />
 										<Typography variant="h6" fontWeight={700}>
-											Statut du facture pro-forma
+											Statut du devis
 										</Typography>
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
@@ -499,8 +499,8 @@ const ProFormaViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 										<Divider />
 										<InfoRow
 											icon={<ReceiptIcon />}
-											label="Numéro de bon commande client"
-											value={rawData?.numero_bon_commande_client}
+											label="Numéro demande prix client"
+											value={rawData?.numero_demande_prix_client}
 										/>
 									</Stack>
 								</CardContent>
@@ -511,7 +511,7 @@ const ProFormaViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 										<ShoppingCartIcon color="primary" />
 										<Typography variant="h6" fontWeight={700}>
-											Lignes de facture pro-forma
+											Lignes du devis
 										</Typography>
 									</Stack>
 									<Divider sx={{ mb: 3 }} />
@@ -610,4 +610,4 @@ const ProFormaViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	);
 };
 
-export default ProFormaViewClient;
+export default DevisViewClient;

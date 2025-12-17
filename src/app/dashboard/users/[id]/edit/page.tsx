@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, USERS_LIST } from '@/utils/routes';
-import UsersForm from '@/components/pages/dashboard/users/usersForm';
+import UsersForm from '@/components/pages/dashboard/users/users-form';
 
 type UsersEditPageProps = {
 	params: Promise<{ id: number }>;

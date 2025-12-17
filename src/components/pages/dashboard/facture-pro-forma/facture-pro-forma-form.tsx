@@ -84,7 +84,7 @@ import { useAddModePaiementMutation } from '@/store/services/parameter';
 import AddEntityModal from '@/components/desktop/modals/addEntityModal/addEntityModal';
 import FactureDevisTotalsCard from '@/components/shared/factureDevistotalCard/factureDevisTotalsCard';
 import LinesGrid from '@/components/shared/linesGrid/linesGrid';
-import { generateRowId } from '@/components/pages/dashboard/devis/devisForm';
+import { generateRowId } from '@/components/pages/dashboard/devis/devis-form';
 import type { FactureProFormaSchemaType } from '@/types/factureProFormaTypes';
 
 const inputTheme = coordonneeTextInputTheme();
@@ -1420,7 +1420,7 @@ interface Props extends SessionProps {
 	id?: number;
 }
 
-const ProFormaForm: React.FC<Props> = ({ session, company_id, id }) => {
+const FactureProFormaForm: React.FC<Props> = ({ session, company_id, id }) => {
 	const token = getAccessTokenFromSession(session);
 	const companies = useAppSelector(getUserCompaniesState);
 	const company = companies?.find((comp) => comp.id === company_id);
@@ -1475,4 +1475,4 @@ const ProFormaForm: React.FC<Props> = ({ session, company_id, id }) => {
 	);
 };
 
-export default ProFormaForm;
+export default FactureProFormaForm;

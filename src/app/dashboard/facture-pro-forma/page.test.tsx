@@ -18,7 +18,7 @@ jest.mock('next/navigation', () => ({
 	redirect: mockRedirect,
 }));
 
-jest.mock('@/components/pages/dashboard/pro-forma/pro-formaList', () => ({
+jest.mock('@/components/pages/dashboard/facture-pro-forma/facture-pro-forma-list', () => ({
 	__esModule: true,
 	default: (props: { session?: Session }) => {
 		// eslint-disable-next-line @typescript-eslint/no-require-imports

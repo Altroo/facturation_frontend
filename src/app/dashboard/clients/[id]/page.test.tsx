@@ -21,7 +21,7 @@ jest.mock('next/navigation', () => ({
 }));
 
 // mock ClientsViewClient
-jest.mock('@/components/pages/dashboard/clients/clientsView', () => ({
+jest.mock('@/components/pages/dashboard/clients/clients-view', () => ({
 	__esModule: true,
 	default: (props: { session?: Session; id?: number; company_id?: number }) => {
 		// eslint-disable-next-line @typescript-eslint/no-require-imports

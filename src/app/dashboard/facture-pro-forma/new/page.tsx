@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, PRO_FORMA_LIST } from '@/utils/routes';
-import ProFormaForm from '@/components/pages/dashboard/pro-forma/pro-formaForm';
+import FactureProFormaForm from '@/components/pages/dashboard/facture-pro-forma/facture-pro-forma-form';
 
 type PageProps = {
 	searchParams: Promise<{ company_id: string }>;
@@ -21,7 +21,7 @@ const ProFormaNewPage = async (props: PageProps) => {
 		redirect(PRO_FORMA_LIST);
 	}
 
-	return <ProFormaForm session={session} company_id={Number(company_id)} />;
+	return <FactureProFormaForm session={session} company_id={Number(company_id)} />;
 };
 
 export default ProFormaNewPage;

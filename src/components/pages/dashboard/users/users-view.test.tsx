@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, within } from '@testing-library/react';
-import UsersViewClient from './usersView';
+import UsersViewClient from './users-view';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import { useGetUserQuery } from '@/store/services/account';

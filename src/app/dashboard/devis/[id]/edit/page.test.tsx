@@ -21,7 +21,7 @@ jest.mock('next/navigation', () => ({
 }));
 
 // mock devisForm
-jest.mock('@/components/pages/dashboard/devis/devisForm', () => ({
+jest.mock('@/components/pages/dashboard/devis/devis-form', () => ({
 	__esModule: true,
 	default: (props: { session?: Session; id?: number; company_id?: number }) => {
 		// eslint-disable-next-line @typescript-eslint/no-require-imports

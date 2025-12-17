@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN } from '@/utils/routes';
-import ProformaListClient from '@/components/pages/dashboard/pro-forma/pro-formaList';
+import FactureProformaListClient from '@/components/pages/dashboard/facture-pro-forma/facture-pro-forma-list';
 
 const ProFormaListPage = async () => {
 	const session = await auth();
@@ -10,7 +10,7 @@ const ProFormaListPage = async () => {
 		redirect(AUTH_LOGIN);
 	}
 
-	return <ProformaListClient session={session} />;
+	return <FactureProformaListClient session={session} />;
 };
 
 export default ProFormaListPage;

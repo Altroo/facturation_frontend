@@ -46,7 +46,7 @@ import { formatDate } from '@/utils/helpers';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { useToast } from '@/utils/hooks';
-import { getStatutColor } from '@/components/pages/dashboard/devis/devisList';
+import { getStatutColor } from '@/components/pages/dashboard/devis/devis-list';
 import { useConvertDeviToFactureProFormaMutation } from '@/store/services/devi';
 
 interface ProformaListContentProps extends SessionProps {
@@ -382,7 +382,7 @@ const ProformaListContent: React.FC<ProformaListContentProps> = (props: Proforma
 	);
 };
 
-const ProformaListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
+const FactureProformaListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 	const token = getAccessTokenFromSession(session);
 	const router = useRouter();
 	const { data: companiesData, isLoading } = useGetUserCompaniesQuery(undefined, { skip: !token });
@@ -520,4 +520,4 @@ const ProformaListClient: React.FC<SessionProps> = ({ session }: SessionProps) =
 	);
 };
 
-export default ProformaListClient;
+export default FactureProformaListClient;

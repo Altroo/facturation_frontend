@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, COMPANIES_LIST } from '@/utils/routes';
-import CompaniesViewClient from '@/components/pages/dashboard/companies/companiesView';
+import CompaniesViewClient from '@/components/pages/dashboard/companies/companies-view';
 
 type PageProps = {
 	params: Promise<{ id: number }>;

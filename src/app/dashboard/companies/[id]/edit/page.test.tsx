@@ -21,7 +21,7 @@ jest.mock('next/navigation', () => ({
 }));
 
 // mock CompaniesForm
-jest.mock('@/components/pages/dashboard/companies/companiesForm', () => ({
+jest.mock('@/components/pages/dashboard/companies/companies-form', () => ({
 	__esModule: true,
 	default: (props: { session?: Session; id?: number }) => {
 		// eslint-disable-next-line @typescript-eslint/no-require-imports

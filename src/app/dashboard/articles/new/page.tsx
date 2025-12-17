@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, CLIENTS_LIST } from '@/utils/routes';
-import ArticlesForm from '@/components/pages/dashboard/articles/articlesForm';
+import ArticlesForm from '@/components/pages/dashboard/articles/articles-form';
 
 type PageProps = {
 	searchParams: Promise<{ company_id: string }>;

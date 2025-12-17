@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, PRO_FORMA_LIST } from '@/utils/routes';
-import FactureProForma from '@/components/pages/dashboard/pro-forma/pro-formaForm';
+import FactureProForma from '@/components/pages/dashboard/facture-pro-forma/facture-pro-forma-form';
 
 type PageProps = {
 	params: Promise<{ id: number }>;

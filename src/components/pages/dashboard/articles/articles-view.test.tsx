@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import ArticlesViewClient from './articlesView';
+import ArticlesViewClient from './articles-view';
 import { Provider } from 'react-redux';
 import { store } from '@/store/store';
 import { useGetArticleQuery } from '@/store/services/article';

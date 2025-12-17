@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, USERS_LIST } from '@/utils/routes';
-import UsersViewClient from '@/components/pages/dashboard/users/usersView';
+import UsersViewClient from '@/components/pages/dashboard/users/users-view';
 
 type UsersViewPageProps = {
 	params: Promise<{ id: number }>;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import DevisViewClient from './devisView';
+import DevisViewClient from './devis-view';
 import { Provider } from 'react-redux';
 import { store } from '@/store/store';
 import '@testing-library/jest-dom';

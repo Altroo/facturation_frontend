@@ -21,7 +21,7 @@ jest.mock('next/navigation', () => ({
 }));
 
 // mock ProForma form component
-jest.mock('@/components/pages/dashboard/pro-forma/pro-formaForm', () => ({
+jest.mock('@/components/pages/dashboard/facture-pro-forma/facture-pro-forma-form', () => ({
 	__esModule: true,
 	default: (props: { session?: Session; id?: number | string; company_id?: number | string }) => {
 		// eslint-disable-next-line @typescript-eslint/no-require-imports

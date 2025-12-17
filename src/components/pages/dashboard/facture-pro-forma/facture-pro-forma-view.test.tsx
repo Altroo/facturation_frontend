@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import ProFormaViewClient from './pro-formaView';
+import FactureProFormaViewClient from './facture-pro-forma-view';
 import { Provider } from 'react-redux';
 import { store } from '@/store/store';
 import '@testing-library/jest-dom';
@@ -126,7 +126,7 @@ describe('ProFormaViewClient UI and navigation', () => {
 		useGetFactureProFormaQuery.mockReturnValue({ isLoading: true, data: undefined, error: undefined });
 		useGetArticlesListQuery.mockReturnValue({ isLoading: true, data: undefined, error: undefined });
 
-		renderWithProviders(<ProFormaViewClient {...defaultProps} />);
+		renderWithProviders(<FactureProFormaViewClient {...defaultProps} />);
 		expect(screen.getByTestId('api-loader')).toBeInTheDocument();
 	});
 
@@ -138,7 +138,7 @@ describe('ProFormaViewClient UI and navigation', () => {
 		});
 		useGetArticlesListQuery.mockReturnValue({ isLoading: false, data: undefined, error: undefined });
 
-		renderWithProviders(<ProFormaViewClient {...defaultProps} />);
+		renderWithProviders(<FactureProFormaViewClient {...defaultProps} />);
 		expect(screen.getByText(/Erreur serveur/)).toBeInTheDocument();
 	});
 
@@ -146,7 +146,7 @@ describe('ProFormaViewClient UI and navigation', () => {
 		useGetFactureProFormaQuery.mockReturnValue({ isLoading: false, data: mockProForma, error: undefined });
 		useGetArticlesListQuery.mockReturnValue({ isLoading: false, data: [mockArticle], error: undefined });
 
-		renderWithProviders(<ProFormaViewClient {...defaultProps} />);
+		renderWithProviders(<FactureProFormaViewClient {...defaultProps} />);
 
 		// Check document info and totals presence
 		expect(screen.getByText('Informations du document')).toBeInTheDocument();
@@ -175,7 +175,7 @@ describe('ProFormaViewClient UI and navigation', () => {
 		useGetFactureProFormaQuery.mockReturnValue({ isLoading: false, data: mockProForma, error: undefined });
 		useGetArticlesListQuery.mockReturnValue({ isLoading: false, data: [mockArticle], error: undefined });
 
-		renderWithProviders(<ProFormaViewClient {...defaultProps} />);
+		renderWithProviders(<FactureProFormaViewClient {...defaultProps} />);
 		fireEvent.click(screen.getByText('Liste des factures pro-forma', { selector: 'button' }));
 		expect(mockPush).toHaveBeenCalled();
 	});
@@ -184,7 +184,7 @@ describe('ProFormaViewClient UI and navigation', () => {
 		useGetFactureProFormaQuery.mockReturnValue({ isLoading: false, data: mockProForma, error: undefined });
 		useGetArticlesListQuery.mockReturnValue({ isLoading: false, data: [mockArticle], error: undefined });
 
-		renderWithProviders(<ProFormaViewClient {...defaultProps} />);
+		renderWithProviders(<FactureProFormaViewClient {...defaultProps} />);
 		const editBtn = screen.getByText('Modifier', { selector: 'button' });
 		expect(editBtn).toBeInTheDocument();
 
@@ -198,7 +198,7 @@ describe('ProFormaViewClient UI and navigation', () => {
 		useGetFactureProFormaQuery.mockReturnValue({ isLoading: false, data: mockProForma, error: undefined });
 		useGetArticlesListQuery.mockReturnValue({ isLoading: false, data: [mockArticle], error: undefined });
 
-		renderWithProviders(<ProFormaViewClient {...defaultProps} />);
+		renderWithProviders(<FactureProFormaViewClient {...defaultProps} />);
 		expect(screen.queryByText('Modifier', { selector: 'button' })).not.toBeInTheDocument();
 	});
 
@@ -206,7 +206,7 @@ describe('ProFormaViewClient UI and navigation', () => {
 		useGetFactureProFormaQuery.mockReturnValue({ isLoading: true, data: undefined, error: undefined });
 		useGetArticlesListQuery.mockReturnValue({ isLoading: true, data: undefined, error: undefined });
 
-		renderWithProviders(<ProFormaViewClient {...defaultProps} />);
+		renderWithProviders(<FactureProFormaViewClient {...defaultProps} />);
 		expect(screen.queryByText('Modifier', { selector: 'button' })).not.toBeInTheDocument();
 	});
 
@@ -218,7 +218,7 @@ describe('ProFormaViewClient UI and navigation', () => {
 		});
 		useGetArticlesListQuery.mockReturnValue({ isLoading: false, data: undefined, error: undefined });
 
-		renderWithProviders(<ProFormaViewClient {...defaultProps} />);
+		renderWithProviders(<FactureProFormaViewClient {...defaultProps} />);
 		expect(screen.queryByText('Modifier', { selector: 'button' })).not.toBeInTheDocument();
 	});
 });

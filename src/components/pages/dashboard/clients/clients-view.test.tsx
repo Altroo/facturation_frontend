@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import ClientsViewClient from './clientsView';
+import ClientsViewClient from './clients-view';
 import { Provider } from 'react-redux';
 import { store } from '@/store/store';
 import { useGetClientQuery } from '@/store/services/client';

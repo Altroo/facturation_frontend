@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN } from '@/utils/routes';
-import UsersForm from '@/components/pages/dashboard/users/usersForm';
+import UsersForm from '@/components/pages/dashboard/users/users-form';
 
 const UsersNewPage = async () => {
 	const session = await auth();

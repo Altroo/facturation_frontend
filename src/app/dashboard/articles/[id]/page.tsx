@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, CLIENTS_LIST } from '@/utils/routes';
-import ArticlesViewClient from '@/components/pages/dashboard/articles/articlesView';
+import ArticlesViewClient from '@/components/pages/dashboard/articles/articles-view';
 
 type PageProps = {
 	params: Promise<{ id: string }>;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import CompaniesViewClient from './companiesView';
+import CompaniesViewClient from './companies-view';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import { useGetCompanyQuery } from '@/store/services/company';

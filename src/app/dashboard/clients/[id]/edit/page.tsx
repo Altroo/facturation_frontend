@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, CLIENTS_LIST } from '@/utils/routes';
-import ClientsForm from '@/components/pages/dashboard/clients/clientsForm';
+import ClientsForm from '@/components/pages/dashboard/clients/clients-form';
 
 type PageProps = {
 	params: Promise<{ id: string }>;

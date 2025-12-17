@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN } from '@/utils/routes';
-import UsersListClient from '@/components/pages/dashboard/users/usersList';
+import UsersListClient from '@/components/pages/dashboard/users/users-list';
 
 const UsersListPage = async () => {
 	const session = await auth();
