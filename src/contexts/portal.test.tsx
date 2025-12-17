@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import Portal from './Portal';
+import Portal from './portal';
 
 // Mock useIsClient to always return true in tests
 jest.mock('@/utils/hooks', () => ({

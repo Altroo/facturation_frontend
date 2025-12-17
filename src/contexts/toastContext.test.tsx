@@ -4,7 +4,7 @@ import '@testing-library/jest-dom';
 import { ToastContext, ToastContextProvider } from './toastContext';
 
 // Mock the Portal used by the provider to avoid DOM/portal complexity
-jest.mock('@/contexts/Portal', () => ({
+jest.mock('@/contexts/portal', () => ({
 	__esModule: true,
 	default: (props: React.PropsWithChildren<Record<string, unknown>>) => (
 		<div data-testid="portal">{props.children}</div>

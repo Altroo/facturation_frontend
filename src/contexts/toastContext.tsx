@@ -2,7 +2,7 @@
 
 import React, { createContext, useState } from 'react';
 import type { AlertColor } from '@mui/material';
-import Portal from '@/contexts/Portal';
+import Portal from '@/contexts/portal';
 import CustomToast from '@/components/portals/customToast/customToast';
 
 export type ToastContextType = {
