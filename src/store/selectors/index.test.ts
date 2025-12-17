@@ -22,7 +22,7 @@ import {
 	EmplacementClass,
 	UniteClass,
 	MarqueClass,
-} from '@/models/Classes';
+} from '@/models/classes';
 import type { CompaniesUserCompaniesType } from '@/types/companyTypes';
 
 describe('Redux selectors', () => {

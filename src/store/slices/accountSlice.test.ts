@@ -1,5 +1,5 @@
 import reducer, { setProfil, setGroupes, setWSUserAvatar } from './accountSlice';
-import { UserClass, GroupClass } from '@/models/Classes';
+import { UserClass, GroupClass } from '@/models/classes';
 
 describe('account slice', () => {
 	const sampleUser = new UserClass(

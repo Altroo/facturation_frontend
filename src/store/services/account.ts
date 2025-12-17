@@ -4,7 +4,7 @@ import { axiosBaseQuery } from '@/utils/axiosBaseQuery';
 import type { ApiErrorResponseType, PaginationResponseType, SuccessResponseType } from '@/types/_initTypes';
 import type { RootState } from '@/store/store';
 import { getInitStateToken } from '@/store/selectors';
-import type { GroupClass, UserClass } from '@/models/Classes';
+import type { GroupClass, UserClass } from '@/models/classes';
 import type { EditProfilResponse, PasswordResetResponse } from '@/types/accountTypes';
 import type { UserWithCompaniesResponseType } from '@/types/usersTypes';
 import { initToken } from '@/store/slices/_initSlice';

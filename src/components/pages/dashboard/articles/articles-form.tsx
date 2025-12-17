@@ -71,7 +71,7 @@ import {
 	useAddMarqueMutation,
 	useAddUniteMutation,
 } from '@/store/services/parameter';
-import type { CategorieClass, MarqueClass, UniteClass, EmplacementClass } from '@/models/Classes';
+import type { CategorieClass, MarqueClass, UniteClass, EmplacementClass } from '@/models/classes';
 import { articleSchema } from '@/utils/formValidationSchemas';
 import AddEntityModal from '@/components/shared/addEntityModal/addEntityModal';
 import CustomSquareImageUploading from '@/components/formikElements/customSquareImageUploading/customSquareImageUploading';

@@ -10,7 +10,7 @@ import type {
 	EmplacementClass,
 	ModePaiementClass,
 	ModeReglementClass,
-} from '@/models/Classes';
+} from '@/models/classes';
 import type { ApiErrorResponseType, SuccessResponseType } from '@/types/_initTypes';
 import type { RootState } from '@/store/store';
 import { initToken } from '@/store/slices/_initSlice';

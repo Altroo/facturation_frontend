@@ -8,7 +8,7 @@ import type {
 	MarqueClass,
 	ModePaiementClass,
 	ModeReglementClass,
-} from '@/models/Classes';
+} from '@/models/classes';
 import type { CompaniesUserCompaniesType } from '@/types/companyTypes';
 import type { InitStateToken } from '@/types/_initTypes';
 

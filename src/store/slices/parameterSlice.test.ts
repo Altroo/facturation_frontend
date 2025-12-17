@@ -15,7 +15,7 @@ import {
 	MarqueClass,
 	ModePaiementClass,
 	ModeReglementClass,
-} from '@/models/Classes';
+} from '@/models/classes';
 
 describe('parameterSlice', () => {
 	const initialState = {

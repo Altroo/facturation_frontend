@@ -16,7 +16,7 @@ import {
 	MarqueClass,
 	ModePaiementClass,
 	ModeReglementClass,
-} from '@/models/Classes';
+} from '@/models/classes';
 
 describe('parameterActions', () => {
 	it('parameterSetCitiesAction should create an action with type PARAMETER_SET_CITIES and array data', () => {

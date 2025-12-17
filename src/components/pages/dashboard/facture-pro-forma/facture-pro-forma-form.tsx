@@ -60,7 +60,7 @@ import type {
 	ValidateArticleLinesErrorType,
 } from '@/types/devisTypes';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
-import type { ArticleClass, ClientClass, ModePaiementClass } from '@/models/Classes';
+import type { ArticleClass, ClientClass, ModePaiementClass } from '@/models/classes';
 import { useGetClientsListQuery } from '@/store/services/client';
 import { useAppSelector, useToast } from '@/utils/hooks';
 import { getModePaiementState, getUserCompaniesState } from '@/store/selectors';

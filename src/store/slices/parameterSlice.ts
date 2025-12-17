@@ -7,7 +7,7 @@ import type {
 	ModePaiementClass,
 	ModeReglementClass,
 	UniteClass,
-} from '@/models/Classes';
+} from '@/models/classes';
 import type { ParameterStateInterface } from '@/types/parameterTypes';
 
 const initialState: ParameterStateInterface = {

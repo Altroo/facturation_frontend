@@ -1,4 +1,4 @@
-import type { UserClass } from '@/models/Classes';
+import type { UserClass } from '@/models/classes';
 
 export type UserCompaniesType = {
 	membership_id: number;

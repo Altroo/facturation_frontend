@@ -7,7 +7,7 @@ import type {
 	ModeReglementClass,
 	UniteClass,
 	ModePaiementClass,
-} from '@/models/Classes';
+} from '@/models/classes';
 
 //!- Parameter State
 export interface ParameterStateInterface {

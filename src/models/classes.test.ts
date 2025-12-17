@@ -14,7 +14,7 @@ import {
 	DeviFactureLineClass,
 	DeviClass,
 	FactureProFormaClass,
-} from './Classes';
+} from './classes';
 import type { TypeArticleType } from '@/types/articleTypes';
 import type { TypeRemiseType, TypeFactureDevisStatus } from '@/types/devisTypes';
 

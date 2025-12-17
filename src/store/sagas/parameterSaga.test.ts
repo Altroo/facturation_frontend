@@ -28,7 +28,7 @@ import {
 	MarqueClass,
 	ModePaiementClass,
 	ModeReglementClass,
-} from '@/models/Classes';
+} from '@/models/classes';
 
 describe('parameter sagas', () => {
 	it('parameterSetCitiesSaga should dispatch setCities with correct payload', async () => {

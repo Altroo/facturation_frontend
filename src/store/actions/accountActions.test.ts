@@ -1,6 +1,6 @@
 import * as types from './index';
 import { accountSetProfilAction, accountSetGroupesAction, accountEditProfilAction } from './accountActions';
-import { UserClass, GroupClass } from '@/models/Classes';
+import { UserClass, GroupClass } from '@/models/classes';
 
 describe('Account Actions', () => {
 	it('accountSetProfilAction should create ACCOUNT_SET_PROFIL action with user data', () => {

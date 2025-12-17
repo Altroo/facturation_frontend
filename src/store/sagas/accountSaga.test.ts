@@ -10,7 +10,7 @@ import {
 } from './accountSaga';
 import { setProfil, setGroupes, setWSUserAvatar } from '../slices/accountSlice';
 import type { setProfilPayloadType, setGroupesPayloadType } from '@/types/accountTypes';
-import { UserClass, GroupClass } from '@/models/Classes';
+import { UserClass, GroupClass } from '@/models/classes';
 
 describe('account sagas', () => {
 	it('accountSetProfilSaga should dispatch setProfil with correct payload', async () => {

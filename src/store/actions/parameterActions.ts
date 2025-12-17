@@ -7,7 +7,7 @@ import type {
 	UniteClass,
 	ModePaiementClass,
 	ModeReglementClass,
-} from '@/models/Classes';
+} from '@/models/classes';
 
 export const parameterSetCitiesAction = (props: Array<CitiesClass>) => {
 	return {
