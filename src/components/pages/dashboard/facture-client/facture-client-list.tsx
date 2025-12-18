@@ -55,6 +55,7 @@ import { getStatutColor } from '@/components/pages/dashboard/devis/devis-list';
 // TODO : fix convert to bon de livraison instead
 import { useConvertDeviToFactureProFormaMutation } from '@/store/services/devi';
 import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
+import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 
 interface FormikContentProps extends SessionProps {
 	company_id: number;
@@ -223,6 +224,34 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		[deleteModalActions, convertirProFormatModalActions],
 	);
 
+	const clientFilterOptions = React.useMemo(() => {
+		if (!data?.results) return [];
+
+		const clientsMap = new Map<number, string>();
+		data.results.forEach((facture) => {
+			if (facture.client && facture.client_name) {
+				clientsMap.set(facture.client, facture.client_name);
+			}
+		});
+
+		return Array.from(clientsMap.entries()).map(([, name]) => ({
+			value: name,
+			label: name,
+		}));
+	}, [data?.results]);
+
+	const statutFilterOptions = React.useMemo(
+		() => [
+			{ value: 'Brouillon', label: 'Brouillon', color: 'default' as const },
+			{ value: 'Envoyé', label: 'Envoyé', color: 'info' as const },
+			{ value: 'Accepté', label: 'Accepté', color: 'success' as const },
+			{ value: 'Refusé', label: 'Refusé', color: 'error' as const },
+			{ value: 'Annulé', label: 'Annulé', color: 'error' as const },
+			{ value: 'Expiré', label: 'Expiré', color: 'warning' as const },
+		],
+		[],
+	);
+
 	const columns: GridColDef[] = [
 		{
 			field: 'numero_facture',
@@ -240,6 +269,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			field: 'client_name',
 			headerName: 'Client',
 			width: 180,
+			filterOperators: createDropdownFilterOperators(clientFilterOptions, 'Tous les clients'),
 			renderCell: (params: GridRenderCellParams<FactureClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -268,6 +298,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			field: 'statut',
 			headerName: 'Statut',
 			width: 100,
+			filterOperators: createDropdownFilterOperators(statutFilterOptions, 'Tous les statuts', true),
 			renderCell: (params: GridRenderCellParams<FactureClass>) => (
 				<DarkTooltip title={params.value}>
 					<Chip label={params.value || '-'} color={getStatutColor(params.value || '')} variant="outlined" />

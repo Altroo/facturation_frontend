@@ -28,12 +28,18 @@ import { formatDate } from '@/utils/helpers';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { useToast } from '@/utils/hooks';
+import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 
 interface FormikContentProps extends SessionProps {
 	company_id: number;
 	archived: boolean;
 	role: string;
 }
+
+export const typeFilterOptions = [
+	{ value: 'Personne physique', label: 'Personne physique', color: 'default' as const },
+	{ value: 'Personne morale', label: 'Personne morale', color: 'default' as const },
+];
 
 const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
 	const { session, company_id, archived, role } = props;
@@ -144,6 +150,22 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		setShowArchiveModal(true);
 	};
 
+	const villeFilterOptions = React.useMemo(() => {
+		if (!data?.results) return [];
+
+		const objectMap = new Map<number, string>();
+		data.results.forEach((client) => {
+			if (client.ville && client.ville_name) {
+				objectMap.set(client.ville, client.ville_name);
+			}
+		});
+
+		return Array.from(objectMap.entries()).map(([, name]) => ({
+			value: name,
+			label: name,
+		}));
+	}, [data?.results]);
+
 	const columns: GridColDef[] = [
 		{
 			field: 'code_client',
@@ -161,6 +183,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			field: 'client_type',
 			headerName: 'Type',
 			width: 160,
+			filterOperators: createDropdownFilterOperators(typeFilterOptions, 'Tous les types', true),
 			renderCell: (params: GridRenderCellParams<ClientClass>) => {
 				return (
 					<DarkTooltip title={params.value}>
@@ -209,6 +232,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			field: 'ville_name',
 			headerName: 'Ville',
 			width: 100,
+			filterOperators: createDropdownFilterOperators(villeFilterOptions, 'Tous les villes'),
 			renderCell: (params: GridRenderCellParams<ClientClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>

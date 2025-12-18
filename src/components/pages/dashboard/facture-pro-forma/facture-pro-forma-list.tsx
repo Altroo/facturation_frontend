@@ -56,8 +56,9 @@ import { formatDate } from '@/utils/helpers';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { useToast } from '@/utils/hooks';
-import { getStatutColor } from '@/components/pages/dashboard/devis/devis-list';
+import { getStatutColor, statutFilterOptions } from '@/components/pages/dashboard/devis/devis-list';
 import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
+import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 
 interface FormikContentProps extends SessionProps {
 	company_id: number;
@@ -225,6 +226,22 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		[deleteModalActions, convertirFactureClientModalActions],
 	);
 
+	const clientFilterOptions = React.useMemo(() => {
+		if (!data?.results) return [];
+
+		const objectMap = new Map<number, string>();
+		data.results.forEach((facture) => {
+			if (facture.client && facture.client_name) {
+				objectMap.set(facture.client, facture.client_name);
+			}
+		});
+
+		return Array.from(objectMap.entries()).map(([, name]) => ({
+			value: name,
+			label: name,
+		}));
+	}, [data?.results]);
+
 	const columns: GridColDef[] = [
 		{
 			field: 'numero_facture',
@@ -242,6 +259,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			field: 'client_name',
 			headerName: 'Client',
 			width: 180,
+			filterOperators: createDropdownFilterOperators(clientFilterOptions, 'Tous les clients'),
 			renderCell: (params: GridRenderCellParams<FactureClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -270,6 +288,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			field: 'statut',
 			headerName: 'Statut',
 			width: 100,
+			filterOperators: createDropdownFilterOperators(statutFilterOptions, 'Tous les statuts', true),
 			renderCell: (params: GridRenderCellParams<FactureClass>) => (
 				<DarkTooltip title={params.value}>
 					<Chip label={params.value || '-'} color={getStatutColor(params.value || '')} variant="outlined" />

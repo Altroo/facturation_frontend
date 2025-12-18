@@ -27,6 +27,10 @@ import { formatDate } from '@/utils/helpers';
 import { Protected } from '@/components/layouts/protected/protected';
 import { useToast } from '@/utils/hooks';
 import Image from 'next/image';
+import {
+	createBooleanFilterOperators,
+	createDropdownFilterOperators,
+} from '@/components/shared/dropdownFilter/dropdownFilter';
 
 const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 	const router = useRouter();
@@ -82,6 +86,22 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 		setSelectedUserId(id);
 		setShowDeleteModal(true);
 	};
+
+	const genderFilterOptions = React.useMemo(
+		() => [
+			{ value: 'Homme', label: 'Homme' },
+			{ value: 'Femme', label: 'Femme' },
+		],
+		[],
+	);
+
+	const TrueFalseFilterOptions = React.useMemo(
+		() => [
+			{ value: 'true', label: 'Oui' },
+			{ value: 'false', label: 'Non' },
+		],
+		[],
+	);
 
 	const columns: GridColDef[] = [
 		{
@@ -165,6 +185,7 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 			field: 'gender',
 			headerName: 'Sexe',
 			width: 80,
+			filterOperators: createDropdownFilterOperators(genderFilterOptions, 'Les deux'),
 			renderCell: (params: GridRenderCellParams<UserClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -177,6 +198,7 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 			field: 'is_staff',
 			headerName: 'Admin',
 			width: 70,
+			filterOperators: createBooleanFilterOperators(TrueFalseFilterOptions, 'Les deux'),
 			renderCell: (params: GridRenderCellParams<UserClass>) => {
 				const isAdmin = Boolean(params.value);
 				return (
@@ -194,6 +216,7 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 			field: 'is_active',
 			headerName: 'Active',
 			width: 70,
+			filterOperators: createBooleanFilterOperators(TrueFalseFilterOptions, 'Les deux'),
 			renderCell: (params: GridRenderCellParams<UserClass>) => {
 				const isActive = Boolean(params.value);
 				return (

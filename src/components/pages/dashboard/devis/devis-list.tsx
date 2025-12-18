@@ -61,6 +61,7 @@ import { useGetUserCompaniesQuery } from '@/store/services/company';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { useToast } from '@/utils/hooks';
 import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
+import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 
 export const getStatutColor = (
 	statut: string,
@@ -82,6 +83,15 @@ export const getStatutColor = (
 			return 'default';
 	}
 };
+
+export const statutFilterOptions = [
+	{ value: 'Brouillon', label: 'Brouillon', color: 'default' as const },
+	{ value: 'Envoyé', label: 'Envoyé', color: 'info' as const },
+	{ value: 'Accepté', label: 'Accepté', color: 'success' as const },
+	{ value: 'Refusé', label: 'Refusé', color: 'error' as const },
+	{ value: 'Annulé', label: 'Annulé', color: 'error' as const },
+	{ value: 'Expiré', label: 'Expiré', color: 'warning' as const },
+];
 
 interface FormikContentProps extends SessionProps {
 	company_id: number;
@@ -291,6 +301,22 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 		[deleteModalActions, convertirToFactureProFormatModalActions, convertirToFactureClientModalActions],
 	);
 
+	const clientFilterOptions = React.useMemo(() => {
+		if (!data?.results) return [];
+
+		const objectMap = new Map<number, string>();
+		data.results.forEach((devi) => {
+			if (devi.client && devi.client_name) {
+				objectMap.set(devi.client, devi.client_name);
+			}
+		});
+
+		return Array.from(objectMap.entries()).map(([, name]) => ({
+			value: name,
+			label: name,
+		}));
+	}, [data?.results]);
+
 	const columns: GridColDef[] = [
 		{
 			field: 'numero_devis',
@@ -308,6 +334,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 			field: 'client_name',
 			headerName: 'Client',
 			width: 180,
+			filterOperators: createDropdownFilterOperators(clientFilterOptions, 'Tous les clients'),
 			renderCell: (p: GridRenderCellParams<DeviClass>) => (
 				<DarkTooltip title={p.value}>
 					<Typography variant="body2" noWrap>
@@ -336,6 +363,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 			field: 'statut',
 			headerName: 'Statut',
 			width: 100,
+			filterOperators: createDropdownFilterOperators(statutFilterOptions, 'Tous les statuts', true),
 			renderCell: (p: GridRenderCellParams<DeviClass>) => (
 				<DarkTooltip title={p.value}>
 					<Chip label={p.value || '-'} color={getStatutColor(p.value || '')} variant="outlined" />

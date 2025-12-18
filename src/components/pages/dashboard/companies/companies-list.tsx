@@ -25,6 +25,15 @@ import { formatDate } from '@/utils/helpers';
 import { Protected } from '@/components/layouts/protected/protected';
 import { useToast } from '@/utils/hooks';
 import Image from 'next/image';
+import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
+
+export const nbrEmployeFilterOptions = [
+	{ value: '1 à 5', label: '1 à 5', color: 'default' as const },
+	{ value: '5 à 10', label: '5 à 10', color: 'default' as const },
+	{ value: '10 à 50', label: '10 à 50', color: 'default' as const },
+	{ value: '50 à 100', label: '50 à 100', color: 'default' as const },
+	{ value: 'plus que 100', label: 'plus que 100', color: 'default' as const },
+];
 
 const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 	const router = useRouter();
@@ -188,6 +197,7 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 			field: 'nbr_employe',
 			headerName: 'Employés',
 			width: 100,
+			filterOperators: createDropdownFilterOperators(nbrEmployeFilterOptions, 'Tous les nombres', true),
 			renderCell: (params: GridRenderCellParams<CompanyClass>) => (
 				<DarkTooltip title={params.value}>
 					<Chip label={params.value} size="small" variant="outlined" />
