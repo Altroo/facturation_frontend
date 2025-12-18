@@ -26,6 +26,7 @@ import type { UserClass } from '@/models/classes';
 import { formatDate } from '@/utils/helpers';
 import { Protected } from '@/components/layouts/protected/protected';
 import { useToast } from '@/utils/hooks';
+import Image from 'next/image';
 
 const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 	const router = useRouter();
@@ -87,9 +88,40 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 			field: 'avatar',
 			headerName: 'Avatar',
 			width: 70,
-			renderCell: (params: GridRenderCellParams<UserClass>) => (
-				<Avatar src={params.value} alt={params.row.first_name} variant="rounded" sx={{ width: 40, height: 40 }} />
-			),
+			renderCell: (params: GridRenderCellParams<UserClass>) => {
+				const src = params.value as string | undefined | null;
+				return (
+					<Tooltip
+						title={
+							src ? (
+								<Box sx={{ width: 260, height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+									<Image
+										src={src}
+										alt={params.row.first_name}
+										width={260}
+										height={260}
+										style={{ objectFit: 'contain', display: 'block' }}
+									/>
+								</Box>
+							) : (
+								''
+							)
+						}
+						placement="right"
+						arrow
+						enterDelay={100}
+						leaveDelay={200}
+						slotProps={{ tooltip: { sx: { pointerEvents: 'auto' } } }}
+					>
+						<Avatar
+							src={src ?? undefined}
+							alt={params.row.first_name}
+							variant="rounded"
+							sx={{ width: 40, height: 40 }}
+						/>
+					</Tooltip>
+				);
+			},
 			sortable: false,
 			filterable: false,
 		},

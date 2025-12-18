@@ -24,6 +24,7 @@ import type { CompanyClass } from '@/models/classes';
 import { formatDate } from '@/utils/helpers';
 import { Protected } from '@/components/layouts/protected/protected';
 import { useToast } from '@/utils/hooks';
+import Image from 'next/image';
 
 const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 	const router = useRouter();
@@ -84,9 +85,40 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 			field: 'logo',
 			headerName: 'Logo',
 			width: 70,
-			renderCell: (params: GridRenderCellParams<CompanyClass>) => (
-				<Avatar src={params.value} alt={params.row.raison_sociale} variant="rounded" sx={{ width: 40, height: 40 }} />
-			),
+			renderCell: (params: GridRenderCellParams<CompanyClass>) => {
+				const src = params.value as string | undefined | null;
+				return (
+					<Tooltip
+						title={
+							src ? (
+								<Box sx={{ width: 260, height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+									<Image
+										src={src}
+										alt={params.row.raison_sociale}
+										width={260}
+										height={260}
+										style={{ objectFit: 'contain', display: 'block' }}
+									/>
+								</Box>
+							) : (
+								''
+							)
+						}
+						placement="right"
+						arrow
+						enterDelay={100}
+						leaveDelay={200}
+						slotProps={{ tooltip: { sx: { pointerEvents: 'auto' } } }}
+					>
+						<Avatar
+							src={src ?? undefined}
+							alt={params.row.raison_sociale}
+							variant="rounded"
+							sx={{ width: 40, height: 40 }}
+						/>
+					</Tooltip>
+				);
+			},
 			sortable: false,
 			filterable: false,
 		},

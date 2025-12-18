@@ -41,6 +41,7 @@ import { formatDate } from '@/utils/helpers';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { useToast } from '@/utils/hooks';
+import Image from 'next/image';
 
 interface FormikContentProps extends SessionProps {
 	company_id: number;
@@ -162,9 +163,40 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			field: 'photo',
 			headerName: 'Photo',
 			width: 70,
-			renderCell: (params: GridRenderCellParams<ArticleClass>) => (
-				<Avatar src={params.value} alt={params.row.reference} variant="rounded" sx={{ width: 40, height: 40 }} />
-			),
+			renderCell: (params: GridRenderCellParams<ArticleClass>) => {
+				const src = params.value as string | undefined | null;
+				return (
+					<Tooltip
+						title={
+							src ? (
+								<Box sx={{ width: 260, height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+									<Image
+										src={src}
+										alt={params.row.reference}
+										width={260}
+										height={260}
+										style={{ objectFit: 'contain', display: 'block' }}
+									/>
+								</Box>
+							) : (
+								''
+							)
+						}
+						placement="right"
+						arrow
+						enterDelay={100}
+						leaveDelay={200}
+						slotProps={{ tooltip: { sx: { pointerEvents: 'auto' } } }}
+					>
+						<Avatar
+							src={src ?? undefined}
+							alt={params.row.reference}
+							variant="rounded"
+							sx={{ width: 40, height: 40 }}
+						/>
+					</Tooltip>
+				);
+			},
 			sortable: false,
 			filterable: false,
 		},
