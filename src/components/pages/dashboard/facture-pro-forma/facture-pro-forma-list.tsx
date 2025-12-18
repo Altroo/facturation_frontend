@@ -9,7 +9,6 @@ import {
 	Typography,
 	Chip,
 	IconButton,
-	Tooltip,
 	Tabs,
 	Tab,
 	Paper,
@@ -24,8 +23,8 @@ import {
 	Edit as EditIcon,
 	Delete as DeleteIcon,
 	Visibility as VisibilityIcon,
-	BusinessOutlined as BusinessOutlinedIcon,
-	AddOutlined as AddOutlinedIcon,
+	Business as BusinessIcon,
+	Add as AddIcon,
 	Close as CloseIcon,
 	CheckCircle as CheckCircleIcon,
 	SwapHoriz as SwapHorizIcon,
@@ -173,7 +172,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const renderActions = (params: GridRenderCellParams<FactureClass>) => (
 		<>
-			<Tooltip title="Modifier">
+			<DarkTooltip title="Modifier">
 				<IconButton
 					size="small"
 					color="primary"
@@ -181,13 +180,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				>
 					<EditIcon fontSize="small" />
 				</IconButton>
-			</Tooltip>
-			<Tooltip title="Supprimer">
+			</DarkTooltip>
+			<DarkTooltip title="Supprimer">
 				<IconButton size="small" color="error" onClick={() => showDeleteModalCall(params.row.id)}>
 					<DeleteIcon fontSize="small" />
 				</IconButton>
-			</Tooltip>
-			<Tooltip title="Convertir">
+			</DarkTooltip>
+			<DarkTooltip title="Convertir">
 				<IconButton
 					size="small"
 					color="success"
@@ -200,7 +199,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						<SwapHorizIcon fontSize="small" />
 					)}
 				</IconButton>
-			</Tooltip>
+			</DarkTooltip>
 		</>
 	);
 
@@ -319,7 +318,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			renderCell: (p: GridRenderCellParams<FactureClass>) => (
 				<Box sx={{ display: 'flex', gap: 1 }}>
 					{(role === 'Admin' || role === 'Lecture') && (
-						<Tooltip title="Voir">
+						<DarkTooltip title="Voir">
 							<IconButton
 								size="small"
 								color="info"
@@ -327,7 +326,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 							>
 								<VisibilityIcon />
 							</IconButton>
-						</Tooltip>
+						</DarkTooltip>
 					)}
 					{role === 'Admin' && <>{renderActions(p)}</>}
 				</Box>
@@ -357,7 +356,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 							py: { xs: 0.8, sm: 1, md: 1 },
 							fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
 						}}
-						startIcon={<AddOutlinedIcon fontSize="small" />}
+						startIcon={<AddIcon fontSize="small" />}
 					>
 						Nouvelle facture proforma
 					</Button>
@@ -452,7 +451,7 @@ const FactureProformaListClient: React.FC<SessionProps> = ({ session }: SessionP
 										margin: '0 auto 24px',
 									}}
 								>
-									<BusinessOutlinedIcon sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
+									<BusinessIcon sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
 								</Box>
 								<Typography variant="h5" fontWeight={600} color="text.primary" gutterBottom>
 									Aucune entreprise trouvée

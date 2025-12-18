@@ -35,9 +35,9 @@ import {
 	Notes as NotesIcon,
 	Delete as DeleteIcon,
 	Warning as WarningIcon,
-	BusinessOutlined as BusinessOutlinedIcon,
-	EditOutlined as EditOutlinedIcon,
-	AddOutlined as AddOutlinedIcon,
+	Business as BusinessIcon,
+	Edit as EditIcon,
+	Add as AddIcon,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -85,6 +85,7 @@ import { useAddModePaiementMutation } from '@/store/services/parameter';
 import AddEntityModal from '@/components/shared/addEntityModal/addEntityModal';
 import FactureDevisTotalsCard from '@/components/shared/factureDevistotalCard/factureDevisTotalsCard';
 import LinesGrid from '@/components/shared/linesGrid/linesGrid';
+import Image from 'next/image';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -745,12 +746,37 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					const article = getArticleById(params.row.article);
 					return (
 						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-							<Avatar
-								src={article?.photo as string | undefined}
-								alt={article?.reference as string | undefined}
-								variant="rounded"
-								sx={{ width: 40, height: 40 }}
-							/>
+							<DarkTooltip
+								title={
+									article?.photo ? (
+										<Box
+											sx={{ width: 260, height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+										>
+											<Image
+												src={article.photo as string}
+												alt={article?.reference as string}
+												width={260}
+												height={260}
+												style={{ objectFit: 'contain', display: 'block' }}
+											/>
+										</Box>
+									) : (
+										''
+									)
+								}
+								placement="right"
+								arrow
+								enterDelay={100}
+								leaveDelay={200}
+								slotProps={{ tooltip: { sx: { pointerEvents: 'auto' } } }}
+							>
+								<Avatar
+									src={(article?.photo as string) ?? undefined}
+									alt={article?.reference as string | undefined}
+									variant="rounded"
+									sx={{ width: 40, height: 40 }}
+								/>
+							</DarkTooltip>
 						</Box>
 					);
 				},
@@ -1366,7 +1392,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									active={!isPending}
 									type="submit"
 									loading={isPending}
-									startIcon={isEditMode ? <EditOutlinedIcon /> : <AddOutlinedIcon />}
+									startIcon={isEditMode ? <EditIcon /> : <AddIcon />}
 									onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
 										if (hasValidationErrors && isEditMode) {
 											e.preventDefault();
@@ -1481,7 +1507,7 @@ const DevisForm: React.FC<Props> = ({ session, company_id, id }) => {
 										margin: '0 auto 24px',
 									}}
 								>
-									<BusinessOutlinedIcon sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
+									<BusinessIcon sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
 								</Box>
 								<Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 3 }}>
 									{isEditMode

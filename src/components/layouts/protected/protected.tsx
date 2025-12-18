@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Typography, Paper, Box } from '@mui/material';
-import { LockOutlined as LockOutlinedIcon } from '@mui/icons-material';
+import { Lock as LockIcon } from '@mui/icons-material';
 import { usePermission } from '@/utils/hooks';
 
 interface ProtectedProps {
@@ -42,7 +42,7 @@ export const Protected = (props: ProtectedProps) => {
 							mb: 2,
 						}}
 					>
-						<LockOutlinedIcon
+						<LockIcon
 							sx={{
 								fontSize: 48,
 								color: 'error.main',

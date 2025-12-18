@@ -12,7 +12,7 @@ import {
 	InputAdornment,
 } from '@mui/material';
 import type { Theme } from '@mui/material/styles';
-import { CheckCircleOutlined as CheckCircleOutlinedIcon } from '@mui/icons-material';
+import { CheckCircle as CheckCircleIcon } from '@mui/icons-material';
 import { DropDownType } from '@/types/accountTypes';
 
 const ITEM_HEIGHT = 48;
@@ -76,7 +76,7 @@ const CustomDropDownSelect: React.FC<Props> = (props: Props) => {
 							<MenuItem key={index} value={value} sx={{ minHeight: ITEM_HEIGHT }}>
 								<Stack direction="row" justifyContent="space-between" sx={{ width: '100%' }}>
 									<span>{value || 'Sélectionner une valeur'}</span>
-									{props.value === value && <CheckCircleOutlinedIcon sx={{ fontSize: 20 }} color="primary" />}
+									{props.value === value && <CheckCircleIcon sx={{ fontSize: 20 }} color="primary" />}
 								</Stack>
 							</MenuItem>
 						);

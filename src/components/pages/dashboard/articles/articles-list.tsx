@@ -2,28 +2,15 @@
 
 import React, { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-	Box,
-	Button,
-	Stack,
-	Typography,
-	Chip,
-	IconButton,
-	Tooltip,
-	Tabs,
-	Tab,
-	Paper,
-	Container,
-	Avatar,
-} from '@mui/material';
+import { Box, Button, Stack, Typography, Chip, IconButton, Tabs, Tab, Paper, Container, Avatar } from '@mui/material';
 import {
 	Edit as EditIcon,
 	Delete as DeleteIcon,
 	Visibility as VisibilityIcon,
-	BusinessOutlined as BusinessOutlinedIcon,
+	Business as BusinessIcon,
 	Archive as ArchiveIcon,
 	Unarchive as UnarchiveIcon,
-	AddOutlined as AddOutlinedIcon,
+	Add as AddIcon,
 	Close as CloseIcon,
 } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
@@ -166,7 +153,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			renderCell: (params: GridRenderCellParams<ArticleClass>) => {
 				const src = params.value as string | undefined | null;
 				return (
-					<Tooltip
+					<DarkTooltip
 						title={
 							src ? (
 								<Box sx={{ width: 260, height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -194,7 +181,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 							variant="rounded"
 							sx={{ width: 40, height: 40 }}
 						/>
-					</Tooltip>
+					</DarkTooltip>
 				);
 			},
 			sortable: false,
@@ -284,7 +271,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			renderCell: (params: GridRenderCellParams<ArticleClass>) => (
 				<Box sx={{ display: 'flex', gap: 1 }}>
 					{(role === 'Admin' || role === 'Lecture') && (
-						<Tooltip title="Voir">
+						<DarkTooltip title="Voir">
 							<IconButton
 								size="small"
 								color="info"
@@ -292,11 +279,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 							>
 								<VisibilityIcon />
 							</IconButton>
-						</Tooltip>
+						</DarkTooltip>
 					)}
 					{role === 'Admin' && (
 						<>
-							<Tooltip title="Modifier">
+							<DarkTooltip title="Modifier">
 								<IconButton
 									size="small"
 									color="primary"
@@ -304,17 +291,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								>
 									<EditIcon />
 								</IconButton>
-							</Tooltip>
-							<Tooltip title="Supprimer">
+							</DarkTooltip>
+							<DarkTooltip title="Supprimer">
 								<IconButton size="small" color="error" onClick={() => showDeleteModalCall(params.row.id)}>
 									<DeleteIcon />
 								</IconButton>
-							</Tooltip>
-							<Tooltip title={archived ? 'Désarchiver' : 'Archiver'}>
+							</DarkTooltip>
+							<DarkTooltip title={archived ? 'Désarchiver' : 'Archiver'}>
 								<IconButton size="small" color="warning" onClick={() => showArchiveModalCall(params.row.id)}>
 									{archived ? <UnarchiveIcon /> : <ArchiveIcon />}
 								</IconButton>
-							</Tooltip>
+							</DarkTooltip>
 						</>
 					)}
 				</Box>
@@ -344,7 +331,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 							py: { xs: 0.8, sm: 1, md: 1 },
 							fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
 						}}
-						startIcon={<AddOutlinedIcon fontSize="small" />}
+						startIcon={<AddIcon fontSize="small" />}
 					>
 						Nouvel article
 					</Button>
@@ -438,7 +425,7 @@ const ArticlesListClient: React.FC<Props> = ({ session, archived }) => {
 										margin: '0 auto 24px',
 									}}
 								>
-									<BusinessOutlinedIcon sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
+									<BusinessIcon sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
 								</Box>
 								<Typography variant="h5" fontWeight={600} color="text.primary" gutterBottom>
 									Aucune entreprise trouvée

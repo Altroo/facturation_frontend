@@ -3,7 +3,7 @@
 import React, { useRef } from 'react';
 import Styles from './circularAvatarInputFile.module.sass';
 import Image from 'next/image';
-import { AddAPhotoOutlined as AddAPhotoOutlinedIcon } from '@mui/icons-material';
+import { AddAPhoto as AddAPhotoIcon } from '@mui/icons-material';
 import { Stack } from '@mui/material';
 
 type Props = {
@@ -71,7 +71,7 @@ const CircularAvatarInputFile: React.FC<Props> = (props: Props) => {
 							className={`${Styles.previewAvatar} ${Styles.avatarIcon}`}
 						/>
 					)}
-					<AddAPhotoOutlinedIcon
+					<AddAPhotoIcon
 						sx={{ fontSize: 30 }}
 						aria-hidden="true"
 						className={`${props.preview !== null ? Styles.hideIcon : ''}`}

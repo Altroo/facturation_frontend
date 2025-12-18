@@ -2,14 +2,14 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Button, Stack, Typography, Avatar, IconButton, Tooltip } from '@mui/material';
+import { Box, Button, Stack, Typography, Avatar, IconButton } from '@mui/material';
 import {
 	Edit as EditIcon,
 	Delete as DeleteIcon,
 	Visibility as VisibilityIcon,
 	CheckCircle as CheckCircleIcon,
 	Cancel as CancelIcon,
-	AddOutlined as AddOutlinedIcon,
+	Add as AddIcon,
 	Close as CloseIcon,
 } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
@@ -91,7 +91,7 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 			renderCell: (params: GridRenderCellParams<UserClass>) => {
 				const src = params.value as string | undefined | null;
 				return (
-					<Tooltip
+					<DarkTooltip
 						title={
 							src ? (
 								<Box sx={{ width: 260, height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -119,7 +119,7 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 							variant="rounded"
 							sx={{ width: 40, height: 40 }}
 						/>
-					</Tooltip>
+					</DarkTooltip>
 				);
 			},
 			sortable: false,
@@ -245,23 +245,23 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 			filterable: false,
 			renderCell: (params) => (
 				<Box sx={{ display: 'flex', gap: 1 }}>
-					<Tooltip title="Voir">
+					<DarkTooltip title="Voir">
 						<IconButton size="small" color="info" onClick={() => router.push(USERS_VIEW(params.row.id))}>
 							<VisibilityIcon />
 						</IconButton>
-					</Tooltip>
+					</DarkTooltip>
 
-					<Tooltip title="Modifier">
+					<DarkTooltip title="Modifier">
 						<IconButton size="small" color="primary" onClick={() => router.push(USERS_EDIT(params.row.id))}>
 							<EditIcon />
 						</IconButton>
-					</Tooltip>
+					</DarkTooltip>
 
-					<Tooltip title="Supprimer">
+					<DarkTooltip title="Supprimer">
 						<IconButton size="small" color="error" onClick={() => showDeleteModalCall(params.row.id)}>
 							<DeleteIcon />
 						</IconButton>
-					</Tooltip>
+					</DarkTooltip>
 				</Box>
 			),
 		},
@@ -297,7 +297,7 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 									py: { xs: 0.8, sm: 1, md: 1 },
 									fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
 								}}
-								startIcon={<AddOutlinedIcon fontSize="small" />}
+								startIcon={<AddIcon fontSize="small" />}
 							>
 								Nouveau utilisateur
 							</Button>

@@ -33,6 +33,7 @@ import {
 	Login as LoginIcon,
 	Business as BusinessIcon,
 	Badge as BadgeIcon,
+	Public as PublicIcon,
 } from '@mui/icons-material';
 import { USERS_LIST, USERS_EDIT } from '@/utils/routes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
@@ -169,12 +170,16 @@ const UsersViewClient: React.FC<Props> = ({ session, id }) => {
 										>
 											<Avatar
 												src={`${userData?.avatar}`}
+												alt={userData?.email}
 												sx={{
 													width: isMobile ? 100 : 120,
 													height: isMobile ? 100 : 120,
 													border: '4px solid',
 													borderColor: 'primary.light',
 													boxShadow: 3,
+													'& img': {
+														objectFit: 'contain',
+													},
 												}}
 											/>
 											<Stack spacing={2} sx={{ flex: 1, width: '100%' }}>
@@ -216,14 +221,12 @@ const UsersViewClient: React.FC<Props> = ({ session, id }) => {
 											py: { xs: 2, md: 3 },
 										}}
 									>
-										<Typography
-											variant="h6"
-											fontWeight={700}
-											gutterBottom
-											sx={{ mb: { xs: 1.5, md: 2 }, fontSize: { xs: '1rem', md: '1.25rem' } }}
-										>
-											Informations générales
-										</Typography>
+										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+											<PublicIcon color="primary" />
+											<Typography variant="h6" fontWeight={700}>
+												Informations générales
+											</Typography>
+										</Stack>
 
 										<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 

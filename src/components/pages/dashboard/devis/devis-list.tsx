@@ -9,7 +9,6 @@ import {
 	Typography,
 	Chip,
 	IconButton,
-	Tooltip,
 	Tabs,
 	Tab,
 	Paper,
@@ -25,12 +24,12 @@ import {
 	Edit as EditIcon,
 	Delete as DeleteIcon,
 	Visibility as VisibilityIcon,
-	BusinessOutlined as BusinessOutlinedIcon,
-	AddOutlined as AddOutlinedIcon,
+	Business as BusinessIcon,
+	Add as AddIcon,
 	Close as CloseIcon,
-	ReceiptLong as ReceiptLongIcon,
 	SwapHoriz as SwapHorizIcon,
 	CheckCircle as CheckCircleIcon,
+	ReceiptLong as ReceiptLongIcon,
 	ReceiptLongOutlined as ReceiptLongOutlinedIcon,
 } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
@@ -212,7 +211,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 			{
 				text: 'Annuler',
 				active: false,
-				onClick: () => setShowConvertProFormaModal(false),
+				onClick: () => setShowConvertClientModal(false),
 				icon: <CloseIcon />,
 				color: '#6B6B6B',
 			},
@@ -234,17 +233,17 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 
 	const renderActions = (params: GridRenderCellParams<DeviClass>) => (
 		<>
-			<Tooltip title="Modifier">
+			<DarkTooltip title="Modifier">
 				<IconButton size="small" color="primary" onClick={() => router.push(DEVIS_EDIT(params.row.id, company_id))}>
 					<EditIcon fontSize="small" />
 				</IconButton>
-			</Tooltip>
-			<Tooltip title="Supprimer">
+			</DarkTooltip>
+			<DarkTooltip title="Supprimer">
 				<IconButton size="small" color="error" onClick={() => showDeleteModalCall(params.row.id)}>
 					<DeleteIcon fontSize="small" />
 				</IconButton>
-			</Tooltip>
-			<Tooltip title="Convertir">
+			</DarkTooltip>
+			<DarkTooltip title="Convertir">
 				<IconButton
 					size="small"
 					color="success"
@@ -259,7 +258,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 						<SwapHorizIcon fontSize="small" />
 					)}
 				</IconButton>
-			</Tooltip>
+			</DarkTooltip>
 		</>
 	);
 
@@ -385,11 +384,11 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 			renderCell: (p: GridRenderCellParams<DeviClass>) => (
 				<Box sx={{ display: 'flex', gap: 1 }}>
 					{(role === 'Admin' || role === 'Lecture') && (
-						<Tooltip title="Voir">
+						<DarkTooltip title="Voir">
 							<IconButton size="small" color="info" onClick={() => router.push(DEVIS_VIEW(p.row.id, company_id))}>
 								<VisibilityIcon />
 							</IconButton>
-						</Tooltip>
+						</DarkTooltip>
 					)}
 					{role === 'Admin' && <>{renderActions(p)}</>}
 				</Box>
@@ -419,7 +418,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 							py: { xs: 0.8, sm: 1, md: 1 },
 							fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
 						}}
-						startIcon={<AddOutlinedIcon fontSize="small" />}
+						startIcon={<AddIcon fontSize="small" />}
 					>
 						Nouveau devi
 					</Button>
@@ -531,7 +530,7 @@ const DevisListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 										margin: '0 auto 24px',
 									}}
 								>
-									<BusinessOutlinedIcon sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
+									<BusinessIcon sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
 								</Box>
 								<Typography variant="h5" fontWeight={600} color="text.primary" gutterBottom>
 									Aucune entreprise trouvée

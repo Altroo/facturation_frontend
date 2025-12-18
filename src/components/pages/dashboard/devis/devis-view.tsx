@@ -46,6 +46,7 @@ import { useGetArticlesListQuery } from '@/store/services/article';
 import { formatDate } from '@/utils/helpers';
 import FactureDevisTotalsCard from '@/components/shared/factureDevistotalCard/factureDevisTotalsCard';
 import { getStatutColor } from '@/components/pages/dashboard/devis/devis-list';
+import Image from 'next/image';
 
 interface InfoRowProps {
 	icon: React.ReactNode;
@@ -221,12 +222,37 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 				const article = articlesData?.find((a) => a.id === params.row.article);
 				return (
 					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-						<Avatar
-							src={article?.photo as string | undefined}
-							alt={article?.reference as string | undefined}
-							variant="rounded"
-							sx={{ width: 40, height: 40 }}
-						/>
+						<DarkTooltip
+							title={
+								article?.photo ? (
+									<Box
+										sx={{ width: 260, height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+									>
+										<Image
+											src={article.photo as string}
+											alt={article?.reference as string}
+											width={260}
+											height={260}
+											style={{ objectFit: 'contain', display: 'block' }}
+										/>
+									</Box>
+								) : (
+									''
+								)
+							}
+							placement="right"
+							arrow
+							enterDelay={100}
+							leaveDelay={200}
+							slotProps={{ tooltip: { sx: { pointerEvents: 'auto' } } }}
+						>
+							<Avatar
+								src={(article?.photo as string) ?? undefined}
+								alt={article?.reference as string | undefined}
+								variant="rounded"
+								sx={{ width: 40, height: 40 }}
+							/>
+						</DarkTooltip>
 					</Box>
 				);
 			},

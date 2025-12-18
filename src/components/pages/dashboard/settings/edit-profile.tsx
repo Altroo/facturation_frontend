@@ -20,7 +20,7 @@ import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiP
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { accountEditProfilAction } from '@/store/actions/accountActions';
 import CustomSquareImageUploading from '@/components/formikElements/customSquareImageUploading/customSquareImageUploading';
-import { EditOutlined as EditOutlinedIcon } from '@mui/icons-material';
+import { Edit as EditIcon } from '@mui/icons-material';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -123,7 +123,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 						onClick={formik.handleSubmit}
 						cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}
 						type="submit"
-						startIcon={<EditOutlinedIcon />}
+						startIcon={<EditIcon />}
 						loading={isPending}
 					/>
 				</Stack>

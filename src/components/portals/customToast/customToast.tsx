@@ -4,10 +4,10 @@ import Styles from './customToast.module.sass';
 import MuiAlert, { AlertProps, AlertColor } from '@mui/material/Alert';
 import { customToastTheme } from '@/utils/themes';
 import {
-	CheckCircleOutline as CheckCircleOutlineIcon,
-	ErrorOutline as ErrorOutlineIcon,
-	InfoOutline as InfoOutlineIcon,
-	WarningAmberOutlined as WarningAmberOutlinedIcon,
+	CheckCircle as CheckCircleIcon,
+	Error as ErrorIcon,
+	Info as InfoIcon,
+	WarningAmber as WarningAmberIcon,
 } from '@mui/icons-material';
 
 type Props = {
@@ -46,10 +46,10 @@ const CustomToast: React.FC<Props> = (props) => {
 						severity={type}
 						className={Styles.alert}
 						iconMapping={{
-							success: <CheckCircleOutlineIcon className={Styles.alertIcon} color="success" />,
-							error: <ErrorOutlineIcon className={Styles.alertIcon} color="error" />,
-							info: <InfoOutlineIcon className={Styles.alertIcon} color="info" />,
-							warning: <WarningAmberOutlinedIcon className={Styles.alertIcon} color="warning" />,
+							success: <CheckCircleIcon className={Styles.alertIcon} color="success" />,
+							error: <ErrorIcon className={Styles.alertIcon} color="error" />,
+							info: <InfoIcon className={Styles.alertIcon} color="info" />,
+							warning: <WarningAmberIcon className={Styles.alertIcon} color="warning" />,
 						}}
 					>
 						{props.message}

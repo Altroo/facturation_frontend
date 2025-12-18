@@ -35,8 +35,8 @@ import {
 	LocationOn as LocationOnIcon,
 	Star as StarIcon,
 	Straighten as StraightenIcon,
-	AddOutlined as AddOutlinedIcon,
-	EditOutlined as EditOutlinedIcon,
+	Add as AddIcon,
+	Edit as EditIcon,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -585,7 +585,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								active={!isPending}
 								type="submit"
 								loading={isPending}
-								startIcon={isEditMode ? <EditOutlinedIcon /> : <AddOutlinedIcon />}
+								startIcon={isEditMode ? <EditIcon /> : <AddIcon />}
 								cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}
 							/>
 						</Box>

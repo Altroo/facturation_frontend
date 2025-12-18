@@ -16,7 +16,7 @@ import { coordonneeTextInputTheme } from '@/utils/themes';
 import CustomPasswordInput from '@/components/formikElements/customPasswordInput/customPasswordInput';
 import { useSetPasswordMutation } from '@/store/services/account';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
-import { EditOutlined as EditOutlinedIcon } from '@mui/icons-material';
+import { Edit as EditIcon } from '@mui/icons-material';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -104,7 +104,7 @@ const SetPasswordPageContent: React.FC<SetPasswordPageContentProps> = ({ email, 
 						onClick={formik.handleSubmit}
 						cssClass={Styles.emailRegisterButton}
 						type="submit"
-						startIcon={<EditOutlinedIcon />}
+						startIcon={<EditIcon />}
 						loading={isSetPasswordLoading || isPending}
 					/>
 				</Stack>

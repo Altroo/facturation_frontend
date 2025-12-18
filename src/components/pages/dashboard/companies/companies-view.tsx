@@ -43,10 +43,11 @@ import {
 	PersonPin as PersonPinIcon,
 	AdminPanelSettings as AdminPanelSettingsIcon,
 	Verified as StampIcon,
+	Public as PublicIcon,
+	ContactPhone as ContactPhoneIcon,
 } from '@mui/icons-material';
 import { COMPANIES_LIST, COMPANIES_EDIT } from '@/utils/routes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
-import Image from 'next/image';
 import { Protected } from '@/components/layouts/protected/protected';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 
@@ -174,12 +175,16 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 										>
 											<Avatar
 												src={`${companyData?.logo_cropped}`}
+												alt="Logo de l'entreprise"
 												sx={{
 													width: isMobile ? 100 : 120,
 													height: isMobile ? 100 : 120,
 													border: '4px solid',
 													borderColor: 'primary.light',
 													boxShadow: 3,
+													'& img': {
+														objectFit: 'contain',
+													},
 												}}
 											/>
 											<Stack spacing={2} sx={{ flex: 1, width: '100%' }}>
@@ -195,7 +200,7 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 													<Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
 														<Chip
 															icon={<BadgeIcon />}
-															label={`ID: ${companyData?.id}`}
+															label={`ICE: ${companyData?.id ?? '-'}`}
 															size="small"
 															variant="outlined"
 														/>
@@ -208,44 +213,47 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 								</Card>
 
 								{/* Stamp Card */}
-								{companyData?.cachet_cropped && (
-									<Card elevation={2} sx={{ borderRadius: 2 }}>
-										<CardContent sx={{ p: 3 }}>
-											<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-												<StampIcon color="primary" />
-												<Typography variant="h6" fontWeight={700}>
-													Cachet de l&#39;entreprise
-												</Typography>
-											</Stack>
-											<Divider sx={{ mb: 3 }} />
-											<Box
+								<Card elevation={2} sx={{ borderRadius: 2 }}>
+									<CardContent sx={{ p: 3 }}>
+										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+											<StampIcon color="primary" />
+											<Typography variant="h6" fontWeight={700}>
+												Cachet de l&#39;entreprise
+											</Typography>
+										</Stack>
+										<Divider sx={{ mb: 3 }} />
+										<Stack
+											direction={isMobile ? 'column' : 'row'}
+											spacing={3}
+											alignItems={isMobile ? 'center' : 'flex-start'}
+										>
+											<Avatar
+												variant="square"
+												src={`${companyData?.cachet_cropped}`}
 												sx={{
-													display: 'flex',
-													justifyContent: 'center',
-													p: 2,
-													backgroundColor: 'grey.50',
-													borderRadius: 2,
+													width: isMobile ? 100 : 120,
+													height: isMobile ? 100 : 120,
+													border: '4px solid',
+													borderColor: 'primary.light',
+													boxShadow: 3,
+													'& img': {
+														objectFit: 'contain',
+													},
 												}}
-											>
-												<Image
-													alt="Cachet de l'entreprise"
-													loading="eager"
-													width={360}
-													height={250}
-													src={`${companyData.cachet_cropped}`}
-													style={{ objectFit: 'contain' }}
-												/>
-											</Box>
-										</CardContent>
-									</Card>
-								)}
+											/>
+										</Stack>
+									</CardContent>
+								</Card>
 
 								{/* General Information Card */}
 								<Card elevation={2} sx={{ borderRadius: 2 }}>
 									<CardContent sx={{ p: 3 }}>
-										<Typography variant="h6" fontWeight={700} gutterBottom sx={{ mb: 2 }}>
-											Informations générales
-										</Typography>
+										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+											<PublicIcon color="primary" />
+											<Typography variant="h6" fontWeight={700}>
+												Informations générales
+											</Typography>
+										</Stack>
 										<Divider sx={{ mb: 2 }} />
 										<Stack spacing={0}>
 											<InfoRow
@@ -266,9 +274,12 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 								{/* Administrative Information Card */}
 								<Card elevation={2} sx={{ borderRadius: 2 }}>
 									<CardContent sx={{ p: 3 }}>
-										<Typography variant="h6" fontWeight={700} gutterBottom sx={{ mb: 2 }}>
-											Informations administratives
-										</Typography>
+										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+											<AdminPanelSettingsIcon color="primary" />
+											<Typography variant="h6" fontWeight={700}>
+												Informations administratives
+											</Typography>
+										</Stack>
 										<Divider sx={{ mb: 2 }} />
 										<Stack spacing={0}>
 											<InfoRow
@@ -325,9 +336,12 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 								{/* Contact Information Card */}
 								<Card elevation={2} sx={{ borderRadius: 2 }}>
 									<CardContent sx={{ p: 3 }}>
-										<Typography variant="h6" fontWeight={700} gutterBottom sx={{ mb: 2 }}>
-											Contact
-										</Typography>
+										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+											<ContactPhoneIcon color="primary" />
+											<Typography variant="h6" fontWeight={700}>
+												Contact
+											</Typography>
+										</Stack>
 										<Divider sx={{ mb: 2 }} />
 										<Stack spacing={0}>
 											<InfoRow icon={<EmailIcon />} label="Email" value={companyData?.email} />
