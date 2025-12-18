@@ -49,6 +49,7 @@ import {
 	DEVIS_ADD,
 	FACTURE_PRO_FORMA_EDIT,
 	FACTURE_CLIENT_EDIT,
+	CLIENTS_VIEW,
 } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
@@ -59,6 +60,7 @@ import { formatDate } from '@/utils/helpers';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { useToast } from '@/utils/hooks';
+import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
 
 export const getStatutColor = (
 	statut: string,
@@ -309,7 +311,11 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 			renderCell: (p: GridRenderCellParams<DeviClass>) => (
 				<DarkTooltip title={p.value}>
 					<Typography variant="body2" noWrap>
-						{p.value}
+						<TextButton
+							buttonText={p.value}
+							onClick={() => router.push(CLIENTS_VIEW(p.row.client, company_id))}
+							cssClass={Styles.textButton}
+						/>
 					</Typography>
 				</DarkTooltip>
 			),

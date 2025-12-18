@@ -40,6 +40,7 @@ import {
 	useConvertFactureProFormaToFactureMutation,
 } from '@/store/services/factureProForma';
 import {
+	CLIENTS_VIEW,
 	COMPANIES_ADD,
 	FACTURE_CLIENT_EDIT,
 	FACTURE_PRO_FORMA_ADD,
@@ -56,6 +57,7 @@ import { useGetUserCompaniesQuery } from '@/store/services/company';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { useToast } from '@/utils/hooks';
 import { getStatutColor } from '@/components/pages/dashboard/devis/devis-list';
+import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
 
 interface FormikContentProps extends SessionProps {
 	company_id: number;
@@ -243,7 +245,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			renderCell: (params: GridRenderCellParams<FactureClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
-						{params.value}
+						<TextButton
+							buttonText={params.value}
+							onClick={() => router.push(CLIENTS_VIEW(params.row.client, company_id))}
+							cssClass={Styles.textButton}
+						/>
 					</Typography>
 				</DarkTooltip>
 			),

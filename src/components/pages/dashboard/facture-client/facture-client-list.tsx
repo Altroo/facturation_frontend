@@ -35,7 +35,13 @@ import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { useDeleteFactureClientMutation, useGetFactureClientListQuery } from '@/store/services/factureClient';
-import { COMPANIES_ADD, FACTURE_CLIENT_ADD, FACTURE_CLIENT_EDIT, FACTURE_CLIENT_VIEW } from '@/utils/routes';
+import {
+	CLIENTS_VIEW,
+	COMPANIES_ADD,
+	FACTURE_CLIENT_ADD,
+	FACTURE_CLIENT_EDIT,
+	FACTURE_CLIENT_VIEW,
+} from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
@@ -48,6 +54,7 @@ import { useToast } from '@/utils/hooks';
 import { getStatutColor } from '@/components/pages/dashboard/devis/devis-list';
 // TODO : fix convert to bon de livraison instead
 import { useConvertDeviToFactureProFormaMutation } from '@/store/services/devi';
+import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
 
 interface FormikContentProps extends SessionProps {
 	company_id: number;
@@ -236,7 +243,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			renderCell: (params: GridRenderCellParams<FactureClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
-						{params.value}
+						<TextButton
+							buttonText={params.value}
+							onClick={() => router.push(CLIENTS_VIEW(params.row.client, company_id))}
+							cssClass={Styles.textButton}
+						/>
 					</Typography>
 				</DarkTooltip>
 			),
