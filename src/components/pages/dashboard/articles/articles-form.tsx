@@ -276,7 +276,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					variant="outlined"
 					startIcon={<ArrowBackIcon />}
 					onClick={() => router.push(ARTICLES_LIST)}
-					sx={{ width: isMobile ? '100%' : 'auto' }}
+					sx={{
+						whiteSpace: 'nowrap',
+						px: { xs: 1.5, sm: 2, md: 3 },
+						py: { xs: 0.8, sm: 1, md: 1 },
+						fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
+					}}
 				>
 					Liste des articles
 				</Button>

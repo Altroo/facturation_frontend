@@ -210,9 +210,9 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 	return (
 		<Stack
 			direction="column"
-			spacing={2}
+			spacing={3}
 			className={Styles.flexRootStack}
-			mt="32px"
+			mt="48px"
 			sx={{ overflowX: 'auto', overflowY: 'hidden' }}
 		>
 			<NavigationBar title="Liste des entreprises">

@@ -240,7 +240,7 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 			direction="column"
 			spacing={2}
 			className={Styles.flexRootStack}
-			mt="32px"
+			mt="48px"
 			sx={{ overflowX: 'auto', overflowY: 'hidden' }}
 		>
 			<NavigationBar title="Liste des utilisateurs">
