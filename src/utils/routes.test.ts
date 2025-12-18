@@ -157,4 +157,25 @@ describe('routes constants', () => {
 		expect(FACTURE_PRO_FORMA_VIEW(5, 99)).toBe(`${SITE_ROOT}dashboard/facture-pro-forma/5/?company_id=99`);
 		expect(FACTURE_PRO_FORMA_EDIT(7, 123)).toBe(`${SITE_ROOT}dashboard/facture-pro-forma/7/edit/?company_id=123`);
 	});
+
+	it('exports facture client routes and functions', () => {
+		const {
+			SITE_ROOT,
+			FACTURE_CLIENT_LIST,
+			FACTURE_CLIENT_ADD,
+			FACTURE_CLIENT_VIEW,
+			FACTURE_CLIENT_EDIT,
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
+		} = require('./routes');
+
+		expect(FACTURE_CLIENT_LIST).toBe(`${SITE_ROOT}dashboard/facture-client`);
+		expect(typeof FACTURE_CLIENT_ADD).toBe('function');
+		expect(FACTURE_CLIENT_ADD(42)).toBe(`${SITE_ROOT}dashboard/facture-client/new/?company_id=42`);
+
+		expect(typeof FACTURE_CLIENT_VIEW).toBe('function');
+		expect(typeof FACTURE_CLIENT_EDIT).toBe('function');
+
+		expect(FACTURE_CLIENT_VIEW(5, 99)).toBe(`${SITE_ROOT}dashboard/facture-client/5/?company_id=99`);
+		expect(FACTURE_CLIENT_EDIT(7, 123)).toBe(`${SITE_ROOT}dashboard/facture-client/7/edit/?company_id=123`);
+	});
 });
