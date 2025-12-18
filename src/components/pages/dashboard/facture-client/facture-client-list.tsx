@@ -231,24 +231,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			),
 		},
 		{
-			field: 'date_facture',
-			headerName: 'Date facture',
-			width: 130,
-			renderCell: (params: GridRenderCellParams<FactureClass>) => {
-				const formatted = formatDate(params.value as string | null).split(',')[0];
-				return (
-					<DarkTooltip title={formatted}>
-						<Typography variant="body2" noWrap>
-							{formatted}
-						</Typography>
-					</DarkTooltip>
-				);
-			},
-		},
-		{
 			field: 'client_name',
 			headerName: 'Client',
-			width: 200,
+			width: 180,
 			renderCell: (params: GridRenderCellParams<FactureClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -284,9 +269,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			headerName: 'Total TTC après remise',
 			width: 150,
 			renderCell: (params: GridRenderCellParams<FactureClass>) => (
-				<DarkTooltip title={params.value}>
+				<DarkTooltip title={params.value.toFixed(2) + ' DH'}>
 					<Typography variant="body2" noWrap>
-						{params.value}
+						{params.value.toFixed(2)} DH
 					</Typography>
 				</DarkTooltip>
 			),
@@ -304,9 +289,24 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			),
 		},
 		{
+			field: 'date_facture',
+			headerName: 'Date facture',
+			width: 130,
+			renderCell: (params: GridRenderCellParams<FactureClass>) => {
+				const formatted = formatDate(params.value as string | null).split(',')[0];
+				return (
+					<DarkTooltip title={formatted}>
+						<Typography variant="body2" noWrap>
+							{formatted}
+						</Typography>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
 			field: 'actions',
 			headerName: 'Actions',
-			width: 200,
+			width: 180,
 			sortable: false,
 			filterable: false,
 			renderCell: (p: GridRenderCellParams<FactureClass>) => (

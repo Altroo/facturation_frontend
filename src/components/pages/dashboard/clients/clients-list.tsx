@@ -148,7 +148,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{
 			field: 'code_client',
 			headerName: 'Code Client',
-			width: 140,
+			width: 100,
 			renderCell: (params: GridRenderCellParams<ClientClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -172,7 +172,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{
 			field: 'raison_sociale',
 			headerName: 'Raison Sociale',
-			width: 200,
+			width: 150,
 			renderCell: (params: GridRenderCellParams<ClientClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -184,7 +184,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{
 			field: 'nom',
 			headerName: 'Nom',
-			width: 200,
+			width: 150,
 			renderCell: (params: GridRenderCellParams<ClientClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -196,7 +196,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{
 			field: 'prenom',
 			headerName: 'Prénom',
-			width: 200,
+			width: 150,
 			renderCell: (params: GridRenderCellParams<ClientClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -220,7 +220,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{
 			field: 'date_created',
 			headerName: 'Date de création',
-			width: 200,
+			width: 170,
 			renderCell: (params: GridRenderCellParams<ClientClass>) => {
 				const formatted = formatDate(params.value as string | null);
 				return (

@@ -171,7 +171,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{
 			field: 'reference',
 			headerName: 'Réference',
-			width: 150,
+			width: 100,
 			renderCell: (params: GridRenderCellParams<ArticleClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -183,7 +183,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{
 			field: 'type_article',
 			headerName: 'Type',
-			width: 150,
+			width: 90,
 			renderCell: (params: GridRenderCellParams<ArticleClass>) => {
 				return (
 					<DarkTooltip title={params.value}>
@@ -207,11 +207,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{
 			field: 'prix_achat',
 			headerName: "Prix d'achat",
-			width: 150,
+			width: 120,
 			renderCell: (params: GridRenderCellParams<ArticleClass>) => (
-				<DarkTooltip title={params.value}>
+				<DarkTooltip title={params.value.toFixed(2) + ' DH'}>
 					<Typography variant="body2" noWrap>
-						{params.value}
+						{params.value.toFixed(2)} DH
 					</Typography>
 				</DarkTooltip>
 			),
@@ -219,11 +219,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{
 			field: 'prix_vente',
 			headerName: 'Prix de vente',
-			width: 150,
+			width: 120,
 			renderCell: (params: GridRenderCellParams<ArticleClass>) => (
-				<DarkTooltip title={params.value}>
+				<DarkTooltip title={params.value.toFixed(2) + ' DH'}>
 					<Typography variant="body2" noWrap>
-						{params.value}
+						{params.value.toFixed(2)} DH
 					</Typography>
 				</DarkTooltip>
 			),
@@ -231,7 +231,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{
 			field: 'date_created',
 			headerName: 'Date de création',
-			width: 200,
+			width: 170,
 			renderCell: (params: GridRenderCellParams<ArticleClass>) => {
 				const formatted = formatDate(params.value as string | null);
 				return (

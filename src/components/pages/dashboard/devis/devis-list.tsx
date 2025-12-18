@@ -304,24 +304,9 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 			),
 		},
 		{
-			field: 'date_devis',
-			headerName: 'Date devi',
-			width: 130,
-			renderCell: (p: GridRenderCellParams<DeviClass>) => {
-				const f = formatDate(p.value as string | null).split(',')[0];
-				return (
-					<DarkTooltip title={f}>
-						<Typography variant="body2" noWrap>
-							{f}
-						</Typography>
-					</DarkTooltip>
-				);
-			},
-		},
-		{
 			field: 'client_name',
 			headerName: 'Client',
-			width: 200,
+			width: 180,
 			renderCell: (p: GridRenderCellParams<DeviClass>) => (
 				<DarkTooltip title={p.value}>
 					<Typography variant="body2" noWrap>
@@ -357,9 +342,9 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 			headerName: 'Total TTC après remise',
 			width: 150,
 			renderCell: (p: GridRenderCellParams<DeviClass>) => (
-				<DarkTooltip title={p.value}>
+				<DarkTooltip title={p.value.toFixed(2) + ' DH'}>
 					<Typography variant="body2" noWrap>
-						{p.value}
+						{p.value.toFixed(2)} DH
 					</Typography>
 				</DarkTooltip>
 			),
@@ -377,9 +362,24 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 			),
 		},
 		{
+			field: 'date_devis',
+			headerName: 'Date devi',
+			width: 130,
+			renderCell: (p: GridRenderCellParams<DeviClass>) => {
+				const f = formatDate(p.value as string | null).split(',')[0];
+				return (
+					<DarkTooltip title={f}>
+						<Typography variant="body2" noWrap>
+							{f}
+						</Typography>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
 			field: 'actions',
 			headerName: 'Actions',
-			width: 200,
+			width: 180,
 			sortable: false,
 			filterable: false,
 			renderCell: (p: GridRenderCellParams<DeviClass>) => (

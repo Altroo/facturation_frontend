@@ -96,7 +96,7 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 		{
 			field: 'first_name',
 			headerName: 'Nom',
-			width: 150,
+			width: 100,
 			renderCell: (params: GridRenderCellParams<UserClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -108,7 +108,7 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 		{
 			field: 'last_name',
 			headerName: 'Prénom',
-			width: 150,
+			width: 100,
 			renderCell: (params: GridRenderCellParams<UserClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -178,7 +178,7 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 		{
 			field: 'date_joined',
 			headerName: "Date d'inscription",
-			width: 200,
+			width: 170,
 			renderCell: (params: GridRenderCellParams<UserClass>) => {
 				const formatted = formatDate(params.value as string | null);
 				return (
@@ -193,7 +193,7 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 		{
 			field: 'last_login',
 			headerName: 'Dernière connexion',
-			width: 200,
+			width: 170,
 			renderCell: (params: GridRenderCellParams<UserClass>) => {
 				const formatted = formatDate(params.value as string | null);
 				return (

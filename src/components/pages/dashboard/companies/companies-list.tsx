@@ -83,7 +83,7 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		{
 			field: 'logo',
 			headerName: 'Logo',
-			width: 60,
+			width: 70,
 			renderCell: (params: GridRenderCellParams<CompanyClass>) => (
 				<Avatar src={params.value} alt={params.row.raison_sociale} variant="rounded" sx={{ width: 40, height: 40 }} />
 			),
@@ -93,7 +93,7 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		{
 			field: 'raison_sociale',
 			headerName: 'Raison Sociale',
-			width: 180,
+			width: 150,
 			renderCell: (params: GridRenderCellParams<CompanyClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -105,7 +105,7 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		{
 			field: 'ICE',
 			headerName: 'ICE',
-			width: 180,
+			width: 100,
 			renderCell: (params: GridRenderCellParams<CompanyClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -117,7 +117,7 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		{
 			field: 'nom_responsable',
 			headerName: 'Responsable',
-			width: 220,
+			width: 150,
 			renderCell: (params: GridRenderCellParams<CompanyClass>) => {
 				return (
 					<DarkTooltip title={params.value}>
@@ -131,7 +131,7 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		{
 			field: 'email',
 			headerName: 'Email',
-			width: 240,
+			width: 150,
 			renderCell: (params: GridRenderCellParams<CompanyClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -143,7 +143,7 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		{
 			field: 'telephone',
 			headerName: 'Téléphone',
-			width: 180,
+			width: 150,
 			renderCell: (params: GridRenderCellParams<CompanyClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -155,7 +155,7 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		{
 			field: 'nbr_employe',
 			headerName: 'Employés',
-			width: 120,
+			width: 100,
 			renderCell: (params: GridRenderCellParams<CompanyClass>) => (
 				<DarkTooltip title={params.value}>
 					<Chip label={params.value} size="small" variant="outlined" />
@@ -180,7 +180,7 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		{
 			field: 'actions',
 			headerName: 'Actions',
-			width: 200,
+			width: 150,
 			sortable: false,
 			filterable: false,
 			renderCell: (params: GridRenderCellParams<CompanyClass>) => (
