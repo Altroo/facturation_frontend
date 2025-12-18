@@ -3,13 +3,13 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import CircularAvatarInputFile from './circularAvatarInputFile';
 import '@testing-library/jest-dom';
 
-jest.mock('@mui/icons-material/AddAPhotoOutlined', () => {
+jest.mock('@mui/icons-material/AddAPhoto', () => {
 	return {
 		__esModule: true,
 		default: (props: React.SVGProps<SVGSVGElement>) => {
 			// only keep safe DOM props; drop htmlColor, sx, etc.
 			const { className, 'aria-hidden': ariaHidden } = props || {};
-			const svgProps: Record<string, unknown> = { 'data-testid': 'AddAPhotoOutlinedIcon' };
+			const svgProps: Record<string, unknown> = { 'data-testid': 'AddAPhotoIcon' };
 			if (className) svgProps.className = className;
 			if (ariaHidden !== undefined) svgProps['aria-hidden'] = ariaHidden;
 			return React.createElement('svg', svgProps);
@@ -32,7 +32,7 @@ describe('CircularAvatarInputFile', () => {
 
 	it('renders avatar icon by default', () => {
 		render(<CircularAvatarInputFile preview={null} active={true} setAvatar={mockSetAvatar} />);
-		expect(screen.getByTestId('AddAPhotoOutlinedIcon')).toBeInTheDocument();
+		expect(screen.getByTestId('AddAPhotoIcon')).toBeInTheDocument();
 	});
 
 	it('renders preview image when provided', () => {

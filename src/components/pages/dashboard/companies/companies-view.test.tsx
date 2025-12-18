@@ -123,7 +123,7 @@ describe('CompaniesViewClient', () => {
 
 		renderWithProviders(<CompaniesViewClient {...defaultProps} />);
 		expect(screen.getByText('Entreprise Test')).toBeInTheDocument();
-		expect(screen.getByText('ID: 123')).toBeInTheDocument();
+		expect(screen.getByText('ICE: 123')).toBeInTheDocument();
 		expect(screen.getByText('Alice Doe')).toBeInTheDocument();
 		expect(screen.getByText('Admin')).toBeInTheDocument();
 	});
