@@ -12,6 +12,8 @@ import {
 	deviSchema,
 	devisLineSchema,
 	deviAddSchema,
+	factureClientProformaSchema,
+	factureClientProformaAddSchema,
 } from './formValidationSchemas';
 
 describe('Zod Schema Validation', () => {
@@ -513,6 +515,203 @@ describe('Zod Schema Validation', () => {
 							remise: 0,
 						},
 					],
+				}),
+			).toThrow();
+		});
+	});
+
+	// ✅ factureClientProformaSchema
+	describe('factureClientProformaSchema', () => {
+		it('validates required fields (with explicit remise)', () => {
+			expect(() =>
+				factureClientProformaSchema.parse({
+					numero_facture: 'F001',
+					client: 1,
+					date_facture: '2025-12-04',
+					mode_paiement: 2,
+					remise: 0,
+					lignes: [
+						{
+							article: 1,
+							prix_achat: 100,
+							prix_vente: 150,
+							quantity: 2,
+							remise: 0,
+						},
+					],
+				}),
+			).not.toThrow();
+		});
+
+		it('accepts when remise and remise_type are both omitted', () => {
+			expect(() =>
+				factureClientProformaSchema.parse({
+					numero_facture: 'F010',
+					client: 1,
+					date_facture: '2025-12-04',
+					mode_paiement: 2,
+				}),
+			).not.toThrow();
+		});
+
+		it('validates when remise_type provided and remise present (top-level and line)', () => {
+			expect(() =>
+				factureClientProformaSchema.parse({
+					numero_facture: 'F012',
+					client: 1,
+					date_facture: '2025-12-04',
+					mode_paiement: 2,
+					remise_type: 'Pourcentage',
+					remise: 10,
+					lignes: [
+						{
+							article: 1,
+							prix_achat: 100,
+							prix_vente: 150,
+							quantity: 2,
+							remise_type: 'Fixe',
+							remise: 5,
+						},
+					],
+				}),
+			).not.toThrow();
+		});
+
+		it('fails when top-level remise_type is provided but remise is missing', () => {
+			expect(() =>
+				factureClientProformaSchema.parse({
+					numero_facture: 'F011',
+					client: 1,
+					date_facture: '2025-12-04',
+					mode_paiement: 2,
+					remise_type: 'Pourcentage',
+				}),
+			).toThrow();
+		});
+
+		it('fails when a line has remise_type but missing remise', () => {
+			expect(() =>
+				factureClientProformaSchema.parse({
+					numero_facture: 'F013',
+					client: 1,
+					date_facture: '2025-12-04',
+					mode_paiement: 2,
+					lignes: [
+						{
+							article: 1,
+							prix_achat: 100,
+							prix_vente: 150,
+							quantity: 2,
+							remise_type: 'Pourcentage',
+						},
+					],
+				}),
+			).toThrow();
+		});
+
+		it('fails with missing client', () => {
+			expect(() =>
+				factureClientProformaSchema.parse({
+					numero_facture: 'F002',
+					date_facture: '2025-12-04',
+					mode_paiement: 2,
+					remise: 0,
+				}),
+			).toThrow();
+		});
+
+		it('fails with missing numero_facture', () => {
+			expect(() =>
+				factureClientProformaSchema.parse({
+					client: 1,
+					date_facture: '2025-12-04',
+					mode_paiement: 2,
+					remise: 0,
+				}),
+			).toThrow();
+		});
+
+		it('fails with missing date_facture', () => {
+			expect(() =>
+				factureClientProformaSchema.parse({
+					numero_facture: 'F003',
+					client: 1,
+					mode_paiement: 2,
+					remise: 0,
+				}),
+			).toThrow();
+		});
+
+		it('accepts missing mode_paiement (optional)', () => {
+			expect(() =>
+				factureClientProformaSchema.parse({
+					numero_facture: 'F004',
+					client: 1,
+					date_facture: '2025-12-04',
+					remise: 0,
+				}),
+			).not.toThrow();
+		});
+
+		it('fails with invalid line item (negative quantity)', () => {
+			expect(() =>
+				factureClientProformaSchema.parse({
+					numero_facture: 'F005',
+					client: 1,
+					date_facture: '2025-12-04',
+					mode_paiement: 2,
+					remise: 0,
+					lignes: [
+						{
+							article: 1,
+							prix_achat: 100,
+							prix_vente: 150,
+							quantity: -1,
+							remise: 0,
+						},
+					],
+				}),
+			).toThrow();
+		});
+	});
+
+	// ✅ factureClientProformaAddSchema
+	describe('factureClientProformaAddSchema', () => {
+		it('validates required fields for adding a facture proforma', () => {
+			expect(() =>
+				factureClientProformaAddSchema.parse({
+					numero_facture: 'FA100',
+					client: 1,
+					date_facture: '2025-12-04',
+				}),
+			).not.toThrow();
+		});
+
+		it('accepts optional fields', () => {
+			expect(() =>
+				factureClientProformaAddSchema.parse({
+					numero_facture: 'FA101',
+					client: 2,
+					date_facture: '2025-12-04',
+					numero_bon_commande_client: 'BC123',
+					mode_paiement: null,
+					remarque: 'note',
+				}),
+			).not.toThrow();
+		});
+
+		it('fails when required fields are missing', () => {
+			expect(() =>
+				factureClientProformaAddSchema.parse({
+					client: 1,
+					date_facture: '2025-12-04',
+				}),
+			).toThrow();
+
+			expect(() =>
+				factureClientProformaAddSchema.parse({
+					numero_facture: 'FA102',
+					date_facture: '2025-12-04',
 				}),
 			).toThrow();
 		});
