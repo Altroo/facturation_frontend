@@ -36,7 +36,7 @@ import { useGetArticleQuery } from '@/store/services/article';
 import { getAccessTokenFromSession } from '@/store/session';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
-import Styles from '@/styles/dashboard/clients/clients.module.sass';
+import Styles from '@/styles/dashboard/dashboard.module.sass';
 import { useAppSelector } from '@/utils/hooks';
 import { getUserCompaniesState } from '@/store/selectors';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';

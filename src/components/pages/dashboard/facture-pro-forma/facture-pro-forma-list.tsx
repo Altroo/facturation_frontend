@@ -33,7 +33,7 @@ import {
 } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
-import Styles from '@/styles/dashboard/pro-forma/pro-forma.module.sass';
+import Styles from '@/styles/dashboard/dashboard.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import {
 	useDeleteFactureProFormaMutation,

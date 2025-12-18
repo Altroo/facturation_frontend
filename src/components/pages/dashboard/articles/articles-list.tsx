@@ -28,7 +28,7 @@ import {
 } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
-import Styles from '@/styles/dashboard/clients/clients.module.sass';
+import Styles from '@/styles/dashboard/dashboard.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { useDeleteArticleMutation, useGetArticlesListQuery, usePatchArchiveMutation } from '@/store/services/article';
 import { ARTICLES_ADD, ARTICLES_EDIT, ARTICLES_VIEW, COMPANIES_ADD } from '@/utils/routes';

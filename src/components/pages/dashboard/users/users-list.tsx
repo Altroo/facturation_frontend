@@ -14,7 +14,7 @@ import {
 } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
-import Styles from '@/styles/dashboard/companies/companies.module.sass';
+import Styles from '@/styles/dashboard/dashboard.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { useDeleteUserMutation, useGetUsersListQuery } from '@/store/services/account';
 import { USERS_VIEW, USERS_EDIT, USERS_ADD } from '@/utils/routes';

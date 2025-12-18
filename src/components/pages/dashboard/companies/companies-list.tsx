@@ -12,7 +12,7 @@ import {
 } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
-import Styles from '@/styles/dashboard/companies/companies.module.sass';
+import Styles from '@/styles/dashboard/dashboard.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { useDeleteCompanyMutation, useGetCompaniesListQuery } from '@/store/services/company';
 import { COMPANIES_ADD, COMPANIES_VIEW, COMPANIES_EDIT } from '@/utils/routes';

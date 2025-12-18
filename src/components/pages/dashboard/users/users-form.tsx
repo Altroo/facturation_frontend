@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
-import Styles from '@/styles/dashboard/companies/companies.module.sass';
+import Styles from '@/styles/dashboard/dashboard.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import {
 	Box,

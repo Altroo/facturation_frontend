@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
 import { useAddCompanyMutation, useEditCompanyMutation, useGetCompanyQuery } from '@/store/services/company';
-import Styles from '@/styles/dashboard/companies/companies.module.sass';
+import Styles from '@/styles/dashboard/dashboard.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { Box, Button, Stack, Typography, Card, CardContent, Divider, useTheme, useMediaQuery } from '@mui/material';
 import {
