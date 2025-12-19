@@ -102,7 +102,7 @@ describe('ClientClass', () => {
 		const client = new ClientClass(
 			1,
 			'CL001',
-			'PP',
+			'Personne physique',
 			10,
 			'MyCompany',
 			'456 Avenue',
@@ -128,7 +128,7 @@ describe('ClientClass', () => {
 
 		expect(client.id).toBe(1);
 		expect(client.code_client).toBe('CL001');
-		expect(client.client_type).toBe('PP');
+		expect(client.client_type).toBe('Personne physique');
 		expect(client.company).toBe(10);
 		expect(client.company_name).toBe('MyCompany');
 		expect(client.ville).toBe(5);
