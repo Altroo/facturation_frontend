@@ -4,10 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+		"debug": "next dev --inspect",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "upgrade": "yarn upgrade-interactive",
+		"analyse": "next experimental-analyze",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage --coverageProvider=v8"
