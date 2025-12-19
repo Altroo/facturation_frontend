@@ -298,7 +298,7 @@ export const articleSchema = z.object({
 	globalError: optionalTextField(1, 500),
 });
 
-export const devisLineSchema = z
+export const devisFactureLineSchema = z
 	.object({
 		article: requiredNumberField(1),
 		prix_achat: requiredNumberField(0),
@@ -364,11 +364,11 @@ export const deviSchema = z
 		client: requiredNumberField(1),
 		date_devis: requiredTextField(1, 100),
 		numero_demande_prix_client: optionalTextField(1, 100).nullable(),
-		mode_paiement: requiredNumberField(1),
+		mode_paiement: optionalNumberField(0).nullable(),
 		remarque: optionalTextField(2, 500).nullable(),
 		remise_type: z.enum(['Pourcentage', 'Fixe']).optional().nullable(),
 		remise: optionalNumberField(0),
-		lignes: z.array(devisLineSchema).optional(),
+		lignes: z.array(devisFactureLineSchema).optional(),
 		globalError: optionalTextField(1, 500),
 	})
 	.superRefine((data, ctx) => {
@@ -430,7 +430,7 @@ export const deviAddSchema = z
 		client: requiredNumberField(1),
 		date_devis: requiredTextField(1, 100),
 		numero_demande_prix_client: optionalTextField(1, 100).nullable(),
-		mode_paiement: requiredNumberField(1),
+		mode_paiement: optionalNumberField(0).nullable(),
 		remarque: optionalTextField(2, 500).nullable(),
 		globalError: optionalTextField(1, 500),
 	})
@@ -451,11 +451,11 @@ export const factureClientProformaSchema = z
 		client: requiredNumberField(1),
 		date_facture: requiredTextField(1, 100),
 		numero_bon_commande_client: optionalTextField(1, 100).nullable(),
-		mode_paiement: requiredNumberField(1),
+		mode_paiement: optionalNumberField(0).nullable(),
 		remarque: optionalTextField(2, 500).nullable(),
 		remise_type: z.enum(['Pourcentage', 'Fixe']).optional().nullable(),
 		remise: optionalNumberField(0),
-		lignes: z.array(devisLineSchema).optional(),
+		lignes: z.array(devisFactureLineSchema).optional(),
 		globalError: optionalTextField(1, 500),
 	})
 	.superRefine((data, ctx) => {
@@ -517,7 +517,7 @@ export const factureClientProformaAddSchema = z
 		client: requiredNumberField(1),
 		date_facture: requiredTextField(1, 100),
 		numero_bon_commande_client: optionalTextField(1, 100).nullable(),
-		mode_paiement: requiredNumberField(1),
+		mode_paiement: optionalNumberField(0).nullable(),
 		remarque: optionalTextField(2, 500).nullable(),
 		globalError: optionalTextField(1, 500),
 	})

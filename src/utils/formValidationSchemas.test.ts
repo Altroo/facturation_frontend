@@ -10,7 +10,7 @@ import {
 	clientSchema,
 	articleSchema,
 	deviSchema,
-	devisLineSchema,
+	devisFactureLineSchema,
 	deviAddSchema,
 	factureClientProformaSchema,
 	factureClientProformaAddSchema,
@@ -249,7 +249,7 @@ describe('Zod Schema Validation', () => {
 	describe('devisLineSchema', () => {
 		it('validates a correct line', () => {
 			expect(() =>
-				devisLineSchema.parse({
+				devisFactureLineSchema.parse({
 					article: 1,
 					prix_achat: 100,
 					prix_vente: 150,
@@ -262,7 +262,7 @@ describe('Zod Schema Validation', () => {
 
 		it('fails when prix_vente is less than prix_achat', () => {
 			expect(() =>
-				devisLineSchema.parse({
+				devisFactureLineSchema.parse({
 					article: 1,
 					prix_achat: 200,
 					prix_vente: 150,
@@ -274,7 +274,7 @@ describe('Zod Schema Validation', () => {
 
 		it('fails with negative quantity', () => {
 			expect(() =>
-				devisLineSchema.parse({
+				devisFactureLineSchema.parse({
 					article: 1,
 					prix_achat: 100,
 					prix_vente: 150,
@@ -286,7 +286,7 @@ describe('Zod Schema Validation', () => {
 
 		it('requires remise when remise_type is provided', () => {
 			expect(() =>
-				devisLineSchema.parse({
+				devisFactureLineSchema.parse({
 					article: 1,
 					prix_achat: 100,
 					prix_vente: 150,
@@ -299,7 +299,7 @@ describe('Zod Schema Validation', () => {
 		it('fails when remise is non-integer or out of bounds for percentage', () => {
 			// non-integer
 			expect(() =>
-				devisLineSchema.parse({
+				devisFactureLineSchema.parse({
 					article: 1,
 					prix_achat: 100,
 					prix_vente: 150,
@@ -311,7 +311,7 @@ describe('Zod Schema Validation', () => {
 
 			// percentage out of bounds
 			expect(() =>
-				devisLineSchema.parse({
+				devisFactureLineSchema.parse({
 					article: 1,
 					prix_achat: 100,
 					prix_vente: 150,
@@ -328,7 +328,8 @@ describe('Zod Schema Validation', () => {
 		it('validates required fields for adding a devis', () => {
 			expect(() =>
 				deviAddSchema.parse({
-					numero_devis: 'DV100',
+					numero_part: 'DV100',
+					year_part: '25',
 					client: 1,
 					date_devis: '2025-12-04',
 				}),
@@ -338,7 +339,8 @@ describe('Zod Schema Validation', () => {
 		it('accepts optional fields', () => {
 			expect(() =>
 				deviAddSchema.parse({
-					numero_devis: 'DV101',
+					numero_part: 'DV101',
+					year_part: '25',
 					client: 2,
 					date_devis: '2025-12-04',
 					numero_demande_prix_client: 'REQ123',
@@ -358,7 +360,8 @@ describe('Zod Schema Validation', () => {
 
 			expect(() =>
 				deviAddSchema.parse({
-					numero_devis: 'DV102',
+					numero_part: 'DV102',
+					year_part: '25',
 					date_devis: '2025-12-04',
 				}),
 			).toThrow();
@@ -370,7 +373,8 @@ describe('Zod Schema Validation', () => {
 		it('validates required fields (with explicit remise)', () => {
 			expect(() =>
 				deviSchema.parse({
-					numero_devis: 'DV001',
+					numero_part: 'DV001',
+					year_part: '25',
 					client: 1,
 					date_devis: '2025-12-04',
 					mode_paiement: 2,
@@ -391,7 +395,8 @@ describe('Zod Schema Validation', () => {
 		it('accepts when remise and remise_type are both omitted', () => {
 			expect(() =>
 				deviSchema.parse({
-					numero_devis: 'DV010',
+					numero_part: 'DV010',
+					year_part: '25',
 					client: 1,
 					date_devis: '2025-12-04',
 					mode_paiement: 2,
@@ -402,7 +407,8 @@ describe('Zod Schema Validation', () => {
 		it('validates when remise_type provided and remise present (top-level and line)', () => {
 			expect(() =>
 				deviSchema.parse({
-					numero_devis: 'DV012',
+					numero_part: 'DV012',
+					year_part: '25',
 					client: 1,
 					date_devis: '2025-12-04',
 					mode_paiement: 2,
@@ -425,7 +431,8 @@ describe('Zod Schema Validation', () => {
 		it('fails when top-level remise_type is provided but remise is missing', () => {
 			expect(() =>
 				deviSchema.parse({
-					numero_devis: 'DV011',
+					numero_part: 'DV011',
+					year_part: '25',
 					client: 1,
 					date_devis: '2025-12-04',
 					mode_paiement: 2,
@@ -437,7 +444,8 @@ describe('Zod Schema Validation', () => {
 		it('fails when a line has remise_type but missing remise', () => {
 			expect(() =>
 				deviSchema.parse({
-					numero_devis: 'DV013',
+					numero_part: 'DV013',
+					year_part: '25',
 					client: 1,
 					date_devis: '2025-12-04',
 					mode_paiement: 2,
@@ -457,7 +465,8 @@ describe('Zod Schema Validation', () => {
 		it('fails with missing client', () => {
 			expect(() =>
 				deviSchema.parse({
-					numero_devis: 'DV002',
+					numero_part: 'DV002',
+					year_part: '25',
 					date_devis: '2025-12-04',
 					mode_paiement: 2,
 					remise: 0,
@@ -479,7 +488,8 @@ describe('Zod Schema Validation', () => {
 		it('fails with missing date_devis', () => {
 			expect(() =>
 				deviSchema.parse({
-					numero_devis: 'DV003',
+					numero_part: 'DV003',
+					year_part: '25',
 					client: 1,
 					mode_paiement: 2,
 					remise: 0,
@@ -490,7 +500,8 @@ describe('Zod Schema Validation', () => {
 		it('accepts missing mode_paiement (optional)', () => {
 			expect(() =>
 				deviSchema.parse({
-					numero_devis: 'DV004',
+					numero_part: 'DV004',
+					year_part: '25',
 					client: 1,
 					date_devis: '2025-12-04',
 					remise: 0,
@@ -501,7 +512,8 @@ describe('Zod Schema Validation', () => {
 		it('fails with invalid line item (negative quantity)', () => {
 			expect(() =>
 				deviSchema.parse({
-					numero_devis: 'DV005',
+					numero_part: 'DV005',
+					year_part: '25',
 					client: 1,
 					date_devis: '2025-12-04',
 					mode_paiement: 2,
@@ -525,7 +537,8 @@ describe('Zod Schema Validation', () => {
 		it('validates required fields (with explicit remise)', () => {
 			expect(() =>
 				factureClientProformaSchema.parse({
-					numero_facture: 'F001',
+					numero_part: 'F001',
+					year_part: '25',
 					client: 1,
 					date_facture: '2025-12-04',
 					mode_paiement: 2,
@@ -546,7 +559,8 @@ describe('Zod Schema Validation', () => {
 		it('accepts when remise and remise_type are both omitted', () => {
 			expect(() =>
 				factureClientProformaSchema.parse({
-					numero_facture: 'F010',
+					numero_part: 'F010',
+					year_part: '25',
 					client: 1,
 					date_facture: '2025-12-04',
 					mode_paiement: 2,
@@ -557,7 +571,8 @@ describe('Zod Schema Validation', () => {
 		it('validates when remise_type provided and remise present (top-level and line)', () => {
 			expect(() =>
 				factureClientProformaSchema.parse({
-					numero_facture: 'F012',
+					numero_part: 'F012',
+					year_part: '25',
 					client: 1,
 					date_facture: '2025-12-04',
 					mode_paiement: 2,
@@ -580,7 +595,8 @@ describe('Zod Schema Validation', () => {
 		it('fails when top-level remise_type is provided but remise is missing', () => {
 			expect(() =>
 				factureClientProformaSchema.parse({
-					numero_facture: 'F011',
+					numero_part: 'F011',
+					year_part: '25',
 					client: 1,
 					date_facture: '2025-12-04',
 					mode_paiement: 2,
@@ -592,7 +608,8 @@ describe('Zod Schema Validation', () => {
 		it('fails when a line has remise_type but missing remise', () => {
 			expect(() =>
 				factureClientProformaSchema.parse({
-					numero_facture: 'F013',
+					numero_part: 'F013',
+					year_part: '25',
 					client: 1,
 					date_facture: '2025-12-04',
 					mode_paiement: 2,
@@ -612,7 +629,8 @@ describe('Zod Schema Validation', () => {
 		it('fails with missing client', () => {
 			expect(() =>
 				factureClientProformaSchema.parse({
-					numero_facture: 'F002',
+					numero_part: 'F002',
+					year_part: '25',
 					date_facture: '2025-12-04',
 					mode_paiement: 2,
 					remise: 0,
@@ -634,7 +652,8 @@ describe('Zod Schema Validation', () => {
 		it('fails with missing date_facture', () => {
 			expect(() =>
 				factureClientProformaSchema.parse({
-					numero_facture: 'F003',
+					numero_part: 'F003',
+					year_part: '25',
 					client: 1,
 					mode_paiement: 2,
 					remise: 0,
@@ -645,7 +664,8 @@ describe('Zod Schema Validation', () => {
 		it('accepts missing mode_paiement (optional)', () => {
 			expect(() =>
 				factureClientProformaSchema.parse({
-					numero_facture: 'F004',
+					numero_part: 'F004',
+					year_part: '25',
 					client: 1,
 					date_facture: '2025-12-04',
 					remise: 0,
@@ -656,7 +676,8 @@ describe('Zod Schema Validation', () => {
 		it('fails with invalid line item (negative quantity)', () => {
 			expect(() =>
 				factureClientProformaSchema.parse({
-					numero_facture: 'F005',
+					numero_part: 'F005',
+					year_part: '25',
 					client: 1,
 					date_facture: '2025-12-04',
 					mode_paiement: 2,
@@ -680,7 +701,8 @@ describe('Zod Schema Validation', () => {
 		it('validates required fields for adding a facture proforma', () => {
 			expect(() =>
 				factureClientProformaAddSchema.parse({
-					numero_facture: 'FA100',
+					numero_part: 'FA100',
+					year_part: '25',
 					client: 1,
 					date_facture: '2025-12-04',
 				}),
@@ -690,7 +712,8 @@ describe('Zod Schema Validation', () => {
 		it('accepts optional fields', () => {
 			expect(() =>
 				factureClientProformaAddSchema.parse({
-					numero_facture: 'FA101',
+					numero_part: 'FA101',
+					year_part: '25',
 					client: 2,
 					date_facture: '2025-12-04',
 					numero_bon_commande_client: 'BC123',
@@ -710,7 +733,8 @@ describe('Zod Schema Validation', () => {
 
 			expect(() =>
 				factureClientProformaAddSchema.parse({
-					numero_facture: 'FA102',
+					numero_part: 'FA102',
+					year_part: '25',
 					date_facture: '2025-12-04',
 				}),
 			).toThrow();
