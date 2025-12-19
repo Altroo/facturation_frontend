@@ -296,7 +296,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		if (!clientsData) return [];
 		return clientsData.map((client) => {
 			const label =
-				client.client_type === 'PP' ? `${client.nom || ''} ${client.prenom || ''}`.trim() : client.raison_sociale || '';
+				client.client_type === 'Personne physique'
+					? `${client.nom || ''} ${client.prenom || ''}`.trim()
+					: client.raison_sociale || '';
 			return {
 				code: label,
 				value: String(client.id),
