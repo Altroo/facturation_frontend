@@ -1,7 +1,9 @@
 import { DeviLineSchemaType, TypeRemiseType } from '@/types/devisTypes';
 
 export type FactureClientProFormaSchemaType = {
-	numero_facture: string;
+	numero_facture?: string;
+	numero_part: string;
+	year_part: string;
 	client: number | null;
 	date_facture: string;
 	numero_bon_commande_client: string | null;

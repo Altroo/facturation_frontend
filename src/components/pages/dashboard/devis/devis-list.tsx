@@ -340,7 +340,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 					<Typography variant="body2" noWrap>
 						<TextButton
 							buttonText={p.value}
-							onClick={() => router.push(CLIENTS_VIEW(p.row.client, company_id))}
+							onClick={() => router.push(CLIENTS_VIEW(p.row.client as number, company_id))}
 							cssClass={Styles.textButton}
 						/>
 					</Typography>

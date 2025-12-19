@@ -265,7 +265,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					<Typography variant="body2" noWrap>
 						<TextButton
 							buttonText={params.value}
-							onClick={() => router.push(CLIENTS_VIEW(params.row.client, company_id))}
+							onClick={() => router.push(CLIENTS_VIEW(params.row.client as number, company_id))}
 							cssClass={Styles.textButton}
 						/>
 					</Typography>

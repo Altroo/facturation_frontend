@@ -217,7 +217,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const formik = useFormik<DeviSchemaType>({
 		initialValues: {
-			numero_devis: initialNum,
+			numero_part: numNumberPart,
+			year_part: numYearPart,
 			client: isEditMode ? (rawData?.client ?? null) : null,
 			date_devis: isEditMode
 				? (rawData?.date_devis ?? new Date().toISOString().split('T')[0])
@@ -240,7 +241,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					// Edit mode
 					const submissionData: Partial<DeviSchemaType> = {
 						...data,
-						numero_devis: `${numberPart}/${yearPart}`,
+						numero_devis: `${data.numero_part}/${data.year_part}`,
 					};
 					if (!submissionData.remise_type) {
 						delete submissionData.remise_type;
@@ -252,7 +253,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					// Add mode
 					const submissionData: Partial<DeviSchemaType> = {
 						...data,
-						numero_devis: `${numberPart}/${yearPart}`,
+						numero_devis: `${data.numero_part}/${data.year_part}`,
 					};
 					const response = await addData({ data: submissionData as DeviSchemaType }).unwrap();
 					onSuccess('Devis ajouté avec succès.');
@@ -337,15 +338,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		if (!v || modePaiementItems.length === 0) return null;
 		return modePaiementItems.find((c) => c.value === String(v)) ?? null;
 	}, [formik.values.mode_paiement, modePaiementItems]);
-
-	const [numberPart, setNumberPart] = useState(numNumberPart);
-	const [yearPart, setYearPart] = useState(numYearPart);
-
-	// Update state when num changes
-	useEffect(() => {
-		setNumberPart(numNumberPart);
-		setYearPart(numYearPart);
-	}, [numNumberPart, numYearPart]);
 
 	// Calculate totals
 	const totals = useMemo(() => {
@@ -1119,12 +1111,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 													id="numero_devis_number"
 													type="text"
 													label="Numéro *"
-													value={numberPart}
-													onChange={(e) => setNumberPart(e.target.value)}
-													onBlur={formik.handleBlur('numero_devis')}
-													error={formik.touched.numero_devis && Boolean(formik.errors.numero_devis)}
+													value={formik.values.numero_part}
+													onChange={formik.handleChange('numero_part')}
+													onBlur={formik.handleBlur('numero_part')}
+													error={formik.touched.numero_part && Boolean(formik.errors.numero_part)}
 													helperText={
-														formik.touched.numero_devis && formik.errors.numero_devis ? formik.errors.numero_devis : ''
+														formik.touched.numero_part && formik.errors.numero_part ? formik.errors.numero_part : ''
 													}
 													fullWidth={true}
 													size="small"
@@ -1140,8 +1132,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 													id="numero_devis_year"
 													type="text"
 													label="Année *"
-													value={yearPart}
-													onChange={(e) => setYearPart(e.target.value)}
+													value={formik.values.year_part}
+													onChange={formik.handleChange('year_part')}
+													onBlur={formik.handleBlur('year_part')}
+													error={formik.touched.year_part && Boolean(formik.errors.year_part)}
+													helperText={
+														formik.touched.year_part && formik.errors.year_part ? formik.errors.year_part : ''
+													}
 													fullWidth={true}
 													size="small"
 													theme={inputTheme}

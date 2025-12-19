@@ -12,3 +12,4 @@ export const INPUT_URL_INVALID = "L'URL doit être une URL valide";
 export const INPUT_REMISE_INT = 'La remise doit être un entier.';
 export const INPUT_REMISE_POURCENTAGE = 'La remise en pourcentage doit être entre 0 et 100.';
 export const INPUT_REMISE_FIX = 'La remise fixe doit être positive ou nulle.';
+export const INPUT_YEAR_PART_INVALID = "L'année doit contenir 2 chiffres";
