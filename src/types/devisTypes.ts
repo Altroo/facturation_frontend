@@ -16,7 +16,7 @@ export type DeviLineSchemaType = {
 
 export type DeviSchemaType = {
 	numero_devis: string;
-	client: number;
+	client: number | null;
 	date_devis: string;
 	numero_demande_prix_client: string | null;
 	mode_paiement: number | null;

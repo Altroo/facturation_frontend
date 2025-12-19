@@ -174,7 +174,7 @@ export class DeviClass {
 	constructor(
 		public readonly id: number,
 		public numero_devis: string,
-		public client: number,
+		public client: number | null,
 		public readonly client_name: string | null,
 		public date_devis: string,
 		public numero_demande_prix_client: string | null,
@@ -201,7 +201,7 @@ export class FactureClass {
 	constructor(
 		public readonly id: number,
 		public numero_facture: string,
-		public client: number,
+		public client: number | null,
 		public readonly client_name: string | null,
 		public date_facture: string,
 		public numero_bon_commande_client: string | null,

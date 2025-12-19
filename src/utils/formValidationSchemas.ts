@@ -280,8 +280,8 @@ export const clientSchema = z
 
 export const articleSchema = z.object({
 	type_article: z.enum(['Produit', 'Service']),
-	reference: requiredTextField(1, 100),
-	designation: requiredTextField(1, 500),
+	reference: requiredTextField(2, 100),
+	designation: requiredTextField(2, 500),
 	company: requiredNumberField(1),
 	// optional fields
 	photo: base64ImageField,
@@ -362,7 +362,7 @@ export const deviSchema = z
 		client: requiredNumberField(1),
 		date_devis: requiredTextField(1, 100),
 		numero_demande_prix_client: optionalTextField(1, 100).nullable(),
-		mode_paiement: optionalNumberField(0).nullable(),
+		mode_paiement: requiredNumberField(1),
 		remarque: optionalTextField(2, 500).nullable(),
 		remise_type: z.enum(['Pourcentage', 'Fixe']).optional().nullable(),
 		remise: optionalNumberField(0),
@@ -418,7 +418,7 @@ export const deviAddSchema = z.object({
 	client: requiredNumberField(1),
 	date_devis: requiredTextField(1, 100),
 	numero_demande_prix_client: optionalTextField(1, 100).nullable(),
-	mode_paiement: optionalNumberField(1).nullable(),
+	mode_paiement: requiredNumberField(1),
 	remarque: optionalTextField(2, 500).nullable(),
 	globalError: optionalTextField(1, 500),
 });
@@ -429,7 +429,7 @@ export const factureClientProformaSchema = z
 		client: requiredNumberField(1),
 		date_facture: requiredTextField(1, 100),
 		numero_bon_commande_client: optionalTextField(1, 100).nullable(),
-		mode_paiement: optionalNumberField(0).nullable(),
+		mode_paiement: requiredNumberField(1),
 		remarque: optionalTextField(2, 500).nullable(),
 		remise_type: z.enum(['Pourcentage', 'Fixe']).optional().nullable(),
 		remise: optionalNumberField(0),
@@ -485,7 +485,7 @@ export const factureClientProformaAddSchema = z.object({
 	client: requiredNumberField(1),
 	date_facture: requiredTextField(1, 100),
 	numero_bon_commande_client: optionalTextField(1, 100).nullable(),
-	mode_paiement: optionalNumberField(1).nullable(),
+	mode_paiement: requiredNumberField(1),
 	remarque: optionalTextField(2, 500).nullable(),
 	globalError: optionalTextField(1, 500),
 });

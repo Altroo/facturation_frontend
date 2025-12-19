@@ -276,7 +276,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="code_client"
 										type="text"
-										label="Code client"
+										label="Code client *"
 										value={formik.values.code_client}
 										onChange={formik.handleChange('code_client')}
 										onBlur={formik.handleBlur('code_client')}

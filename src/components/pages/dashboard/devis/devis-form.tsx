@@ -218,7 +218,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const formik = useFormik<DeviSchemaType>({
 		initialValues: {
 			numero_devis: initialNum,
-			client: isEditMode ? (rawData?.client ?? 0) : 0,
+			client: isEditMode ? (rawData?.client ?? null) : null,
 			date_devis: isEditMode
 				? (rawData?.date_devis ?? new Date().toISOString().split('T')[0])
 				: new Date().toISOString().split('T')[0],

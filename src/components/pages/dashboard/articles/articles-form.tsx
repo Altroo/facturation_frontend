@@ -350,7 +350,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="reference"
 										type="text"
-										label="Référence"
+										label="Référence *"
 										value={formik.values.reference}
 										onChange={formik.handleChange('reference')}
 										onBlur={formik.handleBlur('reference')}

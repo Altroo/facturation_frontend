@@ -199,7 +199,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const formik = useFormik<FactureClientProFormaSchemaType>({
 		initialValues: {
 			numero_facture: initialNum,
-			client: isEditMode ? (rawData?.client ?? 0) : 0,
+			client: isEditMode ? (rawData?.client ?? null) : null,
 			date_facture: isEditMode
 				? (rawData?.date_facture ?? new Date().toISOString().split('T')[0])
 				: new Date().toISOString().split('T')[0],
