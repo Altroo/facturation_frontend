@@ -18,7 +18,7 @@ import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadi
 import { useSendPasswordResetCodeMutation } from '@/store/services/account';
 import { useSession } from 'next-auth/react';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
-import { Send as SendIcon } from '@mui/icons-material';
+import { Send as SendIcon, Email as EmailIcon } from '@mui/icons-material';
 
 const inputTheme = coordonneeTextInputTheme();
 const ResetPasswordPageContent = () => {
@@ -75,6 +75,7 @@ const ResetPasswordPageContent = () => {
 						label="Adresse email"
 						placeholder="Adresse email"
 						theme={inputTheme}
+						startIcon={<EmailIcon fontSize="small" />}
 					/>
 					<PrimaryLoadingButton
 						buttonText="Renvoyer le code"

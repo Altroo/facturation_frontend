@@ -20,7 +20,7 @@ import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiP
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { accountEditProfilAction } from '@/store/actions/accountActions';
 import CustomSquareImageUploading from '@/components/formikElements/customSquareImageUploading/customSquareImageUploading';
-import { Edit as EditIcon } from '@mui/icons-material';
+import { Edit as EditIcon, Groups as GroupsIcon, Person as PersonIcon } from '@mui/icons-material';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -93,6 +93,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 						label="Nom"
 						placeholder="Nom"
 						theme={inputTheme}
+						startIcon={<PersonIcon fontSize="small" />}
 					/>
 					<CustomTextInput
 						id="last_name"
@@ -107,6 +108,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 						label="Prénom"
 						placeholder="Prénom"
 						theme={inputTheme}
+						startIcon={<PersonIcon fontSize="small" />}
 					/>
 					<CustomDropDownSelect
 						size="small"
@@ -116,6 +118,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 						theme={customDropdownTheme()}
 						onChange={(e) => formik.setFieldValue('gender', e.target.value)}
 						value={formik.values.gender}
+						startIcon={<GroupsIcon fontSize="small" />}
 					/>
 					<PrimaryLoadingButton
 						buttonText="Mettre à jour"

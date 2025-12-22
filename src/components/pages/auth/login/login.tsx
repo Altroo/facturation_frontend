@@ -22,7 +22,12 @@ import { coordonneeTextInputTheme } from '@/utils/themes';
 import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
 import { refreshAppTokenStatesAction } from '@/store/actions/_initActions';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
-import { LockReset as LockResetIcon, Login as LoginIcon } from '@mui/icons-material';
+import {
+	LockReset as LockResetIcon,
+	Login as LoginIcon,
+	Email as EmailIcon,
+	Lock as LockIcon,
+} from '@mui/icons-material';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -91,6 +96,7 @@ const LoginPageContent = () => {
 						label="Adresse email"
 						placeholder="Adresse email"
 						theme={inputTheme}
+						startIcon={<EmailIcon fontSize="small" />}
 					/>
 					<CustomPasswordInput
 						id="password"
@@ -104,6 +110,7 @@ const LoginPageContent = () => {
 						label="Mot de passe"
 						placeholder="Mot de passe"
 						theme={inputTheme}
+						startIcon={<LockIcon fontSize="small" />}
 					/>
 					{formik.errors.globalError && <span className={Styles.errorMessage}>{formik.errors.globalError}</span>}
 					<TextButton
@@ -118,7 +125,7 @@ const LoginPageContent = () => {
 						active={!isPending}
 						onClick={formik.handleSubmit}
 						cssClass={Styles.emailRegisterButton}
-						startIcon={<LoginIcon />}
+						startIcon={<LoginIcon fontSize="small" />}
 						type="submit"
 						loading={isPending}
 					/>

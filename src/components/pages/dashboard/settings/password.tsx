@@ -16,7 +16,7 @@ import { useEditPasswordMutation } from '@/store/services/account';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { useToast } from '@/utils/hooks';
-import { Edit as EditIcon } from '@mui/icons-material';
+import { Edit as EditIcon, Lock as LockIcon } from '@mui/icons-material';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -79,6 +79,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 						label="Ancien mot de passe"
 						placeholder="Ancien mot de passe"
 						theme={inputTheme}
+						startIcon={<LockIcon fontSize="small" />}
 					/>
 					<CustomPasswordInput
 						id="new_password"
@@ -92,6 +93,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 						label="Nouveau mot de passe"
 						placeholder="Nouveau mot de passe"
 						theme={inputTheme}
+						startIcon={<LockIcon fontSize="small" />}
 					/>
 					<CustomPasswordInput
 						id="new_password2"
@@ -105,6 +107,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 						label="Confirmation du nouveau mot de passe"
 						placeholder="Confirmation du nouveau mot de passe"
 						theme={inputTheme}
+						startIcon={<LockIcon fontSize="small" />}
 					/>
 					<PrimaryLoadingButton
 						buttonText="Modifier"

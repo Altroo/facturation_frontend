@@ -16,7 +16,7 @@ import { coordonneeTextInputTheme } from '@/utils/themes';
 import CustomPasswordInput from '@/components/formikElements/customPasswordInput/customPasswordInput';
 import { useSetPasswordMutation } from '@/store/services/account';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
-import { Edit as EditIcon } from '@mui/icons-material';
+import { Edit as EditIcon, Lock as LockIcon } from '@mui/icons-material';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -81,6 +81,7 @@ const SetPasswordPageContent: React.FC<SetPasswordPageContentProps> = ({ email, 
 							placeholder="Mot de passe"
 							cssClass={Styles.mobileInput}
 							theme={inputTheme}
+							startIcon={<LockIcon fontSize="small" />}
 						/>
 						<CustomPasswordInput
 							id="new_password2"
@@ -95,6 +96,7 @@ const SetPasswordPageContent: React.FC<SetPasswordPageContentProps> = ({ email, 
 							placeholder="Confirmez mot de passe"
 							cssClass={Styles.mobileInput}
 							theme={inputTheme}
+							startIcon={<LockIcon fontSize="small" />}
 						/>
 					</Stack>
 					{formik.errors.globalError && <span className={Styles.errorMessage}>{formik.errors.globalError}</span>}

@@ -17,11 +17,12 @@ type Props = {
 	fullWidth?: boolean;
 	size?: 'small' | 'medium';
 	disabled?: boolean;
+	startIcon?: React.ReactNode;
 	onClick?: () => void;
 };
 
 const CustomPasswordInput = forwardRef<HTMLInputElement, Props>((props: Props, ref: ForwardedRef<HTMLInputElement>) => {
-	const { cssClass, theme, ...restOfProps } = props;
+	const { cssClass, theme, startIcon, ...restOfProps } = props;
 	const [showpassword, setshowpassword] = useState<boolean>(false);
 
 	const handleClickShowPassword = () => {
@@ -50,6 +51,7 @@ const CustomPasswordInput = forwardRef<HTMLInputElement, Props>((props: Props, r
 				disabled={props.disabled}
 				slotProps={{
 					input: {
+						startAdornment: startIcon ? <InputAdornment position="start">{startIcon}</InputAdornment> : undefined,
 						endAdornment: (
 							<InputAdornment position="end">
 								<IconButton
