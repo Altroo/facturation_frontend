@@ -307,7 +307,10 @@ export const devisFactureLineSchema = z
 			error: INPUT_QUANTITY_INT,
 		}),
 		remise_type: z.enum(['Pourcentage', 'Fixe']).optional().nullable(),
-		remise: optionalNumberField(0),
+		remise: z.preprocess(
+			(val) => (typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val),
+			optionalNumberField(0),
+		),
 	})
 	.refine((data) => data.prix_vente >= data.prix_achat, {
 		error: INPUT_PRICE_VENTE_ACHAT,
@@ -328,15 +331,6 @@ export const devisFactureLineSchema = z
 		}
 
 		if (remiseVal !== undefined && remiseVal !== null) {
-			if (!Number.isInteger(remiseVal)) {
-				ctx.addIssue({
-					path: ['remise'],
-					code: 'custom',
-					message: INPUT_REMISE_INT,
-				});
-				return;
-			}
-
 			if (rType === 'Pourcentage') {
 				if (remiseVal < 0 || remiseVal > 100) {
 					ctx.addIssue({
@@ -367,7 +361,10 @@ export const deviSchema = z
 		mode_paiement: optionalNumberField(0).nullable(),
 		remarque: optionalTextField(2, 500).nullable(),
 		remise_type: z.enum(['Pourcentage', 'Fixe']).optional().nullable(),
-		remise: optionalNumberField(0),
+		remise: z.preprocess(
+			(val) => (typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val),
+			optionalNumberField(0),
+		),
 		lignes: z.array(devisFactureLineSchema).optional(),
 		globalError: optionalTextField(1, 500),
 	})
@@ -386,15 +383,6 @@ export const deviSchema = z
 		}
 
 		if (remiseVal !== undefined && remiseVal !== null) {
-			if (!Number.isInteger(remiseVal)) {
-				ctx.addIssue({
-					path: ['remise'],
-					code: 'custom',
-					message: INPUT_REMISE_INT,
-				});
-				return;
-			}
-
 			if (rType === 'Pourcentage') {
 				if (remiseVal < 0 || remiseVal > 100) {
 					ctx.addIssue({
@@ -454,7 +442,10 @@ export const factureClientProformaSchema = z
 		mode_paiement: optionalNumberField(0).nullable(),
 		remarque: optionalTextField(2, 500).nullable(),
 		remise_type: z.enum(['Pourcentage', 'Fixe']).optional().nullable(),
-		remise: optionalNumberField(0),
+		remise: z.preprocess(
+			(val) => (typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val),
+			optionalNumberField(0),
+		),
 		lignes: z.array(devisFactureLineSchema).optional(),
 		globalError: optionalTextField(1, 500),
 	})
@@ -473,15 +464,6 @@ export const factureClientProformaSchema = z
 		}
 
 		if (remiseVal !== undefined && remiseVal !== null) {
-			if (!Number.isInteger(remiseVal)) {
-				ctx.addIssue({
-					path: ['remise'],
-					code: 'custom',
-					message: INPUT_REMISE_INT,
-				});
-				return;
-			}
-
 			if (rType === 'Pourcentage') {
 				if (remiseVal < 0 || remiseVal > 100) {
 					ctx.addIssue({

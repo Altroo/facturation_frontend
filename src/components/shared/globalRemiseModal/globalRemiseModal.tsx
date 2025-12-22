@@ -31,20 +31,23 @@ interface ModalState {
 	error: string;
 }
 
+const MIN_VALUE = 0.01;
+
 const GlobalRemiseModal: React.FC<GlobalRemiseModalProps> = ({ open, onClose, currentType, currentValue, onApply }) => {
 	const [state, setState] = useState<ModalState>({
 		type: (currentType as 'Pourcentage' | 'Fixe' | '') || '',
-		value: currentType ? Math.max(1, currentValue) : 0,
+		// keep the provided value (allow < 1 floats). If none, default to 0.
+		value: currentType ? currentValue : 0,
 		error: '',
 	});
 
 	const validateValue = (remiseType: string, remiseValue: number): string => {
-		if (remiseValue < 1) {
-			return 'La remise doit être au moins 1';
+		if (remiseValue < MIN_VALUE) {
+			return `La remise doit être au moins ${MIN_VALUE}`;
 		}
 
 		if (remiseType === 'Pourcentage' && remiseValue > 100) {
-			return 'La remise en pourcentage doit être entre 1 et 100';
+			return 'La remise en pourcentage doit être entre 0.01 et 100';
 		}
 
 		return '';
@@ -60,7 +63,8 @@ const GlobalRemiseModal: React.FC<GlobalRemiseModalProps> = ({ open, onClose, cu
 
 	const handleTypeChange = (newType: 'Pourcentage' | 'Fixe' | '') => {
 		setState((prev) => {
-			const newValue = newType === '' ? 0 : prev.value < 1 ? 1 : prev.value;
+			// If switching to a type and previous value is 0 or negative, provide a small default
+			const newValue = newType === '' ? 0 : prev.value <= 0 ? MIN_VALUE : prev.value;
 			return {
 				...prev,
 				type: newType,
@@ -71,7 +75,8 @@ const GlobalRemiseModal: React.FC<GlobalRemiseModalProps> = ({ open, onClose, cu
 	};
 
 	const handleApply = () => {
-		if (!state.type || state.value < 1) {
+		// If no type selected, treat as clearing the remise
+		if (!state.type) {
 			onApply('', 0);
 			onClose();
 			return;
@@ -90,7 +95,7 @@ const GlobalRemiseModal: React.FC<GlobalRemiseModalProps> = ({ open, onClose, cu
 	const handleClose = () => {
 		setState({
 			type: (currentType as 'Pourcentage' | 'Fixe' | '') || '',
-			value: currentType ? Math.max(1, currentValue) : 0,
+			value: currentType ? currentValue : 0,
 			error: '',
 		});
 		onClose();
@@ -137,7 +142,10 @@ const GlobalRemiseModal: React.FC<GlobalRemiseModalProps> = ({ open, onClose, cu
 							theme={coordonneeTextInputTheme()}
 							endIcon={<InputAdornment position="end">{state.type === 'Pourcentage' ? '%' : 'MAD'}</InputAdornment>}
 							error={!!state.error}
-							helperText={state.error || (state.type === 'Pourcentage' ? 'Entre 1 et 100' : 'Montant positif (min 1)')}
+							helperText={
+								state.error ||
+								(state.type === 'Pourcentage' ? `Entre ${MIN_VALUE} et 100` : `Montant positif (min ${MIN_VALUE})`)
+							}
 						/>
 					)}
 				</Stack>
