@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { Dispatch, useState, SetStateAction } from 'react';
 import { Box, ThemeProvider, Stack } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import type { GridColDef, GridFilterModel } from '@mui/x-data-grid';
@@ -15,9 +15,9 @@ type PaginatedDataGridProps<T> = {
 	};
 	columns: GridColDef[];
 	paginationModel: { page: number; pageSize: number };
-	setPaginationModel: React.Dispatch<React.SetStateAction<{ page: number; pageSize: number }>>;
+	setPaginationModel: Dispatch<SetStateAction<{ page: number; pageSize: number }>>;
 	searchTerm: string;
-	setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
+	setSearchTerm: Dispatch<SetStateAction<string>>;
 	toolbar?: {
 		quickFilter?: boolean;
 		debounceMs?: number;
@@ -33,7 +33,7 @@ const PaginatedDataGrid = <T,>({
 	setSearchTerm,
 	toolbar = { quickFilter: true, debounceMs: 500 },
 }: PaginatedDataGridProps<T>) => {
-	const [filterModel, setFilterModel] = React.useState<GridFilterModel>({
+	const [filterModel, setFilterModel] = useState<GridFilterModel>({
 		items: [],
 	});
 
