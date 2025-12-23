@@ -305,7 +305,7 @@ describe('Zod Schema Validation', () => {
 					prix_vente: 150,
 					quantity: 1,
 					remise_type: 'Fixe',
-					remise: 1.5,
+					remise: -1.5,
 				}),
 			).toThrow();
 
