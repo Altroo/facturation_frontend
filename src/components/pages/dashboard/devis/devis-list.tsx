@@ -5,14 +5,9 @@ import { useRouter } from 'next/navigation';
 import {
 	Box,
 	Button,
-	Stack,
 	Typography,
 	Chip,
 	IconButton,
-	Tabs,
-	Tab,
-	Paper,
-	Container,
 	Menu,
 	MenuItem,
 	ListItemIcon,
@@ -24,7 +19,6 @@ import {
 	Edit as EditIcon,
 	Delete as DeleteIcon,
 	Visibility as VisibilityIcon,
-	Business as BusinessIcon,
 	Add as AddIcon,
 	Close as CloseIcon,
 	SwapHoriz as SwapHorizIcon,
@@ -35,7 +29,6 @@ import {
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
-import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import {
 	useDeleteDeviMutation,
 	useGetDevisListQuery,
@@ -45,7 +38,6 @@ import {
 import {
 	DEVIS_EDIT,
 	DEVIS_VIEW,
-	COMPANIES_ADD,
 	DEVIS_ADD,
 	FACTURE_PRO_FORMA_EDIT,
 	FACTURE_CLIENT_EDIT,
@@ -57,11 +49,10 @@ import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDa
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type { DeviClass } from '@/models/classes';
 import { formatDate } from '@/utils/helpers';
-import { useGetUserCompaniesQuery } from '@/store/services/company';
-import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { useToast } from '@/utils/hooks';
 import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
+import CompanyDocumentsList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsList';
 
 export const getStatutColor = (
 	statut: string,
@@ -515,141 +506,11 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 	);
 };
 
-const DevisListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
-	const token = getAccessTokenFromSession(session);
-	const router = useRouter();
-	const { data: companiesData, isLoading } = useGetUserCompaniesQuery(undefined, { skip: !token });
-	const [selectedIndex, setSelectedIndex] = useState(0);
-	const companies = useMemo(() => companiesData ?? [], [companiesData]);
-	const selectedCompany = useMemo(() => companies?.[selectedIndex] ?? null, [companies, selectedIndex]);
-
-	const handleChange = (_: React.SyntheticEvent, newValue: number) => {
-		setSelectedIndex(newValue);
-	};
-
-	if (isLoading) {
-		return <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />;
-	}
-
+const DevisListClient: React.FC<SessionProps> = ({ session }) => {
 	return (
-		<>
-			<Stack
-				direction="column"
-				spacing={2}
-				className={Styles.flexRootStack}
-				mt="40px"
-				sx={{ overflowX: 'auto', overflowY: 'hidden' }}
-			>
-				<NavigationBar title={'Liste des Devis'}>
-					{!companies || companies.length === 0 ? (
-						<Container maxWidth="sm" sx={{ mt: 8 }}>
-							<Paper
-								elevation={3}
-								sx={{
-									p: 6,
-									textAlign: 'center',
-									borderRadius: 3,
-									background: 'linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%)',
-								}}
-							>
-								<Box
-									sx={{
-										width: 80,
-										height: 80,
-										borderRadius: '50%',
-										backgroundColor: 'rgba(13, 7, 11, 0.08)',
-										display: 'flex',
-										alignItems: 'center',
-										justifyContent: 'center',
-										margin: '0 auto 24px',
-									}}
-								>
-									<BusinessIcon sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
-								</Box>
-								<Typography variant="h5" fontWeight={600} color="text.primary" gutterBottom>
-									Aucune entreprise trouvée
-								</Typography>
-								{selectedCompany?.role === 'Admin' ? (
-									<>
-										<Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 3 }}>
-											Vous n&#39;avez pas encore d&#39;entreprises associées à votre compte. Veuillez créer une nouvelle
-											entreprise.
-										</Typography>
-										<Button
-											variant="contained"
-											size="large"
-											sx={{ mt: 2, borderRadius: 2, px: 4 }}
-											onClick={() => router.push(COMPANIES_ADD)}
-										>
-											Créer une entreprise
-										</Button>
-									</>
-								) : (
-									<Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 3 }}>
-										Vous n&#39;avez pas encore d&#39;entreprises associées à votre compte. Veuillez contacter votre
-										administrateur.
-									</Typography>
-								)}
-							</Paper>
-						</Container>
-					) : (
-						<>
-							<Paper
-								elevation={0}
-								sx={{
-									width: '100%',
-									borderBottom: 1,
-									borderColor: 'divider',
-									mb: 2,
-									bgcolor: 'background.paper',
-									borderRadius: '8px 8px 0 0',
-								}}
-							>
-								<Tabs
-									value={selectedIndex}
-									onChange={handleChange}
-									variant="scrollable"
-									allowScrollButtonsMobile
-									scrollButtons="auto"
-									aria-label="companies tabs"
-									sx={{
-										'& .MuiTabs-indicator': {
-											height: 3,
-											borderRadius: '3px 3px 0 0',
-										},
-										'& .MuiTab-root': {
-											textTransform: 'none',
-											fontSize: '0.95rem',
-											fontWeight: 500,
-											minHeight: 56,
-											px: 3,
-											transition: 'all 0.2s ease',
-											'&:hover': {
-												backgroundColor: 'action.hover',
-											},
-											'&.Mui-selected': {
-												fontWeight: 600,
-											},
-										},
-										'& .MuiTabs-scrollButtons': {
-											'&.Mui-disabled': {
-												opacity: 0.3,
-											},
-										},
-									}}
-								>
-									{companies.length > 0 &&
-										companies.map((company) => <Tab key={company.id} label={company.raison_sociale} />)}
-								</Tabs>
-							</Paper>
-							{selectedCompany && (
-								<FormikContent session={session} company_id={selectedCompany.id} role={selectedCompany.role} />
-							)}
-						</>
-					)}
-				</NavigationBar>
-			</Stack>
-		</>
+		<CompanyDocumentsList session={session} title="Liste des Devis">
+			{({ company_id, role }) => <FormikContent session={session} company_id={company_id} role={role} />}
+		</CompanyDocumentsList>
 	);
 };
 
