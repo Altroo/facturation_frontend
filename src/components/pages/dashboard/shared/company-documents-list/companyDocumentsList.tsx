@@ -39,7 +39,7 @@ const CompanyDocumentsList: React.FC<CompanyDocumentsListProps> = ({ session, ti
 	};
 
 	if (isLoading) {
-		return <ApiProgress backdropColor="\#FFFFFF" circularColor="\#0D070B" />;
+		return <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />;
 	}
 
 	return (
@@ -74,7 +74,7 @@ const CompanyDocumentsList: React.FC<CompanyDocumentsListProps> = ({ session, ti
 									margin: '0 auto 24px',
 								}}
 							>
-								<BusinessIcon sx={{ fontSize: 48, color: '\#0D070B', opacity: 0.6 }} />
+								<BusinessIcon sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
 							</Box>
 							<Typography variant="h5" fontWeight={600} color="text.primary" gutterBottom>
 								Aucune entreprise trouvée
@@ -82,8 +82,8 @@ const CompanyDocumentsList: React.FC<CompanyDocumentsListProps> = ({ session, ti
 							{selectedCompany?.role === 'Admin' ? (
 								<>
 									<Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 3 }}>
-										Vous n&#39;avez pas encore d&#39;entreprises associées à votre compte\. Veuillez créer une nouvelle
-										entreprise\.
+										Vous n&#39;avez pas encore d&#39;entreprises associées à votre compte. Veuillez créer une nouvelle
+										entreprise.
 									</Typography>
 									<Button
 										variant="contained"
@@ -96,8 +96,8 @@ const CompanyDocumentsList: React.FC<CompanyDocumentsListProps> = ({ session, ti
 								</>
 							) : (
 								<Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 3 }}>
-									Vous n&#39;avez pas encore d&#39;entreprises associées à votre compte\. Veuillez contacter votre
-									administrateur\.
+									Vous n&#39;avez pas encore d&#39;entreprises associées à votre compte. Veuillez contacter votre
+									administrateur.
 								</Typography>
 							)}
 						</Paper>
