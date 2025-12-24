@@ -49,7 +49,7 @@ import { useToast } from '@/utils/hooks';
 import { getStatutColor, statutFilterOptions } from '@/components/pages/dashboard/devis/devis-list';
 import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
-import CompanyDocumentsList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsList';
+import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 
 interface FormikContentProps extends SessionProps {
 	company_id: number;
@@ -420,9 +420,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 const FactureProformaListClient: React.FC<SessionProps> = ({ session }) => {
 	return (
-		<CompanyDocumentsList session={session} title="Liste des Factures Proforma">
+		<CompanyDocumentsWrapperList session={session} title="Liste des Factures Proforma">
 			{({ company_id, role }) => <FormikContent session={session} company_id={company_id} role={role} />}
-		</CompanyDocumentsList>
+		</CompanyDocumentsWrapperList>
 	);
 };
 

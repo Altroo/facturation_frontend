@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
-import CompanyDocumentsView from './companyDocumentsView';
+import CompanyDocumentsWrapperView from './companyDocumentsWrapperView';
 import type { CompanyDocumentsViewProps, CompanyDocumentData } from '@/types/companyDocumentsTypes';
 
 jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
@@ -133,7 +133,7 @@ describe('CompanyDocumentsView', () => {
 			query: { data: undefined, isLoading: true, error: undefined },
 		});
 
-		render(<CompanyDocumentsView<TestDoc> {...props} />);
+		render(<CompanyDocumentsWrapperView<TestDoc> {...props} />);
 
 		expect(screen.getByText('ApiProgressMock')).toBeInTheDocument();
 	});
@@ -151,7 +151,7 @@ describe('CompanyDocumentsView', () => {
 			query: { data: undefined, isLoading: false, error: errorObj },
 		});
 
-		render(<CompanyDocumentsView<TestDoc> {...props} />);
+		render(<CompanyDocumentsWrapperView<TestDoc> {...props} />);
 
 		expect(screen.getByTestId('api-alert')).toBeInTheDocument();
 	});
@@ -179,7 +179,7 @@ describe('CompanyDocumentsView', () => {
 			},
 		});
 
-		render(<CompanyDocumentsView<TestDoc> {...props} />);
+		render(<CompanyDocumentsWrapperView<TestDoc> {...props} />);
 
 		expect(screen.getByTestId('totals-card')).toBeInTheDocument();
 		expect(screen.getByTestId('datagrid')).toHaveTextContent('rows:1');
@@ -202,7 +202,7 @@ describe('CompanyDocumentsView', () => {
 			query: { isLoading: false, error: undefined, data: { statut: 'Brouillon', lignes: [] } },
 		});
 
-		render(<CompanyDocumentsView<TestDoc> {...props} />);
+		render(<CompanyDocumentsWrapperView<TestDoc> {...props} />);
 
 		expect(screen.queryByRole('button', { name: /Modifier/i })).not.toBeInTheDocument();
 	});
@@ -219,7 +219,7 @@ describe('CompanyDocumentsView', () => {
 			query: { isLoading: false, error: undefined, data: { statut: 'Brouillon', lignes: [] } },
 		});
 
-		render(<CompanyDocumentsView<TestDoc> {...props} />);
+		render(<CompanyDocumentsWrapperView<TestDoc> {...props} />);
 
 		fireEvent.click(screen.getByRole('button', { name: 'Back' }));
 		expect(pushMock).toHaveBeenCalledWith('/documents');

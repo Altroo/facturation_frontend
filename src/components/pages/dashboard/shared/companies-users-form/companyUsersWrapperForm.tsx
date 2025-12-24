@@ -6,17 +6,14 @@ import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { Box, Stack } from '@mui/material';
 import { Protected } from '@/components/layouts/protected/protected';
 
-interface Props extends SessionProps {
+interface Props<TFormikProps> extends SessionProps {
 	id?: number;
-}
-
-interface CompanyUsersFormProps<TFormikProps> extends Props {
 	entityName: 'entreprise' | 'utilisateur';
 	FormikComponent: React.FC<TFormikProps>;
 	extraFormikProps?: Omit<TFormikProps, 'token' | 'id'>;
 }
 
-const CompanyUsersForm = <TFormikProps extends { id?: number }>(props: CompanyUsersFormProps<TFormikProps>) => {
+const CompanyUsersWrapperForm = <TFormikProps extends { id?: number }>(props: Props<TFormikProps>) => {
 	const { session, id, entityName, FormikComponent, extraFormikProps } = props;
 	const token = getAccessTokenFromSession(session);
 	const isEditMode = id !== undefined;
@@ -47,4 +44,4 @@ const CompanyUsersForm = <TFormikProps extends { id?: number }>(props: CompanyUs
 	);
 };
 
-export default CompanyUsersForm;
+export default CompanyUsersWrapperForm;

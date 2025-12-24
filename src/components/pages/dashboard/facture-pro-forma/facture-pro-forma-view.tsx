@@ -4,7 +4,7 @@ import React from 'react';
 import { FACTURE_PRO_FORMA_EDIT, FACTURE_PRO_FORMA_LIST } from '@/utils/routes';
 import { useGetFactureProFormaQuery } from '@/store/services/factureProForma';
 import type { SessionProps } from '@/types/_initTypes';
-import CompanyDocumentsView from '@/components/pages/dashboard/shared/company-documents-view/companyDocumentsView';
+import CompanyDocumentsWrapperView from '@/components/pages/dashboard/shared/company-documents-view/companyDocumentsWrapperView';
 import { CompanyDocumentData } from '@/types/companyDocumentsTypes';
 
 type FactureProFormaData = CompanyDocumentData & {
@@ -22,7 +22,7 @@ const FactureProFormaViewClient: React.FC<Props> = ({ session, company_id, id })
 	const query = useGetFactureProFormaQuery({ id });
 
 	return (
-		<CompanyDocumentsView<FactureProFormaData>
+		<CompanyDocumentsWrapperView<FactureProFormaData>
 			session={session}
 			company_id={company_id}
 			id={id}

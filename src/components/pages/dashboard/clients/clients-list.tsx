@@ -24,7 +24,7 @@ import type { ClientClass } from '@/models/classes';
 import { formatDate } from '@/utils/helpers';
 import { useToast } from '@/utils/hooks';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
-import CompanyDocumentsList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsList';
+import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 
 interface FormikContentProps extends SessionProps {
 	company_id: number;
@@ -368,11 +368,11 @@ interface Props extends SessionProps {
 
 const ClientsListClient: React.FC<Props> = ({ session, archived }) => {
 	return (
-		<CompanyDocumentsList session={session} title={archived ? 'Clients Archivés' : 'Liste des Clients'}>
+		<CompanyDocumentsWrapperList session={session} title={archived ? 'Clients Archivés' : 'Liste des Clients'}>
 			{({ company_id, role }) => (
 				<FormikContent archived={archived} session={session} company_id={company_id} role={role} />
 			)}
-		</CompanyDocumentsList>
+		</CompanyDocumentsWrapperList>
 	);
 };
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import CompanyDocumentsList, { CompanyDocumentsListProps } from './companyDocumentsList';
+import CompanyDocumentsWrapperList, { CompanyDocumentsListProps } from './companyDocumentsWrapperList';
 
 jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 	__esModule: true,
@@ -54,9 +54,9 @@ describe('CompanyDocumentsList', () => {
 		mockedUseGetUserCompaniesQuery.mockReturnValue({ data: undefined, isLoading: true });
 
 		render(
-			<CompanyDocumentsList {...(defaultProps as CompanyDocumentsListProps)}>
+			<CompanyDocumentsWrapperList {...(defaultProps as CompanyDocumentsListProps)}>
 				{() => <div>child</div>}
-			</CompanyDocumentsList>,
+			</CompanyDocumentsWrapperList>,
 		);
 
 		expect(screen.getByText('ApiProgressMock')).toBeInTheDocument();
@@ -67,9 +67,9 @@ describe('CompanyDocumentsList', () => {
 		mockedUseGetUserCompaniesQuery.mockReturnValue({ data: [], isLoading: false });
 
 		render(
-			<CompanyDocumentsList {...(defaultProps as CompanyDocumentsListProps)}>
+			<CompanyDocumentsWrapperList {...(defaultProps as CompanyDocumentsListProps)}>
 				{() => <div data-testid="child">child</div>}
-			</CompanyDocumentsList>,
+			</CompanyDocumentsWrapperList>,
 		);
 
 		expect(screen.getByText('Aucune entreprise trouvée')).toBeInTheDocument();
@@ -92,7 +92,11 @@ describe('CompanyDocumentsList', () => {
 			</div>
 		));
 
-		render(<CompanyDocumentsList {...(defaultProps as CompanyDocumentsListProps)}>{childFn}</CompanyDocumentsList>);
+		render(
+			<CompanyDocumentsWrapperList {...(defaultProps as CompanyDocumentsListProps)}>
+				{childFn}
+			</CompanyDocumentsWrapperList>,
+		);
 
 		// Tabs labels rendered
 		expect(screen.getByText('Company One')).toBeInTheDocument();

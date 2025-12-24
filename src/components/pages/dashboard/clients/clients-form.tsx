@@ -58,7 +58,7 @@ import type { CitiesClass } from '@/models/classes';
 import { clientSchema, pmRequired, ppRequired } from '@/utils/formValidationSchemas';
 import AddEntityModal from '@/components/shared/addEntityModal/addEntityModal';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
-import ClientArticleForm from '@/components/pages/dashboard/shared/client-article-form/clientArticleForm';
+import ClientArticleWrapperForm from '@/components/pages/dashboard/shared/client-article-form/clientArticleWrapperForm';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -638,7 +638,7 @@ interface Props extends SessionProps {
 }
 
 const ClientsForm: React.FC<Props> = (props) => (
-	<ClientArticleForm {...props} entityName="client" FormikComponent={FormikContent} />
+	<ClientArticleWrapperForm {...props} entityName="client" FormikComponent={FormikContent} />
 );
 
 export default ClientsForm;

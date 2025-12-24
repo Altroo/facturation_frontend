@@ -82,7 +82,7 @@ import LinesGrid from '@/components/shared/linesGrid/linesGrid';
 import { generateRowId } from '@/components/pages/dashboard/devis/devis-form';
 import type { FactureClientProFormaSchemaType } from '@/types/factureProFormaTypes';
 import Image from 'next/image';
-import SharedDocumentParentForm from '@/components/pages/dashboard/shared/company-documents-form/companyDocumentsParentForm';
+import CompanyDocumentsWrapperForm from '@/components/pages/dashboard/shared/company-documents-form/companyDocumentsWrapperForm';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -1448,7 +1448,7 @@ interface Props extends SessionProps {
 
 const FactureProFormaForm: React.FC<Props> = ({ session, company_id, id }) => {
 	return (
-		<SharedDocumentParentForm
+		<CompanyDocumentsWrapperForm
 			session={session}
 			company_id={company_id}
 			id={id}

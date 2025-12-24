@@ -18,7 +18,7 @@ interface DocumentConfig {
 	editDeniedMessage: string;
 }
 
-interface SharedDocumentParentFormProps extends SessionProps {
+interface Props extends SessionProps {
 	company_id: number;
 	id?: number;
 	documentConfig: DocumentConfig;
@@ -30,7 +30,7 @@ interface SharedDocumentParentFormProps extends SessionProps {
 	}>;
 }
 
-const SharedDocumentParentForm: React.FC<SharedDocumentParentFormProps> = (props: SharedDocumentParentFormProps) => {
+const CompanyDocumentsWrapperForm: React.FC<Props> = (props: Props) => {
 	const { session, company_id, id, documentConfig, FormComponent } = props;
 	const token = getAccessTokenFromSession(session);
 	const companies = useAppSelector(getUserCompaniesState);
@@ -85,4 +85,4 @@ const SharedDocumentParentForm: React.FC<SharedDocumentParentFormProps> = (props
 	);
 };
 
-export default SharedDocumentParentForm;
+export default CompanyDocumentsWrapperForm;

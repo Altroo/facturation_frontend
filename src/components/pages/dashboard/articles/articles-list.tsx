@@ -25,7 +25,7 @@ import { formatDate } from '@/utils/helpers';
 import { useToast } from '@/utils/hooks';
 import Image from 'next/image';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
-import CompanyDocumentsList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsList';
+import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 
 interface FormikContentProps extends SessionProps {
 	company_id: number;
@@ -381,11 +381,11 @@ interface Props extends SessionProps {
 
 const ArticlesListClient: React.FC<Props> = ({ session, archived }) => {
 	return (
-		<CompanyDocumentsList session={session} title={archived ? 'Articles Archivés' : 'Liste des Articles'}>
+		<CompanyDocumentsWrapperList session={session} title={archived ? 'Articles Archivés' : 'Liste des Articles'}>
 			{({ company_id, role }) => (
 				<FormikContent archived={archived} session={session} company_id={company_id} role={role} />
 			)}
-		</CompanyDocumentsList>
+		</CompanyDocumentsWrapperList>
 	);
 };
 

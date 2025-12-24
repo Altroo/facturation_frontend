@@ -52,7 +52,7 @@ import { formatDate } from '@/utils/helpers';
 import { useToast } from '@/utils/hooks';
 import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
-import CompanyDocumentsList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsList';
+import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 
 export const getStatutColor = (
 	statut: string,
@@ -508,9 +508,9 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 
 const DevisListClient: React.FC<SessionProps> = ({ session }) => {
 	return (
-		<CompanyDocumentsList session={session} title="Liste des Devis">
+		<CompanyDocumentsWrapperList session={session} title="Liste des Devis">
 			{({ company_id, role }) => <FormikContent session={session} company_id={company_id} role={role} />}
-		</CompanyDocumentsList>
+		</CompanyDocumentsWrapperList>
 	);
 };
 

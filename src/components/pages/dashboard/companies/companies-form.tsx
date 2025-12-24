@@ -49,7 +49,7 @@ import type { CompanyFormValuesType, ManagedByType } from '@/types/companyTypes'
 import type { UserClass } from '@/models/classes';
 import ManagedByTableSection from '@/components/shared/addManagedByTable/addManagedByTable';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
-import CompanyUsersForm from '@/components/pages/dashboard/shared/companies-users-form/companyUsersForm';
+import CompanyUsersWrapperForm from '@/components/pages/dashboard/shared/companies-users-form/companyUsersWrapperForm';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -637,7 +637,7 @@ interface Props extends SessionProps {
 }
 
 const CompaniesForm: React.FC<Props> = ({ session, id }) => (
-	<CompanyUsersForm
+	<CompanyUsersWrapperForm
 		session={session}
 		id={id}
 		entityName="entreprise"

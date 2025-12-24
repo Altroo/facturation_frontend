@@ -41,7 +41,7 @@ import { getStatutColor } from '@/components/pages/dashboard/devis/devis-list';
 import { useConvertDeviToFactureProFormaMutation } from '@/store/services/devi';
 import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
-import CompanyDocumentsList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsList';
+import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 
 interface FormikContentProps extends SessionProps {
 	company_id: number;
@@ -426,9 +426,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 const FactureClientListClient: React.FC<SessionProps> = ({ session }) => {
 	return (
-		<CompanyDocumentsList session={session} title="Liste des Factures Clients">
+		<CompanyDocumentsWrapperList session={session} title="Liste des Factures Clients">
 			{({ company_id, role }) => <FormikContent session={session} company_id={company_id} role={role} />}
-		</CompanyDocumentsList>
+		</CompanyDocumentsWrapperList>
 	);
 };
 

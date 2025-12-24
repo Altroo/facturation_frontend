@@ -4,7 +4,7 @@ import React from 'react';
 import { DEVIS_EDIT, DEVIS_LIST } from '@/utils/routes';
 import { useGetDeviQuery } from '@/store/services/devi';
 import type { SessionProps } from '@/types/_initTypes';
-import CompanyDocumentsView from '@/components/pages/dashboard/shared/company-documents-view/companyDocumentsView';
+import CompanyDocumentsWrapperView from '@/components/pages/dashboard/shared/company-documents-view/companyDocumentsWrapperView';
 import { CompanyDocumentData } from '@/types/companyDocumentsTypes';
 
 type DevisData = CompanyDocumentData & {
@@ -22,7 +22,7 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const query = useGetDeviQuery({ id });
 
 	return (
-		<CompanyDocumentsView<DevisData>
+		<CompanyDocumentsWrapperView<DevisData>
 			session={session}
 			company_id={company_id}
 			id={id}

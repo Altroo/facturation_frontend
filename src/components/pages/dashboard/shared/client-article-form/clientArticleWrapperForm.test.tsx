@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { getAccessTokenFromSession } from '@/store/session';
 import { useAppSelector } from '@/utils/hooks';
-import CompanyDocumentsParentForm from './companyDocumentsParentForm';
+import ClientArticleWrapperForm from './clientArticleWrapperForm';
 import { Session } from 'next-auth';
 
 jest.mock('@/store/session', () => ({
@@ -16,19 +16,16 @@ jest.mock('@/utils/hooks', () => ({
 
 jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 	__esModule: true,
-	default: ({ children }: { children: React.ReactNode }) => <div data-testid="nav">{children}</div>,
+	default: ({ children, title }: { children: React.ReactNode; title?: string }) => (
+		<div data-testid="nav">
+			<h1>{title}</h1>
+			{children}
+		</div>
+	),
 }));
 
-describe('CompanyDocumentsParentForm', () => {
-	const docConfig = {
-		singular: 'document',
-		addTitle: 'Add document',
-		editTitle: 'Edit document',
-		addDeniedMessage: 'You cannot add',
-		editDeniedMessage: 'You cannot edit',
-	};
-
-	// Typed mock session
+describe('ClientArticleFormWrapper', () => {
+	// typed mock session
 	const mockSession: Session = {
 		user: {
 			pk: 1,
@@ -46,70 +43,67 @@ describe('CompanyDocumentsParentForm', () => {
 		expires: '2025-01-03',
 	};
 
-	// Explicit props type for the mocked FormComponent
-	type FormComponentProps = {
+	type FormikComponentProps = {
 		token?: string;
-		company_id: number;
 		id?: number;
-		isEditMode?: boolean;
+		company_id: number;
 	};
 
 	beforeEach(() => {
 		jest.resetAllMocks();
 	});
 
-	it('renders FormComponent when company role is Admin and passes token and props', () => {
-		// Arrange: mock token and companies
+	it('renders FormikComponent when company role is Admin and passes token and props', () => {
 		(getAccessTokenFromSession as jest.Mock).mockReturnValue('token-123');
 		const companies = [{ id: 42, role: 'Admin' }];
 		(useAppSelector as jest.Mock).mockImplementation(() => companies);
 
-		// capture props passed to FormComponent
-		const FormComponentCalled = jest.fn() as jest.Mock<void, [FormComponentProps]>;
-		const FormComponent: React.FC<FormComponentProps> = (props) => {
-			FormComponentCalled(props);
+		const FormikCalled = jest.fn() as jest.Mock<void, [FormikComponentProps]>;
+		const FormikComponent: React.FC<FormikComponentProps> = (props) => {
+			FormikCalled(props);
 			return <div data-testid="mock-form">FORM</div>;
 		};
 
-		// Act
 		render(
-			<CompanyDocumentsParentForm
+			<ClientArticleWrapperForm
 				session={mockSession}
 				company_id={42}
 				id={7}
-				documentConfig={docConfig}
-				FormComponent={FormComponent}
+				entityName="article"
+				FormikComponent={FormikComponent}
 			/>,
 		);
 
-		// Assert
 		expect(screen.getByTestId('nav')).toBeInTheDocument();
+		// title should reflect edit mode when id provided
+		expect(screen.getByText("Modifier l'article")).toBeInTheDocument();
 		expect(screen.getByTestId('mock-form')).toBeInTheDocument();
-		expect(FormComponentCalled).toHaveBeenCalledTimes(1);
-		const calledProps = FormComponentCalled.mock.calls[0][0];
+		expect(FormikCalled).toHaveBeenCalledTimes(1);
+		const calledProps = FormikCalled.mock.calls[0][0];
 		expect(calledProps.company_id).toBe(42);
 		expect(calledProps.token).toBe('token-123');
 		expect(calledProps.id).toBe(7);
-		expect(calledProps.isEditMode).toBe(true);
 	});
 
-	it('renders denied message when company role is not Admin and does not render FormComponent', () => {
+	it('renders denied message when company role is not Admin and does not render FormikComponent', () => {
 		(getAccessTokenFromSession as jest.Mock).mockReturnValue('token-xyz');
 		const companies = [{ id: 100, role: 'User' }];
 		(useAppSelector as jest.Mock).mockImplementation(() => companies);
 
-		const FormComponent: React.FC<FormComponentProps> = () => <div data-testid="should-not-render">NO</div>;
+		const FormikComponent: React.FC<FormikComponentProps> = () => <div data-testid="should-not-render">NO</div>;
 
 		render(
-			<CompanyDocumentsParentForm
+			<ClientArticleWrapperForm
 				session={mockSession}
 				company_id={100}
-				documentConfig={docConfig}
-				FormComponent={FormComponent}
+				entityName="client"
+				FormikComponent={FormikComponent}
 			/>,
 		);
 
 		expect(screen.queryByTestId('should-not-render')).not.toBeInTheDocument();
-		expect(screen.getByText(docConfig.addDeniedMessage)).toBeInTheDocument();
+		expect(
+			screen.getByText(`Vous n'avez pas le droit d'ajouter un client. Veuillez contacter votre administrateur.`),
+		).toBeInTheDocument();
 	});
 });

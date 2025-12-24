@@ -10,20 +10,14 @@ import { BusinessOutlined as BusinessOutlinedIcon } from '@mui/icons-material';
 import { useAppSelector } from '@/utils/hooks';
 import { getUserCompaniesState } from '@/store/selectors';
 
-interface ClientArticleFormWrapperProps extends SessionProps {
+interface Props extends SessionProps {
 	company_id: number;
 	id?: number;
 	entityName: string; // "article" or "client"
 	FormikComponent: React.FC<{ token?: string; id?: number; company_id: number }>;
 }
 
-const ClientArticleForm: React.FC<ClientArticleFormWrapperProps> = ({
-	session,
-	company_id,
-	id,
-	entityName,
-	FormikComponent,
-}) => {
+const ClientArticleWrapperForm: React.FC<Props> = ({ session, company_id, id, entityName, FormikComponent }) => {
 	const token = getAccessTokenFromSession(session);
 	const companies = useAppSelector(getUserCompaniesState);
 	const company = companies?.find((comp) => comp.id === company_id);
@@ -88,4 +82,4 @@ const ClientArticleForm: React.FC<ClientArticleFormWrapperProps> = ({
 	);
 };
 
-export default ClientArticleForm;
+export default ClientArticleWrapperForm;

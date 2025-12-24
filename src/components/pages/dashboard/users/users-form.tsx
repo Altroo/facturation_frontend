@@ -56,7 +56,7 @@ import { useGetCompaniesListQuery } from '@/store/services/company';
 import type { CompanyClass } from '@/models/classes';
 import ManagedByTableSection from '@/components/shared/addManagedByTable/addManagedByTable';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
-import CompanyUsersForm from '@/components/pages/dashboard/shared/companies-users-form/companyUsersForm';
+import CompanyUsersWrapperForm from '@/components/pages/dashboard/shared/companies-users-form/companyUsersWrapperForm';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -455,7 +455,7 @@ interface Props extends SessionProps {
 }
 
 const UsersForm: React.FC<Props> = ({ session, id }) => (
-	<CompanyUsersForm session={session} id={id} entityName="utilisateur" FormikComponent={FormikContent} />
+	<CompanyUsersWrapperForm session={session} id={id} entityName="utilisateur" FormikComponent={FormikContent} />
 );
 
 export default UsersForm;

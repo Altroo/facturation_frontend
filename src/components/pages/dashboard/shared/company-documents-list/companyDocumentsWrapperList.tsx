@@ -26,7 +26,7 @@ export type CompanyDocumentsListProps = SessionProps & {
 	children: (args: { company_id: number; role: string }) => React.ReactNode;
 };
 
-const CompanyDocumentsList: React.FC<CompanyDocumentsListProps> = ({ session, title, children }) => {
+const CompanyDocumentsWrapperList: React.FC<CompanyDocumentsListProps> = ({ session, title, children }) => {
 	const token = getAccessTokenFromSession(session);
 	const router = useRouter();
 	const { data: companiesData, isLoading } = useGetUserCompaniesQuery(undefined, { skip: !token });
@@ -161,4 +161,4 @@ const CompanyDocumentsList: React.FC<CompanyDocumentsListProps> = ({ session, ti
 	);
 };
 
-export default CompanyDocumentsList;
+export default CompanyDocumentsWrapperList;

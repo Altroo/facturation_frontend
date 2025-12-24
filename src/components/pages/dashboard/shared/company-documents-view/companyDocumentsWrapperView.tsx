@@ -201,7 +201,7 @@ const computeTotals = <TData extends CompanyDocumentData>(
 	};
 };
 
-const CompanyDocumentsView = <TData extends CompanyDocumentData>({
+const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 	session,
 	company_id,
 	id,
@@ -673,4 +673,4 @@ const CompanyDocumentsView = <TData extends CompanyDocumentData>({
 	);
 };
 
-export default CompanyDocumentsView;
+export default CompanyDocumentsWrapperView;

@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { getAccessTokenFromSession } from '@/store/session';
-import CompanyUsersForm from './companyUsersForm';
+import CompanyUsersWrapperForm from './companyUsersWrapperForm';
 import { Session } from 'next-auth';
 
 jest.mock('@/store/session', () => ({
@@ -62,7 +62,7 @@ describe('CompanyUsersForm', () => {
 		};
 
 		render(
-			<CompanyUsersForm
+			<CompanyUsersWrapperForm
 				session={mockSession}
 				id={7}
 				entityName="entreprise"
@@ -93,7 +93,7 @@ describe('CompanyUsersForm', () => {
 		};
 
 		render(
-			<CompanyUsersForm
+			<CompanyUsersWrapperForm
 				session={mockSession}
 				entityName="entreprise"
 				FormikComponent={FormikComponent}
