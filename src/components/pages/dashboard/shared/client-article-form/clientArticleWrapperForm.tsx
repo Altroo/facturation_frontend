@@ -13,7 +13,7 @@ import { getUserCompaniesState } from '@/store/selectors';
 interface Props extends SessionProps {
 	company_id: number;
 	id?: number;
-	entityName: string; // "article" or "client"
+	entityName: 'article' | 'client';
 	FormikComponent: React.FC<{ token?: string; id?: number; company_id: number }>;
 }
 

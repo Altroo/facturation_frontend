@@ -1453,7 +1453,6 @@ const FactureClientForm: React.FC<Props> = ({ session, company_id, id }) => {
 			company_id={company_id}
 			id={id}
 			documentConfig={{
-				singular: 'facture client',
 				addTitle: 'Ajouter une facture client',
 				editTitle: 'Modifier facture client',
 				addDeniedMessage:

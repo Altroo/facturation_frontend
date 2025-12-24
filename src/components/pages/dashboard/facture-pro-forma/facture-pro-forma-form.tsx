@@ -1453,7 +1453,6 @@ const FactureProFormaForm: React.FC<Props> = ({ session, company_id, id }) => {
 			company_id={company_id}
 			id={id}
 			documentConfig={{
-				singular: 'facture pro-forma',
 				addTitle: 'Ajouter une facture pro-forma',
 				editTitle: 'Modifier facture pro-forma',
 				addDeniedMessage:

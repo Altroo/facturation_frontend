@@ -21,7 +21,6 @@ jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 
 describe('CompanyDocumentsParentForm', () => {
 	const docConfig = {
-		singular: 'document',
 		addTitle: 'Add document',
 		editTitle: 'Edit document',
 		addDeniedMessage: 'You cannot add',

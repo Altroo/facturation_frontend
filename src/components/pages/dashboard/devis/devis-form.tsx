@@ -1470,7 +1470,6 @@ const DevisForm: React.FC<Props> = ({ session, company_id, id }) => {
 			company_id={company_id}
 			id={id}
 			documentConfig={{
-				singular: 'devis',
 				addTitle: 'Ajouter un devis',
 				editTitle: 'Modifier devis',
 				addDeniedMessage: "Vous n'avez pas le droit d'ajouter un devis. Veuillez contacter votre administrateur.",

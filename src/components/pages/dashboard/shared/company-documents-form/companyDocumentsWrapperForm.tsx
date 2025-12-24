@@ -11,7 +11,6 @@ import { SessionProps } from '@/types/_initTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 
 interface DocumentConfig {
-	singular: string;
 	addTitle: string;
 	editTitle: string;
 	addDeniedMessage: string;
