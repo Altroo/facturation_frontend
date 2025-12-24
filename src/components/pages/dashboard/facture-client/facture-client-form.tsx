@@ -2,9 +2,7 @@
 
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
-import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
-import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import {
 	Box,
 	Button,
@@ -20,8 +18,6 @@ import {
 	Tooltip,
 	IconButton,
 	Alert,
-	Paper,
-	Container,
 } from '@mui/material';
 import {
 	ArrowBack as ArrowBackIcon,
@@ -35,7 +31,6 @@ import {
 	Notes as NotesIcon,
 	Delete as DeleteIcon,
 	Warning as WarningIcon,
-	Business as BusinessIcon,
 	Edit as EditIcon,
 	Add as AddIcon,
 } from '@mui/icons-material';
@@ -63,7 +58,7 @@ import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import type { ArticleClass, ClientClass, ModePaiementClass } from '@/models/classes';
 import { useGetClientsListQuery } from '@/store/services/client';
 import { useAppSelector, useToast } from '@/utils/hooks';
-import { getModePaiementState, getUserCompaniesState } from '@/store/selectors';
+import { getModePaiementState } from '@/store/selectors';
 import type { DropDownType } from '@/types/accountTypes';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import { useGetArticlesListQuery } from '@/store/services/article';
@@ -87,11 +82,12 @@ import LinesGrid from '@/components/shared/linesGrid/linesGrid';
 import { generateRowId } from '@/components/pages/dashboard/devis/devis-form';
 import type { FactureClientProFormaSchemaType } from '@/types/factureProFormaTypes';
 import Image from 'next/image';
+import SharedDocumentParentForm from '@/components/pages/dashboard/shared/company-documents-form/companyDocumentsParentForm';
 
 const inputTheme = coordonneeTextInputTheme();
 
 type FormikContentProps = {
-	token: string | undefined;
+	token?: string;
 	company_id: number;
 	id?: number;
 	isEditMode: boolean;
@@ -1451,57 +1447,22 @@ interface Props extends SessionProps {
 }
 
 const FactureClientForm: React.FC<Props> = ({ session, company_id, id }) => {
-	const token = getAccessTokenFromSession(session);
-	const companies = useAppSelector(getUserCompaniesState);
-	const company = companies?.find((comp) => comp.id === company_id);
-	const isEditMode = !!id;
-
-	const title = isEditMode ? 'Modifier facture client' : 'Ajouter une facture client';
-
 	return (
-		<Stack direction="column" sx={{ position: 'relative' }}>
-			<NavigationBar title={title}>
-				<main className={`${Styles.main} ${Styles.fixMobile}`}>
-					{company?.role === 'Admin' ? (
-						<Box sx={{ width: '100%' }}>
-							<FormikContent company_id={company_id} token={token} id={id} isEditMode={isEditMode} />
-						</Box>
-					) : (
-						<Container maxWidth="sm" sx={{ mt: 8 }}>
-							<Paper
-								elevation={3}
-								sx={{
-									p: 6,
-									textAlign: 'center',
-									borderRadius: 3,
-									background: 'linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%)',
-								}}
-							>
-								<Box
-									sx={{
-										width: 80,
-										height: 80,
-										borderRadius: '50%',
-										backgroundColor: 'rgba(13, 7, 11, 0.08)',
-										display: 'flex',
-										alignItems: 'center',
-										justifyContent: 'center',
-										margin: '0 auto 24px',
-									}}
-								>
-									<BusinessIcon sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
-								</Box>
-								<Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 3 }}>
-									{isEditMode
-										? `Vous n'avez pas le droit de modifier cette facture client. Veuillez contacter votre administrateur.`
-										: `Vous n'avez pas le droit d'ajouter une facture client. Veuillez contacter votre administrateur.`}
-								</Typography>
-							</Paper>
-						</Container>
-					)}
-				</main>
-			</NavigationBar>
-		</Stack>
+		<SharedDocumentParentForm
+			session={session}
+			company_id={company_id}
+			id={id}
+			documentConfig={{
+				singular: 'facture client',
+				addTitle: 'Ajouter une facture client',
+				editTitle: 'Modifier facture client',
+				addDeniedMessage:
+					"Vous n'avez pas le droit d'ajouter une facture client. Veuillez contacter votre administrateur.",
+				editDeniedMessage:
+					"Vous n'avez pas le droit de modifier cette facture client. Veuillez contacter votre administrateur.",
+			}}
+			FormComponent={FormikContent}
+		/>
 	);
 };
 
