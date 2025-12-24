@@ -2,9 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
-import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
-import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import {
 	Box,
 	Button,
@@ -13,16 +11,13 @@ import {
 	Card,
 	CardContent,
 	Divider,
-	Paper,
 	useTheme,
 	useMediaQuery,
 	ToggleButtonGroup,
 	ToggleButton,
-	Container,
 } from '@mui/material';
 import {
 	ArrowBack as ArrowBackIcon,
-	BusinessOutlined as BusinessOutlinedIcon,
 	Business as BusinessIcon,
 	Notes as NotesIcon,
 	Email as EmailIcon,
@@ -48,7 +43,7 @@ import { CLIENTS_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import type { DropDownType } from '@/types/accountTypes';
 import { useAppSelector, useToast } from '@/utils/hooks';
-import { getCitiesState, getUserCompaniesState } from '@/store/selectors';
+import { getCitiesState } from '@/store/selectors';
 import {
 	useAddClientMutation,
 	useEditClientMutation,
@@ -63,11 +58,12 @@ import type { CitiesClass } from '@/models/classes';
 import { clientSchema, pmRequired, ppRequired } from '@/utils/formValidationSchemas';
 import AddEntityModal from '@/components/shared/addEntityModal/addEntityModal';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
+import ClientArticleFormWrapper from '@/components/pages/dashboard/shared/client-article-form/clientArticleForm';
 
 const inputTheme = coordonneeTextInputTheme();
 
 type FormikContentProps = {
-	token: string | undefined;
+	token?: string;
 	company_id: number;
 	id?: number;
 };
@@ -641,58 +637,8 @@ interface Props extends SessionProps {
 	id?: number;
 }
 
-const ClientsForm: React.FC<Props> = ({ session, company_id, id }) => {
-	const token = getAccessTokenFromSession(session);
-	const companies = useAppSelector(getUserCompaniesState);
-	const company = companies?.find((comp) => comp.id === company_id);
-
-	const isEditMode = id !== undefined;
-
-	return (
-		<Stack direction="column" sx={{ position: 'relative' }}>
-			<NavigationBar title={isEditMode ? 'Modifier le client' : 'Ajouter un client'}>
-				<main className={`${Styles.main} ${Styles.fixMobile}`}>
-					{company?.role === 'Admin' ? (
-						<Box sx={{ width: '100%' }}>
-							<FormikContent token={token} id={id} company_id={company_id} />
-						</Box>
-					) : (
-						<Container maxWidth="sm" sx={{ mt: 8 }}>
-							<Paper
-								elevation={3}
-								sx={{
-									p: 6,
-									textAlign: 'center',
-									borderRadius: 3,
-									background: 'linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%)',
-								}}
-							>
-								<Box
-									sx={{
-										width: 80,
-										height: 80,
-										borderRadius: '50%',
-										backgroundColor: 'rgba(13, 7, 11, 0.08)',
-										display: 'flex',
-										alignItems: 'center',
-										justifyContent: 'center',
-										margin: '0 auto 24px',
-									}}
-								>
-									<BusinessOutlinedIcon sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
-								</Box>
-								<Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 3 }}>
-									{isEditMode
-										? "Vous n'avez pas le droit de modifier ce client. Veuillez contacter votre administrateur."
-										: "Vous n'avez pas le droit d'ajouter un client. Veuillez contacter votre administrateur."}
-								</Typography>
-							</Paper>
-						</Container>
-					)}
-				</main>
-			</NavigationBar>
-		</Stack>
-	);
-};
+const ClientsForm: React.FC<Props> = (props) => (
+	<ClientArticleFormWrapper {...props} entityName="client" FormikComponent={FormikContent} />
+);
 
 export default ClientsForm;
