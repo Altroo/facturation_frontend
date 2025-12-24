@@ -2,9 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
-import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
-import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import {
 	Box,
 	Button,
@@ -57,8 +55,8 @@ import type { UserCompaniesType, UsersFormValuesType } from '@/types/usersTypes'
 import { useGetCompaniesListQuery } from '@/store/services/company';
 import type { CompanyClass } from '@/models/classes';
 import ManagedByTableSection from '@/components/shared/addManagedByTable/addManagedByTable';
-import { Protected } from '@/components/layouts/protected/protected';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
+import CompanyUsersForm from '@/components/pages/dashboard/shared/companies-users-form/companyUsersForm';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -456,23 +454,8 @@ interface Props extends SessionProps {
 	id?: number;
 }
 
-const UsersForm: React.FC<Props> = ({ session, id }) => {
-	const token = getAccessTokenFromSession(session);
-	const isEditMode = id !== undefined;
-
-	return (
-		<Stack direction="column" sx={{ position: 'relative' }}>
-			<NavigationBar title={isEditMode ? "Modifier l'utilisateur" : 'Ajouter un utilisateur'}>
-				<main className={`${Styles.main} ${Styles.fixMobile}`}>
-					<Protected>
-						<Box sx={{ width: '100%' }}>
-							<FormikContent token={token} id={id} />
-						</Box>
-					</Protected>
-				</main>
-			</NavigationBar>
-		</Stack>
-	);
-};
+const UsersForm: React.FC<Props> = ({ session, id }) => (
+	<CompanyUsersForm session={session} id={id} entityName="utilisateur" FormikComponent={FormikContent} />
+);
 
 export default UsersForm;

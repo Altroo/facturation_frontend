@@ -2,10 +2,8 @@
 
 import React, { useMemo, useState } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
-import { getAccessTokenFromSession } from '@/store/session';
 import { useAddCompanyMutation, useEditCompanyMutation, useGetCompanyQuery } from '@/store/services/company';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
-import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { Box, Button, Stack, Typography, Card, CardContent, Divider, useTheme, useMediaQuery } from '@mui/material';
 import {
 	ArrowBack as ArrowBackIcon,
@@ -50,8 +48,8 @@ import type { DropDownType } from '@/types/accountTypes';
 import type { CompanyFormValuesType, ManagedByType } from '@/types/companyTypes';
 import type { UserClass } from '@/models/classes';
 import ManagedByTableSection from '@/components/shared/addManagedByTable/addManagedByTable';
-import { Protected } from '@/components/layouts/protected/protected';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
+import CompanyUsersForm from '@/components/pages/dashboard/shared/companies-users-form/companyUsersForm';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -638,28 +636,17 @@ interface Props extends SessionProps {
 	id?: number;
 }
 
-const CompaniesForm: React.FC<Props> = ({ session, id }) => {
-	const token = getAccessTokenFromSession(session);
-	const isEditMode = id !== undefined;
-
-	return (
-		<Stack direction="column" sx={{ position: 'relative' }}>
-			<NavigationBar title={isEditMode ? "Modifier l'entreprise" : 'Ajouter une entreprise'}>
-				<main className={`${Styles.main} ${Styles.fixMobile}`}>
-					<Protected>
-						<Box sx={{ width: '100%' }}>
-							<FormikContent
-								first_name={session?.user.first_name ?? ''}
-								last_name={session?.user.last_name ?? ''}
-								token={token}
-								id={id}
-							/>
-						</Box>
-					</Protected>
-				</main>
-			</NavigationBar>
-		</Stack>
-	);
-};
+const CompaniesForm: React.FC<Props> = ({ session, id }) => (
+	<CompanyUsersForm
+		session={session}
+		id={id}
+		entityName="entreprise"
+		FormikComponent={FormikContent}
+		extraFormikProps={{
+			first_name: session?.user.first_name ?? '',
+			last_name: session?.user.last_name ?? '',
+		}}
+	/>
+);
 
 export default CompaniesForm;
