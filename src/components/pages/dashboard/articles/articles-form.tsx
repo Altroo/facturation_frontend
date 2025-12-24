@@ -65,7 +65,7 @@ import { articleSchema } from '@/utils/formValidationSchemas';
 import AddEntityModal from '@/components/shared/addEntityModal/addEntityModal';
 import CustomSquareImageUploading from '@/components/formikElements/customSquareImageUploading/customSquareImageUploading';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
-import ClientArticleFormWrapper from '@/components/pages/dashboard/shared/client-article-form/clientArticleForm';
+import ClientArticleForm from '@/components/pages/dashboard/shared/client-article-form/clientArticleForm';
 
 const inputTheme = coordonneeTextInputTheme();
 
@@ -625,7 +625,7 @@ interface Props extends SessionProps {
 }
 
 const ArticlesForm: React.FC<Props> = (props) => (
-	<ClientArticleFormWrapper {...props} entityName="article" FormikComponent={FormikContent} />
+	<ClientArticleForm {...props} entityName="article" FormikComponent={FormikContent} />
 );
 
 export default ArticlesForm;
