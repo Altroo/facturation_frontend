@@ -33,10 +33,15 @@ interface ModalState {
 
 const MIN_VALUE = 0.01;
 
-const GlobalRemiseModal: React.FC<GlobalRemiseModalProps> = ({ open, onClose, currentType, currentValue, onApply }) => {
+const GlobalRemiseModalContent: React.FC<GlobalRemiseModalProps> = ({
+	open,
+	onClose,
+	currentType,
+	currentValue,
+	onApply,
+}) => {
 	const [state, setState] = useState<ModalState>({
 		type: (currentType as 'Pourcentage' | 'Fixe' | '') || '',
-		// keep the provided value (allow < 1 floats). If none, default to 0.
 		value: currentType ? currentValue : 0,
 		error: '',
 	});
@@ -63,7 +68,6 @@ const GlobalRemiseModal: React.FC<GlobalRemiseModalProps> = ({ open, onClose, cu
 
 	const handleTypeChange = (newType: 'Pourcentage' | 'Fixe' | '') => {
 		setState((prev) => {
-			// If switching to a type and previous value is 0 or negative, provide a small default
 			const newValue = newType === '' ? 0 : prev.value <= 0 ? MIN_VALUE : prev.value;
 			return {
 				...prev,
@@ -75,7 +79,6 @@ const GlobalRemiseModal: React.FC<GlobalRemiseModalProps> = ({ open, onClose, cu
 	};
 
 	const handleApply = () => {
-		// If no type selected, treat as clearing the remise
 		if (!state.type) {
 			onApply('', 0);
 			onClose();
@@ -93,16 +96,11 @@ const GlobalRemiseModal: React.FC<GlobalRemiseModalProps> = ({ open, onClose, cu
 	};
 
 	const handleClose = () => {
-		setState({
-			type: (currentType as 'Pourcentage' | 'Fixe' | '') || '',
-			value: currentType ? currentValue : 0,
-			error: '',
-		});
 		onClose();
 	};
 
 	return (
-		<Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth key={`${open}-${currentType}-${currentValue}`}>
+		<Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
 			<DialogTitle>
 				<Stack direction="row" spacing={2} alignItems="center">
 					<DiscountIcon color="primary" />
@@ -162,6 +160,12 @@ const GlobalRemiseModal: React.FC<GlobalRemiseModalProps> = ({ open, onClose, cu
 				</Button>
 			</DialogActions>
 		</Dialog>
+	);
+};
+
+const GlobalRemiseModal: React.FC<GlobalRemiseModalProps> = (props) => {
+	return (
+		<GlobalRemiseModalContent key={props.open ? `${props.currentType}-${props.currentValue}` : 'closed'} {...props} />
 	);
 };
 
