@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { getAccessTokenFromSession } from '@/store/session';
 import { useAppSelector } from '@/utils/hooks';
-import ClientArticleFormWrapper from './clientArticleForm';
+import ClientArticleForm from './clientArticleForm';
 import { Session } from 'next-auth';
 
 jest.mock('@/store/session', () => ({
@@ -65,7 +65,7 @@ describe('ClientArticleFormWrapper', () => {
 		};
 
 		render(
-			<ClientArticleFormWrapper
+			<ClientArticleForm
 				session={mockSession}
 				company_id={42}
 				id={7}
@@ -93,7 +93,7 @@ describe('ClientArticleFormWrapper', () => {
 		const FormikComponent: React.FC<FormikComponentProps> = () => <div data-testid="should-not-render">NO</div>;
 
 		render(
-			<ClientArticleFormWrapper
+			<ClientArticleForm
 				session={mockSession}
 				company_id={100}
 				entityName="client"

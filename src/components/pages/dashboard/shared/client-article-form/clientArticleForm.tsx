@@ -17,7 +17,7 @@ interface ClientArticleFormWrapperProps extends SessionProps {
 	FormikComponent: React.FC<{ token?: string; id?: number; company_id: number }>;
 }
 
-const ClientArticleFormWrapper: React.FC<ClientArticleFormWrapperProps> = ({
+const ClientArticleForm: React.FC<ClientArticleFormWrapperProps> = ({
 	session,
 	company_id,
 	id,
@@ -88,4 +88,4 @@ const ClientArticleFormWrapper: React.FC<ClientArticleFormWrapperProps> = ({
 	);
 };
 
-export default ClientArticleFormWrapper;
+export default ClientArticleForm;
