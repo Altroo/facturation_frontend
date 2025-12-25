@@ -1002,17 +1002,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		[formik, calculateTotalHTBeforeGlobal, onError],
 	);
 
-	const isLoading =
-		isAddModePaiementLoading ||
-		isPatchLoading ||
-		isClientsLoading ||
-		isUpdateLoading ||
-		isAddLoading ||
-		isPending ||
-		isDataLoading ||
-		isArticlesLoading ||
-		isNumLoading;
-
 	const hasValidationErrors = Object.keys(validationErrors).length > 0;
 
 	const dataGridRows = useMemo(() => {
@@ -1023,6 +1012,18 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			rowIndex: index, // Keep actual index for operations
 		}));
 	}, [getLines]);
+
+	const isLoading =
+		isAddModePaiementLoading ||
+		isPatchLoading ||
+		isClientsLoading ||
+		isUpdateLoading ||
+		isAddLoading ||
+		isPending ||
+		isDataLoading ||
+		isArticlesLoading ||
+		isNumLoading;
+	const shouldShowError = (axiosError?.status ?? 0) > 400 && !isLoading;
 
 	return (
 		<LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
@@ -1058,7 +1059,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					</Alert>
 				)}
 
-				{isEditMode && (
+				{isEditMode && !shouldShowError && (
 					<FactureDevisTotalsCard
 						totals={{
 							totalHT: totals.totalHT,
@@ -1073,16 +1074,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				{formik.errors.globalError && <span className={Styles.errorMessage}>{formik.errors.globalError}</span>}
 				{isLoading ? (
 					<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
-				) : (axiosError?.status as number) > 400 ? (
-					<ApiAlert
-						errorDetails={axiosError?.data.details}
-						cssStyle={{
-							position: 'absolute',
-							top: '50%',
-							left: '50%',
-							transform: 'translate(-50%, -50%)',
-						}}
-					/>
+				) : shouldShowError ? (
+					<ApiAlert errorDetails={axiosError?.data.details} />
 				) : (
 					<form onSubmit={formik.handleSubmit}>
 						<Stack spacing={3}>

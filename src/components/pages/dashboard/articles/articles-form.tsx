@@ -258,6 +258,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		isAddMarqueLoading ||
 		(isEditMode && isDataLoading) ||
 		(!isEditMode && isCodeLoading);
+	const shouldShowError = (axiosError?.status ?? 0) > 400 && !isLoading;
 
 	return (
 		<Stack spacing={3} sx={{ p: { xs: 2, md: 3 } }}>
@@ -279,16 +280,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			{formik.errors.globalError && <span className={Styles.errorMessage}>{formik.errors.globalError}</span>}
 			{isLoading ? (
 				<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
-			) : (axiosError?.status as number) > 400 ? (
-				<ApiAlert
-					errorDetails={axiosError?.data.details}
-					cssStyle={{
-						position: 'absolute',
-						top: '50%',
-						left: '50%',
-						transform: 'translate(-50%, -50%)',
-					}}
-				/>
+			) : shouldShowError ? (
+				<ApiAlert errorDetails={axiosError?.data.details} />
 			) : (
 				<form onSubmit={formik.handleSubmit}>
 					<Stack spacing={3}>

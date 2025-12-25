@@ -22,9 +22,13 @@ const ApiAlert: React.FC<Props> = (props: Props) => {
 				if (!errorResult[key]) {
 					errorResult[key] = [];
 				}
-				value.map((singleError) => {
-					errorResult[key].push(singleError);
-				});
+				if (Array.isArray(value)) {
+					value.map((singleError) => {
+						errorResult[key].push(singleError);
+					});
+				} else {
+					errorResult[key].push(String(value));
+				}
 				errorMessage.push(errorResult);
 			}
 		}
