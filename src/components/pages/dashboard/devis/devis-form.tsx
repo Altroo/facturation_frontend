@@ -1115,7 +1115,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 													type="text"
 													label="Numéro *"
 													value={formik.values.numero_part}
-													onChange={formik.handleChange('numero_part')}
+													onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+														const value = e.target.value;
+														// Only allow digits (0-9)
+														if (/^\d*$/.test(value)) {
+															formik.setFieldValue('numero_part', value);
+														}
+													}}
 													onBlur={formik.handleBlur('numero_part')}
 													error={formik.touched.numero_part && Boolean(formik.errors.numero_part)}
 													helperText={
@@ -1125,6 +1131,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 													size="small"
 													theme={inputTheme}
 													startIcon={<NumbersIcon fontSize="small" color="action" />}
+													slotProps={{
+														input: {
+															inputProps: {
+																inputMode: 'numeric',
+																pattern: '[0-9]*',
+															},
+														},
+													}}
 												/>
 											</Box>
 											<Typography variant="h6" sx={{ px: 0.5, mt: 1 }}>
@@ -1136,7 +1150,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 													type="text"
 													label="Année *"
 													value={formik.values.year_part}
-													onChange={formik.handleChange('year_part')}
+													onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+														const value = e.target.value;
+														// Only allow digits and max length of 2
+														if (/^\d{0,2}$/.test(value)) {
+															formik.setFieldValue('year_part', value);
+														}
+													}}
 													onBlur={formik.handleBlur('year_part')}
 													error={formik.touched.year_part && Boolean(formik.errors.year_part)}
 													helperText={
@@ -1146,6 +1166,15 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 													size="small"
 													theme={inputTheme}
 													startIcon={<CalendarTodayIcon fontSize="small" color="action" />}
+													slotProps={{
+														input: {
+															inputProps: {
+																inputMode: 'numeric',
+																pattern: '[0-9]{2}',
+																maxLength: 2,
+															},
+														},
+													}}
 												/>
 											</Box>
 										</Stack>

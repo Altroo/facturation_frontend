@@ -354,11 +354,16 @@ export const deviSchema = z
 	.object({
 		numero_part: requiredTextField(1, 15),
 		year_part: z.preprocess(
-			(val) => (val === undefined || val === null ? NaN : Number(val)),
+			(val) => {
+				if (val === undefined || val === null || val === '') {
+					return undefined;
+				}
+				return Number(val);
+			},
 			z
-				.number({ error: INPUT_REQUIRED })
-				.refine((val) => !Number.isNaN(val), { error: INPUT_REQUIRED })
-				.refine((val) => val >= 0 && val <= 99 && Number.isInteger(val), {
+				.number({ error: INPUT_YEAR_PART_INVALID })
+				.refine((val) => !Number.isNaN(val), { message: INPUT_YEAR_PART_INVALID })
+				.refine((val) => val >= 20 && val <= 99 && Number.isInteger(val), {
 					message: INPUT_YEAR_PART_INVALID,
 				}),
 		),
@@ -413,11 +418,16 @@ export const deviSchema = z
 export const deviAddSchema = z.object({
 	numero_part: requiredTextField(1, 15),
 	year_part: z.preprocess(
-		(val) => (val === undefined || val === null ? NaN : Number(val)),
+		(val) => {
+			if (val === undefined || val === null || val === '') {
+				return undefined;
+			}
+			return Number(val);
+		},
 		z
-			.number({ error: INPUT_REQUIRED })
-			.refine((val) => !Number.isNaN(val), { error: INPUT_REQUIRED })
-			.refine((val) => val >= 0 && val <= 99 && Number.isInteger(val), {
+			.number({ error: INPUT_YEAR_PART_INVALID })
+			.refine((val) => !Number.isNaN(val), { message: INPUT_YEAR_PART_INVALID })
+			.refine((val) => val >= 20 && val <= 99 && Number.isInteger(val), {
 				message: INPUT_YEAR_PART_INVALID,
 			}),
 	),
@@ -433,11 +443,16 @@ export const factureClientProformaSchema = z
 	.object({
 		numero_part: requiredTextField(1, 15),
 		year_part: z.preprocess(
-			(val) => (val === undefined || val === null ? NaN : Number(val)),
+			(val) => {
+				if (val === undefined || val === null || val === '') {
+					return undefined;
+				}
+				return Number(val);
+			},
 			z
-				.number({ error: INPUT_REQUIRED })
-				.refine((val) => !Number.isNaN(val), { error: INPUT_REQUIRED })
-				.refine((val) => val >= 0 && val <= 99 && Number.isInteger(val), {
+				.number({ error: INPUT_YEAR_PART_INVALID })
+				.refine((val) => !Number.isNaN(val), { message: INPUT_YEAR_PART_INVALID })
+				.refine((val) => val >= 20 && val <= 99 && Number.isInteger(val), {
 					message: INPUT_YEAR_PART_INVALID,
 				}),
 		),
@@ -492,11 +507,16 @@ export const factureClientProformaSchema = z
 export const factureClientProformaAddSchema = z.object({
 	numero_part: requiredTextField(1, 15),
 	year_part: z.preprocess(
-		(val) => (val === undefined || val === null ? NaN : Number(val)),
+		(val) => {
+			if (val === undefined || val === null || val === '') {
+				return undefined;
+			}
+			return Number(val);
+		},
 		z
-			.number({ error: INPUT_REQUIRED })
-			.refine((val) => !Number.isNaN(val), { error: INPUT_REQUIRED })
-			.refine((val) => val >= 0 && val <= 99 && Number.isInteger(val), {
+			.number({ error: INPUT_YEAR_PART_INVALID })
+			.refine((val) => !Number.isNaN(val), { message: INPUT_YEAR_PART_INVALID })
+			.refine((val) => val >= 20 && val <= 99 && Number.isInteger(val), {
 				message: INPUT_YEAR_PART_INVALID,
 			}),
 	),
