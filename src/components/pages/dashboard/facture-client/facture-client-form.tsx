@@ -606,33 +606,31 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			const hasError = !!validationErrors[errorKey];
 
 			return (
-				<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-					<Tooltip title={helperText} arrow>
-						<Box sx={{ width: '100%' }}>
-							<CustomTextInput
-								id={`prix_vente_${rowIndex}`}
-								type="number"
-								value={inputValue}
-								onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-									const raw = (e.target as HTMLInputElement).value;
-									const parsed = parseNumber(raw);
-									if (parsed !== null && parsed < 0) return;
-									handleLineChangeRef.current(rowIndex, 'prix_vente', parsed === null ? raw : parsed);
-								}}
-								fullWidth
-								size="small"
-								theme={gridFieldTheme}
-								error={hasError}
-								slotProps={{
-									input: {
-										style: { textAlign: 'center' },
-										inputProps: { min: 0 },
-									},
-								}}
-							/>
-						</Box>
-					</Tooltip>
-				</Box>
+				<Tooltip title={helperText} arrow>
+					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+						<CustomTextInput
+							id={`prix_vente_${rowIndex}`}
+							type="number"
+							value={inputValue}
+							onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+								const raw = (e.target as HTMLInputElement).value;
+								const parsed = parseNumber(raw);
+								if (parsed !== null && parsed < 0) return;
+								handleLineChangeRef.current(rowIndex, 'prix_vente', parsed === null ? raw : parsed);
+							}}
+							fullWidth
+							size="small"
+							theme={gridFieldTheme}
+							error={hasError}
+							slotProps={{
+								input: {
+									style: { textAlign: 'center' },
+									inputProps: { min: 0 },
+								},
+							}}
+						/>
+					</Box>
+				</Tooltip>
 			);
 		};
 
@@ -644,33 +642,31 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			const hasError = !!validationErrors[errorKey];
 
 			return (
-				<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-					<Tooltip title={validationErrors[errorKey] || ''} arrow>
-						<Box sx={{ width: '100%' }}>
-							<CustomTextInput
-								id={`quantity_${rowIndex}`}
-								type="number"
-								value={inputValue}
-								onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-									const raw = (e.target as HTMLInputElement).value;
-									const parsed = parseNumber(raw);
-									if (parsed !== null && parsed < 1) return;
-									handleLineChangeRef.current(rowIndex, 'quantity', parsed === null ? raw : parsed);
-								}}
-								fullWidth
-								size="small"
-								theme={gridFieldTheme}
-								slotProps={{
-									input: {
-										style: { textAlign: 'center' },
-										inputProps: { min: 1 },
-									},
-								}}
-								error={hasError}
-							/>
-						</Box>
-					</Tooltip>
-				</Box>
+				<Tooltip title={validationErrors[errorKey] || ''} arrow>
+					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+						<CustomTextInput
+							id={`quantity_${rowIndex}`}
+							type="number"
+							value={inputValue}
+							onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+								const raw = (e.target as HTMLInputElement).value;
+								const parsed = parseNumber(raw);
+								if (parsed !== null && parsed < 1) return;
+								handleLineChangeRef.current(rowIndex, 'quantity', parsed === null ? raw : parsed);
+							}}
+							fullWidth
+							size="small"
+							theme={gridFieldTheme}
+							slotProps={{
+								input: {
+									style: { textAlign: 'center' },
+									inputProps: { min: 1 },
+								},
+							}}
+							error={hasError}
+						/>
+					</Box>
+				</Tooltip>
 			);
 		};
 
@@ -684,39 +680,37 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			const remiseTypeValue = getLines()[rowIndex]?.remise_type;
 
 			return (
-				<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-					<Tooltip title={helperText} arrow>
-						<Box sx={{ width: '100%' }}>
-							<CustomTextInput
-								id={`remise_${rowIndex}`}
-								type="number"
-								value={inputValue}
-								onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-									const raw = (e.target as HTMLInputElement).value;
-									const parsed = parseNumber(raw);
-									if (parsed !== null && parsed < 0) return;
-									handleLineChangeRef.current(rowIndex, 'remise', parsed === null ? raw : parsed);
-								}}
-								fullWidth
-								size="small"
-								theme={gridFieldTheme}
-								error={hasError}
-								disabled={!remiseTypeValue}
-								endIcon={
-									remiseTypeValue && (
-										<InputAdornment position="end">{remiseTypeValue === 'Pourcentage' ? '%' : 'MAD'}</InputAdornment>
-									)
-								}
-								slotProps={{
-									input: {
-										style: { textAlign: 'center' },
-										inputProps: { min: 0 },
-									},
-								}}
-							/>
-						</Box>
-					</Tooltip>
-				</Box>
+				<Tooltip title={helperText} arrow>
+					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+						<CustomTextInput
+							id={`remise_${rowIndex}`}
+							type="number"
+							value={inputValue}
+							onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+								const raw = (e.target as HTMLInputElement).value;
+								const parsed = parseNumber(raw);
+								if (parsed !== null && parsed < 0) return;
+								handleLineChangeRef.current(rowIndex, 'remise', parsed === null ? raw : parsed);
+							}}
+							fullWidth
+							size="small"
+							theme={gridFieldTheme}
+							error={hasError}
+							disabled={!remiseTypeValue}
+							endIcon={
+								remiseTypeValue && (
+									<InputAdornment position="end">{remiseTypeValue === 'Pourcentage' ? '%' : 'MAD'}</InputAdornment>
+								)
+							}
+							slotProps={{
+								input: {
+									style: { textAlign: 'center' },
+									inputProps: { min: 0 },
+								},
+							}}
+						/>
+					</Box>
+				</Tooltip>
 			);
 		};
 

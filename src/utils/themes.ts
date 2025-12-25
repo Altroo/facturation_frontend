@@ -125,12 +125,12 @@ export const gridInputTheme = (primaryColor: string | undefined = undefined) => 
 						'& fieldset > legend': {
 							// size of red error line (label) (input size - 5px)
 							fontFamily: 'Poppins',
-							fontSize: '14px',
+							fontSize: '0.875rem',
 						},
 					},
 					input: {
 						fontFamily: 'Poppins',
-						fontSize: '19px',
+						fontSize: '0.875rem',
 						caretColor: blueColor,
 					},
 				},
@@ -140,12 +140,12 @@ export const gridInputTheme = (primaryColor: string | undefined = undefined) => 
 					root: {
 						'& .MuiFormLabel-root': {
 							fontFamily: 'Poppins',
-							fontSize: '19px',
+							fontSize: '0.875rem',
 							color: '#A3A3AD',
 						},
 						'& .MuiFormLabel-root.Mui-focused': {
 							fontFamily: 'Poppins',
-							fontSize: '19px',
+							fontSize: '0.875rem',
 							color: blueColor,
 						},
 					},
@@ -360,12 +360,12 @@ export const customGridDropdownTheme = (primaryColor: string | undefined = undef
 						'& fieldset > legend': {
 							// size of red error line (label) (input size - 5px)
 							fontFamily: 'Poppins',
-							fontSize: '14px',
+							fontSize: '0.875rem',
 						},
 					},
 					input: {
 						fontFamily: 'Poppins',
-						fontSize: '19px',
+						fontSize: '0.875rem',
 						caretColor: blueColor,
 					},
 				},
@@ -375,12 +375,12 @@ export const customGridDropdownTheme = (primaryColor: string | undefined = undef
 					root: {
 						'& .MuiFormLabel-root': {
 							fontFamily: 'Poppins',
-							fontSize: '16px',
+							fontSize: '0.875rem',
 							color: '#A3A3AD',
 						},
 						'& .MuiFormLabel-root.Mui-focused': {
 							fontFamily: 'Poppins',
-							fontSize: '19px',
+							fontSize: '0.875rem',
 							color: blueColor,
 						},
 					},
@@ -390,7 +390,7 @@ export const customGridDropdownTheme = (primaryColor: string | undefined = undef
 				styleOverrides: {
 					gutters: {
 						fontFamily: 'Poppins',
-						fontSize: '16px',
+						fontSize: '0.875rem',
 						paddingTop: '10px',
 						paddingBottom: '10px',
 					},
