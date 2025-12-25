@@ -555,9 +555,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 													: ''
 										}`}
 										value={formik.values.delai_de_paiement === null ? '' : String(formik.values.delai_de_paiement)}
-										onChange={(e) =>
-											formik.setFieldValue('delai_de_paiement', e.target.value === '' ? null : Number(e.target.value))
-										}
+										onChange={(e) => {
+											const value = e.target.value === '' ? null : Number(e.target.value);
+											if (value !== null && value < 0) return;
+											formik.setFieldValue('delai_de_paiement', value);
+										}}
 										onBlur={formik.handleBlur('delai_de_paiement')}
 										error={formik.touched.delai_de_paiement && Boolean(formik.errors.delai_de_paiement)}
 										helperText={formik.touched.delai_de_paiement ? (formik.errors.delai_de_paiement as string) : ''}
@@ -565,6 +567,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										size="small"
 										theme={inputTheme}
 										startIcon={<CreditCardIcon fontSize="small" />}
+										slotProps={{
+											input: {
+												inputProps: { min: 0 },
+											},
+										}}
 									/>
 								</Stack>
 							</CardContent>

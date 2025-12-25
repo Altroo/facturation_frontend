@@ -377,9 +377,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										type="number"
 										label="Prix d'achat"
 										value={String(formik.values.prix_achat) ?? ''}
-										onChange={(e) =>
-											formik.setFieldValue('prix_achat', e.target.value === '' ? null : Number(e.target.value))
-										}
+										onChange={(e) => {
+											const value = e.target.value === '' ? null : Number(e.target.value);
+											if (value !== null && value < 0) return;
+											formik.setFieldValue('prix_achat', value);
+										}}
 										onBlur={formik.handleBlur('prix_achat')}
 										error={formik.touched.prix_achat && Boolean(formik.errors.prix_achat)}
 										helperText={formik.touched.prix_achat ? (formik.errors.prix_achat as string) : ''}
@@ -387,15 +389,22 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										size="small"
 										theme={inputTheme}
 										startIcon={<ShoppingCartIcon fontSize="small" />}
+										slotProps={{
+											input: {
+												inputProps: { min: 0 },
+											},
+										}}
 									/>
 									<CustomTextInput
 										id="prix_vente"
 										type="number"
 										label="Prix de vente"
 										value={String(formik.values.prix_vente) ?? ''}
-										onChange={(e) =>
-											formik.setFieldValue('prix_vente', e.target.value === '' ? null : Number(e.target.value))
-										}
+										onChange={(e) => {
+											const value = e.target.value === '' ? null : Number(e.target.value);
+											if (value !== null && value < 0) return;
+											formik.setFieldValue('prix_vente', value);
+										}}
 										onBlur={formik.handleBlur('prix_vente')}
 										error={formik.touched.prix_vente && Boolean(formik.errors.prix_vente)}
 										helperText={formik.touched.prix_vente ? (formik.errors.prix_vente as string) : ''}
@@ -403,13 +412,22 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										size="small"
 										theme={inputTheme}
 										startIcon={<SellIcon fontSize="small" />}
+										slotProps={{
+											input: {
+												inputProps: { min: 0 },
+											},
+										}}
 									/>
 									<CustomTextInput
 										id="tva"
 										type="number"
 										label="TVA (%)"
 										value={String(formik.values.tva) ?? ''}
-										onChange={(e) => formik.setFieldValue('tva', e.target.value === '' ? null : Number(e.target.value))}
+										onChange={(e) => {
+											const value = e.target.value === '' ? null : Number(e.target.value);
+											if (value !== null && value < 0) return;
+											formik.setFieldValue('tva', value);
+										}}
 										onBlur={formik.handleBlur('tva')}
 										error={formik.touched.tva && Boolean(formik.errors.tva)}
 										helperText={formik.touched.tva ? (formik.errors.tva as string) : ''}
@@ -417,6 +435,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										size="small"
 										theme={inputTheme}
 										startIcon={<ReceiptIcon fontSize="small" />}
+										slotProps={{
+											input: {
+												inputProps: { min: 0 },
+											},
+										}}
 									/>
 								</Stack>
 							</CardContent>
