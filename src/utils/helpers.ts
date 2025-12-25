@@ -160,7 +160,12 @@ export const setFormikAutoErrors = ({ e, setFieldError }: FormikAutoErrorsProps)
 
 	for (const [field, messages] of Object.entries(payload.details)) {
 		const errorMsg = Array.isArray(messages) ? messages[0] : messages;
-		if (field === 'error' || field === 'detail') {
+
+		// Handle combined numero_devis field
+		if (field === 'numero_devis' || field === 'numero_facture') {
+			setFieldError('numero_part', errorMsg);
+			setFieldError('year_part', errorMsg);
+		} else if (field === 'error' || field === 'detail') {
 			setFieldError('globalError', errorMsg);
 		} else {
 			if (Array.isArray(messages)) {
