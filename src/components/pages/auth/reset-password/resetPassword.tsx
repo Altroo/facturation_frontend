@@ -12,7 +12,7 @@ import { Stack, Divider } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useFormik } from 'formik';
 import { emailSchema } from '@/utils/formValidationSchemas';
-import { coordonneeTextInputTheme } from '@/utils/themes';
+import { textInputTheme } from '@/utils/themes';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import { useSendPasswordResetCodeMutation } from '@/store/services/account';
@@ -20,7 +20,7 @@ import { useSession } from 'next-auth/react';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { Send as SendIcon, Email as EmailIcon } from '@mui/icons-material';
 
-const inputTheme = coordonneeTextInputTheme();
+const inputTheme = textInputTheme();
 const ResetPasswordPageContent = () => {
 	const router = useRouter();
 	const [isPending, setIsPending] = useState(false);

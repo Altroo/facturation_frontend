@@ -2,9 +2,9 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import AddEntityModal from './addEntityModal';
-import { coordonneeTextInputTheme } from '@/utils/themes';
+import { textInputTheme } from '@/utils/themes';
 
-const inputTheme = coordonneeTextInputTheme();
+const inputTheme = textInputTheme();
 
 type MockTextInputProps = {
 	id?: string;

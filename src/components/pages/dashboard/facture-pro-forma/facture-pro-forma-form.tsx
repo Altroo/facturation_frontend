@@ -46,7 +46,7 @@ import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadi
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { factureClientProformaSchema, factureClientProformaAddSchema } from '@/utils/formValidationSchemas';
 import { parseNumber, safeParseForInput, setFormikAutoErrors, ValidatePricesHelper } from '@/utils/helpers';
-import { coordonneeTextInputTheme, customDropdownTheme } from '@/utils/themes';
+import { textInputTheme, customDropdownTheme, gridInputTheme, customGridDropdownTheme } from '@/utils/themes';
 import { CLIENTS_ADD, FACTURE_PRO_FORMA_LIST, FACTURE_PRO_FORMA_EDIT } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import type {
@@ -84,7 +84,8 @@ import type { FactureClientProFormaSchemaType } from '@/types/factureProFormaTyp
 import Image from 'next/image';
 import CompanyDocumentsWrapperForm from '@/components/pages/dashboard/shared/company-documents-form/companyDocumentsWrapperForm';
 
-const inputTheme = coordonneeTextInputTheme();
+const inputFieldTheme = textInputTheme();
+const gridFieldTheme = gridInputTheme();
 
 type FormikContentProps = {
 	token?: string;
@@ -620,7 +621,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								}}
 								fullWidth
 								size="small"
-								theme={inputTheme}
+								theme={gridFieldTheme}
 								error={hasError}
 								slotProps={{
 									input: {
@@ -658,7 +659,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								}}
 								fullWidth
 								size="small"
-								theme={inputTheme}
+								theme={gridFieldTheme}
 								slotProps={{
 									input: {
 										style: { textAlign: 'center' },
@@ -698,7 +699,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								}}
 								fullWidth
 								size="small"
-								theme={inputTheme}
+								theme={gridFieldTheme}
 								error={hasError}
 								disabled={!remiseTypeValue}
 								endIcon={
@@ -892,7 +893,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									items={remiseTypeItemsList}
 									value={value}
 									onChange={(e) => handleLineChangeRef.current(rowIndex, 'remise_type', e.target.value)}
-									theme={customDropdownTheme()}
+									theme={customGridDropdownTheme()}
 								/>
 							</Tooltip>
 						</Box>
@@ -1112,7 +1113,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 													}
 													fullWidth={true}
 													size="small"
-													theme={inputTheme}
+													theme={inputFieldTheme}
 													startIcon={<NumbersIcon fontSize="small" color="action" />}
 													slotProps={{
 														input: {
@@ -1147,7 +1148,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 													}
 													fullWidth={true}
 													size="small"
-													theme={inputTheme}
+													theme={inputFieldTheme}
 													startIcon={<CalendarTodayIcon fontSize="small" color="action" />}
 													slotProps={{
 														input: {
@@ -1304,7 +1305,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											}
 											fullWidth={true}
 											size="small"
-											theme={inputTheme}
+											theme={inputFieldTheme}
 											startIcon={<ReceiptIcon fontSize="small" color="action" />}
 										/>
 									</Stack>
@@ -1392,7 +1393,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											helperText={formik.touched.remarque ? formik.errors.remarque : ''}
 											fullWidth={true}
 											size="small"
-											theme={inputTheme}
+											theme={inputFieldTheme}
 											startIcon={<NotesIcon fontSize="small" color="action" />}
 										/>
 									</Stack>
@@ -1470,7 +1471,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				setOpen={setOpenModePaiementModal}
 				label="mode de paiement"
 				icon={<PaymentIcon fontSize="small" />}
-				inputTheme={inputTheme}
+				inputTheme={inputFieldTheme}
 				mutationFn={addModePaiement}
 			/>
 		</LocalizationProvider>

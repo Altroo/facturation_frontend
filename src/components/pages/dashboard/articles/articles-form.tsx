@@ -38,7 +38,7 @@ import { toFormikValidationSchema } from 'zod-formik-adapter';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
-import { coordonneeTextInputTheme } from '@/utils/themes';
+import { textInputTheme } from '@/utils/themes';
 import { ARTICLES_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import type { DropDownType } from '@/types/accountTypes';
@@ -67,7 +67,7 @@ import CustomSquareImageUploading from '@/components/formikElements/customSquare
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import ClientArticleWrapperForm from '@/components/pages/dashboard/shared/client-article-form/clientArticleWrapperForm';
 
-const inputTheme = coordonneeTextInputTheme();
+const inputTheme = textInputTheme();
 
 type FormikContentProps = {
 	token?: string;

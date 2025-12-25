@@ -6,7 +6,7 @@ import { Box, Stack, useMediaQuery, useTheme } from '@mui/material';
 import { useFormik } from 'formik';
 import { profilSchema } from '@/utils/formValidationSchemas';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
-import { coordonneeTextInputTheme, customDropdownTheme } from '@/utils/themes';
+import { textInputTheme, customDropdownTheme } from '@/utils/themes';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import { genderItemsList } from '@/utils/rawData';
 import { useAppDispatch, useToast } from '@/utils/hooks';
@@ -22,7 +22,7 @@ import { accountEditProfilAction } from '@/store/actions/accountActions';
 import CustomSquareImageUploading from '@/components/formikElements/customSquareImageUploading/customSquareImageUploading';
 import { Edit as EditIcon, Groups as GroupsIcon, Person as PersonIcon } from '@mui/icons-material';
 
-const inputTheme = coordonneeTextInputTheme();
+const inputTheme = textInputTheme();
 
 type formikContentType = {
 	token: string | undefined;

@@ -15,7 +15,7 @@ import {
 import { Discount as DiscountIcon, Warning as WarningIcon } from '@mui/icons-material';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
-import { coordonneeTextInputTheme, customDropdownTheme } from '@/utils/themes';
+import { textInputTheme, customDropdownTheme } from '@/utils/themes';
 
 interface GlobalRemiseModalProps {
 	open: boolean;
@@ -137,7 +137,7 @@ const GlobalRemiseModalContent: React.FC<GlobalRemiseModalProps> = ({
 							onChange={(e) => handleValueChange(parseFloat(e.target.value) || 0)}
 							fullWidth={true}
 							size="small"
-							theme={coordonneeTextInputTheme()}
+							theme={textInputTheme()}
 							endIcon={<InputAdornment position="end">{state.type === 'Pourcentage' ? '%' : 'MAD'}</InputAdornment>}
 							error={!!state.error}
 							helperText={

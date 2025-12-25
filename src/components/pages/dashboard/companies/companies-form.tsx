@@ -37,7 +37,7 @@ import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiP
 import { companySchema } from '@/utils/formValidationSchemas';
 import { civiliteItemsList, nbrEmployeItemsList } from '@/utils/rawData';
 import { setFormikAutoErrors } from '@/utils/helpers';
-import { coordonneeTextInputTheme, customDropdownTheme } from '@/utils/themes';
+import { textInputTheme, customDropdownTheme } from '@/utils/themes';
 import { COMPANIES_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import CustomSquareImageUploading from '@/components/formikElements/customSquareImageUploading/customSquareImageUploading';
@@ -51,7 +51,7 @@ import ManagedByTableSection from '@/components/shared/addManagedByTable/addMana
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import CompanyUsersWrapperForm from '@/components/pages/dashboard/shared/companies-users-form/companyUsersWrapperForm';
 
-const inputTheme = coordonneeTextInputTheme();
+const inputTheme = textInputTheme();
 
 type FormikContentProps = {
 	token: string | undefined;

@@ -7,7 +7,7 @@ import { setFormikAutoErrors } from '@/utils/helpers';
 import { useFormik } from 'formik';
 import { changePasswordSchema } from '@/utils/formValidationSchemas';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
-import { coordonneeTextInputTheme } from '@/utils/themes';
+import { textInputTheme } from '@/utils/themes';
 import CustomPasswordInput from '@/components/formikElements/customPasswordInput/customPasswordInput';
 import type { SessionProps } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
@@ -18,7 +18,7 @@ import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { useToast } from '@/utils/hooks';
 import { Edit as EditIcon, Lock as LockIcon } from '@mui/icons-material';
 
-const inputTheme = coordonneeTextInputTheme();
+const inputTheme = textInputTheme();
 
 type formikContentType = {
 	token: string | undefined;

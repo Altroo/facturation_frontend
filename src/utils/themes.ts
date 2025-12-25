@@ -62,7 +62,7 @@ export const getDefaultTheme = (primaryColor: string | undefined = undefined) =>
 	}
 };
 
-export const coordonneeTextInputTheme = (primaryColor: string | undefined = undefined) => {
+export const textInputTheme = (primaryColor: string | undefined = undefined) => {
 	const defaultTheme = getDefaultTheme(primaryColor);
 	const blueColor = '#0274d7';
 
@@ -75,6 +75,52 @@ export const coordonneeTextInputTheme = (primaryColor: string | undefined = unde
 						'& fieldset': {
 							borderRadius: '16px',
 							border: '1px solid #A3A3AD',
+						},
+						'& fieldset > legend': {
+							// size of red error line (label) (input size - 5px)
+							fontFamily: 'Poppins',
+							fontSize: '14px',
+						},
+					},
+					input: {
+						fontFamily: 'Poppins',
+						fontSize: '19px',
+						caretColor: blueColor,
+					},
+				},
+			},
+			MuiFormControl: {
+				styleOverrides: {
+					root: {
+						'& .MuiFormLabel-root': {
+							fontFamily: 'Poppins',
+							fontSize: '19px',
+							color: '#A3A3AD',
+						},
+						'& .MuiFormLabel-root.Mui-focused': {
+							fontFamily: 'Poppins',
+							fontSize: '19px',
+							color: blueColor,
+						},
+					},
+				},
+			},
+		},
+	});
+};
+
+export const gridInputTheme = (primaryColor: string | undefined = undefined) => {
+	const defaultTheme = getDefaultTheme(primaryColor);
+	const blueColor = '#0274d7';
+
+	return createTheme({
+		...defaultTheme,
+		components: {
+			MuiInputBase: {
+				styleOverrides: {
+					root: {
+						'& fieldset': {
+							border: 'none',
 						},
 						'& fieldset > legend': {
 							// size of red error line (label) (input size - 5px)
@@ -245,6 +291,71 @@ export const customDropdownTheme = (primaryColor: string | undefined = undefined
 						'& fieldset': {
 							borderRadius: '16px',
 							border: '1px solid #A3A3AD',
+						},
+						'& fieldset > legend': {
+							// size of red error line (label) (input size - 5px)
+							fontFamily: 'Poppins',
+							fontSize: '14px',
+						},
+					},
+					input: {
+						fontFamily: 'Poppins',
+						fontSize: '19px',
+						caretColor: blueColor,
+					},
+				},
+			},
+			MuiFormControl: {
+				styleOverrides: {
+					root: {
+						'& .MuiFormLabel-root': {
+							fontFamily: 'Poppins',
+							fontSize: '16px',
+							color: '#A3A3AD',
+						},
+						'& .MuiFormLabel-root.Mui-focused': {
+							fontFamily: 'Poppins',
+							fontSize: '19px',
+							color: blueColor,
+						},
+					},
+				},
+			},
+			MuiMenuItem: {
+				styleOverrides: {
+					gutters: {
+						fontFamily: 'Poppins',
+						fontSize: '16px',
+						paddingTop: '10px',
+						paddingBottom: '10px',
+					},
+				},
+			},
+			MuiPaper: {
+				styleOverrides: {
+					root: {
+						border: `1px solid ${blueColor}`,
+						borderBottomLeftRadius: '21px',
+						borderBottomRightRadius: '21px',
+					},
+				},
+			},
+		},
+	});
+};
+
+export const customGridDropdownTheme = (primaryColor: string | undefined = undefined) => {
+	const defaultTheme = getDefaultTheme(primaryColor);
+	const blueColor = '#0274d7';
+
+	return createTheme({
+		...defaultTheme,
+		components: {
+			MuiInputBase: {
+				styleOverrides: {
+					root: {
+						'& fieldset': {
+							border: 'none',
 						},
 						'& fieldset > legend': {
 							// size of red error line (label) (input size - 5px)

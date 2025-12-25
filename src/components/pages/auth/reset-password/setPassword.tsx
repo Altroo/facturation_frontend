@@ -12,13 +12,13 @@ import { Stack } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useFormik } from 'formik';
 import { passwordResetConfirmationSchema } from '@/utils/formValidationSchemas';
-import { coordonneeTextInputTheme } from '@/utils/themes';
+import { textInputTheme } from '@/utils/themes';
 import CustomPasswordInput from '@/components/formikElements/customPasswordInput/customPasswordInput';
 import { useSetPasswordMutation } from '@/store/services/account';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import { Edit as EditIcon, Lock as LockIcon } from '@mui/icons-material';
 
-const inputTheme = coordonneeTextInputTheme();
+const inputTheme = textInputTheme();
 
 type SetPasswordPageContentProps = {
 	email: string;

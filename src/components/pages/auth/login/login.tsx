@@ -18,7 +18,7 @@ import { useFormik } from 'formik';
 import { loginSchema } from '@/utils/formValidationSchemas';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import CustomPasswordInput from '@/components/formikElements/customPasswordInput/customPasswordInput';
-import { coordonneeTextInputTheme } from '@/utils/themes';
+import { textInputTheme } from '@/utils/themes';
 import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
 import { refreshAppTokenStatesAction } from '@/store/actions/_initActions';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
@@ -29,7 +29,7 @@ import {
 	Lock as LockIcon,
 } from '@mui/icons-material';
 
-const inputTheme = coordonneeTextInputTheme();
+const inputTheme = textInputTheme();
 
 const LoginPageContent = () => {
 	const router = useRouter();
