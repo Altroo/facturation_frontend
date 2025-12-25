@@ -632,13 +632,19 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 									const raw = (e.target as HTMLInputElement).value;
 									const parsed = parseNumber(raw);
+									if (parsed !== null && parsed < 0) return;
 									handleLineChangeRef.current(rowIndex, 'prix_vente', parsed === null ? raw : parsed);
 								}}
 								fullWidth
 								size="small"
 								theme={inputTheme}
 								error={hasError}
-								slotProps={{ input: { style: { textAlign: 'center' } } }}
+								slotProps={{
+									input: {
+										style: { textAlign: 'center' },
+										inputProps: { min: 0 },
+									},
+								}}
 							/>
 						</Box>
 					</Tooltip>
@@ -664,12 +670,18 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 									const raw = (e.target as HTMLInputElement).value;
 									const parsed = parseNumber(raw);
+									if (parsed !== null && parsed < 1) return;
 									handleLineChangeRef.current(rowIndex, 'quantity', parsed === null ? raw : parsed);
 								}}
 								fullWidth
 								size="small"
 								theme={inputTheme}
-								slotProps={{ input: { style: { textAlign: 'center' } } }}
+								slotProps={{
+									input: {
+										style: { textAlign: 'center' },
+										inputProps: { min: 1 },
+									},
+								}}
 								error={hasError}
 							/>
 						</Box>
@@ -698,6 +710,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 									const raw = (e.target as HTMLInputElement).value;
 									const parsed = parseNumber(raw);
+									if (parsed !== null && parsed < 0) return;
 									handleLineChangeRef.current(rowIndex, 'remise', parsed === null ? raw : parsed);
 								}}
 								fullWidth
@@ -710,7 +723,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										<InputAdornment position="end">{remiseTypeValue === 'Pourcentage' ? '%' : 'MAD'}</InputAdornment>
 									)
 								}
-								slotProps={{ input: { style: { textAlign: 'center' } } }}
+								slotProps={{
+									input: {
+										style: { textAlign: 'center' },
+										inputProps: { min: 0 },
+									},
+								}}
 							/>
 						</Box>
 					</Tooltip>
