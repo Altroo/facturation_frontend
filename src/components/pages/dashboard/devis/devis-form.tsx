@@ -239,10 +239,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						...data,
 						numero_devis: `${data.numero_part}/${data.year_part}`,
 					};
-					if (!submissionData.remise_type) {
-						delete submissionData.remise_type;
-						delete submissionData.remise;
-					}
 					await updateData({ data: submissionData as DeviSchemaType, id: id! }).unwrap();
 					onSuccess('Devis mis à jour avec succès.');
 				} else {

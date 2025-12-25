@@ -222,10 +222,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						...data,
 						numero_facture: `${data.numero_part}/${data.year_part}`,
 					};
-					if (!submissionData.remise_type) {
-						delete submissionData.remise_type;
-						delete submissionData.remise;
-					}
 					await updateData({ data: submissionData as FactureClientProFormaSchemaType, id: id! }).unwrap();
 					onSuccess('Facture client mis à jour avec succès.');
 				} else {
