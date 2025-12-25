@@ -353,7 +353,15 @@ export const devisFactureLineSchema = z
 export const deviSchema = z
 	.object({
 		numero_part: requiredTextField(1, 15),
-		year_part: requiredTextField(2, 2),
+		year_part: z.preprocess(
+			(val) => (val === undefined || val === null ? NaN : Number(val)),
+			z
+				.number({ error: INPUT_REQUIRED })
+				.refine((val) => !Number.isNaN(val), { error: INPUT_REQUIRED })
+				.refine((val) => val >= 0 && val <= 99 && Number.isInteger(val), {
+					message: INPUT_YEAR_PART_INVALID,
+				}),
+		),
 		client: requiredNumberField(1),
 		date_devis: requiredTextField(1, 100),
 		numero_demande_prix_client: optionalTextField(1, 100).nullable(),
@@ -400,41 +408,39 @@ export const deviSchema = z
 				}
 			}
 		}
-
-		if (data.year_part && !/^\d{2}$/.test(data.year_part)) {
-			ctx.addIssue({
-				path: ['year_part'],
-				code: 'custom',
-				message: INPUT_YEAR_PART_INVALID,
-			});
-		}
 	});
 
-export const deviAddSchema = z
-	.object({
-		numero_part: requiredTextField(1, 15),
-		year_part: requiredTextField(2, 2),
-		client: requiredNumberField(1),
-		date_devis: requiredTextField(1, 100),
-		numero_demande_prix_client: optionalTextField(1, 100).nullable(),
-		mode_paiement: optionalNumberField(0).nullable(),
-		remarque: optionalTextField(2, 500).nullable(),
-		globalError: optionalTextField(1, 500),
-	})
-	.superRefine((data, ctx) => {
-		if (data.year_part && !/^\d{2}$/.test(data.year_part)) {
-			ctx.addIssue({
-				path: ['year_part'],
-				code: 'custom',
+export const deviAddSchema = z.object({
+	numero_part: requiredTextField(1, 15),
+	year_part: z.preprocess(
+		(val) => (val === undefined || val === null ? NaN : Number(val)),
+		z
+			.number({ error: INPUT_REQUIRED })
+			.refine((val) => !Number.isNaN(val), { error: INPUT_REQUIRED })
+			.refine((val) => val >= 0 && val <= 99 && Number.isInteger(val), {
 				message: INPUT_YEAR_PART_INVALID,
-			});
-		}
-	});
+			}),
+	),
+	client: requiredNumberField(1),
+	date_devis: requiredTextField(1, 100),
+	numero_demande_prix_client: optionalTextField(1, 100).nullable(),
+	mode_paiement: optionalNumberField(0).nullable(),
+	remarque: optionalTextField(2, 500).nullable(),
+	globalError: optionalTextField(1, 500),
+});
 
 export const factureClientProformaSchema = z
 	.object({
 		numero_part: requiredTextField(1, 15),
-		year_part: requiredTextField(2, 2),
+		year_part: z.preprocess(
+			(val) => (val === undefined || val === null ? NaN : Number(val)),
+			z
+				.number({ error: INPUT_REQUIRED })
+				.refine((val) => !Number.isNaN(val), { error: INPUT_REQUIRED })
+				.refine((val) => val >= 0 && val <= 99 && Number.isInteger(val), {
+					message: INPUT_YEAR_PART_INVALID,
+				}),
+		),
 		client: requiredNumberField(1),
 		date_facture: requiredTextField(1, 100),
 		numero_bon_commande_client: optionalTextField(1, 100).nullable(),
@@ -481,33 +487,23 @@ export const factureClientProformaSchema = z
 				}
 			}
 		}
-
-		if (data.year_part && !/^\d{2}$/.test(data.year_part)) {
-			ctx.addIssue({
-				path: ['year_part'],
-				code: 'custom',
-				message: INPUT_YEAR_PART_INVALID,
-			});
-		}
 	});
 
-export const factureClientProformaAddSchema = z
-	.object({
-		numero_part: requiredTextField(1, 15),
-		year_part: requiredTextField(2, 2),
-		client: requiredNumberField(1),
-		date_facture: requiredTextField(1, 100),
-		numero_bon_commande_client: optionalTextField(1, 100).nullable(),
-		mode_paiement: optionalNumberField(0).nullable(),
-		remarque: optionalTextField(2, 500).nullable(),
-		globalError: optionalTextField(1, 500),
-	})
-	.superRefine((data, ctx) => {
-		if (data.year_part && !/^\d{2}$/.test(data.year_part)) {
-			ctx.addIssue({
-				path: ['year_part'],
-				code: 'custom',
+export const factureClientProformaAddSchema = z.object({
+	numero_part: requiredTextField(1, 15),
+	year_part: z.preprocess(
+		(val) => (val === undefined || val === null ? NaN : Number(val)),
+		z
+			.number({ error: INPUT_REQUIRED })
+			.refine((val) => !Number.isNaN(val), { error: INPUT_REQUIRED })
+			.refine((val) => val >= 0 && val <= 99 && Number.isInteger(val), {
 				message: INPUT_YEAR_PART_INVALID,
-			});
-		}
-	});
+			}),
+	),
+	client: requiredNumberField(1),
+	date_facture: requiredTextField(1, 100),
+	numero_bon_commande_client: optionalTextField(1, 100).nullable(),
+	mode_paiement: optionalNumberField(0).nullable(),
+	remarque: optionalTextField(2, 500).nullable(),
+	globalError: optionalTextField(1, 500),
+});
