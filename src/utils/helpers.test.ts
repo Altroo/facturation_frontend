@@ -91,6 +91,130 @@ describe('API Utilities', () => {
 			expect(mockSetFieldError).toHaveBeenCalledWith('email', 'Invalid email');
 			expect(mockSetFieldError).toHaveBeenCalledWith('globalError', 'Something went wrong');
 		});
+
+		it('maps numero_devis to numero_part and year_part', () => {
+			const mockSetFieldError = jest.fn();
+			const errorPayload = {
+				error: {
+					status_code: 400,
+					message: 'Invalid',
+					details: {
+						numero_devis: ['Numéro de devis invalide'],
+					},
+				},
+			};
+
+			setFormikAutoErrors({ e: errorPayload, setFieldError: mockSetFieldError });
+
+			expect(mockSetFieldError).toHaveBeenCalledWith('numero_part', 'Numéro de devis invalide');
+			expect(mockSetFieldError).toHaveBeenCalledWith('year_part', 'Numéro de devis invalide');
+		});
+
+		it('maps numero_facture to numero_part and year_part', () => {
+			const mockSetFieldError = jest.fn();
+			const errorPayload = {
+				error: {
+					status_code: 400,
+					message: 'Invalid',
+					details: {
+						numero_facture: ['Numéro de facture invalide'],
+					},
+				},
+			};
+
+			setFormikAutoErrors({ e: errorPayload, setFieldError: mockSetFieldError });
+
+			expect(mockSetFieldError).toHaveBeenCalledWith('numero_part', 'Numéro de facture invalide');
+			expect(mockSetFieldError).toHaveBeenCalledWith('year_part', 'Numéro de facture invalide');
+		});
+
+		it('maps detail field to globalError', () => {
+			const mockSetFieldError = jest.fn();
+			const errorPayload = {
+				error: {
+					status_code: 400,
+					message: 'Invalid',
+					details: {
+						detail: ['Une erreur est survenue'],
+					},
+				},
+			};
+
+			setFormikAutoErrors({ e: errorPayload, setFieldError: mockSetFieldError });
+
+			expect(mockSetFieldError).toHaveBeenCalledWith('globalError', 'Une erreur est survenue');
+		});
+
+		it('reads payload from data property when error is not present', () => {
+			const mockSetFieldError = jest.fn();
+			const errorPayload = {
+				data: {
+					status_code: 400,
+					message: 'Invalid',
+					details: {
+						name: ['Le nom est requis'],
+					},
+				},
+			};
+
+			setFormikAutoErrors({ e: errorPayload, setFieldError: mockSetFieldError });
+
+			expect(mockSetFieldError).toHaveBeenCalledWith('name', 'Le nom est requis');
+		});
+
+		it('reads payload directly when no error or data wrapper', () => {
+			const mockSetFieldError = jest.fn();
+			const errorPayload = {
+				status_code: 400,
+				message: 'Invalid',
+				details: {
+					field: ['Error message'],
+				},
+			};
+
+			setFormikAutoErrors({ e: errorPayload, setFieldError: mockSetFieldError });
+
+			expect(mockSetFieldError).toHaveBeenCalledWith('field', 'Error message');
+		});
+
+		it('handles non-array error messages', () => {
+			const mockSetFieldError = jest.fn();
+			const errorPayload = {
+				error: {
+					status_code: 400,
+					message: 'Invalid',
+					details: {
+						field: 'Single error message',
+					},
+				},
+			};
+
+			setFormikAutoErrors({ e: errorPayload, setFieldError: mockSetFieldError });
+
+			expect(mockSetFieldError).toHaveBeenCalledWith('field', 'Single error message');
+		});
+
+		it('does nothing when details is undefined', () => {
+			const mockSetFieldError = jest.fn();
+			const errorPayload = {
+				error: {
+					status_code: 400,
+					message: 'Invalid',
+				},
+			};
+
+			setFormikAutoErrors({ e: errorPayload, setFieldError: mockSetFieldError });
+
+			expect(mockSetFieldError).not.toHaveBeenCalled();
+		});
+
+		it('does nothing when payload is empty', () => {
+			const mockSetFieldError = jest.fn();
+
+			setFormikAutoErrors({ e: {}, setFieldError: mockSetFieldError });
+
+			expect(mockSetFieldError).not.toHaveBeenCalled();
+		});
 	});
 
 	describe('ValidatePricesHelper', () => {
