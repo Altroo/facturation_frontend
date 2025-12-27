@@ -14,21 +14,6 @@ export type DeviLineSchemaType = {
 	remise: number;
 };
 
-export type DeviSchemaType = {
-	numero_devis?: string;
-	numero_part: string;
-	year_part: string;
-	client: number | null;
-	date_devis: string;
-	numero_demande_prix_client: string | null;
-	mode_paiement: number | null;
-	remarque: string | null;
-	remise_type?: TypeRemiseType;
-	remise?: number;
-	lignes: Array<DeviLineSchemaType>;
-	globalError?: string;
-};
-
 export interface DeviFactureLineFormValues {
 	id?: string | number;
 	article: number;
