@@ -33,6 +33,7 @@ import {
 	Warning as WarningIcon,
 	Edit as EditIcon,
 	Add as AddIcon,
+	Close as CloseIcon,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -1380,11 +1381,19 @@ const CompanyDocumentFormContent: React.FC<SharedDocumentFormContentProps> = (pr
 			{/* Delete Confirmation Modal */}
 			{showDeleteConfirm && (
 				<ActionModals
+					titleIcon={<DeleteIcon />}
+					titleIconColor="#D32F2F"
 					title="Supprimer la ligne"
 					body="Êtes-vous sûr de vouloir supprimer cette ligne ?"
 					actions={[
-						{ active: true, text: 'Oui', onClick: confirmDeleteLine },
-						{ active: false, text: 'Non', onClick: () => setShowDeleteConfirm(false) },
+						{
+							active: false,
+							text: 'Non',
+							onClick: () => setShowDeleteConfirm(false),
+							icon: <CloseIcon />,
+							color: '#6B6B6B',
+						},
+						{ active: true, text: 'Oui', onClick: confirmDeleteLine, icon: <DeleteIcon />, color: '#D32F2F' },
 					]}
 				/>
 			)}
