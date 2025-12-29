@@ -29,7 +29,7 @@ export const articleApi = createApi({
 			}
 		>({
 			query: ({ company_id, with_pagination, page, pageSize, search, archived }) => ({
-				url: process.env.NEXT_PUBLIC_ARTICLE_LIST as string,
+				url: process.env.NEXT_PUBLIC_ARTICLE_LIST,
 				method: 'GET',
 				params: {
 					company_id,
@@ -52,7 +52,7 @@ export const articleApi = createApi({
 		}),
 		getCodeReference: builder.query<Pick<ArticleClass, 'reference'>, void>({
 			query: () => ({
-				url: `${process.env.NEXT_PUBLIC_ARTICLE_GENERATE_CODE_REFERENCE}`,
+				url: process.env.NEXT_PUBLIC_ARTICLE_GENERATE_CODE_REFERENCE,
 				method: 'GET',
 			}),
 			providesTags: ['Article'],

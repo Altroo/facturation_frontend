@@ -31,7 +31,7 @@ export const deviApi = createApi({
 			}
 		>({
 			query: ({ company_id, with_pagination, page, pageSize, search }) => ({
-				url: process.env.NEXT_PUBLIC_DEVIS_LIST as string,
+				url: process.env.NEXT_PUBLIC_DEVIS_LIST,
 				method: 'GET',
 				params: {
 					company_id,
@@ -53,7 +53,7 @@ export const deviApi = createApi({
 		}),
 		getNumDevis: builder.query<Pick<DeviClass, 'numero_devis'>, void>({
 			query: () => ({
-				url: `${process.env.NEXT_PUBLIC_DEVIS_GENERATE_NUM_DEVIS}`,
+				url: process.env.NEXT_PUBLIC_DEVIS_GENERATE_NUM_DEVIS,
 				method: 'GET',
 			}),
 			providesTags: ['Devi'],

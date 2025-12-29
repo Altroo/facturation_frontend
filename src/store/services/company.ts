@@ -25,7 +25,7 @@ export const companyApi = createApi({
 			query: ({ with_pagination, page, pageSize, search }) => ({
 				url: with_pagination
 					? `${process.env.NEXT_PUBLIC_COMPANY_LIST}?search=${search}&page=${page}&page_size=${pageSize}`
-					: (process.env.NEXT_PUBLIC_COMPANY_LIST as string),
+					: process.env.NEXT_PUBLIC_COMPANY_LIST,
 				method: 'GET',
 				params: with_pagination ? { pagination: true } : undefined,
 			}),
@@ -33,7 +33,7 @@ export const companyApi = createApi({
 		}),
 		getUserCompanies: builder.query<Array<CompaniesUserCompaniesType>, void>({
 			query: () => ({
-				url: process.env.NEXT_PUBLIC_USER_COMPANIES_LIST as string,
+				url: process.env.NEXT_PUBLIC_USER_COMPANIES_LIST,
 				method: 'GET',
 			}),
 			providesTags: ['Company'],

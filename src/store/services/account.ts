@@ -15,7 +15,7 @@ export const accountApi = createApi({
 	endpoints: (builder) => ({
 		sendPasswordResetCode: builder.mutation<void | ApiErrorResponseType, { email: string }>({
 			query: (payload) => ({
-				url: process.env.NEXT_PUBLIC_ACCOUNT_SEND_PASSWORD_RESET as string,
+				url: process.env.NEXT_PUBLIC_ACCOUNT_SEND_PASSWORD_RESET,
 				method: 'POST',
 				data: payload,
 			}),
@@ -31,7 +31,7 @@ export const accountApi = createApi({
 			{ email: string; code: string; new_password: string; new_password2: string }
 		>({
 			query: (payload) => ({
-				url: `${process.env.NEXT_PUBLIC_ACCOUNT_PASSWORD_RESET}`,
+				url: process.env.NEXT_PUBLIC_ACCOUNT_PASSWORD_RESET,
 				method: 'PUT',
 				data: payload,
 			}),
@@ -50,7 +50,7 @@ export const groupApi = createApi({
 	endpoints: (builder) => ({
 		getGroups: builder.query<GroupClass, void>({
 			query: () => ({
-				url: process.env.NEXT_PUBLIC_ACCOUNT_GROUPS as string,
+				url: process.env.NEXT_PUBLIC_ACCOUNT_GROUPS,
 				method: 'GET',
 			}),
 		}),
@@ -74,7 +74,7 @@ export const usersApi = createApi({
 			query: ({ with_pagination, page, pageSize, search }) => ({
 				url: with_pagination
 					? `${process.env.NEXT_PUBLIC_USERS_ROOT}?search=${search}&page=${page}&page_size=${pageSize}`
-					: (process.env.NEXT_PUBLIC_USERS_ROOT as string),
+					: process.env.NEXT_PUBLIC_USERS_ROOT,
 				method: 'GET',
 				params: with_pagination ? { pagination: true } : undefined,
 			}),
@@ -90,7 +90,7 @@ export const usersApi = createApi({
 		checkEmail: builder.mutation<void | ApiErrorResponseType, { email: string }>({
 			query: ({ email }) => ({
 				// this is using Account app endpoint
-				url: `${process.env.NEXT_PUBLIC_ACCOUNT_CHECK_EMAIL}`,
+				url: process.env.NEXT_PUBLIC_ACCOUNT_CHECK_EMAIL,
 				method: 'POST',
 				data: { email },
 			}),
@@ -113,7 +113,7 @@ export const usersApi = createApi({
 		}),
 		addUser: builder.mutation<UserClass, { data: Partial<UserClass> }>({
 			query: ({ data }) => ({
-				url: `${process.env.NEXT_PUBLIC_USERS_ROOT}`,
+				url: process.env.NEXT_PUBLIC_USERS_ROOT,
 				method: 'POST',
 				data,
 			}),
@@ -134,14 +134,14 @@ export const profilApi = createApi({
 	endpoints: (builder) => ({
 		getProfil: builder.query<UserClass, void>({
 			query: () => ({
-				url: process.env.NEXT_PUBLIC_ACCOUNT_PROFIL as string,
+				url: process.env.NEXT_PUBLIC_ACCOUNT_PROFIL,
 				method: 'GET',
 			}),
 			providesTags: ['Profil'],
 		}),
 		editProfil: builder.mutation<UserClass, EditProfilResponse>({
 			query: ({ data }) => ({
-				url: process.env.NEXT_PUBLIC_ACCOUNT_PROFIL as string,
+				url: process.env.NEXT_PUBLIC_ACCOUNT_PROFIL,
 				method: 'PATCH',
 				data,
 			}),
@@ -149,7 +149,7 @@ export const profilApi = createApi({
 		}),
 		editPassword: builder.mutation<void | ApiErrorResponseType, PasswordResetResponse>({
 			query: ({ data }) => ({
-				url: process.env.NEXT_PUBLIC_ACCOUNT_PASSWORD_CHANGE as string,
+				url: process.env.NEXT_PUBLIC_ACCOUNT_PASSWORD_CHANGE,
 				method: 'PUT',
 				data,
 			}),

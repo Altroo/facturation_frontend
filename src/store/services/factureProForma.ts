@@ -30,7 +30,7 @@ export const factureProFormaApi = createApi({
 			}
 		>({
 			query: ({ company_id, with_pagination, page, pageSize, search }) => ({
-				url: process.env.NEXT_PUBLIC_FACTURE_PROFORMA_LIST as string,
+				url: process.env.NEXT_PUBLIC_FACTURE_PROFORMA_LIST,
 				method: 'GET',
 				params: {
 					company_id,
@@ -51,7 +51,7 @@ export const factureProFormaApi = createApi({
 		}),
 		getNumFactureProForma: builder.query<Pick<FactureClass, 'numero_facture'>, void>({
 			query: () => ({
-				url: `${process.env.NEXT_PUBLIC_FACTURE_PROFORMA_GENERATE_NUM_FACTURE}`,
+				url: process.env.NEXT_PUBLIC_FACTURE_PROFORMA_GENERATE_NUM_FACTURE,
 				method: 'GET',
 			}),
 			providesTags: ['FactureProForma'],

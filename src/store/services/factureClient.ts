@@ -29,7 +29,7 @@ export const factureClientApi = createApi({
 			}
 		>({
 			query: ({ company_id, with_pagination, page, pageSize, search }) => ({
-				url: process.env.NEXT_PUBLIC_FACTURE_CLIENT_LIST as string,
+				url: process.env.NEXT_PUBLIC_FACTURE_CLIENT_LIST,
 				method: 'GET',
 				params: {
 					company_id,
@@ -51,7 +51,7 @@ export const factureClientApi = createApi({
 		}),
 		getNumFactureClient: builder.query<Pick<FactureClass, 'numero_facture'>, void>({
 			query: () => ({
-				url: `${process.env.NEXT_PUBLIC_FACTURE_CLIENT_GENERATE_NUM_FACTURE}`,
+				url: process.env.NEXT_PUBLIC_FACTURE_CLIENT_GENERATE_NUM_FACTURE,
 				method: 'GET',
 			}),
 			providesTags: ['FactureClient'],

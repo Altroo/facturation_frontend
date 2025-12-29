@@ -136,10 +136,10 @@ export const { handlers, auth } = NextAuth({
 		},
 
 		async session({ session, token }) {
-			session.accessToken = token.access as string;
-			session.refreshToken = token.refresh as string;
-			session.accessTokenExpiration = token.access_expiration as string;
-			session.refreshTokenExpiration = token.refresh_expiration as string;
+			session.accessToken = token.access;
+			session.refreshToken = token.refresh;
+			session.accessTokenExpiration = token.access_expiration;
+			session.refreshTokenExpiration = token.refresh_expiration;
 			session.user = token.user as never;
 			return session;
 		},

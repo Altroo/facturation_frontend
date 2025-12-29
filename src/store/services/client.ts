@@ -29,7 +29,7 @@ export const clientApi = createApi({
 			}
 		>({
 			query: ({ company_id, with_pagination, page, pageSize, search, archived }) => ({
-				url: process.env.NEXT_PUBLIC_CLIENT_LIST as string,
+				url: process.env.NEXT_PUBLIC_CLIENT_LIST,
 				method: 'GET',
 				params: {
 					company_id,
@@ -52,7 +52,7 @@ export const clientApi = createApi({
 		}),
 		getCodeClient: builder.query<Pick<ClientClass, 'code_client'>, void>({
 			query: () => ({
-				url: `${process.env.NEXT_PUBLIC_CLIENT_GENERATE_CODE_CLIENT}`,
+				url: process.env.NEXT_PUBLIC_CLIENT_GENERATE_CODE_CLIENT,
 				method: 'GET',
 			}),
 			providesTags: ['Client'],

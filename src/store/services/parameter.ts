@@ -27,7 +27,7 @@ export const citiesApi = createApi({
 	endpoints: (builder) => ({
 		getCitiesList: builder.query<Array<CitiesClass>, void>({
 			query: () => ({
-				url: process.env.NEXT_PUBLIC_PARAMETER_VILLE as string,
+				url: process.env.NEXT_PUBLIC_PARAMETER_VILLE,
 				method: 'GET',
 			}),
 			providesTags: ['Cities'],
@@ -77,7 +77,7 @@ export const marqueApi = createApi({
 	endpoints: (builder) => ({
 		getMarqueList: builder.query<Array<MarqueClass>, void>({
 			query: () => ({
-				url: process.env.NEXT_PUBLIC_PARAMETER_MARQUE as string,
+				url: process.env.NEXT_PUBLIC_PARAMETER_MARQUE,
 				method: 'GET',
 			}),
 			providesTags: ['Marque'],
@@ -127,7 +127,7 @@ export const categorieApi = createApi({
 	endpoints: (builder) => ({
 		getCategorieList: builder.query<Array<CategorieClass>, void>({
 			query: () => ({
-				url: process.env.NEXT_PUBLIC_PARAMETER_CATEGORIE as string,
+				url: process.env.NEXT_PUBLIC_PARAMETER_CATEGORIE,
 				method: 'GET',
 			}),
 			providesTags: ['Categorie'],
@@ -179,7 +179,7 @@ export const uniteApi = createApi({
 	endpoints: (builder) => ({
 		getUniteList: builder.query<Array<UniteClass>, void>({
 			query: () => ({
-				url: process.env.NEXT_PUBLIC_PARAMETER_UNITE as string,
+				url: process.env.NEXT_PUBLIC_PARAMETER_UNITE,
 				method: 'GET',
 			}),
 			providesTags: ['Unite'],
@@ -229,7 +229,7 @@ export const emplacementApi = createApi({
 	endpoints: (builder) => ({
 		getEmplacementList: builder.query<Array<EmplacementClass>, void>({
 			query: () => ({
-				url: process.env.NEXT_PUBLIC_PARAMETER_EMPLACEMENT as string,
+				url: process.env.NEXT_PUBLIC_PARAMETER_EMPLACEMENT,
 				method: 'GET',
 			}),
 			providesTags: ['Emplacement'],
@@ -282,7 +282,7 @@ export const modePaiementApi = createApi({
 	endpoints: (builder) => ({
 		getModePaiementList: builder.query<Array<ModePaiementClass>, void>({
 			query: () => ({
-				url: process.env.NEXT_PUBLIC_PARAMETER_MODE_PAIEMENT as string,
+				url: process.env.NEXT_PUBLIC_PARAMETER_MODE_PAIEMENT,
 				method: 'GET',
 			}),
 			providesTags: ['ModePaiement'],
@@ -335,7 +335,7 @@ export const modeReglementApi = createApi({
 	endpoints: (builder) => ({
 		getModeReglementList: builder.query<Array<ModeReglementClass>, void>({
 			query: () => ({
-				url: process.env.NEXT_PUBLIC_PARAMETER_MODE_REGLEMENT as string,
+				url: process.env.NEXT_PUBLIC_PARAMETER_MODE_REGLEMENT,
 				method: 'GET',
 			}),
 			providesTags: ['ModeReglement'],
