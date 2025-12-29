@@ -6,6 +6,9 @@ import type {
 	TypeFactureDevisStatus,
 } from '@/types/devisTypes';
 import type { SessionProps } from '@/types/_initTypes';
+import type { DeviClass, FactureClass } from '@/models/classes';
+import type { PaginationResponseType } from '@/types/_initTypes';
+import type { GridColDef } from '@mui/x-data-grid';
 
 type Ligne = {
 	article: number;
@@ -221,25 +224,8 @@ export interface DocumentFormConfig {
 	validation: DocumentFormValidation;
 }
 
-// ============================================================================
-// List Component Types
-// ============================================================================
-
-import type { DeviClass, FactureClass } from '@/models/classes';
-import type { PaginationResponseType } from '@/types/_initTypes';
-import type { GridColDef } from '@mui/x-data-grid';
-
 /** Union type for document class in list views */
 export type DocumentListClass = DeviClass | FactureClass;
-
-/** Query params for fetching document list */
-export interface DocumentListQueryParams {
-	company_id: number;
-	with_pagination: boolean;
-	page: number;
-	pageSize: number;
-	search: string;
-}
 
 /** Pagination model type */
 export interface PaginationModel {
@@ -344,26 +330,6 @@ export interface DocumentListConfig<TDocument extends DocumentListClass> {
 		router: ReturnType<typeof import('next/navigation').useRouter>;
 		companyId: number;
 	}) => GridColDef[];
-}
-
-/** Props for the shared document list content component */
-export interface DocumentListContentProps<TDocument extends DocumentListClass> {
-	/** Session token */
-	token: string | undefined;
-	/** Company ID */
-	companyId: number;
-	/** User role */
-	role: string;
-	/** Router instance */
-	router: ReturnType<typeof import('next/navigation').useRouter>;
-	/** Configuration for the list */
-	config: DocumentListConfig<TDocument>;
-	/** Query result from RTK Query hook */
-	queryResult: DocumentListQueryResult<TDocument>;
-	/** Delete mutation function */
-	deleteMutation: DocumentDeleteMutationResult;
-	/** Convert mutations - key is action key, value is mutation result */
-	convertMutations: Record<string, DocumentConvertMutationResult>;
 }
 
 export type { DeviFactureLineFormValues, DeviLineSchemaType, TypeRemiseType, TypeFactureDevisStatus };
