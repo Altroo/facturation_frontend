@@ -221,4 +221,149 @@ export interface DocumentFormConfig {
 	validation: DocumentFormValidation;
 }
 
+// ============================================================================
+// List Component Types
+// ============================================================================
+
+import type { DeviClass, FactureClass } from '@/models/classes';
+import type { PaginationResponseType } from '@/types/_initTypes';
+import type { GridColDef } from '@mui/x-data-grid';
+
+/** Union type for document class in list views */
+export type DocumentListClass = DeviClass | FactureClass;
+
+/** Query params for fetching document list */
+export interface DocumentListQueryParams {
+	company_id: number;
+	with_pagination: boolean;
+	page: number;
+	pageSize: number;
+	search: string;
+}
+
+/** Pagination model type */
+export interface PaginationModel {
+	page: number;
+	pageSize: number;
+}
+
+/** Convert action configuration */
+export interface ConvertAction {
+	/** Unique key for the action */
+	key: string;
+	/** Label shown in menu */
+	label: string;
+	/** Icon component */
+	icon: React.ReactNode;
+	/** Modal title */
+	modalTitle: string;
+	/** Modal body message */
+	modalBody: string;
+	/** Whether the action is disabled */
+	disabled?: boolean;
+	/** Route to redirect after successful conversion */
+	redirectRoute: (id: number, companyId: number) => string;
+}
+
+/** Labels configuration for document list */
+export interface DocumentListLabels {
+	/** Document type singular name (e.g., "devi", "facture client", "facture pro-forma") */
+	documentTypeName: string;
+	/** Page title (e.g., "Liste des Devis") */
+	pageTitle: string;
+	/** Button text for adding new document */
+	addButtonText: string;
+	/** Success message for delete operation */
+	deleteSuccessMessage: string;
+	/** Error message for delete operation */
+	deleteErrorMessage: string;
+	/** Delete confirmation title */
+	deleteConfirmTitle: string;
+	/** Delete confirmation body */
+	deleteConfirmBody: string;
+}
+
+/** Routes configuration for document list */
+export interface DocumentListRoutes {
+	/** Function to generate the add route */
+	addRoute: (companyId: number) => string;
+	/** Function to generate the edit route */
+	editRoute: (id: number, companyId: number) => string;
+	/** Function to generate the view route */
+	viewRoute: (id: number, companyId: number) => string;
+}
+
+/** Column configuration for document list */
+export interface DocumentListColumnConfig<TDocument extends DocumentListClass> {
+	/** Field name for document number (e.g., "numero_devis" or "numero_facture") */
+	numeroField: keyof TDocument;
+	/** Header name for document number column */
+	numeroHeaderName: string;
+	/** Field name for document date (e.g., "date_devis" or "date_facture") */
+	dateField: keyof TDocument;
+	/** Header name for document date column */
+	dateHeaderName: string;
+	/** Extra field name (e.g., "numero_demande_prix_client" or "numero_bon_commande_client") */
+	extraField: keyof TDocument;
+	/** Header name for extra field column */
+	extraFieldHeaderName: string;
+}
+
+/** Query result interface */
+export interface DocumentListQueryResult<TDocument extends DocumentListClass> {
+	data: PaginationResponseType<TDocument> | undefined;
+	isLoading: boolean;
+	refetch: () => void;
+}
+
+/** Delete mutation result interface */
+export interface DocumentDeleteMutationResult {
+	deleteRecord: (params: { id: number }) => { unwrap: () => Promise<unknown> };
+}
+
+/** Convert mutation result interface */
+export interface DocumentConvertMutationResult {
+	convertMutation: (params: { id: number }) => { unwrap: () => Promise<{ id: number }> };
+	isLoading: boolean;
+}
+
+/** Complete configuration for document list component */
+export interface DocumentListConfig<TDocument extends DocumentListClass> {
+	/** Document type identifier */
+	documentType: DocumentType;
+	/** Labels for the list */
+	labels: DocumentListLabels;
+	/** Routes configuration */
+	routes: DocumentListRoutes;
+	/** Column configuration */
+	columns: DocumentListColumnConfig<TDocument>;
+	/** Convert actions configuration */
+	convertActions: ConvertAction[];
+	/** Custom columns function (returns GridColDef[]) */
+	getExtraColumns?: (args: {
+		router: ReturnType<typeof import('next/navigation').useRouter>;
+		companyId: number;
+	}) => GridColDef[];
+}
+
+/** Props for the shared document list content component */
+export interface DocumentListContentProps<TDocument extends DocumentListClass> {
+	/** Session token */
+	token: string | undefined;
+	/** Company ID */
+	companyId: number;
+	/** User role */
+	role: string;
+	/** Router instance */
+	router: ReturnType<typeof import('next/navigation').useRouter>;
+	/** Configuration for the list */
+	config: DocumentListConfig<TDocument>;
+	/** Query result from RTK Query hook */
+	queryResult: DocumentListQueryResult<TDocument>;
+	/** Delete mutation function */
+	deleteMutation: DocumentDeleteMutationResult;
+	/** Convert mutations - key is action key, value is mutation result */
+	convertMutations: Record<string, DocumentConvertMutationResult>;
+}
+
 export type { DeviFactureLineFormValues, DeviLineSchemaType, TypeRemiseType, TypeFactureDevisStatus };
