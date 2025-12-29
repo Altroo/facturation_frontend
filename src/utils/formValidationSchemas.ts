@@ -278,24 +278,34 @@ export const clientSchema = z
 		}
 	});
 
-export const articleSchema = z.object({
-	type_article: z.enum(['Produit', 'Service']),
-	reference: requiredTextField(2, 100),
-	designation: requiredTextField(2, 500),
-	company: requiredNumberField(1),
-	// optional fields
-	photo: base64ImageField,
-	photo_cropped: base64ImageField,
-	emplacement: optionalNumberField(1).nullable(),
-	marque: optionalNumberField(1).nullable(),
-	categorie: optionalNumberField(1).nullable(),
-	unite: optionalNumberField(1).nullable(),
-	prix_achat: optionalNumberField(0).nullable(),
-	prix_vente: optionalNumberField(0).nullable(),
-	tva: optionalNumberField(0).nullable(),
-	remarque: optionalTextField(2, 500).nullable(),
-	globalError: optionalTextField(1, 500),
-});
+export const articleSchema = z
+	.object({
+		type_article: z.enum(['Produit', 'Service']),
+		reference: requiredTextField(2, 100),
+		designation: requiredTextField(2, 500),
+		company: requiredNumberField(1),
+		// optional fields
+		photo: base64ImageField,
+		photo_cropped: base64ImageField,
+		emplacement: optionalNumberField(1).nullable(),
+		marque: optionalNumberField(1).nullable(),
+		categorie: optionalNumberField(1).nullable(),
+		unite: optionalNumberField(1).nullable(),
+		prix_achat: optionalNumberField(0).nullable(),
+		prix_vente: optionalNumberField(0).nullable(),
+		tva: optionalNumberField(0).nullable(),
+		remarque: optionalTextField(2, 500).nullable(),
+		globalError: optionalTextField(1, 500),
+	})
+	.refine(
+		(data) => {
+			const a = data.prix_achat;
+			const v = data.prix_vente;
+			if (a === undefined || a === null || v === undefined || v === null) return true;
+			return v > a;
+		},
+		{ error: INPUT_PRICE_VENTE_ACHAT, path: ['prix_vente'] },
+	);
 
 export const devisFactureLineSchema = z
 	.object({
