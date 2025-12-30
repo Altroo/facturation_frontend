@@ -71,7 +71,7 @@ describe('BonDeLivraisonViewPage server component', () => {
 	});
 
 	it('redirects to BON_DE_LIVRAISON_LIST when id or company_id is invalid', async () => {
-		const sessionValue: Session = { user: { pk: 1, email: 'bon-de-livraison@site.com' } };
+		const sessionValue: Session = { user: { pk: 1, email: 'dev@site.com' } };
 		mockAuth.mockResolvedValue(sessionValue);
 
 		let Page: (props: {
@@ -95,7 +95,7 @@ describe('BonDeLivraisonViewPage server component', () => {
 	});
 
 	it('renders BonDeLivraisonViewClient with session, id, and company_id when valid', async () => {
-		const sessionValue: Session = { user: { pk: 99, email: 'bon-de-livraison@site.com' } };
+		const sessionValue: Session = { user: { pk: 99, email: 'dev@site.com' } };
 		mockAuth.mockResolvedValueOnce(sessionValue);
 
 		let Page: (props: {
@@ -118,7 +118,7 @@ describe('BonDeLivraisonViewPage server component', () => {
 		const decoded = html.replace(/&quot;/g, '"');
 
 		expect(decoded).toContain('"pk":99');
-		expect(decoded).toContain('"email":"bon-de-livraison@site.com"');
+		expect(decoded).toContain('"email":"dev@site.com"');
 		expect(decoded).toContain('ID=123');
 		expect(decoded).toContain('COMPANY_ID=456');
 		expect(mockRedirect).not.toHaveBeenCalled();

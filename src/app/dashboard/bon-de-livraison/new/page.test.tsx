@@ -67,7 +67,7 @@ describe('BonDeLivraisonNewCompanyIDPage server component', () => {
 	});
 
 	it('redirects to BON_DE_LIVRAISON_LIST when company_id is invalid', async () => {
-		const sessionValue: Session = { user: { pk: 1, email: 'bon-de-livraison@site.com' } };
+		const sessionValue: Session = { user: { pk: 1, email: 'dev@site.com' } };
 		mockAuth.mockResolvedValue(sessionValue);
 
 		let Page: (props: { searchParams: Promise<{ company_id: string }> }) => Promise<unknown>;
@@ -83,7 +83,7 @@ describe('BonDeLivraisonNewCompanyIDPage server component', () => {
 	});
 
 	it('renders BonDeLivraisonForm with session and company_id when valid', async () => {
-		const sessionValue: Session = { user: { pk: 99, email: 'bon-de-livraison@site.com' } };
+		const sessionValue: Session = { user: { pk: 99, email: 'dev@site.com' } };
 		mockAuth.mockResolvedValueOnce(sessionValue);
 
 		let Page: (props: { searchParams: Promise<{ company_id: string }> }) => Promise<unknown>;
@@ -101,7 +101,7 @@ describe('BonDeLivraisonNewCompanyIDPage server component', () => {
 		const decoded = html.replace(/&quot;/g, '"');
 
 		expect(decoded).toContain('"pk":99');
-		expect(decoded).toContain('"email":"bon-de-livraison@site.com"');
+		expect(decoded).toContain('"email":"dev@site.com"');
 		expect(decoded).toContain('COMPANY_ID=456');
 		expect(mockRedirect).not.toHaveBeenCalled();
 	});
