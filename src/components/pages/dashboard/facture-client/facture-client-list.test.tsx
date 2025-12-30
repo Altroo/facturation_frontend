@@ -34,7 +34,7 @@ jest.mock('@/utils/hooks', () => ({
 // Mock RTK Query hooks
 const mockRefetch = jest.fn();
 const mockDeleteRecord = jest.fn();
-const mockConvertToProforma = jest.fn();
+const mockConvertToBonDeLivraison = jest.fn();
 
 jest.mock('@/store/services/factureClient', () => ({
 	useGetFactureClientListQuery: jest.fn(() => ({
@@ -71,10 +71,7 @@ jest.mock('@/store/services/factureClient', () => ({
 		refetch: mockRefetch,
 	})),
 	useDeleteFactureClientMutation: jest.fn(() => [mockDeleteRecord, { isLoading: false }]),
-}));
-
-jest.mock('@/store/services/devi', () => ({
-	useConvertDeviToFactureProFormaMutation: jest.fn(() => [mockConvertToProforma, { isLoading: false }]),
+	useConvertFactureClientToBonDeLivraisonMutation: jest.fn(() => [mockConvertToBonDeLivraison, { isLoading: false }]),
 }));
 
 // Mock devis-list exports
