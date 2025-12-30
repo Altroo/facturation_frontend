@@ -7,6 +7,7 @@ import type { ApiErrorResponseType, PaginationResponseType, SuccessResponseType 
 import type { RootState } from '@/store/store';
 import { initToken } from '@/store/slices/_initSlice';
 import type { TypeFactureDevisStatus } from '@/types/devisTypes';
+import { bonDeLivraisonApi } from '@/store/services/bonDeLivraison';
 
 export const factureClientApi = createApi({
 	reducerPath: 'factureClientApi',
@@ -81,6 +82,22 @@ export const factureClientApi = createApi({
 			}),
 			invalidatesTags: ['FactureClient'],
 		}),
+		convertFactureClientToBonDeLivraison: builder.mutation<{ id: number }, { id: number }>({
+			query: ({ id }) => ({
+				url: `${process.env.NEXT_PUBLIC_FACTURE_CLIENT_CONVERT_TO_BON_DE_LIVRAISON}${id}/`,
+				method: 'POST',
+			}),
+			invalidatesTags: ['FactureClient'],
+			async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+				try {
+					await queryFulfilled;
+					// Invalidate the factureProFormaApi tag so its list refetches
+					dispatch(bonDeLivraisonApi.util.invalidateTags(['BonDeLivraison']));
+				} catch {
+					// ignore
+				}
+			},
+		}),
 		patchStatut: builder.mutation<
 			SuccessResponseType<FactureClass>,
 			{ id: number; data: { statut: TypeFactureDevisStatus } }
@@ -102,5 +119,6 @@ export const {
 	useGetNumFactureClientQuery,
 	useGetFactureClientQuery,
 	useAddFactureClientMutation,
+	useConvertFactureClientToBonDeLivraisonMutation,
 	usePatchStatutMutation,
 } = factureClientApi;

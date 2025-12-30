@@ -4,8 +4,12 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ReceiptLong as ReceiptLongIcon } from '@mui/icons-material';
 import { getAccessTokenFromSession } from '@/store/session';
-import { useDeleteFactureClientMutation, useGetFactureClientListQuery } from '@/store/services/factureClient';
-import { FACTURE_CLIENT_ADD, FACTURE_CLIENT_EDIT, FACTURE_CLIENT_VIEW } from '@/utils/routes';
+import {
+	useConvertFactureClientToBonDeLivraisonMutation,
+	useDeleteFactureClientMutation,
+	useGetFactureClientListQuery,
+} from '@/store/services/factureClient';
+import { BON_DE_LIVRAISON_EDIT, FACTURE_CLIENT_ADD, FACTURE_CLIENT_EDIT, FACTURE_CLIENT_VIEW } from '@/utils/routes';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import type { FactureClass } from '@/models/classes';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
@@ -38,13 +42,13 @@ const factureClientListConfig: DocumentListConfig<FactureClass> = {
 	},
 	convertActions: [
 		{
-			key: 'bon_livraison',
-			label: 'Bon de livraison (bientôt)',
-			icon: <ReceiptLongIcon fontSize="small" />,
+			key: 'bon_de_livraison',
+			label: 'Bon de livraison',
+			icon: <ReceiptLongIcon fontSize="small" color="success" />,
 			modalTitle: 'Convertir en bon de livraison ?',
 			modalBody: 'Êtes-vous sûr de vouloir convertir cette facture client en bon de livraison ?',
-			disabled: true,
-			redirectRoute: FACTURE_CLIENT_EDIT, // Placeholder - will be updated when bon de livraison is implemented
+			disabled: false,
+			redirectRoute: BON_DE_LIVRAISON_EDIT,
 		},
 	],
 };
@@ -85,8 +89,16 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 	const [deleteRecord] = useDeleteFactureClientMutation();
 
 	// Convert mutations map - empty for now since bon de livraison is not implemented
-	// The placeholder mutation is not needed since the action is disabled
-	const convertMutations = {};
+	const [convertToBonDeLivraison, { isLoading: isConvertToBonDeLivraisonLoading }] =
+		useConvertFactureClientToBonDeLivraisonMutation();
+
+	// Convert mutations map
+	const convertMutations = {
+		bon_de_livraison: {
+			convertMutation: convertToBonDeLivraison,
+			isLoading: isConvertToBonDeLivraisonLoading,
+		},
+	};
 
 	return (
 		<CompanyDocumentsListContent<FactureClass>
