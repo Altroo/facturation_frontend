@@ -178,4 +178,25 @@ describe('routes constants', () => {
 		expect(FACTURE_CLIENT_VIEW(5, 99)).toBe(`${SITE_ROOT}dashboard/facture-client/5/?company_id=99`);
 		expect(FACTURE_CLIENT_EDIT(7, 123)).toBe(`${SITE_ROOT}dashboard/facture-client/7/edit/?company_id=123`);
 	});
+
+	it('exports bon de livraison routes and functions', () => {
+		const {
+			SITE_ROOT,
+			BON_DE_LIVRAISON_LIST,
+			BON_DE_LIVRAISON_ADD,
+			BON_DE_LIVRAISON_VIEW,
+			BON_DE_LIVRAISON_EDIT,
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
+		} = require('./routes');
+
+		expect(BON_DE_LIVRAISON_LIST).toBe(`${SITE_ROOT}dashboard/bon-de-livraison`);
+		expect(typeof BON_DE_LIVRAISON_ADD).toBe('function');
+		expect(BON_DE_LIVRAISON_ADD(42)).toBe(`${SITE_ROOT}dashboard/bon-de-livraison/new/?company_id=42`);
+
+		expect(typeof BON_DE_LIVRAISON_VIEW).toBe('function');
+		expect(typeof BON_DE_LIVRAISON_EDIT).toBe('function');
+
+		expect(BON_DE_LIVRAISON_VIEW(5, 99)).toBe(`${SITE_ROOT}dashboard/bon-de-livraison/5/?company_id=99`);
+		expect(BON_DE_LIVRAISON_EDIT(7, 123)).toBe(`${SITE_ROOT}dashboard/bon-de-livraison/7/edit/?company_id=123`);
+	});
 });

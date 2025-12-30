@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen, cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import type { DocumentFormConfig } from '@/types/companyDocumentsTypes';
+import { DeviClass } from '@/models/classes';
 
 // Mock the entire component to prevent memory issues from Formik/Zod validation
 jest.mock('./companyDocumentFormContent', () => ({
@@ -21,7 +22,7 @@ jest.mock('./companyDocumentFormContent', () => ({
 				<span data-testid="token">{String(props.token)}</span>
 				<span data-testid="company-id">{String(props.company_id)}</span>
 				<span data-testid="is-edit-mode">{String(props.isEditMode)}</span>
-				<span data-testid="document-type">{(props.config as DocumentFormConfig)?.documentType}</span>
+				<span data-testid="document-type">{(props.config as DocumentFormConfig<DeviClass>)?.documentType}</span>
 			</div>
 		);
 	},
@@ -30,7 +31,7 @@ jest.mock('./companyDocumentFormContent', () => ({
 // Import after mocking
 import CompanyDocumentFormContent from './companyDocumentFormContent';
 
-const mockDevisConfig: DocumentFormConfig = {
+const mockDevisConfig: DocumentFormConfig<DeviClass> = {
 	documentType: 'devis',
 	labels: {
 		documentTypeName: 'devis',
@@ -55,8 +56,8 @@ const mockDevisConfig: DocumentFormConfig = {
 		editRoute: (id: number, companyId: number) => `/dashboard/devis/${id}/edit?company_id=${companyId}`,
 	},
 	validation: {
-		editSchema: { parse: jest.fn() } as unknown as DocumentFormConfig['validation']['editSchema'],
-		addSchema: { parse: jest.fn() } as unknown as DocumentFormConfig['validation']['addSchema'],
+		editSchema: { parse: jest.fn() } as unknown as DocumentFormConfig<DeviClass>['validation']['editSchema'],
+		addSchema: { parse: jest.fn() } as unknown as DocumentFormConfig<DeviClass>['validation']['addSchema'],
 	},
 };
 

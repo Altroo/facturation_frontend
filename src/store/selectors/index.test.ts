@@ -11,6 +11,7 @@ import {
 	getEmplacementsState,
 	getUnitesState,
 	getMarquesState,
+	getLivreParState,
 } from './index';
 
 import {
@@ -22,6 +23,7 @@ import {
 	EmplacementClass,
 	UniteClass,
 	MarqueClass,
+	LivreParClass,
 } from '@/models/classes';
 import type { CompaniesUserCompaniesType } from '@/types/companyTypes';
 
@@ -36,6 +38,7 @@ describe('Redux selectors', () => {
 	const mockMarques = [new MarqueClass(1, 'Brand1'), new MarqueClass(2, 'Brand2')];
 	const mockModePaiement = [new ModePaiementClass(1, 'Cash'), new ModePaiementClass(2, 'Card')];
 	const mockModeRegelement = [new ModeReglementClass(1, 'Immediate'), new ModeReglementClass(2, 'Deferred')];
+	const mockLivrePar = [new LivreParClass(1, 'Altroo'), new LivreParClass(2, 'Yooy')];
 	const mockState = {
 		_init: {
 			initStateToken: {
@@ -67,6 +70,7 @@ describe('Redux selectors', () => {
 			marques: mockMarques,
 			modePaiement: mockModePaiement,
 			modeReglement: mockModeRegelement,
+			livrePar: mockLivrePar,
 		},
 		companies: {
 			user_companies: mockCompanies,
@@ -150,5 +154,12 @@ describe('Redux selectors', () => {
 		expect(Array.isArray(modeRegelement)).toBe(true);
 		expect(modeRegelement[0]).toBeInstanceOf(ModeReglementClass);
 		expect(modeRegelement.map((m) => m.nom)).toEqual(['Immediate', 'Deferred']);
+	});
+
+	it('getLivreParState should return the livrePar array', () => {
+		const livrePar = getLivreParState(mockState);
+		expect(Array.isArray(livrePar)).toBe(true);
+		expect(livrePar[0]).toBeInstanceOf(LivreParClass);
+		expect(livrePar.map((m) => m.nom)).toEqual(['Altroo', 'Yooy']);
 	});
 });

@@ -99,6 +99,7 @@ const buildProps = (overrides?: Partial<CompanyDocumentsViewProps<TestDoc>>): Co
 		session: {} as CompanyDocumentsViewProps<TestDoc>['session'],
 		company_id: 1,
 		id: 10,
+		type: 'devis',
 		title: 'Doc view',
 		backLabel: 'Back',
 		backTo: '/back',

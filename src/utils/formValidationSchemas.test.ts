@@ -10,10 +10,12 @@ import {
 	clientSchema,
 	articleSchema,
 	deviSchema,
-	devisFactureLineSchema,
+	devisLivraisonFactureLineSchema,
 	deviAddSchema,
 	factureClientProformaSchema,
 	factureClientProformaAddSchema,
+	bonDeLivraisonSchema,
+	bonDeLivraisonAddSchema,
 } from './formValidationSchemas';
 
 describe('Zod Schema Validation', () => {
@@ -249,7 +251,7 @@ describe('Zod Schema Validation', () => {
 	describe('devisLineSchema', () => {
 		it('validates a correct line', () => {
 			expect(() =>
-				devisFactureLineSchema.parse({
+				devisLivraisonFactureLineSchema.parse({
 					article: 1,
 					prix_achat: 100,
 					prix_vente: 150,
@@ -262,7 +264,7 @@ describe('Zod Schema Validation', () => {
 
 		it('fails when prix_vente is less than prix_achat', () => {
 			expect(() =>
-				devisFactureLineSchema.parse({
+				devisLivraisonFactureLineSchema.parse({
 					article: 1,
 					prix_achat: 200,
 					prix_vente: 150,
@@ -274,7 +276,7 @@ describe('Zod Schema Validation', () => {
 
 		it('fails with negative quantity', () => {
 			expect(() =>
-				devisFactureLineSchema.parse({
+				devisLivraisonFactureLineSchema.parse({
 					article: 1,
 					prix_achat: 100,
 					prix_vente: 150,
@@ -286,7 +288,7 @@ describe('Zod Schema Validation', () => {
 
 		it('requires remise when remise_type is provided', () => {
 			expect(() =>
-				devisFactureLineSchema.parse({
+				devisLivraisonFactureLineSchema.parse({
 					article: 1,
 					prix_achat: 100,
 					prix_vente: 150,
@@ -299,7 +301,7 @@ describe('Zod Schema Validation', () => {
 		it('fails when remise is non-integer or out of bounds for percentage', () => {
 			// non-integer
 			expect(() =>
-				devisFactureLineSchema.parse({
+				devisLivraisonFactureLineSchema.parse({
 					article: 1,
 					prix_achat: 100,
 					prix_vente: 150,
@@ -311,7 +313,7 @@ describe('Zod Schema Validation', () => {
 
 			// percentage out of bounds
 			expect(() =>
-				devisFactureLineSchema.parse({
+				devisLivraisonFactureLineSchema.parse({
 					article: 1,
 					prix_achat: 100,
 					prix_vente: 150,
@@ -736,6 +738,217 @@ describe('Zod Schema Validation', () => {
 					numero_part: 'FA102',
 					year_part: '25',
 					date_facture: '2025-12-04',
+				}),
+			).toThrow();
+		});
+	});
+
+	// ✅ bonDeLivraisonSchema
+	describe('bonDeLivraisonSchema', () => {
+		it('validates required fields (with explicit remise)', () => {
+			expect(() =>
+				bonDeLivraisonSchema.parse({
+					numero_part: 'BL001',
+					year_part: '25',
+					client: 1,
+					date_bon_livraison: '2025-12-04',
+					mode_paiement: 2,
+					livre_par: 3,
+					remise: 0,
+					lignes: [
+						{
+							article: 1,
+							prix_achat: 100,
+							prix_vente: 150,
+							quantity: 2,
+							remise: 0,
+						},
+					],
+				}),
+			).not.toThrow();
+		});
+
+		it('accepts when remise and remise_type are both omitted', () => {
+			expect(() =>
+				bonDeLivraisonSchema.parse({
+					numero_part: 'BL010',
+					year_part: '25',
+					client: 1,
+					date_bon_livraison: '2025-12-04',
+					mode_paiement: 2,
+				}),
+			).not.toThrow();
+		});
+
+		it('validates when remise_type provided and remise present (top-level and line)', () => {
+			expect(() =>
+				bonDeLivraisonSchema.parse({
+					numero_part: 'BL012',
+					year_part: '25',
+					client: 1,
+					date_bon_livraison: '2025-12-04',
+					mode_paiement: 2,
+					remise_type: 'Pourcentage',
+					remise: 10,
+					lignes: [
+						{
+							article: 1,
+							prix_achat: 100,
+							prix_vente: 150,
+							quantity: 2,
+							remise_type: 'Fixe',
+							remise: 5,
+						},
+					],
+				}),
+			).not.toThrow();
+		});
+
+		it('fails when top-level remise_type is provided but remise is missing', () => {
+			expect(() =>
+				bonDeLivraisonSchema.parse({
+					numero_part: 'BL011',
+					year_part: '25',
+					client: 1,
+					date_bon_livraison: '2025-12-04',
+					mode_paiement: 2,
+					remise_type: 'Pourcentage',
+				}),
+			).toThrow();
+		});
+
+		it('fails when a line has remise_type but missing remise', () => {
+			expect(() =>
+				bonDeLivraisonSchema.parse({
+					numero_part: 'BL013',
+					year_part: '25',
+					client: 1,
+					date_bon_livraison: '2025-12-04',
+					mode_paiement: 2,
+					lignes: [
+						{
+							article: 1,
+							prix_achat: 100,
+							prix_vente: 150,
+							quantity: 2,
+							remise_type: 'Pourcentage',
+						},
+					],
+				}),
+			).toThrow();
+		});
+
+		it('fails with missing client', () => {
+			expect(() =>
+				bonDeLivraisonSchema.parse({
+					numero_part: 'BL002',
+					year_part: '25',
+					date_bon_livraison: '2025-12-04',
+					mode_paiement: 2,
+					remise: 0,
+				}),
+			).toThrow();
+		});
+
+		it('fails with missing numero_bon_livraison', () => {
+			expect(() =>
+				bonDeLivraisonSchema.parse({
+					client: 1,
+					date_bon_livraison: '2025-12-04',
+					mode_paiement: 2,
+					remise: 0,
+				}),
+			).toThrow();
+		});
+
+		it('fails with missing date_bon_livraison', () => {
+			expect(() =>
+				bonDeLivraisonSchema.parse({
+					numero_part: 'BL003',
+					year_part: '25',
+					client: 1,
+					mode_paiement: 2,
+					remise: 0,
+				}),
+			).toThrow();
+		});
+
+		it('accepts missing mode_paiement and livre_par (optional)', () => {
+			expect(() =>
+				bonDeLivraisonSchema.parse({
+					numero_part: 'BL004',
+					year_part: '25',
+					client: 1,
+					date_bon_livraison: '2025-12-04',
+					remise: 0,
+				}),
+			).not.toThrow();
+		});
+
+		it('fails with invalid line item (negative quantity)', () => {
+			expect(() =>
+				bonDeLivraisonSchema.parse({
+					numero_part: 'BL005',
+					year_part: '25',
+					client: 1,
+					date_bon_livraison: '2025-12-04',
+					mode_paiement: 2,
+					remise: 0,
+					lignes: [
+						{
+							article: 1,
+							prix_achat: 100,
+							prix_vente: 150,
+							quantity: -1,
+							remise: 0,
+						},
+					],
+				}),
+			).toThrow();
+		});
+	});
+
+	// ✅ bonDeLivraisonAddSchema
+	describe('bonDeLivraisonAddSchema', () => {
+		it('validates required fields for adding a bon de livraison', () => {
+			expect(() =>
+				bonDeLivraisonAddSchema.parse({
+					numero_part: 'BLA100',
+					year_part: '25',
+					client: 1,
+					date_bon_livraison: '2025-12-04',
+				}),
+			).not.toThrow();
+		});
+
+		it('accepts optional fields', () => {
+			expect(() =>
+				bonDeLivraisonAddSchema.parse({
+					numero_part: 'BLA101',
+					year_part: '25',
+					client: 2,
+					date_bon_livraison: '2025-12-04',
+					numero_demande_prix_client: 'REQ123',
+					mode_paiement: null,
+					livre_par: null,
+					remarque: 'note',
+				}),
+			).not.toThrow();
+		});
+
+		it('fails when required fields are missing', () => {
+			expect(() =>
+				bonDeLivraisonAddSchema.parse({
+					client: 1,
+					date_bon_livraison: '2025-12-04',
+				}),
+			).toThrow();
+
+			expect(() =>
+				bonDeLivraisonAddSchema.parse({
+					numero_part: 'BLA102',
+					year_part: '25',
+					date_bon_livraison: '2025-12-04',
 				}),
 			).toThrow();
 		});

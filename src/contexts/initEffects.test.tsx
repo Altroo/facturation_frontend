@@ -11,6 +11,7 @@ import {
 	useGetMarqueListQuery,
 	useGetModePaiementListQuery,
 	useGetModeReglementListQuery,
+	useGetLivreParListQuery,
 } from '@/store/services/parameter';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 import { useAppDispatch, useAppSelector } from '@/utils/hooks';
@@ -45,6 +46,7 @@ describe('InitEffects', () => {
 		(useGetUserCompaniesQuery as jest.Mock).mockReturnValue({ data: undefined });
 		(useGetModePaiementListQuery as jest.Mock).mockReturnValue({ data: undefined });
 		(useGetModeReglementListQuery as jest.Mock).mockReturnValue({ data: undefined });
+		(useGetLivreParListQuery as jest.Mock).mockReturnValue({ data: undefined });
 	});
 
 	it('dispatches init tokens when session is authenticated', async () => {
@@ -192,6 +194,21 @@ describe('InitEffects', () => {
 		await waitFor(() => {
 			expect(mockDispatch).toHaveBeenCalledWith(
 				expect.objectContaining({ type: 'PARAMETER_SET_MODE_REGLEMENT', data: mockModeReglement }),
+			);
+		});
+	});
+
+	it('dispatches livrePar action when livrePar data is available', async () => {
+		(useSession as jest.Mock).mockReturnValue({ data: { user: {} }, status: 'authenticated' });
+
+		const mockLivrePar = [{ id: 1, nom: 'Driver A' }];
+		(useGetLivreParListQuery as jest.Mock).mockReturnValue({ data: mockLivrePar });
+
+		render(<InitEffects />);
+
+		await waitFor(() => {
+			expect(mockDispatch).toHaveBeenCalledWith(
+				expect.objectContaining({ type: 'PARAMETER_SET_LIVRE_PAR', data: mockLivrePar }),
 			);
 		});
 	});

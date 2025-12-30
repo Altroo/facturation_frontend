@@ -1,6 +1,6 @@
 import { factureClientApi } from '@/store/services/factureClient';
 import { setupApiStore } from '@/store/setupApiStore';
-import { TypeFactureDevisStatus } from '@/types/devisTypes';
+import { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
 
 beforeAll(() => {
 	process.env.NEXT_PUBLIC_FACTURE_CLIENT_LIST ||= 'https://example.com/facture-client/';
@@ -74,7 +74,7 @@ describe('factureClientApi endpoints', () => {
 		const result = await storeRef.store.dispatch(
 			factureClientApi.endpoints.patchStatut.initiate({
 				id: 1,
-				data: { statut: 'Brouillon' as TypeFactureDevisStatus },
+				data: { statut: 'Brouillon' as TypeFactureLivraisonDevisStatus },
 			}),
 		);
 		expect(result.error).toBeUndefined();

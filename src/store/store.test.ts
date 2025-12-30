@@ -57,6 +57,7 @@ jest.mock('@/store/services/parameter', () => ({
 	uniteApi: makeApiMock('uniteApi'),
 	modeReglementApi: makeApiMock('modeReglementApi'),
 	modePaiementApi: makeApiMock('modePaiementApi'),
+	livreParApi: makeApiMock('livreParApi'),
 }));
 jest.mock('@/store/services/devi', () => ({
 	__esModule: true,
@@ -70,6 +71,11 @@ jest.mock('@/store/services/factureProForma', () => ({
 jest.mock('@/store/services/factureClient', () => ({
 	__esModule: true,
 	factureClientApi: makeApiMock('factureClientApi'),
+}));
+// Added mock for bonDeLivraisonClient service
+jest.mock('@/store/services/bonDeLivraison', () => ({
+	__esModule: true,
+	bonDeLivraisonApi: makeApiMock('bonDeLivraisonApi'),
 }));
 
 // --- Mock rootSaga only (use a lightweight generator) ---
@@ -113,9 +119,11 @@ describe('Redux Saga Store', () => {
 		expect(state).toHaveProperty('uniteApi');
 		expect(state).toHaveProperty('modeReglementApi');
 		expect(state).toHaveProperty('modePaiementApi');
+		expect(state).toHaveProperty('livreParApi');
 		expect(state).toHaveProperty('deviApi');
 		expect(state).toHaveProperty('factureProFormaApi');
 		expect(state).toHaveProperty('factureClientApi');
+		expect(state).toHaveProperty('bonDeLivraisonApi');
 	});
 
 	it('attaches sagaTask after running rootSaga', () => {

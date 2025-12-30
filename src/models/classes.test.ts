@@ -11,12 +11,13 @@ import {
 	EmplacementClass,
 	ModePaiementClass,
 	ModeReglementClass,
-	DeviFactureLineClass,
+	DeviFactureLivraisonLineClass,
 	DeviClass,
 	FactureClass,
+	BonDeLivraisonClass,
 } from './classes';
 import type { TypeArticleType } from '@/types/articleTypes';
-import type { TypeRemiseType, TypeFactureDevisStatus } from '@/types/devisTypes';
+import type { TypeRemiseType, TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
 
 describe('UserClass', () => {
 	it('creates a user instance with given properties', () => {
@@ -243,7 +244,7 @@ describe('ModeReglementClass', () => {
 
 describe('DeviFactureLineClass', () => {
 	it('creates a devi line instance with given properties', () => {
-		const line = new DeviFactureLineClass(
+		const line = new DeviFactureLivraisonLineClass(
 			1,
 			10,
 			'Article name',
@@ -269,8 +270,8 @@ describe('DeviFactureLineClass', () => {
 
 describe('DeviClass', () => {
 	it('creates a devi instance with lines, totals and metadata', () => {
-		const line1 = new DeviFactureLineClass(1, 1, 'A', 'Desc A', 20, 30, 1, 'AMOUNT' as TypeRemiseType, 0);
-		const line2 = new DeviFactureLineClass(2, 2, 'B', 'Desc B', 40, 60, 2, 'PERCENT' as TypeRemiseType, 10);
+		const line1 = new DeviFactureLivraisonLineClass(1, 1, 'A', 'Desc A', 20, 30, 1, 'AMOUNT' as TypeRemiseType, 0);
+		const line2 = new DeviFactureLivraisonLineClass(2, 2, 'B', 'Desc B', 40, 60, 2, 'PERCENT' as TypeRemiseType, 10);
 
 		const devi = new DeviClass(
 			1,
@@ -282,7 +283,7 @@ describe('DeviClass', () => {
 			1,
 			'Cash',
 			'Some remark',
-			'Brouillon' as TypeFactureDevisStatus,
+			'Brouillon' as TypeFactureLivraisonDevisStatus,
 			'2023-01-01',
 			'2023-01-02',
 			10,
@@ -326,8 +327,28 @@ describe('DeviClass', () => {
 
 describe('FactureProFormaClass', () => {
 	it('creates a facture pro forma instance with lines, totals and metadata', () => {
-		const line1 = new DeviFactureLineClass(1, 10, 'Article A', 'Desc A', 20, 30, 1, 'AMOUNT' as TypeRemiseType, 0);
-		const line2 = new DeviFactureLineClass(2, 11, 'Article B', 'Desc B', 40, 60, 2, 'PERCENT' as TypeRemiseType, 10);
+		const line1 = new DeviFactureLivraisonLineClass(
+			1,
+			10,
+			'Article A',
+			'Desc A',
+			20,
+			30,
+			1,
+			'AMOUNT' as TypeRemiseType,
+			0,
+		);
+		const line2 = new DeviFactureLivraisonLineClass(
+			2,
+			11,
+			'Article B',
+			'Desc B',
+			40,
+			60,
+			2,
+			'PERCENT' as TypeRemiseType,
+			10,
+		);
 
 		const facture = new FactureClass(
 			1,
@@ -339,7 +360,7 @@ describe('FactureProFormaClass', () => {
 			1,
 			'Cash',
 			'Some remark',
-			'Brouillon' as TypeFactureDevisStatus,
+			'Brouillon' as TypeFactureLivraisonDevisStatus,
 			'2023-02-01',
 			'2023-02-02',
 			10,
@@ -378,5 +399,87 @@ describe('FactureProFormaClass', () => {
 		expect(facture.lignes.length).toBe(2);
 		expect(facture.lignes[0].id).toBe(1);
 		expect(facture.lignes[1].id).toBe(2);
+	});
+});
+
+describe('BonDeLivraisonClass', () => {
+	it('creates a bon de livraison instance with lines, totals and metadata', () => {
+		const line1 = new DeviFactureLivraisonLineClass(
+			1,
+			10,
+			'Article A',
+			'Desc A',
+			20,
+			30,
+			1,
+			'AMOUNT' as TypeRemiseType,
+			0,
+		);
+		const line2 = new DeviFactureLivraisonLineClass(
+			2,
+			11,
+			'Article B',
+			'Desc B',
+			40,
+			60,
+			2,
+			'PERCENT' as TypeRemiseType,
+			10,
+		);
+
+		const bon = new BonDeLivraisonClass(
+			1,
+			'BL-1',
+			5,
+			'ClientName',
+			'2023-03-01',
+			'BC-123',
+			2,
+			'Driver A',
+			1,
+			'Cash',
+			'Some remark',
+			'Brouillon' as TypeFactureLivraisonDevisStatus,
+			'2023-03-01',
+			'2023-03-02',
+			10,
+			'Creator',
+			2,
+			'Pourcentage' as TypeRemiseType,
+			5,
+			100,
+			20,
+			120,
+			114,
+			[line1, line2],
+		);
+
+		expect(bon.id).toBe(1);
+		expect(bon.numero_bon_livraison).toBe('BL-1');
+		expect(bon.client).toBe(5);
+		expect(bon.client_name).toBe('ClientName');
+		expect(bon.date_bon_livraison).toBe('2023-03-01');
+		expect(bon.numero_bon_commande_client).toBe('BC-123');
+		expect(bon.livre_par).toBe(2);
+		expect(bon.livre_par_name).toBe('Driver A');
+		expect(bon.mode_paiement).toBe(1);
+		expect(bon.mode_paiement_name).toBe('Cash');
+		expect(bon.remarque).toBe('Some remark');
+		expect(bon.statut).toBe('Brouillon');
+		expect(bon.date_created).toBe('2023-03-01');
+		expect(bon.date_updated).toBe('2023-03-02');
+		expect(bon.created_by_user_id).toBe(10);
+		expect(bon.created_by_user_name).toBe('Creator');
+		expect(bon.lignes_count).toBe(2);
+		expect(bon.remise_type).toBe('Pourcentage');
+		expect(bon.remise).toBe(5);
+		expect(bon.total_ht).toBe(100);
+		expect(bon.total_tva).toBe(20);
+		expect(bon.total_ttc).toBe(120);
+		expect(bon.total_ttc_apres_remise).toBe(114);
+		expect(Array.isArray(bon.lignes)).toBe(true);
+		expect(bon.lignes.length).toBe(2);
+		expect(bon.lignes[0].id).toBe(1);
+		expect(bon.lignes[1].id).toBe(2);
 	});
 });

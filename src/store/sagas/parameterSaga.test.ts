@@ -9,6 +9,7 @@ import {
 	parameterSetMarquesSaga,
 	parameterSetModePaiementSaga,
 	parameterSetModeReglementSaga,
+	parameterSetLivreParSaga,
 	watchParameter,
 } from '@/store/sagas/parameterSaga';
 import {
@@ -19,6 +20,7 @@ import {
 	setMarques,
 	setModePaiement,
 	setModeReglement,
+	setLivrePar,
 } from '@/store/slices/parameterSlice';
 import {
 	CitiesClass,
@@ -28,6 +30,7 @@ import {
 	MarqueClass,
 	ModePaiementClass,
 	ModeReglementClass,
+	LivreParClass,
 } from '@/models/classes';
 
 describe('parameter sagas', () => {
@@ -143,6 +146,21 @@ describe('parameter sagas', () => {
 		expect(dispatched).toEqual([setModeReglement([mr1, mr2])]);
 	});
 
+	it('parameterSetLivreParSaga should dispatch setLivrePar with correct payload', async () => {
+		const lp1 = new LivreParClass(1, 'Driver A');
+
+		const payload = { type: Types.PARAMETER_SET_LIVRE_PAR, data: [lp1] };
+
+		const dispatched: unknown[] = [];
+		await runSaga(
+			{ dispatch: (action: unknown) => dispatched.push(action) },
+			parameterSetLivreParSaga,
+			payload,
+		).toPromise();
+
+		expect(dispatched).toEqual([setLivrePar([lp1])]);
+	});
+
 	it('watchParameter should register all sagas with takeLatest', () => {
 		const gen = watchParameter();
 
@@ -153,5 +171,6 @@ describe('parameter sagas', () => {
 		expect(gen.next().value).toEqual(takeLatest(Types.PARAMETER_SET_MARQUES, parameterSetMarquesSaga));
 		expect(gen.next().value).toEqual(takeLatest(Types.PARAMETER_SET_MODE_PAIEMENT, parameterSetModePaiementSaga));
 		expect(gen.next().value).toEqual(takeLatest(Types.PARAMETER_SET_MODE_REGLEMENT, parameterSetModeReglementSaga));
+		expect(gen.next().value).toEqual(takeLatest(Types.PARAMETER_SET_LIVRE_PAR, parameterSetLivreParSaga));
 	});
 });
