@@ -26,6 +26,7 @@ import {
 	Person as PersonIcon,
 	Receipt as ReceiptIcon,
 	ShoppingCart as ShoppingCartIcon,
+	LocalShipping as LocalShippingIcon,
 } from '@mui/icons-material';
 import { DataGrid, type GridColDef, type GridRenderCellParams } from '@mui/x-data-grid';
 import { frFR } from '@mui/x-data-grid/locales';
@@ -205,6 +206,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 	session,
 	company_id,
 	id,
+	type,
 	title,
 	backLabel,
 	backTo,
@@ -574,6 +576,12 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 									<Stack spacing={0}>
 										<InfoRow icon={<PaymentIcon />} label="Mode de paiement" value={rawData?.mode_paiement_name} />
 										<Divider />
+										{type === 'bon-de-livraison' && (
+											<>
+												<InfoRow icon={<LocalShippingIcon />} label="Livré par" value={rawData?.livre_par_name} />
+												<Divider />
+											</>
+										)}
 										<InfoRow icon={<ReceiptIcon />} label={termsSecondLabel} value={getTermsSecondValue(rawData)} />
 									</Stack>
 								</CardContent>

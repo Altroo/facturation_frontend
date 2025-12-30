@@ -4,52 +4,52 @@ import React from 'react';
 import type { SessionProps } from '@/types/_initTypes';
 import CompanyDocumentsWrapperForm from '@/components/pages/dashboard/shared/company-documents-form/companyDocumentsWrapperForm';
 import CompanyDocumentFormContent from '@/components/pages/dashboard/shared/company-documents-form/companyDocumentFormContent';
-import { factureClientProformaSchema, factureClientProformaAddSchema } from '@/utils/formValidationSchemas';
-import { FACTURE_CLIENT_LIST, FACTURE_CLIENT_EDIT } from '@/utils/routes';
+import { bonDeLivraisonSchema, bonDeLivraisonAddSchema } from '@/utils/formValidationSchemas';
+import { BON_DE_LIVRAISON_LIST, BON_DE_LIVRAISON_EDIT } from '@/utils/routes';
 import {
-	useGetFactureClientQuery,
-	useAddFactureClientMutation,
-	useEditFactureClientMutation,
+	useAddBonDeLivraisonMutation,
+	useEditBonDeLivraisonMutation,
+	useGetBonDeLivraisonQuery,
 	usePatchStatutMutation,
-	useGetNumFactureClientQuery,
-} from '@/store/services/factureClient';
-import type {
+	useGetNumBonDeLivraisonQuery,
+} from '@/store/services/bonDeLivraison';
+import {
 	DocumentFormConfig,
-	FactureDocumentData,
-	FactureNumResponse,
 	DocumentFormSchema,
+	BonDeLivraisonDocumentData,
+	BonDeLivraisonNumResponse,
 } from '@/types/companyDocumentsTypes';
 import type { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
-import { FactureClass } from '@/models/classes';
+import { BonDeLivraisonClass } from '@/models/classes';
 
-// Configuration for facture client form
-const factureClientFormConfig: DocumentFormConfig<FactureClass> = {
-	documentType: 'facture-client',
+// Configuration for bon de livraison form
+const bonDeLivraisonFormConfig: DocumentFormConfig<BonDeLivraisonClass> = {
+	documentType: 'bon-de-livraison',
 	labels: {
-		documentTypeName: 'facture client',
-		listLabel: 'Liste des factures client',
-		dateLabel: 'Date de la facture',
-		statusLabel: 'Statut de la facture',
-		linesLabel: 'Lignes de la facture',
-		deleteLineMessage: 'Êtes-vous sûr de vouloir supprimer cette ligne de la facture ?',
-		addSuccessMessage: 'Facture client créée avec succès.',
-		updateSuccessMessage: 'Facture client mise à jour avec succès.',
-		addErrorMessage: 'Échec de la création de la facture client.',
-		updateErrorMessage: 'Échec de la mise à jour de la facture client.',
+		documentTypeName: 'bon de livraison',
+		listLabel: 'Liste des bons de livraison',
+		dateLabel: 'Date du bon de livraison',
+		statusLabel: 'Statut du bon de livraison',
+		linesLabel: 'Lignes du bon de livraison',
+		deleteLineMessage: 'Êtes-vous sûr de vouloir supprimer cette ligne du bon de livraison ?',
+		addSuccessMessage: 'Bon de livraison créé avec succès.',
+		updateSuccessMessage: 'Bon de livraison mis à jour avec succès.',
+		addErrorMessage: 'Échec de la création du bon de livraison.',
+		updateErrorMessage: 'Échec de la mise à jour du bon de livraison.',
 	},
 	fields: {
-		numeroField: 'numero_facture',
-		dateField: 'date_facture',
+		numeroField: 'numero_bon_livraison',
+		dateField: 'date_bon_livraison',
 		extraField: 'numero_bon_commande_client',
-		extraFieldLabel: 'N° bon de commande client',
+		extraFieldLabel: 'N° bon commande client',
 	},
 	routes: {
-		listRoute: FACTURE_CLIENT_LIST,
-		editRoute: FACTURE_CLIENT_EDIT,
+		listRoute: BON_DE_LIVRAISON_LIST,
+		editRoute: BON_DE_LIVRAISON_EDIT,
 	},
 	validation: {
-		editSchema: factureClientProformaSchema,
-		addSchema: factureClientProformaAddSchema,
+		editSchema: bonDeLivraisonSchema,
+		addSchema: bonDeLivraisonAddSchema,
 	},
 };
 
@@ -66,15 +66,15 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 		data: rawData,
 		isLoading: isDataLoading,
 		error: dataError,
-	} = useGetFactureClientQuery({ id: id! }, { skip: !token || !isEditMode });
+	} = useGetBonDeLivraisonQuery({ id: id! }, { skip: !token || !isEditMode });
 
-	const { data: rawNumData, isLoading: isNumLoading } = useGetNumFactureClientQuery(undefined, {
+	const { data: rawNumData, isLoading: isNumLoading } = useGetNumBonDeLivraisonQuery(undefined, {
 		skip: !token || isEditMode,
 	});
 
 	// Mutations
-	const [addDataMutation, { isLoading: isAddLoading, error: addError }] = useAddFactureClientMutation();
-	const [updateDataMutation, { isLoading: isUpdateLoading, error: updateError }] = useEditFactureClientMutation();
+	const [addDataMutation, { isLoading: isAddLoading, error: addError }] = useAddBonDeLivraisonMutation();
+	const [updateDataMutation, { isLoading: isUpdateLoading, error: updateError }] = useEditBonDeLivraisonMutation();
 	const [patchStatutMutation, { isLoading: isPatchLoading, error: patchError }] = usePatchStatutMutation();
 
 	// Create wrapper functions that match the expected signature
@@ -96,11 +96,11 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 			company_id={company_id}
 			id={id}
 			isEditMode={isEditMode}
-			config={factureClientFormConfig}
-			rawData={rawData as FactureDocumentData | undefined}
+			config={bonDeLivraisonFormConfig}
+			rawData={rawData as BonDeLivraisonDocumentData | undefined}
 			isDataLoading={isDataLoading}
 			dataError={dataError}
-			rawNumData={rawNumData as FactureNumResponse | undefined}
+			rawNumData={rawNumData as BonDeLivraisonNumResponse | undefined}
 			isNumLoading={isNumLoading}
 			addData={addData}
 			isAddLoading={isAddLoading}
@@ -120,23 +120,23 @@ interface Props extends SessionProps {
 	id?: number;
 }
 
-const FactureClientForm: React.FC<Props> = ({ session, company_id, id }) => {
+const BonDeLivraisonForm: React.FC<Props> = ({ session, company_id, id }) => {
 	return (
 		<CompanyDocumentsWrapperForm
 			session={session}
 			company_id={company_id}
 			id={id}
 			documentConfig={{
-				addTitle: 'Ajouter une facture client',
-				editTitle: 'Modifier facture client',
+				addTitle: 'Ajouter un bon de livraison',
+				editTitle: 'Modifier le bon de livraison',
 				addDeniedMessage:
-					"Vous n'avez pas le droit d'ajouter une facture client. Veuillez contacter votre administrateur.",
+					"Vous n'avez pas le droit d'ajouter un bon de livraison. Veuillez contacter votre administrateur.",
 				editDeniedMessage:
-					"Vous n'avez pas le droit de modifier cette facture client. Veuillez contacter votre administrateur.",
+					"Vous n'avez pas le droit de modifier ce bon de livraison. Veuillez contacter votre administrateur.",
 			}}
 			FormComponent={FormikContent}
 		/>
 	);
 };
 
-export default FactureClientForm;
+export default BonDeLivraisonForm;

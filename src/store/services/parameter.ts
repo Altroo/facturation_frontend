@@ -10,6 +10,7 @@ import type {
 	EmplacementClass,
 	ModePaiementClass,
 	ModeReglementClass,
+	LivreParClass,
 } from '@/models/classes';
 import type { ApiErrorResponseType, SuccessResponseType } from '@/types/_initTypes';
 import type { RootState } from '@/store/store';
@@ -34,21 +35,21 @@ export const citiesApi = createApi({
 		}),
 		getCity: builder.query<CitiesClass, { id: number }>({
 			query: ({ id }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_VILLE}/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_VILLE}${id}/`,
 				method: 'GET',
 			}),
 			providesTags: ['Cities'],
 		}),
 		deleteCity: builder.mutation<void | ApiErrorResponseType, { id: number }>({
 			query: ({ id }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_VILLE}/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_VILLE}${id}/`,
 				method: 'DELETE',
 			}),
 			invalidatesTags: ['Cities'],
 		}),
 		editCity: builder.mutation<SuccessResponseType<CitiesClass>, { id: number; data: Partial<CitiesClass> }>({
 			query: ({ id, data }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_VILLE}/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_VILLE}${id}/`,
 				method: 'PUT',
 				data,
 			}),
@@ -56,7 +57,7 @@ export const citiesApi = createApi({
 		}),
 		addCity: builder.mutation<SuccessResponseType<CitiesClass>, { data: Partial<CitiesClass> }>({
 			query: ({ data }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_VILLE}/`,
+				url: process.env.NEXT_PUBLIC_PARAMETER_VILLE,
 				method: 'POST',
 				data,
 			}),
@@ -84,21 +85,21 @@ export const marqueApi = createApi({
 		}),
 		getMarque: builder.query<MarqueClass, { id: number }>({
 			query: ({ id }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_MARQUE}/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_MARQUE}${id}/`,
 				method: 'GET',
 			}),
 			providesTags: ['Marque'],
 		}),
 		deleteMarque: builder.mutation<void | ApiErrorResponseType, { id: number }>({
 			query: ({ id }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_MARQUE}/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_MARQUE}${id}/`,
 				method: 'DELETE',
 			}),
 			invalidatesTags: ['Marque'],
 		}),
 		editMarque: builder.mutation<SuccessResponseType<MarqueClass>, { id: number; data: Partial<MarqueClass> }>({
 			query: ({ id, data }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_MARQUE}/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_MARQUE}${id}/`,
 				method: 'PUT',
 				data,
 			}),
@@ -106,7 +107,7 @@ export const marqueApi = createApi({
 		}),
 		addMarque: builder.mutation<SuccessResponseType<MarqueClass>, { data: Partial<MarqueClass> }>({
 			query: ({ data }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_MARQUE}/`,
+				url: process.env.NEXT_PUBLIC_PARAMETER_MARQUE,
 				method: 'POST',
 				data,
 			}),
@@ -134,14 +135,14 @@ export const categorieApi = createApi({
 		}),
 		getCategorie: builder.query<CategorieClass, { id: number }>({
 			query: ({ id }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_CATEGORIE}/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_CATEGORIE}${id}/`,
 				method: 'GET',
 			}),
 			providesTags: ['Categorie'],
 		}),
 		deleteCategorie: builder.mutation<void | ApiErrorResponseType, { id: number }>({
 			query: ({ id }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_CATEGORIE}/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_CATEGORIE}${id}/`,
 				method: 'DELETE',
 			}),
 			invalidatesTags: ['Categorie'],
@@ -149,7 +150,7 @@ export const categorieApi = createApi({
 		editCategorie: builder.mutation<SuccessResponseType<CategorieClass>, { id: number; data: Partial<CategorieClass> }>(
 			{
 				query: ({ id, data }) => ({
-					url: `${process.env.NEXT_PUBLIC_PARAMETER_CATEGORIE}/${id}/`,
+					url: `${process.env.NEXT_PUBLIC_PARAMETER_CATEGORIE}${id}/`,
 					method: 'PUT',
 					data,
 				}),
@@ -158,7 +159,7 @@ export const categorieApi = createApi({
 		),
 		addCategorie: builder.mutation<SuccessResponseType<CategorieClass>, { data: Partial<CategorieClass> }>({
 			query: ({ data }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_CATEGORIE}/`,
+				url: process.env.NEXT_PUBLIC_PARAMETER_CATEGORIE,
 				method: 'POST',
 				data,
 			}),
@@ -186,21 +187,21 @@ export const uniteApi = createApi({
 		}),
 		getUnite: builder.query<UniteClass, { id: number }>({
 			query: ({ id }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_UNITE}/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_UNITE}${id}/`,
 				method: 'GET',
 			}),
 			providesTags: ['Unite'],
 		}),
 		deleteUnite: builder.mutation<void | ApiErrorResponseType, { id: number }>({
 			query: ({ id }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_UNITE}/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_UNITE}${id}/`,
 				method: 'DELETE',
 			}),
 			invalidatesTags: ['Unite'],
 		}),
 		editUnite: builder.mutation<SuccessResponseType<UniteClass>, { id: number; data: Partial<UniteClass> }>({
 			query: ({ id, data }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_UNITE}/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_UNITE}${id}/`,
 				method: 'PUT',
 				data,
 			}),
@@ -208,7 +209,7 @@ export const uniteApi = createApi({
 		}),
 		addUnite: builder.mutation<SuccessResponseType<UniteClass>, { data: Partial<UniteClass> }>({
 			query: ({ data }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_UNITE}/`,
+				url: process.env.NEXT_PUBLIC_PARAMETER_UNITE,
 				method: 'POST',
 				data,
 			}),
@@ -236,14 +237,14 @@ export const emplacementApi = createApi({
 		}),
 		getEmplacement: builder.query<EmplacementClass, { id: number }>({
 			query: ({ id }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_EMPLACEMENT}/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_EMPLACEMENT}${id}/`,
 				method: 'GET',
 			}),
 			providesTags: ['Emplacement'],
 		}),
 		deleteEmplacement: builder.mutation<void | ApiErrorResponseType, { id: number }>({
 			query: ({ id }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_EMPLACEMENT}/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_EMPLACEMENT}${id}/`,
 				method: 'DELETE',
 			}),
 			invalidatesTags: ['Emplacement'],
@@ -253,7 +254,7 @@ export const emplacementApi = createApi({
 			{ id: number; data: Partial<EmplacementClass> }
 		>({
 			query: ({ id, data }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_EMPLACEMENT}/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_EMPLACEMENT}${id}/`,
 				method: 'PUT',
 				data,
 			}),
@@ -261,7 +262,7 @@ export const emplacementApi = createApi({
 		}),
 		addEmplacement: builder.mutation<SuccessResponseType<EmplacementClass>, { data: Partial<EmplacementClass> }>({
 			query: ({ data }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_EMPLACEMENT}/`,
+				url: process.env.NEXT_PUBLIC_PARAMETER_EMPLACEMENT,
 				method: 'POST',
 				data,
 			}),
@@ -289,14 +290,14 @@ export const modePaiementApi = createApi({
 		}),
 		getModePaiement: builder.query<ModePaiementClass, { id: number }>({
 			query: ({ id }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_PAIEMENT}/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_PAIEMENT}${id}/`,
 				method: 'GET',
 			}),
 			providesTags: ['ModePaiement'],
 		}),
 		deleteModePaiement: builder.mutation<void | ApiErrorResponseType, { id: number }>({
 			query: ({ id }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_PAIEMENT}/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_PAIEMENT}${id}/`,
 				method: 'DELETE',
 			}),
 			invalidatesTags: ['ModePaiement'],
@@ -306,7 +307,7 @@ export const modePaiementApi = createApi({
 			{ id: number; data: Partial<ModePaiementClass> }
 		>({
 			query: ({ id, data }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_PAIEMENT}/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_PAIEMENT}${id}/`,
 				method: 'PUT',
 				data,
 			}),
@@ -314,7 +315,7 @@ export const modePaiementApi = createApi({
 		}),
 		addModePaiement: builder.mutation<SuccessResponseType<ModePaiementClass>, { data: Partial<ModePaiementClass> }>({
 			query: ({ data }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_PAIEMENT}/`,
+				url: process.env.NEXT_PUBLIC_PARAMETER_MODE_PAIEMENT,
 				method: 'POST',
 				data,
 			}),
@@ -342,14 +343,14 @@ export const modeReglementApi = createApi({
 		}),
 		getModeReglement: builder.query<ModeReglementClass, { id: number }>({
 			query: ({ id }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_REGLEMENT}/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_REGLEMENT}${id}/`,
 				method: 'GET',
 			}),
 			providesTags: ['ModeReglement'],
 		}),
 		deleteModeReglement: builder.mutation<void | ApiErrorResponseType, { id: number }>({
 			query: ({ id }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_REGLEMENT}/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_REGLEMENT}${id}/`,
 				method: 'DELETE',
 			}),
 			invalidatesTags: ['ModeReglement'],
@@ -359,7 +360,7 @@ export const modeReglementApi = createApi({
 			{ id: number; data: Partial<ModeReglementClass> }
 		>({
 			query: ({ id, data }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_REGLEMENT}/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_REGLEMENT}${id}/`,
 				method: 'PUT',
 				data,
 			}),
@@ -367,11 +368,61 @@ export const modeReglementApi = createApi({
 		}),
 		addModeReglement: builder.mutation<SuccessResponseType<ModeReglementClass>, { data: Partial<ModeReglementClass> }>({
 			query: ({ data }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_REGLEMENT}/`,
+				url: process.env.NEXT_PUBLIC_PARAMETER_MODE_REGLEMENT,
 				method: 'POST',
 				data,
 			}),
 			invalidatesTags: ['ModeReglement'],
+		}),
+	}),
+});
+
+export const livreParApi = createApi({
+	reducerPath: 'livreParApi',
+	tagTypes: ['LivrePar'],
+	baseQuery: axiosBaseQuery((api) =>
+		isAuthenticatedInstance(
+			() => getInitStateToken(api.getState() as RootState),
+			() => api.dispatch(initToken()),
+		),
+	),
+	endpoints: (builder) => ({
+		getLivreParList: builder.query<Array<LivreParClass>, void>({
+			query: () => ({
+				url: process.env.NEXT_PUBLIC_PARAMETER_LIVRE_PAR,
+				method: 'GET',
+			}),
+			providesTags: ['LivrePar'],
+		}),
+		getLivrePar: builder.query<LivreParClass, { id: number }>({
+			query: ({ id }) => ({
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_LIVRE_PAR}${id}/`,
+				method: 'GET',
+			}),
+			providesTags: ['LivrePar'],
+		}),
+		deleteLivrePar: builder.mutation<void | ApiErrorResponseType, { id: number }>({
+			query: ({ id }) => ({
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_LIVRE_PAR}${id}/`,
+				method: 'DELETE',
+			}),
+			invalidatesTags: ['LivrePar'],
+		}),
+		editLivrePar: builder.mutation<SuccessResponseType<LivreParClass>, { id: number; data: Partial<LivreParClass> }>({
+			query: ({ id, data }) => ({
+				url: `${process.env.NEXT_PUBLIC_PARAMETER_LIVRE_PAR}${id}/`,
+				method: 'PUT',
+				data,
+			}),
+			invalidatesTags: ['LivrePar'],
+		}),
+		addLivrePar: builder.mutation<SuccessResponseType<LivreParClass>, { data: Partial<LivreParClass> }>({
+			query: ({ data }) => ({
+				url: process.env.NEXT_PUBLIC_PARAMETER_LIVRE_PAR,
+				method: 'POST',
+				data,
+			}),
+			invalidatesTags: ['LivrePar'],
 		}),
 	}),
 });
@@ -431,3 +482,11 @@ export const {
 	useGetCityQuery,
 	useAddCityMutation,
 } = citiesApi;
+
+export const {
+	useGetLivreParListQuery,
+	useDeleteLivreParMutation,
+	useEditLivreParMutation,
+	useGetLivreParQuery,
+	useAddLivreParMutation,
+} = livreParApi;

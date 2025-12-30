@@ -1,5 +1,5 @@
 import type { SagaPayloadType } from '@/types/_initTypes';
-import type {
+import {
 	CategorieClass,
 	CitiesClass,
 	EmplacementClass,
@@ -7,6 +7,7 @@ import type {
 	ModeReglementClass,
 	UniteClass,
 	ModePaiementClass,
+	LivreParClass,
 } from '@/models/classes';
 
 //!- Parameter State
@@ -18,6 +19,7 @@ export interface ParameterStateInterface {
 	marques: Array<MarqueClass>;
 	modePaiement: Array<ModePaiementClass>;
 	modeReglement: Array<ModeReglementClass>;
+	livrePar: Array<LivreParClass>;
 }
 
 export type setCitiesPayloadType = SagaPayloadType<Array<CitiesClass>>;
@@ -27,3 +29,4 @@ export type setUnitesPayloadType = SagaPayloadType<Array<UniteClass>>;
 export type setMarquesPayloadType = SagaPayloadType<Array<MarqueClass>>;
 export type setModePaiementPayloadType = SagaPayloadType<Array<ModePaiementClass>>;
 export type setModeRegelementPayloadType = SagaPayloadType<Array<ModeReglementClass>>;
+export type setLivreParPayloadType = SagaPayloadType<Array<LivreParClass>>;

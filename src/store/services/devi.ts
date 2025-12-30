@@ -6,7 +6,7 @@ import type { DeviClass } from '@/models/classes';
 import type { ApiErrorResponseType, PaginationResponseType, SuccessResponseType } from '@/types/_initTypes';
 import type { RootState } from '@/store/store';
 import { initToken } from '@/store/slices/_initSlice';
-import { TypeFactureDevisStatus } from '@/types/devisTypes';
+import { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
 import { factureProFormaApi } from '@/store/services/factureProForma';
 import { factureClientApi } from '@/store/services/factureClient';
 
@@ -87,7 +87,7 @@ export const deviApi = createApi({
 				method: 'POST',
 			}),
 			invalidatesTags: ['Devi'],
-			async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+			async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
 				try {
 					await queryFulfilled;
 					// Invalidate the factureProFormaApi tag so its list refetches
@@ -103,7 +103,7 @@ export const deviApi = createApi({
 				method: 'POST',
 			}),
 			invalidatesTags: ['Devi'],
-			async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+			async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
 				try {
 					await queryFulfilled;
 					dispatch(factureClientApi.util.invalidateTags(['FactureClient']));
@@ -114,7 +114,7 @@ export const deviApi = createApi({
 		}),
 		patchStatut: builder.mutation<
 			SuccessResponseType<DeviClass>,
-			{ id: number; data: { statut: TypeFactureDevisStatus } }
+			{ id: number; data: { statut: TypeFactureLivraisonDevisStatus } }
 		>({
 			query: ({ id, data }) => ({
 				url: `${process.env.NEXT_PUBLIC_DEVIS_SWITCH_STATUT}${id}/`,

@@ -307,7 +307,7 @@ export const articleSchema = z
 		{ error: INPUT_PRICE_VENTE_ACHAT, path: ['prix_vente'] },
 	);
 
-export const devisFactureLineSchema = z
+export const devisLivraisonFactureLineSchema = z
 	.object({
 		article: requiredNumberField(1),
 		prix_achat: requiredNumberField(0),
@@ -387,7 +387,7 @@ export const deviSchema = z
 			(val) => (typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val),
 			optionalNumberField(0),
 		),
-		lignes: z.array(devisFactureLineSchema).optional(),
+		lignes: z.array(devisLivraisonFactureLineSchema).optional(),
 		globalError: optionalTextField(1, 500),
 	})
 	.superRefine((data, ctx) => {
@@ -476,7 +476,7 @@ export const factureClientProformaSchema = z
 			(val) => (typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val),
 			optionalNumberField(0),
 		),
-		lignes: z.array(devisFactureLineSchema).optional(),
+		lignes: z.array(devisLivraisonFactureLineSchema).optional(),
 		globalError: optionalTextField(1, 500),
 	})
 	.superRefine((data, ctx) => {
@@ -534,6 +534,97 @@ export const factureClientProformaAddSchema = z.object({
 	date_facture: requiredTextField(1, 100),
 	numero_bon_commande_client: optionalTextField(1, 100).nullable(),
 	mode_paiement: optionalNumberField(0).nullable(),
+	remarque: optionalTextField(2, 500).nullable(),
+	globalError: optionalTextField(1, 500),
+});
+
+export const bonDeLivraisonSchema = z
+	.object({
+		numero_part: requiredTextField(1, 15),
+		year_part: z.preprocess(
+			(val) => {
+				if (val === undefined || val === null || val === '') {
+					return undefined;
+				}
+				return Number(val);
+			},
+			z
+				.number({ error: INPUT_YEAR_PART_INVALID })
+				.refine((val) => !Number.isNaN(val), { message: INPUT_YEAR_PART_INVALID })
+				.refine((val) => val >= 20 && val <= 99 && Number.isInteger(val), {
+					message: INPUT_YEAR_PART_INVALID,
+				}),
+		),
+		client: requiredNumberField(1),
+		date_bon_livraison: requiredTextField(1, 100),
+		numero_demande_prix_client: optionalTextField(1, 100).nullable(),
+		mode_paiement: optionalNumberField(0).nullable(),
+		livre_par: optionalNumberField(0).nullable(),
+		remarque: optionalTextField(2, 500).nullable(),
+		remise_type: z.enum(['Pourcentage', 'Fixe']).optional().nullable(),
+		remise: z.preprocess(
+			(val) => (typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val),
+			optionalNumberField(0),
+		),
+		lignes: z.array(devisLivraisonFactureLineSchema).optional(),
+		globalError: optionalTextField(1, 500),
+	})
+	.superRefine((data, ctx) => {
+		const hasRemiseType = data.remise_type !== undefined;
+		const rType = data.remise_type ?? 'Pourcentage';
+		const remiseVal = data.remise;
+
+		if (hasRemiseType && (remiseVal === undefined || remiseVal === null || Number.isNaN(remiseVal))) {
+			ctx.addIssue({
+				path: ['remise'],
+				code: 'custom',
+				message: INPUT_REQUIRED,
+			});
+			return;
+		}
+
+		if (remiseVal !== undefined && remiseVal !== null) {
+			if (rType === 'Pourcentage') {
+				if (remiseVal < 0 || remiseVal > 100) {
+					ctx.addIssue({
+						path: ['remise'],
+						code: 'custom',
+						message: INPUT_REMISE_POURCENTAGE,
+					});
+				}
+			} else {
+				if (remiseVal < 0) {
+					ctx.addIssue({
+						path: ['remise'],
+						code: 'custom',
+						message: INPUT_REMISE_FIX,
+					});
+				}
+			}
+		}
+	});
+
+export const bonDeLivraisonAddSchema = z.object({
+	numero_part: requiredTextField(1, 15),
+	year_part: z.preprocess(
+		(val) => {
+			if (val === undefined || val === null || val === '') {
+				return undefined;
+			}
+			return Number(val);
+		},
+		z
+			.number({ error: INPUT_YEAR_PART_INVALID })
+			.refine((val) => !Number.isNaN(val), { message: INPUT_YEAR_PART_INVALID })
+			.refine((val) => val >= 20 && val <= 99 && Number.isInteger(val), {
+				message: INPUT_YEAR_PART_INVALID,
+			}),
+	),
+	client: requiredNumberField(1),
+	date_bon_livraison: requiredTextField(1, 100),
+	numero_demande_prix_client: optionalTextField(1, 100).nullable(),
+	mode_paiement: optionalNumberField(0).nullable(),
+	livre_par: optionalNumberField(0).nullable(),
 	remarque: optionalTextField(2, 500).nullable(),
 	globalError: optionalTextField(1, 500),
 });

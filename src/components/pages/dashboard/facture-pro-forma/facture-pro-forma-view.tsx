@@ -26,6 +26,7 @@ const FactureProFormaViewClient: React.FC<Props> = ({ session, company_id, id })
 			session={session}
 			company_id={company_id}
 			id={id}
+			type="facture-pro-forma"
 			title="Détails du facture pro-forma"
 			backLabel="Liste des factures pro-forma"
 			backTo={FACTURE_PRO_FORMA_LIST}

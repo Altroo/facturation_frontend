@@ -19,10 +19,11 @@ import type {
 	FactureNumResponse,
 	DocumentFormSchema,
 } from '@/types/companyDocumentsTypes';
-import type { TypeFactureDevisStatus } from '@/types/devisTypes';
+import type { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
+import { FactureClass } from '@/models/classes';
 
 // Configuration for facture pro forma form
-const factureProFormaFormConfig: DocumentFormConfig = {
+const factureProFormaFormConfig: DocumentFormConfig<FactureClass> = {
 	documentType: 'facture-pro-forma',
 	labels: {
 		documentTypeName: 'facture pro-forma',
@@ -85,7 +86,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 		unwrap: () => updateDataMutation({ data: params.data, id: params.id }).unwrap(),
 	});
 
-	const patchStatut = (params: { id: number; data: { statut: TypeFactureDevisStatus } }) => ({
+	const patchStatut = (params: { id: number; data: { statut: TypeFactureLivraisonDevisStatus } }) => ({
 		unwrap: () => patchStatutMutation({ id: params.id, data: params.data }).unwrap(),
 	});
 

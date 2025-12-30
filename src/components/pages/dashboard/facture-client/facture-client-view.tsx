@@ -26,6 +26,7 @@ const FactureClientViewClient: React.FC<Props> = ({ session, company_id, id }) =
 			session={session}
 			company_id={company_id}
 			id={id}
+			type="facture-client"
 			title="Détails du facture client"
 			backLabel="Liste des factures clients"
 			backTo={FACTURE_CLIENT_LIST}

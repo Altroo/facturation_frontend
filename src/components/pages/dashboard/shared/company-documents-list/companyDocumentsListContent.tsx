@@ -86,7 +86,7 @@ export interface DocumentListContentProps<TDocument extends DocumentListClass> {
 	/** Delete mutation function */
 	deleteMutation: DocumentDeleteMutationResult;
 	/** Convert mutations - key is action key, value is mutation result */
-	convertMutations: Record<string, DocumentConvertMutationResult>;
+	convertMutations?: Record<string, DocumentConvertMutationResult>;
 	/** Pagination model state */
 	paginationModel: PaginationModel;
 	/** Set pagination model state */
@@ -145,8 +145,9 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 
 	const handleConvertAction = useCallback(
 		async (actionKey: string) => {
+			if (!convertMutations) return;
 			const mutation = convertMutations[actionKey];
-			const action = config.convertActions.find((a) => a.key === actionKey);
+			const action = config.convertActions?.find((a) => a.key === actionKey);
 			if (!mutation || !action || !selectedId) return;
 
 			try {
@@ -199,7 +200,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 			string,
 			{ actions: Array<{ text: string; active: boolean; onClick: () => void; icon: React.ReactNode; color: string }> }
 		> = {};
-		config.convertActions.forEach((action) => {
+		config.convertActions?.forEach((action) => {
 			map[action.key] = {
 				actions: [
 					{
@@ -223,6 +224,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 	}, [config.convertActions, handleConvertAction]);
 
 	const isAnyConvertLoading = useMemo(() => {
+		if (!convertMutations) return false;
 		return Object.values(convertMutations).some((m) => m.isLoading);
 	}, [convertMutations]);
 
@@ -250,7 +252,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 							<DeleteIcon fontSize="small" />
 						</IconButton>
 					</DarkTooltip>
-					{config.convertActions.length > 0 && (
+					{config.convertActions && config.convertActions.length > 0 && (
 						<DarkTooltip title="Convertir">
 							<IconButton
 								size="small"
@@ -482,7 +484,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 
 			{showDeleteModal && <ActionModals {...modalsConfig.delete} />}
 
-			{config.convertActions.map(
+			{config.convertActions?.map(
 				(action) =>
 					activeConvertAction === action.key && (
 						<ActionModals
@@ -505,7 +507,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 				}}
 				slotProps={{ paper: { elevation: 3, sx: { minWidth: 220 } } }}
 			>
-				{config.convertActions.flatMap((action, index) => {
+				{config.convertActions?.flatMap((action, index) => {
 					const items = [];
 					if (index > 0) {
 						items.push(<Divider key={`divider-${action.key}`} />);

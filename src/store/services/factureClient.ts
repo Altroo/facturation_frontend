@@ -6,7 +6,7 @@ import type { FactureClass } from '@/models/classes';
 import type { ApiErrorResponseType, PaginationResponseType, SuccessResponseType } from '@/types/_initTypes';
 import type { RootState } from '@/store/store';
 import { initToken } from '@/store/slices/_initSlice';
-import type { TypeFactureDevisStatus } from '@/types/devisTypes';
+import type { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
 import { bonDeLivraisonApi } from '@/store/services/bonDeLivraison';
 
 export const factureClientApi = createApi({
@@ -100,7 +100,7 @@ export const factureClientApi = createApi({
 		}),
 		patchStatut: builder.mutation<
 			SuccessResponseType<FactureClass>,
-			{ id: number; data: { statut: TypeFactureDevisStatus } }
+			{ id: number; data: { statut: TypeFactureLivraisonDevisStatus } }
 		>({
 			query: ({ id, data }) => ({
 				url: `${process.env.NEXT_PUBLIC_FACTURE_CLIENT_SWITCH_STATUT}${id}/`,

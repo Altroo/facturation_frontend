@@ -1,5 +1,5 @@
 import * as types from './index';
-import type {
+import {
 	CategorieClass,
 	CitiesClass,
 	EmplacementClass,
@@ -7,6 +7,7 @@ import type {
 	UniteClass,
 	ModePaiementClass,
 	ModeReglementClass,
+	LivreParClass,
 } from '@/models/classes';
 
 export const parameterSetCitiesAction = (props: Array<CitiesClass>) => {
@@ -54,6 +55,13 @@ export const parameterSetModePaiementAction = (props: Array<ModePaiementClass>) 
 export const parameterSetModeReglementAction = (props: Array<ModeReglementClass>) => {
 	return {
 		type: types.PARAMETER_SET_MODE_REGLEMENT,
+		data: props,
+	};
+};
+
+export const parameterSetLivreParAction = (props: Array<LivreParClass>) => {
+	return {
+		type: types.PARAMETER_SET_LIVRE_PAR,
 		data: props,
 	};
 };

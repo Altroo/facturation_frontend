@@ -1,7 +1,7 @@
 import type { NbrEmployeType, CiviliteType, ManagedByType, ManagedByWriteOnlyType } from '@/types/companyTypes';
 import type { TypeClientType } from '@/types/clientTypes';
 import type { TypeArticleType } from '@/types/articleTypes';
-import type { TypeFactureDevisStatus, TypeRemiseType } from '@/types/devisTypes';
+import type { TypeFactureLivraisonDevisStatus, TypeRemiseType } from '@/types/devisTypes';
 
 export class UserClass {
 	constructor(
@@ -156,7 +156,14 @@ export class ModeReglementClass {
 	) {}
 }
 
-export class DeviFactureLineClass {
+export class LivreParClass {
+	constructor(
+		public readonly id: number,
+		public nom: string,
+	) {}
+}
+
+export class DeviFactureLivraisonLineClass {
 	constructor(
 		public readonly id: number,
 		public article: number,
@@ -181,7 +188,7 @@ export class DeviClass {
 		public mode_paiement: number | null,
 		public readonly mode_paiement_name: string | null,
 		public remarque: string | null,
-		public statut: TypeFactureDevisStatus,
+		public statut: TypeFactureLivraisonDevisStatus,
 		public readonly date_created: string,
 		public readonly date_updated: string,
 		public readonly created_by_user_id: number,
@@ -193,7 +200,7 @@ export class DeviClass {
 		public readonly total_tva: number,
 		public readonly total_ttc: number,
 		public readonly total_ttc_apres_remise: number,
-		public lignes: Array<DeviFactureLineClass>,
+		public lignes: Array<DeviFactureLivraisonLineClass>,
 	) {}
 }
 
@@ -208,7 +215,7 @@ export class FactureClass {
 		public mode_paiement: number | null,
 		public readonly mode_paiement_name: string | null,
 		public remarque: string | null,
-		public statut: TypeFactureDevisStatus,
+		public statut: TypeFactureLivraisonDevisStatus,
 		public readonly date_created: string,
 		public readonly date_updated: string,
 		public readonly created_by_user_id: number,
@@ -220,6 +227,35 @@ export class FactureClass {
 		public readonly total_tva: number,
 		public readonly total_ttc: number,
 		public readonly total_ttc_apres_remise: number,
-		public lignes: Array<DeviFactureLineClass>,
+		public lignes: Array<DeviFactureLivraisonLineClass>,
+	) {}
+}
+
+export class BonDeLivraisonClass {
+	constructor(
+		public readonly id: number,
+		public numero_bon_livraison: string,
+		public client: number | null,
+		public readonly client_name: string | null,
+		public date_bon_livraison: string,
+		public numero_bon_commande_client: string | null,
+		public livre_par: number | null,
+		public readonly livre_par_name: string | null,
+		public mode_paiement: number | null,
+		public readonly mode_paiement_name: string | null,
+		public remarque: string | null,
+		public statut: TypeFactureLivraisonDevisStatus,
+		public readonly date_created: string,
+		public readonly date_updated: string,
+		public readonly created_by_user_id: number,
+		public readonly created_by_user_name: string | null,
+		public readonly lignes_count: number,
+		public remise_type: TypeRemiseType,
+		public remise: number,
+		public readonly total_ht: number,
+		public readonly total_tva: number,
+		public readonly total_ttc: number,
+		public readonly total_ttc_apres_remise: number,
+		public lignes: Array<DeviFactureLivraisonLineClass>,
 	) {}
 }

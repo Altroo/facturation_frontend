@@ -34,6 +34,7 @@ import {
 	Edit as EditIcon,
 	Add as AddIcon,
 	Close as CloseIcon,
+	LocalShipping as LocalShippingIcon,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -50,10 +51,10 @@ import { textInputTheme, customDropdownTheme, gridInputTheme, customGridDropdown
 import { CLIENTS_ADD } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
-import type { ArticleClass, ClientClass, ModePaiementClass } from '@/models/classes';
+import { ArticleClass, ClientClass, ModePaiementClass, LivreParClass } from '@/models/classes';
 import { useGetClientsListQuery } from '@/store/services/client';
 import { useAppSelector, useToast } from '@/utils/hooks';
-import { getModePaiementState } from '@/store/selectors';
+import { getModePaiementState, getLivreParState } from '@/store/selectors';
 import type { DropDownType } from '@/types/accountTypes';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import { useGetArticlesListQuery } from '@/store/services/article';
@@ -63,12 +64,12 @@ import AddArticleModal from '@/components/shared/addArticleModal/addArticleModal
 import GlobalRemiseModal from '@/components/shared/globalRemiseModal/globalRemiseModal';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import { devisFactureStatusItemsList, remiseTypeItemsList } from '@/utils/rawData';
-import { useAddModePaiementMutation } from '@/store/services/parameter';
+import { useAddModePaiementMutation, useAddLivreParMutation } from '@/store/services/parameter';
 import AddEntityModal from '@/components/shared/addEntityModal/addEntityModal';
 import FactureDevisTotalsCard from '@/components/shared/factureDevistotalCard/factureDevisTotalsCard';
 import LinesGrid from '@/components/shared/linesGrid/linesGrid';
 import Image from 'next/image';
-import type {
+import {
 	DocumentFormConfig,
 	DocumentFormSchema,
 	DevisFormSchema,
@@ -76,11 +77,15 @@ import type {
 	DocumentFormData,
 	DevisDocumentData,
 	FactureDocumentData,
+	BonDeLivraisonDocumentData,
 	DocumentNumResponse,
 	DevisNumResponse,
 	FactureNumResponse,
+	BonDeLivraisonNumResponse,
 	DeviFactureLineFormValues,
-	TypeFactureDevisStatus,
+	TypeFactureLivraisonDevisStatus,
+	DocumentListClass,
+	BonDeLivraisonFormSchema,
 } from '@/types/companyDocumentsTypes';
 import type { ValidateArticleLinesErrorType } from '@/types/devisTypes';
 
@@ -108,31 +113,35 @@ export const generateRowId = (
 };
 
 // Helper to get numero from data
-const getNumeroFromData = (
+const getNumeroFromData = <TDocument extends DocumentListClass>(
 	isEditMode: boolean,
 	rawData: DocumentFormData | undefined,
 	rawNumData: DocumentNumResponse | undefined,
-	config: DocumentFormConfig,
+	config: DocumentFormConfig<TDocument>,
 ): string => {
 	if (isEditMode) {
 		if (config.fields.numeroField === 'numero_devis') {
 			return (rawData as DevisDocumentData | undefined)?.numero_devis ?? '';
+		} else if (config.fields.numeroField === 'numero_bon_livraison') {
+			return (rawData as BonDeLivraisonDocumentData | undefined)?.numero_bon_livraison ?? '';
 		}
 		return (rawData as FactureDocumentData | undefined)?.numero_facture ?? '';
 	}
 	if (config.fields.numeroField === 'numero_devis') {
 		return (rawNumData as DevisNumResponse | undefined)?.numero_devis ?? '';
+	} else if (config.fields.numeroField === 'numero_bon_livraison') {
+		return (rawNumData as BonDeLivraisonNumResponse | undefined)?.numero_bon_livraison ?? '';
 	}
 	return (rawNumData as FactureNumResponse | undefined)?.numero_facture ?? '';
 };
 
 // Props for the shared component
-export interface SharedDocumentFormContentProps {
+export interface SharedDocumentFormContentProps<TDocument extends DocumentListClass = DocumentListClass> {
 	token?: string;
 	company_id: number;
 	id?: number;
 	isEditMode: boolean;
-	config: DocumentFormConfig;
+	config: DocumentFormConfig<TDocument>;
 	// Data from API
 	rawData?: DocumentFormData;
 	isDataLoading: boolean;
@@ -146,12 +155,16 @@ export interface SharedDocumentFormContentProps {
 	updateData: (params: { data: DocumentFormSchema; id: number }) => { unwrap: () => Promise<unknown> };
 	isUpdateLoading: boolean;
 	updateError?: unknown;
-	patchStatut: (params: { id: number; data: { statut: TypeFactureDevisStatus } }) => { unwrap: () => Promise<unknown> };
+	patchStatut: (params: { id: number; data: { statut: TypeFactureLivraisonDevisStatus } }) => {
+		unwrap: () => Promise<unknown>;
+	};
 	isPatchLoading: boolean;
 	patchError?: unknown;
 }
 
-const CompanyDocumentFormContent: React.FC<SharedDocumentFormContentProps> = (props) => {
+const CompanyDocumentFormContent = <TDocument extends DocumentListClass = DocumentListClass>(
+	props: SharedDocumentFormContentProps<TDocument>,
+): React.JSX.Element => {
 	const {
 		token,
 		company_id,
@@ -235,6 +248,14 @@ const CompanyDocumentFormContent: React.FC<SharedDocumentFormContentProps> = (pr
 		? rawModePaiement
 		: Object.values(rawModePaiement ?? {});
 
+	// Livre par
+	const [addLivrePar] = useAddLivreParMutation();
+	const [openLivreParModal, setOpenLivreParModal] = useState(false);
+	const rawLivrePar = useAppSelector(getLivreParState);
+	const normalizedLivrePar: Array<LivreParClass> = Array.isArray(rawLivrePar)
+		? rawLivrePar
+		: Object.values(rawLivrePar ?? {});
+
 	// Error handling
 	const error = isEditMode ? dataError || updateError || patchError : addError;
 	const axiosError = useMemo(
@@ -257,11 +278,11 @@ const CompanyDocumentFormContent: React.FC<SharedDocumentFormContentProps> = (pr
 
 	// Build initial values based on document type
 	const getInitialValues = (): DocumentFormSchema => {
-		const isDevis = config.fields.dateField === 'date_devis';
 		const devisData = rawData as DevisDocumentData | undefined;
 		const factureData = rawData as FactureDocumentData | undefined;
+		const bonDeLivraisonData = rawData as BonDeLivraisonDocumentData | undefined;
 
-		if (isDevis) {
+		if (config.documentType === 'devis') {
 			return {
 				numero_part: numNumberPart,
 				year_part: numYearPart,
@@ -277,22 +298,40 @@ const CompanyDocumentFormContent: React.FC<SharedDocumentFormContentProps> = (pr
 				lignes: isEditMode ? (rawData?.lignes ?? []) : [],
 				globalError: '',
 			} as DevisFormSchema;
+		} else if (config.documentType === 'facture-client' || config.documentType === 'facture-pro-forma') {
+			return {
+				numero_part: numNumberPart,
+				year_part: numYearPart,
+				client: isEditMode ? (rawData?.client ?? null) : null,
+				date_facture: isEditMode
+					? (factureData?.date_facture ?? new Date().toISOString().split('T')[0])
+					: new Date().toISOString().split('T')[0],
+				numero_bon_commande_client: isEditMode ? (factureData?.numero_bon_commande_client ?? null) : null,
+				mode_paiement: isEditMode ? (rawData?.mode_paiement ?? null) : null,
+				remarque: isEditMode ? (rawData?.remarque ?? null) : null,
+				remise_type: isEditMode ? rawData?.remise_type : undefined,
+				remise: isEditMode ? rawData?.remise : undefined,
+				lignes: isEditMode ? (rawData?.lignes ?? []) : [],
+				globalError: '',
+			} as FactureFormSchema;
+		} else {
+			return {
+				numero_part: numNumberPart,
+				year_part: numYearPart,
+				client: isEditMode ? (rawData?.client ?? null) : null,
+				date_bon_livraison: isEditMode
+					? (bonDeLivraisonData?.date_bon_livraison ?? new Date().toISOString().split('T')[0])
+					: new Date().toISOString().split('T')[0],
+				numero_bon_commande_client: isEditMode ? (factureData?.numero_bon_commande_client ?? null) : null,
+				mode_paiement: isEditMode ? (rawData?.mode_paiement ?? null) : null,
+				livre_par: isEditMode ? (bonDeLivraisonData?.livre_par ?? null) : null,
+				remarque: isEditMode ? (rawData?.remarque ?? null) : null,
+				remise_type: isEditMode ? rawData?.remise_type : undefined,
+				remise: isEditMode ? rawData?.remise : undefined,
+				lignes: isEditMode ? (rawData?.lignes ?? []) : [],
+				globalError: '',
+			} as BonDeLivraisonFormSchema;
 		}
-		return {
-			numero_part: numNumberPart,
-			year_part: numYearPart,
-			client: isEditMode ? (rawData?.client ?? null) : null,
-			date_facture: isEditMode
-				? (factureData?.date_facture ?? new Date().toISOString().split('T')[0])
-				: new Date().toISOString().split('T')[0],
-			numero_bon_commande_client: isEditMode ? (factureData?.numero_bon_commande_client ?? null) : null,
-			mode_paiement: isEditMode ? (rawData?.mode_paiement ?? null) : null,
-			remarque: isEditMode ? (rawData?.remarque ?? null) : null,
-			remise_type: isEditMode ? rawData?.remise_type : undefined,
-			remise: isEditMode ? rawData?.remise : undefined,
-			lignes: isEditMode ? (rawData?.lignes ?? []) : [],
-			globalError: '',
-		} as FactureFormSchema;
 	};
 
 	const formik = useFormik<DocumentFormSchema>({
@@ -303,22 +342,25 @@ const CompanyDocumentFormContent: React.FC<SharedDocumentFormContentProps> = (pr
 		onSubmit: async (data, { setFieldError }) => {
 			setIsPending(true);
 			try {
-				const isDevis = config.fields.numeroField === 'numero_devis';
 				if (isEditMode) {
 					const submissionData = {
 						...data,
-						...(isDevis
+						...(config.documentType === 'devis'
 							? { numero_devis: `${data.numero_part}/${data.year_part}` }
-							: { numero_facture: `${data.numero_part}/${data.year_part}` }),
+							: config.documentType === 'facture-client' || config.documentType === 'facture-pro-forma'
+								? { numero_facture: `${data.numero_part}/${data.year_part}` }
+								: { numero_bon_livraison: `${data.numero_part}/${data.year_part}` }),
 					};
 					await updateData({ data: submissionData, id: id! }).unwrap();
 					onSuccess(config.labels.updateSuccessMessage);
 				} else {
 					const submissionData = {
 						...data,
-						...(isDevis
+						...(config.documentType === 'devis'
 							? { numero_devis: `${data.numero_part}/${data.year_part}` }
-							: { numero_facture: `${data.numero_part}/${data.year_part}` }),
+							: config.documentType === 'facture-client' || config.documentType === 'facture-pro-forma'
+								? { numero_facture: `${data.numero_part}/${data.year_part}` }
+								: { numero_bon_livraison: `${data.numero_part}/${data.year_part}` }),
 					};
 					const response = await addData({ data: submissionData }).unwrap();
 					onSuccess(config.labels.addSuccessMessage);
@@ -364,6 +406,18 @@ const CompanyDocumentFormContent: React.FC<SharedDocumentFormContentProps> = (pr
 		if (!v || modePaiementItems.length === 0) return null;
 		return modePaiementItems.find((c) => c.value === String(v)) ?? null;
 	}, [formik.values.mode_paiement, modePaiementItems]);
+
+	// Livre par items
+	const livreParItems: DropDownType[] = useMemo(
+		() => (normalizedLivrePar || []).map((c) => ({ value: String(c.id), code: c.nom })),
+		[normalizedLivrePar],
+	);
+
+	const livreParValue = (formik.values as { livre_par?: number | null }).livre_par;
+	const selectedLivrePar = useMemo<DropDownType | null>(() => {
+		if (!livreParValue || livreParItems.length === 0) return null;
+		return livreParItems.find((c) => c.value === String(livreParValue)) ?? null;
+	}, [livreParValue, livreParItems]);
 
 	// Calculate total HT before global remise
 	const calculateTotalHTBeforeGlobal = useCallback((): number => {
@@ -904,7 +958,7 @@ const CompanyDocumentFormContent: React.FC<SharedDocumentFormContentProps> = (pr
 	const handleStatutChange = async (newValue: string) => {
 		try {
 			if (!newValue) return;
-			await patchStatut({ id: id!, data: { statut: newValue as TypeFactureDevisStatus } }).unwrap();
+			await patchStatut({ id: id!, data: { statut: newValue as TypeFactureLivraisonDevisStatus } }).unwrap();
 			onSuccess('Statut mis à jour avec succès.');
 		} catch {
 			onError('Échec de la mise à jour du statut.');
@@ -950,6 +1004,24 @@ const CompanyDocumentFormContent: React.FC<SharedDocumentFormContentProps> = (pr
 		return lignes.map((ligne, index) => ({ ...ligne, id: generateRowId(ligne.article, index), rowIndex: index }));
 	}, [getLines]);
 
+	// Get date value based on document type
+	const getDateValue = (): string => {
+		if (config.documentType === 'devis') {
+			return (formik.values as DevisFormSchema).date_devis;
+		} else if (config.documentType === 'facture-client' || config.documentType === 'facture-pro-forma') {
+			return (formik.values as FactureFormSchema).date_facture;
+		}
+		return (formik.values as BonDeLivraisonFormSchema).date_bon_livraison;
+	};
+
+	// Get extra field value based on document type
+	const getExtraFieldValue = (): string => {
+		if (config.fields.extraField === 'numero_demande_prix_client') {
+			return (formik.values as DevisFormSchema).numero_demande_prix_client || '';
+		}
+		return (formik.values as FactureFormSchema).numero_bon_commande_client || '';
+	};
+
 	const isLoading =
 		isAddModePaiementLoading ||
 		isPatchLoading ||
@@ -962,21 +1034,9 @@ const CompanyDocumentFormContent: React.FC<SharedDocumentFormContentProps> = (pr
 		isNumLoading;
 	const shouldShowError = (axiosError?.status ?? 0) > 400 && !isLoading;
 
-	// Get date value based on document type
-	const getDateValue = (): string => {
-		if (config.fields.dateField === 'date_devis') {
-			return (formik.values as DevisFormSchema).date_devis;
-		}
-		return (formik.values as FactureFormSchema).date_facture;
-	};
-
-	// Get extra field value based on document type
-	const getExtraFieldValue = (): string => {
-		if (config.fields.extraField === 'numero_demande_prix_client') {
-			return (formik.values as DevisFormSchema).numero_demande_prix_client || '';
-		}
-		return (formik.values as FactureFormSchema).numero_bon_commande_client || '';
-	};
+	useEffect(() => {
+		console.log(formik.errors);
+	}, [formik.errors]);
 
 	return (
 		<LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
@@ -1217,6 +1277,42 @@ const CompanyDocumentFormContent: React.FC<SharedDocumentFormContentProps> = (pr
 												</Button>
 											}
 										/>
+										{config.documentType === 'bon-de-livraison' && (
+											<CustomAutoCompleteSelect
+												id="livre_par"
+												size="small"
+												noOptionsText="Aucun livreur trouvé"
+												label="Livré par"
+												items={livreParItems}
+												theme={theme}
+												value={selectedLivrePar}
+												fullWidth
+												onChange={(_, newVal) =>
+													formik.setFieldValue('livre_par', newVal ? Number(newVal.value) : null)
+												}
+												onBlur={formik.handleBlur('livre_par')}
+												error={
+													(formik.touched as { livre_par?: boolean }).livre_par &&
+													Boolean((formik.errors as { livre_par?: string }).livre_par)
+												}
+												helperText={
+													(formik.touched as { livre_par?: boolean }).livre_par
+														? (formik.errors as { livre_par?: string }).livre_par
+														: ''
+												}
+												startIcon={<LocalShippingIcon fontSize="small" color="action" />}
+												endIcon={
+													<Button
+														size="small"
+														variant="outlined"
+														onClick={() => setOpenLivreParModal(true)}
+														sx={{ ml: 1 }}
+													>
+														Ajouter
+													</Button>
+												}
+											/>
+										)}
 										<CustomTextInput
 											id={config.fields.extraField}
 											type="text"
@@ -1406,6 +1502,16 @@ const CompanyDocumentFormContent: React.FC<SharedDocumentFormContentProps> = (pr
 				inputTheme={inputFieldTheme}
 				mutationFn={addModePaiement}
 			/>
+			{config.documentType === 'bon-de-livraison' && (
+				<AddEntityModal
+					open={openLivreParModal}
+					setOpen={setOpenLivreParModal}
+					label="livreur"
+					icon={<LocalShippingIcon fontSize="small" />}
+					inputTheme={inputFieldTheme}
+					mutationFn={addLivrePar}
+				/>
+			)}
 		</LocalizationProvider>
 	);
 };

@@ -3,12 +3,14 @@ import type {
 	DeviFactureLineFormValues,
 	DeviLineSchemaType,
 	TypeRemiseType,
-	TypeFactureDevisStatus,
+	TypeFactureLivraisonDevisStatus,
 } from '@/types/devisTypes';
 import type { SessionProps } from '@/types/_initTypes';
-import type { DeviClass, FactureClass } from '@/models/classes';
+import { BonDeLivraisonClass, DeviClass, FactureClass } from '@/models/classes';
 import type { PaginationResponseType } from '@/types/_initTypes';
 import type { GridColDef } from '@mui/x-data-grid';
+
+export type DocumentType = 'devis' | 'facture-client' | 'facture-pro-forma' | 'bon-de-livraison';
 
 type Ligne = {
 	article: number;
@@ -45,6 +47,7 @@ export type CompanyDocumentData = TotalsFields &
 		statut?: string | null;
 		client_name?: string | null;
 		mode_paiement_name?: string | null;
+		livre_par_name?: string | null;
 		remarque?: string | null;
 	};
 
@@ -65,6 +68,7 @@ export interface CompanyDocumentsViewProps<TData extends CompanyDocumentData> ex
 	company_id: number;
 	id: number;
 
+	type: DocumentType;
 	title: string;
 	backLabel: string;
 	backTo: string;
@@ -96,7 +100,7 @@ export interface BaseDocumentData {
 	remise_type?: TypeRemiseType;
 	remise?: number;
 	lignes: Array<DeviLineSchemaType>;
-	statut?: TypeFactureDevisStatus;
+	statut?: TypeFactureLivraisonDevisStatus;
 }
 
 /** Devis-specific document data */
@@ -113,8 +117,16 @@ export interface FactureDocumentData extends BaseDocumentData {
 	numero_bon_commande_client: string | null;
 }
 
+/** Bon de livraison-specific document data */
+export interface BonDeLivraisonDocumentData extends BaseDocumentData {
+	numero_bon_livraison?: string;
+	date_bon_livraison: string;
+	numero_bon_commande_client: string | null;
+	livre_par?: number | null;
+}
+
 /** Union type for all document form data types */
-export type DocumentFormData = DevisDocumentData | FactureDocumentData;
+export type DocumentFormData = DevisDocumentData | FactureDocumentData | BonDeLivraisonDocumentData;
 
 /** Base form schema fields (common to all document types) */
 export interface BaseDocumentFormSchema {
@@ -136,17 +148,23 @@ export interface DevisFormSchema extends BaseDocumentFormSchema {
 	numero_demande_prix_client: string | null;
 }
 
-/** Facture form schema type (facture client and pro-forma share this) */
+/** Facture form schema type (facture client and pro forma share this) */
 export interface FactureFormSchema extends BaseDocumentFormSchema {
 	numero_facture?: string;
 	date_facture: string;
 	numero_bon_commande_client: string | null;
 }
 
-/** Union type for form schema */
-export type DocumentFormSchema = DevisFormSchema | FactureFormSchema;
+/** Bon de livraison form schema type */
+export interface BonDeLivraisonFormSchema extends BaseDocumentFormSchema {
+	numero_bon_livraison?: string;
+	date_bon_livraison: string;
+	numero_bon_commande_client: string | null;
+	livre_par?: number | null;
+}
 
-export type DocumentType = 'devis' | 'facture-client' | 'facture-pro-forma';
+/** Union type for form schema */
+export type DocumentFormSchema = DevisFormSchema | FactureFormSchema | BonDeLivraisonFormSchema;
 
 export interface DevisNumResponse {
 	numero_devis: string;
@@ -156,7 +174,11 @@ export interface FactureNumResponse {
 	numero_facture: string;
 }
 
-export type DocumentNumResponse = DevisNumResponse | FactureNumResponse;
+export interface BonDeLivraisonNumResponse {
+	numero_bon_livraison: string;
+}
+
+export type DocumentNumResponse = DevisNumResponse | FactureNumResponse | BonDeLivraisonNumResponse;
 
 /** Labels configuration for document forms */
 export interface DocumentFormLabels {
@@ -183,13 +205,13 @@ export interface DocumentFormLabels {
 }
 
 /** Field configuration for document forms */
-export interface DocumentFormFields {
+export interface DocumentFormFields<TDocument> {
 	/** Field name for the document number (e.g., "numero_devis" or "numero_facture") */
-	numeroField: 'numero_devis' | 'numero_facture';
+	numeroField: keyof TDocument & string;
 	/** Field name for the date (e.g., "date_devis" or "date_facture") */
-	dateField: 'date_devis' | 'date_facture';
+	dateField: keyof TDocument & string;
 	/** Field name for the extra field (e.g., "numero_demande_prix_client" or "numero_bon_commande_client") */
-	extraField: 'numero_demande_prix_client' | 'numero_bon_commande_client';
+	extraField: keyof TDocument & string;
 	/** Label for the extra field */
 	extraFieldLabel: string;
 }
@@ -211,13 +233,13 @@ export interface DocumentFormValidation {
 }
 
 /** Complete configuration for document form component */
-export interface DocumentFormConfig {
+export interface DocumentFormConfig<TDocument> {
 	/** Document type identifier */
 	documentType: DocumentType;
 	/** Labels for the form */
 	labels: DocumentFormLabels;
 	/** Field names configuration */
-	fields: DocumentFormFields;
+	fields: DocumentFormFields<TDocument>;
 	/** Routes configuration */
 	routes: DocumentFormRoutes;
 	/** Validation schemas */
@@ -225,7 +247,7 @@ export interface DocumentFormConfig {
 }
 
 /** Union type for document class in list views */
-export type DocumentListClass = DeviClass | FactureClass;
+export type DocumentListClass = DeviClass | FactureClass | BonDeLivraisonClass;
 
 /** Pagination model type */
 export interface PaginationModel {
@@ -324,7 +346,7 @@ export interface DocumentListConfig<TDocument extends DocumentListClass> {
 	/** Column configuration */
 	columns: DocumentListColumnConfig<TDocument>;
 	/** Convert actions configuration */
-	convertActions: ConvertAction[];
+	convertActions?: ConvertAction[];
 	/** Custom columns function (returns GridColDef[]) */
 	getExtraColumns?: (args: {
 		router: ReturnType<typeof import('next/navigation').useRouter>;
@@ -332,4 +354,4 @@ export interface DocumentListConfig<TDocument extends DocumentListClass> {
 	}) => GridColDef[];
 }
 
-export type { DeviFactureLineFormValues, DeviLineSchemaType, TypeRemiseType, TypeFactureDevisStatus };
+export type { DeviFactureLineFormValues, DeviLineSchemaType, TypeRemiseType, TypeFactureLivraisonDevisStatus };

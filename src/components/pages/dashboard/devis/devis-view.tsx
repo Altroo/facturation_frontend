@@ -26,6 +26,7 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 			session={session}
 			company_id={company_id}
 			id={id}
+			type="devis"
 			title="Détails du devis"
 			backLabel="Liste des devis"
 			backTo={DEVIS_LIST}

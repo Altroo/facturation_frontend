@@ -38,7 +38,7 @@ const AddEntityModal: React.FC<AddEntityModalProps> = ({ open, setOpen, label, i
 				<CustomTextInput
 					id={`new_${label}`}
 					type="text"
-					label={`Nom de la ${label}`}
+					label={`Nom du ${label}`}
 					value={newName}
 					onChange={(e) => {
 						setNewName(e.target.value);

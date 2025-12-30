@@ -48,6 +48,7 @@ import {
 	ARTICLES_ARCHIVED,
 	ARTICLES_LIST,
 	AUTH_LOGIN,
+	BON_DE_LIVRAISON_LIST,
 	CLIENTS_ARCHIVED,
 	CLIENTS_LIST,
 	COMPANIES_ADD,
@@ -114,9 +115,9 @@ const getNavigationMenu = (isStaff: boolean) => {
 			title: 'Bons de livraison',
 			icon: <LocalShippingIcon />,
 			items: [
-				{ title: 'Liste des BLs', label: 'Liste des BLs', path: '/bls/list' },
-				{ title: 'BLs non facturés', label: 'BLs non facturés', path: '/bls/uninvoiced' },
-				{ title: 'État de livraison', label: 'État de livraison', path: '/bls/status' },
+				{ title: 'Liste des BLs', label: 'Liste des BLs', path: BON_DE_LIVRAISON_LIST },
+				// { title: 'BLs non facturés', label: 'BLs non facturés', path: '/bls/uninvoiced' },
+				// { title: 'État de livraison', label: 'État de livraison', path: '/bls/status' },
 			],
 		},
 		reglement: {
