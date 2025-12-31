@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import Styles from '@/styles/dashboard/settings/edit-profil.module.sass';
+import Styles from '@/styles/dashboard/settings/settings.module.sass';
 import { Box, Stack, useMediaQuery, useTheme } from '@mui/material';
 import { useFormik } from 'formik';
 import { profilSchema } from '@/utils/formValidationSchemas';
@@ -72,7 +72,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 			)}
 			<h2 className={Styles.pageTitle}>Profil</h2>
 			<form className={Styles.form} onSubmit={(e) => e.preventDefault()}>
-				<Stack direction="column" spacing={2}>
+				<Stack direction="column" spacing={2} justifyContent="center" alignItems="center">
 					<CustomSquareImageUploading
 						cssClasse={Styles.centerAvatar}
 						image={formik.values.avatar}
@@ -94,6 +94,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 						placeholder="Nom"
 						theme={inputTheme}
 						startIcon={<PersonIcon fontSize="small" />}
+						cssClass={Styles.maxInputWidth}
 					/>
 					<CustomTextInput
 						id="last_name"
@@ -109,6 +110,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 						placeholder="Prénom"
 						theme={inputTheme}
 						startIcon={<PersonIcon fontSize="small" />}
+						cssClass={Styles.maxInputWidth}
 					/>
 					<CustomDropDownSelect
 						size="small"
@@ -119,6 +121,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 						onChange={(e) => formik.setFieldValue('gender', e.target.value)}
 						value={formik.values.gender}
 						startIcon={<GroupsIcon fontSize="small" />}
+						cssClass={Styles.maxInputWidth}
 					/>
 					<PrimaryLoadingButton
 						buttonText="Mettre à jour"

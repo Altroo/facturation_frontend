@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Styles from '@/styles/auth/reset-password/reset-password.module.sass';
+import Styles from '@/styles/auth/auth.module.sass';
 import { setFormikAutoErrors } from '@/utils/helpers';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';

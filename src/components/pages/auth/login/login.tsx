@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
-import Styles from '@/styles/auth/login/login.module.sass';
+import Styles from '@/styles/auth/auth.module.sass';
 import { Stack, Divider } from '@mui/material';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import { allowAnyInstance, setFormikAutoErrors } from '@/utils/helpers';
@@ -80,7 +80,7 @@ const LoginPageContent = () => {
 			<Stack direction="column" spacing={2} className={Styles.mobileWidth}>
 				{errorState && <span className={Styles.errorMessage}>{errorState}</span>}
 			</Stack>
-			<Divider orientation="horizontal" flexItem className={Styles.divider} />
+			<Divider orientation="horizontal" flexItem className={Styles.dividerNoMargin} />
 			<form style={{ width: '100%' }} onSubmit={(e) => e.preventDefault()}>
 				<Stack direction="column" spacing={2}>
 					<CustomTextInput

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import Styles from '@/styles/dashboard/settings/password.module.sass';
+import Styles from '@/styles/dashboard/settings/settings.module.sass';
 import { Box, Stack, useMediaQuery, useTheme } from '@mui/material';
 import { setFormikAutoErrors } from '@/utils/helpers';
 import { useFormik } from 'formik';
@@ -66,7 +66,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 			{(isChangePasswordLoading || isPending) && <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />}
 			<h2 className={Styles.pageTitle}>Modifier le mot de passe</h2>
 			<form className={Styles.form} onSubmit={(e) => e.preventDefault()}>
-				<Stack direction="column" spacing={2}>
+				<Stack direction="column" justifyContent="center" alignItems="center" spacing={2}>
 					<CustomPasswordInput
 						id="old_password"
 						value={formik.values.old_password}
@@ -80,6 +80,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 						placeholder="Ancien mot de passe"
 						theme={inputTheme}
 						startIcon={<LockIcon fontSize="small" />}
+						cssClass={Styles.maxInputWidth}
 					/>
 					<CustomPasswordInput
 						id="new_password"
@@ -94,6 +95,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 						placeholder="Nouveau mot de passe"
 						theme={inputTheme}
 						startIcon={<LockIcon fontSize="small" />}
+						cssClass={Styles.maxInputWidth}
 					/>
 					<CustomPasswordInput
 						id="new_password2"
@@ -108,6 +110,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 						placeholder="Confirmation du nouveau mot de passe"
 						theme={inputTheme}
 						startIcon={<LockIcon fontSize="small" />}
+						cssClass={Styles.maxInputWidth}
 					/>
 					<PrimaryLoadingButton
 						buttonText="Modifier"

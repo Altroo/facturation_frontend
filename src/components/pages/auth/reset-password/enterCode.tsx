@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import Styles from '@/styles/auth/reset-password/enter-code.module.sass';
+import Styles from '@/styles/auth/auth.module.sass';
 import { setFormikAutoErrors } from '@/utils/helpers';
 import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
 import { cookiesPoster } from '@/utils/apiHelpers';

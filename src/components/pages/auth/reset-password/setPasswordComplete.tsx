@@ -1,5 +1,5 @@
 import React from 'react';
-import Styles from '@/styles/auth/reset-password/set-password-complete.module.sass';
+import Styles from '@/styles/auth/auth.module.sass';
 import AuthLayout from '@/components/layouts/auth/authLayout';
 import { Stack } from '@mui/material';
 import Image from 'next/image';
