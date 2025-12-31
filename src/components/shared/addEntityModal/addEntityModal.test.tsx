@@ -57,7 +57,7 @@ describe('AddEntityModal', () => {
 			/>,
 		);
 
-		expect(screen.getByText(`Ajouter une ${label}`)).toBeInTheDocument();
+		expect(screen.getByText(`Ajouter un(e) ${label}`)).toBeInTheDocument();
 		expect(screen.getByText('Annuler')).toBeInTheDocument();
 		expect(screen.getByText('Ajouter')).toBeInTheDocument();
 		expect(screen.getByTestId(inputId)).toBeInTheDocument();
@@ -82,7 +82,7 @@ describe('AddEntityModal', () => {
 		});
 
 		await waitFor(() => {
-			expect(screen.getByTestId(`${inputId}-helper`).textContent).toContain(`Le nom de la ${label} est requis.`);
+			expect(screen.getByTestId(`${inputId}-helper`).textContent).toContain(`Le nom du ${label} est requis.`);
 		});
 
 		expect(mutationFn).not.toHaveBeenCalled();
@@ -173,7 +173,7 @@ describe('AddEntityModal', () => {
 		});
 
 		await waitFor(() => {
-			expect(screen.getByTestId(`${inputId}-helper`).textContent).toContain(`Erreur lors de l’ajout de la ${label}.`);
+			expect(screen.getByTestId(`${inputId}-helper`).textContent).toContain(`Erreur lors de l’ajout du ${label}.`);
 		});
 
 		expect(setOpen).not.toHaveBeenCalledWith(false);
