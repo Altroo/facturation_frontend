@@ -347,10 +347,12 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		validateOnMount: true,
 		onSubmit: async (data, { setFieldError }) => {
 			setIsPending(true);
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			const { globalError, ...payload } = data;
 			try {
 				if (isEditMode) {
 					const submissionData = {
-						...data,
+						...payload,
 						...(config.documentType === 'devis'
 							? { numero_devis: `${data.numero_part}/${data.year_part}` }
 							: config.documentType === 'facture-client' || config.documentType === 'facture-pro-forma'
@@ -361,7 +363,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 					onSuccess(config.labels.updateSuccessMessage);
 				} else {
 					const submissionData = {
-						...data,
+						...payload,
 						...(config.documentType === 'devis'
 							? { numero_devis: `${data.numero_part}/${data.year_part}` }
 							: config.documentType === 'facture-client' || config.documentType === 'facture-pro-forma'

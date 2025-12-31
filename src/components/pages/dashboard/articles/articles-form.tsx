@@ -157,12 +157,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		onSubmit: async (data, { setFieldError }) => {
 			setHasAttemptedSubmit(true);
 			setIsPending(true);
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			const { globalError, ...payload } = data;
 			try {
 				if (isEditMode) {
-					await updateArticle({ data: data, id: id! }).unwrap();
+					await updateArticle({ data: payload, id: id! }).unwrap();
 					onSuccess("L'article a été mis à jour avec succès.");
 				} else {
-					await addArticle({ data: data }).unwrap();
+					await addArticle({ data: payload }).unwrap();
 					onSuccess("L'article a été ajouté avec succès.");
 				}
 				if (!isEditMode) {

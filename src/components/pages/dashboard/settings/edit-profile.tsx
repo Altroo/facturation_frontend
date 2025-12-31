@@ -50,8 +50,10 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 		validationSchema: toFormikValidationSchema(profilSchema),
 		onSubmit: async (data, { setFieldError }) => {
 			setIsPending(true);
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			const { globalError, ...payload } = data;
 			try {
-				const response = await editProfil({ token, data }).unwrap();
+				const response = await editProfil({ data: payload }).unwrap();
 				if (response) {
 					dispatch(accountEditProfilAction(response));
 					onSuccess('Profil mis à jour avec succès.');

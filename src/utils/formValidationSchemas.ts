@@ -230,7 +230,6 @@ export const clientSchema = z
 		identifiant_fiscal: optionalTextField(2, 100).nullable(),
 		taxe_professionnelle: optionalTextField(2, 100).nullable(),
 		CNSS: optionalTextField(2, 100).nullable(),
-
 		globalError: optionalTextField(1, 500),
 	})
 	.superRefine((data: ClientSchemaType, ctx) => {

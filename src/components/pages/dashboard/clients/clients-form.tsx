@@ -136,19 +136,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		onSubmit: async (data, { setFieldError }) => {
 			setHasAttemptedSubmit(true);
 			setIsPending(true);
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			const { globalError, ...newPayload } = data;
 			try {
 				// Build payload with irrelevant fields cleared
 				const payload =
 					data.client_type === 'PM'
 						? {
-								...data,
+								...newPayload,
 								nom: null,
 								prenom: null,
 								adresse: null,
 								tel: null,
 							}
 						: {
-								...data,
+								...newPayload,
 								raison_sociale: null,
 								ICE: null,
 								registre_de_commerce: null,

@@ -9,8 +9,6 @@ import { changePasswordSchema } from '@/utils/formValidationSchemas';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import { textInputTheme } from '@/utils/themes';
 import CustomPasswordInput from '@/components/formikElements/customPasswordInput/customPasswordInput';
-import type { SessionProps } from '@/types/_initTypes';
-import { getAccessTokenFromSession } from '@/store/session';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import { useEditPasswordMutation } from '@/store/services/account';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
@@ -20,12 +18,7 @@ import { Edit as EditIcon, Lock as LockIcon } from '@mui/icons-material';
 
 const inputTheme = textInputTheme();
 
-type formikContentType = {
-	token: string | undefined;
-};
-
-const FormikContent: React.FC<formikContentType> = (props: formikContentType) => {
-	const { token } = props;
+const FormikContent: React.FC = () => {
 	const { onSuccess, onError } = useToast();
 	const [changePassword, { isLoading: isChangePasswordLoading }] = useEditPasswordMutation();
 	const [isPending, setIsPending] = useState(false);
@@ -43,7 +36,6 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 			setIsPending(true);
 			try {
 				await changePassword({
-					token,
 					data: {
 						old_password: values.old_password,
 						new_password: values.new_password,
@@ -127,11 +119,9 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 	);
 };
 
-const PasswordClient: React.FC<SessionProps> = (props: SessionProps) => {
-	const { session } = props;
+const PasswordClient: React.FC = () => {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-	const token = getAccessTokenFromSession(session);
 
 	return (
 		<Stack direction="column" sx={{ position: 'relative' }}>
@@ -146,7 +136,7 @@ const PasswordClient: React.FC<SessionProps> = (props: SessionProps) => {
 						}}
 					>
 						<Box sx={{ width: '100%' }}>
-							<FormikContent token={token} />
+							<FormikContent />
 						</Box>
 					</Box>
 				</main>
