@@ -10,7 +10,7 @@ const EditPasswordPage = async () => {
 		redirect(AUTH_LOGIN);
 	}
 
-	return <PasswordClient session={session} />;
+	return <PasswordClient />;
 };
 
 export default EditPasswordPage;

@@ -134,6 +134,7 @@ describe('CustomTheme', () => {
 	});
 
 	it('should handle white primary color specially', () => {
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const theme = CustomTheme('#FFFFFF');
 		expect(helpers.hexToRGB).toHaveBeenCalledWith('#0D070B', 0.5);
 	});
@@ -168,11 +169,13 @@ describe('CustomTheme', () => {
 describe('getDefaultTheme', () => {
 	it('should return theme with provided primary color', () => {
 		const primaryColor = '#00FF00';
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const theme = getDefaultTheme(primaryColor);
 		expect(helpers.hexToRGB).toHaveBeenCalledWith(primaryColor, 0.5);
 	});
 
 	it('should return theme with default color when no color provided', () => {
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const theme = getDefaultTheme();
 		expect(helpers.hexToRGB).toHaveBeenCalledWith('#0274D7', 0.5);
 	});
