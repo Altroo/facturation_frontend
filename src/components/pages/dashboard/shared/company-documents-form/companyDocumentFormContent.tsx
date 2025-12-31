@@ -46,7 +46,13 @@ import CustomTextInput from '@/components/formikElements/customTextInput/customT
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
-import { parseNumber, safeParseForInput, setFormikAutoErrors, ValidatePricesHelper } from '@/utils/helpers';
+import {
+	getCompanyDocumentLabelForKey,
+	parseNumber,
+	safeParseForInput,
+	setFormikAutoErrors,
+	ValidatePricesHelper,
+} from '@/utils/helpers';
 import { textInputTheme, customDropdownTheme, gridInputTheme, customGridDropdownTheme } from '@/utils/themes';
 import { CLIENTS_ADD } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
@@ -271,7 +277,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	const [deleteLineIndex, setDeleteLineIndex] = useState<number | null>(null);
 	const [selectedArticles, setSelectedArticles] = useState<Set<number>>(new Set());
 	const [validationErrors, setValidationErrors] = useState<ValidateArticleLinesErrorType>({});
-
+	const topRef = useRef<HTMLDivElement | null>(null);
 	// Split numero into parts
 	const initialNum = getNumeroFromData(isEditMode, rawData, rawNumData, config);
 	const [numNumberPart = '', numYearPart = ''] = initialNum.split('/');
@@ -997,8 +1003,6 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		[formik, calculateTotalHTBeforeGlobal, onError],
 	);
 
-	const hasValidationErrors = Object.keys(validationErrors).length > 0;
-
 	const dataGridRows = useMemo(() => {
 		const lignes = getLines();
 		return lignes.map((ligne, index) => ({ ...ligne, id: generateRowId(ligne.article, index), rowIndex: index }));
@@ -1022,6 +1026,62 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		return (formik.values as FactureFormSchema).numero_bon_commande_client || '';
 	};
 
+	const fieldLabels = useMemo<Record<string, string>>(
+		() => ({
+			numero_part: 'Numéro',
+			year_part: 'Année',
+			client: 'Client',
+			date_devis: 'Date',
+			date_facture: 'Date',
+			date_bon_livraison: 'Date',
+			numero_demande_prix_client: 'N° demande prix client',
+			numero_bon_commande_client: 'N° bon commande client',
+			mode_paiement: 'Mode de paiement',
+			livre_par: 'Livreur',
+			remarque: 'Remarque',
+			remise_type: 'Type remise',
+			remise: 'Remise',
+			globalError: 'Erreur globale',
+			global_remise: 'Remise globale',
+			lignes: 'Lignes',
+			// line fields
+			prix_vente: 'Prix de vente',
+			prix_achat: "Prix d'achat",
+			quantity: 'Quantité',
+			designation: 'Désignation',
+			reference: 'Référence',
+			marque: 'Marque',
+			categorie: 'Catégorie',
+			remise_field: 'Remise', // generic fallback for remise field naming
+		}),
+		[],
+	);
+
+	const combinedValidationEntries = useMemo(() => {
+		const entries: Array<[string, string]> = [];
+		Object.entries(validationErrors).forEach(([k, v]) => entries.push([k, String(v)]));
+		Object.entries(formik.errors).forEach(([k, v]) => {
+			if (typeof v === 'string') entries.push([k, v]);
+			else if (Array.isArray(v)) entries.push([k, 'Validation erreurs dans les lignes.']);
+			else entries.push([k, String(v)]);
+		});
+		return entries;
+	}, [validationErrors, formik.errors]);
+
+	const hasValidationErrors = combinedValidationEntries.length > 0;
+	const hasLineValidationErrors = Object.keys(validationErrors).length > 0;
+
+	// Show Alert only after a submit attempt or when line-level/custom validation errors exist
+	const showValidationAlert = hasValidationErrors && (formik.submitCount > 0 || hasLineValidationErrors);
+
+	// scroll to top when submit attempted and there are errors
+	useEffect(() => {
+		if (formik.submitCount > 0 && hasValidationErrors) {
+			onError('Veuillez corriger les erreurs de validation avant de soumettre.');
+			topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		}
+	}, [formik.submitCount, hasValidationErrors, onError]);
+
 	const isLoading =
 		isAddModePaiementLoading ||
 		isPatchLoading ||
@@ -1034,13 +1094,9 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		isNumLoading;
 	const shouldShowError = (axiosError?.status ?? 0) > 400 && !isLoading;
 
-	useEffect(() => {
-		console.log(formik.errors);
-	}, [formik.errors]);
-
 	return (
 		<LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
-			<Stack spacing={3} sx={{ p: { xs: 2, md: 3 } }}>
+			<Stack ref={topRef} spacing={3} sx={{ p: { xs: 2, md: 3 } }}>
 				<Stack direction={isMobile ? 'column' : 'row'} pt={2} justifyContent="space-between" spacing={2}>
 					<Button
 						variant="outlined"
@@ -1057,15 +1113,17 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 					</Button>
 				</Stack>
 
-				{hasValidationErrors && (
+				{showValidationAlert && (
 					<Alert severity="error" icon={<WarningIcon />}>
 						<Typography variant="subtitle2" fontWeight={600}>
 							Erreurs de validation détectées:
 						</Typography>
 						<ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
-							{Object.entries(validationErrors).map(([key, error]) => (
+							{combinedValidationEntries.map(([key, error]) => (
 								<li key={key}>
-									<Typography variant="body2">{error}</Typography>
+									<Typography variant="body2">
+										{getCompanyDocumentLabelForKey(fieldLabels, key)} : {error}
+									</Typography>
 								</li>
 							))}
 						</ul>
@@ -1426,7 +1484,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 									loading={isPending}
 									startIcon={isEditMode ? <EditIcon /> : <AddIcon />}
 									onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-										if (hasValidationErrors && isEditMode) {
+										if (showValidationAlert) {
 											e.preventDefault();
 											onError('Veuillez corriger les erreurs de validation avant de soumettre.');
 											window.scrollTo({ top: 0, behavior: 'smooth' });

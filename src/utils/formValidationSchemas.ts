@@ -54,8 +54,19 @@ const requiredTextField = (min: number, max: number) =>
 			.nonempty({ error: INPUT_REQUIRED }),
 	);
 
-const requiredChoiceField = () =>
+const requiredChoiceTextField = () =>
 	z.preprocess((val) => (val === undefined ? '' : val), z.string().nonempty({ error: INPUT_REQUIRED }));
+
+const requiredChoiceNumberField = () =>
+	z.preprocess(
+		(val) => {
+			if (val === undefined || val === null || val === '' || val === 0 || val === '0') {
+				return undefined;
+			}
+			return Number(val);
+		},
+		z.number({ message: INPUT_REQUIRED }).refine((v) => !Number.isNaN(v), { message: INPUT_REQUIRED }),
+	);
 
 const optionalChoiceField = () =>
 	z.preprocess((val) => (val === undefined || val === null || val === '' ? undefined : val), z.string().optional());
@@ -140,7 +151,7 @@ export const companySchema = z.object({
 	// REQUIRED FIELDS
 	raison_sociale: requiredTextField(2, 255),
 	ICE: requiredTextField(2, 100),
-	nbr_employe: requiredChoiceField(),
+	nbr_employe: requiredChoiceTextField(),
 
 	// OPTIONAL FIELDS
 	email: optionalEmailField,
@@ -176,7 +187,7 @@ export const userSchema = z.object({
 	first_name: requiredTextField(2, 255),
 	last_name: requiredTextField(2, 255),
 	email: z.email({ error: MINI_INPUT_EMAIL }),
-	gender: requiredChoiceField(),
+	gender: requiredChoiceTextField(),
 	is_active: z.boolean(),
 	is_staff: z.boolean(),
 	// OPTIONAL FIELDS
@@ -377,7 +388,7 @@ export const deviSchema = z
 					message: INPUT_YEAR_PART_INVALID,
 				}),
 		),
-		client: requiredNumberField(1),
+		client: requiredChoiceNumberField(),
 		date_devis: requiredTextField(1, 100),
 		numero_demande_prix_client: optionalTextField(1, 100).nullable(),
 		mode_paiement: optionalNumberField(0).nullable(),
@@ -441,7 +452,7 @@ export const deviAddSchema = z.object({
 				message: INPUT_YEAR_PART_INVALID,
 			}),
 	),
-	client: requiredNumberField(1),
+	client: requiredChoiceNumberField(),
 	date_devis: requiredTextField(1, 100),
 	numero_demande_prix_client: optionalTextField(1, 100).nullable(),
 	mode_paiement: optionalNumberField(0).nullable(),
@@ -466,7 +477,7 @@ export const factureClientProformaSchema = z
 					message: INPUT_YEAR_PART_INVALID,
 				}),
 		),
-		client: requiredNumberField(1),
+		client: requiredChoiceNumberField(),
 		date_facture: requiredTextField(1, 100),
 		numero_bon_commande_client: optionalTextField(1, 100).nullable(),
 		mode_paiement: optionalNumberField(0).nullable(),
@@ -530,7 +541,7 @@ export const factureClientProformaAddSchema = z.object({
 				message: INPUT_YEAR_PART_INVALID,
 			}),
 	),
-	client: requiredNumberField(1),
+	client: requiredChoiceNumberField(),
 	date_facture: requiredTextField(1, 100),
 	numero_bon_commande_client: optionalTextField(1, 100).nullable(),
 	mode_paiement: optionalNumberField(0).nullable(),
@@ -555,7 +566,7 @@ export const bonDeLivraisonSchema = z
 					message: INPUT_YEAR_PART_INVALID,
 				}),
 		),
-		client: requiredNumberField(1),
+		client: requiredChoiceNumberField(),
 		date_bon_livraison: requiredTextField(1, 100),
 		numero_demande_prix_client: optionalTextField(1, 100).nullable(),
 		mode_paiement: optionalNumberField(0).nullable(),
@@ -620,7 +631,7 @@ export const bonDeLivraisonAddSchema = z.object({
 				message: INPUT_YEAR_PART_INVALID,
 			}),
 	),
-	client: requiredNumberField(1),
+	client: requiredChoiceNumberField(),
 	date_bon_livraison: requiredTextField(1, 100),
 	numero_demande_prix_client: optionalTextField(1, 100).nullable(),
 	mode_paiement: optionalNumberField(0).nullable(),

@@ -15,6 +15,7 @@ import {
 	useMediaQuery,
 	ToggleButtonGroup,
 	ToggleButton,
+	Alert,
 } from '@mui/material';
 import {
 	ArrowBack as ArrowBackIcon,
@@ -32,6 +33,7 @@ import {
 	Description as DescriptionIcon,
 	Edit as EditIcon,
 	Add as AddIcon,
+	Warning as WarningIcon,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -50,7 +52,7 @@ import {
 	useGetClientQuery,
 	useGetCodeClientQuery,
 } from '@/store/services/client';
-import { setFormikAutoErrors } from '@/utils/helpers';
+import { getLabelForKey, setFormikAutoErrors } from '@/utils/helpers';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import type { TypeClientType, ClientSchemaType } from '@/types/clientTypes';
 import { useAddCityMutation } from '@/store/services/parameter';
@@ -99,6 +101,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const [openCityModal, setOpenCityModal] = useState(false);
 
 	const [isPending, setIsPending] = useState(false);
+	const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 
 	// Compute initial code_client: use server-generated when adding, else from clientData
 	const initialCodeClient = isEditMode ? (rawData?.code_client ?? '') : (generatedCodeData?.code_client ?? '');
@@ -131,6 +134,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		validateOnMount: true,
 		validationSchema: toFormikValidationSchema(clientSchema),
 		onSubmit: async (data, { setFieldError }) => {
+			setHasAttemptedSubmit(true);
 			setIsPending(true);
 			try {
 				// Build payload with irrelevant fields cleared
@@ -201,6 +205,54 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const isRequiredPM = (field: (typeof pmRequired)[number]) => isPM && pmRequired.includes(field);
 	const isRequiredPP = (field: (typeof ppRequired)[number]) => !isPM && ppRequired.includes(field);
 
+	// Collect validation errors from Formik
+	const fieldLabels = useMemo<Record<string, string>>(
+		() => ({
+			reference: 'Référence',
+			designation: 'Désignation',
+			prix_achat: "Prix d'achat",
+			prix_vente: 'Prix de vente',
+			tva: 'TVA',
+			categorie: 'Catégorie',
+			emplacement: 'Emplacement',
+			unite: 'Unité',
+			marque: 'Marque',
+			remarque: 'Remarque',
+			photo: 'Photo',
+			photo_cropped: 'Photo recadrée',
+			globalError: 'Erreur globale',
+			raison_sociale: 'Raison sociale',
+			nom: 'Nom',
+			prenom: 'Prénom',
+			adresse: 'Adresse',
+			ville: 'Ville',
+			tel: 'Téléphone',
+			email: 'Email',
+			ICE: 'ICE',
+			registre_de_commerce: 'Registre de commerce',
+			identifiant_fiscal: 'Identifiant fiscal',
+			taxe_professionnelle: 'Taxe professionnelle',
+			CNSS: 'CNSS',
+			numero_du_compte: 'Numéro du compte',
+			delai_de_paiement: 'Délai de paiement',
+		}),
+		[],
+	);
+
+	const validationErrors = useMemo(() => {
+		const errors: Record<string, string> = {};
+		if (hasAttemptedSubmit) {
+			Object.entries(formik.errors).forEach(([key, value]) => {
+				if (key !== 'globalError' && typeof value === 'string') {
+					errors[key] = value;
+				}
+			});
+		}
+		return errors;
+	}, [formik.errors, hasAttemptedSubmit]);
+
+	const hasValidationErrors = Object.keys(validationErrors).length > 0;
+
 	const isLoading =
 		isAddLoading ||
 		isUpdateLoading ||
@@ -227,6 +279,22 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					Liste des clients
 				</Button>
 			</Stack>
+			{hasValidationErrors && (
+				<Alert severity="error" icon={<WarningIcon />} sx={{ mb: 2 }}>
+					<Typography variant="subtitle2" fontWeight={600}>
+						Erreurs de validation détectées:
+					</Typography>
+					<ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
+						{Object.entries(validationErrors).map(([key, error]) => (
+							<li key={key}>
+								<Typography variant="body2">
+									{getLabelForKey(fieldLabels, key)} : {error}
+								</Typography>
+							</li>
+						))}
+					</ul>
+				</Alert>
+			)}
 			{formik.errors.globalError && <span className={Styles.errorMessage}>{formik.errors.globalError}</span>}
 			{isLoading ? (
 				<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
@@ -608,6 +676,15 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								type="submit"
 								loading={isPending}
 								startIcon={isEditMode ? <EditIcon /> : <AddIcon />}
+								onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+									setHasAttemptedSubmit(true);
+									if (!formik.isValid) {
+										e.preventDefault();
+										formik.handleSubmit();
+										onError('Veuillez corriger les erreurs de validation avant de soumettre.');
+										window.scrollTo({ top: 0, behavior: 'smooth' });
+									}
+								}}
 								cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}
 							/>
 						</Box>

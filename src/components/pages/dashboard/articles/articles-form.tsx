@@ -15,6 +15,7 @@ import {
 	useMediaQuery,
 	ToggleButtonGroup,
 	ToggleButton,
+	Alert,
 } from '@mui/material';
 import {
 	ArrowBack as ArrowBackIcon,
@@ -32,6 +33,7 @@ import {
 	Straighten as StraightenIcon,
 	Add as AddIcon,
 	Edit as EditIcon,
+	Warning as WarningIcon,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -51,7 +53,7 @@ import {
 	useGetCodeReferenceQuery,
 } from '@/store/services/article';
 
-import { setFormikAutoErrors } from '@/utils/helpers';
+import { getLabelForKey, setFormikAutoErrors } from '@/utils/helpers';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import type { TypeArticleType, ArticleSchemaType } from '@/types/articleTypes';
 import {
@@ -124,6 +126,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	// Marque
 	const [openMarqueModal, setOpenMarqueModal] = useState(false);
 	const [isPending, setIsPending] = useState(false);
+	const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 
 	// Compute initial code_reference: use server-generated when adding, else from clientData
 	const initialCodeReference = isEditMode ? (rawData?.reference ?? '') : (generatedCodeData?.reference ?? '');
@@ -152,6 +155,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		validateOnMount: true,
 		validationSchema: toFormikValidationSchema(articleSchema),
 		onSubmit: async (data, { setFieldError }) => {
+			setHasAttemptedSubmit(true);
 			setIsPending(true);
 			try {
 				if (isEditMode) {
@@ -248,6 +252,40 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		return marqueItems.find((m) => m.value === String(v)) ?? null;
 	}, [formik.values.marque, marqueItems]);
 
+	// Collect validation errors from Formik
+	const fieldLabels = useMemo<Record<string, string>>(
+		() => ({
+			reference: 'Référence',
+			designation: 'Désignation',
+			prix_achat: "Prix d'achat",
+			prix_vente: 'Prix de vente',
+			tva: 'TVA',
+			categorie: 'Catégorie',
+			emplacement: 'Emplacement',
+			unite: 'Unité',
+			marque: 'Marque',
+			remarque: 'Remarque',
+			photo: 'Photo',
+			photo_cropped: 'Photo recadrée',
+			globalError: 'Erreur globale',
+		}),
+		[],
+	);
+
+	const validationErrors = useMemo(() => {
+		const errors: Record<string, string> = {};
+		if (hasAttemptedSubmit) {
+			Object.entries(formik.errors).forEach(([key, value]) => {
+				if (key !== 'globalError' && typeof value === 'string') {
+					errors[key] = value;
+				}
+			});
+		}
+		return errors;
+	}, [formik.errors, hasAttemptedSubmit]);
+
+	const hasValidationErrors = Object.keys(validationErrors).length > 0;
+
 	const isLoading =
 		isAddLoading ||
 		isUpdateLoading ||
@@ -277,6 +315,22 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					Liste des articles
 				</Button>
 			</Stack>
+			{hasValidationErrors && (
+				<Alert severity="error" icon={<WarningIcon />} sx={{ mb: 2 }}>
+					<Typography variant="subtitle2" fontWeight={600}>
+						Erreurs de validation détectées:
+					</Typography>
+					<ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
+						{Object.entries(validationErrors).map(([key, error]) => (
+							<li key={key}>
+								<Typography variant="body2">
+									{getLabelForKey(fieldLabels, key)} : {error}
+								</Typography>
+							</li>
+						))}
+					</ul>
+				</Alert>
+			)}
 			{formik.errors.globalError && <span className={Styles.errorMessage}>{formik.errors.globalError}</span>}
 			{isLoading ? (
 				<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
@@ -592,6 +646,15 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								type="submit"
 								loading={isPending}
 								startIcon={isEditMode ? <EditIcon /> : <AddIcon />}
+								onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+									setHasAttemptedSubmit(true);
+									if (!formik.isValid) {
+										e.preventDefault();
+										formik.handleSubmit();
+										onError('Veuillez corriger les erreurs de validation avant de soumettre.');
+										window.scrollTo({ top: 0, behavior: 'smooth' });
+									}
+								}}
 								cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}
 							/>
 						</Box>

@@ -261,3 +261,21 @@ export const ValidatePricesHelper = {
 		return null;
 	},
 };
+
+export const getLabelForKey = (fieldLabels: Record<string, string>, key: string) =>
+	fieldLabels[key] ?? key.replace(/_/g, ' ').replace(/\b\w/g, (ch) => ch.toUpperCase());
+
+export const getCompanyDocumentLabelForKey = (fieldLabels: Record<string, string>, key: string) => {
+	// Handle line errors like: ligne_0_prix_vente or ligne_2_remise
+	const lineMatch = key.match(/^ligne_(\d+)_(.+)$/);
+	if (lineMatch) {
+		const idx = Number(lineMatch[1]);
+		const fieldKey = lineMatch[2];
+		const baseLabel = fieldLabels[fieldKey] ?? getLabelForKey(fieldLabels, fieldKey);
+		return `Ligne ${idx + 1} - ${baseLabel}`;
+	}
+	// Other known keys (including global_remise)
+	if (fieldLabels[key]) return fieldLabels[key];
+	// Fallback
+	return getLabelForKey(fieldLabels, key);
+};

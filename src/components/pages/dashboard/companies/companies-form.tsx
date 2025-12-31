@@ -4,7 +4,18 @@ import React, { useMemo, useState } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import { useAddCompanyMutation, useEditCompanyMutation, useGetCompanyQuery } from '@/store/services/company';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
-import { Box, Button, Stack, Typography, Card, CardContent, Divider, useTheme, useMediaQuery } from '@mui/material';
+import {
+	Box,
+	Button,
+	Stack,
+	Typography,
+	Card,
+	CardContent,
+	Divider,
+	useTheme,
+	useMediaQuery,
+	Alert,
+} from '@mui/material';
 import {
 	ArrowBack as ArrowBackIcon,
 	Business as BusinessIcon,
@@ -27,6 +38,7 @@ import {
 	AdminPanelSettings as AdminPanelSettingsIcon,
 	Edit as EditIcon,
 	Add as AddIcon,
+	Warning as WarningIcon,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -36,7 +48,7 @@ import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadi
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { companySchema } from '@/utils/formValidationSchemas';
 import { civiliteItemsList, nbrEmployeItemsList } from '@/utils/rawData';
-import { setFormikAutoErrors } from '@/utils/helpers';
+import { getLabelForKey, setFormikAutoErrors } from '@/utils/helpers';
 import { textInputTheme, customDropdownTheme } from '@/utils/themes';
 import { COMPANIES_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
@@ -89,6 +101,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const { id: userID } = useAppSelector(getProfilState);
 	const groupes = useAppSelector(getGroupesState);
 	const [isPending, setIsPending] = useState(false);
+	const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 	const router = useRouter();
 	const computedManagedBy = useMemo(() => {
 		let admins: Array<ManagedByType> = [];
@@ -147,6 +160,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		validateOnMount: true,
 		validationSchema: toFormikValidationSchema(companySchema),
 		onSubmit: async (data, { setFieldError }) => {
+			setHasAttemptedSubmit(true);
 			setIsPending(true);
 			try {
 				if (isEditMode) {
@@ -217,6 +231,49 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		}
 	};
 
+	// Collect validation errors from Formik
+	const fieldLabels = useMemo<Record<string, string>>(
+		() => ({
+			raison_sociale: 'Raison sociale',
+			email: 'Email',
+			nbr_employe: "Nombre d'employés",
+			civilite_responsable: 'Civilité du responsable',
+			nom_responsable: 'Nom du responsable',
+			gsm_responsable: 'GSM du responsable',
+			adresse: 'Adresse',
+			site_web: 'Site web',
+			telephone: 'Téléphone',
+			fax: 'Fax',
+			numero_du_compte: 'Numéro du compte',
+			ICE: 'ICE',
+			registre_de_commerce: 'Registre de commerce',
+			identifiant_fiscal: 'Identifiant fiscal',
+			tax_professionnelle: 'Taxe professionnelle',
+			CNSS: 'CNSS',
+			logo: 'Logo',
+			logo_cropped: 'Logo recadré',
+			cachet: 'Cachet',
+			cachet_cropped: 'Cachet recadré',
+			managed_by: 'Utilisateurs gestionnaires',
+			globalError: 'Erreur globale',
+		}),
+		[],
+	);
+
+	const validationErrors = useMemo(() => {
+		const errors: Record<string, string> = {};
+		if (hasAttemptedSubmit) {
+			Object.entries(formik.errors).forEach(([key, value]) => {
+				if (key !== 'globalError' && typeof value === 'string') {
+					errors[key] = value;
+				}
+			});
+		}
+		return errors;
+	}, [formik.errors, hasAttemptedSubmit]);
+
+	const hasValidationErrors = Object.keys(validationErrors).length > 0;
+
 	const isLoading = isUsersLoading || isAddLoading || isUpdateLoading || isPending || (isEditMode && isDataLoading);
 	const shouldShowError = (axiosError?.status ?? 0) > 400 && !isLoading;
 
@@ -237,6 +294,22 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					Liste des entreprises
 				</Button>
 			</Stack>
+			{hasValidationErrors && (
+				<Alert severity="error" icon={<WarningIcon />} sx={{ mb: 2 }}>
+					<Typography variant="subtitle2" fontWeight={600}>
+						Erreurs de validation détectées:
+					</Typography>
+					<ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
+						{Object.entries(validationErrors).map(([key, error]) => (
+							<li key={key}>
+								<Typography variant="body2">
+									{getLabelForKey(fieldLabels, key)} : {error}
+								</Typography>
+							</li>
+						))}
+					</ul>
+				</Alert>
+			)}
 			{formik.errors.globalError && <span className={Styles.errorMessage}>{formik.errors.globalError}</span>}
 			{isLoading ? (
 				<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
@@ -616,6 +689,15 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								type="submit"
 								loading={isPending}
 								startIcon={isEditMode ? <EditIcon /> : <AddIcon />}
+								onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+									setHasAttemptedSubmit(true);
+									if (!formik.isValid) {
+										e.preventDefault();
+										formik.handleSubmit();
+										onError('Veuillez corriger les erreurs de validation avant de soumettre.');
+										window.scrollTo({ top: 0, behavior: 'smooth' });
+									}
+								}}
 								cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}
 							/>
 						</Box>
