@@ -32,7 +32,7 @@ const AddEntityModal: React.FC<AddEntityModalProps> = ({ open, setOpen, label, i
 				}}
 			>
 				<Typography variant="h6" mb={2}>
-					Ajouter une {label}
+					Ajouter un(e) {label}
 				</Typography>
 
 				<CustomTextInput
@@ -58,7 +58,7 @@ const AddEntityModal: React.FC<AddEntityModalProps> = ({ open, setOpen, label, i
 						variant="contained"
 						onClick={async () => {
 							if (!newName.trim()) {
-								setError(`Le nom de la ${label} est requis.`);
+								setError(`Le nom du ${label} est requis.`);
 								return;
 							}
 							try {
@@ -77,7 +77,7 @@ const AddEntityModal: React.FC<AddEntityModalProps> = ({ open, setOpen, label, i
 									const errorMsg = Array.isArray(messages) ? messages[0] : messages;
 									setError(errorMsg);
 								} else {
-									setError(`Erreur lors de l’ajout de la ${label}.`);
+									setError(`Erreur lors de l’ajout du ${label}.`);
 								}
 							}
 						}}

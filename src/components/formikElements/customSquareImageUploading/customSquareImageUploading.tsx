@@ -126,7 +126,7 @@ const CustomSquareImageUploading: React.FC<Props> = ({ image, croppedImage, onCh
 									height={250}
 									src={typeof croppedImage === 'string' ? croppedImage : ''}
 									alt="Cropped preview"
-									style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+									style={{ width: '100%', height: '100%', objectFit: 'cover' }}
 								/>
 								<Box
 									sx={{
