@@ -8,6 +8,8 @@ import {
 	parseNumber,
 	safeParseForInput,
 	ValidatePricesHelper,
+	getCompanyDocumentLabelForKey,
+	getLabelForKey,
 } from './helpers';
 import { signOut } from 'next-auth/react';
 
@@ -485,6 +487,39 @@ describe('API Utilities', () => {
 		it('does not fail without onResetToken', async () => {
 			await expect(handleUnauthorized()).resolves.toBeUndefined();
 			expect(mockedSignOut).toHaveBeenCalledWith({ redirect: false, redirectTo: '/mock-root' });
+		});
+	});
+});
+
+describe('Label helpers', () => {
+	describe('getLabelForKey', () => {
+		it('returns mapped label when present', () => {
+			const labels = { name: 'Nom', email_address: 'Adresse e-mail' };
+			expect(getLabelForKey(labels, 'name')).toBe('Nom');
+			expect(getLabelForKey(labels, 'email_address')).toBe('Adresse e-mail');
+		});
+
+		it('formats key when label missing', () => {
+			const labels: Record<string, string> = {};
+			expect(getLabelForKey(labels, 'missing_key')).toBe('Missing Key');
+			expect(getLabelForKey(labels, 'another_field_here')).toBe('Another Field Here');
+		});
+	});
+
+	describe('getCompanyDocumentLabelForKey', () => {
+		it('formats line keys using field label when present', () => {
+			const labels = { prix_vente: 'Prix de vente' };
+			expect(getCompanyDocumentLabelForKey(labels, 'ligne_0_prix_vente')).toBe('Ligne 1 - Prix de vente');
+		});
+
+		it('formats line keys using fallback when label missing', () => {
+			const labels: Record<string, string> = {};
+			expect(getCompanyDocumentLabelForKey(labels, 'ligne_2_custom_field')).toBe('Ligne 3 - Custom Field');
+		});
+
+		it('returns known key label when present', () => {
+			const labels = { global_remise: 'Remise globale' };
+			expect(getCompanyDocumentLabelForKey(labels, 'global_remise')).toBe('Remise globale');
 		});
 	});
 });
