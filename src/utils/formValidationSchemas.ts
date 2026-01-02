@@ -320,8 +320,14 @@ export const articleSchema = z
 export const devisLivraisonFactureLineSchema = z
 	.object({
 		article: requiredNumberField(1),
-		prix_achat: requiredNumberField(0),
-		prix_vente: requiredNumberField(0),
+		prix_achat: z.preprocess(
+			(val) => (typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val),
+			optionalNumberField(0),
+		).nullable(),
+		prix_vente: z.preprocess(
+			(val) => (typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val),
+			optionalNumberField(0),
+		).nullable(),
 		quantity: requiredNumberField(1).refine((val) => Number.isInteger(val), {
 			error: INPUT_QUANTITY_INT,
 		}),
@@ -331,10 +337,15 @@ export const devisLivraisonFactureLineSchema = z
 			optionalNumberField(0),
 		),
 	})
-	.refine((data) => data.prix_vente >= data.prix_achat, {
-		error: INPUT_PRICE_VENTE_ACHAT,
-		path: ['prix_vente'],
-	})
+	.refine(
+		(data) => {
+			const a = data.prix_achat;
+			const v = data.prix_vente;
+			if (a === undefined || a === null || v === undefined || v === null) return true;
+			return v > a;
+		},
+		{ error: INPUT_PRICE_VENTE_ACHAT, path: ['prix_vente'] },
+	)
 	.superRefine((data, ctx) => {
 		const hasRemiseType = data.remise_type !== undefined;
 		const rType = data.remise_type ?? 'Pourcentage';

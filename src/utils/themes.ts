@@ -119,9 +119,6 @@ export const gridInputTheme = (primaryColor: string | undefined = undefined) => 
 			MuiInputBase: {
 				styleOverrides: {
 					root: {
-						'& fieldset': {
-							border: 'none',
-						},
 						'& fieldset > legend': {
 							// size of red error line (label) (input size - 5px)
 							fontFamily: 'Poppins',

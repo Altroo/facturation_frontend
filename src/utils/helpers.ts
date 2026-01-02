@@ -203,7 +203,15 @@ export const formatDate = (value: string | null) => {
 };
 
 export const parseNumber = (value: string | number): number | null => {
-	const n = typeof value === 'number' ? value : value.trim() === '' ? NaN : Number(value);
+	if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+	const trimmed = value.trim();
+	if (trimmed === '') return null;
+	// Replace comma with dot for decimal parsing (supports both "10.5" and "10,5")
+	const normalized = trimmed.replace(',', '.');
+	// Return null for intermediate typing states (trailing decimal point)
+	// This keeps the raw string in the input so user can continue typing decimals
+	if (normalized.endsWith('.')) return null;
+	const n = Number(normalized);
 	return Number.isFinite(n) ? n : null;
 };
 

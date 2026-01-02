@@ -355,9 +355,9 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 				headerName: 'Total TTC après remise',
 				width: 150,
 				renderCell: (params: GridRenderCellParams<TDocument>) => (
-					<DarkTooltip title={params.value.toFixed(2) + ' DH'}>
+					<DarkTooltip title={params.value + ' DH'}>
 						<Typography variant="body2" noWrap>
-							{params.value.toFixed(2)} DH
+							{params.value} DH
 						</Typography>
 					</DarkTooltip>
 				),

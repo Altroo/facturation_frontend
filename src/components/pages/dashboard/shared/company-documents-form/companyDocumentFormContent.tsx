@@ -349,27 +349,44 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			setIsPending(true);
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const { globalError, ...payload } = data;
+
+			// Convert ligne values to proper numbers for backend
+			const normalizedLignes = (payload.lignes ?? []).map((ligne) => ({
+				...ligne,
+				prix_achat: parseNumber(ligne.prix_achat ?? ''),
+				prix_vente: parseNumber(ligne.prix_vente ?? ''),
+				quantity: parseNumber(ligne.quantity ?? '') ?? 1,
+				remise: parseNumber(ligne.remise ?? '') ?? 0,
+			}));
+
+			// Normalize global remise
+			const normalizedRemise = parseNumber(payload.remise ?? '');
+
 			try {
 				if (isEditMode) {
 					const submissionData = {
 						...payload,
+						lignes: normalizedLignes,
+						remise: normalizedRemise,
 						...(config.documentType === 'devis'
 							? { numero_devis: `${data.numero_part}/${data.year_part}` }
 							: config.documentType === 'facture-client' || config.documentType === 'facture-pro-forma'
 								? { numero_facture: `${data.numero_part}/${data.year_part}` }
 								: { numero_bon_livraison: `${data.numero_part}/${data.year_part}` }),
-					};
+					} as DocumentFormSchema;
 					await updateData({ data: submissionData, id: id! }).unwrap();
 					onSuccess(config.labels.updateSuccessMessage);
 				} else {
 					const submissionData = {
 						...payload,
+						lignes: normalizedLignes,
+						remise: normalizedRemise,
 						...(config.documentType === 'devis'
 							? { numero_devis: `${data.numero_part}/${data.year_part}` }
 							: config.documentType === 'facture-client' || config.documentType === 'facture-pro-forma'
 								? { numero_facture: `${data.numero_part}/${data.year_part}` }
 								: { numero_bon_livraison: `${data.numero_part}/${data.year_part}` }),
-					};
+					} as DocumentFormSchema;
 					const response = await addData({ data: submissionData }).unwrap();
 					onSuccess(config.labels.addSuccessMessage);
 					if (response.id) {
@@ -646,6 +663,27 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		handleLineChangeRef.current = handleLineChange;
 	}, [handleLineChange]);
 
+	// Sync formik.errors.lignes with validationErrors state for red border highlighting
+	useEffect(() => {
+		const lignesErrors = formik.errors.lignes;
+		if (lignesErrors && Array.isArray(lignesErrors)) {
+			setValidationErrors((prevErrors) => {
+				const newErrors = { ...prevErrors };
+				lignesErrors.forEach((lineError: unknown, index: number) => {
+					if (lineError && typeof lineError === 'object') {
+						Object.entries(lineError as Record<string, string>).forEach(([field, message]) => {
+							if (message) {
+								const errorKey = `ligne_${index}_${field}`;
+								newErrors[errorKey] = message;
+							}
+						});
+					}
+				});
+				return newErrors;
+			});
+		}
+	}, [formik.errors.lignes]);
+
 	const getRowIndexFromParams = useCallback(
 		(params: GridRenderCellParams): number => {
 			const idStr = String(params.id);
@@ -675,7 +713,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
 						<CustomTextInput
 							id={`prix_vente_${rowIndex}`}
-							type="number"
+							type="text"
 							value={inputValue}
 							onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 								const raw = (e.target as HTMLInputElement).value;
@@ -687,6 +725,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 							size="small"
 							theme={gridFieldTheme}
 							error={hasError}
+							endIcon={<InputAdornment position="end">MAD</InputAdornment>}
 							slotProps={{ input: { style: { textAlign: 'center' }, inputProps: { min: 0 } } }}
 						/>
 					</Box>
@@ -735,7 +774,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
 						<CustomTextInput
 							id={`remise_${rowIndex}`}
-							type="number"
+							type="text"
 							value={inputValue}
 							onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 								const raw = (e.target as HTMLInputElement).value;
@@ -886,7 +925,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				headerName: "Prix d'achat",
 				width: 120,
 				renderCell: (params: GridRenderCellParams) => {
-					const value = Number(params.row.prix_achat ?? 0).toFixed(2) + ' MAD';
+					const value = Number(params.row.prix_achat ?? 0) + ' MAD';
 					return (
 						<DarkTooltip title={value}>
 							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
@@ -1060,14 +1099,33 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	);
 
 	const combinedValidationEntries = useMemo(() => {
-		const entries: Array<[string, string]> = [];
-		Object.entries(validationErrors).forEach(([k, v]) => entries.push([k, String(v)]));
+		const entriesMap = new Map<string, string>();
+		// First add custom validation errors
+		Object.entries(validationErrors).forEach(([k, v]) => entriesMap.set(k, String(v)));
+		// Then add formik errors (avoiding duplicates)
 		Object.entries(formik.errors).forEach(([k, v]) => {
-			if (typeof v === 'string') entries.push([k, v]);
-			else if (Array.isArray(v)) entries.push([k, 'Validation erreurs dans les lignes.']);
-			else entries.push([k, String(v)]);
+			if (k === 'lignes' && Array.isArray(v)) {
+				// Process ligne errors properly
+				v.forEach((lineError, index) => {
+					if (lineError && typeof lineError === 'object') {
+						Object.entries(lineError).forEach(([field, message]) => {
+							if (message && typeof message === 'string') {
+								const errorKey = `ligne_${index}_${field}`;
+								if (!entriesMap.has(errorKey)) {
+									entriesMap.set(errorKey, message);
+								}
+							}
+						});
+					}
+				});
+			} else if (typeof v === 'string') {
+				if (!entriesMap.has(k)) {
+					entriesMap.set(k, v);
+				}
+			}
+			// Skip non-string, non-lignes entries to avoid [object Object]
 		});
-		return entries;
+		return Array.from(entriesMap.entries());
 	}, [validationErrors, formik.errors]);
 
 	const hasValidationErrors = combinedValidationEntries.length > 0;

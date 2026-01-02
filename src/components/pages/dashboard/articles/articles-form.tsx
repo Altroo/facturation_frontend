@@ -53,7 +53,7 @@ import {
 	useGetCodeReferenceQuery,
 } from '@/store/services/article';
 
-import { getLabelForKey, setFormikAutoErrors } from '@/utils/helpers';
+import { getLabelForKey, setFormikAutoErrors, parseNumber } from '@/utils/helpers';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import type { TypeArticleType, ArticleSchemaType } from '@/types/articleTypes';
 import {
@@ -430,13 +430,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								<Stack spacing={2.5}>
 									<CustomTextInput
 										id="prix_achat"
-										type="number"
+										type="text"
 										label="Prix d'achat"
 										value={String(formik.values.prix_achat) ?? ''}
-										onChange={(e) => {
-											const value = e.target.value === '' ? null : Number(e.target.value);
-											if (value !== null && value < 0) return;
-											formik.setFieldValue('prix_achat', value);
+										onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+											const raw = (e.target as HTMLInputElement).value;
+											const parsed = parseNumber(raw);
+											if (parsed !== null && parsed < 0) return;
+											formik.setFieldValue('prix_achat', parsed === null ? raw : parsed);
 										}}
 										onBlur={formik.handleBlur('prix_achat')}
 										error={formik.touched.prix_achat && Boolean(formik.errors.prix_achat)}
@@ -453,13 +454,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									/>
 									<CustomTextInput
 										id="prix_vente"
-										type="number"
+										type="text"
 										label="Prix de vente"
 										value={String(formik.values.prix_vente) ?? ''}
-										onChange={(e) => {
-											const value = e.target.value === '' ? null : Number(e.target.value);
-											if (value !== null && value < 0) return;
-											formik.setFieldValue('prix_vente', value);
+										onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+											const raw = (e.target as HTMLInputElement).value;
+											const parsed = parseNumber(raw);
+											if (parsed !== null && parsed < 0) return;
+											formik.setFieldValue('prix_vente', parsed === null ? raw : parsed);
 										}}
 										onBlur={formik.handleBlur('prix_vente')}
 										error={formik.touched.prix_vente && Boolean(formik.errors.prix_vente)}
@@ -476,13 +478,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									/>
 									<CustomTextInput
 										id="tva"
-										type="number"
+										type="text"
 										label="TVA (%)"
 										value={String(formik.values.tva) ?? ''}
-										onChange={(e) => {
-											const value = e.target.value === '' ? null : Number(e.target.value);
-											if (value !== null && value < 0) return;
-											formik.setFieldValue('tva', value);
+										onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+											const raw = (e.target as HTMLInputElement).value;
+											const parsed = parseNumber(raw);
+											if (parsed !== null && parsed < 0) return;
+											formik.setFieldValue('tva', parsed === null ? raw : parsed);
 										}}
 										onBlur={formik.handleBlur('tva')}
 										error={formik.touched.tva && Boolean(formik.errors.tva)}

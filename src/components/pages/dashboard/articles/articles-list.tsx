@@ -231,9 +231,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			headerName: "Prix d'achat",
 			width: 120,
 			renderCell: (params: GridRenderCellParams<ArticleClass>) => (
-				<DarkTooltip title={params.value.toFixed(2) + ' DH'}>
+				<DarkTooltip title={params.value + ' DH'}>
 					<Typography variant="body2" noWrap>
-						{params.value.toFixed(2)} DH
+						{params.value} DH
 					</Typography>
 				</DarkTooltip>
 			),
@@ -243,9 +243,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			headerName: 'Prix de vente',
 			width: 120,
 			renderCell: (params: GridRenderCellParams<ArticleClass>) => (
-				<DarkTooltip title={params.value.toFixed(2) + ' DH'}>
+				<DarkTooltip title={params.value + ' DH'}>
 					<Typography variant="body2" noWrap>
-						{params.value.toFixed(2)} DH
+						{params.value} DH
 					</Typography>
 				</DarkTooltip>
 			),

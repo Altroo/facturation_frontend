@@ -383,7 +383,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 				headerName: "Prix d'achat",
 				width: 120,
 				renderCell: (params: GridRenderCellParams) => {
-					const value = toNumber((params.row as { prix_achat?: unknown }).prix_achat, 0).toFixed(2) + ' MAD';
+					const value = toNumber((params.row as { prix_achat?: unknown }).prix_achat, 0) + ' MAD';
 					return (
 						<DarkTooltip title={value}>
 							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
@@ -400,7 +400,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 				headerName: 'Prix de vente',
 				width: 150,
 				renderCell: (params: GridRenderCellParams) => {
-					const value = toNumber((params.row as { prix_vente?: unknown }).prix_vente, 0).toFixed(2) + ' MAD';
+					const value = toNumber((params.row as { prix_vente?: unknown }).prix_vente, 0) + ' MAD';
 					return (
 						<DarkTooltip title={value}>
 							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
