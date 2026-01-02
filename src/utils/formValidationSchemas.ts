@@ -325,9 +325,15 @@ export const devisLivraisonFactureLineSchema = z
 			optionalNumberField(0),
 		).nullable(),
 		prix_vente: z.preprocess(
-			(val) => (typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val),
-			optionalNumberField(0),
-		).nullable(),
+			(val) => {
+				if (val === undefined || val === null || val === '') return NaN;
+				return typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val;
+			},
+			z
+				.number({ error: INPUT_REQUIRED })
+				.refine((val) => !Number.isNaN(val), { error: INPUT_REQUIRED })
+				.min(0, { error: INPUT_MIN(0) }),
+		),
 		quantity: requiredNumberField(1).refine((val) => Number.isInteger(val), {
 			error: INPUT_QUANTITY_INT,
 		}),
