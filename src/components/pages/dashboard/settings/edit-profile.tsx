@@ -40,7 +40,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 		initialValues: {
 			first_name: profilData?.first_name ?? '',
 			last_name: profilData?.last_name ?? '',
-			gender: profilData?.gender ? (profilData.gender === 'H' ? 'Homme' : 'Femme') : '',
+			gender: profilData?.gender ?? '',
 			avatar: profilData?.avatar ?? '',
 			avatar_cropped: profilData?.avatar_cropped ?? '',
 			globalError: '',
