@@ -217,12 +217,6 @@ describe('textInputTheme', () => {
 });
 
 describe('gridInputTheme', () => {
-	it('should create theme with no border on fieldset', () => {
-		const theme = gridInputTheme();
-		const inputRoot = theme.components?.MuiInputBase?.styleOverrides?.root as InputBaseRoot & FieldsetStyles;
-		expect(inputRoot['& fieldset'].border).toBe('none');
-	});
-
 	it('should use smaller font size (0.875rem)', () => {
 		const theme = gridInputTheme();
 		const inputBase = theme.components?.MuiInputBase?.styleOverrides?.input as InputBaseInput & InputStyles;

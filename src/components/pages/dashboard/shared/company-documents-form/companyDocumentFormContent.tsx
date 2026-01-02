@@ -1123,7 +1123,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 					entriesMap.set(k, v);
 				}
 			}
-			// Skip non-string, non-lignes entries to avoid [object Object]
+			// Skip non-string, non-lignes entries to avoid [object object] issues
 		});
 		return Array.from(entriesMap.entries());
 	}, [validationErrors, formik.errors]);

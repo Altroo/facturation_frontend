@@ -4,6 +4,7 @@ import NavigationBar from './navigationBar';
 import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
 import { store } from '@/store/store';
+import React from 'react';
 
 jest.mock('@/utils/clientHelpers', () => ({
 	Desktop: ({ children }: { children?: React.ReactNode }) => <>{children}</>,

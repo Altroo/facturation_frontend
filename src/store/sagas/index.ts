@@ -7,7 +7,7 @@ import { watchCompanies } from '@/store/sagas/companiesSaga';
 
 const sagas = [watchInit, watchAccount, watchParameter, watchCompanies];
 
-// spawn : whenever a watcher get's crashed somehow,
+// spawn : whenever a watcher get crashed somehow,
 // we use spawn to respawn it back. (except it's unblocking)
 // fork : for blocking calls.
 export function* rootSaga() {
