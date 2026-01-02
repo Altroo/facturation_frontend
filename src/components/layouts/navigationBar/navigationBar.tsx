@@ -142,15 +142,15 @@ const getNavigationMenu = (isStaff: boolean) => {
 					{ title: 'Nouvel utilisateur', label: 'Nouvel utilisateur', path: USERS_ADD },
 				],
 			},
-			parametres: {
-				title: 'Paramètres',
-				icon: <SettingsIcon />,
-				items: [
-					{ title: 'Mon Profil', label: 'Mon Profil', path: DASHBOARD_EDIT_PROFILE },
-					{ title: 'Mot de passe', label: 'Changer le mot de passe', path: DASHBOARD_PASSWORD },
-				],
-			},
 		}),
+		parametres: {
+			title: 'Paramètres',
+			icon: <SettingsIcon />,
+			items: [
+				{ title: 'Mon Profil', label: 'Mon Profil', path: DASHBOARD_EDIT_PROFILE },
+				{ title: 'Mot de passe', label: 'Changer le mot de passe', path: DASHBOARD_PASSWORD },
+			],
+		},
 	};
 };
 
