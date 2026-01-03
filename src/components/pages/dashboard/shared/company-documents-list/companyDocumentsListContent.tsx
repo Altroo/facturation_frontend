@@ -52,6 +52,8 @@ export const getStatutColor = (
 			return 'info';
 		case 'Accepté':
 			return 'success';
+		case 'Valide':
+			return 'success';
 		case 'Refusé':
 			return 'error';
 		case 'Annulé':
@@ -356,7 +358,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 				width: 150,
 				renderCell: (params: GridRenderCellParams<TDocument>) => (
 					<DarkTooltip title={params.value + ' DH'}>
-						<Typography variant="body2" noWrap>
+						<Typography variant="body2" noWrap fontWeight={600} color="primary">
 							{params.value} DH
 						</Typography>
 					</DarkTooltip>

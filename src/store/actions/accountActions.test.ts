@@ -16,6 +16,7 @@ describe('Account Actions', () => {
 			true,
 			'2023-01-01',
 			'2023-01-02',
+			'2023-01-02',
 		);
 
 		const action = accountSetProfilAction(user);
@@ -47,6 +48,7 @@ describe('Account Actions', () => {
 			false,
 			true,
 			'2023-02-01',
+			'2023-02-02',
 			'2023-02-02',
 		);
 

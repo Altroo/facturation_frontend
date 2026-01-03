@@ -24,6 +24,7 @@ import { deviApi } from '@/store/services/devi';
 import { factureProFormaApi } from '@/store/services/factureProForma';
 import { factureClientApi } from '@/store/services/factureClient';
 import { bonDeLivraisonApi } from '@/store/services/bonDeLivraison';
+import { reglementApi } from '@/store/services/reglement';
 
 const sagaMiddleware = createSagaMiddleware();
 
@@ -51,6 +52,7 @@ const rootReducer = combineReducers({
 	[factureProFormaApi.reducerPath]: factureProFormaApi.reducer,
 	[factureClientApi.reducerPath]: factureClientApi.reducer,
 	[bonDeLivraisonApi.reducerPath]: bonDeLivraisonApi.reducer,
+	[reglementApi.reducerPath]: reglementApi.reducer,
 });
 
 export interface SagaStore extends Store {
@@ -88,6 +90,7 @@ export const store: SagaStore = configureStore({
 			.concat(factureProFormaApi.middleware)
 			.concat(factureClientApi.middleware)
 			.concat(bonDeLivraisonApi.middleware)
+			.concat(reglementApi.middleware)
 			.prepend(sagaMiddleware),
 	devTools: process.env.NODE_ENV !== 'production',
 });

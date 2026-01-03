@@ -50,6 +50,7 @@ import { COMPANIES_LIST, COMPANIES_EDIT } from '@/utils/routes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { Protected } from '@/components/layouts/protected/protected';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
+import { formatDate } from '@/utils/helpers';
 
 interface InfoRowProps {
 	icon: React.ReactNode;
@@ -259,7 +260,13 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 											<InfoRow
 												icon={<CalendarTodayIcon />}
 												label="Date de création"
-												value={companyData?.date_created}
+												value={formatDate(companyData?.date_created ?? null)}
+											/>
+											<Divider />
+											<InfoRow
+												icon={<CalendarTodayIcon />}
+												label="Dernière mise à jour"
+												value={formatDate(companyData?.date_updated ?? null)}
 											/>
 											<Divider />
 											<InfoRow icon={<PeopleIcon />} label="Nombre d'employés" value={companyData?.nbr_employe} />

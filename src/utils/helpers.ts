@@ -202,6 +202,13 @@ export const formatDate = (value: string | null) => {
 	}).format(date);
 };
 
+export const formatPrice = (value: string | number | null | undefined): string => {
+	if (value === null || value === undefined) return '0,00 DH';
+	const num = typeof value === 'string' ? parseFloat(value) : value;
+	if (Number.isNaN(num)) return '0,00 DH';
+	return num.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' DH';
+};
+
 export const parseNumber = (value: string | number): number | null => {
 	if (typeof value === 'number') return Number.isFinite(value) ? value : null;
 	const trimmed = value.trim();

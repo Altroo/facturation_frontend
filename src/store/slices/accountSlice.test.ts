@@ -14,6 +14,7 @@ describe('account slice', () => {
 		true,
 		'2024-01-01T00:00:00Z',
 		'2024-06-01T00:00:00Z',
+		'2024-06-01T00:00:00Z',
 	);
 
 	it('returns the initial state when given undefined state', () => {

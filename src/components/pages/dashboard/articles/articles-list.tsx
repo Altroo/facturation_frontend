@@ -232,7 +232,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			width: 120,
 			renderCell: (params: GridRenderCellParams<ArticleClass>) => (
 				<DarkTooltip title={params.value + ' DH'}>
-					<Typography variant="body2" noWrap>
+					<Typography variant="body2" noWrap fontWeight={600} color="primary">
 						{params.value} DH
 					</Typography>
 				</DarkTooltip>
@@ -244,7 +244,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			width: 120,
 			renderCell: (params: GridRenderCellParams<ArticleClass>) => (
 				<DarkTooltip title={params.value + ' DH'}>
-					<Typography variant="body2" noWrap>
+					<Typography variant="body2" noWrap fontWeight={600} color="primary">
 						{params.value} DH
 					</Typography>
 				</DarkTooltip>

@@ -266,6 +266,12 @@ const UsersViewClient: React.FC<Props> = ({ session, id }) => {
 											/>
 											<Divider />
 											<InfoRow
+												icon={<CalendarTodayIcon />}
+												label="Dernière mise à jour"
+												value={userData?.date_updated && formatDate(userData?.date_updated)}
+											/>
+											<Divider />
+											<InfoRow
 												icon={<LoginIcon />}
 												label="Dernière connexion"
 												value={userData?.last_login && formatDate(userData?.last_login)}

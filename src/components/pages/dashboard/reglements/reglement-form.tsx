@@ -1,0 +1,567 @@
+'use client';
+
+import React, { useMemo, useState } from 'react';
+import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
+import Styles from '@/styles/dashboard/dashboard.module.sass';
+import {
+	Box,
+	Button,
+	Stack,
+	Typography,
+	Card,
+	CardContent,
+	Divider,
+	useTheme,
+	useMediaQuery,
+	Alert,
+	Paper,
+	Container,
+} from '@mui/material';
+import {
+	ArrowBack as ArrowBackIcon,
+	Receipt as ReceiptIcon,
+	Payment as PaymentIcon,
+	CalendarToday as CalendarTodayIcon,
+	Notes as NotesIcon,
+	AttachMoney as AttachMoneyIcon,
+	Add as AddIcon,
+	Edit as EditIcon,
+	Warning as WarningIcon,
+	BusinessOutlined as BusinessOutlinedIcon,
+} from '@mui/icons-material';
+import { useFormik } from 'formik';
+import { toFormikValidationSchema } from 'zod-formik-adapter';
+import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
+import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
+import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
+import { textInputTheme } from '@/utils/themes';
+import { FACTURE_CLIENT_ADD, REGLEMENTS_LIST } from '@/utils/routes';
+import { useRouter } from 'next/navigation';
+import type { DropDownType } from '@/types/accountTypes';
+import { useAppSelector, useToast } from '@/utils/hooks';
+import { getModeReglementState, getUserCompaniesState } from '@/store/selectors';
+import { useAddReglementMutation, useEditReglementMutation, useGetReglementQuery } from '@/store/services/reglement';
+import { useGetFactureClientListQuery } from '@/store/services/factureClient';
+import { getLabelForKey, setFormikAutoErrors, parseNumber, formatPrice } from '@/utils/helpers';
+import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
+import type { ReglementSchemaType } from '@/types/reglementTypes';
+import type { ModeReglementClass, FactureClass } from '@/models/classes';
+import { reglementSchema } from '@/utils/formValidationSchemas';
+import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
+import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
+import { getAccessTokenFromSession } from '@/store/session';
+
+const inputTheme = textInputTheme();
+
+type FormikContentProps = {
+	token?: string;
+	company_id: number;
+	id?: number;
+	facture_client_id?: number;
+};
+
+const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
+	const { token, company_id, id, facture_client_id } = props;
+	const { onSuccess, onError } = useToast();
+	const isEditMode = id !== undefined;
+	const theme = useTheme();
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+	const router = useRouter();
+
+	// Fetch reglement data if editing
+	const {
+		data: rawData,
+		isLoading: isDataLoading,
+		error: dataError,
+	} = useGetReglementQuery({ id: id! }, { skip: !token || !isEditMode });
+
+	// Fetch factures for the dropdown
+	const { data: facturesData, isLoading: isFacturesLoading } = useGetFactureClientListQuery(
+		{ company_id, with_pagination: false },
+		{ skip: !token },
+	);
+
+	// Mutations
+	const [addReglement, { isLoading: isAddLoading, error: addError }] = useAddReglementMutation();
+	const [updateReglement, { isLoading: isUpdateLoading, error: updateError }] = useEditReglementMutation();
+
+	// Modes Règlement
+	const rawModesReglements = useAppSelector(getModeReglementState);
+	const normalizedModesReglements: Array<ModeReglementClass> = Array.isArray(rawModesReglements)
+		? rawModesReglements
+		: Object.values(rawModesReglements ?? {});
+
+	const [isPending, setIsPending] = useState(false);
+	const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+
+	// Initial date as YYYY-MM-DD
+	const today = new Date().toISOString().split('T')[0];
+
+	// Formik
+	const formik = useFormik<ReglementSchemaType>({
+		initialValues: {
+			facture_client: rawData?.facture_client ?? facture_client_id ?? 0,
+			mode_reglement: rawData?.mode_reglement ?? null,
+			libelle: rawData?.libelle ?? '',
+			montant: rawData?.montant ?? 0,
+			date_reglement: rawData?.date_reglement ?? today,
+			date_echeance: rawData?.date_echeance ?? today,
+			globalError: '',
+		},
+		enableReinitialize: true,
+		validateOnMount: true,
+		validationSchema: toFormikValidationSchema(reglementSchema),
+		onSubmit: async (data, { setFieldError }) => {
+			setHasAttemptedSubmit(true);
+			setIsPending(true);
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			const { globalError, ...payload } = data;
+			try {
+				if (isEditMode) {
+					await updateReglement({ data: payload, id: id! }).unwrap();
+					onSuccess('Le règlement a été mis à jour avec succès.');
+				} else {
+					await addReglement({ data: payload }).unwrap();
+					onSuccess('Le règlement a été ajouté avec succès.');
+				}
+				if (!isEditMode) {
+					setTimeout(() => {
+						router.replace(REGLEMENTS_LIST);
+					}, 500);
+				}
+			} catch (e) {
+				if (!isEditMode) {
+					onError("Une erreur est survenue lors de l'ajout du règlement.");
+				} else {
+					onError('Une erreur est survenue lors de la mise à jour du règlement.');
+				}
+				setFormikAutoErrors({ e, setFieldError });
+			} finally {
+				setIsPending(false);
+			}
+		},
+	});
+
+	// Error handling
+	const error = isEditMode ? dataError || updateError : addError;
+	const axiosError = error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined;
+
+	// Factures dropdown items
+	// Backend validates that only factures with status 'Envoyé' or 'Accepté' can have règlements
+	const factureItems: DropDownType[] = useMemo(() => {
+		const items: DropDownType[] = [];
+
+		// If editing, and we have rawData, include the current facture first
+		if (isEditMode && rawData?.facture_client && rawData?.facture_client_numero) {
+			items.push({
+				value: String(rawData.facture_client),
+				code: `${rawData.facture_client_numero} - ${rawData.client_name ?? 'Client inconnu'}`,
+			});
+		}
+
+		// Add factures from the list (only Envoyé or Accepté - validated by backend)
+		if (facturesData && Array.isArray(facturesData)) {
+			(facturesData as FactureClass[])
+				.filter((f) => f.statut === 'Envoyé' || f.statut === 'Accepté')
+				.forEach((f) => {
+					// Skip if already added (in edit mode, the current facture might be in the list)
+					if (!items.some((item) => item.value === String(f.id))) {
+						items.push({
+							value: String(f.id),
+							code: `${f.numero_facture} - ${f.client_name ?? 'Client inconnu'} (${formatPrice(f.total_ttc_apres_remise)})`,
+						});
+					}
+				});
+		}
+
+		return items;
+	}, [facturesData, isEditMode, rawData]);
+
+	const selectedFacture = useMemo<DropDownType | null>(() => {
+		const v = formik.values.facture_client;
+		if (!v || factureItems.length === 0) return null;
+		return factureItems.find((f) => f.value === String(v)) ?? null;
+	}, [formik.values.facture_client, factureItems]);
+
+	// Modes Règlement dropdown items
+	const modeReglementItems: DropDownType[] = useMemo(
+		() =>
+			normalizedModesReglements.map((m) => ({
+				value: String(m.id),
+				code: m.nom,
+			})),
+		[normalizedModesReglements],
+	);
+
+	const selectedModeReglement = useMemo<DropDownType | null>(() => {
+		const v = formik.values.mode_reglement;
+		if (!v || modeReglementItems.length === 0) return null;
+		return modeReglementItems.find((m) => m.value === String(v)) ?? null;
+	}, [formik.values.mode_reglement, modeReglementItems]);
+
+	// Collect validation errors from Formik
+	const fieldLabels = useMemo<Record<string, string>>(
+		() => ({
+			facture_client: 'Facture client',
+			mode_reglement: 'Mode de règlement',
+			libelle: 'Libellé',
+			montant: 'Montant',
+			date_reglement: 'Date de règlement',
+			date_echeance: "Date d'échéance",
+			globalError: 'Erreur globale',
+		}),
+		[],
+	);
+
+	const validationErrors = useMemo(() => {
+		const errors: Record<string, string> = {};
+		if (hasAttemptedSubmit) {
+			Object.entries(formik.errors).forEach(([key, value]) => {
+				if (key !== 'globalError' && typeof value === 'string') {
+					errors[key] = value;
+				}
+			});
+		}
+		return errors;
+	}, [formik.errors, hasAttemptedSubmit]);
+
+	const hasValidationErrors = Object.keys(validationErrors).length > 0;
+
+	const isLoading = isAddLoading || isUpdateLoading || isPending || (isEditMode && isDataLoading) || isFacturesLoading;
+	const shouldShowError = (axiosError?.status ?? 0) > 400 && !isLoading;
+
+	// Financial info for edit mode
+	const montantFacture = rawData?.montant_facture ? formatPrice(rawData.montant_facture) : null;
+	const totalReglementsFacture = rawData?.total_reglements_facture
+		? formatPrice(rawData.total_reglements_facture)
+		: null;
+	const resteAPayer = rawData?.reste_a_payer ? formatPrice(rawData.reste_a_payer) : 0 + ' DH';
+
+	return (
+		<Stack spacing={3} sx={{ p: { xs: 2, md: 3 } }}>
+			<Stack direction={isMobile ? 'column' : 'row'} pt={2} justifyContent="space-between" spacing={2}>
+				<Button
+					variant="outlined"
+					startIcon={<ArrowBackIcon />}
+					onClick={() => router.push(REGLEMENTS_LIST)}
+					sx={{
+						whiteSpace: 'nowrap',
+						px: { xs: 1.5, sm: 2, md: 3 },
+						py: { xs: 0.8, sm: 1, md: 1 },
+						fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
+					}}
+				>
+					Liste des règlements
+				</Button>
+			</Stack>
+			{hasValidationErrors && (
+				<Alert severity="error" icon={<WarningIcon />} sx={{ mb: 2 }}>
+					<Typography variant="subtitle2" fontWeight={600}>
+						Erreurs de validation détectées:
+					</Typography>
+					<ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
+						{Object.entries(validationErrors).map(([key, errorText]) => (
+							<li key={key}>
+								<Typography variant="body2">
+									{getLabelForKey(fieldLabels, key)} : {errorText}
+								</Typography>
+							</li>
+						))}
+					</ul>
+				</Alert>
+			)}
+			{formik.errors.globalError && <span className={Styles.errorMessage}>{formik.errors.globalError}</span>}
+			{isLoading ? (
+				<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
+			) : shouldShowError ? (
+				<ApiAlert errorDetails={axiosError?.data.details} />
+			) : (
+				<form onSubmit={formik.handleSubmit}>
+					<Stack spacing={3}>
+						{/* Financial info card for edit mode */}
+						{isEditMode && montantFacture && (
+							<Card elevation={2} sx={{ borderRadius: 2, bgcolor: 'grey.50' }}>
+								<CardContent sx={{ p: 3 }}>
+									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<AttachMoneyIcon color="primary" />
+										<Typography variant="h6" fontWeight={700}>
+											Informations financières
+										</Typography>
+									</Stack>
+									<Divider sx={{ mb: 3 }} />
+									<Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
+										<Box>
+											<Typography variant="body2" color="text.secondary">
+												Montant de la facture
+											</Typography>
+											<Typography variant="h6" fontWeight={600}>
+												{montantFacture}
+											</Typography>
+										</Box>
+										<Box>
+											<Typography variant="body2" color="text.secondary">
+												Total règlements
+											</Typography>
+											<Typography variant="h6" fontWeight={600} color="success.main">
+												{totalReglementsFacture}
+											</Typography>
+										</Box>
+										<Box>
+											<Typography variant="body2" color="text.secondary">
+												Reste à payer
+											</Typography>
+											<Typography variant="h6" fontWeight={600} color="error.main">
+												{resteAPayer}
+											</Typography>
+										</Box>
+									</Stack>
+								</CardContent>
+							</Card>
+						)}
+
+						{/* Facture Selection Card */}
+						<Card elevation={2} sx={{ borderRadius: 2 }}>
+							<CardContent sx={{ p: 3 }}>
+								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<ReceiptIcon color="primary" />
+									<Typography variant="h6" fontWeight={700}>
+										Facture client
+									</Typography>
+								</Stack>
+								<Divider sx={{ mb: 3 }} />
+								<Stack spacing={2.5}>
+									<CustomAutoCompleteSelect
+										id="facture_client"
+										size="small"
+										noOptionsText="Aucune facture trouvée"
+										label="Facture client *"
+										theme={theme}
+										items={factureItems}
+										value={selectedFacture}
+										fullWidth
+										onChange={(_, newValue) => {
+											formik.setFieldValue('facture_client', newValue?.value ? Number(newValue.value) : 0);
+										}}
+										onBlur={formik.handleBlur('facture_client')}
+										error={formik.touched.facture_client && Boolean(formik.errors.facture_client)}
+										helperText={formik.touched.facture_client ? formik.errors.facture_client : ''}
+										disabled={isEditMode}
+										startIcon={<ReceiptIcon fontSize="small" />}
+										endIcon={
+											!isEditMode && (
+												<Button
+													size="small"
+													variant="outlined"
+													onClick={() => router.push(FACTURE_CLIENT_ADD(company_id))}
+													sx={{ ml: 1 }}
+												>
+													Ajouter
+												</Button>
+											)
+										}
+									/>
+								</Stack>
+							</CardContent>
+						</Card>
+
+						{/* Payment Details Card */}
+						<Card elevation={2} sx={{ borderRadius: 2 }}>
+							<CardContent sx={{ p: 3 }}>
+								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<PaymentIcon color="primary" />
+									<Typography variant="h6" fontWeight={700}>
+										Détails du règlement
+									</Typography>
+								</Stack>
+								<Divider sx={{ mb: 3 }} />
+								<Stack spacing={2.5}>
+									<CustomAutoCompleteSelect
+										id="mode_reglement"
+										size="small"
+										noOptionsText="Aucun mode de règlement trouvé"
+										label="Mode de règlement"
+										theme={theme}
+										items={modeReglementItems}
+										value={selectedModeReglement}
+										fullWidth
+										onChange={(_, newValue) => {
+											formik.setFieldValue('mode_reglement', newValue?.value ? Number(newValue.value) : null);
+										}}
+										onBlur={formik.handleBlur('mode_reglement')}
+										error={formik.touched.mode_reglement && Boolean(formik.errors.mode_reglement)}
+										helperText={formik.touched.mode_reglement ? formik.errors.mode_reglement : ''}
+										startIcon={<PaymentIcon fontSize="small" />}
+									/>
+									<CustomTextInput
+										id="montant"
+										type="text"
+										label="Montant (DH) *"
+										value={String(formik.values.montant)}
+										onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+											const raw = e.target.value;
+											const parsed = parseNumber(raw);
+											if (parsed !== null && parsed < 0) return;
+											formik.setFieldValue('montant', parsed === null ? raw : parsed);
+										}}
+										onBlur={formik.handleBlur('montant')}
+										error={formik.touched.montant && Boolean(formik.errors.montant)}
+										helperText={formik.touched.montant ? formik.errors.montant : ''}
+										fullWidth={false}
+										size="small"
+										theme={inputTheme}
+										startIcon={<AttachMoneyIcon fontSize="small" />}
+										slotProps={{
+											input: {
+												inputProps: { min: 0, step: '0.01' },
+											},
+										}}
+									/>
+									<CustomTextInput
+										id="libelle"
+										type="text"
+										label="Libellé"
+										value={formik.values.libelle ?? ''}
+										onChange={formik.handleChange('libelle')}
+										onBlur={formik.handleBlur('libelle')}
+										error={formik.touched.libelle && Boolean(formik.errors.libelle)}
+										helperText={formik.touched.libelle ? formik.errors.libelle : ''}
+										fullWidth={false}
+										size="small"
+										theme={inputTheme}
+										startIcon={<NotesIcon fontSize="small" />}
+									/>
+								</Stack>
+							</CardContent>
+						</Card>
+
+						{/* Dates Card */}
+						<Card elevation={2} sx={{ borderRadius: 2 }}>
+							<CardContent sx={{ p: 3 }}>
+								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<CalendarTodayIcon color="primary" />
+									<Typography variant="h6" fontWeight={700}>
+										Dates
+									</Typography>
+								</Stack>
+								<Divider sx={{ mb: 3 }} />
+								<Stack spacing={2.5}>
+									<CustomTextInput
+										id="date_reglement"
+										type="date"
+										label="Date de règlement *"
+										value={formik.values.date_reglement}
+										onChange={formik.handleChange('date_reglement')}
+										onBlur={formik.handleBlur('date_reglement')}
+										error={formik.touched.date_reglement && Boolean(formik.errors.date_reglement)}
+										helperText={formik.touched.date_reglement ? formik.errors.date_reglement : ''}
+										fullWidth={false}
+										size="small"
+										theme={inputTheme}
+										startIcon={<CalendarTodayIcon fontSize="small" />}
+									/>
+									<CustomTextInput
+										id="date_echeance"
+										type="date"
+										label="Date d'échéance *"
+										value={formik.values.date_echeance}
+										onChange={formik.handleChange('date_echeance')}
+										onBlur={formik.handleBlur('date_echeance')}
+										error={formik.touched.date_echeance && Boolean(formik.errors.date_echeance)}
+										helperText={formik.touched.date_echeance ? formik.errors.date_echeance : ''}
+										fullWidth={false}
+										size="small"
+										theme={inputTheme}
+										startIcon={<CalendarTodayIcon fontSize="small" />}
+									/>
+								</Stack>
+							</CardContent>
+						</Card>
+
+						{/* Submit Button */}
+						<Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+							<PrimaryLoadingButton
+								buttonText={isEditMode ? 'Mettre à jour' : 'Ajouter le règlement'}
+								active={!isPending}
+								onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+									setHasAttemptedSubmit(true);
+									if (!formik.isValid) {
+										e.preventDefault();
+										formik.handleSubmit();
+										onError('Veuillez corriger les erreurs de validation avant de soumettre.');
+										window.scrollTo({ top: 0, behavior: 'smooth' });
+									}
+								}}
+								cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}
+								type="submit"
+								startIcon={isEditMode ? <EditIcon /> : <AddIcon />}
+								loading={isPending}
+							/>
+						</Box>
+					</Stack>
+				</form>
+			)}
+		</Stack>
+	);
+};
+
+interface Props extends SessionProps {
+	company_id: number;
+	id?: number;
+	facture_client_id?: number;
+}
+
+const ReglementForm: React.FC<Props> = ({ session, company_id, id, facture_client_id }) => {
+	const token = getAccessTokenFromSession(session);
+	const companies = useAppSelector(getUserCompaniesState);
+	const company = companies?.find((comp) => comp.id === company_id);
+
+	const isEditMode = id !== undefined;
+
+	return (
+		<Stack direction="column" sx={{ position: 'relative' }}>
+			<NavigationBar title={isEditMode ? 'Modifier le règlement' : 'Ajouter un règlement'}>
+				<main className={`${Styles.main} ${Styles.fixMobile}`}>
+					{company?.role === 'Admin' ? (
+						<Box sx={{ width: '100%' }}>
+							<FormikContent token={token} id={id} company_id={company_id} facture_client_id={facture_client_id} />
+						</Box>
+					) : (
+						<Container maxWidth="sm" sx={{ mt: 8 }}>
+							<Paper
+								elevation={3}
+								sx={{
+									p: 6,
+									textAlign: 'center',
+									borderRadius: 3,
+									background: 'linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%)',
+								}}
+							>
+								<Box
+									sx={{
+										width: 80,
+										height: 80,
+										borderRadius: '50%',
+										backgroundColor: 'rgba(13, 7, 11, 0.08)',
+										display: 'flex',
+										alignItems: 'center',
+										justifyContent: 'center',
+										margin: '0 auto 24px',
+									}}
+								>
+									<BusinessOutlinedIcon sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
+								</Box>
+								<Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 3 }}>
+									{isEditMode
+										? "Vous n'avez pas le droit de modifier ce règlement. Veuillez contacter votre administrateur."
+										: "Vous n'avez pas le droit d'ajouter un règlement. Veuillez contacter votre administrateur."}
+								</Typography>
+							</Paper>
+						</Container>
+					)}
+				</main>
+			</NavigationBar>
+		</Stack>
+	);
+};
+
+export default ReglementForm;

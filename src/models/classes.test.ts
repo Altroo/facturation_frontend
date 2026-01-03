@@ -33,6 +33,7 @@ describe('UserClass', () => {
 			true,
 			'2023-01-01',
 			'2023-01-02',
+			'2023-01-02',
 		);
 
 		expect(user.id).toBe(1);
@@ -63,6 +64,7 @@ describe('CompanyClass', () => {
 	it('creates a company instance with given properties', () => {
 		const company = new CompanyClass(
 			1,
+			'2023-01-01',
 			'2023-01-01',
 			'MyCompany',
 			'company@example.com',
@@ -113,6 +115,7 @@ describe('ClientClass', () => {
 			'client@example.com',
 			30,
 			'Important client',
+			'2023-01-01',
 			'2023-01-01',
 			false,
 			'ClientRaison',
@@ -173,6 +176,7 @@ describe('ArticleClass', () => {
 			150,
 			20,
 			'Remark',
+			'2023-01-01',
 			'2023-01-01',
 			false,
 		);

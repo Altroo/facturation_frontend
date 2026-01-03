@@ -28,6 +28,7 @@ import {
 	Straighten as StraightenIcon,
 	LocationOn as LocationOnIcon,
 	Notes as NotesIcon,
+	CalendarToday as CalendarTodayIcon,
 } from '@mui/icons-material';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { ARTICLES_LIST, ARTICLES_EDIT } from '@/utils/routes';
@@ -40,6 +41,7 @@ import Styles from '@/styles/dashboard/dashboard.module.sass';
 import { useAppSelector } from '@/utils/hooks';
 import { getUserCompaniesState } from '@/store/selectors';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
+import { formatDate } from '@/utils/helpers';
 
 interface InfoRowProps {
 	icon: React.ReactNode;
@@ -267,6 +269,32 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 									<InfoRow icon={<NotesIcon />} label="Remarque" value={client?.remarque} />
+								</CardContent>
+							</Card>
+
+							{/* Dates */}
+							<Card elevation={2} sx={{ borderRadius: 2 }}>
+								<CardContent sx={{ p: 3 }}>
+									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<CalendarTodayIcon color="primary" />
+										<Typography variant="h6" fontWeight={700}>
+											Dates
+										</Typography>
+									</Stack>
+									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
+									<Stack spacing={0}>
+										<InfoRow
+											icon={<CalendarTodayIcon />}
+											label="Date de création"
+											value={formatDate(client?.date_created ?? null)}
+										/>
+										<Divider />
+										<InfoRow
+											icon={<CalendarTodayIcon />}
+											label="Dernière mise à jour"
+											value={formatDate(client?.date_updated ?? null)}
+										/>
+									</Stack>
 								</CardContent>
 							</Card>
 						</Stack>

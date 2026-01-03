@@ -26,6 +26,7 @@ describe('account sagas', () => {
 			true,
 			'2023-01-01',
 			'2023-01-02',
+			'2023-01-02',
 		);
 
 		const payload: setProfilPayloadType = {
@@ -55,6 +56,7 @@ describe('account sagas', () => {
 			false,
 			true,
 			'2023-02-01',
+			'2023-02-02',
 			'2023-02-02',
 		);
 

@@ -2,6 +2,7 @@ import type { NbrEmployeType, CiviliteType, ManagedByType, ManagedByWriteOnlyTyp
 import type { TypeClientType } from '@/types/clientTypes';
 import type { TypeArticleType } from '@/types/articleTypes';
 import type { TypeFactureLivraisonDevisStatus, TypeRemiseType } from '@/types/devisTypes';
+import type { ReglementStatutType } from '@/types/reglementTypes';
 
 export class UserClass {
 	constructor(
@@ -15,6 +16,7 @@ export class UserClass {
 		public is_staff: boolean,
 		public is_active: boolean,
 		public date_joined: string | null,
+		public date_updated: string | null,
 		public last_login: string | null,
 	) {}
 }
@@ -27,6 +29,7 @@ export class CompanyClass {
 	constructor(
 		public readonly id: number,
 		public date_created: string | null,
+		public date_updated: string | null,
 		public raison_sociale: string,
 		public email: string | null,
 		public logo: string | ArrayBuffer | null,
@@ -67,6 +70,7 @@ export class ClientClass {
 		public delai_de_paiement: number | null,
 		public remarque: string | null,
 		public date_created: string | null,
+		public date_updated: string | null,
 		public archived: boolean,
 		public raison_sociale: string | null,
 		public numero_du_compte: string | null,
@@ -103,6 +107,7 @@ export class ArticleClass {
 		public tva: number,
 		public remarque: string | null,
 		public readonly date_created: string,
+		public readonly date_updated: string,
 		public archived: boolean,
 	) {}
 }
@@ -257,5 +262,28 @@ export class BonDeLivraisonClass {
 		public readonly total_ttc: number,
 		public readonly total_ttc_apres_remise: number,
 		public lignes: Array<DeviFactureLivraisonLineClass>,
+	) {}
+}
+
+export class ReglementClass {
+	constructor(
+		public readonly id: number,
+		public facture_client: number,
+		public readonly facture_client_numero: string | null,
+		public readonly client: number | null,
+		public readonly client_name: string | null,
+		public mode_reglement: number | null,
+		public readonly mode_reglement_name: string | null,
+		public libelle: string,
+		public montant: number,
+		public date_reglement: string,
+		public date_echeance: string,
+		public statut: ReglementStatutType,
+		public readonly date_created: string,
+		public readonly date_updated: string,
+		// Financial fields (detail/update)
+		public readonly montant_facture?: number,
+		public readonly total_reglements_facture?: number,
+		public readonly reste_a_payer?: number,
 	) {}
 }

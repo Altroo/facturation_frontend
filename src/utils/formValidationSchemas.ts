@@ -655,3 +655,23 @@ export const bonDeLivraisonAddSchema = z.object({
 	remarque: optionalTextField(2, 500).nullable(),
 	globalError: optionalTextField(1, 500),
 });
+
+export const reglementSchema = z.object({
+	facture_client: requiredChoiceNumberField(),
+	mode_reglement: optionalNumberField(1).nullable(),
+	libelle: optionalTextField(1, 255).nullable(),
+	montant: z.preprocess(
+		(val) => {
+			if (val === undefined || val === null || val === '') return NaN;
+			return typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val;
+		},
+		z
+			.number({ error: INPUT_REQUIRED })
+			.refine((val) => !Number.isNaN(val), { error: INPUT_REQUIRED })
+			.min(0.01, { error: INPUT_MIN(0.01) }),
+	),
+	date_reglement: requiredTextField(1, 100),
+	date_echeance: requiredTextField(1, 100),
+	globalError: optionalTextField(1, 500),
+});
+

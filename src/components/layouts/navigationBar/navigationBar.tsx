@@ -59,6 +59,7 @@ import {
 	DEVIS_LIST,
 	FACTURE_CLIENT_LIST,
 	FACTURE_PRO_FORMA_LIST,
+	REGLEMENTS_LIST,
 	SITE_ROOT,
 	USERS_ADD,
 	USERS_LIST,
@@ -123,7 +124,7 @@ const getNavigationMenu = (isStaff: boolean) => {
 		reglement: {
 			title: 'Règlement',
 			icon: <PaymentIcon />,
-			items: [{ title: 'Liste des règlements', label: 'Liste des règlements', path: '/reglements/list' }],
+			items: [{ title: 'Liste des règlements', label: 'Liste des règlements', path: REGLEMENTS_LIST }],
 		},
 		...(isStaff && {
 			societe: {
