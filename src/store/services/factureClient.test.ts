@@ -7,6 +7,9 @@ beforeAll(() => {
 	process.env.NEXT_PUBLIC_FACTURE_CLIENT_ROOT ||= 'https://example.com/facture-client';
 	process.env.NEXT_PUBLIC_FACTURE_CLIENT_GENERATE_NUM_FACTURE ||= 'https://example.com/facture-client/generate-num/';
 	process.env.NEXT_PUBLIC_FACTURE_CLIENT_SWITCH_STATUT ||= 'https://example.com/facture-client/switch-status/';
+	process.env.NEXT_PUBLIC_FACTURE_CLIENT_UNPAID ||= 'https://example.com/facture-client/unpaid/';
+	process.env.NEXT_PUBLIC_FACTURE_CLIENT_CONVERT_TO_BON_DE_LIVRAISON ||=
+		'https://example.com/facture-client/convert-to-bon-de-livraison/';
 });
 
 // Mock axiosBaseQuery to always succeed
@@ -75,6 +78,30 @@ describe('factureClientApi endpoints', () => {
 			factureClientApi.endpoints.patchStatut.initiate({
 				id: 1,
 				data: { statut: 'Brouillon' as TypeFactureLivraisonDevisStatus },
+			}),
+		);
+		expect(result.error).toBeUndefined();
+		expect(result.data).toEqual({ ok: true });
+	});
+
+	it('getFactureClientUnpaidList query should return mocked data', async () => {
+		const result = await storeRef.store.dispatch(
+			factureClientApi.endpoints.getFactureClientUnpaidList.initiate({
+				company_id: 1,
+				with_pagination: true,
+				page: 1,
+				pageSize: 10,
+				search: '',
+			}),
+		);
+		expect(result.error).toBeUndefined();
+		expect(result.data).toEqual({ ok: true });
+	});
+
+	it('convertFactureClientToBonDeLivraison mutation should return mocked data', async () => {
+		const result = await storeRef.store.dispatch(
+			factureClientApi.endpoints.convertFactureClientToBonDeLivraison.initiate({
+				id: 1,
 			}),
 		);
 		expect(result.error).toBeUndefined();

@@ -8,6 +8,7 @@ beforeAll(() => {
 	process.env.NEXT_PUBLIC_BON_DE_LIVRAISON_GENERATE_NUM_BON_DE_LIVRAISON ||=
 		'https://example.com/bon-de-livraison/generate-num/';
 	process.env.NEXT_PUBLIC_BON_DE_LIVRAISON_SWITCH_STATUT ||= 'https://example.com/bon-de-livraison/switch-status/';
+	process.env.NEXT_PUBLIC_BON_DE_LIVRAISON_UNINVOICED ||= 'https://example.com/bon-de-livraison/uninvoiced/';
 });
 
 // Mock axiosBaseQuery to always succeed
@@ -76,6 +77,20 @@ describe('bonDeLivraisonApi endpoints', () => {
 			bonDeLivraisonApi.endpoints.patchStatut.initiate({
 				id: 1,
 				data: { statut: 'Brouillon' as TypeFactureLivraisonDevisStatus },
+			}),
+		);
+		expect(result.error).toBeUndefined();
+		expect(result.data).toEqual({ ok: true });
+	});
+
+	it('getBonDeLivraisonUninvoicedList query should return mocked data', async () => {
+		const result = await storeRef.store.dispatch(
+			bonDeLivraisonApi.endpoints.getBonDeLivraisonUninvoicedList.initiate({
+				company_id: 1,
+				with_pagination: true,
+				page: 1,
+				pageSize: 10,
+				search: '',
 			}),
 		);
 		expect(result.error).toBeUndefined();

@@ -186,6 +186,7 @@ describe('routes constants', () => {
 			BON_DE_LIVRAISON_ADD,
 			BON_DE_LIVRAISON_VIEW,
 			BON_DE_LIVRAISON_EDIT,
+			BON_DE_LIVRAISON_UNINVOICED,
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
 		} = require('./routes');
 
@@ -198,5 +199,13 @@ describe('routes constants', () => {
 
 		expect(BON_DE_LIVRAISON_VIEW(5, 99)).toBe(`${SITE_ROOT}dashboard/bon-de-livraison/5/?company_id=99`);
 		expect(BON_DE_LIVRAISON_EDIT(7, 123)).toBe(`${SITE_ROOT}dashboard/bon-de-livraison/7/edit/?company_id=123`);
+		expect(BON_DE_LIVRAISON_UNINVOICED).toBe(`${SITE_ROOT}dashboard/bon-de-livraison/uninvoiced`);
+	});
+
+	it('exports facture client unpaid route', () => {
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		const { SITE_ROOT, FACTURE_CLIENT_UNPAID } = require('./routes');
+
+		expect(FACTURE_CLIENT_UNPAID).toBe(`${SITE_ROOT}dashboard/facture-client/unpaid`);
 	});
 });
