@@ -320,20 +320,8 @@ export const articleSchema = z
 export const devisLivraisonFactureLineSchema = z
 	.object({
 		article: requiredNumberField(1),
-		prix_achat: z.preprocess(
-			(val) => (typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val),
-			optionalNumberField(0),
-		).nullable(),
-		prix_vente: z.preprocess(
-			(val) => {
-				if (val === undefined || val === null || val === '') return NaN;
-				return typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val;
-			},
-			z
-				.number({ error: INPUT_REQUIRED })
-				.refine((val) => !Number.isNaN(val), { error: INPUT_REQUIRED })
-				.min(0, { error: INPUT_MIN(0) }),
-		),
+		prix_achat: optionalNumberField(0).nullable(),
+		prix_vente: optionalNumberField(0).nullable(),
 		quantity: requiredNumberField(1).refine((val) => Number.isInteger(val), {
 			error: INPUT_QUANTITY_INT,
 		}),
@@ -674,4 +662,3 @@ export const reglementSchema = z.object({
 	date_echeance: requiredTextField(1, 100),
 	globalError: optionalTextField(1, 500),
 });
-
