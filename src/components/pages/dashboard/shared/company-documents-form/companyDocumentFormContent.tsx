@@ -346,24 +346,42 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		validationSchema: toFormikValidationSchema(isEditMode ? config.validation.editSchema : config.validation.addSchema),
 		validateOnMount: true,
 		onSubmit: async (data, { setFieldError }) => {
+			// Check if articles list is empty
+			if (isEditMode) {
+				if (!data.lignes || data.lignes.length === 0) {
+					setValidationErrors((prev) => ({
+						...prev,
+						lignes_empty: 'Vous devez ajouter au moins un article',
+					}));
+					onError('Vous devez ajouter au moins un article');
+					topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+					return;
+				}
+				// Clear articles validation error if it exists
+				setValidationErrors((prev) => {
+					// eslint-disable-next-line @typescript-eslint/no-unused-vars
+					const { lignes_empty, ...rest } = prev;
+					return rest;
+				});
+			}
 			setIsPending(true);
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const { globalError, ...payload } = data;
 
-			// Convert ligne values to proper numbers for backend
-			const normalizedLignes = (payload.lignes ?? []).map((ligne) => ({
-				...ligne,
-				prix_achat: parseNumber(ligne.prix_achat ?? ''),
-				prix_vente: parseNumber(ligne.prix_vente ?? ''),
-				quantity: parseNumber(ligne.quantity ?? '') ?? 1,
-				remise: parseNumber(ligne.remise ?? '') ?? 0,
-			}));
-
-			// Normalize global remise
-			const normalizedRemise = parseNumber(payload.remise ?? '');
-
 			try {
 				if (isEditMode) {
+					// Convert ligne values to proper numbers for backend (only in edit mode)
+					const normalizedLignes = (payload.lignes ?? []).map((ligne) => ({
+						...ligne,
+						prix_achat: parseNumber(ligne.prix_achat ?? ''),
+						prix_vente: parseNumber(ligne.prix_vente ?? ''),
+						quantity: parseNumber(ligne.quantity ?? '') ?? 1,
+						remise: parseNumber(ligne.remise ?? '') ?? 0,
+					}));
+
+					// Normalize global remise
+					const normalizedRemise = parseNumber(payload.remise ?? '');
+
 					const submissionData = {
 						...payload,
 						lignes: normalizedLignes,
@@ -377,10 +395,11 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 					await updateData({ data: submissionData, id: id! }).unwrap();
 					onSuccess(config.labels.updateSuccessMessage);
 				} else {
+					// In add mode, exclude lignes and remise fields as they're not part of initial creation
+					// eslint-disable-next-line @typescript-eslint/no-unused-vars
+					const { lignes, remise, remise_type, ...payloadWithoutLines } = payload;
 					const submissionData = {
-						...payload,
-						lignes: normalizedLignes,
-						remise: normalizedRemise,
+						...payloadWithoutLines,
 						...(config.documentType === 'devis'
 							? { numero_devis: `${data.numero_part}/${data.year_part}` }
 							: config.documentType === 'facture-client' || config.documentType === 'facture-pro-forma'
@@ -621,6 +640,14 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			.filter((line): line is DeviFactureLineFormValues => line !== null);
 		const currentLines = getLines();
 		formik.setFieldValue('lignes', [...currentLines, ...newLines]);
+
+		// Clear lignes_empty validation error when articles are added
+		setValidationErrors((prev) => {
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			const { lignes_empty, ...rest } = prev;
+			return rest;
+		});
+
 		setShowAddArticleModal(false);
 		setSelectedArticles(new Set());
 	}, [selectedArticles, getArticleById, getLines, formik]);
@@ -1083,6 +1110,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			globalError: 'Erreur globale',
 			global_remise: 'Remise globale',
 			lignes: 'Lignes',
+			lignes_empty: 'Articles',
 			// line fields
 			prix_vente: 'Prix de vente',
 			prix_achat: "Prix d'achat",
