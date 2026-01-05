@@ -158,11 +158,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		}
 
 		// Add factures from the list (only Envoyé or Accepté - validated by backend)
-		if (facturesData && Array.isArray(facturesData)) {
-			(facturesData as FactureClass[])
+		if (facturesData) {
+			const facturesArray: FactureClass[] = Array.isArray(facturesData)
+				? (facturesData as FactureClass[])
+				: (facturesData.results as FactureClass[]);
+
+			facturesArray
 				.filter((f) => f.statut === 'Envoyé' || f.statut === 'Accepté')
 				.forEach((f) => {
-					// Skip if already added (in edit mode, the current facture might be in the list)
 					if (!items.some((item) => item.value === String(f.id))) {
 						items.push({
 							value: String(f.id),
