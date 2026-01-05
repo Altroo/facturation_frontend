@@ -38,6 +38,11 @@ export const devisFactureStatusItemsList: Array<DropDownType> = [
 	{ code: 'Expiré', value: 'Expiré' },
 ];
 
+export const bonDeLivraisonStatusItemsList: Array<DropDownType> = [
+	...devisFactureStatusItemsList,
+	{ code: 'Facturé', value: 'Facturé' },
+];
+
 // 'Pourcentage', 'Fixe'
 export const remiseTypeItemsList: Array<DropDownType> = [
 	{ code: '', value: '' },

@@ -54,6 +54,8 @@ export const getStatutColor = (
 			return 'success';
 		case 'Valide':
 			return 'success';
+		case 'Facturé':
+			return 'success';
 		case 'Refusé':
 			return 'error';
 		case 'Annulé':

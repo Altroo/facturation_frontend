@@ -69,7 +69,7 @@ import ActionModals from '@/components/htmlElements/modals/actionModal/actionMod
 import AddArticleModal from '@/components/shared/addArticleModal/addArticleModal';
 import GlobalRemiseModal from '@/components/shared/globalRemiseModal/globalRemiseModal';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
-import { devisFactureStatusItemsList, remiseTypeItemsList } from '@/utils/rawData';
+import { bonDeLivraisonStatusItemsList, devisFactureStatusItemsList, remiseTypeItemsList } from '@/utils/rawData';
 import { useAddModePaiementMutation, useAddLivreParMutation } from '@/store/services/parameter';
 import AddEntityModal from '@/components/shared/addEntityModal/addEntityModal';
 import FactureDevisTotalsCard from '@/components/shared/factureDevistotalCard/factureDevisTotalsCard';
@@ -1309,7 +1309,11 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 											<CustomDropDownSelect
 												id="statut"
 												label="Statut"
-												items={devisFactureStatusItemsList}
+												items={
+													config.documentType === 'bon-de-livraison'
+														? bonDeLivraisonStatusItemsList
+														: devisFactureStatusItemsList
+												}
 												value={rawData?.statut || ''}
 												onChange={(e) => handleStatutChange(e.target.value)}
 												size="small"
