@@ -357,12 +357,8 @@ export interface DocumentListConfig<TDocument extends DocumentListClass> {
 
 export type { DeviFactureLineFormValues, DeviLineSchemaType, TypeRemiseType, TypeFactureLivraisonDevisStatus };
 
-export type FactureClientListResponseType = {
-	count: number;
-	next: string | null;
-	previous: string | null;
-	results: Array<FactureClass>;
+export interface FactureClientListResponseType extends PaginationResponseType<FactureClass> {
 	chiffre_affaire_total: string;
 	total_reglements: string;
 	total_impayes: string;
-};
+}

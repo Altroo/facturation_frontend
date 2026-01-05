@@ -49,6 +49,7 @@ import {
 	ARTICLES_LIST,
 	AUTH_LOGIN,
 	BON_DE_LIVRAISON_LIST,
+	BON_DE_LIVRAISON_UNINVOICED,
 	CLIENTS_ARCHIVED,
 	CLIENTS_LIST,
 	COMPANIES_ADD,
@@ -58,6 +59,7 @@ import {
 	DASHBOARD_PASSWORD,
 	DEVIS_LIST,
 	FACTURE_CLIENT_LIST,
+	FACTURE_CLIENT_UNPAID,
 	FACTURE_PRO_FORMA_LIST,
 	REGLEMENTS_LIST,
 	SITE_ROOT,
@@ -104,7 +106,7 @@ const getNavigationMenu = (isStaff: boolean) => {
 			icon: <ReceiptLongIcon />,
 			items: [
 				{ title: 'Liste des factures', label: 'Liste des factures', path: FACTURE_CLIENT_LIST },
-				// { title: 'Factures impayées', label: 'Factures impayées', path: '/factures/unpaid' },
+				{ title: 'Factures impayées', label: 'Factures impayées', path: FACTURE_CLIENT_UNPAID },
 			],
 		},
 		factures_proformat: {
@@ -117,8 +119,7 @@ const getNavigationMenu = (isStaff: boolean) => {
 			icon: <LocalShippingIcon />,
 			items: [
 				{ title: 'Liste des BLs', label: 'Liste des BLs', path: BON_DE_LIVRAISON_LIST },
-				// { title: 'BLs non facturés', label: 'BLs non facturés', path: '/bls/uninvoiced' },
-				// { title: 'État de livraison', label: 'État de livraison', path: '/bls/status' },
+				{ title: 'BLs non facturés', label: 'BLs non facturés', path: BON_DE_LIVRAISON_UNINVOICED },
 			],
 		},
 		reglement: {

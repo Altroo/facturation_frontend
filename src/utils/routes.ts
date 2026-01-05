@@ -50,6 +50,7 @@ export const FACTURE_PRO_FORMA_EDIT = (id: number, company_id: number) =>
 	`${SITE_ROOT}dashboard/facture-pro-forma/${id}/edit/?company_id=${company_id}`;
 // Facture Client
 export const FACTURE_CLIENT_LIST = `${SITE_ROOT}dashboard/facture-client`;
+export const FACTURE_CLIENT_UNPAID = `${SITE_ROOT}dashboard/facture-client/unpaid`;
 export const FACTURE_CLIENT_ADD = (company_id: number) =>
 	`${SITE_ROOT}dashboard/facture-client/new/?company_id=${company_id}`;
 export const FACTURE_CLIENT_VIEW = (id: number, company_id: number) =>
@@ -58,6 +59,7 @@ export const FACTURE_CLIENT_EDIT = (id: number, company_id: number) =>
 	`${SITE_ROOT}dashboard/facture-client/${id}/edit/?company_id=${company_id}`;
 // Bon de Livraison
 export const BON_DE_LIVRAISON_LIST = `${SITE_ROOT}dashboard/bon-de-livraison`;
+export const BON_DE_LIVRAISON_UNINVOICED = `${SITE_ROOT}dashboard/bon-de-livraison/uninvoiced`;
 export const BON_DE_LIVRAISON_ADD = (company_id: number) =>
 	`${SITE_ROOT}dashboard/bon-de-livraison/new/?company_id=${company_id}`;
 export const BON_DE_LIVRAISON_VIEW = (id: number, company_id: number) =>

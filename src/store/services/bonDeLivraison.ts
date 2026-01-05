@@ -41,6 +41,29 @@ export const bonDeLivraisonApi = createApi({
 			}),
 			providesTags: ['BonDeLivraison'],
 		}),
+		getBonDeLivraisonUninvoicedList: builder.query<
+			Array<Partial<BonDeLivraisonClass>> | PaginationResponseType<BonDeLivraisonClass>,
+			{
+				company_id: number;
+				with_pagination?: boolean;
+				page?: number;
+				pageSize?: number;
+				search?: string;
+			}
+		>({
+			query: ({ company_id, with_pagination, page, pageSize, search }) => ({
+				url: process.env.NEXT_PUBLIC_BON_DE_LIVRAISON_UNINVOICED,
+				method: 'GET',
+				params: {
+					company_id,
+					pagination: !!with_pagination,
+					page: with_pagination ? page : undefined,
+					page_size: with_pagination ? pageSize : undefined,
+					search,
+				},
+			}),
+			providesTags: ['BonDeLivraison'],
+		}),
 
 		getBonDeLivraison: builder.query<BonDeLivraisonClass, { id: number }>({
 			query: ({ id }) => ({
@@ -98,6 +121,7 @@ export const bonDeLivraisonApi = createApi({
 
 export const {
 	useGetBonDeLivraisonListQuery,
+	useGetBonDeLivraisonUninvoicedListQuery,
 	useDeleteBonDeLivraisonMutation,
 	useEditBonDeLivraisonMutation,
 	useGetNumBonDeLivraisonQuery,

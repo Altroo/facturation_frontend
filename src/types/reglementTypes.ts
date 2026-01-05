@@ -1,3 +1,6 @@
+import type { PaginationResponseType } from '@/types/_initTypes';
+import { ReglementClass } from '@/models/classes';
+
 export type ReglementStatutType = 'Valide' | 'Annulé';
 
 export type ReglementSchemaType = {
@@ -10,27 +13,8 @@ export type ReglementSchemaType = {
 	globalError?: string;
 };
 
-export type ReglementListResponseType = {
-	count: number;
-	next: string | null;
-	previous: string | null;
-	results: Array<{
-		id: number;
-		facture_client: number;
-		facture_client_numero: string;
-		client: number;
-		client_name: string;
-		mode_reglement: number | null;
-		mode_reglement_name: string | null;
-		libelle: string;
-		montant: string;
-		date_reglement: string;
-		date_echeance: string;
-		statut: ReglementStatutType;
-		date_created: string;
-		date_updated: string;
-	}>;
+export interface ReglementListResponseType extends PaginationResponseType<ReglementClass> {
 	chiffre_affaire_total: string;
 	total_reglements: string;
 	total_impayes: string;
-};
+}

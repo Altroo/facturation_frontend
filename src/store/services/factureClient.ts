@@ -43,6 +43,29 @@ export const factureClientApi = createApi({
 			}),
 			providesTags: ['FactureClient'],
 		}),
+		getFactureClientUnpaidList: builder.query<
+			Array<Partial<FactureClass>> | FactureClientListResponseType,
+			{
+				company_id: number;
+				with_pagination?: boolean;
+				page?: number;
+				pageSize?: number;
+				search?: string;
+			}
+		>({
+			query: ({ company_id, with_pagination, page, pageSize, search }) => ({
+				url: process.env.NEXT_PUBLIC_FACTURE_CLIENT_UNPAID,
+				method: 'GET',
+				params: {
+					company_id,
+					pagination: !!with_pagination,
+					page: with_pagination ? page : undefined,
+					page_size: with_pagination ? pageSize : undefined,
+					search,
+				},
+			}),
+			providesTags: ['FactureClient'],
+		}),
 
 		getFactureClient: builder.query<FactureClass, { id: number }>({
 			query: ({ id }) => ({
@@ -115,6 +138,7 @@ export const factureClientApi = createApi({
 
 export const {
 	useGetFactureClientListQuery,
+	useGetFactureClientUnpaidListQuery,
 	useDeleteFactureClientMutation,
 	useEditFactureClientMutation,
 	useGetNumFactureClientQuery,
