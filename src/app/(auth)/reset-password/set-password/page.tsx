@@ -3,6 +3,12 @@ import SetPasswordClient from '@/components/pages/auth/reset-password/setPasswor
 import { redirect } from 'next/navigation';
 import { AUTH_RESET_PASSWORD, DASHBOARD } from '@/utils/routes';
 import { auth } from '@/auth';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+	title: 'Définir un Nouveau Mot de Passe',
+	description: 'Créer un nouveau mot de passe pour votre compte',
+};
 
 const SetPasswordPage = async () => {
 	// check if user is logged in

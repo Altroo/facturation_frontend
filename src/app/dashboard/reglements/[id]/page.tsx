@@ -2,6 +2,12 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, REGLEMENTS_LIST } from '@/utils/routes';
 import ReglementViewClient from '@/components/pages/dashboard/reglements/reglement-view';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+	title: 'Détails du Règlement',
+	description: "Consulter les détails d'un règlement",
+};
 
 type PageProps = {
 	params: Promise<{ id: string }>;

@@ -2,6 +2,12 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, CLIENTS_LIST } from '@/utils/routes';
 import ClientsForm from '@/components/pages/dashboard/clients/clients-form';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+	title: 'Nouveau Client',
+	description: 'Créer un nouveau client',
+};
 
 type PageProps = {
 	searchParams: Promise<{ company_id: string }>;

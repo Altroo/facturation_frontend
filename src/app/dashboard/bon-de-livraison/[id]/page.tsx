@@ -2,6 +2,12 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, BON_DE_LIVRAISON_LIST } from '@/utils/routes';
 import BonDeLivraisonViewClient from '@/components/pages/dashboard/bon-de-livraison/bon-de-livraison-view';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+	title: 'Détails du Bon de Livraison',
+	description: 'Consulter les détails d\'un bon de livraison',
+};
 
 type PageProps = {
 	params: Promise<{ id: string }>;

@@ -1,7 +1,13 @@
 import { redirect } from 'next/navigation';
+import { type Metadata } from 'next';
 import { auth } from '@/auth';
 import { AUTH_LOGIN } from '@/utils/routes';
 import DevisListClient from '@/components/pages/dashboard/devis/devis-list';
+
+export const metadata: Metadata = {
+	title: 'Devis',
+	description: 'Liste des devis',
+};
 
 const DevisListPage = async () => {
 	const session = await auth();

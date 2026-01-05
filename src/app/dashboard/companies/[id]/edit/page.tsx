@@ -2,6 +2,12 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, COMPANIES_LIST } from '@/utils/routes';
 import CompaniesForm from '@/components/pages/dashboard/companies/companies-form';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+	title: 'Modifier Société',
+	description: 'Modifier une société existante',
+};
 
 type PageProps = {
 	params: Promise<{ id: number }>;

@@ -2,6 +2,12 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN } from '@/utils/routes';
 import UsersForm from '@/components/pages/dashboard/users/users-form';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+	title: 'Nouvel Utilisateur',
+	description: 'Créer un nouvel utilisateur',
+};
 
 const UsersNewPage = async () => {
 	const session = await auth();

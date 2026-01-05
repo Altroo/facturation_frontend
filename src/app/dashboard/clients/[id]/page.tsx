@@ -2,6 +2,12 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, CLIENTS_LIST } from '@/utils/routes';
 import ClientsViewClient from '@/components/pages/dashboard/clients/clients-view';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+	title: 'Détails du Client',
+	description: 'Consulter les détails d\'un client',
+};
 
 type PageProps = {
 	params: Promise<{ id: string }>;

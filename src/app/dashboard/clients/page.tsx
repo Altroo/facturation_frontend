@@ -2,6 +2,12 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN } from '@/utils/routes';
 import ClientsListClient from '@/components/pages/dashboard/clients/clients-list';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+	title: 'Clients',
+	description: 'Liste des clients',
+};
 
 const ClientsListPage = async () => {
 	const session = await auth();

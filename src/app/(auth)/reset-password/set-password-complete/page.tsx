@@ -4,6 +4,12 @@ import ClearCookiesClient from './clearCookiesClient';
 import { redirect } from 'next/navigation';
 import { AUTH_RESET_PASSWORD, DASHBOARD } from '@/utils/routes';
 import { auth } from '@/auth';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+	title: 'Mot de Passe Modifié',
+	description: 'Votre mot de passe a été modifié avec succès',
+};
 
 const SetPasswordCompletePage = async () => {
 	const session = await auth();

@@ -2,6 +2,12 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, BON_DE_LIVRAISON_LIST } from '@/utils/routes';
 import BonDeLivraisonForm from '@/components/pages/dashboard/bon-de-livraison/bon-de-livraison-form';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+	title: 'Nouveau Bon de Livraison',
+	description: 'Créer un nouveau bon de livraison',
+};
 
 type PageProps = {
 	searchParams: Promise<{ company_id: string }>;

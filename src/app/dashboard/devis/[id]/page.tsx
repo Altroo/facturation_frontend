@@ -2,6 +2,12 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, DEVIS_LIST } from '@/utils/routes';
 import DevisViewClient from '@/components/pages/dashboard/devis/devis-view';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+	title: 'Détails du Devis',
+	description: "Consulter les détails d'un devis",
+};
 
 type PageProps = {
 	params: Promise<{ id: string }>;

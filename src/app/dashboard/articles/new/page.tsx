@@ -2,6 +2,12 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, CLIENTS_LIST } from '@/utils/routes';
 import ArticlesForm from '@/components/pages/dashboard/articles/articles-form';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+	title: 'Nouvel Article',
+	description: 'Créer un nouvel article',
+};
 
 type PageProps = {
 	searchParams: Promise<{ company_id: string }>;

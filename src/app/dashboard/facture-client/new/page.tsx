@@ -2,6 +2,12 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, FACTURE_CLIENT_LIST } from '@/utils/routes';
 import FactureClientForm from '@/components/pages/dashboard/facture-client/facture-client-form';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+	title: 'Nouvelle Facture Client',
+	description: 'Créer une nouvelle facture client',
+};
 
 type PageProps = {
 	searchParams: Promise<{ company_id: string }>;

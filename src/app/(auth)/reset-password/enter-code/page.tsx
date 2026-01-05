@@ -4,6 +4,12 @@ import EnterCodeClient from '@/components/pages/auth/reset-password/enterCode';
 import { redirect } from 'next/navigation';
 import { AUTH_RESET_PASSWORD, DASHBOARD } from '@/utils/routes';
 import { auth } from '@/auth';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+	title: 'Saisir le Code',
+	description: 'Entrer le code de vérification reçu par email',
+};
 
 const EnterCodePage = async () => {
 	// check if user is logged in

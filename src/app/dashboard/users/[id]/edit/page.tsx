@@ -2,6 +2,12 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, USERS_LIST } from '@/utils/routes';
 import UsersForm from '@/components/pages/dashboard/users/users-form';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+	title: 'Modifier Utilisateur',
+	description: 'Modifier un utilisateur existant',
+};
 
 type UsersEditPageProps = {
 	params: Promise<{ id: number }>;

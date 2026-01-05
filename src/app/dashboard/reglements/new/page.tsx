@@ -2,6 +2,12 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, REGLEMENTS_LIST } from '@/utils/routes';
 import ReglementForm from '@/components/pages/dashboard/reglements/reglement-form';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+	title: 'Nouveau Règlement',
+	description: 'Créer un nouveau règlement',
+};
 
 type PageProps = {
 	searchParams: Promise<{ company_id: string; facture_client_id?: string }>;

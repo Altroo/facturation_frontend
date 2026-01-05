@@ -2,6 +2,12 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, CLIENTS_LIST } from '@/utils/routes';
 import ArticlesForm from '@/components/pages/dashboard/articles/articles-form';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+	title: 'Modifier Article',
+	description: 'Modifier un article existant',
+};
 
 type PageProps = {
 	params: Promise<{ id: string }>;

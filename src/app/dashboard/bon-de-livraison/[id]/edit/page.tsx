@@ -2,6 +2,12 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, BON_DE_LIVRAISON_LIST } from '@/utils/routes';
 import BonDeLivraisonForm from '@/components/pages/dashboard/bon-de-livraison/bon-de-livraison-form';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+	title: 'Modifier Bon de Livraison',
+	description: 'Modifier un bon de livraison existant',
+};
 
 type PageProps = {
 	params: Promise<{ id: number }>;

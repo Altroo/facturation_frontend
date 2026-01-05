@@ -2,6 +2,12 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, FACTURE_CLIENT_LIST } from '@/utils/routes';
 import FactureClientViewClient from '@/components/pages/dashboard/facture-client/facture-client-view';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+	title: 'Détails de la Facture Client',
+	description: 'Consulter les détails d\'une facture client',
+};
 
 type PageProps = {
 	params: Promise<{ id: string }>;

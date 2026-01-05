@@ -2,6 +2,12 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, CLIENTS_LIST } from '@/utils/routes';
 import ArticlesViewClient from '@/components/pages/dashboard/articles/articles-view';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+	title: "Détails de l'Article",
+	description: "Consulter les détails d'un article",
+};
 
 type PageProps = {
 	params: Promise<{ id: string }>;

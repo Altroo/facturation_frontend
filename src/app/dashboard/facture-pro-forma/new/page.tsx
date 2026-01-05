@@ -2,6 +2,12 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, FACTURE_PRO_FORMA_LIST } from '@/utils/routes';
 import FactureProFormaForm from '@/components/pages/dashboard/facture-pro-forma/facture-pro-forma-form';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+	title: 'Nouvelle Facture Pro Forma',
+	description: 'Créer une nouvelle facture pro forma',
+};
 
 type PageProps = {
 	searchParams: Promise<{ company_id: string }>;
