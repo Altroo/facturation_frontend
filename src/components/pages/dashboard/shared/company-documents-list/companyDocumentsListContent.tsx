@@ -155,9 +155,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 			try {
 				const response = await mutation.convertMutation({ id: selectedId }).unwrap();
 				onSuccess(`${config.labels.documentTypeName} converti(e) avec succès`);
-				setTimeout(() => {
-					router.push(action.redirectRoute(response.id, companyId));
-				}, 500);
+				router.push(action.redirectRoute(response.id, companyId));
 			} catch {
 				onError(`Erreur lors de la conversion du ${config.labels.documentTypeName}`);
 			} finally {

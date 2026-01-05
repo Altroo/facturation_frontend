@@ -390,9 +390,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 					const response = await addData({ data: submissionData }).unwrap();
 					onSuccess(config.labels.addSuccessMessage);
 					if (response.id) {
-						setTimeout(() => {
-							router.replace(config.routes.editRoute(response.id!, company_id));
-						}, 500);
+						router.replace(config.routes.editRoute(response.id!, company_id));
 					}
 				}
 			} catch (e) {

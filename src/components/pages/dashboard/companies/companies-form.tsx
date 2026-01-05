@@ -173,9 +173,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					onSuccess("L'entreprise a été ajoutée avec succès.");
 				}
 				if (!isEditMode) {
-					setTimeout(() => {
-						router.replace(COMPANIES_LIST);
-					}, 500);
+					router.replace(COMPANIES_LIST);
 				}
 			} catch (e) {
 				if (isEditMode) {

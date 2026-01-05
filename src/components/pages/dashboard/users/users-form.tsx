@@ -137,9 +137,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					onSuccess("L'utilisateur a été ajouté avec succès.");
 				}
 				if (!isEditMode) {
-					setTimeout(() => {
-						router.replace(USERS_LIST);
-					}, 500);
+					router.replace(USERS_LIST);
 				}
 			} catch (e) {
 				if (isEditMode) {

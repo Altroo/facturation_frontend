@@ -168,9 +168,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					onSuccess("L'article a été ajouté avec succès.");
 				}
 				if (!isEditMode) {
-					setTimeout(() => {
-						router.replace(ARTICLES_LIST);
-					}, 500);
+					router.replace(ARTICLES_LIST);
 				}
 			} catch (e) {
 				if (!isEditMode) {

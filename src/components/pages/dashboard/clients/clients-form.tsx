@@ -164,9 +164,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					onSuccess('Le client a été ajouté avec succès.');
 				}
 				if (!isEditMode) {
-					setTimeout(() => {
-						router.replace(CLIENTS_LIST);
-					}, 500);
+					router.replace(CLIENTS_LIST);
 				}
 			} catch (e) {
 				if (isEditMode) {

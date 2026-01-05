@@ -125,9 +125,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					onSuccess('Le règlement a été ajouté avec succès.');
 				}
 				if (!isEditMode) {
-					setTimeout(() => {
-						router.replace(REGLEMENTS_LIST);
-					}, 500);
+					router.replace(REGLEMENTS_LIST);
 				}
 			} catch (e) {
 				if (!isEditMode) {
