@@ -2,8 +2,9 @@ import { createApi } from '@reduxjs/toolkit/query/react';
 import { isAuthenticatedInstance } from '@/utils/helpers';
 import { axiosBaseQuery } from '@/utils/axiosBaseQuery';
 import { getInitStateToken } from '@/store/selectors';
-import type { FactureClass } from '@/models/classes';
-import type { ApiErrorResponseType, PaginationResponseType, SuccessResponseType } from '@/types/_initTypes';
+import { FactureClass } from '@/models/classes';
+import type { ApiErrorResponseType, SuccessResponseType } from '@/types/_initTypes';
+import type { FactureClientListResponseType } from '@/types/companyDocumentsTypes';
 import type { RootState } from '@/store/store';
 import { initToken } from '@/store/slices/_initSlice';
 import type { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
@@ -20,7 +21,7 @@ export const factureClientApi = createApi({
 	),
 	endpoints: (builder) => ({
 		getFactureClientList: builder.query<
-			Array<Partial<FactureClass>> | PaginationResponseType<FactureClass>,
+			Array<Partial<FactureClass>> | FactureClientListResponseType,
 			{
 				company_id: number;
 				with_pagination?: boolean;
