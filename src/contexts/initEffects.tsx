@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '@/utils/hooks';
 import { useSession } from 'next-auth/react';
 import { initAppSessionTokensAction } from '@/store/actions/_initActions';
-import { getInitStateToken } from '@/store/selectors';
+import { getAccessToken } from '@/store/selectors';
 import { useGetProfilQuery, useGetGroupsQuery } from '@/store/services/account';
 import { accountSetGroupesAction, accountSetProfilAction } from '@/store/actions/accountActions';
 import {
@@ -33,8 +33,8 @@ import { companiesSetUserCompaniesAction } from '@/store/actions/companiesAction
 export const InitEffects: React.FC = () => {
 	const { data: session, status } = useSession();
 	const dispatch = useAppDispatch();
-	const initState = useAppSelector(getInitStateToken);
-	const accessToken = initState?.access ?? undefined;
+	const initState = useAppSelector(getAccessToken);
+	const accessToken = initState ?? undefined;
 	const skip = !accessToken || status !== 'authenticated';
 
 	const tokensInitializedRef = useRef(false);
