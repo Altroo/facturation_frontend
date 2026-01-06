@@ -190,12 +190,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const handlePrint = async (reglementId: number) => {
 		try {
 			if (!token) {
-				onError('Erreur d\'authentification. Veuillez vous reconnecter.');
+				onError("Erreur d'authentification. Veuillez vous reconnecter.");
 				return;
 			}
 
 			const url = `${process.env.NEXT_PUBLIC_ROOT_API_URL}/reglement/pdf/${reglementId}/?company_id=${company_id}`;
-
 			// Fetch PDF with authentication
 			const response = await fetch(url, {
 				method: 'GET',
@@ -203,26 +202,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					Authorization: `Bearer ${token}`,
 				},
 			});
-
 			if (!response.ok) {
 				onError('Erreur lors de la génération du PDF.');
 				return;
 			}
-
 			// Convert response to blob
 			const blob = await response.blob();
-
 			// Create object URL and open in new window
 			const blobUrl = URL.createObjectURL(blob);
 			const newWindow = window.open(blobUrl, '_blank');
-
 			// Clean up the blob URL after a delay
 			if (newWindow) {
 				setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
 			}
-		} catch (error) {
+		} catch {
 			onError('Erreur lors de la génération du PDF.');
-			console.error('PDF generation error:', error);
 		}
 	};
 
