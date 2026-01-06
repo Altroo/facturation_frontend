@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ReceiptLong as ReceiptLongIcon } from '@mui/icons-material';
+import { GridFilterModel } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import {
 	useDeleteFactureProFormaMutation,
@@ -73,8 +74,24 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 		pageSize: 10,
 	});
 	const [searchTerm, setSearchTerm] = useState<string>('');
+	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
 
-	// Query hook
+	const getDateFilterParams = () => {
+		const params: Record<string, string> = {};
+		filterModel.items.forEach(item => {
+			if (item.field === 'date_facture' && item.value) {
+				const { from, to } = item.value as { from?: string; to?: string };
+				if (from) {
+					params.date_after = from;
+				}
+				if (to) {
+					params.date_before = to;
+				}
+			}
+		});
+		return params;
+	};
+
 	const {
 		data: rawData,
 		isLoading,
@@ -86,6 +103,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 			page: paginationModel.page + 1,
 			pageSize: paginationModel.pageSize,
 			search: searchTerm,
+			...getDateFilterParams(),
 		},
 		{ skip: !token },
 	);
@@ -118,11 +136,13 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 			setPaginationModel={setPaginationModel}
 			searchTerm={searchTerm}
 			setSearchTerm={setSearchTerm}
+			filterModel={filterModel}
+			onFilterModelChange={setFilterModel}
 		/>
 	);
 };
 
-const FactureProformaListClient: React.FC<SessionProps> = ({ session }) => {
+const FactureProFormaListClient: React.FC<SessionProps> = ({ session }) => {
 	return (
 		<CompanyDocumentsWrapperList session={session} title="Liste des Factures Proforma">
 			{({ company_id, role }) => <FormikContent session={session} company_id={company_id} role={role} />}
@@ -130,4 +150,4 @@ const FactureProformaListClient: React.FC<SessionProps> = ({ session }) => {
 	);
 };
 
-export default FactureProformaListClient;
+export default FactureProFormaListClient;

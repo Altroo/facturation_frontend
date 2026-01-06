@@ -9,6 +9,7 @@ import {
 	CheckCircle as CheckCircleIcon,
 	Cancel as CancelIcon,
 } from '@mui/icons-material';
+import { GridFilterModel } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import {
 	useConvertFactureClientToBonDeLivraisonMutation,
@@ -75,6 +76,24 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 		pageSize: 10,
 	});
 	const [searchTerm, setSearchTerm] = useState<string>('');
+	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
+
+	// Extract date filter parameters from filter model
+	const getDateFilterParams = () => {
+		const params: Record<string, string> = {};
+		filterModel.items.forEach(item => {
+			if (item.field === 'date_facture' && item.value) {
+				const { from, to } = item.value as { from?: string; to?: string };
+				if (from) {
+					params.date_after = from;
+				}
+				if (to) {
+					params.date_before = to;
+				}
+			}
+		});
+		return params;
+	};
 
 	const {
 		data: rawData,
@@ -87,6 +106,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 			page: paginationModel.page + 1,
 			pageSize: paginationModel.pageSize,
 			search: searchTerm,
+			...getDateFilterParams(),
 		},
 		{ skip: !token },
 	);
@@ -178,6 +198,8 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 				setPaginationModel={setPaginationModel}
 				searchTerm={searchTerm}
 				setSearchTerm={setSearchTerm}
+				filterModel={filterModel}
+				onFilterModelChange={setFilterModel}
 			/>
 		</>
 	);

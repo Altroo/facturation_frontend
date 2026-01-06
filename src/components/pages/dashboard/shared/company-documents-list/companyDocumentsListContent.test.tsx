@@ -64,12 +64,16 @@ jest.mock('@/components/shared/paginatedDataGrid/paginatedDataGrid', () => ({
 	__esModule: true,
 	default: ({
 		columns,
-		queryHook,
+		data,
 	}: {
-		columns: Array<{ field: string; headerName: string; renderCell?: (params: { value: string; row: DeviClass }) => React.ReactNode }>;
-		queryHook: () => { data: DocumentListQueryResult<DeviClass>['data']; isLoading: boolean };
+		columns: Array<{
+			field: string;
+			headerName: string;
+			renderCell?: (params: { value: string; row: DeviClass }) => React.ReactNode;
+		}>;
+		data?: DocumentListQueryResult<DeviClass>['data'];
+		isLoading?: boolean;
 	}) => {
-		const { data } = queryHook();
 		const results = data?.results || [];
 		return (
 			<div data-testid="paginated-data-grid">
@@ -86,7 +90,9 @@ jest.mock('@/components/shared/paginatedDataGrid/paginatedDataGrid', () => ({
 							<tr key={row.id} data-testid={`row-${row.id}`}>
 								{columns.map((col) => (
 									<td key={`${row.id}-${col.field}`}>
-										{col.renderCell ? col.renderCell({ value: row[col.field as keyof DeviClass] as string, row }) : String(row[col.field as keyof DeviClass] ?? '')}
+										{col.renderCell
+											? col.renderCell({ value: row[col.field as keyof DeviClass] as string, row })
+											: String(row[col.field as keyof DeviClass] ?? '')}
 									</td>
 								))}
 							</tr>
@@ -217,7 +223,8 @@ const mockConfig: DocumentListConfig<DeviClass> = {
 			icon: <DescriptionIcon />,
 			modalTitle: 'Convertir en facture pro forma',
 			modalBody: 'Voulez-vous convertir ce devi en facture pro forma ?',
-			redirectRoute: (id: number, companyId: number) => `/dashboard/facture-pro-forma/edit/${id}?company_id=${companyId}`,
+			redirectRoute: (id: number, companyId: number) =>
+				`/dashboard/facture-pro-forma/edit/${id}?company_id=${companyId}`,
 			disabled: false,
 		},
 		{
@@ -479,7 +486,7 @@ describe('CompanyDocumentsListContent', () => {
 			const deleteButtons = container.querySelectorAll('[data-testid*="DeleteIcon"]');
 			if (deleteButtons.length > 0) {
 				fireEvent.click(deleteButtons[0] as Element);
-				
+
 				await waitFor(() => {
 					const modal = screen.queryByTestId('action-modal');
 					if (modal) {

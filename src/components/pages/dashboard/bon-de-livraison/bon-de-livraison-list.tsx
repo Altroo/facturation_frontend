@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { GridFilterModel } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import { useDeleteBonDeLivraisonMutation, useGetBonDeLivraisonListQuery } from '@/store/services/bonDeLivraison';
 import { BON_DE_LIVRAISON_ADD, BON_DE_LIVRAISON_EDIT, BON_DE_LIVRAISON_VIEW } from '@/utils/routes';
@@ -52,6 +53,23 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 		pageSize: 10,
 	});
 	const [searchTerm, setSearchTerm] = useState<string>('');
+	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
+
+	const getDateFilterParams = () => {
+		const params: Record<string, string> = {};
+		filterModel.items.forEach(item => {
+			if (item.field === 'date_bon_livraison' && item.value) {
+				const { from, to } = item.value as { from?: string; to?: string };
+				if (from) {
+					params.date_after = from;
+				}
+				if (to) {
+					params.date_before = to;
+				}
+			}
+		});
+		return params;
+	};
 
 	const {
 		data: rawData,
@@ -64,6 +82,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 			page: paginationModel.page + 1,
 			pageSize: paginationModel.pageSize,
 			search: searchTerm,
+			...getDateFilterParams(),
 		},
 		{ skip: !token },
 	);
@@ -84,13 +103,15 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 			setPaginationModel={setPaginationModel}
 			searchTerm={searchTerm}
 			setSearchTerm={setSearchTerm}
+			filterModel={filterModel}
+			onFilterModelChange={setFilterModel}
 		/>
 	);
 };
 
 const BonDeLivraisonListClient: React.FC<SessionProps> = ({ session }) => {
 	return (
-		<CompanyDocumentsWrapperList session={session} title="Liste des Factures Clients">
+		<CompanyDocumentsWrapperList session={session} title="Liste des Bons de Livraison">
 			{({ company_id, role }) => <FormikContent session={session} company_id={company_id} role={role} />}
 		</CompanyDocumentsWrapperList>
 	);

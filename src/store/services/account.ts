@@ -69,14 +69,14 @@ export const usersApi = createApi({
 	endpoints: (builder) => ({
 		getUsersList: builder.query<
 			SuccessResponseType<Array<Partial<UserClass>>> | PaginationResponseType<Partial<UserClass>>,
-			{ with_pagination?: boolean; page?: number; pageSize?: number; search?: string }
+			{ with_pagination?: boolean; page?: number; pageSize?: number; search?: string; date_joined_after?: string; date_joined_before?: string; last_login_after?: string; last_login_before?: string }
 		>({
-			query: ({ with_pagination, page, pageSize, search }) => ({
+			query: ({ with_pagination, page, pageSize, search, date_joined_after, date_joined_before, last_login_after, last_login_before }) => ({
 				url: with_pagination
 					? `${process.env.NEXT_PUBLIC_USERS_ROOT}?search=${search}&page=${page}&page_size=${pageSize}`
 					: process.env.NEXT_PUBLIC_USERS_ROOT,
 				method: 'GET',
-				params: with_pagination ? { pagination: true } : undefined,
+				params: with_pagination ? { pagination: true, date_joined_after, date_joined_before, last_login_after, last_login_before } : { date_joined_after, date_joined_before, last_login_after, last_login_before },
 			}),
 			providesTags: ['Users'],
 		}),

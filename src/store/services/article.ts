@@ -26,9 +26,11 @@ export const articleApi = createApi({
 				pageSize?: number;
 				search?: string;
 				archived?: boolean;
+				date_created_after?: string;
+				date_created_before?: string;
 			}
 		>({
-			query: ({ company_id, with_pagination, page, pageSize, search, archived }) => ({
+			query: ({ company_id, with_pagination, page, pageSize, search, archived, date_created_after, date_created_before }) => ({
 				url: process.env.NEXT_PUBLIC_ARTICLE_LIST,
 				method: 'GET',
 				params: {
@@ -38,6 +40,8 @@ export const articleApi = createApi({
 					page_size: with_pagination ? pageSize : undefined,
 					search,
 					archived,
+					date_created_after,
+					date_created_before,
 				},
 			}),
 			providesTags: ['Article'],

@@ -20,14 +20,14 @@ export const companyApi = createApi({
 	endpoints: (builder) => ({
 		getCompaniesList: builder.query<
 			Array<Partial<CompanyClass>> | PaginationResponseType<CompanyClass>,
-			{ with_pagination?: boolean; page?: number; pageSize?: number; search?: string }
+			{ with_pagination?: boolean; page?: number; pageSize?: number; search?: string; date_created_after?: string; date_created_before?: string }
 		>({
-			query: ({ with_pagination, page, pageSize, search }) => ({
+			query: ({ with_pagination, page, pageSize, search, date_created_after, date_created_before }) => ({
 				url: with_pagination
 					? `${process.env.NEXT_PUBLIC_COMPANY_LIST}?search=${search}&page=${page}&page_size=${pageSize}`
 					: process.env.NEXT_PUBLIC_COMPANY_LIST,
 				method: 'GET',
-				params: with_pagination ? { pagination: true } : undefined,
+				params: with_pagination ? { pagination: true, date_created_after, date_created_before } : { date_created_after, date_created_before },
 			}),
 			providesTags: ['Company'],
 		}),

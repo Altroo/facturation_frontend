@@ -10,7 +10,7 @@ import {
 	Add as AddIcon,
 	Close as CloseIcon,
 } from '@mui/icons-material';
-import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
+import { GridColDef, GridRenderCellParams, GridFilterModel } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
@@ -26,6 +26,7 @@ import { Protected } from '@/components/layouts/protected/protected';
 import { useToast } from '@/utils/hooks';
 import Image from 'next/image';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
+import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
 
 export const nbrEmployeFilterOptions = [
 	{ value: '1 à 5', label: '1 à 5', color: 'default' as const },
@@ -44,9 +45,28 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		pageSize: 10,
 	});
 	const [searchTerm, setSearchTerm] = useState<string>('');
+	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
 	const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
 	const [selectedId, setSelectedId] = useState<number | null>(null);
 
+	// Extract date filter parameters from filter model
+	const getDateFilterParams = () => {
+		const params: Record<string, string> = {};
+		filterModel.items.forEach(item => {
+			if (item.field === 'date_created' && item.value) {
+				const { from, to } = item.value as { from?: string; to?: string };
+				if (from) {
+					params.date_created_after = from;
+				}
+				if (to) {
+					params.date_created_before = to;
+				}
+			}
+		});
+		return params;
+	};
+
+	// Call query hook at component level
 	const {
 		data: rawData,
 		isLoading,
@@ -57,11 +77,13 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 			page: paginationModel.page + 1,
 			pageSize: paginationModel.pageSize,
 			search: searchTerm,
+			...getDateFilterParams(),
 		},
 		{ skip: !token },
 	);
 	// enforce the type of the users data
 	const data = rawData as PaginationResponseType<CompanyClass> | undefined;
+
 	const [deleteRecord] = useDeleteCompanyMutation();
 
 	const deleteHandler = async () => {
@@ -208,6 +230,7 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 			field: 'date_created',
 			headerName: 'Date de création',
 			width: 180,
+			filterOperators: createDateRangeFilterOperator(),
 			renderCell: (params: GridRenderCellParams<CompanyClass>) => {
 				const formatted = formatDate(params.value as string | null);
 				return (
@@ -285,13 +308,16 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 							</Button>
 						</Box>
 						<PaginatedDataGrid
-							queryHook={() => ({ data, isLoading })}
-							columns={columns}
-							paginationModel={paginationModel}
-							setPaginationModel={setPaginationModel}
-							searchTerm={searchTerm}
-							setSearchTerm={setSearchTerm}
-							toolbar={{ quickFilter: true, debounceMs: 500 }}
+						data={data}
+						isLoading={isLoading}
+						columns={columns}
+						paginationModel={paginationModel}
+						setPaginationModel={setPaginationModel}
+						searchTerm={searchTerm}
+						setSearchTerm={setSearchTerm}
+						filterModel={filterModel}
+						onFilterModelChange={setFilterModel}
+						toolbar={{ quickFilter: true, debounceMs: 500 }}
 						/>
 						{showDeleteModal && (
 							<ActionModals

@@ -28,9 +28,11 @@ export const deviApi = createApi({
 				page?: number;
 				pageSize?: number;
 				search?: string;
+				date_after?: string;
+				date_before?: string;
 			}
 		>({
-			query: ({ company_id, with_pagination, page, pageSize, search }) => ({
+			query: ({ company_id, with_pagination, page, pageSize, search, date_after, date_before }) => ({
 				url: process.env.NEXT_PUBLIC_DEVIS_LIST,
 				method: 'GET',
 				params: {
@@ -39,6 +41,8 @@ export const deviApi = createApi({
 					page: with_pagination ? page : undefined,
 					page_size: with_pagination ? pageSize : undefined,
 					search,
+					date_after,
+					date_before,
 				},
 			}),
 			providesTags: ['Devi'],

@@ -12,7 +12,7 @@ import {
 	Add as AddIcon,
 	Close as CloseIcon,
 } from '@mui/icons-material';
-import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
+import { GridColDef, GridRenderCellParams, GridFilterModel } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import { useDeleteClientMutation, useGetClientsListQuery, usePatchArchiveMutation } from '@/store/services/client';
 import { CLIENTS_ADD, CLIENTS_EDIT, CLIENTS_VIEW } from '@/utils/routes';
@@ -24,6 +24,7 @@ import type { ClientClass } from '@/models/classes';
 import { formatDate } from '@/utils/helpers';
 import { useToast } from '@/utils/hooks';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
+import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 
 interface FormikContentProps extends SessionProps {
@@ -48,12 +49,31 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		pageSize: 10,
 	});
 	const [searchTerm, setSearchTerm] = useState<string>('');
+	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
 	const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
 	const [selectedId, setSelectedId] = useState<number | null>(null);
 
 	const [showArchiveModal, setShowArchiveModal] = useState<boolean>(false);
 	const [archiveTarget, setArchiveTarget] = useState<number | null>(null);
 
+	// Extract date filter parameters from filter model
+	const getDateFilterParams = () => {
+		const params: Record<string, string> = {};
+		filterModel.items.forEach(item => {
+			if (item.field === 'date_created' && item.value) {
+				const { from, to } = item.value as { from?: string; to?: string };
+				if (from) {
+					params.date_created_after = from;
+				}
+				if (to) {
+					params.date_created_before = to;
+				}
+			}
+		});
+		return params;
+	};
+
+	// Call query hook at component level
 	const {
 		data: rawData,
 		isLoading,
@@ -66,6 +86,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			pageSize: paginationModel.pageSize,
 			search: searchTerm,
 			archived: archived,
+			...getDateFilterParams(),
 		},
 		{ skip: !token },
 	);
@@ -241,6 +262,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			field: 'date_created',
 			headerName: 'Date de création',
 			width: 170,
+			filterOperators: createDateRangeFilterOperator(),
 			renderCell: (params: GridRenderCellParams<ClientClass>) => {
 				const formatted = formatDate(params.value as string | null);
 				return (
@@ -328,12 +350,15 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				</Box>
 			)}
 			<PaginatedDataGrid
-				queryHook={() => ({ data, isLoading })}
+				data={data}
+				isLoading={isLoading}
 				columns={columns}
 				paginationModel={paginationModel}
 				setPaginationModel={setPaginationModel}
 				searchTerm={searchTerm}
 				setSearchTerm={setSearchTerm}
+				filterModel={filterModel}
+				onFilterModelChange={setFilterModel}
 				toolbar={{ quickFilter: true, debounceMs: 500 }}
 			/>
 			{showDeleteModal && (

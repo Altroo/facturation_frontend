@@ -24,10 +24,9 @@ describe('PaginatedDataGrid', () => {
 		{ field: 'name', headerName: 'Name', width: 200, filterable: true },
 	];
 
-	const mockQueryHook = jest.fn();
-
 	const defaultProps = {
-		queryHook: mockQueryHook,
+		data: { count: 0, results: [] as RowType[] },
+		isLoading: false,
 		columns,
 		paginationModel: { page: 0, pageSize: 5 },
 		setPaginationModel: jest.fn(),
@@ -41,7 +40,8 @@ describe('PaginatedDataGrid', () => {
 	});
 
 	it('renders rows when data is returned', () => {
-		mockQueryHook.mockReturnValue({
+		const propsWithData = {
+			...defaultProps,
 			data: {
 				count: 2,
 				results: [
@@ -49,46 +49,32 @@ describe('PaginatedDataGrid', () => {
 					{ id: 2, name: 'Bob' },
 				],
 			},
-			isLoading: false,
-		});
+		};
 
-		render(<PaginatedDataGrid<RowType> {...defaultProps} />);
+		render(<PaginatedDataGrid<RowType> {...propsWithData} />);
 		expect(screen.getByText('Alice')).toBeInTheDocument();
 		expect(screen.getByText('Bob')).toBeInTheDocument();
 		expect(screen.queryByTestId('api-progress')).not.toBeInTheDocument();
 	});
 
 	it('shows loading indicator when isLoading is true', () => {
-		mockQueryHook.mockReturnValue({
+		const propsWithLoading = {
+			...defaultProps,
 			data: undefined,
 			isLoading: true,
-		});
+		};
 
-		render(<PaginatedDataGrid<RowType> {...defaultProps} />);
+		render(<PaginatedDataGrid<RowType> {...propsWithLoading} />);
 		expect(screen.getByTestId('api-progress')).toBeInTheDocument();
 	});
 
-	it('calls queryHook with correct pagination and search', () => {
-		mockQueryHook.mockReturnValue({
-			data: { count: 0, results: [] },
-			isLoading: false,
-		});
-
+	it('renders with default props', () => {
 		render(<PaginatedDataGrid<RowType> {...defaultProps} />);
-		expect(mockQueryHook).toHaveBeenCalledWith({
-			page: 1,
-			pageSize: 5,
-			search: '',
-		});
+		expect(screen.queryByTestId('api-progress')).not.toBeInTheDocument();
 	});
 
 	it('updates search term when quick filter changes', async () => {
 		const setSearchTermMock = jest.fn();
-
-		mockQueryHook.mockReturnValue({
-			data: { count: 0, results: [] },
-			isLoading: false,
-		});
 
 		render(<PaginatedDataGrid<RowType> {...defaultProps} setSearchTerm={setSearchTermMock} />);
 

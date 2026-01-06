@@ -13,7 +13,7 @@ import {
 	CheckCircle as CheckCircleIcon,
 	AttachMoney as AttachMoneyIcon,
 } from '@mui/icons-material';
-import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
+import { GridColDef, GridRenderCellParams, GridFilterModel } from '@mui/x-data-grid';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import { getAccessTokenFromSession } from '@/store/session';
 import {
@@ -32,6 +32,7 @@ import type { ReglementClass } from '@/models/classes';
 import { formatDate, formatPrice } from '@/utils/helpers';
 import { useToast } from '@/utils/hooks';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
+import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 
 interface FormikContentProps extends SessionProps {
@@ -55,11 +56,37 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		pageSize: 10,
 	});
 	const [searchTerm, setSearchTerm] = useState<string>('');
+	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
 	const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
 	const [selectedId, setSelectedId] = useState<number | null>(null);
 
 	const [showCancelModal, setShowCancelModal] = useState<boolean>(false);
 	const [cancelTarget, setCancelTarget] = useState<number | null>(null);
+
+	const getDateFilterParams = () => {
+		const params: Record<string, string> = {};
+		filterModel.items.forEach(item => {
+			if (item.field === 'date_reglement' && item.value) {
+				const { from, to } = item.value as { from?: string; to?: string };
+				if (from) {
+					params.date_reglement_after = from;
+				}
+				if (to) {
+					params.date_reglement_before = to;
+				}
+			}
+			if (item.field === 'date_echeance' && item.value) {
+				const { from, to } = item.value as { from?: string; to?: string };
+				if (from) {
+					params.date_echeance_after = from;
+				}
+				if (to) {
+					params.date_echeance_before = to;
+				}
+			}
+		});
+		return params;
+	};
 
 	const {
 		data: rawData,
@@ -72,6 +99,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			page: paginationModel.page + 1,
 			pageSize: paginationModel.pageSize,
 			search: searchTerm,
+			...getDateFilterParams(),
 		},
 		{ skip: !token },
 	);
@@ -216,6 +244,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			field: 'date_reglement',
 			headerName: 'Date règlement',
 			width: 180,
+			filterOperators: createDateRangeFilterOperator(),
 			renderCell: (params: GridRenderCellParams<ReglementClass>) => {
 				const formatted = formatDate(params.value as string | null);
 				return (
@@ -231,6 +260,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			field: 'date_echeance',
 			headerName: "Date d'échéance",
 			width: 180,
+			filterOperators: createDateRangeFilterOperator(),
 			renderCell: (params: GridRenderCellParams<ReglementClass>) => {
 				const formatted = formatDate(params.value as string | null);
 				return (
@@ -409,17 +439,15 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				</Box>
 			)}
 			<PaginatedDataGrid
-				queryHook={() => ({
-					data: data
-						? { count: data.count, next: data.next, previous: data.previous, results: data.results }
-						: undefined,
-					isLoading,
-				})}
+				data={data}
+				isLoading={isLoading}
 				columns={columns}
 				paginationModel={paginationModel}
 				setPaginationModel={setPaginationModel}
 				searchTerm={searchTerm}
 				setSearchTerm={setSearchTerm}
+				filterModel={filterModel}
+				onFilterModelChange={setFilterModel}
 				toolbar={{ quickFilter: true, debounceMs: 500 }}
 			/>
 			{showDeleteModal && (

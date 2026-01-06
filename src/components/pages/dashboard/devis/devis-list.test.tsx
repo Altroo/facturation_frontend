@@ -98,12 +98,12 @@ jest.mock('@/components/shared/paginatedDataGrid/paginatedDataGrid', () => ({
 	__esModule: true,
 	default: ({
 		columns,
-		queryHook,
+		data,
 	}: {
 		columns: Array<{ field: string; headerName: string }>;
-		queryHook: () => { data: unknown; isLoading: boolean };
+		data?: unknown;
+		isLoading?: boolean;
 	}) => {
-		const { data } = queryHook();
 		const results =
 			(data as { results?: Array<{ id: number; numero_devis: string; client_name: string; statut: string }> })
 				?.results || [];

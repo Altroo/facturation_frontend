@@ -28,9 +28,11 @@ export const factureClientApi = createApi({
 				page?: number;
 				pageSize?: number;
 				search?: string;
+				date_after?: string;
+				date_before?: string;
 			}
 		>({
-			query: ({ company_id, with_pagination, page, pageSize, search }) => ({
+			query: ({ company_id, with_pagination, page, pageSize, search, date_after, date_before }) => ({
 				url: process.env.NEXT_PUBLIC_FACTURE_CLIENT_LIST,
 				method: 'GET',
 				params: {
@@ -39,6 +41,8 @@ export const factureClientApi = createApi({
 					page: with_pagination ? page : undefined,
 					page_size: with_pagination ? pageSize : undefined,
 					search,
+					date_after,
+					date_before,
 				},
 			}),
 			providesTags: ['FactureClient'],
@@ -51,9 +55,11 @@ export const factureClientApi = createApi({
 				page?: number;
 				pageSize?: number;
 				search?: string;
+				date_after?: string;
+				date_before?: string;
 			}
 		>({
-			query: ({ company_id, with_pagination, page, pageSize, search }) => ({
+			query: ({ company_id, with_pagination, page, pageSize, search, date_after, date_before }) => ({
 				url: process.env.NEXT_PUBLIC_FACTURE_CLIENT_UNPAID,
 				method: 'GET',
 				params: {
@@ -62,6 +68,8 @@ export const factureClientApi = createApi({
 					page: with_pagination ? page : undefined,
 					page_size: with_pagination ? pageSize : undefined,
 					search,
+					date_after,
+					date_before,
 				},
 			}),
 			providesTags: ['FactureClient'],

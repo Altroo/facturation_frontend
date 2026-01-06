@@ -2,22 +2,26 @@
 
 import React, { Dispatch, useState, SetStateAction } from 'react';
 import { Box, ThemeProvider, Stack } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
+import { DataGrid, GridSlotProps } from '@mui/x-data-grid';
 import type { GridColDef, GridFilterModel } from '@mui/x-data-grid';
 import { frFR } from '@mui/x-data-grid/locales';
 import { getDefaultTheme } from '@/utils/themes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 
 type PaginatedDataGridProps<T> = {
-	queryHook: (params: { page: number; pageSize: number; search: string }) => {
+	queryHook?: (params: { page: number; pageSize: number; search: string; [key: string]: string | number }) => {
 		data?: { count: number; results: T[] };
 		isLoading: boolean;
 	};
+	data?: { count: number; results: T[] };
+	isLoading?: boolean;
 	columns: GridColDef[];
 	paginationModel: { page: number; pageSize: number };
 	setPaginationModel: Dispatch<SetStateAction<{ page: number; pageSize: number }>>;
 	searchTerm: string;
 	setSearchTerm: Dispatch<SetStateAction<string>>;
+	filterModel?: GridFilterModel;
+	onFilterModelChange?: (model: GridFilterModel) => void;
 	toolbar?: {
 		quickFilter?: boolean;
 		debounceMs?: number;
@@ -26,22 +30,52 @@ type PaginatedDataGridProps<T> = {
 
 const PaginatedDataGrid = <T,>({
 	queryHook,
+	data: externalData,
+	isLoading: externalIsLoading,
 	columns,
 	paginationModel,
 	setPaginationModel,
 	searchTerm,
 	setSearchTerm,
+	filterModel: externalFilterModel,
+	onFilterModelChange,
 	toolbar = { quickFilter: true, debounceMs: 500 },
 }: PaginatedDataGridProps<T>) => {
-	const [filterModel, setFilterModel] = useState<GridFilterModel>({
+	const [internalFilterModel, setInternalFilterModel] = useState<GridFilterModel>({
 		items: [],
 	});
 
-	const { data, isLoading } = queryHook({
+	const filterModel = externalFilterModel ?? internalFilterModel;
+
+	// Extract date filter parameters from filter model
+	const extractDateFilterParams = () => {
+		const params: Record<string, string> = {};
+		filterModel.items.forEach(item => {
+			if (item.value && typeof item.value === 'object' && 'from' in item.value) {
+				const { from, to } = item.value as { from?: string; to?: string };
+				const fieldName = item.field;
+				
+				if (from) {
+					params[`${fieldName}_after`] = from;
+				}
+				if (to) {
+					params[`${fieldName}_before`] = to;
+				}
+			}
+		});
+		return params;
+	};
+
+	// Use queryHook if provided, otherwise use external data
+	const queryResult = queryHook?.({
 		page: paginationModel.page + 1,
 		pageSize: paginationModel.pageSize,
 		search: searchTerm,
+		...extractDateFilterParams(),
 	});
+
+	const data = queryResult?.data ?? externalData;
+	const isLoading = queryResult?.isLoading ?? externalIsLoading ?? false;
 
 	const rows = data?.results ?? [];
 
@@ -50,11 +84,18 @@ const PaginatedDataGrid = <T,>({
 		const quickFilterValue = model.quickFilterValues?.[0] ?? '';
 		// Update search term for server-side search (from quickFilter only)
 		setSearchTerm(quickFilterValue);
-		// Keep only column filters (items), remove quickFilter for client-side
-		setFilterModel({
+
+		const updatedModel = {
 			items: model.items,
 			// Don't pass quickFilterValues to avoid client-side quickFilter
-		});
+		};
+
+		// Keep only column filters (items), remove quickFilter for client-side
+		if (onFilterModelChange) {
+			onFilterModelChange(updatedModel);
+		} else {
+			setInternalFilterModel(updatedModel);
+		}
 	};
 
 	return (
@@ -102,6 +143,13 @@ const PaginatedDataGrid = <T,>({
 										showQuickFilter: toolbar.quickFilter,
 										quickFilterProps: { debounceMs: toolbar.debounceMs },
 									},
+									panel: {
+										sx: {
+											'& .MuiDataGrid-paper': {
+												minWidth: '800px',
+											},
+										},
+									} as GridSlotProps['panel'] & { sx: never },
 								}}
 								filterModel={filterModel}
 								onFilterModelChange={handleFilterChange}

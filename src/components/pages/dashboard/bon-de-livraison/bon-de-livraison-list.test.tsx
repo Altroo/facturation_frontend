@@ -94,12 +94,12 @@ jest.mock('@/components/shared/paginatedDataGrid/paginatedDataGrid', () => ({
 	__esModule: true,
 	default: ({
 		columns,
-		queryHook,
+		data,
 	}: {
 		columns: Array<{ field: string; headerName: string }>;
-		queryHook: () => { data: unknown; isLoading: boolean };
+		data?: unknown;
+		isLoading?: boolean;
 	}) => {
-		const { data } = queryHook();
 		const results =
 			(data as { results?: Array<{ id: number; numero_bon_livraison: string; client_name: string; statut: string }> })
 				?.results || [];
@@ -213,7 +213,7 @@ describe('BonDeLivraisonListClient', () => {
 
 		it('renders the title from wrapper', () => {
 			render(<BonDeLivraisonListClient session={mockSession} />);
-			expect(screen.getByText('Liste des Factures Clients')).toBeInTheDocument();
+			expect(screen.getByText('Liste des Bons de Livraison')).toBeInTheDocument();
 		});
 
 		it('renders the paginated data grid', () => {

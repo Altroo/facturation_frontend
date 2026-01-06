@@ -22,7 +22,7 @@ import {
 	Close as CloseIcon,
 	SwapHoriz as SwapHorizIcon,
 } from '@mui/icons-material';
-import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
+import { GridColDef, GridRenderCellParams, GridFilterModel } from '@mui/x-data-grid';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
@@ -31,6 +31,7 @@ import { formatDate } from '@/utils/helpers';
 import { useToast } from '@/utils/hooks';
 import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
+import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
 import { CLIENTS_VIEW } from '@/utils/routes';
 import type {
 	DocumentListClass,
@@ -99,6 +100,10 @@ export interface DocumentListContentProps<TDocument extends DocumentListClass> {
 	searchTerm: string;
 	/** Set search term state */
 	setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
+	/** Filter model state */
+	filterModel?: GridFilterModel;
+	/** Filter model change handler */
+	onFilterModelChange?: (model: GridFilterModel) => void;
 }
 
 function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
@@ -116,6 +121,8 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 		setPaginationModel,
 		searchTerm,
 		setSearchTerm,
+		filterModel,
+		onFilterModelChange,
 	} = props;
 
 	const { onSuccess, onError } = useToast();
@@ -380,6 +387,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 				field: config.columns.dateField as string,
 				headerName: config.columns.dateHeaderName,
 				width: 130,
+				filterOperators: createDateRangeFilterOperator(),
 				renderCell: (params: GridRenderCellParams<TDocument>) => {
 					const formatted = formatDate(params.value as string | null).split(',')[0];
 					return (
@@ -475,12 +483,15 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 			)}
 
 			<PaginatedDataGrid
-				queryHook={() => ({ data, isLoading })}
+				data={data}
+				isLoading={isLoading}
 				columns={columns}
 				paginationModel={paginationModel}
 				setPaginationModel={setPaginationModel}
 				searchTerm={searchTerm}
 				setSearchTerm={setSearchTerm}
+				filterModel={filterModel}
+				onFilterModelChange={onFilterModelChange}
 				toolbar={{ quickFilter: true, debounceMs: 500 }}
 			/>
 
