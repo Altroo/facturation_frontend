@@ -6,7 +6,7 @@ import { Print as PrintIcon } from '@mui/icons-material';
 import { GridFilterModel } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import { useDeleteBonDeLivraisonMutation, useGetBonDeLivraisonListQuery } from '@/store/services/bonDeLivraison';
-import { BON_DE_LIVRAISON_ADD, BON_DE_LIVRAISON_EDIT, BON_DE_LIVRAISON_VIEW } from '@/utils/routes';
+import { BON_DE_LIVRAISON_ADD, BON_DE_LIVRAISON_EDIT, BON_DE_LIVRAISON_VIEW, BON_DE_LIVRAISON_PDF } from '@/utils/routes';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import { BonDeLivraisonClass } from '@/models/classes';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
@@ -43,24 +43,21 @@ const bonDeLivraisonListConfig: DocumentListConfig<BonDeLivraisonClass> = {
 			label: 'Afficher le bon de livraison',
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#1976d2',
-			urlGenerator: (id: number, companyId: number) =>
-				`${process.env.NEXT_PUBLIC_ROOT_API_URL}/bon_de_livraison/pdf/${id}/?company_id=${companyId}&type=normal`,
+			urlGenerator: (id: number, companyId: number) => BON_DE_LIVRAISON_PDF(id, companyId, 'normal'),
 		},
 		{
 			key: 'quantity_only',
 			label: 'Afficher le bon de livraison (quantité seulement)',
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#2e7d32',
-			urlGenerator: (id: number, companyId: number) =>
-				`${process.env.NEXT_PUBLIC_ROOT_API_URL}/bon_de_livraison/pdf/${id}/?company_id=${companyId}&type=quantity_only`,
+			urlGenerator: (id: number, companyId: number) => BON_DE_LIVRAISON_PDF(id, companyId, 'quantity_only'),
 		},
 		{
 			key: 'avec_unite',
 			label: 'Afficher le bon de livraison avec unité',
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#ed6c02',
-			urlGenerator: (id: number, companyId: number) =>
-				`${process.env.NEXT_PUBLIC_ROOT_API_URL}/bon_de_livraison/pdf/${id}/?company_id=${companyId}&type=avec_unite`,
+			urlGenerator: (id: number, companyId: number) => BON_DE_LIVRAISON_PDF(id, companyId, 'avec_unite'),
 		},
 	],
 };

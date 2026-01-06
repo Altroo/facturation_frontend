@@ -22,7 +22,7 @@ import {
 	useGetReglementsListQuery,
 	usePatchReglementStatutMutation,
 } from '@/store/services/reglement';
-import { REGLEMENTS_ADD, REGLEMENTS_EDIT, REGLEMENTS_VIEW, CLIENTS_VIEW } from '@/utils/routes';
+import { REGLEMENTS_ADD, REGLEMENTS_EDIT, REGLEMENTS_VIEW, CLIENTS_VIEW, REGLEMENT_PDF } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
 import type { SessionProps } from '@/types/_initTypes';
@@ -187,37 +187,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		setShowCancelModal(true);
 	};
 
-	const handlePrint = async (reglementId: number) => {
-		try {
-			if (!token) {
-				onError("Erreur d'authentification. Veuillez vous reconnecter.");
-				return;
-			}
-
-			const url = `${process.env.NEXT_PUBLIC_ROOT_API_URL}/reglement/pdf/${reglementId}/?company_id=${company_id}`;
-			// Fetch PDF with authentication
-			const response = await fetch(url, {
-				method: 'GET',
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			});
-			if (!response.ok) {
-				onError('Erreur lors de la génération du PDF.');
-				return;
-			}
-			// Convert response to blob
-			const blob = await response.blob();
-			// Create object URL and open in new window
-			const blobUrl = URL.createObjectURL(blob);
-			const newWindow = window.open(blobUrl, '_blank');
-			// Clean up the blob URL after a delay
-			if (newWindow) {
-				setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
-			}
-		} catch {
-			onError('Erreur lors de la génération du PDF.');
+	const handlePrint = (reglementId: number) => {
+		if (!token) {
+			onError("Erreur d'authentification. Veuillez vous reconnecter.");
+			return;
 		}
+
+		const url = `${REGLEMENT_PDF(reglementId, company_id)}&token=${encodeURIComponent(token)}`;
+		window.open(url, '_blank');
 	};
 
 	const columns: GridColDef[] = [

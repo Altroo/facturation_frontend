@@ -11,7 +11,7 @@ import {
 	useConvertDeviToFactureProFormaMutation,
 	useConvertDeviToFactureClientMutation,
 } from '@/store/services/devi';
-import { DEVIS_EDIT, DEVIS_VIEW, DEVIS_ADD, FACTURE_PRO_FORMA_EDIT, FACTURE_CLIENT_EDIT } from '@/utils/routes';
+import { DEVIS_EDIT, DEVIS_VIEW, DEVIS_ADD, FACTURE_PRO_FORMA_EDIT, FACTURE_CLIENT_EDIT, DEVIS_PDF } from '@/utils/routes';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import type { DeviClass } from '@/models/classes';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
@@ -73,24 +73,21 @@ const devisListConfig: DocumentListConfig<DeviClass> = {
 			label: 'Afficher Devi avec remise',
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#1976d2',
-			urlGenerator: (id: number, companyId: number) =>
-				`${process.env.NEXT_PUBLIC_ROOT_API_URL}/devi/pdf/${id}/?company_id=${companyId}&type=avec_remise`,
+			urlGenerator: (id: number, companyId: number) => DEVIS_PDF(id, companyId, 'avec_remise'),
 		},
 		{
 			key: 'sans_remise',
 			label: 'Afficher Devi sans remise',
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#2e7d32',
-			urlGenerator: (id: number, companyId: number) =>
-				`${process.env.NEXT_PUBLIC_ROOT_API_URL}/devi/pdf/${id}/?company_id=${companyId}&type=sans_remise`,
+			urlGenerator: (id: number, companyId: number) => DEVIS_PDF(id, companyId, 'sans_remise'),
 		},
 		{
 			key: 'avec_unite',
 			label: 'Afficher Devi avec unité',
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#ed6c02',
-			urlGenerator: (id: number, companyId: number) =>
-				`${process.env.NEXT_PUBLIC_ROOT_API_URL}/devi/pdf/${id}/?company_id=${companyId}&type=avec_unite`,
+			urlGenerator: (id: number, companyId: number) => DEVIS_PDF(id, companyId, 'avec_unite'),
 		},
 	],
 };

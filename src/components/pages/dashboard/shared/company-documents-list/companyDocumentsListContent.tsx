@@ -202,45 +202,19 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 	}, []);
 
 	const handlePrintMenuItemClick = useCallback(
-		async (url: string) => {
+		(url: string) => {
 			setPrintAnchorEl(null);
 
-			try {
-				const accessToken = getAccessTokenFromSession(session ?? undefined);
+			const accessToken = getAccessTokenFromSession(session ?? undefined);
 
-				if (!accessToken) {
-					onError('Erreur d\'authentification. Veuillez vous reconnecter.');
-					return;
-				}
-
-				// Fetch PDF with authentication
-				const response = await fetch(url, {
-					method: 'GET',
-					headers: {
-						Authorization: `Bearer ${accessToken}`,
-					},
-				});
-
-				if (!response.ok) {
-					onError('Erreur lors de la génération du PDF.');
-					return;
-				}
-
-				// Convert response to blob
-				const blob = await response.blob();
-
-				// Create object URL and open in new window
-				const blobUrl = URL.createObjectURL(blob);
-				const newWindow = window.open(blobUrl, '_blank');
-
-				// Clean up the blob URL after a delay
-				if (newWindow) {
-					setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
-				}
-			} catch (error) {
-				onError('Erreur lors de la génération du PDF.');
-				console.error('PDF generation error:', error);
+			if (!accessToken) {
+				onError("Erreur d'authentification. Veuillez vous reconnecter.");
+				return;
 			}
+
+			// Open PDF in new tab with token as query parameter
+			const urlWithToken = `${url}&token=${encodeURIComponent(accessToken)}`;
+			window.open(urlWithToken, '_blank');
 		},
 		[session, onError],
 	);

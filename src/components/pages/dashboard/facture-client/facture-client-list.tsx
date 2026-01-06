@@ -17,7 +17,13 @@ import {
 	useDeleteFactureClientMutation,
 	useGetFactureClientListQuery,
 } from '@/store/services/factureClient';
-import { BON_DE_LIVRAISON_EDIT, FACTURE_CLIENT_ADD, FACTURE_CLIENT_EDIT, FACTURE_CLIENT_VIEW } from '@/utils/routes';
+import {
+	BON_DE_LIVRAISON_EDIT,
+	FACTURE_CLIENT_ADD,
+	FACTURE_CLIENT_EDIT,
+	FACTURE_CLIENT_VIEW,
+	FACTURE_CLIENT_PDF,
+} from '@/utils/routes';
 import type { SessionProps } from '@/types/_initTypes';
 import type { FactureClass } from '@/models/classes';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
@@ -66,24 +72,21 @@ const factureClientListConfig: DocumentListConfig<FactureClass> = {
 			label: 'Afficher Facture client avec remise',
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#1976d2',
-			urlGenerator: (id: number, companyId: number) =>
-				`${process.env.NEXT_PUBLIC_ROOT_API_URL}/facture_client/pdf/${id}/?company_id=${companyId}&type=avec_remise`,
+			urlGenerator: (id: number, companyId: number) => FACTURE_CLIENT_PDF(id, companyId, 'avec_remise'),
 		},
 		{
 			key: 'sans_remise',
 			label: 'Afficher Facture client sans remise',
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#2e7d32',
-			urlGenerator: (id: number, companyId: number) =>
-				`${process.env.NEXT_PUBLIC_ROOT_API_URL}/facture_client/pdf/${id}/?company_id=${companyId}&type=sans_remise`,
+			urlGenerator: (id: number, companyId: number) => FACTURE_CLIENT_PDF(id, companyId, 'sans_remise'),
 		},
 		{
 			key: 'avec_unite',
 			label: 'Afficher Facture client avec unité',
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#ed6c02',
-			urlGenerator: (id: number, companyId: number) =>
-				`${process.env.NEXT_PUBLIC_ROOT_API_URL}/facture_client/pdf/${id}/?company_id=${companyId}&type=avec_unite`,
+			urlGenerator: (id: number, companyId: number) => FACTURE_CLIENT_PDF(id, companyId, 'avec_unite'),
 		},
 	],
 };
@@ -108,7 +111,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 	// Extract date filter parameters from filter model
 	const getDateFilterParams = () => {
 		const params: Record<string, string> = {};
-		filterModel.items.forEach(item => {
+		filterModel.items.forEach((item) => {
 			if (item.field === 'date_facture' && item.value) {
 				const { from, to } = item.value as { from?: string; to?: string };
 				if (from) {

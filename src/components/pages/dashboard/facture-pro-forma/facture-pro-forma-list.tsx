@@ -15,6 +15,7 @@ import {
 	FACTURE_PRO_FORMA_ADD,
 	FACTURE_PRO_FORMA_EDIT,
 	FACTURE_PRO_FORMA_VIEW,
+	FACTURE_PRO_FORMA_PDF,
 } from '@/utils/routes';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import type { FactureClass } from '@/models/classes';
@@ -63,24 +64,21 @@ const factureProFormaListConfig: DocumentListConfig<FactureClass> = {
 			label: 'Afficher Facture pro forma avec remise',
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#1976d2',
-			urlGenerator: (id: number, companyId: number) =>
-				`${process.env.NEXT_PUBLIC_ROOT_API_URL}/facture_proforma/pdf/${id}/?company_id=${companyId}&type=avec_remise`,
+			urlGenerator: (id: number, companyId: number) => FACTURE_PRO_FORMA_PDF(id, companyId, 'avec_remise'),
 		},
 		{
 			key: 'sans_remise',
 			label: 'Afficher Facture pro forma sans remise',
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#2e7d32',
-			urlGenerator: (id: number, companyId: number) =>
-				`${process.env.NEXT_PUBLIC_ROOT_API_URL}/facture_proforma/pdf/${id}/?company_id=${companyId}&type=sans_remise`,
+			urlGenerator: (id: number, companyId: number) => FACTURE_PRO_FORMA_PDF(id, companyId, 'sans_remise'),
 		},
 		{
 			key: 'avec_unite',
 			label: 'Afficher Facture pro forma avec unité',
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#ed6c02',
-			urlGenerator: (id: number, companyId: number) =>
-				`${process.env.NEXT_PUBLIC_ROOT_API_URL}/facture_proforma/pdf/${id}/?company_id=${companyId}&type=avec_unite`,
+			urlGenerator: (id: number, companyId: number) => FACTURE_PRO_FORMA_PDF(id, companyId, 'avec_unite'),
 		},
 	],
 };

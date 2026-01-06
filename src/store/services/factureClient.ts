@@ -151,6 +151,15 @@ export const factureClientApi = createApi({
 			}),
 			invalidatesTags: ['FactureClient'],
 		}),
+		getPrintPdfUrl: builder.query<
+			string,
+			{ id: number; company_id: number; type: 'avec_remise' | 'sans_remise' | 'avec_unite' }
+		>({
+			queryFn: ({ id, company_id, type }) => {
+				const url = `${process.env.NEXT_PUBLIC_FACTURE_CLIENT_PDF}/${id}/?company_id=${company_id}&type=${type}`;
+				return { data: url };
+			},
+		}),
 	}),
 });
 
@@ -165,4 +174,5 @@ export const {
 	useAddFactureClientMutation,
 	useConvertFactureClientToBonDeLivraisonMutation,
 	usePatchStatutMutation,
+	useGetPrintPdfUrlQuery,
 } = factureClientApi;

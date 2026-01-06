@@ -34,7 +34,19 @@ export const reglementApi = createApi({
 				date_echeance_before?: string;
 			}
 		>({
-			query: ({ company_id, with_pagination, page, pageSize, search, facture_client, statut, date_reglement_after, date_reglement_before, date_echeance_after, date_echeance_before }) => ({
+			query: ({
+				company_id,
+				with_pagination,
+				page,
+				pageSize,
+				search,
+				facture_client,
+				statut,
+				date_reglement_after,
+				date_reglement_before,
+				date_echeance_after,
+				date_echeance_before,
+			}) => ({
 				url: process.env.NEXT_PUBLIC_REGLEMENT_LIST,
 				method: 'GET',
 				params: {
@@ -101,6 +113,12 @@ export const reglementApi = createApi({
 			}),
 			invalidatesTags: ['Reglement'],
 		}),
+		getPrintPdfUrl: builder.query<string, { id: number; company_id: number }>({
+			queryFn: ({ id, company_id }) => {
+				const url = `${process.env.NEXT_PUBLIC_REGLEMENT_PDF}/${id}/?company_id=${company_id}`;
+				return { data: url };
+			},
+		}),
 	}),
 });
 
@@ -111,4 +129,5 @@ export const {
 	useEditReglementMutation,
 	useAddReglementMutation,
 	usePatchReglementStatutMutation,
+	useGetPrintPdfUrlQuery,
 } = reglementApi;
