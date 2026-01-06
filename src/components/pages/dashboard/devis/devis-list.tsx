@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ReceiptLong as ReceiptLongIcon, ReceiptLongOutlined as ReceiptLongOutlinedIcon } from '@mui/icons-material';
+import { ReceiptLong as ReceiptLongIcon, ReceiptLongOutlined as ReceiptLongOutlinedIcon, Print as PrintIcon } from '@mui/icons-material';
 import { GridFilterModel } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import {
@@ -65,6 +65,32 @@ const devisListConfig: DocumentListConfig<DeviClass> = {
 			modalBody: 'Êtes-vous sûr de vouloir convertir ce devi en facture client ?',
 			disabled: false,
 			redirectRoute: FACTURE_CLIENT_EDIT,
+		},
+	],
+	printActions: [
+		{
+			key: 'avec_remise',
+			label: 'Afficher Devi avec remise',
+			icon: <PrintIcon fontSize="small" />,
+			iconColor: '#1976d2',
+			urlGenerator: (id: number, companyId: number) =>
+				`${process.env.NEXT_PUBLIC_ROOT_API_URL}/devi/pdf/${id}/?company_id=${companyId}&type=avec_remise`,
+		},
+		{
+			key: 'sans_remise',
+			label: 'Afficher Devi sans remise',
+			icon: <PrintIcon fontSize="small" />,
+			iconColor: '#2e7d32',
+			urlGenerator: (id: number, companyId: number) =>
+				`${process.env.NEXT_PUBLIC_ROOT_API_URL}/devi/pdf/${id}/?company_id=${companyId}&type=sans_remise`,
+		},
+		{
+			key: 'avec_unite',
+			label: 'Afficher Devi avec unité',
+			icon: <PrintIcon fontSize="small" />,
+			iconColor: '#ed6c02',
+			urlGenerator: (id: number, companyId: number) =>
+				`${process.env.NEXT_PUBLIC_ROOT_API_URL}/devi/pdf/${id}/?company_id=${companyId}&type=avec_unite`,
 		},
 	],
 };

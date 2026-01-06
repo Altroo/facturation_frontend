@@ -274,6 +274,20 @@ export interface ConvertAction {
 	redirectRoute: (id: number, companyId: number) => string;
 }
 
+/** Print action configuration */
+export interface PrintAction {
+	/** Unique key for the action */
+	key: string;
+	/** Label shown in menu */
+	label: string;
+	/** Icon component */
+	icon: React.ReactNode;
+	/** Icon color */
+	iconColor?: string;
+	/** URL generator for the PDF */
+	urlGenerator: (id: number, companyId: number) => string;
+}
+
 /** Labels configuration for document list */
 export interface DocumentListLabels {
 	/** Document type singular name (e.g., "devi", "facture client", "facture pro-forma") */
@@ -348,6 +362,8 @@ export interface DocumentListConfig<TDocument extends DocumentListClass> {
 	columns: DocumentListColumnConfig<TDocument>;
 	/** Convert actions configuration */
 	convertActions?: ConvertAction[];
+	/** Print actions configuration */
+	printActions?: PrintAction[];
 	/** Custom columns function (returns GridColDef[]) */
 	getExtraColumns?: (args: {
 		router: ReturnType<typeof import('next/navigation').useRouter>;
@@ -356,6 +372,17 @@ export interface DocumentListConfig<TDocument extends DocumentListClass> {
 }
 
 export type { DeviFactureLineFormValues, DeviLineSchemaType, TypeRemiseType, TypeFactureLivraisonDevisStatus };
+
+export interface FactureForPayment {
+	id: number;
+	numero_facture: string;
+	client_name: string;
+	date_facture: string;
+	total_ttc_apres_remise: string;
+	total_paid: string;
+	remaining_amount: string;
+	statut: string;
+}
 
 export interface FactureClientListResponseType extends PaginationResponseType<FactureClass> {
 	chiffre_affaire_total: string;

@@ -21,8 +21,10 @@ import {
 	Add as AddIcon,
 	Close as CloseIcon,
 	SwapHoriz as SwapHorizIcon,
+	Print as PrintIcon,
 } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams, GridFilterModel } from '@mui/x-data-grid';
+import { useSession } from 'next-auth/react';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
@@ -33,6 +35,7 @@ import TextButton from '@/components/htmlElements/buttons/textButton/textButton'
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
 import { CLIENTS_VIEW } from '@/utils/routes';
+import { getAccessTokenFromSession } from '@/store/session';
 import type {
 	DocumentListClass,
 	DocumentListConfig,
@@ -125,6 +128,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 		onFilterModelChange,
 	} = props;
 
+	const { data: session } = useSession();
 	const { onSuccess, onError } = useToast();
 
 	const { data, isLoading, refetch } = queryResult;
@@ -136,6 +140,8 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 	const [activeConvertAction, setActiveConvertAction] = useState<string | null>(null);
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const [menuItemId, setMenuItemId] = useState<number | null>(null);
+	const [printAnchorEl, setPrintAnchorEl] = useState<null | HTMLElement>(null);
+	const [printMenuItemId, setPrintMenuItemId] = useState<number | null>(null);
 
 	const deleteHandler = useCallback(async () => {
 		try {
@@ -189,6 +195,60 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 		},
 		[menuItemId],
 	);
+
+	const showPrintMenuCall = useCallback((e: React.MouseEvent<HTMLButtonElement, MouseEvent>, id: number) => {
+		setPrintAnchorEl(e.currentTarget);
+		setPrintMenuItemId(id);
+	}, []);
+
+	const handlePrintMenuItemClick = useCallback(
+		async (url: string) => {
+			setPrintAnchorEl(null);
+
+			try {
+				const accessToken = getAccessTokenFromSession(session ?? undefined);
+
+				if (!accessToken) {
+					onError('Erreur d\'authentification. Veuillez vous reconnecter.');
+					return;
+				}
+
+				// Fetch PDF with authentication
+				const response = await fetch(url, {
+					method: 'GET',
+					headers: {
+						Authorization: `Bearer ${accessToken}`,
+					},
+				});
+
+				if (!response.ok) {
+					onError('Erreur lors de la génération du PDF.');
+					return;
+				}
+
+				// Convert response to blob
+				const blob = await response.blob();
+
+				// Create object URL and open in new window
+				const blobUrl = URL.createObjectURL(blob);
+				const newWindow = window.open(blobUrl, '_blank');
+
+				// Clean up the blob URL after a delay
+				if (newWindow) {
+					setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+				}
+			} catch (error) {
+				onError('Erreur lors de la génération du PDF.');
+				console.error('PDF generation error:', error);
+			}
+		},
+		[session, onError],
+	);
+
+	const handlePrintMenuClose = useCallback(() => {
+		setPrintAnchorEl(null);
+		setPrintMenuItemId(null);
+	}, []);
 
 	const deleteModalActions = useMemo(
 		() => [
@@ -273,6 +333,17 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 							</IconButton>
 						</DarkTooltip>
 					)}
+					{config.printActions && config.printActions.length > 0 && (
+						<DarkTooltip title="Afficher">
+							<IconButton
+								size="small"
+								color="info"
+								onClick={(e) => showPrintMenuCall(e, (params.row as DocumentListClass).id)}
+							>
+								<PrintIcon fontSize="small" />
+							</IconButton>
+						</DarkTooltip>
+					)}
 				</>
 			);
 		},
@@ -280,9 +351,11 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 			router,
 			config.routes,
 			config.convertActions,
+			config.printActions,
 			companyId,
 			showDeleteModalCall,
 			showConvertModalCall,
+			showPrintMenuCall,
 			isAnyConvertLoading,
 			selectedId,
 		],
@@ -402,7 +475,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 			{
 				field: 'actions',
 				headerName: 'Actions',
-				width: 180,
+				width: 250,
 				sortable: false,
 				filterable: false,
 				renderCell: (params: GridRenderCellParams<TDocument>) => (
@@ -528,6 +601,30 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 					items.push(
 						<MenuItem key={action.key} disabled={action.disabled} onClick={() => handleMenuItemClick(action.key)}>
 							<ListItemIcon>{action.icon}</ListItemIcon>
+							<ListItemText>{action.label}</ListItemText>
+						</MenuItem>,
+					);
+					return items;
+				})}
+			</Menu>
+
+			<Menu
+				anchorEl={printAnchorEl}
+				open={Boolean(printAnchorEl)}
+				onClose={handlePrintMenuClose}
+				slotProps={{ paper: { elevation: 3, sx: { minWidth: 240 } } }}
+			>
+				{config.printActions?.flatMap((action, index) => {
+					const items = [];
+					if (index > 0) {
+						items.push(<Divider key={`divider-print-${action.key}`} />);
+					}
+					items.push(
+						<MenuItem
+							key={action.key}
+							onClick={() => handlePrintMenuItemClick(action.urlGenerator(printMenuItemId!, companyId))}
+						>
+							<ListItemIcon sx={{ color: action.iconColor || 'inherit' }}>{action.icon}</ListItemIcon>
 							<ListItemText>{action.label}</ListItemText>
 						</MenuItem>,
 					);

@@ -12,6 +12,7 @@ import {
 	Cancel as CancelIcon,
 	CheckCircle as CheckCircleIcon,
 	AttachMoney as AttachMoneyIcon,
+	Print as PrintIcon,
 } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams, GridFilterModel } from '@mui/x-data-grid';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
@@ -65,7 +66,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const getDateFilterParams = () => {
 		const params: Record<string, string> = {};
-		filterModel.items.forEach(item => {
+		filterModel.items.forEach((item) => {
 			if (item.field === 'date_reglement' && item.value) {
 				const { from, to } = item.value as { from?: string; to?: string };
 				if (from) {
@@ -184,6 +185,45 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const showCancelModalCall = (id: number) => {
 		setCancelTarget(id);
 		setShowCancelModal(true);
+	};
+
+	const handlePrint = async (reglementId: number) => {
+		try {
+			if (!token) {
+				onError('Erreur d\'authentification. Veuillez vous reconnecter.');
+				return;
+			}
+
+			const url = `${process.env.NEXT_PUBLIC_ROOT_API_URL}/reglement/pdf/${reglementId}/?company_id=${company_id}`;
+
+			// Fetch PDF with authentication
+			const response = await fetch(url, {
+				method: 'GET',
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			});
+
+			if (!response.ok) {
+				onError('Erreur lors de la génération du PDF.');
+				return;
+			}
+
+			// Convert response to blob
+			const blob = await response.blob();
+
+			// Create object URL and open in new window
+			const blobUrl = URL.createObjectURL(blob);
+			const newWindow = window.open(blobUrl, '_blank');
+
+			// Clean up the blob URL after a delay
+			if (newWindow) {
+				setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+			}
+		} catch (error) {
+			onError('Erreur lors de la génération du PDF.');
+			console.error('PDF generation error:', error);
+		}
 	};
 
 	const columns: GridColDef[] = [
@@ -305,7 +345,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{
 			field: 'actions',
 			headerName: 'Actions',
-			width: 200,
+			width: 250,
 			sortable: false,
 			filterable: false,
 			renderCell: (params: GridRenderCellParams<ReglementClass>) => {
@@ -313,15 +353,22 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				return (
 					<Box sx={{ display: 'flex', gap: 1 }}>
 						{(role === 'Admin' || role === 'Lecture') && (
-							<DarkTooltip title="Voir">
-								<IconButton
-									size="small"
-									color="info"
-									onClick={() => router.push(REGLEMENTS_VIEW(params.row.id, company_id))}
-								>
-									<VisibilityIcon />
-								</IconButton>
-							</DarkTooltip>
+							<>
+								<DarkTooltip title="Voir">
+									<IconButton
+										size="small"
+										color="info"
+										onClick={() => router.push(REGLEMENTS_VIEW(params.row.id, company_id))}
+									>
+										<VisibilityIcon />
+									</IconButton>
+								</DarkTooltip>
+								<DarkTooltip title="Afficher le reçu de règlement">
+									<IconButton size="small" color="success" onClick={() => handlePrint(params.row.id)}>
+										<PrintIcon />
+									</IconButton>
+								</DarkTooltip>
+							</>
 						)}
 						{role === 'Admin' && isValid && (
 							<>

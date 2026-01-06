@@ -41,11 +41,11 @@ import type { DropDownType } from '@/types/accountTypes';
 import { useAppSelector, useToast } from '@/utils/hooks';
 import { getModeReglementState, getUserCompaniesState } from '@/store/selectors';
 import { useAddReglementMutation, useEditReglementMutation, useGetReglementQuery } from '@/store/services/reglement';
-import { useGetFactureClientListQuery } from '@/store/services/factureClient';
+import { useGetFactureClientForPaymentQuery } from '@/store/services/factureClient';
 import { getLabelForKey, setFormikAutoErrors, parseNumber, formatPrice } from '@/utils/helpers';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import type { ReglementSchemaType } from '@/types/reglementTypes';
-import type { ModeReglementClass, FactureClass } from '@/models/classes';
+import type { ModeReglementClass } from '@/models/classes';
 import { reglementSchema } from '@/utils/formValidationSchemas';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
@@ -75,9 +75,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		error: dataError,
 	} = useGetReglementQuery({ id: id! }, { skip: !token || !isEditMode });
 
-	// Fetch factures for the dropdown
-	const { data: facturesData, isLoading: isFacturesLoading } = useGetFactureClientListQuery(
-		{ company_id, with_pagination: false },
+	// Fetch factures available for payment
+	const { data: facturesForPayment, isLoading: isFacturesLoading } = useGetFactureClientForPaymentQuery(
+		{ company_id },
 		{ skip: !token },
 	);
 
@@ -144,8 +144,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const error = isEditMode ? dataError || updateError : addError;
 	const axiosError = error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined;
 
-	// Factures dropdown items
-	// Backend validates that only factures with status 'Envoyé' or 'Accepté' can have règlements
+	// Factures dropdown items - showing only unpaid or partially paid
 	const factureItems: DropDownType[] = useMemo(() => {
 		const items: DropDownType[] = [];
 
@@ -157,32 +156,47 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			});
 		}
 
-		// Add factures from the list (only Envoyé or Accepté - validated by backend)
-		if (facturesData) {
-			const facturesArray: FactureClass[] = Array.isArray(facturesData)
-				? (facturesData as FactureClass[])
-				: (facturesData.results as FactureClass[]);
-
-			facturesArray
-				.filter((f) => f.statut === 'Envoyé' || f.statut === 'Accepté')
-				.forEach((f) => {
-					if (!items.some((item) => item.value === String(f.id))) {
-						items.push({
-							value: String(f.id),
-							code: `${f.numero_facture} - ${f.client_name ?? 'Client inconnu'} (${formatPrice(f.total_ttc_apres_remise)})`,
-						});
-					}
-				});
+		// Add factures from the for_payment endpoint (only unpaid/partially paid)
+		if (facturesForPayment) {
+			facturesForPayment.forEach((f) => {
+				if (!items.some((item) => item.value === String(f.id))) {
+					items.push({
+						value: String(f.id),
+						code: `${f.numero_facture} - ${f.client_name ?? 'Client inconnu'} (Reste: ${formatPrice(parseNumber(f.remaining_amount))})`,
+					});
+				}
+			});
 		}
 
 		return items;
-	}, [facturesData, isEditMode, rawData]);
+	}, [facturesForPayment, isEditMode, rawData]);
 
 	const selectedFacture = useMemo<DropDownType | null>(() => {
 		const v = formik.values.facture_client;
 		if (!v || factureItems.length === 0) return null;
 		return factureItems.find((f) => f.value === String(v)) ?? null;
 	}, [formik.values.facture_client, factureItems]);
+
+	// Get remaining amount for selected facture
+	const selectedFactureRemainingAmount = useMemo<number>(() => {
+		const v = formik.values.facture_client;
+		if (!v || !facturesForPayment) return 0;
+		const facture = facturesForPayment.find((f) => f.id === v);
+		if (!facture) return 0;
+		const parsed = parseNumber(facture.remaining_amount);
+		return parsed ?? 0;
+	}, [formik.values.facture_client, facturesForPayment]);
+
+	// Disable montant field when no facture is selected
+	const isMontantDisabled = !formik.values.facture_client || formik.values.facture_client === 0;
+
+	// Handle facture selection change - clear montant when facture is removed
+	React.useEffect(() => {
+		if (!formik.values.facture_client || formik.values.facture_client === 0) {
+			formik.setFieldValue('montant', 0);
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [formik.values.facture_client]);
 
 	// Modes Règlement dropdown items
 	const modeReglementItems: DropDownType[] = useMemo(
@@ -402,11 +416,29 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											const raw = e.target.value;
 											const parsed = parseNumber(raw);
 											if (parsed !== null && parsed < 0) return;
+											// Enforce max value as remaining amount
+											if (
+												parsed !== null &&
+												selectedFactureRemainingAmount > 0 &&
+												parsed > selectedFactureRemainingAmount
+											) {
+												formik.setFieldValue('montant', selectedFactureRemainingAmount);
+												return;
+											}
 											formik.setFieldValue('montant', parsed === null ? raw : parsed);
 										}}
 										onBlur={formik.handleBlur('montant')}
 										error={formik.touched.montant && Boolean(formik.errors.montant)}
-										helperText={formik.touched.montant ? formik.errors.montant : ''}
+										helperText={
+											formik.touched.montant
+												? formik.errors.montant
+												: isMontantDisabled
+													? 'Veuillez sélectionner une facture'
+													: selectedFactureRemainingAmount > 0
+														? `Maximum: ${formatPrice(selectedFactureRemainingAmount)}`
+														: ''
+										}
+										disabled={isMontantDisabled}
 										fullWidth={false}
 										size="small"
 										theme={inputTheme}

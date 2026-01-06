@@ -8,6 +8,7 @@ import {
 	AttachMoney as AttachMoneyIcon,
 	CheckCircle as CheckCircleIcon,
 	Cancel as CancelIcon,
+	Print as PrintIcon,
 } from '@mui/icons-material';
 import { GridFilterModel } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
@@ -57,6 +58,32 @@ const factureClientListConfig: DocumentListConfig<FactureClass> = {
 			modalBody: 'Êtes-vous sûr de vouloir convertir cette facture client en bon de livraison ?',
 			disabled: false,
 			redirectRoute: BON_DE_LIVRAISON_EDIT,
+		},
+	],
+	printActions: [
+		{
+			key: 'avec_remise',
+			label: 'Afficher Facture client avec remise',
+			icon: <PrintIcon fontSize="small" />,
+			iconColor: '#1976d2',
+			urlGenerator: (id: number, companyId: number) =>
+				`${process.env.NEXT_PUBLIC_ROOT_API_URL}/facture_client/pdf/${id}/?company_id=${companyId}&type=avec_remise`,
+		},
+		{
+			key: 'sans_remise',
+			label: 'Afficher Facture client sans remise',
+			icon: <PrintIcon fontSize="small" />,
+			iconColor: '#2e7d32',
+			urlGenerator: (id: number, companyId: number) =>
+				`${process.env.NEXT_PUBLIC_ROOT_API_URL}/facture_client/pdf/${id}/?company_id=${companyId}&type=sans_remise`,
+		},
+		{
+			key: 'avec_unite',
+			label: 'Afficher Facture client avec unité',
+			icon: <PrintIcon fontSize="small" />,
+			iconColor: '#ed6c02',
+			urlGenerator: (id: number, companyId: number) =>
+				`${process.env.NEXT_PUBLIC_ROOT_API_URL}/facture_client/pdf/${id}/?company_id=${companyId}&type=avec_unite`,
 		},
 	],
 };

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Print as PrintIcon } from '@mui/icons-material';
 import { GridFilterModel } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import { useDeleteBonDeLivraisonMutation, useGetBonDeLivraisonListQuery } from '@/store/services/bonDeLivraison';
@@ -36,6 +37,32 @@ const bonDeLivraisonListConfig: DocumentListConfig<BonDeLivraisonClass> = {
 		extraField: 'numero_bon_commande_client',
 		extraFieldHeaderName: 'N° bon commande client',
 	},
+	printActions: [
+		{
+			key: 'normal',
+			label: 'Afficher le bon de livraison',
+			icon: <PrintIcon fontSize="small" />,
+			iconColor: '#1976d2',
+			urlGenerator: (id: number, companyId: number) =>
+				`${process.env.NEXT_PUBLIC_ROOT_API_URL}/bon_de_livraison/pdf/${id}/?company_id=${companyId}&type=normal`,
+		},
+		{
+			key: 'quantity_only',
+			label: 'Afficher le bon de livraison (quantité seulement)',
+			icon: <PrintIcon fontSize="small" />,
+			iconColor: '#2e7d32',
+			urlGenerator: (id: number, companyId: number) =>
+				`${process.env.NEXT_PUBLIC_ROOT_API_URL}/bon_de_livraison/pdf/${id}/?company_id=${companyId}&type=quantity_only`,
+		},
+		{
+			key: 'avec_unite',
+			label: 'Afficher le bon de livraison avec unité',
+			icon: <PrintIcon fontSize="small" />,
+			iconColor: '#ed6c02',
+			urlGenerator: (id: number, companyId: number) =>
+				`${process.env.NEXT_PUBLIC_ROOT_API_URL}/bon_de_livraison/pdf/${id}/?company_id=${companyId}&type=avec_unite`,
+		},
+	],
 };
 
 interface FormikContentProps extends SessionProps {
