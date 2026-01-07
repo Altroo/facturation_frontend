@@ -113,12 +113,6 @@ export const reglementApi = createApi({
 			}),
 			invalidatesTags: ['Reglement'],
 		}),
-		getPrintPdfUrl: builder.query<string, { id: number; company_id: number }>({
-			queryFn: ({ id, company_id }) => {
-				const url = `${process.env.NEXT_PUBLIC_REGLEMENT_PDF}/${id}/?company_id=${company_id}`;
-				return { data: url };
-			},
-		}),
 	}),
 });
 
@@ -129,5 +123,4 @@ export const {
 	useEditReglementMutation,
 	useAddReglementMutation,
 	usePatchReglementStatutMutation,
-	useGetPrintPdfUrlQuery,
 } = reglementApi;

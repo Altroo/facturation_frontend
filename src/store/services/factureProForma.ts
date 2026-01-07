@@ -112,15 +112,6 @@ export const factureProFormaApi = createApi({
 				}
 			},
 		}),
-		getPrintPdfUrl: builder.query<
-			string,
-			{ id: number; company_id: number; type: 'avec_remise' | 'sans_remise' | 'avec_unite' }
-		>({
-			queryFn: ({ id, company_id, type }) => {
-				const url = `${process.env.NEXT_PUBLIC_FACTURE_PROFORMA_PDF}/${id}/?company_id=${company_id}&type=${type}`;
-				return { data: url };
-			},
-		}),
 	}),
 });
 
@@ -133,5 +124,4 @@ export const {
 	useAddFactureProFormaMutation,
 	usePatchStatutMutation,
 	useConvertFactureProFormaToFactureMutation,
-	useGetPrintPdfUrlQuery,
 } = factureProFormaApi;

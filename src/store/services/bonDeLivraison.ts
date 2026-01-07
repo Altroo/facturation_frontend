@@ -124,15 +124,6 @@ export const bonDeLivraisonApi = createApi({
 			}),
 			invalidatesTags: ['BonDeLivraison'],
 		}),
-		getPrintPdfUrl: builder.query<
-			string,
-			{ id: number; company_id: number; type: 'normal' | 'quantity_only' | 'avec_unite' }
-		>({
-			queryFn: ({ id, company_id, type }) => {
-				const url = `${process.env.NEXT_PUBLIC_BON_DE_LIVRAISON_PDF}/${id}/?company_id=${company_id}&type=${type}`;
-				return { data: url };
-			},
-		}),
 	}),
 });
 
@@ -145,5 +136,4 @@ export const {
 	useGetBonDeLivraisonQuery,
 	useAddBonDeLivraisonMutation,
 	usePatchStatutMutation,
-	useGetPrintPdfUrlQuery,
 } = bonDeLivraisonApi;
