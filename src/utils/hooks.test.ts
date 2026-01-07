@@ -87,3 +87,31 @@ describe('useToast', () => {
 		expect(screen.getByTestId('has-hide').textContent).toBe('function');
 	});
 });
+
+describe('usePermission', () => {
+	// eslint-disable-next-line @typescript-eslint/no-require-imports
+	const { renderHook } = require('@testing-library/react');
+
+	it('returns is_staff from profil state', () => {
+		jest.doMock('@/store/selectors', () => ({
+			getProfilState: () => ({ is_staff: true }),
+		}));
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		const { usePermission } = require('./hooks');
+		const { result } = renderHook(() => usePermission());
+		expect(result.current.is_staff).toBe(true);
+		jest.dontMock('@/store/selectors');
+	});
+});
+
+describe('useIsClient', () => {
+	// eslint-disable-next-line @typescript-eslint/no-require-imports
+	const { renderHook } = require('@testing-library/react');
+	// eslint-disable-next-line @typescript-eslint/no-require-imports
+	const { useIsClient } = require('./hooks');
+
+	it('returns true on client side', () => {
+		const { result } = renderHook(() => useIsClient());
+		expect(result.current).toBe(true);
+	});
+});

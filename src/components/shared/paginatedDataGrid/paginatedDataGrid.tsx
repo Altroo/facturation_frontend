@@ -1,9 +1,9 @@
 'use client';
 
-import React, { Dispatch, useState, SetStateAction } from 'react';
-import { Box, ThemeProvider, Stack } from '@mui/material';
-import { DataGrid, GridSlotProps } from '@mui/x-data-grid';
+import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
+import { Box, Stack, ThemeProvider } from '@mui/material';
 import type { GridColDef, GridFilterModel } from '@mui/x-data-grid';
+import { DataGrid, GridSlotProps } from '@mui/x-data-grid';
 import { frFR } from '@mui/x-data-grid/locales';
 import { getDefaultTheme } from '@/utils/themes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
@@ -44,17 +44,32 @@ const PaginatedDataGrid = <T,>({
 	const [internalFilterModel, setInternalFilterModel] = useState<GridFilterModel>({
 		items: [],
 	});
+	const pendingFilterUpdate = useRef<GridFilterModel | null>(null);
 
 	const filterModel = externalFilterModel ?? internalFilterModel;
+
+	// Handle pending filter updates in useEffect to avoid setState during render
+	useEffect(() => {
+		if (pendingFilterUpdate.current) {
+			const update = pendingFilterUpdate.current;
+			pendingFilterUpdate.current = null;
+
+			if (onFilterModelChange) {
+				onFilterModelChange(update);
+			} else {
+				setInternalFilterModel(update);
+			}
+		}
+	}, [onFilterModelChange]);
 
 	// Extract date filter parameters from filter model
 	const extractDateFilterParams = () => {
 		const params: Record<string, string> = {};
-		filterModel.items.forEach(item => {
+		filterModel.items.forEach((item) => {
 			if (item.value && typeof item.value === 'object' && 'from' in item.value) {
 				const { from, to } = item.value as { from?: string; to?: string };
 				const fieldName = item.field;
-				
+
 				if (from) {
 					params[`${fieldName}_after`] = from;
 				}
@@ -85,17 +100,11 @@ const PaginatedDataGrid = <T,>({
 		// Update search term for server-side search (from quickFilter only)
 		setSearchTerm(quickFilterValue);
 
-		const updatedModel = {
+		// Store pending update to be applied in useEffect
+		pendingFilterUpdate.current = {
 			items: model.items,
 			// Don't pass quickFilterValues to avoid client-side quickFilter
 		};
-
-		// Keep only column filters (items), remove quickFilter for client-side
-		if (onFilterModelChange) {
-			onFilterModelChange(updatedModel);
-		} else {
-			setInternalFilterModel(updatedModel);
-		}
 	};
 
 	return (

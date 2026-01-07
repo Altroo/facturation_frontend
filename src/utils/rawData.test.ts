@@ -3,6 +3,7 @@ import {
 	nbrEmployeItemsList,
 	civiliteItemsList,
 	devisFactureStatusItemsList,
+	bonDeLivraisonStatusItemsList,
 	remiseTypeItemsList,
 } from './rawData';
 
@@ -97,6 +98,36 @@ describe('items lists', () => {
 				expect(typeof it.value).toBe('string');
 				expect(it.value.length).toBeGreaterThan(0);
 			}
+		});
+	});
+
+	describe('bonDeLivraisonStatusItemsList', () => {
+		it('includes all devis/facture statuses plus Facturé status', () => {
+			const expected = [
+				{ code: '', value: '' },
+				{ code: 'Brouillon', value: 'Brouillon' },
+				{ code: 'Envoyé', value: 'Envoyé' },
+				{ code: 'Accepté', value: 'Accepté' },
+				{ code: 'Refusé', value: 'Refusé' },
+				{ code: 'Annulé', value: 'Annulé' },
+				{ code: 'Expiré', value: 'Expiré' },
+				{ code: 'Facturé', value: 'Facturé' },
+			];
+
+			expect(bonDeLivraisonStatusItemsList).toEqual(expected);
+		});
+
+		it('includes Facturé status not present in devisFactureStatusItemsList', () => {
+			const factureCode = bonDeLivraisonStatusItemsList.find((item) => item.code === 'Facturé');
+			expect(factureCode).toBeDefined();
+			expect(factureCode?.value).toBe('Facturé');
+
+			const notInDevis = devisFactureStatusItemsList.find((item) => item.code === 'Facturé');
+			expect(notInDevis).toBeUndefined();
+		});
+
+		it('first item is the empty placeholder', () => {
+			expect(bonDeLivraisonStatusItemsList[0]).toEqual({ code: '', value: '' });
 		});
 	});
 

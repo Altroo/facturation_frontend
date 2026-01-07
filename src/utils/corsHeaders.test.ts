@@ -62,4 +62,23 @@ describe('CORS headers in development', () => {
 		expect(headers.get('Access-Control-Allow-Credentials')).toBe(baseHeaders['Access-Control-Allow-Credentials']);
 		expect(await updatedResponse.text()).toBe('Hello');
 	});
+
+	test('getCorsHeaders with null origin in development still returns wildcard', () => {
+		const headers = getCorsHeaders(null) as Record<string, string>;
+		expect(headers['Access-Control-Allow-Origin']).toBe('*');
+		expect(headers['Access-Control-Allow-Methods']).toBe(baseHeaders['Access-Control-Allow-Methods']);
+	});
+
+	test('addCorsHeaders preserves response body and status', async () => {
+		const originalResponse = new Response('Test Body', {
+			status: 201,
+			statusText: 'Created',
+			headers: { 'Content-Type': 'application/json' },
+		});
+
+		const updatedResponse = addCorsHeaders(originalResponse, 'https://example.com');
+		expect(updatedResponse.status).toBe(201);
+		expect(updatedResponse.statusText).toBe('Created');
+		expect(await updatedResponse.text()).toBe('Test Body');
+	});
 });

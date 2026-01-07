@@ -41,4 +41,30 @@ describe('ApiAlert', () => {
 		expect(message).toBeInTheDocument();
 		expect(message).toHaveTextContent('Une erreur est survenue. Veuillez réessayer plus tard.');
 	});
+
+	it('handles errorDetails with non-array string values', () => {
+		const errorDetails = { field1: 'Error message 1', field2: 'Error message 2' } as unknown as Record<
+			string,
+			string[]
+		>;
+
+		render(<ApiAlert errorDetails={errorDetails} />);
+
+		const alert = screen.getByRole('alert');
+		expect(alert).toHaveTextContent(/field1/);
+		expect(alert).toHaveTextContent(/Error message 1/);
+	});
+
+	it('handles errorDetails with mixed array and object values', () => {
+		const errorDetails: Record<string, string[]> = {
+			username: ['Username is required', 'Username must be unique'],
+		};
+
+		render(<ApiAlert errorDetails={errorDetails} />);
+
+		const alert = screen.getByRole('alert');
+		expect(alert).toHaveTextContent(/username/);
+		expect(alert).toHaveTextContent(/Username is required/);
+		expect(alert).toHaveTextContent(/Username must be unique/);
+	});
 });

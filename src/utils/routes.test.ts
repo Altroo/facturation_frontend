@@ -208,4 +208,102 @@ describe('routes constants', () => {
 
 		expect(FACTURE_CLIENT_UNPAID).toBe(`${SITE_ROOT}dashboard/facture-client/unpaid`);
 	});
+
+	it('exports reglement routes and functions', () => {
+		const {
+			SITE_ROOT,
+			REGLEMENTS_LIST,
+			REGLEMENTS_ADD,
+			REGLEMENTS_VIEW,
+			REGLEMENTS_EDIT,
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
+		} = require('./routes');
+
+		expect(REGLEMENTS_LIST).toBe(`${SITE_ROOT}dashboard/reglements`);
+		expect(typeof REGLEMENTS_ADD).toBe('function');
+		expect(REGLEMENTS_ADD(42)).toBe(`${SITE_ROOT}dashboard/reglements/new/?company_id=42`);
+		expect(REGLEMENTS_ADD(42, 10)).toBe(
+			`${SITE_ROOT}dashboard/reglements/new/?company_id=42&facture_client_id=10`
+		);
+
+		expect(typeof REGLEMENTS_VIEW).toBe('function');
+		expect(typeof REGLEMENTS_EDIT).toBe('function');
+
+		expect(REGLEMENTS_VIEW(5, 99)).toBe(`${SITE_ROOT}dashboard/reglements/5/?company_id=99`);
+		expect(REGLEMENTS_EDIT(7, 123)).toBe(`${SITE_ROOT}dashboard/reglements/7/edit/?company_id=123`);
+	});
+
+	describe('PDF routes', () => {
+		const ORIG_API_URL = process.env.NEXT_PUBLIC_ROOT_API_URL;
+
+		beforeEach(() => {
+			process.env.NEXT_PUBLIC_ROOT_API_URL = 'https://api.example.com';
+			jest.resetModules();
+		});
+
+		afterEach(() => {
+			process.env.NEXT_PUBLIC_ROOT_API_URL = ORIG_API_URL;
+			jest.resetModules();
+		});
+
+		it('exports devis PDF route function', () => {
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
+			const { DEVIS_PDF } = require('./routes');
+
+			expect(typeof DEVIS_PDF).toBe('function');
+			expect(DEVIS_PDF(5, 99, 'avec_remise')).toBe(
+				'https://api.example.com/devi/pdf/5/?company_id=99&type=avec_remise'
+			);
+			expect(DEVIS_PDF(10, 50, 'sans_remise')).toBe(
+				'https://api.example.com/devi/pdf/10/?company_id=50&type=sans_remise'
+			);
+			expect(DEVIS_PDF(15, 75, 'avec_unite')).toBe(
+				'https://api.example.com/devi/pdf/15/?company_id=75&type=avec_unite'
+			);
+		});
+
+		it('exports facture client PDF route function', () => {
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
+			const { FACTURE_CLIENT_PDF } = require('./routes');
+
+			expect(typeof FACTURE_CLIENT_PDF).toBe('function');
+			expect(FACTURE_CLIENT_PDF(5, 99, 'avec_remise')).toBe(
+				'https://api.example.com/facture_client/pdf/5/?company_id=99&type=avec_remise'
+			);
+		});
+
+		it('exports facture pro forma PDF route function', () => {
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
+			const { FACTURE_PRO_FORMA_PDF } = require('./routes');
+
+			expect(typeof FACTURE_PRO_FORMA_PDF).toBe('function');
+			expect(FACTURE_PRO_FORMA_PDF(5, 99, 'avec_remise')).toBe(
+				'https://api.example.com/facture_proforma/pdf/5/?company_id=99&type=avec_remise'
+			);
+		});
+
+		it('exports bon de livraison PDF route function', () => {
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
+			const { BON_DE_LIVRAISON_PDF } = require('./routes');
+
+			expect(typeof BON_DE_LIVRAISON_PDF).toBe('function');
+			expect(BON_DE_LIVRAISON_PDF(5, 99, 'normal')).toBe(
+				'https://api.example.com/bon_de_livraison/pdf/5/?company_id=99&type=normal'
+			);
+			expect(BON_DE_LIVRAISON_PDF(10, 50, 'quantity_only')).toBe(
+				'https://api.example.com/bon_de_livraison/pdf/10/?company_id=50&type=quantity_only'
+			);
+			expect(BON_DE_LIVRAISON_PDF(15, 75, 'avec_unite')).toBe(
+				'https://api.example.com/bon_de_livraison/pdf/15/?company_id=75&type=avec_unite'
+			);
+		});
+
+		it('exports reglement PDF route function', () => {
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
+			const { REGLEMENT_PDF } = require('./routes');
+
+			expect(typeof REGLEMENT_PDF).toBe('function');
+			expect(REGLEMENT_PDF(5, 99)).toBe('https://api.example.com/reglement/pdf/5/?company_id=99');
+		});
+	});
 });
