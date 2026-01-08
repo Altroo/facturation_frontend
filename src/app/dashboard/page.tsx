@@ -2,11 +2,11 @@ import { redirect } from 'next/navigation';
 import { type Metadata } from 'next';
 import { auth } from '@/auth';
 import { AUTH_LOGIN } from '@/utils/routes';
-import DashboardClient from '@/components/pages/dashboard/dashboard';
+import DashboardClient from '@/components/pages/dashboard/dashboard-home/dashboard-view';
 
 export const metadata: Metadata = {
 	title: 'Tableau de bord',
-	description: "Vue d'ensemble du tableau de bord",
+	description: "Vue d'ensemble du tableau de bord avec statistiques et graphiques",
 };
 
 const DashboardPage = async () => {
