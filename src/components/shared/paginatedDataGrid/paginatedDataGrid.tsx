@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
+import React, { Dispatch, SetStateAction, useState } from 'react';
 import { Box, Stack, ThemeProvider } from '@mui/material';
 import type { GridColDef, GridFilterModel } from '@mui/x-data-grid';
 import { DataGrid, GridSlotProps } from '@mui/x-data-grid';
@@ -44,23 +44,8 @@ const PaginatedDataGrid = <T,>({
 	const [internalFilterModel, setInternalFilterModel] = useState<GridFilterModel>({
 		items: [],
 	});
-	const pendingFilterUpdate = useRef<GridFilterModel | null>(null);
 
 	const filterModel = externalFilterModel ?? internalFilterModel;
-
-	// Handle pending filter updates in useEffect to avoid setState during render
-	useEffect(() => {
-		if (pendingFilterUpdate.current) {
-			const update = pendingFilterUpdate.current;
-			pendingFilterUpdate.current = null;
-
-			if (onFilterModelChange) {
-				onFilterModelChange(update);
-			} else {
-				setInternalFilterModel(update);
-			}
-		}
-	}, [onFilterModelChange]);
 
 	// Extract date filter parameters from filter model
 	const extractDateFilterParams = () => {
@@ -100,11 +85,17 @@ const PaginatedDataGrid = <T,>({
 		// Update search term for server-side search (from quickFilter only)
 		setSearchTerm(quickFilterValue);
 
-		// Store pending update to be applied in useEffect
-		pendingFilterUpdate.current = {
+		// Apply filter model update
+		const updatedModel: GridFilterModel = {
 			items: model.items,
 			// Don't pass quickFilterValues to avoid client-side quickFilter
 		};
+		
+		if (onFilterModelChange) {
+			onFilterModelChange(updatedModel);
+		} else {
+			setInternalFilterModel(updatedModel);
+		}
 	};
 
 	return (

@@ -11,7 +11,7 @@ import { factureClientApi } from '@/store/services/factureClient';
 
 export const factureProFormaApi = createApi({
 	reducerPath: 'factureProFormaApi',
-	tagTypes: ['FactureProForma'],
+	tagTypes: ['FactureProForma', 'Dashboard'],
 	baseQuery: axiosBaseQuery((api) =>
 		isAuthenticatedInstance(
 			() => getInitStateToken(api.getState() as RootState),
@@ -65,7 +65,7 @@ export const factureProFormaApi = createApi({
 				url: `${process.env.NEXT_PUBLIC_FACTURE_PROFORMA_ROOT}/${id}/`,
 				method: 'DELETE',
 			}),
-			invalidatesTags: ['FactureProForma'],
+			invalidatesTags: ['FactureProForma', 'Dashboard'],
 		}),
 		editFactureProForma: builder.mutation<
 			SuccessResponseType<FactureClass>,
@@ -76,7 +76,7 @@ export const factureProFormaApi = createApi({
 				method: 'PUT',
 				data,
 			}),
-			invalidatesTags: ['FactureProForma'],
+			invalidatesTags: ['FactureProForma', 'Dashboard'],
 		}),
 		addFactureProForma: builder.mutation<FactureClass, { data: Partial<FactureClass> }>({
 			query: ({ data }) => ({
@@ -84,7 +84,7 @@ export const factureProFormaApi = createApi({
 				method: 'POST',
 				data,
 			}),
-			invalidatesTags: ['FactureProForma'],
+			invalidatesTags: ['FactureProForma', 'Dashboard'],
 		}),
 		patchStatut: builder.mutation<
 			SuccessResponseType<FactureClass>,
@@ -95,14 +95,14 @@ export const factureProFormaApi = createApi({
 				method: 'PATCH',
 				data,
 			}),
-			invalidatesTags: ['FactureProForma'],
+			invalidatesTags: ['FactureProForma', 'Dashboard'],
 		}),
 		convertFactureProFormaToFacture: builder.mutation<{ id: number }, { id: number }>({
 			query: ({ id }) => ({
 				url: `${process.env.NEXT_PUBLIC_FACTURE_PROFORMAT_CONVERT_TO_FACTURE_CLIENT}${id}/`,
 				method: 'POST',
 			}),
-			invalidatesTags: ['FactureProForma'],
+			invalidatesTags: ['FactureProForma', 'Dashboard'],
 			async onQueryStarted(arg, { dispatch, queryFulfilled }) {
 				try {
 					await queryFulfilled;

@@ -9,7 +9,7 @@ import { initToken } from '@/store/slices/_initSlice';
 
 export const clientApi = createApi({
 	reducerPath: 'clientApi',
-	tagTypes: ['Client'],
+	tagTypes: ['Client', 'Dashboard'],
 	baseQuery: axiosBaseQuery((api) =>
 		isAuthenticatedInstance(
 			() => getInitStateToken(api.getState() as RootState),
@@ -66,7 +66,7 @@ export const clientApi = createApi({
 				url: `${process.env.NEXT_PUBLIC_CLIENT_ROOT}/${id}/`,
 				method: 'DELETE',
 			}),
-			invalidatesTags: ['Client'],
+			invalidatesTags: ['Client', 'Dashboard'],
 		}),
 		editClient: builder.mutation<SuccessResponseType<ClientClass>, { id: number; data: Partial<ClientClass> }>({
 			query: ({ id, data }) => ({
@@ -74,7 +74,7 @@ export const clientApi = createApi({
 				method: 'PUT',
 				data,
 			}),
-			invalidatesTags: ['Client'],
+			invalidatesTags: ['Client', 'Dashboard'],
 		}),
 		addClient: builder.mutation<SuccessResponseType<ClientClass>, { data: Partial<ClientClass> }>({
 			query: ({ data }) => ({
@@ -82,7 +82,7 @@ export const clientApi = createApi({
 				method: 'POST',
 				data,
 			}),
-			invalidatesTags: ['Client'],
+			invalidatesTags: ['Client', 'Dashboard'],
 		}),
 		patchArchive: builder.mutation<SuccessResponseType<ClientClass>, { id: number; data: { archived: boolean } }>({
 			query: ({ id, data }) => ({
@@ -90,7 +90,7 @@ export const clientApi = createApi({
 				method: 'PATCH',
 				data,
 			}),
-			invalidatesTags: ['Client'],
+			invalidatesTags: ['Client', 'Dashboard'],
 		}),
 	}),
 });

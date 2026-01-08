@@ -10,7 +10,7 @@ import type { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
 
 export const bonDeLivraisonApi = createApi({
 	reducerPath: 'bonDeLivraisonApi',
-	tagTypes: ['BonDeLivraison'],
+	tagTypes: ['BonDeLivraison', 'Dashboard'],
 	baseQuery: axiosBaseQuery((api) =>
 		isAuthenticatedInstance(
 			() => getInitStateToken(api.getState() as RootState),
@@ -92,7 +92,7 @@ export const bonDeLivraisonApi = createApi({
 				url: `${process.env.NEXT_PUBLIC_BON_DE_LIVRAISON_ROOT}/${id}/`,
 				method: 'DELETE',
 			}),
-			invalidatesTags: ['BonDeLivraison'],
+			invalidatesTags: ['BonDeLivraison', 'Dashboard'],
 		}),
 		editBonDeLivraison: builder.mutation<
 			SuccessResponseType<BonDeLivraisonClass>,
@@ -103,7 +103,7 @@ export const bonDeLivraisonApi = createApi({
 				method: 'PUT',
 				data,
 			}),
-			invalidatesTags: ['BonDeLivraison'],
+			invalidatesTags: ['BonDeLivraison', 'Dashboard'],
 		}),
 		addBonDeLivraison: builder.mutation<BonDeLivraisonClass, { data: Partial<BonDeLivraisonClass> }>({
 			query: ({ data }) => ({
@@ -111,7 +111,7 @@ export const bonDeLivraisonApi = createApi({
 				method: 'POST',
 				data,
 			}),
-			invalidatesTags: ['BonDeLivraison'],
+			invalidatesTags: ['BonDeLivraison', 'Dashboard'],
 		}),
 		patchStatut: builder.mutation<
 			SuccessResponseType<BonDeLivraisonClass>,
@@ -122,7 +122,7 @@ export const bonDeLivraisonApi = createApi({
 				method: 'PATCH',
 				data,
 			}),
-			invalidatesTags: ['BonDeLivraison'],
+			invalidatesTags: ['BonDeLivraison', 'Dashboard'],
 		}),
 	}),
 });

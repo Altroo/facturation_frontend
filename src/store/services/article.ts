@@ -9,7 +9,7 @@ import { initToken } from '@/store/slices/_initSlice';
 
 export const articleApi = createApi({
 	reducerPath: 'articleApi',
-	tagTypes: ['Article'],
+	tagTypes: ['Article', 'Dashboard'],
 	baseQuery: axiosBaseQuery((api) =>
 		isAuthenticatedInstance(
 			() => getInitStateToken(api.getState() as RootState),
@@ -66,7 +66,7 @@ export const articleApi = createApi({
 				url: `${process.env.NEXT_PUBLIC_ARTICLE_ROOT}/${id}/`,
 				method: 'DELETE',
 			}),
-			invalidatesTags: ['Article'],
+			invalidatesTags: ['Article', 'Dashboard'],
 		}),
 		editArticle: builder.mutation<SuccessResponseType<ArticleClass>, { id: number; data: Partial<ArticleClass> }>({
 			query: ({ id, data }) => ({
@@ -74,7 +74,7 @@ export const articleApi = createApi({
 				method: 'PUT',
 				data,
 			}),
-			invalidatesTags: ['Article'],
+			invalidatesTags: ['Article', 'Dashboard'],
 		}),
 		addArticle: builder.mutation<SuccessResponseType<ArticleClass>, { data: Partial<ArticleClass> }>({
 			query: ({ data }) => ({
@@ -82,7 +82,7 @@ export const articleApi = createApi({
 				method: 'POST',
 				data,
 			}),
-			invalidatesTags: ['Article'],
+			invalidatesTags: ['Article', 'Dashboard'],
 		}),
 		patchArchive: builder.mutation<SuccessResponseType<ArticleClass>, { id: number; data: { archived: boolean } }>({
 			query: ({ id, data }) => ({
@@ -90,7 +90,7 @@ export const articleApi = createApi({
 				method: 'PATCH',
 				data,
 			}),
-			invalidatesTags: ['Article'],
+			invalidatesTags: ['Article', 'Dashboard'],
 		}),
 	}),
 });

@@ -12,7 +12,7 @@ import { bonDeLivraisonApi } from '@/store/services/bonDeLivraison';
 
 export const factureClientApi = createApi({
 	reducerPath: 'factureClientApi',
-	tagTypes: ['FactureClient'],
+	tagTypes: ['FactureClient', 'Dashboard'],
 	baseQuery: axiosBaseQuery((api) =>
 		isAuthenticatedInstance(
 			() => getInitStateToken(api.getState() as RootState),
@@ -104,7 +104,7 @@ export const factureClientApi = createApi({
 				url: `${process.env.NEXT_PUBLIC_FACTURE_CLIENT_ROOT}/${id}/`,
 				method: 'DELETE',
 			}),
-			invalidatesTags: ['FactureClient'],
+			invalidatesTags: ['FactureClient', 'Dashboard'],
 		}),
 		editFactureClient: builder.mutation<SuccessResponseType<FactureClass>, { id: number; data: Partial<FactureClass> }>(
 			{
@@ -113,7 +113,7 @@ export const factureClientApi = createApi({
 					method: 'PUT',
 					data,
 				}),
-				invalidatesTags: ['FactureClient'],
+				invalidatesTags: ['FactureClient', 'Dashboard'],
 			},
 		),
 		addFactureClient: builder.mutation<FactureClass, { data: Partial<FactureClass> }>({
@@ -122,14 +122,14 @@ export const factureClientApi = createApi({
 				method: 'POST',
 				data,
 			}),
-			invalidatesTags: ['FactureClient'],
+			invalidatesTags: ['FactureClient', 'Dashboard'],
 		}),
 		convertFactureClientToBonDeLivraison: builder.mutation<{ id: number }, { id: number }>({
 			query: ({ id }) => ({
 				url: `${process.env.NEXT_PUBLIC_FACTURE_CLIENT_CONVERT_TO_BON_DE_LIVRAISON}${id}/`,
 				method: 'POST',
 			}),
-			invalidatesTags: ['FactureClient'],
+			invalidatesTags: ['FactureClient', 'Dashboard'],
 			async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
 				try {
 					await queryFulfilled;
@@ -149,7 +149,7 @@ export const factureClientApi = createApi({
 				method: 'PATCH',
 				data,
 			}),
-			invalidatesTags: ['FactureClient'],
+			invalidatesTags: ['FactureClient', 'Dashboard'],
 		}),
 	}),
 });

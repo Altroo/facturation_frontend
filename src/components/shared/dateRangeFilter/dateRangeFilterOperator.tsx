@@ -20,14 +20,26 @@ const DateRangeFilterInput: React.FC<GridFilterInputValueProps> = (props) => {
 
 	const handleFromChange = (date: Date | null) => {
 		setFromDate(date);
+		let effectiveToDate = toDate;
+		
+		// If new from date is after to date, adjust to date
+		if (date && toDate && date > toDate) {
+			effectiveToDate = date;
+			setToDate(date);
+		}
+		
 		const newValue: DateRangeValue = {
 			from: date ? date.toISOString().split('T')[0] : undefined,
-			to: toDate ? toDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+			to: effectiveToDate ? effectiveToDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
 		};
 		applyValue({ ...item, value: newValue });
 	};
 
 	const handleToChange = (date: Date | null) => {
+		// Only allow to date >= from date
+		if (date && fromDate && date < fromDate) {
+			return; // Don't allow invalid selection
+		}
 		setToDate(date);
 		const newValue: DateRangeValue = {
 			from: fromDate ? fromDate.toISOString().split('T')[0] : undefined,
@@ -43,6 +55,7 @@ const DateRangeFilterInput: React.FC<GridFilterInputValueProps> = (props) => {
 					label="De"
 					value={fromDate}
 					onChange={handleFromChange}
+					maxDate={toDate || undefined}
 					slotProps={{
 						textField: {
 							size: 'small',

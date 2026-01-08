@@ -10,7 +10,7 @@ import type { ReglementListResponseType, ReglementStatutType } from '@/types/reg
 
 export const reglementApi = createApi({
 	reducerPath: 'reglementApi',
-	tagTypes: ['Reglement'],
+	tagTypes: ['Reglement', 'Dashboard'],
 	baseQuery: axiosBaseQuery((api) =>
 		isAuthenticatedInstance(
 			() => getInitStateToken(api.getState() as RootState),
@@ -79,7 +79,7 @@ export const reglementApi = createApi({
 				url: `${process.env.NEXT_PUBLIC_REGLEMENT_ROOT}/${id}/`,
 				method: 'DELETE',
 			}),
-			invalidatesTags: ['Reglement'],
+			invalidatesTags: ['Reglement', 'Dashboard'],
 		}),
 
 		editReglement: builder.mutation<SuccessResponseType<ReglementClass>, { id: number; data: Partial<ReglementClass> }>(
@@ -89,7 +89,7 @@ export const reglementApi = createApi({
 					method: 'PUT',
 					data,
 				}),
-				invalidatesTags: ['Reglement'],
+				invalidatesTags: ['Reglement', 'Dashboard'],
 			},
 		),
 
@@ -99,7 +99,7 @@ export const reglementApi = createApi({
 				method: 'POST',
 				data,
 			}),
-			invalidatesTags: ['Reglement'],
+			invalidatesTags: ['Reglement', 'Dashboard'],
 		}),
 
 		patchReglementStatut: builder.mutation<
@@ -111,7 +111,7 @@ export const reglementApi = createApi({
 				method: 'PATCH',
 				data,
 			}),
-			invalidatesTags: ['Reglement'],
+			invalidatesTags: ['Reglement', 'Dashboard'],
 		}),
 	}),
 });

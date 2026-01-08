@@ -12,7 +12,7 @@ import { factureClientApi } from '@/store/services/factureClient';
 
 export const deviApi = createApi({
 	reducerPath: 'deviApi',
-	tagTypes: ['Devi'],
+	tagTypes: ['Devi', 'Dashboard'],
 	baseQuery: axiosBaseQuery((api) =>
 		isAuthenticatedInstance(
 			() => getInitStateToken(api.getState() as RootState),
@@ -67,7 +67,7 @@ export const deviApi = createApi({
 				url: `${process.env.NEXT_PUBLIC_DEVIS_ROOT}/${id}/`,
 				method: 'DELETE',
 			}),
-			invalidatesTags: ['Devi'],
+			invalidatesTags: ['Devi', 'Dashboard'],
 		}),
 		editDevi: builder.mutation<SuccessResponseType<DeviClass>, { id: number; data: Partial<DeviClass> }>({
 			query: ({ id, data }) => ({
@@ -75,7 +75,7 @@ export const deviApi = createApi({
 				method: 'PUT',
 				data,
 			}),
-			invalidatesTags: ['Devi'],
+			invalidatesTags: ['Devi', 'Dashboard'],
 		}),
 		addDevi: builder.mutation<DeviClass, { data: Partial<DeviClass> }>({
 			query: ({ data }) => ({
@@ -83,14 +83,14 @@ export const deviApi = createApi({
 				method: 'POST',
 				data,
 			}),
-			invalidatesTags: ['Devi'],
+			invalidatesTags: ['Devi', 'Dashboard'],
 		}),
 		convertDeviToFactureProForma: builder.mutation<{ id: number }, { id: number }>({
 			query: ({ id }) => ({
 				url: `${process.env.NEXT_PUBLIC_DEVIS_CONVERT_TO_FACTURE_PRO_FORMA}${id}/`,
 				method: 'POST',
 			}),
-			invalidatesTags: ['Devi'],
+			invalidatesTags: ['Devi', 'Dashboard'],
 			async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
 				try {
 					await queryFulfilled;
@@ -106,7 +106,7 @@ export const deviApi = createApi({
 				url: `${process.env.NEXT_PUBLIC_DEVIS_CONVERT_TO_FACTURE_CLIENT}${id}/`,
 				method: 'POST',
 			}),
-			invalidatesTags: ['Devi'],
+			invalidatesTags: ['Devi', 'Dashboard'],
 			async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
 				try {
 					await queryFulfilled;
@@ -125,7 +125,7 @@ export const deviApi = createApi({
 				method: 'PATCH',
 				data,
 			}),
-			invalidatesTags: ['Devi'],
+			invalidatesTags: ['Devi', 'Dashboard'],
 		}),
 	}),
 });

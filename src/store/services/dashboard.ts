@@ -9,6 +9,7 @@ import { initToken } from '@/store/slices/_initSlice';
 export interface DateFilterParams {
 	date_from?: string;
 	date_to?: string;
+	company_id?: number;
 }
 
 // Dashboard data types
@@ -167,9 +168,10 @@ const buildDateQueryString = (params?: DateFilterParams): string => {
 	const searchParams = new URLSearchParams();
 	if (params.date_from) searchParams.append('date_from', params.date_from);
 	if (params.date_to) searchParams.append('date_to', params.date_to);
+	if (params.company_id) searchParams.append('company_id', params.company_id.toString());
 	const queryString = searchParams.toString();
 	return queryString ? `?${queryString}` : '';
-};
+}
 
 export const dashboardApi = createApi({
 	reducerPath: 'dashboardApi',
