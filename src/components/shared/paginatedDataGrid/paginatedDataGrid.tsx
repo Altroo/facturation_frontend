@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Dispatch, SetStateAction, useState } from 'react';
+import React, { Dispatch, SetStateAction, useState, useEffect } from 'react';
 import { Box, Stack, ThemeProvider } from '@mui/material';
 import type { GridColDef, GridFilterModel } from '@mui/x-data-grid';
 import { DataGrid, GridSlotProps } from '@mui/x-data-grid';
@@ -44,6 +44,13 @@ const PaginatedDataGrid = <T,>({
 	const [internalFilterModel, setInternalFilterModel] = useState<GridFilterModel>({
 		items: [],
 	});
+
+	// Sync internal filter model when external filter model changes
+	useEffect(() => {
+		if (externalFilterModel && !onFilterModelChange) {
+			setInternalFilterModel(externalFilterModel);
+		}
+	}, [externalFilterModel, onFilterModelChange]);
 
 	const filterModel = externalFilterModel ?? internalFilterModel;
 
@@ -93,7 +100,9 @@ const PaginatedDataGrid = <T,>({
 		
 		if (onFilterModelChange) {
 			onFilterModelChange(updatedModel);
-		} else {
+		} else if (!externalFilterModel) {
+			// Only update internal state if we're not using external filterModel
+			// This prevents "Cannot update during render" warnings when external filterModel is provided
 			setInternalFilterModel(updatedModel);
 		}
 	};
