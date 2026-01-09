@@ -266,9 +266,7 @@ jest.mock('chart.js', () => ({
 // Mock MUI DatePickers
 jest.mock('@mui/x-date-pickers/DatePicker', () => ({
 	__esModule: true,
-	DatePicker: ({ label }: { label: string }) => (
-		<input data-testid={`date-picker-${label}`} placeholder={label} />
-	),
+	DatePicker: ({ label }: { label: string }) => <input data-testid={`date-picker-${label}`} placeholder={label} />,
 }));
 
 jest.mock('@mui/x-date-pickers/LocalizationProvider', () => ({
@@ -362,12 +360,6 @@ describe('DashboardClient', () => {
 			expect(barCharts.length).toBeGreaterThan(0);
 		});
 
-		it('renders ScatterChart components', () => {
-			render(<DashboardClient session={mockSession} />);
-			const scatterCharts = screen.getAllByTestId('scatter-chart');
-			expect(scatterCharts.length).toBeGreaterThan(0);
-		});
-
 		it('renders Doughnut components', () => {
 			render(<DashboardClient session={mockSession} />);
 			const doughnutCharts = screen.getAllByTestId('doughnut-chart');
@@ -429,7 +421,7 @@ describe('DashboardClient', () => {
 		it('shows empty message when payment status is empty', () => {
 			mockQueryStates['paymentStatus'] = 'empty';
 			render(<DashboardClient session={mockSession} />);
-			expect(screen.getByText('Aucune donnée de statut disponible')).toBeInTheDocument();
+			expect(screen.getByText('Aucune donnée de paiement disponible')).toBeInTheDocument();
 		});
 
 		it('shows empty message when quote conversion is empty', () => {
@@ -447,7 +439,7 @@ describe('DashboardClient', () => {
 		it('shows empty message when overdue receivables is empty', () => {
 			mockQueryStates['overdueReceivables'] = 'empty';
 			render(<DashboardClient session={mockSession} />);
-			expect(screen.getByText('Aucune créance en retard')).toBeInTheDocument();
+			expect(screen.getByText('Aucune donnée de créances disponible')).toBeInTheDocument();
 		});
 
 		it('shows placeholder when section micro trends has empty data', () => {

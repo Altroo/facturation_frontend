@@ -11,7 +11,7 @@
     "upgrade": "bun x ncu -u",
     "analyse": "next experimental-analyze",
     "test:watch": "bun x jest --watch",
-    "test:coverage": "bun x jest --coverage --coverageProvider=v8"
+    "test:coverage": "bun x jest  --maxWorkers=20 --coverage --coverageProvider=v8"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -21,8 +21,8 @@
     "@mui/material": "^7.3.7",
     "@mui/material-nextjs": "^7.3.7",
     "@mui/system": "^7.3.7",
-    "@mui/x-data-grid": "^8.23.0",
-    "@mui/x-date-pickers": "^8.23.0",
+    "@mui/x-data-grid": "^8.24.0",
+    "@mui/x-date-pickers": "^8.24.0",
     "@reduxjs/toolkit": "^2.11.2",
     "axios": "^1.13.2",
     "chart.js": "^4.5.1",
