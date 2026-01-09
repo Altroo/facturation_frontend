@@ -383,7 +383,7 @@ describe('BonDeLivraisonListClient', () => {
 	describe('Loading state', () => {
 		it('renders when data is loading', () => {
 			mockUseGetBonDeLivraisonListQuery.mockReturnValueOnce({
-				data: undefined,
+				data: { results: [], count: 0, next: null, previous: null },
 				isLoading: true,
 				refetch: mockRefetch,
 			});
@@ -396,7 +396,7 @@ describe('BonDeLivraisonListClient', () => {
 	describe('Empty state', () => {
 		it('renders when no data is available', () => {
 			mockUseGetBonDeLivraisonListQuery.mockReturnValueOnce({
-				data: { results: [], count: 0 },
+				data: { results: [], count: 0, next: null, previous: null },
 				isLoading: false,
 				refetch: mockRefetch,
 			});

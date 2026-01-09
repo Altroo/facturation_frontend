@@ -506,7 +506,7 @@ describe('DevisListClient', () => {
 	describe('Loading state', () => {
 		it('renders when data is loading', () => {
 			mockUseGetDevisListQuery.mockReturnValueOnce({
-				data: undefined,
+				data: { results: [], count: 0, next: null, previous: null },
 				isLoading: true,
 				refetch: mockRefetch,
 			});
@@ -519,7 +519,7 @@ describe('DevisListClient', () => {
 	describe('Empty state', () => {
 		it('renders when no data is available', () => {
 			mockUseGetDevisListQuery.mockReturnValueOnce({
-				data: { results: [], count: 0 },
+				data: { results: [], count: 0, next: null, previous: null },
 				isLoading: false,
 				refetch: mockRefetch,
 			});
