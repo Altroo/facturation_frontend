@@ -1,6 +1,7 @@
 import { GridFilterItem, GridColDef } from '@mui/x-data-grid';
 import type { GridApiCommunity } from '@mui/x-data-grid/internals';
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { createDateRangeFilterOperator } from './dateRangeFilterOperator';
 import React from 'react';
@@ -268,6 +269,55 @@ describe('dateRangeFilterOperator', () => {
 				expect(container).toBeInTheDocument();
 				// Component initializes with provided dates
 				expect(screen.getAllByText('De').length).toBeGreaterThan(0);
+			}
+		});
+
+		it('should handle to date change using spinbutton', async () => {
+			const mockApplyValue = jest.fn();
+			const mockItem: GridFilterItem = {
+				field: 'date',
+				operator: 'between',
+				value: { from: '2024-01-01', to: '2024-12-31' },
+			};
+
+			if (InputComponent) {
+				render(<InputComponent item={mockItem} applyValue={mockApplyValue} apiRef={mockApiRef} />);
+
+				// Get all Day spinbuttons (one for "De", one for "À")
+				const daySpinbuttons = screen.getAllByRole('spinbutton', { name: /day/i });
+				const toDaySpinbutton = daySpinbuttons[1];
+
+				// Focus and type to change the day
+				await act(async () => {
+					await userEvent.click(toDaySpinbutton);
+					await userEvent.type(toDaySpinbutton, '15');
+				});
+
+				// applyValue should be called
+				expect(mockApplyValue).toHaveBeenCalled();
+			}
+		});
+
+		it('should handle to date with no existing from date', async () => {
+			const mockApplyValue = jest.fn();
+			const mockItem: GridFilterItem = {
+				field: 'date',
+				operator: 'between',
+				value: {},
+			};
+
+			if (InputComponent) {
+				render(<InputComponent item={mockItem} applyValue={mockApplyValue} apiRef={mockApiRef} />);
+
+				const daySpinbuttons = screen.getAllByRole('spinbutton', { name: /day/i });
+				const toDaySpinbutton = daySpinbuttons[1];
+
+				await act(async () => {
+					await userEvent.click(toDaySpinbutton);
+					await userEvent.type(toDaySpinbutton, '25');
+				});
+
+				expect(mockApplyValue).toHaveBeenCalled();
 			}
 		});
 	});

@@ -11,8 +11,10 @@ jest.mock('@/utils/clientHelpers', () => ({
 	TabletAndMobile: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
 }));
 
+// Dynamic mock for pathname
+let mockPathname = '/dashboard';
 jest.mock('next/navigation', () => ({
-	usePathname: () => '/dashboard',
+	usePathname: () => mockPathname,
 }));
 
 // controllable mock for MUI useMediaQuery
@@ -47,6 +49,8 @@ jest.mock('@/utils/hooks', () => ({
 describe('NavigationBar additional behaviors', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
+		// reset pathname to default
+		mockPathname = '/dashboard';
 		// default profile
 		mockUseAppSelector.mockImplementation(() => ({
 			avatar_cropped: undefined,
@@ -195,4 +199,74 @@ describe('NavigationBar additional behaviors', () => {
 		const toggleBtnMobile = screen.getByLabelText('toggle drawer');
 		expect(toggleBtnMobile).toBeInTheDocument();
 	});
-});
+	it('finds exact match for pathname and expands correct panel', () => {
+		// Set pathname to exactly match articles list path
+		mockPathname = '/dashboard/articles';
+
+		render(
+			<Provider store={store}>
+				<NavigationBar title="Test">
+					<div />
+				</NavigationBar>
+			</Provider>,
+		);
+
+		// The Articles panel should be expanded since pathname matches
+		expect(screen.getByText('Liste des articles')).toBeInTheDocument();
+	});
+
+	it('handles partial path matching with different segments', () => {
+		// Set pathname to a subpath that partially matches
+		mockPathname = '/dashboard/companies/123';
+
+		mockUseAppSelector.mockImplementation(() => ({
+			avatar_cropped: undefined,
+			first_name: 'A',
+			last_name: 'B',
+			gender: 'Homme',
+			is_staff: true, // Enable staff to see companies menu
+		}));
+
+		render(
+			<Provider store={store}>
+				<NavigationBar title="Test">
+					<div />
+				</NavigationBar>
+			</Provider>,
+		);
+
+		// The companies panel should be expanded due to partial match
+		expect(screen.getByText('Entreprises')).toBeInTheDocument();
+	});
+
+	it('handles pathname with no matching menu item', () => {
+		// Set pathname to something that doesn't match any menu
+		mockPathname = '/some/random/path';
+
+		render(
+			<Provider store={store}>
+				<NavigationBar title="Test">
+					<div />
+				</NavigationBar>
+			</Provider>,
+		);
+
+		// Should still render without errors
+		expect(screen.getByText('Test')).toBeInTheDocument();
+	});
+
+	it('handles path segment mismatch in partial matching', () => {
+		// Set pathname where first segments match but later ones don't
+		mockPathname = '/dashboard/articles/different/path';
+
+		render(
+			<Provider store={store}>
+				<NavigationBar title="Test">
+					<div />
+				</NavigationBar>
+			</Provider>,
+		);
+
+		// Articles panel should still be expanded due to partial match on /dashboard/articles
+		expect(screen.getByText('Liste des articles')).toBeInTheDocument();
+	});});

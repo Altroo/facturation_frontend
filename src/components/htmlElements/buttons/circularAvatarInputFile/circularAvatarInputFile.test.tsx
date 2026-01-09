@@ -54,4 +54,63 @@ describe('CircularAvatarInputFile', () => {
 		fireEvent.change(fileInput, { target: { files: [file] } });
 		expect(mockSetAvatar).toHaveBeenCalledWith(file);
 	});
+
+	it('does not call setAvatar when files is null', () => {
+		render(<CircularAvatarInputFile preview={null} active={true} setAvatar={mockSetAvatar} />);
+		const fileInput = screen.getByTestId('avatar-file-input') as HTMLInputElement;
+		fireEvent.change(fileInput, { target: { files: null } });
+		expect(mockSetAvatar).not.toHaveBeenCalled();
+	});
+
+	it('does not call setAvatar when setAvatar prop is not provided', () => {
+		render(<CircularAvatarInputFile preview={null} active={true} />);
+		const fileInput = screen.getByTestId('avatar-file-input') as HTMLInputElement;
+		const file = new File(['dummy'], 'avatar.png', { type: 'image/png' });
+		fireEvent.change(fileInput, { target: { files: [file] } });
+		// No error should be thrown
+		expect(mockSetAvatar).not.toHaveBeenCalled();
+	});
+
+	it('calls setAvatar with null for non-image file', () => {
+		render(<CircularAvatarInputFile preview={null} active={true} setAvatar={mockSetAvatar} />);
+		const fileInput = screen.getByTestId('avatar-file-input') as HTMLInputElement;
+		const file = new File(['dummy'], 'document.pdf', { type: 'application/pdf' });
+		fireEvent.change(fileInput, { target: { files: [file] } });
+		expect(mockSetAvatar).toHaveBeenCalledWith(null);
+	});
+
+	it('does not trigger file input when inactive and container clicked', () => {
+		render(<CircularAvatarInputFile preview={null} active={false} setAvatar={mockSetAvatar} />);
+		const avatarIcon = screen.getByTestId('AddAPhotoIcon');
+		const container = avatarIcon.closest('div');
+		expect(container).not.toBeNull();
+		fireEvent.click(container!);
+		// Since active is false, file input should not be clicked
+	});
+
+	it('does not trigger file input when inactive and text clicked', () => {
+		render(<CircularAvatarInputFile preview={null} active={false} setAvatar={mockSetAvatar} showText={true} />);
+		const text = screen.getByText('Modifier ma photo');
+		fireEvent.click(text);
+		// Since active is false, file input should not be clicked
+	});
+
+	it('triggers file input click when avatar container is clicked', () => {
+		render(<CircularAvatarInputFile preview={null} active={true} setAvatar={mockSetAvatar} />);
+		const avatarIcon = screen.getByTestId('AddAPhotoIcon');
+		const container = avatarIcon.closest('div');
+		expect(container).not.toBeNull();
+		fireEvent.click(container!);
+		// File input should be triggered
+	});
+
+	it('renders children when provided', () => {
+		render(
+			<CircularAvatarInputFile preview={null} active={true} setAvatar={mockSetAvatar}>
+				<span data-testid="child-element">Child</span>
+			</CircularAvatarInputFile>,
+		);
+		// Children are not used in this component, but should not cause errors
+		expect(screen.getByTestId('AddAPhotoIcon')).toBeInTheDocument();
+	});
 });

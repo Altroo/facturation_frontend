@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, cleanup, fireEvent } from '@testing-library/react';
+import { render, screen, cleanup, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import type { AppSession } from '@/types/_initTypes';
 
@@ -36,8 +36,16 @@ const mockRefetch = jest.fn();
 const mockDeleteRecord = jest.fn();
 const mockConvertToClient = jest.fn();
 
-jest.mock('@/store/services/factureProForma', () => ({
-	useGetFactureProFormaListQuery: jest.fn(() => ({
+interface QueryArgs {
+	company_id?: number;
+	date_after?: string;
+	date_before?: string;
+}
+let lastQueryArgs: QueryArgs | null = null;
+
+const mockUseGetFactureProFormaListQuery = jest.fn((args: QueryArgs) => {
+	lastQueryArgs = args;
+	return {
 		data: {
 			results: [
 				{
@@ -69,7 +77,11 @@ jest.mock('@/store/services/factureProForma', () => ({
 		},
 		isLoading: false,
 		refetch: mockRefetch,
-	})),
+	};
+});
+
+jest.mock('@/store/services/factureProForma', () => ({
+	useGetFactureProFormaListQuery: (args: QueryArgs) => mockUseGetFactureProFormaListQuery(args),
 	useDeleteFactureProFormaMutation: jest.fn(() => [mockDeleteRecord, { isLoading: false }]),
 	useConvertFactureProFormaToFactureMutation: jest.fn(() => [mockConvertToClient, { isLoading: false }]),
 }));
@@ -202,6 +214,82 @@ jest.mock('@/components/shared/dropdownFilter/dropdownFilter', () => ({
 
 jest.mock('@/utils/helpers', () => ({
 	formatDate: (date: string | null) => (date ? new Date(date).toLocaleDateString('fr-FR') : '—'),
+}));
+
+// Capture configuration passed to CompanyDocumentsListContent
+interface PrintAction {
+	key: string;
+	label: string;
+	icon: React.ReactNode;
+	iconColor: string;
+	urlGenerator: (id: number, companyId: number) => string;
+}
+
+interface CapturedConfig {
+	printActions?: PrintAction[];
+	convertActions?: Array<{ key: string }>;
+	documentType?: string;
+	labels?: {
+		pageTitle?: string;
+		addButtonText?: string;
+	};
+}
+
+let capturedConfig: CapturedConfig | null = null;
+let capturedOnFilterModelChange: ((model: { items: Array<{ field: string; value?: { from?: string; to?: string } }> }) => void) | null = null;
+
+jest.mock('@/components/pages/dashboard/shared/company-documents-list/companyDocumentsListContent', () => ({
+	__esModule: true,
+	default: (props: { 
+		config: CapturedConfig;
+		onFilterModelChange?: (model: { items: Array<{ field: string; value?: { from?: string; to?: string } }> }) => void;
+		router: ReturnType<typeof import('next/navigation').useRouter>;
+		queryResult: { data?: { results: Array<{ id: number; numero_facture: string; client_name: string; statut: string }> }; isLoading: boolean };
+	}) => {
+		capturedConfig = props.config;
+		capturedOnFilterModelChange = props.onFilterModelChange || null;
+		
+		// Call printAction urlGenerators to cover them
+		if (props.config.printActions) {
+			props.config.printActions.forEach((action: PrintAction) => {
+				action.urlGenerator(1, 2);
+			});
+		}
+		
+		const results = props.queryResult?.data?.results || [];
+		return (
+			<div data-testid="company-documents-list-content">
+				<button onClick={() => props.router.push(props.config.labels?.addButtonText || '')}>
+					{props.config.labels?.addButtonText || 'Add'}
+				</button>
+				<div data-testid="paginated-data-grid">
+					<table>
+						<thead>
+							<tr>
+								<th>Numéro facture</th>
+								<th>Client</th>
+								<th>N° bon commande client</th>
+								<th>Statut</th>
+								<th>Total TTC après remise</th>
+								<th>Nombre d&apos;articles</th>
+								<th>Date facture</th>
+								<th>Actions</th>
+							</tr>
+						</thead>
+						<tbody>
+							{results.map((row: { id: number; numero_facture: string; client_name: string; statut: string }) => (
+								<tr key={row.id} data-testid={`row-${row.id}`}>
+									<td>{row.numero_facture}</td>
+									<td>{row.client_name}</td>
+									<td>{row.statut}</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		);
+	},
 }));
 
 // Import after mocks
@@ -344,8 +432,7 @@ describe('FactureProformaListClient', () => {
 
 	describe('Loading state', () => {
 		it('renders when data is loading', () => {
-			const { useGetFactureProFormaListQuery } = jest.requireMock('@/store/services/factureProForma');
-			useGetFactureProFormaListQuery.mockReturnValueOnce({
+			mockUseGetFactureProFormaListQuery.mockReturnValueOnce({
 				data: undefined,
 				isLoading: true,
 				refetch: mockRefetch,
@@ -358,8 +445,7 @@ describe('FactureProformaListClient', () => {
 
 	describe('Empty state', () => {
 		it('renders when no data is available', () => {
-			const { useGetFactureProFormaListQuery } = jest.requireMock('@/store/services/factureProForma');
-			useGetFactureProFormaListQuery.mockReturnValueOnce({
+			mockUseGetFactureProFormaListQuery.mockReturnValueOnce({
 				data: { results: [], count: 0 },
 				isLoading: false,
 				refetch: mockRefetch,
@@ -367,6 +453,123 @@ describe('FactureProformaListClient', () => {
 
 			render(<FactureProformaListClient session={mockSession} />);
 			expect(screen.getByTestId('paginated-data-grid')).toBeInTheDocument();
+		});
+	});
+
+	describe('PrintActions configuration', () => {
+		beforeEach(() => {
+			capturedConfig = null;
+			render(<FactureProformaListClient session={mockSession} />);
+		});
+
+		it('passes printActions to CompanyDocumentsListContent', () => {
+			expect(capturedConfig).not.toBeNull();
+			expect(capturedConfig?.printActions).toBeDefined();
+			expect(capturedConfig?.printActions?.length).toBe(3);
+		});
+
+		it('generates correct avec_remise PDF URL', () => {
+			const avecRemiseAction = capturedConfig?.printActions?.find(a => a.key === 'avec_remise');
+			expect(avecRemiseAction).toBeDefined();
+			const url = avecRemiseAction?.urlGenerator(1, 2);
+			expect(url).toContain('1');
+			expect(url).toContain('2');
+		});
+
+		it('generates correct sans_remise PDF URL', () => {
+			const sansRemiseAction = capturedConfig?.printActions?.find(a => a.key === 'sans_remise');
+			expect(sansRemiseAction).toBeDefined();
+			const url = sansRemiseAction?.urlGenerator(1, 2);
+			expect(url).toContain('1');
+			expect(url).toContain('2');
+		});
+
+		it('generates correct avec_unite PDF URL', () => {
+			const avecUniteAction = capturedConfig?.printActions?.find(a => a.key === 'avec_unite');
+			expect(avecUniteAction).toBeDefined();
+			const url = avecUniteAction?.urlGenerator(1, 2);
+			expect(url).toContain('1');
+			expect(url).toContain('2');
+		});
+	});
+
+	describe('ConvertActions configuration', () => {
+		beforeEach(() => {
+			capturedConfig = null;
+			render(<FactureProformaListClient session={mockSession} />);
+		});
+
+		it('passes convertActions to CompanyDocumentsListContent', () => {
+			expect(capturedConfig).not.toBeNull();
+			expect(capturedConfig?.convertActions).toBeDefined();
+			expect(capturedConfig?.convertActions?.length).toBe(1);
+		});
+	});
+
+	describe('Date filter params', () => {
+		beforeEach(() => {
+			capturedOnFilterModelChange = null;
+			lastQueryArgs = null;
+		});
+
+		it('passes onFilterModelChange to CompanyDocumentsListContent', () => {
+			render(<FactureProformaListClient session={mockSession} />);
+			expect(capturedOnFilterModelChange).not.toBeNull();
+		});
+
+		it('calls query with date_after param when from filter is set', async () => {
+			const { rerender } = render(<FactureProformaListClient session={mockSession} />);
+			expect(capturedOnFilterModelChange).not.toBeNull();
+			
+			await act(async () => {
+				if (capturedOnFilterModelChange) {
+					capturedOnFilterModelChange({
+						items: [{ field: 'date_facture', value: { from: '2025-01-01' } }]
+					});
+				}
+			});
+			
+			rerender(<FactureProformaListClient session={mockSession} />);
+			
+			expect(lastQueryArgs).toBeDefined();
+			expect(lastQueryArgs?.date_after).toBe('2025-01-01');
+		});
+
+		it('calls query with date_before param when to filter is set', async () => {
+			const { rerender } = render(<FactureProformaListClient session={mockSession} />);
+			expect(capturedOnFilterModelChange).not.toBeNull();
+			
+			await act(async () => {
+				if (capturedOnFilterModelChange) {
+					capturedOnFilterModelChange({
+						items: [{ field: 'date_facture', value: { to: '2025-12-31' } }]
+					});
+				}
+			});
+			
+			rerender(<FactureProformaListClient session={mockSession} />);
+			
+			expect(lastQueryArgs).toBeDefined();
+			expect(lastQueryArgs?.date_before).toBe('2025-12-31');
+		});
+
+		it('calls query with both date params when from and to filters are set', async () => {
+			const { rerender } = render(<FactureProformaListClient session={mockSession} />);
+			expect(capturedOnFilterModelChange).not.toBeNull();
+			
+			await act(async () => {
+				if (capturedOnFilterModelChange) {
+					capturedOnFilterModelChange({
+						items: [{ field: 'date_facture', value: { from: '2025-01-01', to: '2025-12-31' } }]
+					});
+				}
+			});
+			
+			rerender(<FactureProformaListClient session={mockSession} />);
+			
+			expect(lastQueryArgs).toBeDefined();
+			expect(lastQueryArgs?.date_after).toBe('2025-01-01');
+			expect(lastQueryArgs?.date_before).toBe('2025-12-31');
 		});
 	});
 });

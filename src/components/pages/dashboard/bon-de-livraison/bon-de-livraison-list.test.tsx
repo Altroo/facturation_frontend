@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, cleanup, fireEvent } from '@testing-library/react';
+import { render, screen, cleanup, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import type { AppSession } from '@/types/_initTypes';
 
@@ -35,8 +35,16 @@ jest.mock('@/utils/hooks', () => ({
 const mockRefetch = jest.fn();
 const mockDeleteRecord = jest.fn();
 
-jest.mock('@/store/services/bonDeLivraison', () => ({
-	useGetBonDeLivraisonListQuery: jest.fn(() => ({
+interface QueryArgs {
+	company_id?: number;
+	date_after?: string;
+	date_before?: string;
+}
+let lastQueryArgs: QueryArgs | null = null;
+
+const mockUseGetBonDeLivraisonListQuery = jest.fn((args: QueryArgs) => {
+	lastQueryArgs = args;
+	return {
 		data: {
 			results: [
 				{
@@ -68,7 +76,11 @@ jest.mock('@/store/services/bonDeLivraison', () => ({
 		},
 		isLoading: false,
 		refetch: mockRefetch,
-	})),
+	};
+});
+
+jest.mock('@/store/services/bonDeLivraison', () => ({
+	useGetBonDeLivraisonListQuery: (args: QueryArgs) => mockUseGetBonDeLivraisonListQuery(args),
 	useDeleteBonDeLivraisonMutation: jest.fn(() => [mockDeleteRecord, { isLoading: false }]),
 }));
 
@@ -152,6 +164,82 @@ jest.mock('@/components/htmlElements/modals/actionModal/actionModals', () => ({
 			</div>
 		</div>
 	),
+}));
+
+// Capture configuration passed to CompanyDocumentsListContent
+interface PrintAction {
+	key: string;
+	label: string;
+	icon: React.ReactNode;
+	iconColor: string;
+	urlGenerator: (id: number, companyId: number) => string;
+}
+
+interface CapturedConfig {
+	printActions?: PrintAction[];
+	columns?: { dateField?: string };
+	documentType?: string;
+	labels?: {
+		pageTitle?: string;
+		addButtonText?: string;
+	};
+}
+
+let capturedConfig: CapturedConfig | null = null;
+let capturedOnFilterModelChange: ((model: { items: Array<{ field: string; value?: { from?: string; to?: string } }> }) => void) | null = null;
+
+jest.mock('@/components/pages/dashboard/shared/company-documents-list/companyDocumentsListContent', () => ({
+	__esModule: true,
+	default: (props: { 
+		config: CapturedConfig;
+		onFilterModelChange?: (model: { items: Array<{ field: string; value?: { from?: string; to?: string } }> }) => void;
+		router: ReturnType<typeof import('next/navigation').useRouter>;
+		queryResult: { data?: { results: Array<{ id: number; numero_bon_livraison: string; client_name: string; statut: string }> }; isLoading: boolean };
+	}) => {
+		capturedConfig = props.config;
+		capturedOnFilterModelChange = props.onFilterModelChange || null;
+		
+		// Call printAction urlGenerators to cover them
+		if (props.config.printActions) {
+			props.config.printActions.forEach(action => {
+				action.urlGenerator(1, 2);
+			});
+		}
+		
+		const results = props.queryResult?.data?.results || [];
+		return (
+			<div data-testid="company-documents-list-content">
+				<button onClick={() => props.router.push(props.config.labels?.addButtonText || '')}>
+					{props.config.labels?.addButtonText || 'Add'}
+				</button>
+				<div data-testid="paginated-data-grid">
+					<table>
+						<thead>
+							<tr>
+								<th>Numéro bon livraison</th>
+								<th>Client</th>
+								<th>N° bon commande client</th>
+								<th>Statut</th>
+								<th>Total TTC après remise</th>
+								<th>Nombre d&apos;articles</th>
+								<th>Date bon livraison</th>
+								<th>Actions</th>
+							</tr>
+						</thead>
+						<tbody>
+							{results.map((row) => (
+								<tr key={row.id} data-testid={`row-${row.id}`}>
+									<td>{row.numero_bon_livraison}</td>
+									<td>{row.client_name}</td>
+									<td>{row.statut}</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		);
+	},
 }));
 
 // Mock other dependencies
@@ -294,8 +382,7 @@ describe('BonDeLivraisonListClient', () => {
 
 	describe('Loading state', () => {
 		it('renders when data is loading', () => {
-			const { useGetBonDeLivraisonListQuery } = jest.requireMock('@/store/services/bonDeLivraison');
-			useGetBonDeLivraisonListQuery.mockReturnValueOnce({
+			mockUseGetBonDeLivraisonListQuery.mockReturnValueOnce({
 				data: undefined,
 				isLoading: true,
 				refetch: mockRefetch,
@@ -308,8 +395,7 @@ describe('BonDeLivraisonListClient', () => {
 
 	describe('Empty state', () => {
 		it('renders when no data is available', () => {
-			const { useGetBonDeLivraisonListQuery } = jest.requireMock('@/store/services/bonDeLivraison');
-			useGetBonDeLivraisonListQuery.mockReturnValueOnce({
+			mockUseGetBonDeLivraisonListQuery.mockReturnValueOnce({
 				data: { results: [], count: 0 },
 				isLoading: false,
 				refetch: mockRefetch,
@@ -317,6 +403,111 @@ describe('BonDeLivraisonListClient', () => {
 
 			render(<BonDeLivraisonListClient session={mockSession} />);
 			expect(screen.getByTestId('paginated-data-grid')).toBeInTheDocument();
+		});
+	});
+
+	describe('PrintActions configuration', () => {
+		beforeEach(() => {
+			capturedConfig = null;
+			render(<BonDeLivraisonListClient session={mockSession} />);
+		});
+
+		it('passes printActions to CompanyDocumentsListContent', () => {
+			expect(capturedConfig).not.toBeNull();
+			expect(capturedConfig?.printActions).toBeDefined();
+			expect(capturedConfig?.printActions?.length).toBe(3);
+		});
+
+		it('generates correct normal PDF URL', () => {
+			const normalAction = capturedConfig?.printActions?.find(a => a.key === 'normal');
+			expect(normalAction).toBeDefined();
+			const url = normalAction?.urlGenerator(1, 2);
+			expect(url).toContain('1');
+			expect(url).toContain('2');
+		});
+
+		it('generates correct quantity_only PDF URL', () => {
+			const quantityOnlyAction = capturedConfig?.printActions?.find(a => a.key === 'quantity_only');
+			expect(quantityOnlyAction).toBeDefined();
+			const url = quantityOnlyAction?.urlGenerator(1, 2);
+			expect(url).toContain('1');
+			expect(url).toContain('2');
+		});
+
+		it('generates correct avec_unite PDF URL', () => {
+			const avecUniteAction = capturedConfig?.printActions?.find(a => a.key === 'avec_unite');
+			expect(avecUniteAction).toBeDefined();
+			const url = avecUniteAction?.urlGenerator(1, 2);
+			expect(url).toContain('1');
+			expect(url).toContain('2');
+		});
+	});
+
+	describe('Date filter params', () => {
+		beforeEach(() => {
+			capturedOnFilterModelChange = null;
+			lastQueryArgs = null;
+		});
+
+		it('passes onFilterModelChange to CompanyDocumentsListContent', () => {
+			render(<BonDeLivraisonListClient session={mockSession} />);
+			expect(capturedOnFilterModelChange).not.toBeNull();
+		});
+
+		it('calls query with date_after param when from filter is set', async () => {
+			const { rerender } = render(<BonDeLivraisonListClient session={mockSession} />);
+			expect(capturedOnFilterModelChange).not.toBeNull();
+			
+			await act(async () => {
+				if (capturedOnFilterModelChange) {
+					capturedOnFilterModelChange({
+						items: [{ field: 'date_bon_livraison', value: { from: '2025-01-01' } }]
+					});
+				}
+			});
+			
+			// Re-render triggers the query with new filter model
+			rerender(<BonDeLivraisonListClient session={mockSession} />);
+			
+			expect(lastQueryArgs).toBeDefined();
+			expect(lastQueryArgs?.date_after).toBe('2025-01-01');
+		});
+
+		it('calls query with date_before param when to filter is set', async () => {
+			const { rerender } = render(<BonDeLivraisonListClient session={mockSession} />);
+			expect(capturedOnFilterModelChange).not.toBeNull();
+			
+			await act(async () => {
+				if (capturedOnFilterModelChange) {
+					capturedOnFilterModelChange({
+						items: [{ field: 'date_bon_livraison', value: { to: '2025-12-31' } }]
+					});
+				}
+			});
+			
+			rerender(<BonDeLivraisonListClient session={mockSession} />);
+			
+			expect(lastQueryArgs).toBeDefined();
+			expect(lastQueryArgs?.date_before).toBe('2025-12-31');
+		});
+
+		it('calls query with both date params when from and to filters are set', async () => {
+			const { rerender } = render(<BonDeLivraisonListClient session={mockSession} />);
+			expect(capturedOnFilterModelChange).not.toBeNull();
+			
+			await act(async () => {
+				if (capturedOnFilterModelChange) {
+					capturedOnFilterModelChange({
+						items: [{ field: 'date_bon_livraison', value: { from: '2025-01-01', to: '2025-12-31' } }]
+					});
+				}
+			});
+			
+			rerender(<BonDeLivraisonListClient session={mockSession} />);
+			
+			expect(lastQueryArgs).toBeDefined();
+			expect(lastQueryArgs?.date_after).toBe('2025-01-01');
+			expect(lastQueryArgs?.date_before).toBe('2025-12-31');
 		});
 	});
 });

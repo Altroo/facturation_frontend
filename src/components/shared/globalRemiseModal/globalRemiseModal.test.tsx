@@ -153,4 +153,112 @@ describe('GlobalRemiseModal', () => {
 		fireEvent.click(screen.getByText('Annuler'));
 		expect(onClose).toHaveBeenCalledTimes(1);
 	});
+
+	it('shows error when percentage is greater than 100', async () => {
+		const onApply = jest.fn();
+		const onClose = jest.fn();
+
+		render(<GlobalRemiseModal open={true} onClose={onClose} currentType="" currentValue={0} onApply={onApply} />);
+
+		const select = screen.getByTestId('global_remise_type') as HTMLSelectElement;
+		fireEvent.change(select, { target: { value: 'Pourcentage' } });
+
+		const input = (await screen.findByTestId('remise_value')) as HTMLInputElement;
+		fireEvent.change(input, { target: { value: '150' } });
+
+		// Try to apply - should set error
+		fireEvent.click(screen.getByText('Appliquer'));
+
+		// onApply should not be called due to validation error
+		await waitFor(() => {
+			expect(onApply).not.toHaveBeenCalled();
+		});
+	});
+
+	it('shows error when value is below minimum', async () => {
+		const onApply = jest.fn();
+		const onClose = jest.fn();
+
+		render(<GlobalRemiseModal open={true} onClose={onClose} currentType="" currentValue={0} onApply={onApply} />);
+
+		const select = screen.getByTestId('global_remise_type') as HTMLSelectElement;
+		fireEvent.change(select, { target: { value: 'Fixe' } });
+
+		const input = (await screen.findByTestId('remise_value')) as HTMLInputElement;
+		fireEvent.change(input, { target: { value: '0' } });
+
+		// Try to apply - should set error
+		fireEvent.click(screen.getByText('Appliquer'));
+
+		// onApply should not be called due to validation error
+		await waitFor(() => {
+			expect(onApply).not.toHaveBeenCalled();
+		});
+	});
+
+	it('displays MAD suffix for Fixe type', async () => {
+		const onApply = jest.fn();
+		const onClose = jest.fn();
+
+		render(<GlobalRemiseModal open={true} onClose={onClose} currentType="" currentValue={0} onApply={onApply} />);
+
+		const select = screen.getByTestId('global_remise_type') as HTMLSelectElement;
+		fireEvent.change(select, { target: { value: 'Fixe' } });
+
+		await waitFor(() => {
+			expect(screen.getByTestId('remise_value-endicon').textContent).toContain('MAD');
+		});
+	});
+
+	it('applies valid fixed amount correctly', async () => {
+		const onApply = jest.fn();
+		const onClose = jest.fn();
+
+		render(<GlobalRemiseModal open={true} onClose={onClose} currentType="" currentValue={0} onApply={onApply} />);
+
+		const select = screen.getByTestId('global_remise_type') as HTMLSelectElement;
+		fireEvent.change(select, { target: { value: 'Fixe' } });
+
+		const input = (await screen.findByTestId('remise_value')) as HTMLInputElement;
+		fireEvent.change(input, { target: { value: '50' } });
+
+		fireEvent.click(screen.getByText('Appliquer'));
+
+		await waitFor(() => {
+			expect(onApply).toHaveBeenCalledWith('Fixe', 50);
+		});
+	});
+
+	it('initializes with existing currentType and currentValue', async () => {
+		const onApply = jest.fn();
+		const onClose = jest.fn();
+
+		render(
+			<GlobalRemiseModal open={true} onClose={onClose} currentType="Fixe" currentValue={100} onApply={onApply} />,
+		);
+
+		// Input should be visible with type Fixe
+		const input = await screen.findByTestId('remise_value');
+		expect(input).toBeInTheDocument();
+		expect((input as HTMLInputElement).value).toBe('100');
+	});
+
+	it('validates percentage is exactly 100', async () => {
+		const onApply = jest.fn();
+		const onClose = jest.fn();
+
+		render(<GlobalRemiseModal open={true} onClose={onClose} currentType="" currentValue={0} onApply={onApply} />);
+
+		const select = screen.getByTestId('global_remise_type') as HTMLSelectElement;
+		fireEvent.change(select, { target: { value: 'Pourcentage' } });
+
+		const input = (await screen.findByTestId('remise_value')) as HTMLInputElement;
+		fireEvent.change(input, { target: { value: '100' } });
+
+		fireEvent.click(screen.getByText('Appliquer'));
+
+		await waitFor(() => {
+			expect(onApply).toHaveBeenCalledWith('Pourcentage', 100);
+		});
+	});
 });

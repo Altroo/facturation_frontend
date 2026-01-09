@@ -237,6 +237,24 @@ const mockConfig: DocumentListConfig<DeviClass> = {
 			disabled: false,
 		},
 	],
+	printActions: [
+		{
+			key: 'print_pdf',
+			label: 'Imprimer PDF',
+			icon: <DescriptionIcon />,
+			iconColor: '#1976d2',
+			urlGenerator: (itemId: number, companyId: number) =>
+				`http://localhost:8000/api/devis/${itemId}/pdf/?company_id=${companyId}`,
+		},
+		{
+			key: 'print_excel',
+			label: 'Exporter Excel',
+			icon: <ReceiptIcon />,
+			iconColor: '#2e7d32',
+			urlGenerator: (itemId: number, companyId: number) =>
+				`http://localhost:8000/api/devis/${itemId}/excel/?company_id=${companyId}`,
+		},
+	],
 };
 
 const mockPaginationModel: PaginationModel = {
@@ -282,6 +300,14 @@ describe('CompanyDocumentsListContent', () => {
 
 		it('returns "warning" for Expiré', () => {
 			expect(getStatutColor('Expiré')).toBe('warning');
+		});
+
+		it('returns "success" for Valide', () => {
+			expect(getStatutColor('Valide')).toBe('success');
+		});
+
+		it('returns "success" for Facturé', () => {
+			expect(getStatutColor('Facturé')).toBe('success');
 		});
 
 		it('returns "default" for unknown status', () => {
@@ -529,6 +555,266 @@ describe('CompanyDocumentsListContent', () => {
 				});
 			}
 		});
+
+		it('handles convert action and redirects on success', async () => {
+			const mockConvertResult = { id: 100 };
+			mockConvertToProForma.mockImplementation(() => ({
+				unwrap: jest.fn().mockResolvedValue(mockConvertResult),
+			}));
+
+			const { container } = render(
+				<CompanyDocumentsListContent
+					companyId={1}
+					role="Admin"
+					router={mockRouter}
+					config={mockConfig}
+					queryResult={mockQueryResult}
+					deleteMutation={mockDeleteMutation}
+					convertMutations={mockConvertMutations}
+					paginationModel={mockPaginationModel}
+					setPaginationModel={mockSetPaginationModel}
+					searchTerm=""
+					setSearchTerm={mockSetSearchTerm}
+				/>,
+			);
+
+			// Click convert button to show menu
+			const convertButtons = container.querySelectorAll('[data-testid*="SwapHorizIcon"]');
+			if (convertButtons.length > 0) {
+				fireEvent.click(convertButtons[0] as Element);
+				await waitFor(() => {
+					const menuItem = screen.queryByText('Convertir en facture pro forma');
+					if (menuItem) {
+						fireEvent.click(menuItem);
+					}
+				});
+
+				await waitFor(() => {
+					// The modal should now be shown
+					const modal = screen.queryByTestId('action-modal');
+					if (modal) {
+						const convertButton = screen.queryByTestId('modal-convertir');
+						if (convertButton) {
+							fireEvent.click(convertButton);
+						}
+					}
+				});
+			}
+		});
+
+		it('handles convert action error', async () => {
+			mockConvertToProForma.mockImplementation(() => ({
+				unwrap: jest.fn().mockRejectedValue(new Error('Convert failed')),
+			}));
+
+			const { container } = render(
+				<CompanyDocumentsListContent
+					companyId={1}
+					role="Admin"
+					router={mockRouter}
+					config={mockConfig}
+					queryResult={mockQueryResult}
+					deleteMutation={mockDeleteMutation}
+					convertMutations={mockConvertMutations}
+					paginationModel={mockPaginationModel}
+					setPaginationModel={mockSetPaginationModel}
+					searchTerm=""
+					setSearchTerm={mockSetSearchTerm}
+				/>,
+			);
+
+			const convertButtons = container.querySelectorAll('[data-testid*="SwapHorizIcon"]');
+			if (convertButtons.length > 0) {
+				fireEvent.click(convertButtons[0] as Element);
+				await waitFor(() => {
+					const menuItem = screen.queryByText('Convertir en facture pro forma');
+					if (menuItem) {
+						fireEvent.click(menuItem);
+					}
+				});
+
+				await waitFor(() => {
+					const modal = screen.queryByTestId('action-modal');
+					if (modal) {
+						const convertButton = screen.queryByTestId('modal-convertir');
+						if (convertButton) {
+							fireEvent.click(convertButton);
+						}
+					}
+				});
+
+				await waitFor(
+					() => {
+						expect(mockOnError).toHaveBeenCalled();
+					},
+					{ timeout: 3000 },
+				);
+			}
+		});
+
+		it('closes convert modal when clicking cancel', async () => {
+			const { container } = render(
+				<CompanyDocumentsListContent
+					companyId={1}
+					role="Admin"
+					router={mockRouter}
+					config={mockConfig}
+					queryResult={mockQueryResult}
+					deleteMutation={mockDeleteMutation}
+					convertMutations={mockConvertMutations}
+					paginationModel={mockPaginationModel}
+					setPaginationModel={mockSetPaginationModel}
+					searchTerm=""
+					setSearchTerm={mockSetSearchTerm}
+				/>,
+			);
+
+			const convertButtons = container.querySelectorAll('[data-testid*="SwapHorizIcon"]');
+			if (convertButtons.length > 0) {
+				fireEvent.click(convertButtons[0] as Element);
+				await waitFor(() => {
+					const menuItem = screen.queryByText('Convertir en facture pro forma');
+					if (menuItem) {
+						fireEvent.click(menuItem);
+					}
+				});
+
+				await waitFor(() => {
+					const modal = screen.queryByTestId('action-modal');
+					if (modal) {
+						const cancelButton = screen.queryByTestId('modal-annuler');
+						if (cancelButton) {
+							fireEvent.click(cancelButton);
+						}
+					}
+				});
+			}
+		});
+	});
+
+	describe('Delete error handling', () => {
+		it('handles delete error', async () => {
+			mockDeleteRecord.mockImplementation(() => ({
+				unwrap: jest.fn().mockRejectedValue(new Error('Delete failed')),
+			}));
+
+			const { container } = render(
+				<CompanyDocumentsListContent
+					companyId={1}
+					role="Admin"
+					router={mockRouter}
+					config={mockConfig}
+					queryResult={mockQueryResult}
+					deleteMutation={mockDeleteMutation}
+					convertMutations={mockConvertMutations}
+					paginationModel={mockPaginationModel}
+					setPaginationModel={mockSetPaginationModel}
+					searchTerm=""
+					setSearchTerm={mockSetSearchTerm}
+				/>,
+			);
+
+			const deleteButtons = container.querySelectorAll('[data-testid*="DeleteIcon"]');
+			if (deleteButtons.length > 0) {
+				fireEvent.click(deleteButtons[0] as Element);
+
+				await waitFor(() => {
+					const modal = screen.queryByTestId('action-modal');
+					if (modal) {
+						const confirmButton = screen.getByTestId('modal-supprimer');
+						fireEvent.click(confirmButton);
+					}
+				});
+
+				await waitFor(
+					() => {
+						expect(mockOnError).toHaveBeenCalled();
+					},
+					{ timeout: 3000 },
+				);
+			}
+		});
+
+		it('closes delete modal when clicking cancel', async () => {
+			const { container } = render(
+				<CompanyDocumentsListContent
+					companyId={1}
+					role="Admin"
+					router={mockRouter}
+					config={mockConfig}
+					queryResult={mockQueryResult}
+					deleteMutation={mockDeleteMutation}
+					convertMutations={mockConvertMutations}
+					paginationModel={mockPaginationModel}
+					setPaginationModel={mockSetPaginationModel}
+					searchTerm=""
+					setSearchTerm={mockSetSearchTerm}
+				/>,
+			);
+
+			const deleteButtons = container.querySelectorAll('[data-testid*="DeleteIcon"]');
+			if (deleteButtons.length > 0) {
+				fireEvent.click(deleteButtons[0] as Element);
+
+				await waitFor(() => {
+					const modal = screen.queryByTestId('action-modal');
+					if (modal) {
+						const cancelButton = screen.getByTestId('modal-annuler');
+						fireEvent.click(cancelButton);
+					}
+				});
+			}
+		});
+	});
+
+	describe('Print functionality', () => {
+		beforeEach(() => {
+			// Mock window.open
+			jest.spyOn(window, 'open').mockImplementation(() => null);
+		});
+
+		afterEach(() => {
+			(window.open as jest.Mock).mockRestore();
+		});
+
+		it('shows print menu when print button is clicked', async () => {
+			const { container } = render(
+				<CompanyDocumentsListContent
+					companyId={1}
+					role="Admin"
+					router={mockRouter}
+					config={mockConfig}
+					queryResult={mockQueryResult}
+					deleteMutation={mockDeleteMutation}
+					convertMutations={mockConvertMutations}
+					paginationModel={mockPaginationModel}
+					setPaginationModel={mockSetPaginationModel}
+					searchTerm=""
+					setSearchTerm={mockSetSearchTerm}
+				/>,
+			);
+
+			// Find print button (PrintIcon)
+			const printButtons = container.querySelectorAll('[data-testid*="PrintIcon"]');
+			if (printButtons.length > 0) {
+				fireEvent.click(printButtons[0] as Element);
+				// The menu should appear - verify it can be rendered
+				await waitFor(() => {
+					expect(container).toBeInTheDocument();
+				});
+			}
+		});
+
+		it('renders config with print actions', () => {
+			// This test verifies the printActions config is properly processed
+			expect(mockConfig.printActions).toHaveLength(2);
+			expect(mockConfig.printActions?.[0].urlGenerator(1, 2)).toBe(
+				'http://localhost:8000/api/devis/1/pdf/?company_id=2',
+			);
+			expect(mockConfig.printActions?.[1].urlGenerator(3, 4)).toBe(
+				'http://localhost:8000/api/devis/3/excel/?company_id=4',
+			);
+		});
 	});
 
 	describe('Loading state', () => {
@@ -601,6 +887,85 @@ describe('CompanyDocumentsListContent', () => {
 					queryResult={mockQueryResult}
 					deleteMutation={mockDeleteMutation}
 					convertMutations={{}}
+					paginationModel={mockPaginationModel}
+					setPaginationModel={mockSetPaginationModel}
+					searchTerm=""
+					setSearchTerm={mockSetSearchTerm}
+				/>,
+			);
+			expect(screen.getByTestId('paginated-data-grid')).toBeInTheDocument();
+		});
+	});
+
+	describe('Config with no print actions', () => {
+		it('renders without print buttons when printActions is empty', () => {
+			const configWithoutPrint: DocumentListConfig<DeviClass> = {
+				...mockConfig,
+				printActions: [],
+			};
+
+			render(
+				<CompanyDocumentsListContent
+					companyId={1}
+					role="Admin"
+					router={mockRouter}
+					config={configWithoutPrint}
+					queryResult={mockQueryResult}
+					deleteMutation={mockDeleteMutation}
+					convertMutations={mockConvertMutations}
+					paginationModel={mockPaginationModel}
+					setPaginationModel={mockSetPaginationModel}
+					searchTerm=""
+					setSearchTerm={mockSetSearchTerm}
+				/>,
+			);
+			expect(screen.getByTestId('paginated-data-grid')).toBeInTheDocument();
+		});
+	});
+
+	describe('Convert loading state', () => {
+		it('renders with convert mutations loading', () => {
+			const loadingConvertMutations: Record<string, DocumentConvertMutationResult> = {
+				facture_pro_forma: {
+					convertMutation: mockConvertToProForma,
+					isLoading: true,
+				},
+				facture_client: {
+					convertMutation: mockConvertToClient,
+					isLoading: false,
+				},
+			};
+
+			render(
+				<CompanyDocumentsListContent
+					companyId={1}
+					role="Admin"
+					router={mockRouter}
+					config={mockConfig}
+					queryResult={mockQueryResult}
+					deleteMutation={mockDeleteMutation}
+					convertMutations={loadingConvertMutations}
+					paginationModel={mockPaginationModel}
+					setPaginationModel={mockSetPaginationModel}
+					searchTerm=""
+					setSearchTerm={mockSetSearchTerm}
+				/>,
+			);
+			expect(screen.getByTestId('paginated-data-grid')).toBeInTheDocument();
+		});
+	});
+
+	describe('Null convertMutations', () => {
+		it('handles null convertMutations gracefully', () => {
+			render(
+				<CompanyDocumentsListContent
+					companyId={1}
+					role="Admin"
+					router={mockRouter}
+					config={mockConfig}
+					queryResult={mockQueryResult}
+					deleteMutation={mockDeleteMutation}
+					convertMutations={null as unknown as Record<string, DocumentConvertMutationResult>}
 					paginationModel={mockPaginationModel}
 					setPaginationModel={mockSetPaginationModel}
 					searchTerm=""

@@ -20,6 +20,9 @@ interface MockGridProps {
 	sx?: unknown;
 }
 
+// Capture the onRowSelectionModelChange for manual triggering in tests
+let capturedOnRowSelectionModelChange: MockGridProps['onRowSelectionModelChange'] | null = null;
+
 /* Mock DataGrid and frFR locale used by the component.
    The mock renders a simple list of rows with a checkbox to simulate selection.
 */
@@ -27,6 +30,9 @@ jest.mock('@mui/x-data-grid', () => {
 	// eslint-disable-next-line @typescript-eslint/no-require-imports
 	const ReactModule = require('react');
 	const MockDataGrid: React.FC<MockGridProps> = (props) => {
+		// Capture the callback for manual triggering
+		capturedOnRowSelectionModelChange = props.onRowSelectionModelChange;
+		
 		const rows = props.rows ?? [];
 		return ReactModule.createElement(
 			'div',
@@ -61,6 +67,10 @@ describe('AddArticleModal', () => {
 		{ id: 2, reference: 'REF-2', designation: 'Article 2' },
 		{ id: 3, reference: 'REF-3', designation: 'Article 3' },
 	];
+
+	beforeEach(() => {
+		capturedOnRowSelectionModelChange = null;
+	});
 
 	it('renders modal, excludes existingArticleIds and shows rows', () => {
 		const setSelectedArticles = jest.fn();
@@ -175,5 +185,114 @@ describe('AddArticleModal', () => {
 
 		const addButton = screen.getByRole('button', { name: /Ajouter/i });
 		expect(addButton).toBeDisabled();
+	});
+
+	it('handles selection with include type object', () => {
+		const setSelectedArticles = jest.fn();
+		const onAdd = jest.fn();
+		const onClose = jest.fn();
+
+		render(
+			<AddArticleModal
+				open={true}
+				loading={false}
+				onClose={onClose}
+				articles={articles}
+				selectedArticles={new Set<number>()}
+				setSelectedArticles={setSelectedArticles}
+				onAdd={onAdd}
+				existingArticleIds={new Set<number>()}
+			/>,
+		);
+
+		// Manually trigger with include type
+		if (capturedOnRowSelectionModelChange) {
+			capturedOnRowSelectionModelChange({ type: 'include', ids: new Set([1, 3]) });
+		}
+
+		expect(setSelectedArticles).toHaveBeenCalledWith(new Set([1, 3]));
+	});
+
+	it('handles selection with exclude type object', () => {
+		const setSelectedArticles = jest.fn();
+		const onAdd = jest.fn();
+		const onClose = jest.fn();
+
+		render(
+			<AddArticleModal
+				open={true}
+				loading={false}
+				onClose={onClose}
+				articles={articles}
+				selectedArticles={new Set<number>()}
+				setSelectedArticles={setSelectedArticles}
+				onAdd={onAdd}
+				existingArticleIds={new Set<number>()}
+			/>,
+		);
+
+		// Manually trigger with exclude type - should select all except excluded
+		if (capturedOnRowSelectionModelChange) {
+			capturedOnRowSelectionModelChange({ type: 'exclude', ids: new Set([2]) });
+		}
+
+		// Should select all available (1, 2, 3) except 2 = [1, 3]
+		expect(setSelectedArticles).toHaveBeenCalledWith(new Set([1, 3]));
+	});
+
+	it('handles selection with object without type (defaults to include)', () => {
+		const setSelectedArticles = jest.fn();
+		const onAdd = jest.fn();
+		const onClose = jest.fn();
+
+		render(
+			<AddArticleModal
+				open={true}
+				loading={false}
+				onClose={onClose}
+				articles={articles}
+				selectedArticles={new Set<number>()}
+				setSelectedArticles={setSelectedArticles}
+				onAdd={onAdd}
+				existingArticleIds={new Set<number>()}
+			/>,
+		);
+
+		// Manually trigger without type (should default to include)
+		if (capturedOnRowSelectionModelChange) {
+			capturedOnRowSelectionModelChange({ ids: new Set([2]) });
+		}
+
+		expect(setSelectedArticles).toHaveBeenCalledWith(new Set([2]));
+	});
+
+	it('filters out articles without id', () => {
+		const setSelectedArticles = jest.fn();
+		const onAdd = jest.fn();
+		const onClose = jest.fn();
+
+		const articlesWithNoId: Article[] = [
+			{ id: 1, reference: 'REF-1' },
+			{ reference: 'REF-NO-ID' }, // no id
+			{ id: 3, reference: 'REF-3' },
+		];
+
+		render(
+			<AddArticleModal
+				open={true}
+				loading={false}
+				onClose={onClose}
+				articles={articlesWithNoId}
+				selectedArticles={new Set<number>()}
+				setSelectedArticles={setSelectedArticles}
+				onAdd={onAdd}
+				existingArticleIds={new Set<number>()}
+			/>,
+		);
+
+		// Only rows with id should appear
+		expect(screen.getByTestId('row-1')).toBeInTheDocument();
+		expect(screen.queryByTestId('row-no-id')).toBeNull();
+		expect(screen.getByTestId('row-3')).toBeInTheDocument();
 	});
 });
