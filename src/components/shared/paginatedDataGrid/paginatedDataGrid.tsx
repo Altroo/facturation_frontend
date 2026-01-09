@@ -87,17 +87,18 @@ const PaginatedDataGrid = <T,>({
 	const rows = data?.results ?? [];
 
 	const handleFilterChange = (model: GridFilterModel) => {
-		// Separate quickFilter from column filters
-		const quickFilterValue = model.quickFilterValues?.[0] ?? '';
-		// Update search term for server-side search (from quickFilter only)
+		// Extract quickFilter value for server-side search
+		// Join all search terms with space since DataGrid splits by spaces
+		const quickFilterValue = model.quickFilterValues?.join(' ') ?? '';
+		// Update search term for server-side search
 		setSearchTerm(quickFilterValue);
 
-		// Apply filter model update
+		// Don't include quickFilterValues in the updated model to prevent client-side filtering
+		// but keep items for column filters (client-side filtering)
 		const updatedModel: GridFilterModel = {
 			items: model.items,
-			// Don't pass quickFilterValues to avoid client-side quickFilter
 		};
-		
+
 		if (onFilterModelChange) {
 			onFilterModelChange(updatedModel);
 		} else if (!externalFilterModel) {
