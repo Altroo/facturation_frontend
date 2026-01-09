@@ -3,9 +3,10 @@
 import React, { ForwardedRef, forwardRef, useState } from 'react';
 import Styles from './authLayout.module.sass';
 import { Box, Stack } from '@mui/material';
-import TeeshirtSVG from '../../../../public/assets/images/auth_illu/teeshirt.svg';
-import WatchSVG from '../../../../public/assets/images/auth_illu/watch.svg';
-import MessagesSVG from '../../../../public/assets/images/auth_illu/messages.svg';
+import InvoiceSVG from '../../../../public/assets/images/auth_illu/invoice.svg';
+import ReceiptSVG from '../../../../public/assets/images/auth_illu/receipt.svg';
+import CalculatorSVG from '../../../../public/assets/images/auth_illu/calculator.svg';
+import DocumentSVG from '../../../../public/assets/images/auth_illu/document.svg';
 
 type Props = {
 	children?: React.ReactNode;
@@ -21,16 +22,20 @@ const AuthLayout = forwardRef<HTMLAnchorElement, Props>((props: Props, ref: Forw
 	const [authIlluRandom] = useState<{ image: svgImageType; color: string }>(() => {
 		const availableAuthBgImages: Array<{ image: svgImageType; color: string }> = [
 			{
-				image: TeeshirtSVG.src,
-				color: '#DBF4EA',
+				image: InvoiceSVG.src,
+				color: '#E8F5E9',
 			},
 			{
-				image: WatchSVG.src,
-				color: '#DBE8F4',
+				image: ReceiptSVG.src,
+				color: '#FFF3E0',
 			},
 			{
-				image: MessagesSVG.src,
-				color: '#F3DCDC',
+				image: CalculatorSVG.src,
+				color: '#E3F2FD',
+			},
+			{
+				image: DocumentSVG.src,
+				color: '#F3E5F5',
 			},
 		];
 		return availableAuthBgImages[Math.floor(Math.random() * availableAuthBgImages.length)];

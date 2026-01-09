@@ -1,0 +1,41 @@
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Calculator Body -->
+  <rect x="100" y="50" width="200" height="300" rx="12" fill="#34495E"/>
+  <rect x="110" y="60" width="180" height="280" rx="8" fill="#2C3E50"/>
+  
+  <!-- Display Screen -->
+  <rect x="125" y="75" width="150" height="50" rx="6" fill="#1ABC9C"/>
+  <rect x="135" y="95" width="90" height="15" rx="3" fill="#FFFFFF" opacity="0.9"/>
+  
+  <!-- Calculator Buttons Grid -->
+  <!-- Row 1 -->
+  <rect x="125" y="145" width="35" height="35" rx="6" fill="#95A5A6"/>
+  <rect x="170" y="145" width="35" height="35" rx="6" fill="#95A5A6"/>
+  <rect x="215" y="145" width="35" height="35" rx="6" fill="#95A5A6"/>
+  <rect x="260" y="145" width="35" height="35" rx="6" fill="#E67E22"/>
+  
+  <!-- Row 2 -->
+  <rect x="125" y="190" width="35" height="35" rx="6" fill="#ECF0F1"/>
+  <rect x="170" y="190" width="35" height="35" rx="6" fill="#ECF0F1"/>
+  <rect x="215" y="190" width="35" height="35" rx="6" fill="#ECF0F1"/>
+  <rect x="260" y="190" width="35" height="35" rx="6" fill="#E67E22"/>
+  
+  <!-- Row 3 -->
+  <rect x="125" y="235" width="35" height="35" rx="6" fill="#ECF0F1"/>
+  <rect x="170" y="235" width="35" height="35" rx="6" fill="#ECF0F1"/>
+  <rect x="215" y="235" width="35" height="35" rx="6" fill="#ECF0F1"/>
+  <rect x="260" y="235" width="35" height="35" rx="6" fill="#E67E22"/>
+  
+  <!-- Row 4 -->
+  <rect x="125" y="280" width="80" height="35" rx="6" fill="#ECF0F1"/>
+  <rect x="215" y="280" width="35" height="35" rx="6" fill="#ECF0F1"/>
+  <rect x="260" y="280" width="35" height="35" rx="6" fill="#27AE60"/>
+  
+  <!-- Number Indicators on Buttons -->
+  <circle cx="142.5" cy="207.5" r="3" fill="#2C3E50"/>
+  <circle cx="187.5" cy="207.5" r="3" fill="#2C3E50"/>
+  <circle cx="232.5" cy="207.5" r="3" fill="#2C3E50"/>
+  <circle cx="142.5" cy="252.5" r="3" fill="#2C3E50"/>
+  <circle cx="187.5" cy="252.5" r="3" fill="#2C3E50"/>
+  <circle cx="232.5" cy="252.5" r="3" fill="#2C3E50"/>
+</svg>
