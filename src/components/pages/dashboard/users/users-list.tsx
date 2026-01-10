@@ -138,7 +138,8 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 		{
 			field: 'avatar',
 			headerName: 'Avatar',
-			width: 70,
+			flex: 0.5,
+			minWidth: 70,
 			renderCell: (params: GridRenderCellParams<UserClass>) => {
 				const src = params.value as string | undefined | null;
 				return (
@@ -179,7 +180,8 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 		{
 			field: 'first_name',
 			headerName: 'Nom',
-			width: 100,
+			flex: 1,
+			minWidth: 100,
 			renderCell: (params: GridRenderCellParams<UserClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -191,7 +193,8 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 		{
 			field: 'last_name',
 			headerName: 'Prénom',
-			width: 100,
+			flex: 1,
+			minWidth: 100,
 			renderCell: (params: GridRenderCellParams<UserClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -203,7 +206,8 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 		{
 			field: 'email',
 			headerName: 'Email',
-			width: 200,
+			flex: 1.5,
+			minWidth: 150,
 			renderCell: (params: GridRenderCellParams<UserClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -215,7 +219,8 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 		{
 			field: 'gender',
 			headerName: 'Sexe',
-			width: 80,
+			flex: 0.7,
+			minWidth: 80,
 			filterOperators: createDropdownFilterOperators(genderFilterOptions, 'Les deux'),
 			renderCell: (params: GridRenderCellParams<UserClass>) => (
 				<DarkTooltip title={params.value}>
@@ -228,7 +233,8 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 		{
 			field: 'is_staff',
 			headerName: 'Admin',
-			width: 70,
+			flex: 0.6,
+			minWidth: 70,
 			filterOperators: createBooleanFilterOperators(TrueFalseFilterOptions, 'Les deux'),
 			renderCell: (params: GridRenderCellParams<UserClass>) => {
 				const isAdmin = Boolean(params.value);
@@ -246,7 +252,8 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 		{
 			field: 'is_active',
 			headerName: 'Active',
-			width: 70,
+			flex: 0.6,
+			minWidth: 70,
 			filterOperators: createBooleanFilterOperators(TrueFalseFilterOptions, 'Les deux'),
 			renderCell: (params: GridRenderCellParams<UserClass>) => {
 				const isActive = Boolean(params.value);
@@ -264,7 +271,8 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 		{
 			field: 'date_joined',
 			headerName: "Date d'inscription",
-			width: 170,
+			flex: 1.2,
+			minWidth: 150,
 			filterOperators: createDateRangeFilterOperator(),
 			renderCell: (params: GridRenderCellParams<UserClass>) => {
 				const formatted = formatDate(params.value as string | null);
@@ -280,7 +288,8 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 		{
 			field: 'last_login',
 			headerName: 'Dernière connexion',
-			width: 170,
+			flex: 1.2,
+			minWidth: 150,
 			filterOperators: createDateRangeFilterOperator(),
 			renderCell: (params: GridRenderCellParams<UserClass>) => {
 				const formatted = formatDate(params.value as string | null);
@@ -296,7 +305,8 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 		{
 			field: 'actions',
 			headerName: 'Actions',
-			width: 200,
+			flex: 1.5,
+			minWidth: 150,
 			sortable: false,
 			filterable: false,
 			renderCell: (params) => (

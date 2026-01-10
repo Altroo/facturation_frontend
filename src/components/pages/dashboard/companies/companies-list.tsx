@@ -115,7 +115,8 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		{
 			field: 'logo',
 			headerName: 'Logo',
-			width: 70,
+			flex: 0.5,
+			minWidth: 70,
 			renderCell: (params: GridRenderCellParams<CompanyClass>) => {
 				const src = params.value as string | undefined | null;
 				return (
@@ -156,7 +157,8 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		{
 			field: 'raison_sociale',
 			headerName: 'Raison Sociale',
-			width: 150,
+			flex: 1.5,
+			minWidth: 130,
 			renderCell: (params: GridRenderCellParams<CompanyClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -168,7 +170,8 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		{
 			field: 'ICE',
 			headerName: 'ICE',
-			width: 100,
+			flex: 1,
+			minWidth: 100,
 			renderCell: (params: GridRenderCellParams<CompanyClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -180,7 +183,8 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		{
 			field: 'nom_responsable',
 			headerName: 'Responsable',
-			width: 150,
+			flex: 1.2,
+			minWidth: 120,
 			renderCell: (params: GridRenderCellParams<CompanyClass>) => {
 				return (
 					<DarkTooltip title={params.value}>
@@ -194,7 +198,8 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		{
 			field: 'email',
 			headerName: 'Email',
-			width: 150,
+			flex: 1.5,
+			minWidth: 130,
 			renderCell: (params: GridRenderCellParams<CompanyClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -206,7 +211,8 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		{
 			field: 'telephone',
 			headerName: 'Téléphone',
-			width: 150,
+			flex: 1.2,
+			minWidth: 120,
 			renderCell: (params: GridRenderCellParams<CompanyClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -218,7 +224,8 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		{
 			field: 'nbr_employe',
 			headerName: 'Employés',
-			width: 100,
+			flex: 0.8,
+			minWidth: 100,
 			filterOperators: createDropdownFilterOperators(nbrEmployeFilterOptions, 'Tous les nombres', true),
 			renderCell: (params: GridRenderCellParams<CompanyClass>) => (
 				<DarkTooltip title={params.value}>
@@ -229,7 +236,8 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		{
 			field: 'date_created',
 			headerName: 'Date de création',
-			width: 180,
+			flex: 1.5,
+			minWidth: 150,
 			filterOperators: createDateRangeFilterOperator(),
 			renderCell: (params: GridRenderCellParams<CompanyClass>) => {
 				const formatted = formatDate(params.value as string | null);
@@ -245,7 +253,8 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		{
 			field: 'actions',
 			headerName: 'Actions',
-			width: 150,
+			flex: 1.2,
+			minWidth: 130,
 			sortable: false,
 			filterable: false,
 			renderCell: (params: GridRenderCellParams<CompanyClass>) => (

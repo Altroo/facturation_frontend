@@ -201,7 +201,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{
 			field: 'facture_client_numero',
 			headerName: 'N° Facture',
-			width: 130,
+			flex: 1,
+			minWidth: 120,
 			renderCell: (params: GridRenderCellParams<ReglementClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -213,7 +214,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{
 			field: 'client_name',
 			headerName: 'Client',
-			width: 180,
+			flex: 1.5,
+			minWidth: 150,
 			filterOperators: createDropdownFilterOperators(clientFilterOptions, 'Tous les clients'),
 			renderCell: (params: GridRenderCellParams<ReglementClass>) => (
 				<DarkTooltip title={params.value}>
@@ -230,7 +232,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{
 			field: 'mode_reglement_name',
 			headerName: 'Mode règlement',
-			width: 140,
+			flex: 1.2,
+			minWidth: 120,
 			renderCell: (params: GridRenderCellParams<ReglementClass>) => (
 				<DarkTooltip title={params.value || '-'}>
 					<Typography variant="body2" noWrap>
@@ -242,7 +245,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{
 			field: 'montant',
 			headerName: 'Montant',
-			width: 120,
+			flex: 1,
+			minWidth: 100,
 			renderCell: (params: GridRenderCellParams<ReglementClass>) => (
 				<DarkTooltip title={formatPrice(params.value)}>
 					<Typography variant="body2" noWrap fontWeight={600} color="primary">
@@ -254,7 +258,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{
 			field: 'date_reglement',
 			headerName: 'Date règlement',
-			width: 180,
+			flex: 1.5,
+			minWidth: 150,
 			filterOperators: createDateRangeFilterOperator(),
 			renderCell: (params: GridRenderCellParams<ReglementClass>) => {
 				const formatted = formatDate(params.value as string | null);
@@ -270,7 +275,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{
 			field: 'date_echeance',
 			headerName: "Date d'échéance",
-			width: 180,
+			flex: 1.5,
+			minWidth: 150,
 			filterOperators: createDateRangeFilterOperator(),
 			renderCell: (params: GridRenderCellParams<ReglementClass>) => {
 				const formatted = formatDate(params.value as string | null);
@@ -286,7 +292,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{
 			field: 'statut',
 			headerName: 'Statut',
-			width: 100,
+			flex: 0.8,
+			minWidth: 100,
 			filterOperators: createDropdownFilterOperators(statutFilterOptions, 'Tous les statuts', true),
 			renderCell: (params: GridRenderCellParams<ReglementClass>) => {
 				const statut = params.value as string;
@@ -316,7 +323,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{
 			field: 'actions',
 			headerName: 'Actions',
-			width: 250,
+			flex: 2,
+			minWidth: 200,
 			sortable: false,
 			filterable: false,
 			renderCell: (params: GridRenderCellParams<ReglementClass>) => {

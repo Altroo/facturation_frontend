@@ -187,7 +187,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{
 			field: 'code_client',
 			headerName: 'Code Client',
-			width: 100,
+			flex: 0.8,
+			minWidth: 100,
 			renderCell: (params: GridRenderCellParams<ClientClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -199,7 +200,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{
 			field: 'client_type',
 			headerName: 'Type',
-			width: 160,
+			flex: 1.2,
+			minWidth: 120,
 			filterOperators: createDropdownFilterOperators(typeFilterOptions, 'Tous les types', true),
 			renderCell: (params: GridRenderCellParams<ClientClass>) => {
 				return (
@@ -212,7 +214,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{
 			field: 'raison_sociale',
 			headerName: 'Raison Sociale',
-			width: 150,
+			flex: 1.3,
+			minWidth: 130,
 			renderCell: (params: GridRenderCellParams<ClientClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -224,7 +227,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{
 			field: 'nom',
 			headerName: 'Nom',
-			width: 150,
+			flex: 1.2,
+			minWidth: 120,
 			renderCell: (params: GridRenderCellParams<ClientClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -236,7 +240,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{
 			field: 'prenom',
 			headerName: 'Prénom',
-			width: 150,
+			flex: 1.2,
+			minWidth: 120,
 			renderCell: (params: GridRenderCellParams<ClientClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -248,7 +253,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{
 			field: 'ville_name',
 			headerName: 'Ville',
-			width: 100,
+			flex: 1,
+			minWidth: 100,
 			filterOperators: createDropdownFilterOperators(villeFilterOptions, 'Tous les villes'),
 			renderCell: (params: GridRenderCellParams<ClientClass>) => (
 				<DarkTooltip title={params.value}>
@@ -261,7 +267,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{
 			field: 'date_created',
 			headerName: 'Date de création',
-			width: 170,
+			flex: 1.4,
+			minWidth: 140,
 			filterOperators: createDateRangeFilterOperator(),
 			renderCell: (params: GridRenderCellParams<ClientClass>) => {
 				const formatted = formatDate(params.value as string | null);
@@ -277,7 +284,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		{
 			field: 'actions',
 			headerName: 'Actions',
-			width: 200,
+			flex: 1.5,
+			minWidth: 150,
 			sortable: false,
 			filterable: false,
 			renderCell: (params: GridRenderCellParams<ClientClass>) => (

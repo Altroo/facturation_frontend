@@ -357,7 +357,8 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 			{
 				field: config.columns.numeroField as string,
 				headerName: config.columns.numeroHeaderName,
-				width: 130,
+				flex: 1,
+				minWidth: 120,
 				renderCell: (params: GridRenderCellParams<TDocument>) => (
 					<DarkTooltip title={params.value}>
 						<Typography variant="body2" noWrap>
@@ -369,7 +370,8 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 			{
 				field: 'client_name',
 				headerName: 'Client',
-				width: 180,
+				flex: 1.5,
+				minWidth: 140,
 				filterOperators: createDropdownFilterOperators(clientFilterOptions, 'Tous les clients'),
 				renderCell: (params: GridRenderCellParams<TDocument>) => (
 					<DarkTooltip title={params.value}>
@@ -386,7 +388,8 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 			{
 				field: config.columns.extraField as string,
 				headerName: config.columns.extraFieldHeaderName,
-				width: 150,
+				flex: 1.2,
+				minWidth: 120,
 				renderCell: (params: GridRenderCellParams<TDocument>) => (
 					<DarkTooltip title={params.value}>
 						<Typography variant="body2" noWrap>
@@ -398,7 +401,8 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 			{
 				field: 'statut',
 				headerName: 'Statut',
-				width: 100,
+				flex: 0.8,
+				minWidth: 100,
 				filterOperators: createDropdownFilterOperators(statutFilterOptions, 'Tous les statuts', true),
 				renderCell: (params: GridRenderCellParams<TDocument>) => (
 					<DarkTooltip title={params.value}>
@@ -409,7 +413,8 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 			{
 				field: 'total_ttc_apres_remise',
 				headerName: 'Total TTC après remise',
-				width: 150,
+				flex: 1.3,
+				minWidth: 130,
 				renderCell: (params: GridRenderCellParams<TDocument>) => (
 					<DarkTooltip title={params.value + ' DH'}>
 						<Typography variant="body2" noWrap fontWeight={600} color="primary">
@@ -421,7 +426,8 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 			{
 				field: 'lignes_count',
 				headerName: "Nombre d'articles",
-				width: 150,
+				flex: 1.2,
+				minWidth: 120,
 				renderCell: (params: GridRenderCellParams<TDocument>) => (
 					<DarkTooltip title={params.value}>
 						<Typography variant="body2" noWrap>
@@ -433,7 +439,8 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 			{
 				field: config.columns.dateField as string,
 				headerName: config.columns.dateHeaderName,
-				width: 130,
+				flex: 1,
+				minWidth: 110,
 				filterOperators: createDateRangeFilterOperator(),
 				renderCell: (params: GridRenderCellParams<TDocument>) => {
 					const formatted = formatDate(params.value as string | null).split(',')[0];
@@ -449,7 +456,8 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 			{
 				field: 'actions',
 				headerName: 'Actions',
-				width: 250,
+				flex: 2,
+				minWidth: 200,
 				sortable: false,
 				filterable: false,
 				renderCell: (params: GridRenderCellParams<TDocument>) => (
