@@ -26,7 +26,6 @@ import {
 	AdminPanelSettings as AdminPanelSettingsIcon,
 	CheckCircle as CheckCircleIcon,
 	AccountCircle as AccountCircleIcon,
-	Person as PersonIcon,
 	Edit as EditIcon,
 	Add as AddIcon,
 	Warning as WarningIcon,
@@ -456,14 +455,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									setCompaniesAdmin(companiesAdmin.filter((c) => c.membership_id !== membershipId));
 								}}
 								addSectionProps={{
-									title: 'Ajouter un gestionnaire',
+									title: 'Ajouter une société',
 									isMobile,
 									selectId: 'new_user_select',
-									selectLabel: 'Sélectionner un utilisateur',
+									selectLabel: 'Sélectionner une société',
 									selectItems: availableCompanies,
 									selectValue: selectedCompany,
 									onSelectChange: (_e, newCompany) => setSelectedCompany(newCompany),
-									selectIcon: <PersonIcon fontSize="small" />,
+									selectIcon: <BusinessIcon fontSize="small" />,
 									roleId: 'new_user_role',
 									roleLabel: 'Rôle',
 									roleOptions,

@@ -661,14 +661,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									formik.setFieldValue('managed_by', filtered);
 								}}
 								addSectionProps={{
-									title: 'Ajouter une société',
+									title: 'Ajouter un gestionnaire',
 									isMobile,
 									selectId: 'new_company_select',
-									selectLabel: 'Sélectionner une société',
+									selectLabel: 'Sélectionner un utilisateur',
 									selectItems: availableUsers,
 									selectValue: selectedUser,
 									onSelectChange: (_e, newUser) => setSelectedUser(newUser),
-									selectIcon: <BusinessIcon fontSize="small" />,
+									selectIcon: <PersonIcon fontSize="small" />,
 									roleId: 'new_company_role',
 									roleLabel: 'Rôle',
 									roleOptions,
