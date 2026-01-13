@@ -20,14 +20,23 @@ export const companyApi = createApi({
 	endpoints: (builder) => ({
 		getCompaniesList: builder.query<
 			Array<Partial<CompanyClass>> | PaginationResponseType<CompanyClass>,
-			{ with_pagination?: boolean; page?: number; pageSize?: number; search?: string; date_created_after?: string; date_created_before?: string }
+			{
+				with_pagination?: boolean;
+				page?: number;
+				pageSize?: number;
+				search?: string;
+				date_created_after?: string;
+				date_created_before?: string;
+			}
 		>({
 			query: ({ with_pagination, page, pageSize, search, date_created_after, date_created_before }) => ({
 				url: with_pagination
 					? `${process.env.NEXT_PUBLIC_COMPANY_LIST}?search=${search}&page=${page}&page_size=${pageSize}`
 					: process.env.NEXT_PUBLIC_COMPANY_LIST,
 				method: 'GET',
-				params: with_pagination ? { pagination: true, date_created_after, date_created_before } : { date_created_after, date_created_before },
+				params: with_pagination
+					? { pagination: true, date_created_after, date_created_before }
+					: { date_created_after, date_created_before },
 			}),
 			providesTags: ['Company'],
 		}),
@@ -45,7 +54,7 @@ export const companyApi = createApi({
 			}),
 			providesTags: ['Company'],
 		}),
-		deleteCompany: builder.mutation<void | ApiErrorResponseType, { id: number }>({
+		suspendCompany: builder.mutation<void | ApiErrorResponseType, { id: number }>({
 			query: ({ id }) => ({
 				url: `${process.env.NEXT_PUBLIC_COMPANY_ROOT}/${id}/`,
 				method: 'DELETE',
@@ -73,7 +82,7 @@ export const companyApi = createApi({
 
 export const {
 	useGetCompaniesListQuery,
-	useDeleteCompanyMutation,
+	useSuspendCompanyMutation,
 	useEditCompanyMutation,
 	useGetCompanyQuery,
 	useAddCompanyMutation,

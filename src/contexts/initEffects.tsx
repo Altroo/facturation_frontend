@@ -14,7 +14,6 @@ import {
 	useGetUniteListQuery,
 	useGetMarqueListQuery,
 	useGetModePaiementListQuery,
-	useGetModeReglementListQuery,
 	useGetLivreParListQuery,
 } from '@/store/services/parameter';
 import {
@@ -23,7 +22,6 @@ import {
 	parameterSetEmplacementsAction,
 	parameterSetMarquesAction,
 	parameterSetUnitesAction,
-	parameterSetModeReglementAction,
 	parameterSetModePaiementAction,
 	parameterSetLivreParAction,
 } from '@/store/actions/parameterActions';
@@ -49,7 +47,6 @@ export const InitEffects: React.FC = () => {
 	const { data: marques } = useGetMarqueListQuery(undefined, { skip });
 	const { data: companies } = useGetUserCompaniesQuery(undefined, { skip });
 	const { data: modePaiement } = useGetModePaiementListQuery(undefined, { skip });
-	const { data: modeReglement } = useGetModeReglementListQuery(undefined, { skip });
 	const { data: livrePar } = useGetLivreParListQuery(undefined, { skip });
 
 	// Initialize tokens once
@@ -92,10 +89,6 @@ export const InitEffects: React.FC = () => {
 	useEffect(() => {
 		if (modePaiement) dispatch(parameterSetModePaiementAction(modePaiement));
 	}, [dispatch, modePaiement]);
-
-	useEffect(() => {
-		if (modeReglement) dispatch(parameterSetModeReglementAction(modeReglement));
-	}, [dispatch, modeReglement]);
 
 	useEffect(() => {
 		if (livrePar) dispatch(parameterSetLivreParAction(livrePar));

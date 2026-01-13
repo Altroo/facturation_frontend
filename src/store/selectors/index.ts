@@ -7,7 +7,6 @@ import {
 	UniteClass,
 	MarqueClass,
 	ModePaiementClass,
-	ModeReglementClass,
 	LivreParClass,
 } from '@/models/classes';
 import type { CompaniesUserCompaniesType } from '@/types/companyTypes';
@@ -28,7 +27,6 @@ export const getEmplacementsState = (state: RootState): Array<EmplacementClass> 
 export const getUnitesState = (state: RootState): Array<UniteClass> => state.parameter.unites;
 export const getMarquesState = (state: RootState): Array<MarqueClass> => state.parameter.marques;
 export const getModePaiementState = (state: RootState): Array<ModePaiementClass> => state.parameter.modePaiement;
-export const getModeReglementState = (state: RootState): Array<ModeReglementClass> => state.parameter.modeReglement;
 export const getLivreParState = (state: RootState): Array<LivreParClass> => state.parameter.livrePar;
 // Companies
 export const getUserCompaniesState = (state: RootState): Array<CompaniesUserCompaniesType> =>

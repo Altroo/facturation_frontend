@@ -9,7 +9,6 @@ import type {
 	UniteClass,
 	EmplacementClass,
 	ModePaiementClass,
-	ModeReglementClass,
 	LivreParClass,
 } from '@/models/classes';
 import type { ApiErrorResponseType, SuccessResponseType } from '@/types/_initTypes';
@@ -324,59 +323,6 @@ export const modePaiementApi = createApi({
 	}),
 });
 
-export const modeReglementApi = createApi({
-	reducerPath: 'modeReglementApi',
-	tagTypes: ['ModeReglement'],
-	baseQuery: axiosBaseQuery((api) =>
-		isAuthenticatedInstance(
-			() => getInitStateToken(api.getState() as RootState),
-			() => api.dispatch(initToken()),
-		),
-	),
-	endpoints: (builder) => ({
-		getModeReglementList: builder.query<Array<ModeReglementClass>, void>({
-			query: () => ({
-				url: process.env.NEXT_PUBLIC_PARAMETER_MODE_REGLEMENT,
-				method: 'GET',
-			}),
-			providesTags: ['ModeReglement'],
-		}),
-		getModeReglement: builder.query<ModeReglementClass, { id: number }>({
-			query: ({ id }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_REGLEMENT}${id}/`,
-				method: 'GET',
-			}),
-			providesTags: ['ModeReglement'],
-		}),
-		deleteModeReglement: builder.mutation<void | ApiErrorResponseType, { id: number }>({
-			query: ({ id }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_REGLEMENT}${id}/`,
-				method: 'DELETE',
-			}),
-			invalidatesTags: ['ModeReglement'],
-		}),
-		editModeReglement: builder.mutation<
-			SuccessResponseType<ModeReglementClass>,
-			{ id: number; data: Partial<ModeReglementClass> }
-		>({
-			query: ({ id, data }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_REGLEMENT}${id}/`,
-				method: 'PUT',
-				data,
-			}),
-			invalidatesTags: ['ModeReglement'],
-		}),
-		addModeReglement: builder.mutation<SuccessResponseType<ModeReglementClass>, { data: Partial<ModeReglementClass> }>({
-			query: ({ data }) => ({
-				url: process.env.NEXT_PUBLIC_PARAMETER_MODE_REGLEMENT,
-				method: 'POST',
-				data,
-			}),
-			invalidatesTags: ['ModeReglement'],
-		}),
-	}),
-});
-
 export const livreParApi = createApi({
 	reducerPath: 'livreParApi',
 	tagTypes: ['LivrePar'],
@@ -426,14 +372,6 @@ export const livreParApi = createApi({
 		}),
 	}),
 });
-
-export const {
-	useGetModeReglementListQuery,
-	useDeleteModeReglementMutation,
-	useEditModeReglementMutation,
-	useGetModeReglementQuery,
-	useAddModeReglementMutation,
-} = modeReglementApi;
 
 export const {
 	useGetModePaiementListQuery,

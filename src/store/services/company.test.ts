@@ -41,8 +41,8 @@ describe('companyApi endpoints', () => {
 		expect(result.data).toEqual({ ok: true });
 	});
 
-	it('deleteCompany mutation should return mocked data', async () => {
-		const result = await storeRef.store.dispatch(companyApi.endpoints.deleteCompany.initiate({ id: 1 }));
+	it('suspendCompany mutation should return mocked data', async () => {
+		const result = await storeRef.store.dispatch(companyApi.endpoints.suspendCompany.initiate({ id: 1 }));
 		expect(result.error).toBeUndefined();
 		expect(result.data).toEqual({ ok: true });
 	});

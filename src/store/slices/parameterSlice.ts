@@ -5,7 +5,6 @@ import type {
 	EmplacementClass,
 	MarqueClass,
 	ModePaiementClass,
-	ModeReglementClass,
 	UniteClass,
 	LivreParClass,
 } from '@/models/classes';
@@ -18,7 +17,6 @@ const initialState: ParameterStateInterface = {
 	unites: [],
 	marques: [],
 	modePaiement: [],
-	modeReglement: [],
 	livrePar: [],
 };
 
@@ -41,9 +39,6 @@ const parameterSlice = createSlice({
 		setMarques: (state, action: PayloadAction<Array<MarqueClass>>) => {
 			state.marques = action.payload;
 		},
-		setModeReglement: (state, action: PayloadAction<Array<ModeReglementClass>>) => {
-			state.modeReglement = action.payload;
-		},
 		setModePaiement: (state, action: PayloadAction<Array<ModePaiementClass>>) => {
 			state.modePaiement = action.payload;
 		},
@@ -53,15 +48,7 @@ const parameterSlice = createSlice({
 	},
 });
 
-export const {
-	setCities,
-	setCategories,
-	setEmplacements,
-	setMarques,
-	setUnites,
-	setModePaiement,
-	setModeReglement,
-	setLivrePar,
-} = parameterSlice.actions;
+export const { setCities, setCategories, setEmplacements, setMarques, setUnites, setModePaiement, setLivrePar } =
+	parameterSlice.actions;
 
 export default parameterSlice.reducer;

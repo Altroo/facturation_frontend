@@ -1,5 +1,4 @@
 import { runSaga } from 'redux-saga';
-import { takeLatest } from 'redux-saga/effects';
 import * as Types from '@/store/actions';
 import {
 	parameterSetCitiesSaga,
@@ -8,7 +7,6 @@ import {
 	parameterSetUnitesSaga,
 	parameterSetMarquesSaga,
 	parameterSetModePaiementSaga,
-	parameterSetModeReglementSaga,
 	parameterSetLivreParSaga,
 	watchParameter,
 } from '@/store/sagas/parameterSaga';
@@ -19,7 +17,6 @@ import {
 	setUnites,
 	setMarques,
 	setModePaiement,
-	setModeReglement,
 	setLivrePar,
 } from '@/store/slices/parameterSlice';
 import {
@@ -29,9 +26,9 @@ import {
 	UniteClass,
 	MarqueClass,
 	ModePaiementClass,
-	ModeReglementClass,
 	LivreParClass,
 } from '@/models/classes';
+import { takeLatest } from 'redux-saga/effects';
 
 describe('parameter sagas', () => {
 	it('parameterSetCitiesSaga should dispatch setCities with correct payload', async () => {
@@ -130,22 +127,6 @@ describe('parameter sagas', () => {
 		expect(dispatched).toEqual([setModePaiement([mp1, mp2])]);
 	});
 
-	it('parameterSetModeRegelementSaga should dispatch setModeRegelement with correct payload', async () => {
-		const mr1 = new ModeReglementClass(1, 'Immediate');
-		const mr2 = new ModeReglementClass(2, 'Deferred');
-
-		const payload = { type: Types.PARAMETER_SET_MODE_REGLEMENT, data: [mr1, mr2] };
-
-		const dispatched: unknown[] = [];
-		await runSaga(
-			{ dispatch: (action: unknown) => dispatched.push(action) },
-			parameterSetModeReglementSaga,
-			payload,
-		).toPromise();
-
-		expect(dispatched).toEqual([setModeReglement([mr1, mr2])]);
-	});
-
 	it('parameterSetLivreParSaga should dispatch setLivrePar with correct payload', async () => {
 		const lp1 = new LivreParClass(1, 'Driver A');
 
@@ -170,7 +151,6 @@ describe('parameter sagas', () => {
 		expect(gen.next().value).toEqual(takeLatest(Types.PARAMETER_SET_UNITES, parameterSetUnitesSaga));
 		expect(gen.next().value).toEqual(takeLatest(Types.PARAMETER_SET_MARQUES, parameterSetMarquesSaga));
 		expect(gen.next().value).toEqual(takeLatest(Types.PARAMETER_SET_MODE_PAIEMENT, parameterSetModePaiementSaga));
-		expect(gen.next().value).toEqual(takeLatest(Types.PARAMETER_SET_MODE_REGLEMENT, parameterSetModeReglementSaga));
 		expect(gen.next().value).toEqual(takeLatest(Types.PARAMETER_SET_LIVRE_PAR, parameterSetLivreParSaga));
 	});
 });

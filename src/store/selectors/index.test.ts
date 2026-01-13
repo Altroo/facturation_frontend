@@ -6,7 +6,6 @@ import {
 	getCitiesState,
 	getUserCompaniesState,
 	getModePaiementState,
-	getModeReglementState,
 	getCategoriesState,
 	getEmplacementsState,
 	getUnitesState,
@@ -18,7 +17,6 @@ import {
 	UserClass,
 	CitiesClass,
 	ModePaiementClass,
-	ModeReglementClass,
 	CategorieClass,
 	EmplacementClass,
 	UniteClass,
@@ -37,7 +35,6 @@ describe('Redux selectors', () => {
 	const mockUnites = [new UniteClass(1, 'Unit1'), new UniteClass(2, 'Unit2')];
 	const mockMarques = [new MarqueClass(1, 'Brand1'), new MarqueClass(2, 'Brand2')];
 	const mockModePaiement = [new ModePaiementClass(1, 'Cash'), new ModePaiementClass(2, 'Card')];
-	const mockModeRegelement = [new ModeReglementClass(1, 'Immediate'), new ModeReglementClass(2, 'Deferred')];
 	const mockLivrePar = [new LivreParClass(1, 'Altroo'), new LivreParClass(2, 'Yooy')];
 	const mockState = {
 		_init: {
@@ -70,7 +67,6 @@ describe('Redux selectors', () => {
 			unites: mockUnites,
 			marques: mockMarques,
 			modePaiement: mockModePaiement,
-			modeReglement: mockModeRegelement,
 			livrePar: mockLivrePar,
 		},
 		companies: {
@@ -148,13 +144,6 @@ describe('Redux selectors', () => {
 		expect(Array.isArray(modePaiement)).toBe(true);
 		expect(modePaiement[0]).toBeInstanceOf(ModePaiementClass);
 		expect(modePaiement.map((m) => m.nom)).toEqual(['Cash', 'Card']);
-	});
-
-	it('getModeRegelementState should return the modeRegelement array', () => {
-		const modeRegelement = getModeReglementState(mockState);
-		expect(Array.isArray(modeRegelement)).toBe(true);
-		expect(modeRegelement[0]).toBeInstanceOf(ModeReglementClass);
-		expect(modeRegelement.map((m) => m.nom)).toEqual(['Immediate', 'Deferred']);
 	});
 
 	it('getLivreParState should return the livrePar array', () => {

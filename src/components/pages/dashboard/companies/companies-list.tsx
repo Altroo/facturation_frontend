@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Box, Button, Stack, Typography, Avatar, Chip, IconButton } from '@mui/material';
 import {
 	Edit as EditIcon,
-	Delete as DeleteIcon,
+	PauseCircle as PauseIcon,
 	Visibility as VisibilityIcon,
 	Add as AddIcon,
 	Close as CloseIcon,
@@ -14,7 +14,7 @@ import { GridColDef, GridRenderCellParams, GridFilterModel } from '@mui/x-data-g
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import { useDeleteCompanyMutation, useGetCompaniesListQuery } from '@/store/services/company';
+import { useSuspendCompanyMutation, useGetCompaniesListQuery } from '@/store/services/company';
 import { COMPANIES_ADD, COMPANIES_VIEW, COMPANIES_EDIT } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
@@ -46,13 +46,13 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 	});
 	const [searchTerm, setSearchTerm] = useState<string>('');
 	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
-	const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
+	const [showSuspendModal, setShowSuspendModal] = useState<boolean>(false);
 	const [selectedId, setSelectedId] = useState<number | null>(null);
 
 	// Extract date filter parameters from filter model
 	const getDateFilterParams = () => {
 		const params: Record<string, string> = {};
-		filterModel.items.forEach(item => {
+		filterModel.items.forEach((item) => {
 			if (item.field === 'date_created' && item.value) {
 				const { from, to } = item.value as { from?: string; to?: string };
 				if (from) {
@@ -84,31 +84,37 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 	// enforce the type of the users data
 	const data = rawData as PaginationResponseType<CompanyClass> | undefined;
 
-	const [deleteRecord] = useDeleteCompanyMutation();
+	const [suspendRecord] = useSuspendCompanyMutation();
 
-	const deleteHandler = async () => {
+	const suspendHandler = async () => {
 		try {
-			await deleteRecord({ id: selectedId! }).unwrap();
+			await suspendRecord({ id: selectedId! }).unwrap();
 			// success toast
-			onSuccess('Entreprise supprimée avec succès');
+			onSuccess('Entreprise suspendue avec succès');
 			// refresh the page / data
 			refetch();
 		} catch {
 			// error toast
-			onError('Erreur lors de la suppression de l’entreprise');
+			onError("Erreur lors de la suspension de l'entreprise");
 		} finally {
-			setShowDeleteModal(false);
+			setShowSuspendModal(false);
 		}
 	};
 
 	const deleteModalActions = [
-		{ text: 'Annuler', active: false, onClick: () => setShowDeleteModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
-		{ text: 'Supprimer', active: true, onClick: deleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
+		{
+			text: 'Annuler',
+			active: false,
+			onClick: () => setShowSuspendModal(false),
+			icon: <CloseIcon />,
+			color: '#6B6B6B',
+		},
+		{ text: 'Suspendre', active: true, onClick: suspendHandler, icon: <PauseIcon />, color: '#D32F2F' },
 	];
 
 	const showDeleteModalCall = (id: number) => {
 		setSelectedId(id);
-		setShowDeleteModal(true);
+		setShowSuspendModal(true);
 	};
 
 	const columns: GridColDef[] = [
@@ -271,9 +277,9 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 						</IconButton>
 					</DarkTooltip>
 
-					<DarkTooltip title="Supprimer">
+					<DarkTooltip title="Suspendre">
 						<IconButton size="small" color="error" onClick={() => showDeleteModalCall(params.row.id)}>
-							<DeleteIcon />
+							<PauseIcon />
 						</IconButton>
 					</DarkTooltip>
 				</Box>
@@ -317,23 +323,23 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 							</Button>
 						</Box>
 						<PaginatedDataGrid
-						data={data}
-						isLoading={isLoading}
-						columns={columns}
-						paginationModel={paginationModel}
-						setPaginationModel={setPaginationModel}
-						searchTerm={searchTerm}
-						setSearchTerm={setSearchTerm}
-						filterModel={filterModel}
-						onFilterModelChange={setFilterModel}
-						toolbar={{ quickFilter: true, debounceMs: 500 }}
+							data={data}
+							isLoading={isLoading}
+							columns={columns}
+							paginationModel={paginationModel}
+							setPaginationModel={setPaginationModel}
+							searchTerm={searchTerm}
+							setSearchTerm={setSearchTerm}
+							filterModel={filterModel}
+							onFilterModelChange={setFilterModel}
+							toolbar={{ quickFilter: true, debounceMs: 500 }}
 						/>
-						{showDeleteModal && (
+						{showSuspendModal && (
 							<ActionModals
-								title="Supprimer cette entreprise ?"
-								body="Êtes‑vous sûr de vouloir supprimer cette entreprise?"
+								title="Suspendre cette entreprise ?"
+								body="Êtes‑vous sûr de vouloir suspendre cette entreprise ? Cette action est irréversible."
 								actions={deleteModalActions}
-								titleIcon={<DeleteIcon />}
+								titleIcon={<PauseIcon />}
 								titleIconColor="#D32F2F"
 							/>
 						)}

@@ -6,7 +6,6 @@ import {
 	MarqueClass,
 	UniteClass,
 	ModePaiementClass,
-	ModeReglementClass,
 	LivreParClass,
 } from '@/models/classes';
 
@@ -48,13 +47,6 @@ export const parameterSetMarquesAction = (props: Array<MarqueClass>) => {
 export const parameterSetModePaiementAction = (props: Array<ModePaiementClass>) => {
 	return {
 		type: types.PARAMETER_SET_MODE_PAIEMENT,
-		data: props,
-	};
-};
-
-export const parameterSetModeReglementAction = (props: Array<ModeReglementClass>) => {
-	return {
-		type: types.PARAMETER_SET_MODE_REGLEMENT,
 		data: props,
 	};
 };

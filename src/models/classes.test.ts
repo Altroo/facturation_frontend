@@ -10,7 +10,6 @@ import {
 	UniteClass,
 	EmplacementClass,
 	ModePaiementClass,
-	ModeReglementClass,
 	DeviFactureLivraisonLineClass,
 	DeviClass,
 	FactureClass,
@@ -235,14 +234,6 @@ describe('ModePaiementClass', () => {
 		const modePaiement = new ModePaiementClass(1, 'Cash');
 		expect(modePaiement.id).toBe(1);
 		expect(modePaiement.nom).toBe('Cash');
-	});
-});
-
-describe('ModeReglementClass', () => {
-	it('creates a mode reglement instance with given properties', () => {
-		const modeReglement = new ModeReglementClass(2, 'Deferred');
-		expect(modeReglement.id).toBe(2);
-		expect(modeReglement.nom).toBe('Deferred');
 	});
 });
 

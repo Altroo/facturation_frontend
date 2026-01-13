@@ -13,6 +13,7 @@ import {
 	INPUT_YEAR_PART_INVALID,
 	MINI_INPUT_EMAIL,
 	SHORT_INPUT_REQUIRED,
+	TVA_INPUT_INVALID,
 } from '@/utils/formValidationErrorMessages';
 import { ClientSchemaType } from '@/types/clientTypes';
 
@@ -100,6 +101,23 @@ const optionalNumberField = (min: number = 1, max?: number) =>
 			.min(min, { error: INPUT_MIN(min) })
 			.max(max ?? Number.MAX_SAFE_INTEGER, { error: INPUT_MAX(max ?? Number.MAX_SAFE_INTEGER) })
 			.optional(),
+	);
+
+const optionalTVANumberField = (min: number = 1, max?: number) =>
+	z.preprocess(
+		(val) => {
+			if (val === '') return undefined; // champ optionnel si vide
+			if (val === undefined) return undefined;
+			if (val === null) return null; // conserver null pour .nullable()
+			return Number(val); // convertit "123" -> 123, "abc" -> NaN
+		},
+		z
+			.number({ message: TVA_INPUT_INVALID })
+			.refine((val) => Number.isFinite(val), { message: TVA_INPUT_INVALID })
+			.min(min, { message: INPUT_MIN(min) })
+			.max(max ?? Number.MAX_SAFE_INTEGER, { message: INPUT_MAX(max ?? Number.MAX_SAFE_INTEGER) })
+			.optional()
+			.nullable(),
 	);
 
 const singleDigit = z
@@ -303,7 +321,7 @@ export const articleSchema = z
 		unite: optionalNumberField(1).nullable(),
 		prix_achat: optionalNumberField(0).nullable(),
 		prix_vente: optionalNumberField(0).nullable(),
-		tva: optionalNumberField(0).nullable(),
+		tva: optionalTVANumberField(0),
 		remarque: optionalTextField(2, 500).nullable(),
 		globalError: optionalTextField(1, 500),
 	})

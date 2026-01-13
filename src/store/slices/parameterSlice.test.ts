@@ -5,7 +5,6 @@ import reducer, {
 	setUnites,
 	setMarques,
 	setModePaiement,
-	setModeReglement,
 	setLivrePar,
 } from '@/store/slices/parameterSlice';
 import {
@@ -15,7 +14,6 @@ import {
 	UniteClass,
 	MarqueClass,
 	ModePaiementClass,
-	ModeReglementClass,
 	LivreParClass,
 } from '@/models/classes';
 
@@ -26,7 +24,6 @@ describe('parameterSlice', () => {
 		emplacements: [],
 		unites: [],
 		marques: [],
-		modeReglement: [],
 		modePaiement: [],
 		livrePar: [],
 	};
@@ -87,15 +84,6 @@ describe('parameterSlice', () => {
 		const newState = reducer(initialState, setModePaiement([mp1, mp2]));
 
 		expect(newState.modePaiement).toEqual([mp1, mp2]);
-	});
-
-	it('should handle setModeRegelement', () => {
-		const mr1 = new ModeReglementClass(1, 'Immediate');
-		const mr2 = new ModeReglementClass(2, 'Deferred');
-
-		const newState = reducer(initialState, setModeReglement([mr1, mr2]));
-
-		expect(newState.modeReglement).toEqual([mr1, mr2]);
 	});
 
 	it('should handle setLivrePar', () => {

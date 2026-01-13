@@ -1,7 +1,6 @@
 import * as types from './index';
 import {
 	parameterSetModePaiementAction,
-	parameterSetModeReglementAction,
 	parameterSetCitiesAction,
 	parameterSetCategoriesAction,
 	parameterSetEmplacementsAction,
@@ -15,7 +14,6 @@ import {
 	UniteClass,
 	MarqueClass,
 	ModePaiementClass,
-	ModeReglementClass,
 } from '@/models/classes';
 
 describe('parameterActions', () => {
@@ -89,16 +87,5 @@ describe('parameterActions', () => {
 
 		expect(action.type).toBe(types.PARAMETER_SET_MODE_PAIEMENT);
 		expect(action.data).toEqual([mp1, mp2]);
-	});
-
-	it('parameterSetModeRegelementAction should create an action with type PARAMETER_SET_MODE_REGELEMENT and array data', () => {
-		const mr1 = new ModeReglementClass(1, 'Immediate');
-		const mr2 = new ModeReglementClass(2, 'Deferred');
-		const props = [mr1, mr2];
-
-		const action = parameterSetModeReglementAction(props);
-
-		expect(action.type).toBe(types.PARAMETER_SET_MODE_REGLEMENT);
-		expect(action.data).toEqual([mr1, mr2]);
 	});
 });

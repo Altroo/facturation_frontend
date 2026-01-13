@@ -154,13 +154,6 @@ export class ModePaiementClass {
 	) {}
 }
 
-export class ModeReglementClass {
-	constructor(
-		public readonly id: number,
-		public nom: string,
-	) {}
-}
-
 export class LivreParClass {
 	constructor(
 		public readonly id: number,
