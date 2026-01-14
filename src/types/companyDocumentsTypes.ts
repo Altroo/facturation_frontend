@@ -268,8 +268,8 @@ export interface ConvertAction {
 	modalTitle: string;
 	/** Modal body message */
 	modalBody: string;
-	/** Whether the action is disabled */
-	disabled?: boolean;
+	/** Whether the action is disabled - can be boolean or function */
+	disabled?: boolean | ((row: DocumentListClass) => boolean);
 	/** Route to redirect after successful conversion */
 	redirectRoute: (id: number, companyId: number) => string;
 }

@@ -62,7 +62,7 @@ const factureClientListConfig: DocumentListConfig<FactureClass> = {
 			icon: <ReceiptLongIcon fontSize="small" color="success" />,
 			modalTitle: 'Convertir en bon de livraison ?',
 			modalBody: 'Êtes-vous sûr de vouloir convertir cette facture client en bon de livraison ?',
-			disabled: false,
+			disabled: (row) => !['Envoyé', 'Accepté'].includes(row.statut),
 			redirectRoute: BON_DE_LIVRAISON_EDIT,
 		},
 	],

@@ -54,7 +54,7 @@ const devisListConfig: DocumentListConfig<DeviClass> = {
 			icon: <ReceiptLongOutlinedIcon fontSize="small" color="success" />,
 			modalTitle: 'Convertir en facture pro-forma ?',
 			modalBody: 'Êtes-vous sûr de vouloir convertir ce devi en facture pro-forma ?',
-			disabled: false,
+			disabled: (row) => !['Envoyé', 'Accepté'].includes(row.statut),
 			redirectRoute: FACTURE_PRO_FORMA_EDIT,
 		},
 		{
@@ -63,7 +63,7 @@ const devisListConfig: DocumentListConfig<DeviClass> = {
 			icon: <ReceiptLongIcon fontSize="small" color="success" />,
 			modalTitle: 'Convertir en facture client ?',
 			modalBody: 'Êtes-vous sûr de vouloir convertir ce devi en facture client ?',
-			disabled: false,
+			disabled: (row) => !['Envoyé', 'Accepté'].includes(row.statut),
 			redirectRoute: FACTURE_CLIENT_EDIT,
 		},
 	],

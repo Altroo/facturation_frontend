@@ -591,8 +591,15 @@ const modalsConfig = useMemo(
 					if (index > 0) {
 						items.push(<Divider key={`divider-${action.key}`} />);
 					}
+					
+					// Find the current row to evaluate disabled state
+					const currentRow = menuItemId && data?.results ? data.results.find((row) => row.id === menuItemId) : null;
+					const isDisabled = typeof action.disabled === 'function' 
+						? currentRow ? action.disabled(currentRow) : true
+						: action.disabled ?? false;
+					
 					items.push(
-						<MenuItem key={action.key} disabled={action.disabled} onClick={() => handleMenuItemClick(action.key)}>
+						<MenuItem key={action.key} disabled={isDisabled} onClick={() => handleMenuItemClick(action.key)}>
 							<ListItemIcon>{action.icon}</ListItemIcon>
 							<ListItemText>{action.label}</ListItemText>
 						</MenuItem>,

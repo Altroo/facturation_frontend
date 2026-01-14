@@ -54,7 +54,7 @@ const factureProFormaListConfig: DocumentListConfig<FactureClass> = {
 			icon: <ReceiptLongIcon fontSize="small" color="success" />,
 			modalTitle: 'Convertir en facture client ?',
 			modalBody: 'Êtes-vous sûr de vouloir convertir cette facture pro forma en facture client ?',
-			disabled: false,
+			disabled: (row) => !['Envoyé', 'Accepté'].includes(row.statut),
 			redirectRoute: FACTURE_CLIENT_EDIT,
 		},
 	],
