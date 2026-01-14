@@ -69,7 +69,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 		error: dataError,
 	} = useGetBonDeLivraisonQuery({ id: id! }, { skip: !token || !isEditMode });
 
-	const { data: rawNumData, isLoading: isNumLoading } = useGetNumBonDeLivraisonQuery(undefined, {
+	const { data: rawNumData, isLoading: isNumLoading, refetch: refetchNum } = useGetNumBonDeLivraisonQuery(undefined, {
 		skip: !token || isEditMode,
 	});
 
@@ -103,6 +103,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 			dataError={dataError}
 			rawNumData={rawNumData as BonDeLivraisonNumResponse | undefined}
 			isNumLoading={isNumLoading}
+			refetchNum={refetchNum}
 			addData={addData}
 			isAddLoading={isAddLoading}
 			addError={addError}

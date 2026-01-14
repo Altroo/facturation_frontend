@@ -35,6 +35,7 @@ import {
 	Add as AddIcon,
 	Close as CloseIcon,
 	LocalShipping as LocalShippingIcon,
+	Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -155,6 +156,7 @@ export interface SharedDocumentFormContentProps<TDocument extends DocumentListCl
 	dataError?: unknown;
 	rawNumData?: DocumentNumResponse;
 	isNumLoading: boolean;
+	refetchNum?: () => Promise<unknown>;
 	// Mutation functions
 	addData: (params: { data: DocumentFormSchema }) => { unwrap: () => Promise<{ id?: number }> };
 	isAddLoading: boolean;
@@ -178,6 +180,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		id,
 		isEditMode,
 		config,
+		refetchNum,
 		role,
 		rawData,
 		isDataLoading,
@@ -280,6 +283,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	const [selectedArticles, setSelectedArticles] = useState<Set<number>>(new Set());
 	const [validationErrors, setValidationErrors] = useState<ValidateArticleLinesErrorType>({});
 	const topRef = useRef<HTMLDivElement | null>(null);
+	const prevRawNumDataRef = useRef<DocumentNumResponse | undefined>(rawNumData);
 	// Split numero into parts
 	const initialNum = getNumeroFromData(isEditMode, rawData, rawNumData, config);
 	const [numNumberPart = '', numYearPart = ''] = initialNum.split('/');
@@ -422,6 +426,18 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			}
 		},
 	});
+
+	// Update numero_part and year_part when rawNumData changes (after refetch)
+	useEffect(() => {
+		if (!isEditMode && rawNumData && prevRawNumDataRef.current !== rawNumData) {
+			prevRawNumDataRef.current = rawNumData;
+			const newNum = getNumeroFromData(isEditMode, rawData, rawNumData, config);
+			const [newNumberPart = '', newYearPart = ''] = newNum.split('/');
+			formik.setFieldValue('numero_part', newNumberPart);
+			formik.setFieldValue('year_part', newYearPart);
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [rawNumData, isEditMode, rawData, config]);
 
 	const getLines = useCallback((): DeviFactureLineFormValues[] => {
 		return Array.isArray(formik.values.lignes) ? (formik.values.lignes as DeviFactureLineFormValues[]) : [];
@@ -1311,6 +1327,29 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 													}}
 												/>
 											</Box>
+											{!isEditMode && refetchNum && (
+												<Tooltip title="Réinitialiser le numéro">
+													<IconButton
+														size="large"
+														color="primary"
+														onClick={async () => {
+															// Reset ref to force useEffect to run after refetch
+															prevRawNumDataRef.current = undefined;
+															const result = (await refetchNum()) as { data?: DocumentNumResponse };
+															// Directly update fields from refetch result
+															if (result?.data) {
+																const newNum = getNumeroFromData(isEditMode, rawData, result.data, config);
+																const [newNumberPart = '', newYearPart = ''] = newNum.split('/');
+																await formik.setFieldValue('numero_part', newNumberPart);
+																await formik.setFieldValue('year_part', newYearPart);
+															}
+														}}
+														sx={{ mt: 1 }}
+													>
+														<RefreshIcon fontSize="small" />
+													</IconButton>
+												</Tooltip>
+											)}
 										</Stack>
 										<DatePicker
 											label={config.labels.dateLabel}

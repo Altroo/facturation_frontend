@@ -69,7 +69,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 		error: dataError,
 	} = useGetDeviQuery({ id: id! }, { skip: !token || !isEditMode });
 
-	const { data: rawNumData, isLoading: isNumLoading } = useGetNumDevisQuery(undefined, {
+	const { data: rawNumData, isLoading: isNumLoading, refetch: refetchNum } = useGetNumDevisQuery(undefined, {
 		skip: !token || isEditMode,
 	});
 
@@ -103,6 +103,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 			dataError={dataError}
 			rawNumData={rawNumData as DevisNumResponse | undefined}
 			isNumLoading={isNumLoading}
+			refetchNum={refetchNum}
 			addData={addData}
 			isAddLoading={isAddLoading}
 			addError={addError}
