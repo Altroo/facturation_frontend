@@ -16,6 +16,8 @@ import {
 	ToggleButtonGroup,
 	ToggleButton,
 	Alert,
+	IconButton,
+	Tooltip,
 } from '@mui/material';
 import {
 	ArrowBack as ArrowBackIcon,
@@ -34,6 +36,7 @@ import {
 	Edit as EditIcon,
 	Add as AddIcon,
 	Warning as WarningIcon,
+	Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -84,7 +87,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		error: dataError,
 	} = useGetClientQuery({ id: id! }, { skip: !token || !isEditMode });
 
-	const { data: generatedCodeData, isLoading: isCodeLoading } = useGetCodeClientQuery(undefined, {
+	const {
+		data: generatedCodeData,
+		isLoading: isCodeLoading,
+		refetch: refetchCodeClient,
+	} = useGetCodeClientQuery(undefined, {
 		skip: !token || isEditMode,
 	});
 
@@ -330,20 +337,39 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								</ToggleButtonGroup>
 
 								<Stack spacing={2.5}>
-									<CustomTextInput
-										id="code_client"
-										type="text"
-										label="Code client *"
-										value={formik.values.code_client}
-										onChange={formik.handleChange('code_client')}
-										onBlur={formik.handleBlur('code_client')}
-										error={formik.touched.code_client && Boolean(formik.errors.code_client)}
-										helperText={formik.touched.code_client ? formik.errors.code_client : ''}
-										fullWidth={false}
-										size="small"
-										theme={inputTheme}
-										startIcon={<BadgeIcon fontSize="small" />}
-									/>
+									<Stack direction="row" spacing={1} alignItems="flex-start">
+										<CustomTextInput
+											id="code_client"
+											type="text"
+											label="Code client *"
+											value={formik.values.code_client}
+											onChange={formik.handleChange('code_client')}
+											onBlur={formik.handleBlur('code_client')}
+											error={formik.touched.code_client && Boolean(formik.errors.code_client)}
+											helperText={formik.touched.code_client ? formik.errors.code_client : ''}
+											fullWidth
+											size="small"
+											theme={inputTheme}
+											startIcon={<BadgeIcon fontSize="small" />}
+										/>
+										{!isEditMode && (
+											<Tooltip title="Réinitialiser le code">
+												<IconButton
+													size="large"
+													color="primary"
+													onClick={async () => {
+														const result = (await refetchCodeClient()) as { data?: { code_client: string } };
+														if (result?.data?.code_client) {
+															await formik.setFieldValue('code_client', result.data.code_client);
+														}
+													}}
+													sx={{ mt: 1 }}
+												>
+													<RefreshIcon fontSize="small" />
+												</IconButton>
+											</Tooltip>
+										)}
+									</Stack>
 								</Stack>
 							</CardContent>
 						</Card>

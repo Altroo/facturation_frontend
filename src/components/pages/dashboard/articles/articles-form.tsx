@@ -16,6 +16,8 @@ import {
 	ToggleButtonGroup,
 	ToggleButton,
 	Alert,
+	IconButton,
+	Tooltip,
 } from '@mui/material';
 import {
 	ArrowBack as ArrowBackIcon,
@@ -34,6 +36,7 @@ import {
 	Add as AddIcon,
 	Edit as EditIcon,
 	Warning as WarningIcon,
+	Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -89,7 +92,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		isLoading: isDataLoading,
 		error: dataError,
 	} = useGetArticleQuery({ id: id! }, { skip: !token || !isEditMode });
-	const { data: generatedCodeData, isLoading: isCodeLoading } = useGetCodeReferenceQuery(undefined, {
+	const {
+		data: generatedCodeData,
+		isLoading: isCodeLoading,
+		refetch: refetchCodeReference,
+	} = useGetCodeReferenceQuery(undefined, {
 		skip: !token || isEditMode,
 	});
 	// Mutations
@@ -384,20 +391,39 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<ToggleButton value="Service">Service</ToggleButton>
 								</ToggleButtonGroup>
 								<Stack spacing={2.5}>
-									<CustomTextInput
-										id="reference"
-										type="text"
-										label="Référence *"
-										value={formik.values.reference}
-										onChange={formik.handleChange('reference')}
-										onBlur={formik.handleBlur('reference')}
-										error={formik.touched.reference && Boolean(formik.errors.reference)}
-										helperText={formik.touched.reference ? formik.errors.reference : ''}
-										fullWidth={false}
-										size="small"
-										theme={inputTheme}
-										startIcon={<FingerprintIcon fontSize="small" />}
-									/>
+									<Stack direction="row" spacing={1} alignItems="flex-start">
+										<CustomTextInput
+											id="reference"
+											type="text"
+											label="Référence *"
+											value={formik.values.reference}
+											onChange={formik.handleChange('reference')}
+											onBlur={formik.handleBlur('reference')}
+											error={formik.touched.reference && Boolean(formik.errors.reference)}
+											helperText={formik.touched.reference ? formik.errors.reference : ''}
+											fullWidth
+											size="small"
+											theme={inputTheme}
+											startIcon={<FingerprintIcon fontSize="small" />}
+										/>
+										{!isEditMode && (
+											<Tooltip title="Réinitialiser la référence">
+												<IconButton
+													size="large"
+													color="primary"
+													onClick={async () => {
+														const result = (await refetchCodeReference()) as { data?: { reference: string } };
+														if (result?.data?.reference) {
+															await formik.setFieldValue('reference', result.data.reference);
+														}
+													}}
+													sx={{ mt: 1 }}
+												>
+													<RefreshIcon fontSize="small" />
+												</IconButton>
+											</Tooltip>
+										)}
+									</Stack>
 									<CustomTextInput
 										id="designation"
 										type="text"
