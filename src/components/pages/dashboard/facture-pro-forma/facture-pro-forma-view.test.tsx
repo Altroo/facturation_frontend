@@ -80,7 +80,7 @@ const mockProForma = {
 	remarque: 'Livrer avant fin mois',
 	date_created: '2025-01-01T10:00:00Z',
 	date_updated: '2025-01-02T12:00:00Z',
-	created_by_user_name: 'Admin User',
+	created_by_user_name: 'Caissier User',
 	lignes: [
 		{
 			article: 11,
@@ -114,8 +114,8 @@ describe('ProFormaViewClient UI and navigation', () => {
 			prefetch: jest.fn(),
 		});
 
-		// default Admin role
-		(useAppSelector as jest.Mock).mockReturnValue([{ id: 1, role: 'Admin' }]);
+		// default Caissier role
+		(useAppSelector as jest.Mock).mockReturnValue([{ id: 1, role: 'Caissier' }]);
 	});
 
 	afterEach(() => {

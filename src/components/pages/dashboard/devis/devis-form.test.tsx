@@ -44,7 +44,7 @@ jest.mock('next/navigation', () => ({
 // Mock hooks and selectors
 jest.mock('@/utils/hooks', () => ({
 	__esModule: true,
-	useAppSelector: jest.fn(() => [{ id: 1, role: 'Admin' }]),
+	useAppSelector: jest.fn(() => [{ id: 1, role: 'Caissier' }]),
 	useToast: () => ({
 		onSuccess: jest.fn(),
 		onError: jest.fn(),

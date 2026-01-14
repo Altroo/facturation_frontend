@@ -125,7 +125,7 @@ describe('CompanyDocumentsView', () => {
 
 	test('shows ApiProgress while loading', () => {
 		mockedGetAccessToken.mockReturnValue('token');
-		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Admin' }]);
+		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
@@ -141,7 +141,7 @@ describe('CompanyDocumentsView', () => {
 
 	test('shows ApiAlert when error status \\> 400', () => {
 		mockedGetAccessToken.mockReturnValue('token');
-		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Admin' }]);
+		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
@@ -157,9 +157,9 @@ describe('CompanyDocumentsView', () => {
 		expect(screen.getByTestId('api-alert')).toBeInTheDocument();
 	});
 
-	test('renders content and shows \\`Modifier\\` button for Admin, clicking navigates to edit route', () => {
+	test('renders content and shows \\`Modifier\\` button for Caissier, clicking navigates to edit route', () => {
 		mockedGetAccessToken.mockReturnValue('token');
-		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Admin' }]);
+		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
@@ -192,9 +192,9 @@ describe('CompanyDocumentsView', () => {
 		expect(pushMock).toHaveBeenCalledWith('/edit/1/10');
 	});
 
-	test('does not show \\`Modifier\\` button for non\\-Admin', () => {
+	test('does not show \\`Modifier\\` button for Lecture', () => {
 		mockedGetAccessToken.mockReturnValue('token');
-		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'User' }]);
+		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Lecture' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
@@ -210,7 +210,7 @@ describe('CompanyDocumentsView', () => {
 
 	test('clicking back button navigates to back route', () => {
 		mockedGetAccessToken.mockReturnValue('token');
-		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Admin' }]);
+		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);

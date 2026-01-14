@@ -93,8 +93,8 @@ describe('ClientsViewClient', () => {
 			prefetch: jest.fn(),
 		});
 
-		// Default: Admin role
-		(useAppSelector as jest.Mock).mockReturnValue([{ id: 1, role: 'Admin' }]);
+		// Default: Caissier role
+		(useAppSelector as jest.Mock).mockReturnValue([{ id: 1, role: 'Caissier' }]);
 	});
 
 	afterEach(() => {
@@ -169,7 +169,7 @@ describe('ClientsViewClient', () => {
 		expect(mockPush).toHaveBeenCalled();
 	});
 
-	it('shows and navigates with "Modifier" button when role is Admin', () => {
+	it('shows and navigates with "Modifier" button when role is Caissier', () => {
 		(useGetClientQuery as jest.Mock).mockReturnValue({
 			isLoading: false,
 			error: undefined,
@@ -184,8 +184,8 @@ describe('ClientsViewClient', () => {
 		expect(mockPush).toHaveBeenCalled();
 	});
 
-	it('does not show "Modifier" button when role is not Admin', () => {
-		(useAppSelector as jest.Mock).mockReturnValueOnce([{ id: 1, role: 'User' }]);
+	it('does not show "Modifier" button when role is Lecture', () => {
+		(useAppSelector as jest.Mock).mockReturnValueOnce([{ id: 1, role: 'Lecture' }]);
 
 		(useGetClientQuery as jest.Mock).mockReturnValue({
 			isLoading: false,

@@ -137,16 +137,19 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 						>
 							Liste des règlements
 						</Button>
-						{!isLoading && !error && company?.role === 'Admin' && reglement?.statut === 'Valide' && (
-							<Button
-								variant="contained"
-								startIcon={<EditIcon />}
-								onClick={() => router.push(REGLEMENTS_EDIT(id, company_id))}
-								sx={{ width: isMobile ? '100%' : 'auto' }}
-							>
-								Modifier
-							</Button>
-						)}
+						{!isLoading &&
+							!error &&
+							company?.role === 'Caissier' &&
+							reglement?.statut === 'Valide' && (
+								<Button
+									variant="contained"
+									startIcon={<EditIcon />}
+									onClick={() => router.push(REGLEMENTS_EDIT(id, company_id))}
+									sx={{ width: isMobile ? '100%' : 'auto' }}
+								>
+									Modifier
+								</Button>
+							)}
 					</Stack>
 
 					{isLoading ? (

@@ -14,8 +14,6 @@ import {
 	useTheme,
 	useMediaQuery,
 	Alert,
-	Paper,
-	Container,
 } from '@mui/material';
 import {
 	ArrowBack as ArrowBackIcon,
@@ -27,7 +25,6 @@ import {
 	Add as AddIcon,
 	Edit as EditIcon,
 	Warning as WarningIcon,
-	BusinessOutlined as BusinessOutlinedIcon,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -50,6 +47,7 @@ import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { getAccessTokenFromSession } from '@/store/session';
 import { ModePaiementClass } from '@/models/classes';
+import NoPermission from '@/components/shared/noPermission/noPermission';
 
 const inputTheme = textInputTheme();
 
@@ -554,42 +552,12 @@ const ReglementForm: React.FC<Props> = ({ session, company_id, id, facture_clien
 		<Stack direction="column" sx={{ position: 'relative' }}>
 			<NavigationBar title={isEditMode ? 'Modifier le règlement' : 'Ajouter un règlement'}>
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
-					{company?.role === 'Admin' ? (
+					{company?.role === 'Caissier' || company?.role === 'Commercial' ? (
 						<Box sx={{ width: '100%' }}>
 							<FormikContent token={token} id={id} company_id={company_id} facture_client_id={facture_client_id} />
 						</Box>
 					) : (
-						<Container maxWidth="sm" sx={{ mt: 8 }}>
-							<Paper
-								elevation={3}
-								sx={{
-									p: 6,
-									textAlign: 'center',
-									borderRadius: 3,
-									background: 'linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%)',
-								}}
-							>
-								<Box
-									sx={{
-										width: 80,
-										height: 80,
-										borderRadius: '50%',
-										backgroundColor: 'rgba(13, 7, 11, 0.08)',
-										display: 'flex',
-										alignItems: 'center',
-										justifyContent: 'center',
-										margin: '0 auto 24px',
-									}}
-								>
-									<BusinessOutlinedIcon sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
-								</Box>
-								<Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 3 }}>
-									{isEditMode
-										? "Vous n'avez pas le droit de modifier ce règlement. Veuillez contacter votre administrateur."
-										: "Vous n'avez pas le droit d'ajouter un règlement. Veuillez contacter votre administrateur."}
-								</Typography>
-							</Paper>
-						</Container>
+						<NoPermission />
 					)}
 				</main>
 			</NavigationBar>

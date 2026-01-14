@@ -290,7 +290,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			filterable: false,
 			renderCell: (params: GridRenderCellParams<ClientClass>) => (
 				<Box sx={{ display: 'flex', gap: 1 }}>
-					{(role === 'Admin' || role === 'Lecture') && (
+					{(role === 'Caissier' || role === 'Lecture' || role === 'Comptable' || role === 'Commercial') && (
 						<DarkTooltip title="Voir">
 							<IconButton
 								size="small"
@@ -301,7 +301,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 							</IconButton>
 						</DarkTooltip>
 					)}
-					{role === 'Admin' && (
+					{(role === 'Caissier' || role === 'Commercial') && (
 						<>
 							<DarkTooltip title="Modifier">
 								<IconButton
@@ -331,7 +331,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	return (
 		<>
-			{!archived && role === 'Admin' && (
+			{!archived && (role === 'Caissier' || role === 'Commercial') && (
 				<Box
 					sx={{
 						width: '100%',

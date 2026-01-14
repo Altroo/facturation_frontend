@@ -55,7 +55,6 @@ jest.mock('@/store/services/parameter', () => ({
 	categorieApi: makeApiMock('categorieApi'),
 	marqueApi: makeApiMock('marqueApi'),
 	uniteApi: makeApiMock('uniteApi'),
-	modeReglementApi: makeApiMock('modeReglementApi'),
 	modePaiementApi: makeApiMock('modePaiementApi'),
 	livreParApi: makeApiMock('livreParApi'),
 }));
@@ -117,7 +116,6 @@ describe('Redux Saga Store', () => {
 		expect(state).toHaveProperty('categorieApi');
 		expect(state).toHaveProperty('marqueApi');
 		expect(state).toHaveProperty('uniteApi');
-		expect(state).toHaveProperty('modeReglementApi');
 		expect(state).toHaveProperty('modePaiementApi');
 		expect(state).toHaveProperty('livreParApi');
 		expect(state).toHaveProperty('deviApi');

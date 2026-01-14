@@ -86,10 +86,10 @@ describe('AddManagedBySection', () => {
 		roleId: 'role-select',
 		roleLabel: 'Rôle',
 		roleOptions: [
-			{ value: 'Admin', code: 'admin' },
-			{ value: 'Manager', code: 'manager' },
+			{ value: 'Caissier', code: 'caissier' },
+			{ value: 'Lecture', code: 'lecture' },
 		],
-		roleValue: 'Admin',
+		roleValue: 'Caissier',
 		onRoleChange: mockRoleChange,
 		roleIcon: <span data-testid="role-icon" />,
 

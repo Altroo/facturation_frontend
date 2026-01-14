@@ -49,8 +49,8 @@ describe('UserClass', () => {
 
 describe('GroupClass', () => {
 	it('creates a group instance with titles', () => {
-		const group = new GroupClass(['Admin', 'User']);
-		expect(group.group_titles).toEqual(['Admin', 'User']);
+		const group = new GroupClass(['Caissier', 'Lecture']);
+		expect(group.group_titles).toEqual(['Caissier', 'Lecture']);
 	});
 
 	it('creates a group instance with null titles', () => {
@@ -85,8 +85,8 @@ describe('CompanyClass', () => {
 			'IF123',
 			'TP123',
 			'CNSS123',
-			[{ pk: 1, role: 'Manager' }],
-			[{ id: 1, first_name: 'Jane', last_name: 'Doe', role: 'Admin' }],
+			[{ pk: 1, role: 'Lecture' }],
+			[{ id: 1, first_name: 'Jane', last_name: 'Doe', role: 'Caissier' }],
 		);
 
 		expect(company.id).toBe(1);
@@ -94,8 +94,8 @@ describe('CompanyClass', () => {
 		expect(company.nbr_employe).toBe('10 à 50');
 		expect(company.civilite_responsable).toBe('M.');
 		expect(company.nom_responsable).toBe('Boss');
-		expect(company.managed_by).toEqual([{ pk: 1, role: 'Manager' }]);
-		expect(company.admins).toEqual([{ id: 1, first_name: 'Jane', last_name: 'Doe', role: 'Admin' }]);
+		expect(company.managed_by).toEqual([{ pk: 1, role: 'Lecture' }]);
+		expect(company.admins).toEqual([{ id: 1, first_name: 'Jane', last_name: 'Doe', role: 'Caissier' }]);
 	});
 });
 

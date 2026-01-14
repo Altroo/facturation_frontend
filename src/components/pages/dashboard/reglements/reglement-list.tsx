@@ -331,7 +331,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				const isValid = params.row.statut === 'Valide';
 				return (
 					<Box sx={{ display: 'flex', gap: 1 }}>
-						{(role === 'Admin' || role === 'Lecture') && (
+						{(role === 'Caissier' ||
+							role === 'Comptable' ||
+							role === 'Commercial' ||
+							role === 'Lecture') && (
 							<>
 								<DarkTooltip title="Voir">
 									<IconButton
@@ -342,14 +345,16 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										<VisibilityIcon />
 									</IconButton>
 								</DarkTooltip>
-								<DarkTooltip title="Afficher le reçu de règlement">
-									<IconButton size="small" color="success" onClick={() => handlePrint(params.row.id)}>
-										<PrintIcon />
-									</IconButton>
-								</DarkTooltip>
 							</>
 						)}
-						{role === 'Admin' && isValid && (
+						{(role === 'Caissier' || role === 'Comptable' || role === 'Commercial') && (
+							<DarkTooltip title="Afficher le reçu de règlement">
+								<IconButton size="small" color="success" onClick={() => handlePrint(params.row.id)}>
+									<PrintIcon />
+								</IconButton>
+							</DarkTooltip>
+						)}
+						{role === 'Caissier' && isValid && (
 							<>
 								<DarkTooltip title="Modifier">
 									<IconButton
@@ -367,7 +372,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								</DarkTooltip>
 							</>
 						)}
-						{role === 'Admin' && (
+						{role === 'Caissier' && (
 							<DarkTooltip title="Supprimer">
 								<IconButton size="small" color="error" onClick={() => showDeleteModalCall(params.row.id)}>
 									<DeleteIcon />
@@ -439,7 +444,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				<Divider sx={{ mb: 2 }} />
 			</Box>
 
-			{role === 'Admin' && (
+			{(role === 'Caissier' || role === 'Commercial') && (
 				<Box
 					sx={{
 						width: '100%',

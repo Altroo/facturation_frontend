@@ -332,11 +332,11 @@ describe('CompanyDocumentsListContent', () => {
 	});
 
 	describe('Rendering', () => {
-		it('renders the component for Admin role', () => {
+		it('renders the component for Caissier role', () => {
 			render(
 				<CompanyDocumentsListContent
 					companyId={1}
-					role="Admin"
+					role="Caissier"
 					router={mockRouter}
 					config={mockConfig}
 					queryResult={mockQueryResult}
@@ -351,11 +351,11 @@ describe('CompanyDocumentsListContent', () => {
 			expect(screen.getByTestId('paginated-data-grid')).toBeInTheDocument();
 		});
 
-		it('renders add button for Admin role', () => {
+		it('renders add button for Caissier role', () => {
 			render(
 				<CompanyDocumentsListContent
 					companyId={1}
-					role="Admin"
+					role="Caissier"
 					router={mockRouter}
 					config={mockConfig}
 					queryResult={mockQueryResult}
@@ -393,7 +393,7 @@ describe('CompanyDocumentsListContent', () => {
 			render(
 				<CompanyDocumentsListContent
 					companyId={1}
-					role="Admin"
+					role="Caissier"
 					router={mockRouter}
 					config={mockConfig}
 					queryResult={mockQueryResult}
@@ -413,7 +413,7 @@ describe('CompanyDocumentsListContent', () => {
 			render(
 				<CompanyDocumentsListContent
 					companyId={1}
-					role="Admin"
+					role="Caissier"
 					router={mockRouter}
 					config={mockConfig}
 					queryResult={mockQueryResult}
@@ -441,7 +441,7 @@ describe('CompanyDocumentsListContent', () => {
 			render(
 				<CompanyDocumentsListContent
 					companyId={1}
-					role="Admin"
+					role="Caissier"
 					router={mockRouter}
 					config={mockConfig}
 					queryResult={mockQueryResult}
@@ -464,7 +464,7 @@ describe('CompanyDocumentsListContent', () => {
 			const { container } = render(
 				<CompanyDocumentsListContent
 					companyId={1}
-					role="Admin"
+					role="Caissier"
 					router={mockRouter}
 					config={mockConfig}
 					queryResult={mockQueryResult}
@@ -495,7 +495,7 @@ describe('CompanyDocumentsListContent', () => {
 			const { container } = render(
 				<CompanyDocumentsListContent
 					companyId={1}
-					role="Admin"
+					role="Caissier"
 					router={mockRouter}
 					config={mockConfig}
 					queryResult={mockQueryResult}
@@ -533,7 +533,7 @@ describe('CompanyDocumentsListContent', () => {
 			const { container } = render(
 				<CompanyDocumentsListContent
 					companyId={1}
-					role="Admin"
+					role="Caissier"
 					router={mockRouter}
 					config={mockConfig}
 					queryResult={mockQueryResult}
@@ -565,7 +565,7 @@ describe('CompanyDocumentsListContent', () => {
 			const { container } = render(
 				<CompanyDocumentsListContent
 					companyId={1}
-					role="Admin"
+					role="Caissier"
 					router={mockRouter}
 					config={mockConfig}
 					queryResult={mockQueryResult}
@@ -610,7 +610,7 @@ describe('CompanyDocumentsListContent', () => {
 			const { container } = render(
 				<CompanyDocumentsListContent
 					companyId={1}
-					role="Admin"
+					role="Caissier"
 					router={mockRouter}
 					config={mockConfig}
 					queryResult={mockQueryResult}
@@ -656,7 +656,7 @@ describe('CompanyDocumentsListContent', () => {
 			const { container } = render(
 				<CompanyDocumentsListContent
 					companyId={1}
-					role="Admin"
+					role="Caissier"
 					router={mockRouter}
 					config={mockConfig}
 					queryResult={mockQueryResult}
@@ -701,7 +701,7 @@ describe('CompanyDocumentsListContent', () => {
 			const { container } = render(
 				<CompanyDocumentsListContent
 					companyId={1}
-					role="Admin"
+					role="Caissier"
 					router={mockRouter}
 					config={mockConfig}
 					queryResult={mockQueryResult}
@@ -739,7 +739,7 @@ describe('CompanyDocumentsListContent', () => {
 			const { container } = render(
 				<CompanyDocumentsListContent
 					companyId={1}
-					role="Admin"
+					role="Caissier"
 					router={mockRouter}
 					config={mockConfig}
 					queryResult={mockQueryResult}
@@ -781,7 +781,7 @@ describe('CompanyDocumentsListContent', () => {
 			const { container } = render(
 				<CompanyDocumentsListContent
 					companyId={1}
-					role="Admin"
+					role="Caissier"
 					router={mockRouter}
 					config={mockConfig}
 					queryResult={mockQueryResult}
@@ -828,7 +828,7 @@ describe('CompanyDocumentsListContent', () => {
 			render(
 				<CompanyDocumentsListContent
 					companyId={1}
-					role="Admin"
+					role="Caissier"
 					router={mockRouter}
 					config={mockConfig}
 					queryResult={loadingQueryResult}
@@ -855,7 +855,7 @@ describe('CompanyDocumentsListContent', () => {
 			render(
 				<CompanyDocumentsListContent
 					companyId={1}
-					role="Admin"
+					role="Caissier"
 					router={mockRouter}
 					config={mockConfig}
 					queryResult={emptyQueryResult}
@@ -881,7 +881,7 @@ describe('CompanyDocumentsListContent', () => {
 			render(
 				<CompanyDocumentsListContent
 					companyId={1}
-					role="Admin"
+					role="Caissier"
 					router={mockRouter}
 					config={configWithoutConvert}
 					queryResult={mockQueryResult}
@@ -907,7 +907,7 @@ describe('CompanyDocumentsListContent', () => {
 			render(
 				<CompanyDocumentsListContent
 					companyId={1}
-					role="Admin"
+					role="Caissier"
 					router={mockRouter}
 					config={configWithoutPrint}
 					queryResult={mockQueryResult}
@@ -939,7 +939,7 @@ describe('CompanyDocumentsListContent', () => {
 			render(
 				<CompanyDocumentsListContent
 					companyId={1}
-					role="Admin"
+					role="Caissier"
 					router={mockRouter}
 					config={mockConfig}
 					queryResult={mockQueryResult}
@@ -960,7 +960,7 @@ describe('CompanyDocumentsListContent', () => {
 			render(
 				<CompanyDocumentsListContent
 					companyId={1}
-					role="Admin"
+					role="Caissier"
 					router={mockRouter}
 					config={mockConfig}
 					queryResult={mockQueryResult}

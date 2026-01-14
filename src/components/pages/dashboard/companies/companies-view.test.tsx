@@ -117,7 +117,7 @@ describe('CompaniesViewClient', () => {
 				id: 123,
 				raison_sociale: 'Entreprise Test',
 				logo_cropped: '/logo.png',
-				admins: [{ id: 1, first_name: 'Alice', last_name: 'Doe', role: 'Admin' }],
+				admins: [{ id: 1, first_name: 'Alice', last_name: 'Doe', role: 'Caissier' }],
 			},
 		});
 
@@ -125,7 +125,7 @@ describe('CompaniesViewClient', () => {
 		expect(screen.getByText('Entreprise Test')).toBeInTheDocument();
 		expect(screen.getByText('ICE: 123')).toBeInTheDocument();
 		expect(screen.getByText('Alice Doe')).toBeInTheDocument();
-		expect(screen.getByText('Admin')).toBeInTheDocument();
+		expect(screen.getByText('Caissier')).toBeInTheDocument();
 	});
 
 	it('navigates back to list when "Liste des entreprises" button is clicked', () => {

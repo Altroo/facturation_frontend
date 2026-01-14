@@ -148,6 +148,7 @@ export interface SharedDocumentFormContentProps<TDocument extends DocumentListCl
 	id?: number;
 	isEditMode: boolean;
 	config: DocumentFormConfig<TDocument>;
+	role?: string;
 	// Data from API
 	rawData?: DocumentFormData;
 	isDataLoading: boolean;
@@ -177,6 +178,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		id,
 		isEditMode,
 		config,
+		role,
 		rawData,
 		isDataLoading,
 		dataError,
@@ -733,29 +735,42 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			const errorKey = `ligne_${rowIndex}_prix_vente`;
 			const helperText = validationErrors[errorKey] || '';
 			const hasError = !!validationErrors[errorKey];
-			return (
-				<Tooltip title={helperText} arrow>
-					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-						<CustomTextInput
-							id={`prix_vente_${rowIndex}`}
-							type="text"
-							value={inputValue}
-							onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-								const raw = (e.target as HTMLInputElement).value;
-								const parsed = parseNumber(raw);
-								if (parsed !== null && parsed < 0) return;
-								handleLineChangeRef.current(rowIndex, 'prix_vente', parsed === null ? raw : parsed);
-							}}
-							fullWidth
-							size="small"
-							theme={gridFieldTheme}
-							error={hasError}
-							endIcon={<InputAdornment position="end">MAD</InputAdornment>}
-							slotProps={{ input: { style: { textAlign: 'center' }, inputProps: { min: 0 } } }}
-						/>
-					</Box>
-				</Tooltip>
-			);
+
+			if (role === 'Commercial') {
+				return (
+					<DarkTooltip title={inputValue}>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+								{inputValue}
+							</Typography>
+						</Box>
+					</DarkTooltip>
+				);
+			} else {
+				return (
+					<Tooltip title={helperText} arrow>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<CustomTextInput
+								id={`prix_vente_${rowIndex}`}
+								type="text"
+								value={inputValue}
+								onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+									const raw = (e.target as HTMLInputElement).value;
+									const parsed = parseNumber(raw);
+									if (parsed !== null && parsed < 0) return;
+									handleLineChangeRef.current(rowIndex, 'prix_vente', parsed === null ? raw : parsed);
+								}}
+								fullWidth
+								size="small"
+								theme={gridFieldTheme}
+								error={hasError}
+								endIcon={<InputAdornment position="end">MAD</InputAdornment>}
+								slotProps={{ input: { style: { textAlign: 'center' }, inputProps: { min: 0 } } }}
+							/>
+						</Box>
+					</Tooltip>
+				);
+			}
 		};
 		const quantity = (params: GridRenderCellParams) => {
 			const rowIndex = getRowIndexFromParams(params);
@@ -824,7 +839,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			);
 		};
 		return [prix, quantity, remise];
-	}, [getLines, getRowIndexFromParams, validationErrors, handleLineChangeRef]);
+	}, [getLines, getRowIndexFromParams, validationErrors, handleLineChangeRef, role]);
 
 	const linesColumns: GridColDef[] = useMemo(
 		() => [

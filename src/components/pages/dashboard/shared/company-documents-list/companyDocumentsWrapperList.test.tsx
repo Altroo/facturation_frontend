@@ -62,7 +62,7 @@ describe('CompanyDocumentsList', () => {
 		expect(screen.getByText('ApiProgressMock')).toBeInTheDocument();
 	});
 
-	test('renders empty state when no companies and shows admin branch correctly (no create button)', () => {
+	test('renders empty state when no companies and shows Caissier branch correctly (no create button)', () => {
 		mockedGetAccessToken.mockReturnValue('token');
 		mockedUseGetUserCompaniesQuery.mockReturnValue({ data: [], isLoading: false });
 
@@ -81,8 +81,8 @@ describe('CompanyDocumentsList', () => {
 	test('renders tabs and invokes children with selected company props', () => {
 		mockedGetAccessToken.mockReturnValue('token');
 		const companies = [
-			{ id: 1, raison_sociale: 'Company One', role: 'Admin' },
-			{ id: 2, raison_sociale: 'Company Two', role: 'User' },
+			{ id: 1, raison_sociale: 'Company One', role: 'Caissier' },
+			{ id: 2, raison_sociale: 'Company Two', role: 'Lecture' },
 		];
 		mockedUseGetUserCompaniesQuery.mockReturnValue({ data: companies, isLoading: false });
 
@@ -103,7 +103,7 @@ describe('CompanyDocumentsList', () => {
 		expect(screen.getByText('Company Two')).toBeInTheDocument();
 
 		// Child rendered and called with first company (selectedIndex defaults to 0)
-		expect(screen.getByTestId('child')).toHaveTextContent('id:1 role:Admin');
-		expect(childFn).toHaveBeenCalledWith({ company_id: 1, role: 'Admin' });
+		expect(screen.getByTestId('child')).toHaveTextContent('id:1 role:Caissier');
+		expect(childFn).toHaveBeenCalledWith({ company_id: 1, role: 'Caissier' });
 	});
 });

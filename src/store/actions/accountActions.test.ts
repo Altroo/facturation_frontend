@@ -27,7 +27,7 @@ describe('Account Actions', () => {
 	});
 
 	it('accountSetGroupesAction should create ACCOUNT_SET_GROUPES action with group data', () => {
-		const group = new GroupClass(['Admin', 'User']);
+		const group = new GroupClass(['Caissier', 'User']);
 
 		const action = accountSetGroupesAction(group);
 		expect(action).toEqual({

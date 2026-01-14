@@ -134,16 +134,18 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 						>
 							Liste des clients
 						</Button>
-						{!isLoading && !error && company?.role === 'Admin' && (
-							<Button
-								variant="contained"
-								startIcon={<EditIcon />}
-								onClick={() => router.push(CLIENTS_EDIT(id, company_id))}
-								sx={{ width: isMobile ? '100%' : 'auto' }}
-							>
-								Modifier
-							</Button>
-						)}
+						{!isLoading &&
+							!error &&
+							(company?.role === 'Caissier' || company?.role === 'Commercial') && (
+								<Button
+									variant="contained"
+									startIcon={<EditIcon />}
+									onClick={() => router.push(CLIENTS_EDIT(id, company_id))}
+									sx={{ width: isMobile ? '100%' : 'auto' }}
+								>
+									Modifier
+								</Button>
+							)}
 					</Stack>
 
 					{isLoading ? (

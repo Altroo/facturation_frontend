@@ -475,7 +475,9 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 						>
 							{backLabel}
 						</Button>
-						{!isLoading && !error && company?.role === 'Admin' && (
+					{!isLoading &&
+						!error &&
+						(company?.role === 'Caissier' || company?.role === 'Commercial') && (
 							<Button
 								variant="contained"
 								startIcon={<EditIcon />}
@@ -485,9 +487,9 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 								Modifier
 							</Button>
 						)}
-					</Stack>
+				</Stack>
 
-					{isLoading || isArticlesLoading ? (
+				{isLoading || isArticlesLoading ? (
 						<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
 					) : (axiosError?.status as number) > 400 ? (
 						<ApiAlert

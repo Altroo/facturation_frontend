@@ -271,7 +271,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 		return Object.values(convertMutations).some((m) => m.isLoading);
 	}, [convertMutations]);
 
-	const renderActions = useCallback(
+	const renderMutationActions = useCallback(
 		(params: GridRenderCellParams<TDocument>) => {
 			const isCurrentItemLoading = isAnyConvertLoading && selectedId === (params.row as DocumentListClass).id;
 
@@ -307,17 +307,6 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 							</IconButton>
 						</DarkTooltip>
 					)}
-					{config.printActions && config.printActions.length > 0 && (
-						<DarkTooltip title="Afficher">
-							<IconButton
-								size="small"
-								color="info"
-								onClick={(e) => showPrintMenuCall(e, (params.row as DocumentListClass).id)}
-							>
-								<PrintIcon fontSize="small" />
-							</IconButton>
-						</DarkTooltip>
-					)}
 				</>
 			);
 		},
@@ -325,14 +314,31 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 			router,
 			config.routes,
 			config.convertActions,
-			config.printActions,
 			companyId,
 			showDeleteModalCall,
 			showConvertModalCall,
-			showPrintMenuCall,
 			isAnyConvertLoading,
 			selectedId,
 		],
+	);
+
+	const renderPrintAction = useCallback(
+		(params: GridRenderCellParams<TDocument>) => (
+			<>
+				{config.printActions && config.printActions.length > 0 && (
+					<DarkTooltip title="Afficher">
+						<IconButton
+							size="small"
+							color="info"
+							onClick={(e) => showPrintMenuCall(e, (params.row as DocumentListClass).id)}
+						>
+							<PrintIcon fontSize="small" />
+						</IconButton>
+					</DarkTooltip>
+				)}
+			</>
+		),
+		[config.printActions, showPrintMenuCall],
 	);
 
 	const clientFilterOptions = useMemo(() => {
@@ -462,55 +468,60 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 				filterable: false,
 				renderCell: (params: GridRenderCellParams<TDocument>) => (
 					<Box sx={{ display: 'flex', gap: 1 }}>
-						{(role === 'Admin' || role === 'Lecture') && (
-							<DarkTooltip title="Voir">
-								<IconButton
-									size="small"
-									color="info"
-									onClick={() => router.push(config.routes.viewRoute((params.row as DocumentListClass).id, companyId))}
-								>
-									<VisibilityIcon />
-								</IconButton>
-							</DarkTooltip>
-						)}
-						{role === 'Admin' && <>{renderActions(params)}</>}
-					</Box>
-				),
-			},
-		];
+					{(role === 'Caissier' ||
+						role === 'Comptable' ||
+						role === 'Commercial' ||
+						role === 'Lecture') && (
+						<DarkTooltip title="Voir">
+							<IconButton
+								size="small"
+								color="info"
+								onClick={() => router.push(config.routes.viewRoute((params.row as DocumentListClass).id, companyId))}
+							>
+								<VisibilityIcon />
+							</IconButton>
+						</DarkTooltip>
+					)}
+					{(role === 'Caissier' || role === 'Commercial') && <>{renderMutationActions(params)}</>}
+					{(role === 'Caissier' || role === 'Comptable' || role === 'Commercial') && <>{renderPrintAction(params)}</>}
+			</Box>
+		),
+	},
+];
 
-		return baseColumns;
-	}, [
-		config.columns.numeroField,
-		config.columns.numeroHeaderName,
-		config.columns.extraField,
-		config.columns.extraFieldHeaderName,
-		config.columns.dateField,
-		config.columns.dateHeaderName,
-		config.routes,
-		clientFilterOptions,
-		router,
-		companyId,
-		role,
-		renderActions,
-	]);
+return baseColumns;
+}, [
+config.columns.numeroField,
+config.columns.numeroHeaderName,
+config.columns.extraField,
+config.columns.extraFieldHeaderName,
+config.columns.dateField,
+config.columns.dateHeaderName,
+config.routes,
+clientFilterOptions,
+router,
+companyId,
+role,
+renderMutationActions,
+renderPrintAction,
+]);
 
-	const modalsConfig = useMemo(
-		() => ({
-			delete: {
-				title: config.labels.deleteConfirmTitle,
-				body: config.labels.deleteConfirmBody,
-				actions: deleteModalActions,
-				titleIcon: <DeleteIcon />,
-				titleIconColor: '#D32F2F',
-			},
-		}),
-		[config.labels, deleteModalActions],
-	);
+const modalsConfig = useMemo(
+() => ({
+	delete: {
+		title: config.labels.deleteConfirmTitle,
+		body: config.labels.deleteConfirmBody,
+		actions: deleteModalActions,
+		titleIcon: <DeleteIcon />,
+		titleIconColor: '#D32F2F',
+	},
+}),
+[config.labels, deleteModalActions],
+);
 
 	return (
 		<>
-			{role === 'Admin' && (
+			{(role === 'Caissier' || role === 'Commercial') && (
 				<Box
 					sx={{
 						width: '100%',

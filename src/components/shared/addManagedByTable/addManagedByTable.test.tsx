@@ -63,8 +63,8 @@ jest.mock('@/utils/themes', () => ({
 
 describe('ManagedByTableSection', () => {
 	const roleOptions = [
-		{ value: 'Admin', code: 'admin' },
-		{ value: 'Manager', code: 'manager' },
+		{ value: 'Caissier', code: 'caissier' },
+		{ value: 'Lecture', code: 'lecture' },
 	];
 
 	const addSectionProps: AddManagedBySectionProps = {
@@ -79,7 +79,7 @@ describe('ManagedByTableSection', () => {
 		roleId: 'role-select',
 		roleLabel: 'Rôle',
 		roleOptions,
-		roleValue: 'Admin',
+		roleValue: 'Caissier',
 		onRoleChange: jest.fn(),
 		roleIcon: <span />,
 		onAdd: jest.fn(),
@@ -113,8 +113,8 @@ describe('ManagedByTableSection', () => {
 		const onDelete = jest.fn();
 
 		const userData: ManagedByType[] = [
-			{ id: 1, first_name: 'Alice', last_name: 'Smith', role: 'Admin' },
-			{ id: 2, first_name: 'Bob', last_name: 'Jones', role: 'Manager' },
+			{ id: 1, first_name: 'Alice', last_name: 'Smith', role: 'Caissier' },
+			{ id: 2, first_name: 'Bob', last_name: 'Jones', role: 'Lecture' },
 		];
 
 		render(
@@ -139,9 +139,9 @@ describe('ManagedByTableSection', () => {
 		expect(screen.getByText('vous')).toBeInTheDocument();
 
 		fireEvent.change(screen.getByTestId('dropdown-role_1'), {
-			target: { value: 'Admin' },
+			target: { value: 'Caissier' },
 		});
-		expect(onRoleChange).toHaveBeenCalledWith(1, 'Admin');
+		expect(onRoleChange).toHaveBeenCalledWith(1, 'Caissier');
 
 		const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
 		fireEvent.click(deleteButtons[1]); // Click Bob's delete button
@@ -154,7 +154,7 @@ describe('ManagedByTableSection', () => {
 				membership_id: 10,
 				company_id: 100,
 				raison_sociale: 'Acme Corp',
-				role: 'Manager',
+				role: 'Lecture',
 			},
 		];
 

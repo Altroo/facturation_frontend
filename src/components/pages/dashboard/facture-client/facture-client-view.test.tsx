@@ -79,7 +79,7 @@ const mockFacture = {
 	remarque: 'Livrer avant fin mois',
 	date_created: '2025-01-01T10:00:00Z',
 	date_updated: '2025-01-02T12:00:00Z',
-	created_by_user_name: 'Admin User',
+	created_by_user_name: 'Caissier User',
 	lignes: [
 		{
 			article: 11,
@@ -113,8 +113,8 @@ describe('FactureClientViewClient UI and navigation', () => {
 			prefetch: jest.fn(),
 		});
 
-		// default company role Admin
-		(useAppSelector as jest.Mock).mockReturnValue([{ id: 1, role: 'Admin' }]);
+		// default company role Caissier
+		(useAppSelector as jest.Mock).mockReturnValue([{ id: 1, role: 'Caissier' }]);
 	});
 
 	afterEach(() => {
@@ -174,7 +174,7 @@ describe('FactureClientViewClient UI and navigation', () => {
 		expect(mockPush).toHaveBeenCalled();
 	});
 
-	it('shows and navigates with "Modifier" button when company role is Admin', () => {
+	it('shows and navigates with "Modifier" button when company role is Caissier', () => {
 		useGetFactureClientQuery.mockReturnValue({ isLoading: false, data: mockFacture, error: undefined });
 		useGetArticlesListQuery.mockReturnValue({ isLoading: false, data: [mockArticle], error: undefined });
 

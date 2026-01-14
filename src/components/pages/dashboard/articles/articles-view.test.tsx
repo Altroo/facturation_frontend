@@ -81,8 +81,8 @@ describe('ArticlesViewClient navigation and permissions', () => {
 			prefetch: jest.fn(),
 		});
 
-		// Default: Admin role
-		(useAppSelector as jest.Mock).mockReturnValue([{ id: 1, role: 'Admin' }]);
+		// Default: Caissier role
+		(useAppSelector as jest.Mock).mockReturnValue([{ id: 1, role: 'Caissier' }]);
 	});
 
 	afterEach(() => {
@@ -142,7 +142,7 @@ describe('ArticlesViewClient navigation and permissions', () => {
 		expect(mockPush).toHaveBeenCalled();
 	});
 
-	it('shows and navigates with "Modifier" button when role is Admin', () => {
+	it('shows and navigates with "Modifier" button when role is Caissier', () => {
 		(useGetArticleQuery as jest.Mock).mockReturnValue({
 			isLoading: false,
 			error: undefined,

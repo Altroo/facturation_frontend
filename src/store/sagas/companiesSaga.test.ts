@@ -9,8 +9,8 @@ describe('companiesSetUserCompaniesSaga', () => {
 		const mockPayload: setCompaniesUserSagatype = {
 			type: Types.COMPANIES_SET_USER_COMPANIES,
 			data: [
-				{ id: 1, raison_sociale: 'Alpha Corp', role: 'Admin' },
-				{ id: 2, raison_sociale: 'Beta LLC', role: 'Manager' },
+				{ id: 1, raison_sociale: 'Alpha Corp', role: 'Caissier' },
+				{ id: 2, raison_sociale: 'Beta LLC', role: 'Lecture' },
 			],
 		};
 

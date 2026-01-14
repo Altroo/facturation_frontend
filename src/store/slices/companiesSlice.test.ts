@@ -13,8 +13,8 @@ describe('companiesSlice reducer', () => {
 
 	it('should handle setUserCompanies with a non-empty array', () => {
 		const payload: CompaniesUserCompaniesType[] = [
-			{ id: 1, raison_sociale: 'Alpha Corp', role: 'Admin' },
-			{ id: 2, raison_sociale: 'Beta LLC', role: 'Manager' },
+			{ id: 1, raison_sociale: 'Alpha Corp', role: 'Caissier' },
+			{ id: 2, raison_sociale: 'Beta LLC', role: 'Lecture' },
 		];
 
 		const action = setUserCompanies(payload);
@@ -22,7 +22,7 @@ describe('companiesSlice reducer', () => {
 
 		expect(result.user_companies).toEqual(payload);
 		expect(result.user_companies[0].raison_sociale).toBe('Alpha Corp');
-		expect(result.user_companies[1].role).toBe('Manager');
+		expect(result.user_companies[1].role).toBe('Lecture');
 	});
 
 	it('should handle setUserCompanies with an empty array', () => {
@@ -35,10 +35,10 @@ describe('companiesSlice reducer', () => {
 
 	it('should replace existing state with new payload', () => {
 		const initial: CompaniesStateInterface = {
-			user_companies: [{ id: 1, raison_sociale: 'Alpha Corp', role: 'Admin' }],
+			user_companies: [{ id: 1, raison_sociale: 'Alpha Corp', role: 'Caissier' }],
 		};
 
-		const payload: CompaniesUserCompaniesType[] = [{ id: 2, raison_sociale: 'Beta LLC', role: 'Manager' }];
+		const payload: CompaniesUserCompaniesType[] = [{ id: 2, raison_sociale: 'Beta LLC', role: 'Lecture' }];
 
 		const action = setUserCompanies(payload);
 		const result = reducer(initial, action);

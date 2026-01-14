@@ -76,7 +76,7 @@ describe('account sagas', () => {
 	});
 
 	it('accountSetGroupesSaga should dispatch setGroupes with correct payload', async () => {
-		const group = new GroupClass(['Admin', 'User']);
+		const group = new GroupClass(['Caissier', 'Lecture']);
 
 		const payload: setGroupesPayloadType = {
 			type: Types.ACCOUNT_SET_GROUPES,

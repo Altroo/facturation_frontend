@@ -58,9 +58,10 @@ type FormikContentProps = {
 	company_id: number;
 	id?: number;
 	isEditMode: boolean;
+	role?: string;
 };
 
-const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, isEditMode }) => {
+const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, isEditMode, role }) => {
 	// Queries
 	const {
 		data: rawData,
@@ -111,6 +112,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 			patchStatut={patchStatut}
 			isPatchLoading={isPatchLoading}
 			patchError={patchError}
+			role={role}
 		/>
 	);
 };
@@ -129,8 +131,6 @@ const DevisForm: React.FC<Props> = ({ session, company_id, id }) => {
 			documentConfig={{
 				addTitle: 'Ajouter un devis',
 				editTitle: 'Modifier devis',
-				addDeniedMessage: "Vous n'avez pas le droit d'ajouter un devis. Veuillez contacter votre administrateur.",
-				editDeniedMessage: "Vous n'avez pas le droit de modifier ce devis. Veuillez contacter votre administrateur.",
 			}}
 			FormComponent={FormikContent}
 		/>

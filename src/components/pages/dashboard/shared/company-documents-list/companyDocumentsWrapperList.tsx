@@ -79,7 +79,7 @@ const CompanyDocumentsWrapperList: React.FC<CompanyDocumentsListProps> = ({ sess
 							<Typography variant="h5" fontWeight={600} color="text.primary" gutterBottom>
 								Aucune entreprise trouvée
 							</Typography>
-							{selectedCompany?.role === 'Admin' ? (
+						{selectedCompany?.role === 'Caissier' ? (
 								<>
 									<Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 3 }}>
 										Vous n&#39;avez pas encore d&#39;entreprises associées à votre compte. Veuillez créer une nouvelle

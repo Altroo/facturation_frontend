@@ -5,8 +5,8 @@ import type { CompaniesUserCompaniesType } from '@/types/companyTypes';
 describe('companiesSetUserCompaniesAction', () => {
 	it('creates an action with the correct type and data', () => {
 		const payload: CompaniesUserCompaniesType[] = [
-			{ id: 1, raison_sociale: 'Alpha Corp', role: 'Admin' },
-			{ id: 2, raison_sociale: 'Beta LLC', role: 'Manager' },
+			{ id: 1, raison_sociale: 'Alpha Corp', role: 'Caissier' },
+			{ id: 2, raison_sociale: 'Beta LLC', role: 'Lecture' },
 		];
 
 		const action = companiesSetUserCompaniesAction(payload);

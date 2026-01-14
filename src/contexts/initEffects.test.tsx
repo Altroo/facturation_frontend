@@ -200,8 +200,8 @@ describe('InitEffects', () => {
 		(useSession as jest.Mock).mockReturnValue({ data: { user: {} }, status: 'authenticated' });
 
 		const mockCompanies = [
-			{ id: 1, raison_sociale: 'Alpha Corp', role: 'Admin' },
-			{ id: 2, raison_sociale: 'Beta LLC', role: 'Manager' },
+			{ id: 1, raison_sociale: 'Alpha Corp', role: 'Caissier' },
+			{ id: 2, raison_sociale: 'Beta LLC', role: 'Lecture' },
 		];
 		(useGetUserCompaniesQuery as jest.Mock).mockReturnValue({ data: mockCompanies });
 

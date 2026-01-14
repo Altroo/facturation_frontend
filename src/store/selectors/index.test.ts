@@ -27,8 +27,8 @@ import type { CompaniesUserCompaniesType } from '@/types/companyTypes';
 
 describe('Redux selectors', () => {
 	const mockCompanies: CompaniesUserCompaniesType[] = [
-		{ id: 1, raison_sociale: 'Alpha Corp', role: 'Admin' },
-		{ id: 2, raison_sociale: 'Beta LLC', role: 'Manager' },
+		{ id: 1, raison_sociale: 'Alpha Corp', role: 'Caissier' },
+		{ id: 2, raison_sociale: 'Beta LLC', role: 'Lecture' },
 	];
 	const mockCategories = [new CategorieClass(1, 'Cat1'), new CategorieClass(2, 'Cat2')];
 	const mockEmplacements = [new EmplacementClass(1, 'Emp1'), new EmplacementClass(2, 'Emp2')];
@@ -58,7 +58,7 @@ describe('Redux selectors', () => {
 				'2023-12-01T08:30:00Z',
 				'2023-12-01T08:30:00Z',
 			),
-			groupes: ['admin', 'editor'],
+			groupes: ['Caissier', 'Lecture'],
 		},
 		parameter: {
 			cities: [new CitiesClass(1, 'Tanger'), new CitiesClass(2, 'Tetouan')],
@@ -93,7 +93,7 @@ describe('Redux selectors', () => {
 	});
 
 	it('getGroupesState should return the groupes array', () => {
-		expect(getGroupesState(mockState)).toEqual(['admin', 'editor']);
+		expect(getGroupesState(mockState)).toEqual(['Caissier', 'Lecture']);
 	});
 
 	it('getCitiesState should return the cities array', () => {
@@ -108,7 +108,7 @@ describe('Redux selectors', () => {
 		expect(Array.isArray(companies)).toBe(true);
 		expect(companies).toEqual(mockCompanies);
 		expect(companies[0].raison_sociale).toBe('Alpha Corp');
-		expect(companies[1].role).toBe('Manager');
+		expect(companies[1].role).toBe('Lecture');
 	});
 
 	it('getCategoriesState should return the categories array', () => {

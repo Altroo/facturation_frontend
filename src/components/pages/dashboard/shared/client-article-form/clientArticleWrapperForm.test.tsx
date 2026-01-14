@@ -53,9 +53,9 @@ describe('ClientArticleFormWrapper', () => {
 		jest.resetAllMocks();
 	});
 
-	it('renders FormikComponent when company role is Admin and passes token and props', () => {
+	it('renders FormikComponent when company role is Caissier and passes token and props', () => {
 		(getAccessTokenFromSession as jest.Mock).mockReturnValue('token-123');
-		const companies = [{ id: 42, role: 'Admin' }];
+		const companies = [{ id: 42, role: 'Caissier' }];
 		(useAppSelector as jest.Mock).mockImplementation(() => companies);
 
 		const FormikCalled = jest.fn() as jest.Mock<void, [FormikComponentProps]>;
@@ -102,8 +102,6 @@ describe('ClientArticleFormWrapper', () => {
 		);
 
 		expect(screen.queryByTestId('should-not-render')).not.toBeInTheDocument();
-		expect(
-			screen.getByText(`Vous n'avez pas le droit d'ajouter un client. Veuillez contacter votre administrateur.`),
-		).toBeInTheDocument();
+		expect(screen.getByText(/Vous n'avez pas la permission d'accéder à cette page/i)).toBeInTheDocument();
 	});
 });

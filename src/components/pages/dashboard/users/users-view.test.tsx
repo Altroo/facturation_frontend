@@ -77,8 +77,8 @@ const mockUserData = {
 	date_joined: '2023-01-01T12:00:00Z',
 	last_login: '2023-12-01T08:30:00Z',
 	companies: [
-		{ membership_id: '123', raison_sociale: 'TechCorp', role: 'Admin' },
-		{ membership_id: '456', raison_sociale: 'BizGroup', role: 'Manager' },
+		{ membership_id: '123', raison_sociale: 'TechCorp', role: 'Caissier' },
+		{ membership_id: '456', raison_sociale: 'BizGroup', role: 'Lecture' },
 	],
 };
 
@@ -95,8 +95,8 @@ describe('UsersViewClient navigation and permissions', () => {
 			prefetch: jest.fn(),
 		});
 
-		// Default: Admin role
-		(useAppSelector as jest.Mock).mockReturnValue([{ id: 1, role: 'Admin' }]);
+		// Default: Caissier role
+		(useAppSelector as jest.Mock).mockReturnValue([{ id: 1, role: 'Caissier' }]);
 	});
 
 	afterEach(() => {
@@ -144,10 +144,10 @@ describe('UsersViewClient navigation and permissions', () => {
 		expect(screen.getByText('ID: 123')).toBeInTheDocument();
 		expect(screen.getByText('ID: 456')).toBeInTheDocument();
 
-		const adminElements = screen.getAllByText((_, element) => element?.textContent === 'Admin');
+		const adminElements = screen.getAllByText((_, element) => element?.textContent === 'Caissier');
 		expect(adminElements.length).toBeGreaterThan(0);
 
-		expect(screen.getByText('Manager')).toBeInTheDocument();
+		expect(screen.getByText('Lecture')).toBeInTheDocument();
 
 		const dateJoinedLabel = screen.getByText("Date d'inscription");
 		const dateJoinedContainer = dateJoinedLabel.closest('div') ?? dateJoinedLabel.parentElement!;

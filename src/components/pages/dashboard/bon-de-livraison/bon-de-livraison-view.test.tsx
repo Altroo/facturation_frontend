@@ -80,7 +80,7 @@ const mockBon = {
 	remarque: 'Livrer avant fin mois',
 	date_created: '2025-01-01T10:00:00Z',
 	date_updated: '2025-01-02T12:00:00Z',
-	created_by_user_name: 'Admin User',
+	created_by_user_name: 'Caissier User',
 	lignes: [
 		{
 			article: 11,
@@ -114,8 +114,8 @@ describe('BonDeLivraisonViewClient UI and navigation', () => {
 			prefetch: jest.fn(),
 		});
 
-		// default Admin role
-		(useAppSelector as jest.Mock).mockReturnValue([{ id: 1, role: 'Admin' }]);
+		// default Caissier role
+		(useAppSelector as jest.Mock).mockReturnValue([{ id: 1, role: 'Caissier' }]);
 	});
 
 	afterEach(() => {
@@ -180,7 +180,7 @@ describe('BonDeLivraisonViewClient UI and navigation', () => {
 		expect(mockPush).toHaveBeenCalled();
 	});
 
-	it('shows and navigates with "Modifier" button when role is Admin', () => {
+	it('shows and navigates with "Modifier" button when role is Caissier', () => {
 		useGetBonDeLivraisonQuery.mockReturnValue({ isLoading: false, data: mockBon, error: undefined });
 		useGetArticlesListQuery.mockReturnValue({ isLoading: false, data: [mockArticle], error: undefined });
 
@@ -192,8 +192,8 @@ describe('BonDeLivraisonViewClient UI and navigation', () => {
 		expect(mockPush).toHaveBeenCalled();
 	});
 
-	it('does not show "Modifier" button when role is not Admin', () => {
-		(useAppSelector as jest.Mock).mockReturnValueOnce([{ id: 1, role: 'User' }]);
+	it('does not show "Modifier" button when role is not Caissier', () => {
+		(useAppSelector as jest.Mock).mockReturnValueOnce([{ id: 1, role: 'Lecture' }]);
 
 		useGetBonDeLivraisonQuery.mockReturnValue({ isLoading: false, data: mockBon, error: undefined });
 		useGetArticlesListQuery.mockReturnValue({ isLoading: false, data: [mockArticle], error: undefined });
