@@ -13,8 +13,10 @@ const config: Config = {
 	},
 	transformIgnorePatterns: ['node_modules/(?!(next-auth|@mui|lodash-es)/)'],
 	moduleDirectories: ['node_modules', '<rootDir>/'],
-	coverageReporters: ['text-summary', 'lcov'],
+	collectCoverage: true,
+	coverageReporters: ['text-summary', 'lcov', ['cobertura', { file: 'cobertura-coverage.xml' }]],
 	coverageProvider: 'v8',
+	rootDir: './',
 };
 
 export default createJestConfig(config);
