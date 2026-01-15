@@ -83,17 +83,17 @@ export const USERS_VIEW = (id: number) => `${SITE_ROOT}dashboard/users/${id}`;
 export const USERS_EDIT = (id: number) => `${SITE_ROOT}dashboard/users/${id}/edit`;
 
 // PDF Routes (without token - token is added dynamically when opening)
-export const DEVIS_PDF = (id: number, company_id: number, type: 'avec_remise' | 'sans_remise' | 'avec_unite') =>
-	`${process.env.NEXT_PUBLIC_ROOT_API_URL}/devi/pdf/${id}/?company_id=${company_id}&type=${type}`;
+export const DEVIS_PDF = (id: number, company_id: number, type: 'avec_remise' | 'sans_remise' | 'avec_unite', language: 'fr' | 'en' = 'fr') =>
+	`${process.env.NEXT_PUBLIC_ROOT_API_URL}/devi/pdf/${language}/${id}/?company_id=${company_id}&type=${type}`;
 
-export const FACTURE_CLIENT_PDF = (id: number, company_id: number, type: 'avec_remise' | 'sans_remise' | 'avec_unite') =>
-	`${process.env.NEXT_PUBLIC_ROOT_API_URL}/facture_client/pdf/${id}/?company_id=${company_id}&type=${type}`;
+export const FACTURE_CLIENT_PDF = (id: number, company_id: number, type: 'avec_remise' | 'sans_remise' | 'avec_unite', language: 'fr' | 'en' = 'fr') =>
+	`${process.env.NEXT_PUBLIC_ROOT_API_URL}/facture_client/pdf/${language}/${id}/?company_id=${company_id}&type=${type}`;
 
-export const FACTURE_PRO_FORMA_PDF = (id: number, company_id: number, type: 'avec_remise' | 'sans_remise' | 'avec_unite') =>
-	`${process.env.NEXT_PUBLIC_ROOT_API_URL}/facture_proforma/pdf/${id}/?company_id=${company_id}&type=${type}`;
+export const FACTURE_PRO_FORMA_PDF = (id: number, company_id: number, type: 'avec_remise' | 'sans_remise' | 'avec_unite', language: 'fr' | 'en' = 'fr') =>
+	`${process.env.NEXT_PUBLIC_ROOT_API_URL}/facture_proforma/pdf/${language}/${id}/?company_id=${company_id}&type=${type}`;
 
-export const BON_DE_LIVRAISON_PDF = (id: number, company_id: number, type: 'normal' | 'quantity_only' | 'avec_unite') =>
-	`${process.env.NEXT_PUBLIC_ROOT_API_URL}/bon_de_livraison/pdf/${id}/?company_id=${company_id}&type=${type}`;
+export const BON_DE_LIVRAISON_PDF = (id: number, company_id: number, type: 'normal' | 'quantity_only' | 'avec_unite', language: 'fr' | 'en' = 'fr') =>
+	`${process.env.NEXT_PUBLIC_ROOT_API_URL}/bon_de_livraison/pdf/${language}/${id}/?company_id=${company_id}&type=${type}`;
 
-export const REGLEMENT_PDF = (id: number, company_id: number) =>
-	`${process.env.NEXT_PUBLIC_ROOT_API_URL}/reglement/pdf/${id}/?company_id=${company_id}`;
+export const REGLEMENT_PDF = (id: number, company_id: number, language: 'fr' | 'en' = 'fr') =>
+	`${process.env.NEXT_PUBLIC_ROOT_API_URL}/reglement/pdf/${language}/${id}/?company_id=${company_id}`;

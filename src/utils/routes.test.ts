@@ -252,13 +252,13 @@ describe('routes constants', () => {
 
 			expect(typeof DEVIS_PDF).toBe('function');
 			expect(DEVIS_PDF(5, 99, 'avec_remise')).toBe(
-				'https://api.example.com/devi/pdf/5/?company_id=99&type=avec_remise'
+				'https://api.example.com/devi/pdf/fr/5/?company_id=99&type=avec_remise'
 			);
-			expect(DEVIS_PDF(10, 50, 'sans_remise')).toBe(
-				'https://api.example.com/devi/pdf/10/?company_id=50&type=sans_remise'
+			expect(DEVIS_PDF(10, 50, 'sans_remise', 'en')).toBe(
+				'https://api.example.com/devi/pdf/en/10/?company_id=50&type=sans_remise'
 			);
-			expect(DEVIS_PDF(15, 75, 'avec_unite')).toBe(
-				'https://api.example.com/devi/pdf/15/?company_id=75&type=avec_unite'
+			expect(DEVIS_PDF(15, 75, 'avec_unite', 'fr')).toBe(
+				'https://api.example.com/devi/pdf/fr/15/?company_id=75&type=avec_unite'
 			);
 		});
 
@@ -268,7 +268,7 @@ describe('routes constants', () => {
 
 			expect(typeof FACTURE_CLIENT_PDF).toBe('function');
 			expect(FACTURE_CLIENT_PDF(5, 99, 'avec_remise')).toBe(
-				'https://api.example.com/facture_client/pdf/5/?company_id=99&type=avec_remise'
+				'https://api.example.com/facture_client/pdf/fr/5/?company_id=99&type=avec_remise'
 			);
 		});
 
@@ -278,7 +278,7 @@ describe('routes constants', () => {
 
 			expect(typeof FACTURE_PRO_FORMA_PDF).toBe('function');
 			expect(FACTURE_PRO_FORMA_PDF(5, 99, 'avec_remise')).toBe(
-				'https://api.example.com/facture_proforma/pdf/5/?company_id=99&type=avec_remise'
+				'https://api.example.com/facture_proforma/pdf/fr/5/?company_id=99&type=avec_remise'
 			);
 		});
 
@@ -288,13 +288,13 @@ describe('routes constants', () => {
 
 			expect(typeof BON_DE_LIVRAISON_PDF).toBe('function');
 			expect(BON_DE_LIVRAISON_PDF(5, 99, 'normal')).toBe(
-				'https://api.example.com/bon_de_livraison/pdf/5/?company_id=99&type=normal'
+				'https://api.example.com/bon_de_livraison/pdf/fr/5/?company_id=99&type=normal'
 			);
-			expect(BON_DE_LIVRAISON_PDF(10, 50, 'quantity_only')).toBe(
-				'https://api.example.com/bon_de_livraison/pdf/10/?company_id=50&type=quantity_only'
+			expect(BON_DE_LIVRAISON_PDF(10, 50, 'quantity_only', 'en')).toBe(
+				'https://api.example.com/bon_de_livraison/pdf/en/10/?company_id=50&type=quantity_only'
 			);
-			expect(BON_DE_LIVRAISON_PDF(15, 75, 'avec_unite')).toBe(
-				'https://api.example.com/bon_de_livraison/pdf/15/?company_id=75&type=avec_unite'
+			expect(BON_DE_LIVRAISON_PDF(15, 75, 'avec_unite', 'fr')).toBe(
+				'https://api.example.com/bon_de_livraison/pdf/fr/15/?company_id=75&type=avec_unite'
 			);
 		});
 
@@ -303,7 +303,7 @@ describe('routes constants', () => {
 			const { REGLEMENT_PDF } = require('./routes');
 
 			expect(typeof REGLEMENT_PDF).toBe('function');
-			expect(REGLEMENT_PDF(5, 99)).toBe('https://api.example.com/reglement/pdf/5/?company_id=99');
+			expect(REGLEMENT_PDF(5, 99)).toBe('https://api.example.com/reglement/pdf/fr/5/?company_id=99');
 		});
 	});
 });

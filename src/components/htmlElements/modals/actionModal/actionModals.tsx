@@ -21,8 +21,16 @@ type Props = {
 };
 
 const ActionModals: React.FC<Props> = ({ title, actions, actionsStyle, body, children, titleIcon, titleIconColor }) => {
+	const handleClose = () => {
+		// Find the first active action and click it (usually the cancel/close button)
+		const activeAction = actions.find(a => a.active);
+		if (activeAction) {
+			activeAction.onClick();
+		}
+	};
+
 	return (
-		<Dialog open onClose={() => {}}>
+		<Dialog open onClose={handleClose}>
 			<DialogTitle>
 				<Stack direction="row" alignItems="center" spacing={1}>
 					{titleIcon && (

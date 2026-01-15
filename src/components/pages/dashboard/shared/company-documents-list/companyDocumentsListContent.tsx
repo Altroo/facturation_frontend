@@ -29,6 +29,7 @@ import Styles from '@/styles/dashboard/dashboard.module.sass';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
+import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
 import { formatDate } from '@/utils/helpers';
 import { useToast } from '@/utils/hooks';
 import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
@@ -43,6 +44,7 @@ import type {
 	DocumentDeleteMutationResult,
 	DocumentConvertMutationResult,
 	PaginationModel,
+	PrintAction,
 } from '@/types/companyDocumentsTypes';
 import type { DeviClass, FactureClass } from '@/models/classes';
 
@@ -142,6 +144,8 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 	const [menuItemId, setMenuItemId] = useState<number | null>(null);
 	const [printAnchorEl, setPrintAnchorEl] = useState<null | HTMLElement>(null);
 	const [printMenuItemId, setPrintMenuItemId] = useState<number | null>(null);
+	const [showLanguageModal, setShowLanguageModal] = useState(false);
+	const [selectedPrintAction, setSelectedPrintAction] = useState<PrintAction | null>(null);
 
 	const deleteHandler = useCallback(async () => {
 		try {
@@ -202,8 +206,21 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 	}, []);
 
 	const handlePrintMenuItemClick = useCallback(
-		(url: string) => {
+		(action: PrintAction) => {
 			setPrintAnchorEl(null);
+			setSelectedPrintAction(action);
+			setShowLanguageModal(true);
+		},
+		[],
+	);
+
+	const handleLanguageSelect = useCallback(
+		(language: 'fr' | 'en') => {
+			setShowLanguageModal(false);
+
+			if (!selectedPrintAction || printMenuItemId === null) {
+				return;
+			}
 
 			const accessToken = getAccessTokenFromSession(session ?? undefined);
 
@@ -212,12 +229,23 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 				return;
 			}
 
-			// Open PDF in new tab with token as query parameter
+			// Generate URL with selected language
+			const url = selectedPrintAction.urlGenerator(printMenuItemId, companyId, language);
 			const urlWithToken = `${url}&token=${encodeURIComponent(accessToken)}`;
 			window.open(urlWithToken, '_blank');
+
+			// Reset states
+			setSelectedPrintAction(null);
+			setPrintMenuItemId(null);
 		},
-		[session, onError],
+		[selectedPrintAction, printMenuItemId, session, companyId, onError],
 	);
+
+	const handleLanguageModalClose = useCallback(() => {
+		setShowLanguageModal(false);
+		setSelectedPrintAction(null);
+		setPrintMenuItemId(null);
+	}, []);
 
 	const handlePrintMenuClose = useCallback(() => {
 		setPrintAnchorEl(null);
@@ -622,7 +650,7 @@ const modalsConfig = useMemo(
 					items.push(
 						<MenuItem
 							key={action.key}
-							onClick={() => handlePrintMenuItemClick(action.urlGenerator(printMenuItemId!, companyId))}
+							onClick={() => handlePrintMenuItemClick(action)}
 						>
 							<ListItemIcon sx={{ color: action.iconColor || 'inherit' }}>{action.icon}</ListItemIcon>
 							<ListItemText>{action.label}</ListItemText>
@@ -631,6 +659,8 @@ const modalsConfig = useMemo(
 					return items;
 				})}
 			</Menu>
+
+			{showLanguageModal && <PdfLanguageModal onSelectLanguage={handleLanguageSelect} onClose={handleLanguageModalClose} />}
 		</>
 	);
 }

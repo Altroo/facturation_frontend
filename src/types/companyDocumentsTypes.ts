@@ -284,8 +284,8 @@ export interface PrintAction {
 	icon: React.ReactNode;
 	/** Icon color */
 	iconColor?: string;
-	/** URL generator for the PDF */
-	urlGenerator: (id: number, companyId: number) => string;
+	/** URL generator for the PDF - now includes language parameter */
+	urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') => string;
 }
 
 /** Labels configuration for document list */
