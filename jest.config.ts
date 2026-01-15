@@ -16,6 +16,7 @@ const config: Config = {
 	collectCoverage: true,
 	coverageReporters: ['text-summary', 'lcov', ['cobertura', { file: 'cobertura-coverage.xml' }]],
 	coverageProvider: 'v8',
+	coveragePathIgnorePatterns: ['\\\\node_modules\\\\'],
 	rootDir: './',
 };
 
