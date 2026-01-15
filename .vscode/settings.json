@@ -1,0 +1,6 @@
+{
+	"jest.jestCommandLine": "bun x jest --maxWorkers=20",
+	"jest.rootPath": "./",
+	"jest.runAllTestsFirst": true,
+	"jest.showCoverageOnTestExplorer": true
+}

@@ -14,6 +14,7 @@ const config: Config = {
 	transformIgnorePatterns: ['node_modules/(?!(next-auth|@mui|lodash-es)/)'],
 	moduleDirectories: ['node_modules', '<rootDir>/'],
 	coverageReporters: ['text-summary', 'lcov'],
+	coverageProvider: 'v8',
 };
 
 export default createJestConfig(config);
