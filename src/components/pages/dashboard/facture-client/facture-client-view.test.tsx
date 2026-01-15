@@ -187,7 +187,7 @@ describe('FactureClientViewClient UI and navigation', () => {
 	});
 
 	it('does not show "Modifier" button when company role is not Admin', () => {
-		(useAppSelector as jest.Mock).mockReturnValueOnce([{ id: 1, role: 'User' }]);
+		(useAppSelector as jest.Mock).mockReturnValueOnce([{ id: 1, role: 'Lecture' }]);
 
 		useGetFactureClientQuery.mockReturnValue({ isLoading: false, data: mockFacture, error: undefined });
 		useGetArticlesListQuery.mockReturnValue({ isLoading: false, data: [mockArticle], error: undefined });

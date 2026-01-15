@@ -193,7 +193,7 @@ describe('ProFormaViewClient UI and navigation', () => {
 	});
 
 	it('does not show "Modifier" button when role is not Admin', () => {
-		(useAppSelector as jest.Mock).mockReturnValueOnce([{ id: 1, role: 'User' }]);
+		(useAppSelector as jest.Mock).mockReturnValueOnce([{ id: 1, role: 'Lecture' }]);
 
 		useGetFactureProFormaQuery.mockReturnValue({ isLoading: false, data: mockProForma, error: undefined });
 		useGetArticlesListQuery.mockReturnValue({ isLoading: false, data: [mockArticle], error: undefined });

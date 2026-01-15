@@ -28,7 +28,7 @@ describe('companiesSlice reducer', () => {
 	it('should handle setUserCompanies with an empty array', () => {
 		const payload: CompaniesUserCompaniesType[] = [];
 		const action = setUserCompanies(payload);
-		const result = reducer({ user_companies: [{ id: 99, raison_sociale: 'Old Co', role: 'User' }] }, action);
+		const result = reducer({ user_companies: [{ id: 99, raison_sociale: 'Old Co', role: 'Lecture' }] }, action);
 
 		expect(result.user_companies).toEqual([]);
 	});

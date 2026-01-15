@@ -158,7 +158,7 @@ describe('ArticlesViewClient navigation and permissions', () => {
 	});
 
 	it('does not show "Modifier" button when role is not Admin', () => {
-		(useAppSelector as jest.Mock).mockReturnValueOnce([{ id: 1, role: 'User' }]);
+		(useAppSelector as jest.Mock).mockReturnValueOnce([{ id: 1, role: 'Lecture' }]);
 
 		(useGetArticleQuery as jest.Mock).mockReturnValue({
 			isLoading: false,

@@ -87,7 +87,7 @@ describe('ClientArticleFormWrapper', () => {
 
 	it('renders denied message when company role is not Admin and does not render FormikComponent', () => {
 		(getAccessTokenFromSession as jest.Mock).mockReturnValue('token-xyz');
-		const companies = [{ id: 100, role: 'User' }];
+		const companies = [{ id: 100, role: 'Lecture' }];
 		(useAppSelector as jest.Mock).mockImplementation(() => companies);
 
 		const FormikComponent: React.FC<FormikComponentProps> = () => <div data-testid="should-not-render">NO</div>;

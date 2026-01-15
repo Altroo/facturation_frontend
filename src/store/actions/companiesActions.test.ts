@@ -27,7 +27,7 @@ describe('companiesSetUserCompaniesAction', () => {
 	});
 
 	it('preserves the exact payload reference', () => {
-		const payload: CompaniesUserCompaniesType[] = [{ id: 3, raison_sociale: 'Gamma Inc', role: 'User' }];
+		const payload: CompaniesUserCompaniesType[] = [{ id: 3, raison_sociale: 'Gamma Inc', role: 'Lecture' }];
 
 		const action = companiesSetUserCompaniesAction(payload);
 

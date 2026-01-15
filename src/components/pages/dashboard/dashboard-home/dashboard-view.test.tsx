@@ -231,7 +231,7 @@ jest.mock('@/components/pages/dashboard/shared/company-documents-list/companyDoc
 	}) => (
 		<div data-testid="company-documents-wrapper">
 			<h1>{title}</h1>
-			{children({ company_id: 1, role: 'admin' })}
+			{children({ company_id: 1, role: 'Caissier' })}
 		</div>
 	),
 }));

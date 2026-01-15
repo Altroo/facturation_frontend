@@ -114,7 +114,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					id: userID,
 					first_name: first_name ?? 'Moi',
 					last_name: last_name ?? '',
-					role: 'Admin',
+					role: 'Caissier',
 				},
 			];
 		}

@@ -100,7 +100,7 @@ jest.mock('@/components/pages/dashboard/shared/company-documents-list/companyDoc
 	}) => (
 		<div data-testid="company-wrapper">
 			<h1>{title}</h1>
-			{children({ company_id: 1, role: 'Admin' })}
+			{children({ company_id: 1, role: 'Caissier' })}
 		</div>
 	),
 }));
@@ -211,31 +211,40 @@ interface CapturedConfig {
 }
 
 let capturedConfig: CapturedConfig | null = null;
-let capturedOnFilterModelChange: ((model: { items: Array<{ field: string; value?: { from?: string; to?: string } }> }) => void) | null = null;
+let capturedOnFilterModelChange:
+	| ((model: { items: Array<{ field: string; value?: { from?: string; to?: string } }> }) => void)
+	| null = null;
 
 jest.mock('@/components/pages/dashboard/shared/company-documents-list/companyDocumentsListContent', () => {
-	const actualModule = jest.requireActual('@/components/pages/dashboard/shared/company-documents-list/companyDocumentsListContent');
+	const actualModule = jest.requireActual(
+		'@/components/pages/dashboard/shared/company-documents-list/companyDocumentsListContent',
+	);
 	return {
 		__esModule: true,
 		// Keep actual exports for getStatutColor and statutFilterOptions
 		getStatutColor: actualModule.getStatutColor,
 		statutFilterOptions: actualModule.statutFilterOptions,
-		default: (props: { 
+		default: (props: {
 			config: CapturedConfig;
-			onFilterModelChange?: (model: { items: Array<{ field: string; value?: { from?: string; to?: string } }> }) => void;
+			onFilterModelChange?: (model: {
+				items: Array<{ field: string; value?: { from?: string; to?: string } }>;
+			}) => void;
 			router: ReturnType<typeof import('next/navigation').useRouter>;
-			queryResult: { data?: { results: Array<{ id: number; numero_devis: string; client_name: string; statut: string }> }; isLoading: boolean };
+			queryResult: {
+				data?: { results: Array<{ id: number; numero_devis: string; client_name: string; statut: string }> };
+				isLoading: boolean;
+			};
 		}) => {
 			capturedConfig = props.config;
 			capturedOnFilterModelChange = props.onFilterModelChange || null;
-			
+
 			// Call printAction urlGenerators to cover them
 			if (props.config.printActions) {
 				props.config.printActions.forEach((action: PrintAction) => {
 					action.urlGenerator(1, 2);
 				});
 			}
-			
+
 			const results = props.queryResult?.data?.results || [];
 			return (
 				<div data-testid="company-documents-list-content">
@@ -542,7 +551,7 @@ describe('DevisListClient', () => {
 		});
 
 		it('generates correct avec_remise PDF URL', () => {
-			const avecRemiseAction = capturedConfig?.printActions?.find(a => a.key === 'avec_remise');
+			const avecRemiseAction = capturedConfig?.printActions?.find((a) => a.key === 'avec_remise');
 			expect(avecRemiseAction).toBeDefined();
 			const url = avecRemiseAction?.urlGenerator(1, 2);
 			expect(url).toContain('1');
@@ -550,7 +559,7 @@ describe('DevisListClient', () => {
 		});
 
 		it('generates correct sans_remise PDF URL', () => {
-			const sansRemiseAction = capturedConfig?.printActions?.find(a => a.key === 'sans_remise');
+			const sansRemiseAction = capturedConfig?.printActions?.find((a) => a.key === 'sans_remise');
 			expect(sansRemiseAction).toBeDefined();
 			const url = sansRemiseAction?.urlGenerator(1, 2);
 			expect(url).toContain('1');
@@ -558,7 +567,7 @@ describe('DevisListClient', () => {
 		});
 
 		it('generates correct avec_unite PDF URL', () => {
-			const avecUniteAction = capturedConfig?.printActions?.find(a => a.key === 'avec_unite');
+			const avecUniteAction = capturedConfig?.printActions?.find((a) => a.key === 'avec_unite');
 			expect(avecUniteAction).toBeDefined();
 			const url = avecUniteAction?.urlGenerator(1, 2);
 			expect(url).toContain('1');
@@ -593,17 +602,17 @@ describe('DevisListClient', () => {
 		it('calls query with date_after param when from filter is set', async () => {
 			const { rerender } = render(<DevisListClient session={mockSession} />);
 			expect(capturedOnFilterModelChange).not.toBeNull();
-			
+
 			await act(async () => {
 				if (capturedOnFilterModelChange) {
 					capturedOnFilterModelChange({
-						items: [{ field: 'date_devis', value: { from: '2025-01-01' } }]
+						items: [{ field: 'date_devis', value: { from: '2025-01-01' } }],
 					});
 				}
 			});
-			
+
 			rerender(<DevisListClient session={mockSession} />);
-			
+
 			expect(lastQueryArgs).toBeDefined();
 			expect(lastQueryArgs?.date_after).toBe('2025-01-01');
 		});
@@ -611,17 +620,17 @@ describe('DevisListClient', () => {
 		it('calls query with date_before param when to filter is set', async () => {
 			const { rerender } = render(<DevisListClient session={mockSession} />);
 			expect(capturedOnFilterModelChange).not.toBeNull();
-			
+
 			await act(async () => {
 				if (capturedOnFilterModelChange) {
 					capturedOnFilterModelChange({
-						items: [{ field: 'date_devis', value: { to: '2025-12-31' } }]
+						items: [{ field: 'date_devis', value: { to: '2025-12-31' } }],
 					});
 				}
 			});
-			
+
 			rerender(<DevisListClient session={mockSession} />);
-			
+
 			expect(lastQueryArgs).toBeDefined();
 			expect(lastQueryArgs?.date_before).toBe('2025-12-31');
 		});
@@ -629,17 +638,17 @@ describe('DevisListClient', () => {
 		it('calls query with both date params when from and to filters are set', async () => {
 			const { rerender } = render(<DevisListClient session={mockSession} />);
 			expect(capturedOnFilterModelChange).not.toBeNull();
-			
+
 			await act(async () => {
 				if (capturedOnFilterModelChange) {
 					capturedOnFilterModelChange({
-						items: [{ field: 'date_devis', value: { from: '2025-01-01', to: '2025-12-31' } }]
+						items: [{ field: 'date_devis', value: { from: '2025-01-01', to: '2025-12-31' } }],
 					});
 				}
 			});
-			
+
 			rerender(<DevisListClient session={mockSession} />);
-			
+
 			expect(lastQueryArgs).toBeDefined();
 			expect(lastQueryArgs?.date_after).toBe('2025-01-01');
 			expect(lastQueryArgs?.date_before).toBe('2025-12-31');
