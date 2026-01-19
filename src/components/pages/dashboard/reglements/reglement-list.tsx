@@ -35,6 +35,7 @@ import { useToast } from '@/utils/hooks';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
+import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
 
 interface FormikContentProps extends SessionProps {
 	company_id: number;
@@ -63,6 +64,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const [showCancelModal, setShowCancelModal] = useState<boolean>(false);
 	const [cancelTarget, setCancelTarget] = useState<number | null>(null);
+
+	const [showLanguageModal, setShowLanguageModal] = useState<boolean>(false);
+	const [printReglementId, setPrintReglementId] = useState<number | null>(null);
 
 	const getDateFilterParams = () => {
 		const params: Record<string, string> = {};
@@ -188,13 +192,31 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	};
 
 	const handlePrint = (reglementId: number) => {
+		setPrintReglementId(reglementId);
+		setShowLanguageModal(true);
+	};
+
+	const handleLanguageSelect = (language: 'fr' | 'en') => {
+		setShowLanguageModal(false);
+
+		if (!printReglementId) {
+			return;
+		}
+
 		if (!token) {
 			onError("Erreur d'authentification. Veuillez vous reconnecter.");
 			return;
 		}
 
-		const url = `${REGLEMENT_PDF(reglementId, company_id)}&token=${encodeURIComponent(token)}`;
+		const url = `${REGLEMENT_PDF(printReglementId, company_id, language)}&token=${encodeURIComponent(token)}`;
 		window.open(url, '_blank');
+
+		setPrintReglementId(null);
+	};
+
+	const handleLanguageModalClose = () => {
+		setShowLanguageModal(false);
+		setPrintReglementId(null);
 	};
 
 	const columns: GridColDef[] = [
@@ -498,6 +520,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					body="Êtes‑vous sûr de vouloir annuler ce règlement? Cette action est irréversible."
 					actions={cancelModalActions}
 				/>
+			)}
+			{showLanguageModal && (
+				<PdfLanguageModal onSelectLanguage={handleLanguageSelect} onClose={handleLanguageModalClose} />
 			)}
 		</>
 	);
