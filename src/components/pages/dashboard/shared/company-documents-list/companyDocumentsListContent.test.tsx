@@ -808,10 +808,10 @@ describe('CompanyDocumentsListContent', () => {
 		it('renders config with print actions', () => {
 			// This test verifies the printActions config is properly processed
 			expect(mockConfig.printActions).toHaveLength(2);
-			expect(mockConfig.printActions?.[0].urlGenerator(1, 2)).toBe(
+			expect(mockConfig.printActions?.[0].urlGenerator(1, 2, 'fr')).toBe(
 				'http://localhost:8000/api/devis/1/pdf/?company_id=2',
 			);
-			expect(mockConfig.printActions?.[1].urlGenerator(3, 4)).toBe(
+			expect(mockConfig.printActions?.[1].urlGenerator(3, 4, 'en')).toBe(
 				'http://localhost:8000/api/devis/3/excel/?company_id=4',
 			);
 		});
