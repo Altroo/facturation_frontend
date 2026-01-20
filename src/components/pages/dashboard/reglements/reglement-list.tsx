@@ -327,21 +327,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				);
 			},
 		},
-		// {
-		// 	field: 'date_created',
-		// 	headerName: 'Date de création',
-		// 	width: 150,
-		// 	renderCell: (params: GridRenderCellParams<ReglementClass>) => {
-		// 		const formatted = formatDate(params.value as string | null);
-		// 		return (
-		// 			<DarkTooltip title={formatted}>
-		// 				<Typography variant="body2" noWrap>
-		// 					{formatted}
-		// 				</Typography>
-		// 			</DarkTooltip>
-		// 		);
-		// 	},
-		// },
 		{
 			field: 'actions',
 			headerName: 'Actions',
@@ -353,10 +338,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				const isValid = params.row.statut === 'Valide';
 				return (
 					<Box sx={{ display: 'flex', gap: 1 }}>
-						{(role === 'Caissier' ||
-							role === 'Comptable' ||
-							role === 'Commercial' ||
-							role === 'Lecture') && (
+						{(role === 'Caissier' || role === 'Comptable' || role === 'Commercial' || role === 'Lecture') && (
 							<>
 								<DarkTooltip title="Voir">
 									<IconButton

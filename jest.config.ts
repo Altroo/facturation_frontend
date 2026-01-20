@@ -6,8 +6,10 @@ const createJestConfig = nextJest({
 });
 
 const config: Config = {
+	roots: ['<rootDir>/src'],
 	setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
 	testEnvironment: 'jest-environment-jsdom',
+	testMatch: ['**/?(*.)+(spec|test).[tj]s?(x)'],
 	moduleNameMapper: {
 		'^@/(.*)$': '<rootDir>/src/$1',
 	},
@@ -17,7 +19,22 @@ const config: Config = {
 	coverageReporters: ['text-summary', 'lcov', ['cobertura', { file: 'cobertura-coverage.xml' }]],
 	coverageProvider: 'v8',
 	coveragePathIgnorePatterns: ['\\\\node_modules\\\\'],
-	rootDir: './',
+	// collectCoverageFrom: [
+	// 	// include only source files
+	// 	'src/**/*.{js,jsx,ts,tsx}',
+	// 	// exclude type definitions
+	// 	'!src/**/*.d.ts',
+	// 	'!src/types/*',
+	// 	// exclude providers
+	// 	'!src/app/providers/*',
+	// 	// exclude demo files
+	// 	'!src/app/dashboard/demo/page.tsx',
+	// 	'!src/app/components/dashboard/dashboard-home/dashboard-dummy-view.tsx',
+	// 	// exclude barrel index files
+	// 	'!src/**/index.{js,ts}',
+	// 	// exclude files ending with .test.*,
+	// 	'!src/**/*.test.{js,jsx,ts,tsx}',
+	// ],
 };
 
 export default createJestConfig(config);

@@ -1,50 +1,56 @@
 import React from 'react';
 import { render, screen, cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import type { SessionProps, AppSession } from '@/types/_initTypes';
+import ArticlesListClient, { typeFilterOptions } from './articles-list';
+import * as sessionModule from '@/store/session';
 
-type ListProps = SessionProps & {
-	archived: boolean;
-};
-
-// Mock the component
-jest.mock('./articles-list', () => ({
-	__esModule: true,
-	default: (props: ListProps) => {
-		const session = props.session;
-		return (
-			<div data-testid="articles-list">
-				<span data-testid="session-access-token">{session?.accessToken ?? 'no-token'}</span>
-				<span data-testid="archived">{String(props.archived)}</span>
-				<h2>Liste des articles</h2>
-				<div data-testid="data-grid">
-					<table>
-						<thead>
-							<tr>
-								<th>Photo</th>
-								<th>Référence</th>
-								<th>Type</th>
-								<th>Désignation</th>
-								<th>Prix d&apos;achat</th>
-								<th>Prix de vente</th>
-								<th>Actions</th>
-							</tr>
-						</thead>
-					</table>
-				</div>
-				<button data-testid="add-button">Ajouter un article</button>
-			</div>
-		);
-	},
-	typeFilterOptions: [
-		{ value: 'Produit', label: 'Produit', color: 'default' },
-		{ value: 'Service', label: 'Service', color: 'default' },
-	],
+// Mock session module (replace getAccessTokenFromSession)
+jest.mock('@/store/session', () => ({
+	getAccessTokenFromSession: jest.fn(() => 'test-token'),
 }));
 
-import ArticlesListClient, { typeFilterOptions } from './articles-list';
+// Mock article service module (mock hooks/tuples) to avoid spyOn on non-configurable exports
+jest.mock('@/store/services/article', () => ({
+	__esModule: true,
+	useGetArticlesListQuery: jest.fn(() => ({ data: undefined, isLoading: false, refetch: jest.fn() })),
+	useDeleteArticleMutation: jest.fn(() => [jest.fn(), {}]),
+	usePatchArchiveMutation: jest.fn(() => [jest.fn(), {}]),
+}));
 
-const mockSession: AppSession = {
+// Mock CompanyDocumentsWrapperList with typed props
+jest.mock('@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList', () => {
+	// eslint-disable-next-line @typescript-eslint/no-require-imports
+	const React = require('react');
+	type ChildrenCb = (opts: { company_id: number; role: string }) => React.ReactNode;
+	return {
+		__esModule: true,
+		default: (props: { children: ChildrenCb; title: string; session?: unknown }) => (
+			<div data-testid="articles-list">
+				<h2>{props.title}</h2>
+				{props.children({ company_id: 1, role: 'Commercial' })}
+			</div>
+		),
+	};
+});
+
+// Mock PaginatedDataGrid with typed props
+jest.mock('@/components/shared/paginatedDataGrid/paginatedDataGrid', () => ({
+	__esModule: true,
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	default: (_props: Record<string, unknown>) => <div data-testid="data-grid" />,
+}));
+
+// Mock next/navigation useRouter
+jest.mock('next/navigation', () => ({
+	useRouter: () => ({ push: jest.fn() }),
+}));
+
+// Mock hooks / utilities used by the component
+jest.mock('@/utils/hooks', () => ({
+	useToast: () => ({ onSuccess: jest.fn(), onError: jest.fn() }),
+}));
+
+const mockSession = {
 	accessToken: 'test-access-token',
 	refreshToken: 'test-refresh-token',
 	accessTokenExpiration: '2099-12-31T23:59:59Z',
@@ -62,68 +68,38 @@ const mockSession: AppSession = {
 	},
 };
 
-describe('ArticlesListClient', () => {
+describe('ArticlesListClient (integration with mocked deps)', () => {
 	afterEach(() => {
 		cleanup();
 		jest.clearAllMocks();
 	});
 
-	describe('Rendering', () => {
-		it('renders the articles list', () => {
-			render(<ArticlesListClient session={mockSession} archived={false} />);
-			expect(screen.getByTestId('articles-list')).toBeInTheDocument();
-		});
-
-		it('renders the title', () => {
-			render(<ArticlesListClient session={mockSession} archived={false} />);
-			expect(screen.getByText('Liste des articles')).toBeInTheDocument();
-		});
-
-		it('renders the data grid', () => {
-			render(<ArticlesListClient session={mockSession} archived={false} />);
-			expect(screen.getByTestId('data-grid')).toBeInTheDocument();
-		});
-
-		it('renders the add button', () => {
-			render(<ArticlesListClient session={mockSession} archived={false} />);
-			expect(screen.getByTestId('add-button')).toBeInTheDocument();
-		});
-
-		it('renders column headers', () => {
-			render(<ArticlesListClient session={mockSession} archived={false} />);
-			expect(screen.getByText('Référence')).toBeInTheDocument();
-			expect(screen.getByText('Désignation')).toBeInTheDocument();
-		});
+	it('renders wrapper and title and data grid', () => {
+		render(<ArticlesListClient session={mockSession} archived={false} />);
+		expect(screen.getByTestId('articles-list')).toBeInTheDocument();
+		expect(screen.getByText('Liste des Articles')).toBeInTheDocument();
+		expect(screen.getByTestId('data-grid')).toBeInTheDocument();
 	});
 
-	describe('Props', () => {
-		it('receives correct session token', () => {
-			render(<ArticlesListClient session={mockSession} archived={false} />);
-			expect(screen.getByTestId('session-access-token')).toHaveTextContent('test-access-token');
-		});
-
-		it('shows non-archived articles by default', () => {
-			render(<ArticlesListClient session={mockSession} archived={false} />);
-			expect(screen.getByTestId('archived')).toHaveTextContent('false');
-		});
-
-		it('shows archived articles when archived prop is true', () => {
-			render(<ArticlesListClient session={mockSession} archived={true} />);
-			expect(screen.getByTestId('archived')).toHaveTextContent('true');
-		});
-
-		it('handles undefined session gracefully', () => {
-			render(<ArticlesListClient session={undefined} archived={false} />);
-			expect(screen.getByTestId('session-access-token')).toHaveTextContent('no-token');
-		});
+	it('shows the add button when not archived and role allows it', () => {
+		render(<ArticlesListClient session={mockSession} archived={false} />);
+		expect(screen.getByText('Nouvel article')).toBeInTheDocument();
 	});
 
-	describe('Exports', () => {
-		it('exports typeFilterOptions with correct values', () => {
-			expect(typeFilterOptions).toEqual([
-				{ value: 'Produit', label: 'Produit', color: 'default' },
-				{ value: 'Service', label: 'Service', color: 'default' },
-			]);
-		});
+	it('does not show add button when archived is true', () => {
+		render(<ArticlesListClient session={mockSession} archived={true} />);
+		expect(screen.queryByText('Nouvel article')).toBeNull();
+	});
+
+	it('handles undefined session without throwing', () => {
+		render(<ArticlesListClient session={undefined as unknown as typeof mockSession} archived={false} />);
+		expect((sessionModule.getAccessTokenFromSession as jest.Mock).mock.calls.length).toBeGreaterThanOrEqual(0);
+	});
+
+	it('exports typeFilterOptions with correct values', () => {
+		expect(typeFilterOptions).toEqual([
+			{ value: 'Produit', label: 'Produit', color: 'default' },
+			{ value: 'Service', label: 'Service', color: 'default' },
+		]);
 	});
 });
