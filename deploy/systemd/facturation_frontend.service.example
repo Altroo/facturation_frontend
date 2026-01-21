@@ -1,0 +1,16 @@
+[Unit]
+Description=Facturation Frontend Docker Compose
+After=network.target docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/var/www/facturation_frontend
+RemainAfterExit=yes
+ExecStart=/usr/bin/docker compose up -d --build
+ExecStop=/usr/bin/docker compose down
+TimeoutStartSec=600
+TimeoutStopSec=600
+
+[Install]
+WantedBy=multi-user.target

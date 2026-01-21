@@ -1,0 +1,13 @@
+[Unit]
+Description=Webhook listener for deploy
+After=network.target docker.service
+Requires=docker.service
+
+[Service]
+User=deploy
+WorkingDirectory=/var/www/facturation_frontend/deploy
+ExecStart=/usr/local/bin/webhook -hooks hooks.json -port 9000 -verbose
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

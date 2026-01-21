@@ -1,0 +1,32 @@
+[
+  {
+    "id": "deploy-facturation",
+    "execute-command": "/var/www/facturation_frontend/deploy/deploy.sh",
+    "command-working-directory": "/var/www/facturation_frontend",
+    "response-message": "Deploy started",
+    "trigger-rule": {
+      "and": [
+        {
+          "match": {
+            "type": "payload-hmac-sha1",
+            "secret": "REPLACE_WITH_STRONG_SECRET",
+            "parameter": {
+              "source": "header",
+              "name": "X-Hub-Signature"
+            }
+          }
+        },
+        {
+          "match": {
+            "type": "value",
+            "value": "refs/heads/main",
+            "parameter": {
+              "source": "payload",
+              "name": "ref"
+            }
+          }
+        }
+      ]
+    }
+  }
+]
