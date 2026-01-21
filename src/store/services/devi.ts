@@ -96,8 +96,8 @@ export const deviApi = createApi({
 					await queryFulfilled;
 					// Invalidate the factureProFormaApi tag so its list refetches
 					dispatch(factureProFormaApi.util.invalidateTags(['FactureProForma']));
-				} catch {
-					// ignore
+				} catch (error) {
+					console.error('Failed to convert Devi to FactureProForma or invalidate cache:', error);
 				}
 			},
 		}),
@@ -111,8 +111,8 @@ export const deviApi = createApi({
 				try {
 					await queryFulfilled;
 					dispatch(factureClientApi.util.invalidateTags(['FactureClient']));
-				} catch {
-					// ignore
+				} catch (error) {
+					console.error('Failed to convert Devi to FactureClient or invalidate cache:', error);
 				}
 			},
 		}),

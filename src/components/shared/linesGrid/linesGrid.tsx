@@ -65,7 +65,13 @@ const LinesGrid = React.memo(
 					([key, val]) => val === (nextProps.rows[i] as unknown as Record<string, unknown>)?.[key],
 				),
 			);
-		return rowsEqual && prevProps.columns === nextProps.columns && prevProps.isLoading === nextProps.isLoading;
+
+		// Deep compare columns by checking length and field names
+		const columnsEqual =
+			prevProps.columns.length === nextProps.columns.length &&
+			prevProps.columns.every((col, i) => col.field === nextProps.columns[i]?.field);
+
+		return rowsEqual && columnsEqual && prevProps.isLoading === nextProps.isLoading;
 	},
 );
 

@@ -21,14 +21,19 @@ export function initWebsocket(token: string): EventChannel<WSAction> {
 					console.log('WS error ' + error);
 				};
 				ws.onmessage = (e: MessageEvent) => {
-					const msg = JSON.parse(e.data);
-					if (msg) {
-						const { message } = msg;
-						const signalType: WSEventType = message.type;
-						if (signalType === 'USER_AVATAR') {
-							const { pk, avatar } = (msg as WSEvent<WSUserAvatar>).message;
-							emitter(WSUserAvatarAction(pk, avatar));
+					try {
+						const msg = JSON.parse(e.data);
+						if (msg) {
+							const { message } = msg;
+							const signalType: WSEventType = message.type;
+							if (signalType === 'USER_AVATAR') {
+								const { pk, avatar } = (msg as WSEvent<WSUserAvatar>).message;
+								emitter(WSUserAvatarAction(pk, avatar));
+							}
 						}
+					} catch (error) {
+						console.error('WS: Invalid JSON received', error);
+						// Skip malformed message and continue listening
 					}
 				}; // unsubscribe function
 				ws.onclose = (e: CloseEvent) => {

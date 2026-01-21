@@ -130,6 +130,8 @@ export const { handlers, auth } = NextAuth({
 					}
 				} catch (err) {
 					console.error('Failed to refresh token:', err);
+					// Return null to force re-authentication
+					return null;
 				}
 			}
 			return token;

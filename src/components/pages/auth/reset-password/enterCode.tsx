@@ -56,7 +56,9 @@ const EnterCodePageContent = ({ email }: EnterCodePageContentProps) => {
 			const i = fields.indexOf(field);
 			const nextField = fields[i + 1];
 			if (nextField) setTimeout(() => inputRefs[nextField].current?.focus(), 0);
-			else setTimeout(() => formik.validateForm(), 0);
+			else setTimeout(() => formik.validateForm().catch((error) => {
+				console.error('Form validation error:', error);
+			}), 0);
 		}
 	};
 
@@ -86,7 +88,9 @@ const EnterCodePageContent = ({ email }: EnterCodePageContentProps) => {
 		digits.forEach((ch, idx) => formik.setFieldValue(fields[idx], ch));
 		formik.setFieldValue('code', digits.join(''));
 		setTimeout(() => {
-			formik.validateForm().then();
+			formik.validateForm().catch((error) => {
+				console.error('Form validation error:', error);
+			});
 			const focusIndex = Math.min(digits.length, fields.length - 1);
 			inputRefs[fields[focusIndex]].current?.focus();
 		}, 0);

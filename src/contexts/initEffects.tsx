@@ -57,46 +57,20 @@ export const InitEffects: React.FC = () => {
 		}
 	}, [status, session, dispatch]);
 
-	// Dispatch data actions
+	// Consolidate all data dispatches into single useEffect
+	// React 18+ automatically batches these dispatches to minimize re-renders
 	useEffect(() => {
 		if (user) dispatch(accountSetProfilAction(user));
-	}, [dispatch, user]);
-
-	useEffect(() => {
 		if (groupes) dispatch(accountSetGroupesAction(groupes));
-	}, [dispatch, groupes]);
-
-	useEffect(() => {
 		if (cities) dispatch(parameterSetCitiesAction(cities));
-	}, [dispatch, cities]);
-
-	useEffect(() => {
 		if (categories) dispatch(parameterSetCategoriesAction(categories));
-	}, [dispatch, categories]);
-
-	useEffect(() => {
 		if (emplacements) dispatch(parameterSetEmplacementsAction(emplacements));
-	}, [dispatch, emplacements]);
-
-	useEffect(() => {
 		if (unites) dispatch(parameterSetUnitesAction(unites));
-	}, [dispatch, unites]);
-
-	useEffect(() => {
 		if (marques) dispatch(parameterSetMarquesAction(marques));
-	}, [dispatch, marques]);
-
-	useEffect(() => {
 		if (modePaiement) dispatch(parameterSetModePaiementAction(modePaiement));
-	}, [dispatch, modePaiement]);
-
-	useEffect(() => {
 		if (livrePar) dispatch(parameterSetLivreParAction(livrePar));
-	}, [dispatch, livrePar]);
-
-	useEffect(() => {
 		if (companies) dispatch(companiesSetUserCompaniesAction(companies));
-	}, [dispatch, companies]);
+	}, [dispatch, user, groupes, cities, categories, emplacements, unites, marques, modePaiement, livrePar, companies]);
 
 	return null; // This component only runs effects, no UI
 };
