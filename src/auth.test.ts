@@ -321,7 +321,7 @@ describe('auth.ts', () => {
 			const result = await callbacks.jwt({ token, account: undefined, user: undefined });
 
 			expect(consoleSpy).toHaveBeenCalledWith('Failed to refresh token:', expect.any(Error));
-			expect(result.access).toBe('old-access-token'); // Unchanged
+			expect(result).toBeNull(); // jwt callback returns null on refresh failure
 			consoleSpy.mockRestore();
 		});
 
