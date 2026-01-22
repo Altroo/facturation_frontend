@@ -48,4 +48,4 @@ next-env.d.ts
 !/.vscode/settings.json
 
 # Archives
-archives
+/archives
