@@ -4,10 +4,10 @@ services:
   web:
     build: .
     restart: always
+    env_file:
+      - .env
     environment:
       - NODE_ENV=production
-      - NEXTAUTH_URL=http://localhost
-      # Put runtime env variables with `docker-compose --env-file .env` or set on server
     networks:
       - webnet
     expose:
