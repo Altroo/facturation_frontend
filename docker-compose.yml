@@ -24,20 +24,8 @@ services:
       - ./deploy/nginx/certs:/etc/ssl/certs:ro
     depends_on:
       - web
-      - webhook
     networks:
       - webnet
-
-  webhook:
-    image: adnanh/webhook:2.8.0
-    restart: always
-    volumes:
-      - ./deploy/hooks.json:/hooks/hooks.json:ro
-    command: ["-hooks", "/hooks/hooks.json", "-port", "9000", "-verbose"]
-    networks:
-      - webnet
-    expose:
-      - '9000'
 
 networks:
   webnet:
