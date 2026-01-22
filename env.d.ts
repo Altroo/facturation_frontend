@@ -5,6 +5,7 @@ declare namespace NodeJS {
 		NEXT_PUBLIC_HTTP_PROTOCOLE: 'http' | 'https';
 		HTTP: string;
 		WS: string;
+		ALLOWED_ORIGINS: string;
 		// Next.js backend api (for cookies)
 		NEXT_PUBLIC_BACKEND_DOMAIN: string;
 		NEXT_PUBLIC_BACKEND_API: string;
