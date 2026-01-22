@@ -1,5 +1,6 @@
 version: '3.8'
 
+# Production docker-compose configuration
 services:
   web:
     build: .
