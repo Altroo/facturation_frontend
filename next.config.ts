@@ -7,14 +7,17 @@ import path from 'path';
 
 type http = 'http' | 'https' | undefined;
 
-const remotePatterns: RemotePattern[] = [
-	{
+const remotePatterns: RemotePattern[] = [];
+
+// Only add remote pattern if env vars are available
+if (process.env.NEXT_PUBLIC_API_ROOT_URL) {
+	remotePatterns.push({
 		protocol: process.env.NEXT_PUBLIC_HTTP_PROTOCOLE as http,
 		hostname: process.env.NEXT_PUBLIC_API_ROOT_URL as string,
 		port: process.env.NEXT_PUBLIC_API_ROOT_PORT,
 		pathname: '/media/**',
-	},
-];
+	});
+}
 
 const nextConfig: NextConfig = {
 	reactCompiler: true,
