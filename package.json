@@ -37,7 +37,7 @@
     "react-dom": "19.2.3",
     "react-redux": "^9.2.0",
     "redux-saga": "^1.4.2",
-    "zod": "^4.3.5",
+    "zod": "^4.3.6",
     "zod-formik-adapter": "^2.0.0"
   },
   "devDependencies": {
