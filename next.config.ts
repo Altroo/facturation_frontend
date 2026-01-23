@@ -23,7 +23,7 @@ const nextConfig: NextConfig = {
 	reactCompiler: true,
 	reactStrictMode: true,
 	poweredByHeader: false,
-	compress: true,
+	compress: false,
 	typedRoutes: true,
 
 	experimental: {
