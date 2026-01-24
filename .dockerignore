@@ -1,8 +1,8 @@
 node_modules
 .next
 coverage
-.env
-.env.*
+.env*
+!.env.production
 .DS_Store
 npm-debug.log
 .vscode
