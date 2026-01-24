@@ -12,7 +12,9 @@ const remotePatterns: RemotePattern[] = [
 	{
 		protocol: 'https',
 		hostname: 'api.elbouazzatiholding.ma',
+		port: '',
 		pathname: '/media/**',
+		search: '',
 	},
 ];
 
