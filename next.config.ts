@@ -11,7 +11,6 @@ type http = 'http' | 'https' | undefined;
 const remotePatterns: RemotePattern[] = [
 	{
 		hostname: 'api.elbouazzatiholding.ma',
-		pathname: '/media/**',
 	},
 ];
 
