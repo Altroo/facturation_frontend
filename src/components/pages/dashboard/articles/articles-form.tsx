@@ -479,7 +479,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="prix_vente"
 										type="text"
-										label="Prix de vente"
+										label="Prix de vente *"
 										value={String(formik.values.prix_vente) ?? ''}
 										onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 											const raw = (e.target as HTMLInputElement).value;
