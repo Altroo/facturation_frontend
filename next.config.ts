@@ -7,12 +7,18 @@ const isProd = process.env.NODE_ENV === 'production';
 
 type http = 'http' | 'https' | undefined;
 
-const remotePatterns: RemotePattern[] = [];
+// Define remote patterns for production API
+const remotePatterns: RemotePattern[] = [
+	{
+		protocol: 'https',
+		hostname: 'api.elbouazzatiholding.ma',
+		pathname: '/media/**',
+	},
+];
 
-// Only add remote pattern if env vars are available
-if (process.env.NEXT_PUBLIC_API_ROOT_URL) {
+// Add localhost for development
+if (isDev && process.env.NEXT_PUBLIC_API_ROOT_URL) {
 	const port = process.env.NEXT_PUBLIC_API_ROOT_PORT;
-	// Don't include port for standard HTTP (80) or HTTPS (443)
 	const shouldIncludePort = port && port !== '80' && port !== '443';
 
 	remotePatterns.push({
