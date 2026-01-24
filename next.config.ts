@@ -10,7 +10,9 @@ type http = 'http' | 'https' | undefined;
 // Define remote patterns for production API
 const remotePatterns: RemotePattern[] = [
 	{
+		protocol: 'https',
 		hostname: 'api.elbouazzatiholding.ma',
+		pathname: '/media/**',
 	},
 ];
 
