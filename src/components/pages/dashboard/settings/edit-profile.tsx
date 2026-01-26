@@ -90,7 +90,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 						onBlur={formik.handleBlur('first_name')}
 						helperText={formik.touched.first_name ? formik.errors.first_name : ''}
 						error={formik.touched.first_name && Boolean(formik.errors.first_name)}
-						fullWidth={false}
+						fullWidth={true}
 						size="small"
 						label="Nom"
 						placeholder="Nom"
@@ -106,7 +106,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 						onBlur={formik.handleBlur('last_name')}
 						helperText={formik.touched.last_name ? formik.errors.last_name : ''}
 						error={formik.touched.last_name && Boolean(formik.errors.last_name)}
-						fullWidth={false}
+						fullWidth={true}
 						size="small"
 						label="Prénom"
 						placeholder="Prénom"
