@@ -3,6 +3,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '@/utils/hooks';
 import { useSession } from 'next-auth/react';
+import { useRouter, usePathname } from 'next/navigation';
 import { initAppSessionTokensAction } from '@/store/actions/_initActions';
 import { getAccessToken } from '@/store/selectors';
 import { useGetProfilQuery, useGetGroupsQuery } from '@/store/services/account';
@@ -27,10 +28,13 @@ import {
 } from '@/store/actions/parameterActions';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 import { companiesSetUserCompaniesAction } from '@/store/actions/companiesActions';
+import { DASHBOARD_PASSWORD } from '@/utils/routes';
 
 export const InitEffects: React.FC = () => {
 	const { data: session, status } = useSession();
 	const dispatch = useAppDispatch();
+	const router = useRouter();
+	const pathname = usePathname();
 	const initState = useAppSelector(getAccessToken);
 	const accessToken = initState ?? undefined;
 	const skip = !accessToken || status !== 'authenticated';
@@ -71,6 +75,13 @@ export const InitEffects: React.FC = () => {
 		if (livrePar) dispatch(parameterSetLivreParAction(livrePar));
 		if (companies) dispatch(companiesSetUserCompaniesAction(companies));
 	}, [dispatch, user, groupes, cities, categories, emplacements, unites, marques, modePaiement, livrePar, companies]);
+
+	// Redirect to password change page if user still has default password
+	useEffect(() => {
+		if (user && user.default_password_set && pathname !== '/dashboard/settings/password') {
+			router.push(DASHBOARD_PASSWORD);
+		}
+	}, [user, pathname, router]);
 
 	return null; // This component only runs effects, no UI
 };

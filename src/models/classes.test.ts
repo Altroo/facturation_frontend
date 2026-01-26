@@ -30,6 +30,7 @@ describe('UserClass', () => {
 			null,
 			true,
 			true,
+			false,
 			'2023-01-01',
 			'2023-01-02',
 			'2023-01-02',
@@ -42,6 +43,7 @@ describe('UserClass', () => {
 		expect(user.gender).toBe('M');
 		expect(user.is_staff).toBe(true);
 		expect(user.is_active).toBe(true);
+		expect(user.default_password_set).toBe(false);
 		expect(user.date_joined).toBe('2023-01-01');
 		expect(user.last_login).toBe('2023-01-02');
 	});

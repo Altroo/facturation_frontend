@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Styles from '@/styles/dashboard/settings/settings.module.sass';
-import { Box, Stack, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Stack, useMediaQuery, useTheme, Alert } from '@mui/material';
 import { setFormikAutoErrors } from '@/utils/helpers';
 import { useFormik } from 'formik';
 import { changePasswordSchema } from '@/utils/formValidationSchemas';
@@ -13,13 +13,15 @@ import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadi
 import { useEditPasswordMutation } from '@/store/services/account';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import { useToast } from '@/utils/hooks';
+import { useToast, useAppSelector } from '@/utils/hooks';
 import { Edit as EditIcon, Lock as LockIcon } from '@mui/icons-material';
+import { getProfilState } from '@/store/selectors';
 
 const inputTheme = textInputTheme();
 
 const FormikContent: React.FC = () => {
 	const { onSuccess, onError } = useToast();
+	const profil = useAppSelector(getProfilState);
 	const [changePassword, { isLoading: isChangePasswordLoading }] = useEditPasswordMutation();
 	const [isPending, setIsPending] = useState(false);
 
@@ -57,8 +59,14 @@ const FormikContent: React.FC = () => {
 		<Stack direction="column" alignItems="center" spacing={2} className={`${Styles.flexRootStack}`} mt="32px">
 			{(isChangePasswordLoading || isPending) && <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />}
 			<h2 className={Styles.pageTitle}>Modifier le mot de passe</h2>
+
 			<form className={Styles.form} onSubmit={(e) => e.preventDefault()}>
 				<Stack direction="column" justifyContent="center" alignItems="center" spacing={2}>
+					{profil && profil.default_password_set && (
+						<Alert severity="warning" sx={{ maxWidth: '365px', width: '100%' }}>
+							Il est recommandé de changer votre mot de passe par défaut pour des raisons de sécurité.
+						</Alert>
+					)}
 					<CustomPasswordInput
 						id="old_password"
 						value={formik.values.old_password}

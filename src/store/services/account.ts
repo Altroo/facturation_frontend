@@ -153,6 +153,7 @@ export const profilApi = createApi({
 				method: 'PUT',
 				data,
 			}),
+			invalidatesTags: ['Profil'],
 		}),
 	}),
 });

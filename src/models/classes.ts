@@ -15,6 +15,7 @@ export class UserClass {
 		public avatar_cropped: string | ArrayBuffer | null,
 		public is_staff: boolean,
 		public is_active: boolean,
+		public default_password_set: boolean,
 		public date_joined: string | null,
 		public date_updated: string | null,
 		public last_login: string | null,

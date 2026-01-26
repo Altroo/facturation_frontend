@@ -12,6 +12,7 @@ describe('account slice', () => {
 		null,
 		false,
 		true,
+		false,
 		'2024-01-01T00:00:00Z',
 		'2024-06-01T00:00:00Z',
 		'2024-06-01T00:00:00Z',
