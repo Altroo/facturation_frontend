@@ -48,6 +48,7 @@ import {
 	ARTICLES_ARCHIVED,
 	ARTICLES_LIST,
 	AUTH_LOGIN,
+	BACKEND_SITE_ADMIN,
 	BON_DE_LIVRAISON_LIST,
 	BON_DE_LIVRAISON_UNINVOICED,
 	CLIENTS_ARCHIVED,
@@ -323,11 +324,19 @@ const NavigationBar = (props: Props) => {
 								{!loading && session && (
 									<>
 										<Desktop>
+											{is_staff && (
+												<Button variant="text" color="inherit" href={BACKEND_SITE_ADMIN} target="_blank" rel="noopener" endIcon={<DomainIcon />}>
+													Site d’administration
+												</Button>
+											)}
 											<Button variant="text" color="inherit" endIcon={<LogoutIcon />} onClick={logOutHandler}>
 												Se déconnecter
 											</Button>
 										</Desktop>
 										<TabletAndMobile>
+											<IconButton color="inherit" href={BACKEND_SITE_ADMIN} target="_blank" rel="noopener">
+												<DomainIcon />
+											</IconButton>
 											<IconButton color="inherit" onClick={logOutHandler}>
 												<LogoutIcon />
 											</IconButton>

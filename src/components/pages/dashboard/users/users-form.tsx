@@ -109,7 +109,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			email: rawData?.email ?? '',
 			gender: rawData?.gender ?? '',
 			is_active: rawData?.is_active ?? true,
-			is_staff: rawData?.is_staff ?? false,
+			is_staff: rawData?.is_staff ?? true,
 			avatar: rawData?.avatar ?? '',
 			avatar_cropped: rawData?.avatar ?? '',
 			// Initialize with server companies; Formik will reinitialize when rawData changes
