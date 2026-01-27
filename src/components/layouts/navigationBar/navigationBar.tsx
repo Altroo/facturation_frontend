@@ -58,6 +58,7 @@ import {
 	DASHBOARD,
 	DASHBOARD_EDIT_PROFILE,
 	DASHBOARD_PASSWORD,
+	DASHBOARD_OBJECTIFS_MENSUELS,
 	DEVIS_LIST,
 	FACTURE_CLIENT_LIST,
 	FACTURE_CLIENT_UNPAID,
@@ -152,6 +153,15 @@ const getNavigationMenu = (isStaff: boolean) => {
 			items: [
 				{ title: 'Mon Profil', label: 'Mon Profil', path: DASHBOARD_EDIT_PROFILE },
 				{ title: 'Mot de passe', label: 'Changer le mot de passe', path: DASHBOARD_PASSWORD },
+				...(isStaff
+					? [
+							{
+								title: 'Objectifs Mensuels',
+								label: 'Configurer les objectifs mensuels',
+								path: DASHBOARD_OBJECTIFS_MENSUELS,
+							},
+						]
+					: []),
 			],
 		},
 	};

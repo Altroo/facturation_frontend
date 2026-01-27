@@ -58,6 +58,10 @@ import {
 } from '@/store/services/dashboard';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import type { SessionProps } from '@/types/_initTypes';
+import Link from 'next/link';
+import { DASHBOARD_OBJECTIFS_MENSUELS } from '@/utils/routes';
+import { getProfilState } from '@/store/selectors';
+import { useAppSelector } from '@/utils/hooks';
 
 // Register Chart.js components
 ChartJS.register(
@@ -830,9 +834,28 @@ const KPICardsSection: React.FC<ChartProps> = ({ dateParams, company_id }) => {
 
 const MonthlyObjectivesSection: React.FC<ChartProps> = ({ dateParams, company_id }) => {
 	const { data, isLoading, error } = useGetMonthlyObjectivesQuery({ ...dateParams, company_id });
+	const { is_staff } = useAppSelector(getProfilState);
 
 	if (isLoading) return <LoadingChart />;
 	if (error || !data) return <EmptyChart message="Aucune donnée d'objectifs disponible" />;
+
+	// Show message with link if objectives are not set
+	if (!data.objectives_set) {
+		return (
+			<Card elevation={2} sx={{ p: 3, textAlign: 'center' }}>
+				<Typography variant="body1" color="text.secondary" gutterBottom>
+					Les objectifs mensuels ne sont pas encore configurés pour cette société.
+				</Typography>
+				{is_staff && (
+					<Link href={DASHBOARD_OBJECTIFS_MENSUELS} style={{ textDecoration: 'none' }}>
+						<Button variant="contained" sx={{ mt: 2 }}>
+							Configurer les objectifs
+						</Button>
+					</Link>
+				)}
+			</Card>
+		);
+	}
 
 	const objectives = [
 		{

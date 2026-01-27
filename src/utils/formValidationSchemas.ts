@@ -12,6 +12,7 @@ import {
 	INPUT_URL_INVALID,
 	INPUT_YEAR_PART_INVALID,
 	MINI_INPUT_EMAIL,
+	POURCENTAGE_INPUT_INVALID,
 	SHORT_INPUT_REQUIRED,
 	TVA_INPUT_INVALID,
 } from '@/utils/formValidationErrorMessages';
@@ -680,3 +681,44 @@ export const reglementSchema = z.object({
 	date_echeance: requiredTextField(1, 100),
 	globalError: optionalTextField(1, 500),
 });
+
+// Add monthly objectives schema to central validation file so other components can reuse it.
+export const monthlyObjectivesSchema = z.object({
+	objectif_ca: z.preprocess(
+		(val) => {
+			// accept empty string / undefined and convert to NaN so number validation fails with INPUT_REQUIRED
+			if (val === undefined || val === null || val === '') return NaN;
+			if (typeof val === 'string') return parseFloat(val.replace(',', '.'));
+			return val;
+		},
+		z
+			.number({ error: INPUT_REQUIRED })
+			.refine((v) => !Number.isNaN(v), { message: INPUT_REQUIRED })
+			.min(0, { message: INPUT_MIN(0) }),
+	),
+	objectif_factures: z.preprocess(
+		(val) => {
+			if (val === undefined || val === null || val === '') return NaN;
+			// allow numeric strings
+			return Number(val);
+		},
+		z
+			.number({ error: INPUT_REQUIRED })
+			.refine((v) => !Number.isNaN(v), { message: INPUT_REQUIRED })
+			.refine((v) => Number.isInteger(v), { message: INPUT_QUANTITY_INT })
+			.min(0, { message: INPUT_MIN(0) }),
+	),
+	objectif_conversion: z.preprocess(
+		(val) => {
+			if (val === undefined || val === null || val === '') return NaN;
+			if (typeof val === 'string') return parseFloat(val.replace(',', '.'));
+			return val;
+		},
+		z
+			.number({ error: INPUT_REQUIRED })
+			.refine((v) => !Number.isNaN(v), { message: INPUT_REQUIRED })
+			.min(0, { message: INPUT_MIN(0) })
+			.max(100, { message: POURCENTAGE_INPUT_INVALID }),
+	),
+});
+

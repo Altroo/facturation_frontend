@@ -129,6 +129,7 @@ const mockObjectivesData: MonthlyObjectivesData = {
 	revenue: { current: 150000, objective: 200000, percentage: 75 },
 	invoices: { current: 40, objective: 50, percentage: 80 },
 	conversion: { current: 60, objective: 70, percentage: 85 },
+	objectives_set: true,
 };
 
 const mockDiscountImpactData: DiscountImpactData[] = [
@@ -279,8 +280,22 @@ jest.mock('@mui/x-date-pickers/AdapterDateFns', () => ({
 	AdapterDateFns: jest.fn(),
 }));
 
+// Mock useAppSelector
+jest.mock('@/utils/hooks', () => ({
+	useAppSelector: jest.fn(),
+	useAppDispatch: jest.fn(),
+}));
+
+jest.mock('@/store/selectors', () => ({
+	getProfilState: jest.fn(),
+}));
+
 // Import component after mocks
 import DashboardClient from './dashboard-view';
+import { useAppSelector } from '@/utils/hooks';
+
+// Get the mocked function
+const mockUseAppSelector = useAppSelector as jest.MockedFunction<typeof useAppSelector>;
 
 const mockSession: AppSession = {
 	accessToken: 'test-access-token',
@@ -303,6 +318,14 @@ const mockSession: AppSession = {
 describe('DashboardClient', () => {
 	beforeEach(() => {
 		mockQueryStates = {};
+		// Mock useAppSelector to return a default profile state
+		mockUseAppSelector.mockReturnValue({
+			is_staff: true,
+			first_name: 'Test',
+			last_name: 'User',
+			gender: 'Homme',
+			avatar_cropped: null,
+		});
 	});
 
 	afterEach(() => {

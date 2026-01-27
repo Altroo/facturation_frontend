@@ -170,8 +170,10 @@ describe('dashboardApi', () => {
 				revenue: { current: 8000, objective: 10000, percentage: 80 },
 				invoices: { current: 40, objective: 50, percentage: 80 },
 				conversion: { current: 15, objective: 20, percentage: 75 },
+				objectives_set: true,
 			};
 			expect(data.revenue.percentage).toBe(80);
+			expect(data.objectives_set).toBe(true);
 		});
 
 		it('should have correct DiscountImpactData structure', () => {

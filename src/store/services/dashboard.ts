@@ -126,6 +126,24 @@ export interface MonthlyObjectivesData {
 	revenue: ObjectiveData;
 	invoices: ObjectiveData;
 	conversion: ObjectiveData;
+	objectives_set: boolean;
+}
+
+export interface MonthlyObjectivesSettings {
+	id: number;
+	company: number;
+	objectif_ca: string;
+	objectif_factures: number;
+	objectif_conversion: string;
+	date_created: string;
+	date_updated: string;
+}
+
+export interface MonthlyObjectivesSettingsInput {
+	company: number;
+	objectif_ca: string;
+	objectif_factures: number;
+	objectif_conversion: string;
 }
 
 export interface DiscountImpactData {
@@ -175,7 +193,7 @@ const buildDateQueryString = (params?: DateFilterParams): string => {
 
 export const dashboardApi = createApi({
 	reducerPath: 'dashboardApi',
-	tagTypes: ['Dashboard'],
+	tagTypes: ['Dashboard', 'MonthlyObjectivesSettings'],
 	baseQuery: axiosBaseQuery((api) =>
 		isAuthenticatedInstance(
 			() => getInitStateToken(api.getState() as RootState),
@@ -338,6 +356,53 @@ export const dashboardApi = createApi({
 			}),
 			providesTags: ['Dashboard'],
 		}),
+
+		// Monthly Objectives Settings CRUD
+		getAllMonthlyObjectivesSettings: builder.query<MonthlyObjectivesSettings[], void>({
+			query: () => ({
+				url: '/dashboard/objectives/',
+				method: 'GET',
+			}),
+			providesTags: ['MonthlyObjectivesSettings'],
+		}),
+		getMonthlyObjectivesSettingsByCompany: builder.query<MonthlyObjectivesSettings, number>({
+			query: (companyId) => ({
+				url: `/dashboard/objectives/by-company/${companyId}/`,
+				method: 'GET',
+			}),
+			providesTags: ['MonthlyObjectivesSettings'],
+		}),
+		createMonthlyObjectivesSettings: builder.mutation<MonthlyObjectivesSettings, MonthlyObjectivesSettingsInput>({
+			query: (data) => ({
+				url: '/dashboard/objectives/',
+				method: 'POST',
+				data,
+			}),
+			invalidatesTags: ['MonthlyObjectivesSettings', 'Dashboard'],
+		}),
+		updateMonthlyObjectivesSettings: builder.mutation<MonthlyObjectivesSettings, { id: number; data: MonthlyObjectivesSettingsInput }>({
+			query: ({ id, data }) => ({
+				url: `/dashboard/objectives/${id}/`,
+				method: 'PUT',
+				data,
+			}),
+			invalidatesTags: ['MonthlyObjectivesSettings', 'Dashboard'],
+		}),
+		patchMonthlyObjectivesSettings: builder.mutation<MonthlyObjectivesSettings, { id: number; data: Partial<MonthlyObjectivesSettingsInput> }>({
+			query: ({ id, data }) => ({
+				url: `/dashboard/objectives/${id}/`,
+				method: 'PATCH',
+				data,
+			}),
+			invalidatesTags: ['MonthlyObjectivesSettings', 'Dashboard'],
+		}),
+		deleteMonthlyObjectivesSettings: builder.mutation<void, number>({
+			query: (id) => ({
+				url: `/dashboard/objectives/${id}/`,
+				method: 'DELETE',
+			}),
+			invalidatesTags: ['MonthlyObjectivesSettings', 'Dashboard'],
+		}),
 	}),
 });
 
@@ -362,4 +427,10 @@ export const {
 	useGetProductMarginVolumeQuery,
 	useGetMonthlyGlobalPerformanceQuery,
 	useGetSectionMicroTrendsQuery,
+	useGetAllMonthlyObjectivesSettingsQuery,
+	useGetMonthlyObjectivesSettingsByCompanyQuery,
+	useCreateMonthlyObjectivesSettingsMutation,
+	useUpdateMonthlyObjectivesSettingsMutation,
+	usePatchMonthlyObjectivesSettingsMutation,
+	useDeleteMonthlyObjectivesSettingsMutation,
 } = dashboardApi;
