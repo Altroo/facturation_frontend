@@ -4,8 +4,6 @@ import React, { useMemo, useState } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import {
 	Box,
-	Card,
-	CardContent,
 	Container,
 	Divider,
 	Paper,
