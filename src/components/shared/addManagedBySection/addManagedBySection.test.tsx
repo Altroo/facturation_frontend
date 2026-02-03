@@ -134,6 +134,6 @@ describe('AddManagedBySection', () => {
 				selectValue={null}
 			/>,
 		);
-		expect(screen.getByTestId('no-options')).toHaveTextContent('Aucun utilisateur trouvé');
+		expect(screen.getByTestId('no-options')).toHaveTextContent('Aucun résultat');
 	});
 });
