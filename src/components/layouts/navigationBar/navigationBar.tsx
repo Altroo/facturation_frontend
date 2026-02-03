@@ -400,7 +400,7 @@ const NavigationBar = (props: Props) => {
 									width={80}
 									height={80}
 									loading="eager"
-									style={{ objectFit: 'cover' }}
+									style={{ objectFit: 'contain' }}
 								/>
 							</Box>
 						)}
