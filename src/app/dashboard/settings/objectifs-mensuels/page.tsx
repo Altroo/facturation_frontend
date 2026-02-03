@@ -5,7 +5,7 @@ import { AUTH_LOGIN } from '@/utils/routes';
 import MonthlyObjectivesView from '@/components/pages/dashboard/settings/monthly-objectives-view';
 
 export const metadata: Metadata = {
-	title: 'Objectifs Mensuels - Paramètres',
+	title: 'Objectifs Mensuels',
 	description: 'Configuration des objectifs mensuels pour chaque société',
 };
 

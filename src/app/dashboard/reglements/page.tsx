@@ -5,7 +5,7 @@ import ReglementListClient from '@/components/pages/dashboard/reglements/regleme
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-	title: 'Règlements',
+	title: 'Liste des règlements',
 	description: 'Liste des règlements',
 };
 

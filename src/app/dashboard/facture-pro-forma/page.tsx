@@ -5,7 +5,7 @@ import FactureProformaListClient from '@/components/pages/dashboard/facture-pro-
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-	title: 'Factures Pro Forma',
+	title: "Liste des factures pro forma'",
 	description: 'Liste des factures pro forma',
 };
 

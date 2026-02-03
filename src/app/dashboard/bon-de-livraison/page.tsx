@@ -5,7 +5,7 @@ import BonDeLivraisonListClient from '@/components/pages/dashboard/bon-de-livrai
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-	title: 'Bons de Livraison',
+	title: 'Liste des bons de livraison',
 	description: 'Liste des bons de livraison',
 };
 

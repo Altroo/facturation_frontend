@@ -5,7 +5,7 @@ import { AUTH_LOGIN } from '@/utils/routes';
 import DevisListClient from '@/components/pages/dashboard/devis/devis-list';
 
 export const metadata: Metadata = {
-	title: 'Devis',
+	title: 'Liste des devis',
 	description: 'Liste des devis',
 };
 

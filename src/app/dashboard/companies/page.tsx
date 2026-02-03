@@ -5,7 +5,7 @@ import CompaniesListClient from '@/components/pages/dashboard/companies/companie
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-	title: 'Sociétés',
+	title: 'Liste des sociétés',
 	description: 'Liste des sociétés',
 };
 

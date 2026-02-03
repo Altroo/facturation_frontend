@@ -5,7 +5,7 @@ import ArticlesListClient from '@/components/pages/dashboard/articles/articles-l
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-	title: 'Articles',
+	title: 'Liste des articles',
 	description: 'Liste des articles',
 };
 

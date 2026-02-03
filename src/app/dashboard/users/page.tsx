@@ -5,7 +5,7 @@ import { AUTH_LOGIN } from '@/utils/routes';
 import UsersListClient from '@/components/pages/dashboard/users/users-list';
 
 export const metadata: Metadata = {
-	title: 'Utilisateurs',
+	title: 'Liste des utilisateurs',
 	description: 'Liste des utilisateurs',
 };
 

@@ -5,7 +5,7 @@ import ClientsListClient from '@/components/pages/dashboard/clients/clients-list
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-	title: 'Clients',
+	title: 'Liste des clients',
 	description: 'Liste des clients',
 };
 

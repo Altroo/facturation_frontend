@@ -5,7 +5,7 @@ import FactureClientListClient from '@/components/pages/dashboard/facture-client
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-	title: 'Factures Client',
+	title: 'Liste des factures client',
 	description: 'Liste des factures client',
 };
 
