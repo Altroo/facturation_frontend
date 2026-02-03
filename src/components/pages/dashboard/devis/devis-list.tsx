@@ -45,7 +45,7 @@ const devisListConfig: DocumentListConfig<DeviClass> = {
 		dateField: 'date_devis',
 		dateHeaderName: 'Date devis',
 		extraField: 'numero_demande_prix_client',
-		extraFieldHeaderName: 'N° Dde de prix',
+		extraFieldHeaderName: 'N° demande de prix',
 	},
 	convertActions: [
 		{

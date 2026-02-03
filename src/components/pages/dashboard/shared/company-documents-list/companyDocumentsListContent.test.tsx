@@ -212,7 +212,7 @@ const mockConfig: DocumentListConfig<DeviClass> = {
 		numeroField: 'numero_devis',
 		numeroHeaderName: 'Numéro devis',
 		extraField: 'numero_demande_prix_client',
-		extraFieldHeaderName: 'N° Dde de prix',
+		extraFieldHeaderName: 'N° demande de prix',
 		dateField: 'date_devis',
 		dateHeaderName: 'Date devis',
 	},
@@ -427,7 +427,7 @@ describe('CompanyDocumentsListContent', () => {
 			);
 			expect(screen.getByText('Numéro devis')).toBeInTheDocument();
 			expect(screen.getByText('Client')).toBeInTheDocument();
-			expect(screen.getByText('N° Dde de prix')).toBeInTheDocument();
+			expect(screen.getByText('N° demande de prix')).toBeInTheDocument();
 			expect(screen.getByText('Statut')).toBeInTheDocument();
 			expect(screen.getByText('Total TTC après remise')).toBeInTheDocument();
 			expect(screen.getByText("Nombre d'articles")).toBeInTheDocument();

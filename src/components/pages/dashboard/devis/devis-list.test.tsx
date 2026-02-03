@@ -257,7 +257,7 @@ jest.mock('@/components/pages/dashboard/shared/company-documents-list/companyDoc
 								<tr>
 									<th>Numéro devis</th>
 									<th>Client</th>
-									<th>N° Dde de prix</th>
+									<th>N° demande de prix</th>
 									<th>Statut</th>
 									<th>Total TTC après remise</th>
 									<th>Nombre d&apos;articles</th>
@@ -481,9 +481,9 @@ describe('DevisListClient', () => {
 			expect(screen.getByText('Client')).toBeInTheDocument();
 		});
 
-		it('renders N° Dde de prix header', () => {
+		it('renders N° demande de prix header', () => {
 			render(<DevisListClient session={mockSession} />);
-			expect(screen.getByText('N° Dde de prix')).toBeInTheDocument();
+			expect(screen.getByText('N° demande de prix')).toBeInTheDocument();
 		});
 
 		it('renders Statut header', () => {
