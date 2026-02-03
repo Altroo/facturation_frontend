@@ -240,7 +240,7 @@ describe('ModePaiementClass', () => {
 });
 
 describe('DeviFactureLineClass', () => {
-	it('creates a devi line instance with given properties', () => {
+	it('creates a devis line instance with given properties', () => {
 		const line = new DeviFactureLivraisonLineClass(
 			1,
 			10,
@@ -266,7 +266,7 @@ describe('DeviFactureLineClass', () => {
 });
 
 describe('DeviClass', () => {
-	it('creates a devi instance with lines, totals and metadata', () => {
+	it('creates a devis instance with lines, totals and metadata', () => {
 		const line1 = new DeviFactureLivraisonLineClass(1, 1, 'A', 'Desc A', 20, 30, 1, 'AMOUNT' as TypeRemiseType, 0);
 		const line2 = new DeviFactureLivraisonLineClass(2, 2, 'B', 'Desc B', 40, 60, 2, 'PERCENT' as TypeRemiseType, 10);
 

@@ -26,13 +26,13 @@ export {
 const devisListConfig: DocumentListConfig<DeviClass> = {
 	documentType: 'devis',
 	labels: {
-		documentTypeName: 'devi',
+		documentTypeName: 'devis',
 		pageTitle: 'Liste des Devis',
-		addButtonText: 'Nouveau devi',
-		deleteSuccessMessage: 'Devi supprimé avec succès',
-		deleteErrorMessage: 'Erreur lors de la suppression du devi',
-		deleteConfirmTitle: 'Supprimer ce devi ?',
-		deleteConfirmBody: 'Êtes‑vous sûr de vouloir supprimer ce devi ?',
+		addButtonText: 'Nouveau devis',
+		deleteSuccessMessage: 'Devis supprimé avec succès',
+		deleteErrorMessage: 'Erreur lors de la suppression du devis',
+		deleteConfirmTitle: 'Supprimer ce devis ?',
+		deleteConfirmBody: 'Êtes‑vous sûr de vouloir supprimer ce devis ?',
 	},
 	routes: {
 		addRoute: DEVIS_ADD,
@@ -41,9 +41,9 @@ const devisListConfig: DocumentListConfig<DeviClass> = {
 	},
 	columns: {
 		numeroField: 'numero_devis',
-		numeroHeaderName: 'Numéro devi',
+		numeroHeaderName: 'Numéro devis',
 		dateField: 'date_devis',
-		dateHeaderName: 'Date devi',
+		dateHeaderName: 'Date devis',
 		extraField: 'numero_demande_prix_client',
 		extraFieldHeaderName: 'N° Dde de prix',
 	},
@@ -53,7 +53,7 @@ const devisListConfig: DocumentListConfig<DeviClass> = {
 			label: 'Facture pro-forma',
 			icon: <ReceiptLongOutlinedIcon fontSize="small" color="success" />,
 			modalTitle: 'Convertir en facture pro-forma ?',
-			modalBody: 'Êtes-vous sûr de vouloir convertir ce devi en facture pro-forma ?',
+			modalBody: 'Êtes-vous sûr de vouloir convertir ce devis en facture pro-forma ?',
 			disabled: (row) => !['Envoyé', 'Accepté'].includes(row.statut),
 			redirectRoute: FACTURE_PRO_FORMA_EDIT,
 		},
@@ -62,7 +62,7 @@ const devisListConfig: DocumentListConfig<DeviClass> = {
 			label: 'Facture client',
 			icon: <ReceiptLongIcon fontSize="small" color="success" />,
 			modalTitle: 'Convertir en facture client ?',
-			modalBody: 'Êtes-vous sûr de vouloir convertir ce devi en facture client ?',
+			modalBody: 'Êtes-vous sûr de vouloir convertir ce devis en facture client ?',
 			disabled: (row) => !['Envoyé', 'Accepté'].includes(row.statut),
 			redirectRoute: FACTURE_CLIENT_EDIT,
 		},
@@ -70,24 +70,27 @@ const devisListConfig: DocumentListConfig<DeviClass> = {
 	printActions: [
 		{
 			key: 'avec_remise',
-			label: 'Afficher Devi avec remise',
+			label: 'Afficher Devis avec remise',
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#1976d2',
-			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') => DEVIS_PDF(id, companyId, 'avec_remise', language),
+			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') =>
+				DEVIS_PDF(id, companyId, 'avec_remise', language),
 		},
 		{
 			key: 'sans_remise',
-			label: 'Afficher Devi sans remise',
+			label: 'Afficher Devis sans remise',
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#2e7d32',
-			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') => DEVIS_PDF(id, companyId, 'sans_remise', language),
+			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') =>
+				DEVIS_PDF(id, companyId, 'sans_remise', language),
 		},
 		{
 			key: 'avec_unite',
-			label: 'Afficher Devi avec unité',
+			label: 'Afficher Devis avec unité',
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#ed6c02',
-			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') => DEVIS_PDF(id, companyId, 'avec_unite', language),
+			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') =>
+				DEVIS_PDF(id, companyId, 'avec_unite', language),
 		},
 	],
 };

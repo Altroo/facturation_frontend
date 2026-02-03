@@ -67,7 +67,7 @@ describe('DeviNewCompanyIDPage server component', () => {
 	});
 
 	it('redirects to DEVIS_LIST when company_id is invalid', async () => {
-		const sessionValue: Session = { user: { pk: 1, email: 'devi@site.com' } };
+		const sessionValue: Session = { user: { pk: 1, email: 'devis@site.com' } };
 		mockAuth.mockResolvedValue(sessionValue);
 
 		let Page: (props: { searchParams: Promise<{ company_id: string }> }) => Promise<unknown>;
@@ -83,7 +83,7 @@ describe('DeviNewCompanyIDPage server component', () => {
 	});
 
 	it('renders DeviForm with session and company_id when valid', async () => {
-		const sessionValue: Session = { user: { pk: 99, email: 'devi@site.com' } };
+		const sessionValue: Session = { user: { pk: 99, email: 'devis@site.com' } };
 		mockAuth.mockResolvedValueOnce(sessionValue);
 
 		let Page: (props: { searchParams: Promise<{ company_id: string }> }) => Promise<unknown>;
@@ -101,7 +101,7 @@ describe('DeviNewCompanyIDPage server component', () => {
 		const decoded = html.replace(/&quot;/g, '"');
 
 		expect(decoded).toContain('"pk":99');
-		expect(decoded).toContain('"email":"devi@site.com"');
+		expect(decoded).toContain('"email":"devis@site.com"');
 		expect(decoded).toContain('COMPANY_ID=456');
 		expect(mockRedirect).not.toHaveBeenCalled();
 	});

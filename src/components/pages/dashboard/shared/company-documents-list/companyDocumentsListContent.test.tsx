@@ -196,12 +196,12 @@ const mockConfig: DocumentListConfig<DeviClass> = {
 	documentType: 'devis',
 	labels: {
 		pageTitle: 'Liste des Devis',
-		documentTypeName: 'devi',
-		addButtonText: 'Nouveau devi',
-		deleteConfirmTitle: 'Supprimer ce devi ?',
-		deleteConfirmBody: 'Êtes-vous sûr de vouloir supprimer ce devi ? Cette action est irréversible.',
-		deleteSuccessMessage: 'Devi supprimé avec succès',
-		deleteErrorMessage: 'Erreur lors de la suppression du devi',
+		documentTypeName: 'devis',
+		addButtonText: 'Nouveau devis',
+		deleteConfirmTitle: 'Supprimer ce devis ?',
+		deleteConfirmBody: 'Êtes-vous sûr de vouloir supprimer ce devis ? Cette action est irréversible.',
+		deleteSuccessMessage: 'Devis supprimé avec succès',
+		deleteErrorMessage: 'Erreur lors de la suppression du devis',
 	},
 	routes: {
 		addRoute: (companyId: number) => `/dashboard/devis/add?company_id=${companyId}`,
@@ -210,11 +210,11 @@ const mockConfig: DocumentListConfig<DeviClass> = {
 	},
 	columns: {
 		numeroField: 'numero_devis',
-		numeroHeaderName: 'Numéro devi',
+		numeroHeaderName: 'Numéro devis',
 		extraField: 'numero_demande_prix_client',
 		extraFieldHeaderName: 'N° Dde de prix',
 		dateField: 'date_devis',
-		dateHeaderName: 'Date devi',
+		dateHeaderName: 'Date devis',
 	},
 	convertActions: [
 		{
@@ -222,7 +222,7 @@ const mockConfig: DocumentListConfig<DeviClass> = {
 			label: 'Convertir en facture pro forma',
 			icon: <DescriptionIcon />,
 			modalTitle: 'Convertir en facture pro forma',
-			modalBody: 'Voulez-vous convertir ce devi en facture pro forma ?',
+			modalBody: 'Voulez-vous convertir ce devis en facture pro forma ?',
 			redirectRoute: (id: number, companyId: number) =>
 				`/dashboard/facture-pro-forma/edit/${id}?company_id=${companyId}`,
 			disabled: false,
@@ -232,7 +232,7 @@ const mockConfig: DocumentListConfig<DeviClass> = {
 			label: 'Convertir en facture client',
 			icon: <ReceiptIcon />,
 			modalTitle: 'Convertir en facture client',
-			modalBody: 'Voulez-vous convertir ce devi en facture client ?',
+			modalBody: 'Voulez-vous convertir ce devis en facture client ?',
 			redirectRoute: (id: number, companyId: number) => `/dashboard/facture-client/edit/${id}?company_id=${companyId}`,
 			disabled: false,
 		},
@@ -367,7 +367,7 @@ describe('CompanyDocumentsListContent', () => {
 					setSearchTerm={mockSetSearchTerm}
 				/>,
 			);
-			expect(screen.getByText('Nouveau devi')).toBeInTheDocument();
+			expect(screen.getByText('Nouveau devis')).toBeInTheDocument();
 		});
 
 		it('does not render add button for Lecture role', () => {
@@ -386,7 +386,7 @@ describe('CompanyDocumentsListContent', () => {
 					setSearchTerm={mockSetSearchTerm}
 				/>,
 			);
-			expect(screen.queryByText('Nouveau devi')).not.toBeInTheDocument();
+			expect(screen.queryByText('Nouveau devis')).not.toBeInTheDocument();
 		});
 
 		it('renders data rows', () => {
@@ -425,13 +425,13 @@ describe('CompanyDocumentsListContent', () => {
 					setSearchTerm={mockSetSearchTerm}
 				/>,
 			);
-			expect(screen.getByText('Numéro devi')).toBeInTheDocument();
+			expect(screen.getByText('Numéro devis')).toBeInTheDocument();
 			expect(screen.getByText('Client')).toBeInTheDocument();
 			expect(screen.getByText('N° Dde de prix')).toBeInTheDocument();
 			expect(screen.getByText('Statut')).toBeInTheDocument();
 			expect(screen.getByText('Total TTC après remise')).toBeInTheDocument();
 			expect(screen.getByText("Nombre d'articles")).toBeInTheDocument();
-			expect(screen.getByText('Date devi')).toBeInTheDocument();
+			expect(screen.getByText('Date devis')).toBeInTheDocument();
 			expect(screen.getByText('Actions')).toBeInTheDocument();
 		});
 	});
@@ -453,7 +453,7 @@ describe('CompanyDocumentsListContent', () => {
 					setSearchTerm={mockSetSearchTerm}
 				/>,
 			);
-			const addButton = screen.getByText('Nouveau devi');
+			const addButton = screen.getByText('Nouveau devis');
 			fireEvent.click(addButton);
 			expect(mockPush).toHaveBeenCalledWith('/dashboard/devis/add?company_id=1');
 		});

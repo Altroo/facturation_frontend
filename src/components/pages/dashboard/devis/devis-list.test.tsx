@@ -255,13 +255,13 @@ jest.mock('@/components/pages/dashboard/shared/company-documents-list/companyDoc
 						<table>
 							<thead>
 								<tr>
-									<th>Numéro devi</th>
+									<th>Numéro devis</th>
 									<th>Client</th>
 									<th>N° Dde de prix</th>
 									<th>Statut</th>
 									<th>Total TTC après remise</th>
 									<th>Nombre d&apos;articles</th>
-									<th>Date devi</th>
+									<th>Date devis</th>
 									<th>Actions</th>
 								</tr>
 							</thead>
@@ -420,9 +420,9 @@ describe('DevisListClient', () => {
 			expect(screen.getByTestId('paginated-data-grid')).toBeInTheDocument();
 		});
 
-		it('renders "Nouveau devi" button for Admin role', () => {
+		it('renders "Nouveau devis" button for Admin role', () => {
 			render(<DevisListClient session={mockSession} />);
-			expect(screen.getByText('Nouveau devi')).toBeInTheDocument();
+			expect(screen.getByText('Nouveau devis')).toBeInTheDocument();
 		});
 
 		it('renders data rows from query', () => {
@@ -462,18 +462,18 @@ describe('DevisListClient', () => {
 	});
 
 	describe('Navigation', () => {
-		it('navigates to add page when clicking "Nouveau devi" button', () => {
+		it('navigates to add page when clicking "Nouveau devis" button', () => {
 			render(<DevisListClient session={mockSession} />);
-			const addButton = screen.getByText('Nouveau devi');
+			const addButton = screen.getByText('Nouveau devis');
 			fireEvent.click(addButton);
 			expect(mockPush).toHaveBeenCalled();
 		});
 	});
 
 	describe('Column headers', () => {
-		it('renders Numéro devi header', () => {
+		it('renders Numéro devis header', () => {
 			render(<DevisListClient session={mockSession} />);
-			expect(screen.getByText('Numéro devi')).toBeInTheDocument();
+			expect(screen.getByText('Numéro devis')).toBeInTheDocument();
 		});
 
 		it('renders Client header', () => {
@@ -501,9 +501,9 @@ describe('DevisListClient', () => {
 			expect(screen.getByText("Nombre d'articles")).toBeInTheDocument();
 		});
 
-		it('renders Date devi header', () => {
+		it('renders Date devis header', () => {
 			render(<DevisListClient session={mockSession} />);
-			expect(screen.getByText('Date devi')).toBeInTheDocument();
+			expect(screen.getByText('Date devis')).toBeInTheDocument();
 		});
 
 		it('renders Actions header', () => {
