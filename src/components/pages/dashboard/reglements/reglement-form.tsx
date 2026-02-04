@@ -248,7 +248,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const totalReglementsFacture = rawData?.total_reglements_facture
 		? formatPrice(rawData.total_reglements_facture)
 		: null;
-	const resteAPayer = rawData?.reste_a_payer ? formatPrice(rawData.reste_a_payer) : 0 + ' DH';
+	const resteAPayer = rawData?.reste_a_payer ? formatPrice(rawData.reste_a_payer) : 0 + ' MAD';
 
 	return (
 		<Stack spacing={3} sx={{ p: { xs: 2, md: 3 } }}>
@@ -408,7 +408,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="montant"
 										type="text"
-										label="Montant (DH) *"
+										label="Montant (MAD) *"
 										value={String(formik.values.montant)}
 										onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 											const raw = e.target.value;

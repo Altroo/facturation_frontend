@@ -208,10 +208,10 @@ export const formatDate = (value: string | null) => {
 };
 
 export const formatPrice = (value: string | number | null | undefined): string => {
-	if (value === null || value === undefined) return '0,00 DH';
+	if (value === null || value === undefined) return '0,00 MAD';
 	const num = typeof value === 'string' ? parseFloat(value) : value;
-	if (Number.isNaN(num)) return '0,00 DH';
-	return num.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' DH';
+	if (Number.isNaN(num)) return '0,00 MAD';
+	return num.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' MAD';
 };
 
 export const parseNumber = (value: string | number): number | null => {

@@ -450,9 +450,9 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 				flex: 1.3,
 				minWidth: 130,
 				renderCell: (params: GridRenderCellParams<TDocument>) => (
-					<DarkTooltip title={params.value + ' DH'}>
+					<DarkTooltip title={params.value + ' MAD'}>
 						<Typography variant="body2" noWrap fontWeight={600} color="primary">
-							{params.value} DH
+							{params.value} MAD
 						</Typography>
 					</DarkTooltip>
 				),

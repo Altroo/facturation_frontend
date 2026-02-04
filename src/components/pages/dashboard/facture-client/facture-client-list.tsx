@@ -158,9 +158,9 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 	};
 
 	// Format aggregated stats
-	const chiffreAffaireTotal = data?.chiffre_affaire_total ? formatPrice(data.chiffre_affaire_total) : '0,00 DH';
-	const totalReglements = data?.total_reglements ? formatPrice(data.total_reglements) : '0,00 DH';
-	const totalImpayes = data?.total_impayes ? formatPrice(data.total_impayes) : '0,00 DH';
+	const chiffreAffaireTotal = data?.chiffre_affaire_total ? formatPrice(data.chiffre_affaire_total) : '0,00 MAD';
+	const totalReglements = data?.total_reglements ? formatPrice(data.total_reglements) : '0,00 MAD';
+	const totalImpayes = data?.total_impayes ? formatPrice(data.total_impayes) : '0,00 MAD';
 
 	return (
 		<>

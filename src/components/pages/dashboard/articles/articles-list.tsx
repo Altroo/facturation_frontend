@@ -295,7 +295,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			flex: 1,
 			minWidth: 100,
 			renderCell: (params: GridRenderCellParams<ArticleClass>) => (
-				<DarkTooltip title={usesForeignCurrency ? params.value + ' ' + params.row.devise_prix_achat : String(params.value)}>
+				<DarkTooltip title={usesForeignCurrency ? params.value + ' ' + params.row.devise_prix_achat : String(params.value) + ' MAD'}>
 					<Typography variant="body2" noWrap fontWeight={600} color="primary">
 						{params.value}{usesForeignCurrency ? ' ' + params.row.devise_prix_achat : ''}
 					</Typography>
@@ -308,9 +308,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			flex: 1,
 			minWidth: 100,
 			renderCell: (params: GridRenderCellParams<ArticleClass>) => (
-				<DarkTooltip title={params.value + ' DH'}>
+				<DarkTooltip title={params.value + ' MAD'}>
 					<Typography variant="body2" noWrap fontWeight={600} color="primary">
-						{params.value} DH
+						{params.value} MAD
 					</Typography>
 				</DarkTooltip>
 			),
