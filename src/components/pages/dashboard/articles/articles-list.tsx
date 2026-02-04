@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Button, Typography, Chip, IconButton, Avatar } from '@mui/material';
+import { Box, Button, Typography, Chip, IconButton, Avatar, Alert } from '@mui/material';
 import {
 	Edit as EditIcon,
 	Delete as DeleteIcon,
@@ -13,6 +13,7 @@ import {
 	Close as CloseIcon,
 	FileUpload as FileUploadIcon,
 	FileDownloadOutlined as FileDownloadOutlinedIcon,
+	Warning as WarningIcon,
 } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams, GridFilterModel } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
@@ -61,6 +62,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const [showArchiveModal, setShowArchiveModal] = useState<boolean>(false);
 	const [archiveTarget, setArchiveTarget] = useState<number | null>(null);
+	const [importErrors, setImportErrors] = useState<{ row: number; message: string }[]>([]);
+
+	useEffect(() => {
+		setImportErrors([]);
+	}, [company_id]);
 
 	// Extract date filter parameters from filter model
 	const getDateFilterParams = () => {
@@ -103,6 +109,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
+		setImportErrors([]);
 		try {
 			const result = await importArticles({ file, company_id }).unwrap();
 			if (result.created > 0) {
@@ -110,7 +117,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				refetch();
 			}
 			if (result.errors.length > 0) {
-				onError(`${result.errors.length} erreur(s) lors de l'importation`);
+				setImportErrors(result.errors);
 			}
 		} catch {
 			onError("Erreur lors de l'importation des articles");
@@ -382,6 +389,22 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	return (
 		<>
+			{importErrors.length > 0 && (
+				<Alert severity="error" icon={<WarningIcon />} sx={{ px: { xs: 1, sm: 2, md: 3 }, mt: { xs: 1, sm: 2, md: 3 } }}>
+					<Typography variant="subtitle2" fontWeight={600}>
+						Erreurs lors de l&#39;importation :
+					</Typography>
+					<ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
+						{importErrors.map((err) => (
+							<li key={err.row}>
+								<Typography variant="body2">
+									Ligne {err.row} : {err.message}
+								</Typography>
+							</li>
+						))}
+					</ul>
+				</Alert>
+			)}
 			{!archived && (role === 'Caissier' || role === 'Commercial') && (
 				<Box
 					sx={{
