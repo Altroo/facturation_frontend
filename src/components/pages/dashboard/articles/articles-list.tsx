@@ -304,7 +304,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			renderCell: (params: GridRenderCellParams<ArticleClass>) => (
 				<DarkTooltip title={usesForeignCurrency ? params.value + ' ' + params.row.devise_prix_achat : String(params.value) + ' MAD'}>
 					<Typography variant="body2" noWrap fontWeight={600} color="primary">
-						{params.value}{usesForeignCurrency ? ' ' + params.row.devise_prix_achat : ''}
+						{params.value}{usesForeignCurrency ? ' ' + params.row.devise_prix_achat : ' MAD'}
 					</Typography>
 				</DarkTooltip>
 			),
