@@ -321,6 +321,7 @@ export const articleSchema = z
 		categorie: optionalNumberField(1).nullable(),
 		unite: optionalNumberField(1).nullable(),
 		prix_achat: optionalNumberField(0).nullable(),
+		devise_prix_achat: z.enum(['MAD', 'EUR', 'USD']).default('MAD'),
 		prix_vente: optionalNumberField(0).nullable(),
 		tva: optionalTVANumberField(0),
 		remarque: optionalTextField(2, 500).nullable(),

@@ -174,6 +174,7 @@ describe('ArticleClass', () => {
 			'Designation',
 			null,
 			100,
+			'MAD',
 			150,
 			20,
 			'Remark',

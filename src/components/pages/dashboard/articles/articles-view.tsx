@@ -229,7 +229,7 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 									<Stack spacing={0}>
-										<InfoRow icon={<ShoppingCartIcon />} label="Prix d'achat" value={client?.prix_achat} />
+										<InfoRow icon={<ShoppingCartIcon />} label="Prix d'achat" value={client?.prix_achat != null ? `${client.prix_achat} ${client.devise_prix_achat}` : null} />
 										<Divider />
 										<InfoRow icon={<SellIcon />} label="Prix de vente" value={client?.prix_vente} />
 										<Divider />

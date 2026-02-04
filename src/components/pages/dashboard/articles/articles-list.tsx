@@ -118,9 +118,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const handleDownloadExample = () => {
 		const rows = [
-			'reference;type_article;designation;prix_achat;prix_vente;tva;remarque;marque;categorie;emplacement;unite',
-			';Produit;Bureau;100,00;200,00;20;Exemple de remarque;Marque A;Electronique;Entrepôt A;Pièce',
-			'ART0099;Service;Consultation;50,00;75,00;10;;;;; ',
+			'reference;type_article;designation;prix_achat;devise_prix_achat;prix_vente;tva;remarque;marque;categorie;emplacement;unite',
+			';Produit;Bureau;100,00;MAD;200,00;20;Exemple de remarque;Marque A;Electronique;Entrepôt A;Pièce',
+			'ART0099;Service;Consultation;50,00;EUR;75,00;10;;;;; ',
 		];
 		const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8' });
 		const url = URL.createObjectURL(blob);
@@ -292,9 +292,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			flex: 1,
 			minWidth: 100,
 			renderCell: (params: GridRenderCellParams<ArticleClass>) => (
-				<DarkTooltip title={params.value + ' DH'}>
+				<DarkTooltip title={params.value + ' ' + params.row.devise_prix_achat}>
 					<Typography variant="body2" noWrap fontWeight={600} color="primary">
-						{params.value} DH
+						{params.value} {params.row.devise_prix_achat}
 					</Typography>
 				</DarkTooltip>
 			),

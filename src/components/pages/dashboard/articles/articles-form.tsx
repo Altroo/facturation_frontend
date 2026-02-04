@@ -43,7 +43,7 @@ import { toFormikValidationSchema } from 'zod-formik-adapter';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
-import { textInputTheme } from '@/utils/themes';
+import { textInputTheme, customDropdownTheme } from '@/utils/themes';
 import { ARTICLES_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import type { DropDownType } from '@/types/accountTypes';
@@ -58,6 +58,7 @@ import {
 
 import { getLabelForKey, setFormikAutoErrors, parseNumber } from '@/utils/helpers';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
+import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import type { TypeArticleType, ArticleSchemaType } from '@/types/articleTypes';
 import {
 	useAddCategorieMutation,
@@ -150,6 +151,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			unite: rawData?.unite ?? null,
 			designation: rawData?.designation ?? '',
 			prix_achat: rawData?.prix_achat ?? 0,
+			devise_prix_achat: rawData?.devise_prix_achat ?? 'MAD',
 			prix_vente: rawData?.prix_vente ?? 0,
 			photo: rawData?.photo ?? '',
 			photo_cropped: rawData?.photo ?? '',
@@ -452,30 +454,41 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								</Stack>
 								<Divider sx={{ mb: 3 }} />
 								<Stack spacing={2.5}>
-									<CustomTextInput
-										id="prix_achat"
-										type="text"
-										label="Prix d'achat"
-										value={String(formik.values.prix_achat) ?? ''}
-										onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-											const raw = (e.target as HTMLInputElement).value;
-											const parsed = parseNumber(raw);
-											if (parsed !== null && parsed < 0) return;
-											formik.setFieldValue('prix_achat', parsed === null ? raw : parsed);
-										}}
-										onBlur={formik.handleBlur('prix_achat')}
-										error={formik.touched.prix_achat && Boolean(formik.errors.prix_achat)}
-										helperText={formik.touched.prix_achat ? formik.errors.prix_achat : ''}
-										fullWidth={false}
-										size="small"
-										theme={inputTheme}
-										startIcon={<ShoppingCartIcon fontSize="small" />}
-										slotProps={{
-											input: {
-												inputProps: { min: 0 },
-											},
-										}}
-									/>
+									<Stack direction="row" spacing={1} alignItems="flex-start" justifyContent="space-around">
+										<CustomTextInput
+											id="prix_achat"
+											type="text"
+											label="Prix d'achat"
+											value={String(formik.values.prix_achat) ?? ''}
+											onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+												const raw = (e.target as HTMLInputElement).value;
+												const parsed = parseNumber(raw);
+												if (parsed !== null && parsed < 0) return;
+												formik.setFieldValue('prix_achat', parsed === null ? raw : parsed);
+											}}
+											onBlur={formik.handleBlur('prix_achat')}
+											error={formik.touched.prix_achat && Boolean(formik.errors.prix_achat)}
+											helperText={formik.touched.prix_achat ? formik.errors.prix_achat : ''}
+											fullWidth={true}
+											size="small"
+											theme={inputTheme}
+											startIcon={<ShoppingCartIcon fontSize="small" />}
+											slotProps={{
+												input: {
+													inputProps: { min: 0 },
+												},
+											}}
+										/>
+										<CustomDropDownSelect
+											id="devise_prix_achat"
+											size="small"
+											label="Devise"
+											items={['MAD', 'EUR', 'USD']}
+											value={formik.values.devise_prix_achat ?? 'MAD'}
+											onChange={(e) => formik.setFieldValue('devise_prix_achat', e.target.value)}
+											theme={customDropdownTheme()}
+										/>
+									</Stack>
 									<CustomTextInput
 										id="prix_vente"
 										type="text"

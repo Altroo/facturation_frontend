@@ -1,6 +1,6 @@
 import type { NbrEmployeType, CiviliteType, ManagedByType, ManagedByWriteOnlyType } from '@/types/companyTypes';
 import type { TypeClientType } from '@/types/clientTypes';
-import type { TypeArticleType } from '@/types/articleTypes';
+import type { TypeArticleType, CurrencyType } from '@/types/articleTypes';
 import type { TypeFactureLivraisonDevisStatus, TypeRemiseType } from '@/types/devisTypes';
 import type { ReglementStatutType } from '@/types/reglementTypes';
 
@@ -104,6 +104,7 @@ export class ArticleClass {
 		public designation: string | null,
 		public photo: string | ArrayBuffer | null,
 		public prix_achat: number | null,
+		public devise_prix_achat: CurrencyType,
 		public prix_vente: number | null,
 		public tva: number,
 		public remarque: string | null,

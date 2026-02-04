@@ -1,5 +1,7 @@
 export type TypeArticleType = 'Produit' | 'Service';
 
+export type CurrencyType = 'MAD' | 'EUR' | 'USD';
+
 export type ImportArticlesResponseType = {
 	total: number;
 	created: number;
@@ -18,6 +20,7 @@ export type ArticleSchemaType = {
 	unite?: number | null;
 	designation?: string;
 	prix_achat?: number;
+	devise_prix_achat?: CurrencyType;
 	prix_vente?: number;
 	tva?: number;
 	remarque?: string;
