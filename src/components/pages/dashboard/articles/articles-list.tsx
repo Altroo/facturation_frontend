@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, Typography, Chip, IconButton, Avatar } from '@mui/material';
 import {
@@ -11,10 +11,12 @@ import {
 	Unarchive as UnarchiveIcon,
 	Add as AddIcon,
 	Close as CloseIcon,
+	FileUpload as FileUploadIcon,
+	FileDownloadOutlined as FileDownloadOutlinedIcon,
 } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams, GridFilterModel } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
-import { useDeleteArticleMutation, useGetArticlesListQuery, usePatchArchiveMutation } from '@/store/services/article';
+import { useDeleteArticleMutation, useGetArticlesListQuery, useImportArticlesMutation, usePatchArchiveMutation } from '@/store/services/article';
 import { ARTICLES_ADD, ARTICLES_EDIT, ARTICLES_VIEW } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
@@ -92,6 +94,42 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const [deleteRecord] = useDeleteArticleMutation();
 	const [patchArchive] = usePatchArchiveMutation();
+	const [importArticles, { isLoading: isImporting }] = useImportArticlesMutation();
+	const fileInputRef = useRef<HTMLInputElement>(null);
+
+	const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+		try {
+			const result = await importArticles({ file, company_id }).unwrap();
+			if (result.created > 0) {
+				onSuccess(`${result.created} article(s) importé(s) avec succès`);
+				refetch();
+			}
+			if (result.errors.length > 0) {
+				onError(`${result.errors.length} erreur(s) lors de l'importation`);
+			}
+		} catch {
+			onError("Erreur lors de l'importation des articles");
+		} finally {
+			e.target.value = '';
+		}
+	};
+
+	const handleDownloadExample = () => {
+		const rows = [
+			'reference;type_article;designation;prix_achat;prix_vente;tva;remarque;marque;categorie;emplacement;unite',
+			';Produit;Bureau;100,00;200,00;20;Exemple de remarque;Marque A;Electronique;Entrepôt A;Pièce',
+			'ART0099;Service;Consultation;50,00;75,00;10;;;;; ',
+		];
+		const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8' });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = 'exemple_articles.csv';
+		a.click();
+		URL.revokeObjectURL(url);
+	};
 
 	const deleteHandler = async () => {
 		try {
@@ -367,6 +405,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					</Button>
 				</Box>
 			)}
+			<input ref={fileInputRef} type="file" accept=".csv" style={{ display: 'none' }} onChange={handleFileChange} />
 			<PaginatedDataGrid
 				data={data}
 				isLoading={isLoading}
@@ -378,6 +417,27 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				filterModel={filterModel}
 				onFilterModelChange={setFilterModel}
 				toolbar={{ quickFilter: true, debounceMs: 500 }}
+				toolbarActions={
+					!archived && (role === 'Caissier' || role === 'Commercial') ? (
+						<>
+							<DarkTooltip title="Télécharger exemple CSV">
+								<IconButton size="small" color="default" onClick={handleDownloadExample}>
+									<FileDownloadOutlinedIcon />
+								</IconButton>
+							</DarkTooltip>
+							<DarkTooltip title="Importer CSV">
+								<IconButton
+									disabled={isImporting}
+									size="small"
+									color="default"
+									onClick={() => fileInputRef.current?.click()}
+								>
+									<FileUploadIcon />
+								</IconButton>
+							</DarkTooltip>
+						</>
+					) : undefined
+				}
 			/>
 			{showDeleteModal && (
 				<ActionModals

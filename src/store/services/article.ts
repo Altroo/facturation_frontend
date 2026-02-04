@@ -4,6 +4,7 @@ import { axiosBaseQuery } from '@/utils/axiosBaseQuery';
 import { getInitStateToken } from '@/store/selectors';
 import type { ArticleClass } from '@/models/classes';
 import type { ApiErrorResponseType, PaginationResponseType, SuccessResponseType } from '@/types/_initTypes';
+import type { ImportArticlesResponseType } from '@/types/articleTypes';
 import type { RootState } from '@/store/store';
 import { initToken } from '@/store/slices/_initSlice';
 
@@ -92,6 +93,19 @@ export const articleApi = createApi({
 			}),
 			invalidatesTags: ['Article', 'Dashboard'],
 		}),
+		importArticles: builder.mutation<ImportArticlesResponseType, { file: File; company_id: number }>({
+			query: ({ file, company_id }) => {
+				const formData = new FormData();
+				formData.append('file', file);
+				formData.append('company_id', String(company_id));
+				return {
+					url: process.env.NEXT_PUBLIC_ARTICLE_IMPORT,
+					method: 'POST',
+					data: formData,
+				};
+			},
+			invalidatesTags: ['Article'],
+		}),
 	}),
 });
 
@@ -103,4 +117,5 @@ export const {
 	useGetArticleQuery,
 	useAddArticleMutation,
 	usePatchArchiveMutation,
+	useImportArticlesMutation,
 } = articleApi;

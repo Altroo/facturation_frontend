@@ -15,6 +15,7 @@ jest.mock('@/store/services/article', () => ({
 	useGetArticlesListQuery: jest.fn(() => ({ data: undefined, isLoading: false, refetch: jest.fn() })),
 	useDeleteArticleMutation: jest.fn(() => [jest.fn(), {}]),
 	usePatchArchiveMutation: jest.fn(() => [jest.fn(), {}]),
+	useImportArticlesMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
 }));
 
 // Mock CompanyDocumentsWrapperList with typed props

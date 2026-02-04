@@ -1,5 +1,11 @@
 export type TypeArticleType = 'Produit' | 'Service';
 
+export type ImportArticlesResponseType = {
+	total: number;
+	created: number;
+	errors: { row: number; message: string }[];
+};
+
 export type ArticleSchemaType = {
 	type_article: TypeArticleType;
 	photo: string | ArrayBuffer;

@@ -2,8 +2,9 @@
 
 import React, { Dispatch, SetStateAction, useState } from 'react';
 import { Box, Stack, ThemeProvider } from '@mui/material';
+import { ViewColumn as ViewColumnIcon, FilterList as FilterListIcon } from '@mui/icons-material';
 import type { GridColDef, GridFilterModel } from '@mui/x-data-grid';
-import { DataGrid, GridSlotProps } from '@mui/x-data-grid';
+import { DataGrid, GridSlotProps, ColumnsPanelTrigger, FilterPanelTrigger, ToolbarButton } from '@mui/x-data-grid';
 import { frFR } from '@mui/x-data-grid/locales';
 import { getDefaultTheme } from '@/utils/themes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
@@ -26,6 +27,7 @@ type PaginatedDataGridProps<T> = {
 		quickFilter?: boolean;
 		debounceMs?: number;
 	};
+	toolbarActions?: React.ReactNode;
 };
 
 const PaginatedDataGrid = <T,>({
@@ -40,6 +42,7 @@ const PaginatedDataGrid = <T,>({
 	filterModel: externalFilterModel,
 	onFilterModelChange,
 	toolbar = { quickFilter: true, debounceMs: 500 },
+	toolbarActions,
 }: PaginatedDataGridProps<T>) => {
 	const [internalFilterModel, setInternalFilterModel] = useState<GridFilterModel>({
 		items: [],
@@ -140,12 +143,27 @@ const PaginatedDataGrid = <T,>({
 								pageSizeOptions={[5, 10, 25, 50, 100]}
 								localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
 								disableRowSelectionOnClick
-								showToolbar={toolbar.quickFilter}
+								showToolbar={toolbar.quickFilter || !!toolbarActions}
 								slotProps={{
 									toolbar: {
 										showQuickFilter: toolbar.quickFilter,
 										quickFilterProps: { debounceMs: toolbar.debounceMs },
-									},
+										...(toolbarActions && {
+											mainControls: (
+												<>
+													<ColumnsPanelTrigger render={<ToolbarButton />}>
+														<ViewColumnIcon fontSize="small" />
+													</ColumnsPanelTrigger>
+													<FilterPanelTrigger render={(triggerProps, state) => (
+														<ToolbarButton {...triggerProps} color={state.filterCount > 0 ? 'primary' : 'default'}>
+															<FilterListIcon fontSize="small" />
+														</ToolbarButton>
+													)} />
+													{toolbarActions}
+												</>
+											),
+										}),
+									} as GridSlotProps['toolbar'],
 									panel: {
 										sx: {
 											'& .MuiDataGrid-paper': {

@@ -40,6 +40,11 @@ export const isAuthenticatedInstance = (
 				headers.set('Authorization', `Bearer ${token.access}`);
 			}
 
+			// Let axios auto-set Content-Type (with boundary) for multipart uploads
+			if (config.data instanceof FormData) {
+				headers.delete('Content-Type');
+			}
+
 			config.headers = headers as InternalAxiosRequestConfig['headers'];
 			return config;
 		},
