@@ -198,6 +198,7 @@ export const companySchema = z.object({
 	logo_cropped: base64ImageField,
 	cachet: base64ImageField,
 	cachet_cropped: base64ImageField,
+	uses_foreign_currency: z.boolean().default(false),
 	globalError: optionalTextField(1, 500),
 });
 
@@ -341,6 +342,7 @@ export const devisLivraisonFactureLineSchema = z
 	.object({
 		article: requiredNumberField(1),
 		prix_achat: optionalNumberField(0).nullable(),
+		devise_prix_achat: z.string().default('MAD'),
 		prix_vente: optionalNumberField(0).nullable(),
 		quantity: requiredNumberField(1).refine((val) => Number.isInteger(val), {
 			error: INPUT_QUANTITY_INT,

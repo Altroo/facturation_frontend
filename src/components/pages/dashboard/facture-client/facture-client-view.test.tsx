@@ -86,6 +86,7 @@ const mockFacture = {
 			designation: 'Produit A',
 			prix_vente: 100,
 			prix_achat: 50,
+			devise_prix_achat: 'MAD',
 			quantity: 2,
 			remise: 0,
 			remise_type: '',

@@ -74,6 +74,11 @@ jest.mock('@/store/services/article', () => ({
 	useGetArticlesListQuery: jest.fn(),
 }));
 
+jest.mock('@/store/services/company', () => ({
+	__esModule: true,
+	useGetCompanyQuery: jest.fn(() => ({ data: { uses_foreign_currency: false }, isLoading: false })),
+}));
+
 const pushMock = jest.fn();
 jest.mock('next/navigation', () => ({
 	__esModule: true,

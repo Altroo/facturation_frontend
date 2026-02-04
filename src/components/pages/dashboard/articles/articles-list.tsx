@@ -29,6 +29,7 @@ import Image from 'next/image';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
+import { useGetCompanyQuery } from '@/store/services/company';
 
 interface FormikContentProps extends SessionProps {
 	company_id: number;
@@ -46,6 +47,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const { onSuccess, onError } = useToast();
 	const router = useRouter();
 	const token = getAccessTokenFromSession(session);
+	const { data: companyData } = useGetCompanyQuery({ id: company_id }, { skip: !token });
+	const usesForeignCurrency = companyData?.uses_foreign_currency === true;
 
 	const [paginationModel, setPaginationModel] = useState<{ page: number; pageSize: number }>({
 		page: 0,
@@ -292,9 +295,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			flex: 1,
 			minWidth: 100,
 			renderCell: (params: GridRenderCellParams<ArticleClass>) => (
-				<DarkTooltip title={params.value + ' ' + params.row.devise_prix_achat}>
+				<DarkTooltip title={usesForeignCurrency ? params.value + ' ' + params.row.devise_prix_achat : String(params.value)}>
 					<Typography variant="body2" noWrap fontWeight={600} color="primary">
-						{params.value} {params.row.devise_prix_achat}
+						{params.value}{usesForeignCurrency ? ' ' + params.row.devise_prix_achat : ''}
 					</Typography>
 				</DarkTooltip>
 			),

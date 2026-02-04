@@ -72,6 +72,7 @@ import AddEntityModal from '@/components/shared/addEntityModal/addEntityModal';
 import CustomSquareImageUploading from '@/components/formikElements/customSquareImageUploading/customSquareImageUploading';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import ClientArticleWrapperForm from '@/components/pages/dashboard/shared/client-article-form/clientArticleWrapperForm';
+import { useGetCompanyQuery } from '@/store/services/company';
 
 const inputTheme = textInputTheme();
 
@@ -100,6 +101,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	} = useGetCodeReferenceQuery(undefined, {
 		skip: !token || isEditMode,
 	});
+	const { data: companyData, isFetching: isCompanyFetching } = useGetCompanyQuery({ id: company_id }, { skip: !token });
+	const usesForeignCurrency = !isCompanyFetching && companyData?.uses_foreign_currency === true;
 	// Mutations
 	const [addArticle, { isLoading: isAddLoading, error: addError }] = useAddArticleMutation();
 	const [updateArticle, { isLoading: isUpdateLoading, error: updateError }] = useEditArticleMutation();
@@ -479,15 +482,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												},
 											}}
 										/>
-										<CustomDropDownSelect
-											id="devise_prix_achat"
-											size="small"
-											label="Devise"
-											items={['MAD', 'EUR', 'USD']}
-											value={formik.values.devise_prix_achat ?? 'MAD'}
-											onChange={(e) => formik.setFieldValue('devise_prix_achat', e.target.value)}
-											theme={customDropdownTheme()}
-										/>
+										{usesForeignCurrency && (
+											<CustomDropDownSelect
+												id="devise_prix_achat"
+												size="small"
+												label="Devise"
+												items={['MAD', 'EUR', 'USD']}
+												value={formik.values.devise_prix_achat ?? 'MAD'}
+												onChange={(e) => formik.setFieldValue('devise_prix_achat', e.target.value)}
+												theme={customDropdownTheme()}
+											/>
+										)}
 									</Stack>
 									<CustomTextInput
 										id="prix_vente"

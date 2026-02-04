@@ -43,6 +43,7 @@ import Styles from '@/styles/dashboard/dashboard.module.sass';
 import { useAppSelector } from '@/utils/hooks';
 import { getUserCompaniesState } from '@/store/selectors';
 import { useGetArticlesListQuery } from '@/store/services/article';
+import { useGetCompanyQuery } from '@/store/services/company';
 import { formatDate } from '@/utils/helpers';
 import { getAccessTokenFromSession } from '@/store/session';
 
@@ -239,6 +240,9 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 		return undefined;
 	}, [rawArticlesData]);
 
+	const { data: companyData } = useGetCompanyQuery({ id: company_id }, { skip: !token });
+	const usesForeignCurrency = companyData?.uses_foreign_currency === true;
+
 	const axiosError = useMemo(
 		() => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),
 		[error],
@@ -253,7 +257,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 			{
 				field: 'photo',
 				headerName: 'Photo',
-				width: 70,
+				flex: 0.5, minWidth: 60,
 				renderCell: (params: GridRenderCellParams) => {
 					const articleId = toNumber((params.row as { article?: unknown }).article, NaN);
 					const article = Number.isFinite(articleId) ? articlesData?.find((a) => a.id === articleId) : undefined;
@@ -306,7 +310,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 			{
 				field: 'reference',
 				headerName: 'Référence',
-				width: 110,
+				flex: 0.8, minWidth: 90,
 				renderCell: (params: GridRenderCellParams) => {
 					const articleId = toNumber((params.row as { article?: unknown }).article, NaN);
 					const article = Number.isFinite(articleId) ? articlesData?.find((a) => a.id === articleId) : undefined;
@@ -325,7 +329,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 			{
 				field: 'designation',
 				headerName: 'Désignation',
-				width: 150,
+				flex: 1.4, minWidth: 120,
 				renderCell: (params: GridRenderCellParams) => {
 					const value = (params.row as { designation?: unknown }).designation;
 					const label = value === null || value === undefined ? '' : String(value);
@@ -343,7 +347,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 			{
 				field: 'marque',
 				headerName: 'Marque',
-				width: 130,
+				flex: 1, minWidth: 100,
 				renderCell: (params: GridRenderCellParams) => {
 					const articleId = toNumber((params.row as { article?: unknown }).article, NaN);
 					const article = Number.isFinite(articleId) ? articlesData?.find((a) => a.id === articleId) : undefined;
@@ -362,7 +366,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 			{
 				field: 'categorie',
 				headerName: 'Catégorie',
-				width: 130,
+				flex: 1, minWidth: 100,
 				renderCell: (params: GridRenderCellParams) => {
 					const articleId = toNumber((params.row as { article?: unknown }).article, NaN);
 					const article = Number.isFinite(articleId) ? articlesData?.find((a) => a.id === articleId) : undefined;
@@ -381,9 +385,10 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 			{
 				field: 'prix_achat',
 				headerName: "Prix d'achat",
-				width: 120,
+				flex: 1, minWidth: 110,
 				renderCell: (params: GridRenderCellParams) => {
-					const value = toNumber((params.row as { prix_achat?: unknown }).prix_achat, 0) + ' MAD';
+					const prixAchat = toNumber((params.row as { prix_achat?: unknown }).prix_achat, 0);
+					const value = usesForeignCurrency ? prixAchat + ' ' + ((params.row as { devise_prix_achat?: unknown }).devise_prix_achat || 'MAD') : String(prixAchat);
 					return (
 						<DarkTooltip title={value}>
 							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
@@ -398,7 +403,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 			{
 				field: 'prix_vente',
 				headerName: 'Prix de vente',
-				width: 150,
+				flex: 1, minWidth: 110,
 				renderCell: (params: GridRenderCellParams) => {
 					const value = toNumber((params.row as { prix_vente?: unknown }).prix_vente, 0) + ' MAD';
 					return (
@@ -415,7 +420,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 			{
 				field: 'quantity',
 				headerName: 'Quantité',
-				width: 120,
+				flex: 0.8, minWidth: 90,
 				renderCell: (params: GridRenderCellParams) => {
 					const raw = (params.row as { quantity?: unknown }).quantity;
 					const value = raw === null || raw === undefined ? 1 : String(raw);
@@ -429,7 +434,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 			{
 				field: 'remise_type',
 				headerName: 'Type remise',
-				width: 120,
+				flex: 0.8, minWidth: 90,
 				renderCell: (params: GridRenderCellParams) => {
 					const value = (params.row as { remise_type?: unknown }).remise_type;
 					const label = value === null || value === undefined ? '' : String(value);
@@ -443,7 +448,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 			{
 				field: 'remise',
 				headerName: 'Remise',
-				width: 120,
+				flex: 0.8, minWidth: 90,
 				renderCell: (params: GridRenderCellParams) => {
 					const row = params.row as { remise?: unknown; remise_type?: unknown };
 					const remise = toNumber(row.remise, 0);
@@ -457,7 +462,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 				},
 			},
 		],
-		[articlesData],
+		[articlesData, usesForeignCurrency],
 	);
 
 	const dateLabel = formatDate(getDocumentDateRaw(rawData) ?? null) || '-';

@@ -89,6 +89,7 @@ describe('CompanyClass', () => {
 			'CNSS123',
 			[{ pk: 1, role: 'Lecture' }],
 			[{ id: 1, first_name: 'Jane', last_name: 'Doe', role: 'Caissier' }],
+			false,
 		);
 
 		expect(company.id).toBe(1);
@@ -248,6 +249,7 @@ describe('DeviFactureLineClass', () => {
 			'Article name',
 			'Line designation',
 			50,
+			'MAD',
 			75,
 			3,
 			'Pourcentage' as TypeRemiseType,
@@ -268,8 +270,8 @@ describe('DeviFactureLineClass', () => {
 
 describe('DeviClass', () => {
 	it('creates a devis instance with lines, totals and metadata', () => {
-		const line1 = new DeviFactureLivraisonLineClass(1, 1, 'A', 'Desc A', 20, 30, 1, 'AMOUNT' as TypeRemiseType, 0);
-		const line2 = new DeviFactureLivraisonLineClass(2, 2, 'B', 'Desc B', 40, 60, 2, 'PERCENT' as TypeRemiseType, 10);
+		const line1 = new DeviFactureLivraisonLineClass(1, 1, 'A', 'Desc A', 20, 'MAD', 30, 1, 'AMOUNT' as TypeRemiseType, 0);
+		const line2 = new DeviFactureLivraisonLineClass(2, 2, 'B', 'Desc B', 40, 'MAD', 60, 2, 'PERCENT' as TypeRemiseType, 10);
 
 		const devi = new DeviClass(
 			1,
@@ -331,6 +333,7 @@ describe('FactureProFormaClass', () => {
 			'Article A',
 			'Desc A',
 			20,
+			'MAD',
 			30,
 			1,
 			'AMOUNT' as TypeRemiseType,
@@ -342,6 +345,7 @@ describe('FactureProFormaClass', () => {
 			'Article B',
 			'Desc B',
 			40,
+			'MAD',
 			60,
 			2,
 			'PERCENT' as TypeRemiseType,
@@ -408,6 +412,7 @@ describe('BonDeLivraisonClass', () => {
 			'Article A',
 			'Desc A',
 			20,
+			'MAD',
 			30,
 			1,
 			'AMOUNT' as TypeRemiseType,
@@ -419,6 +424,7 @@ describe('BonDeLivraisonClass', () => {
 			'Article B',
 			'Desc B',
 			40,
+			'MAD',
 			60,
 			2,
 			'PERCENT' as TypeRemiseType,

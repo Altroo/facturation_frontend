@@ -49,6 +49,7 @@ export type CompanyFormValuesType = {
 	cachet: string | ArrayBuffer;
 	cachet_cropped: string | ArrayBuffer;
 	managed_by: ManagedByEntry[];
+	uses_foreign_currency: boolean;
 	globalError?: string;
 };
 

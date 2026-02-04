@@ -18,6 +18,12 @@ jest.mock('@/store/services/article', () => ({
 	useImportArticlesMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
 }));
 
+// Mock company service module
+jest.mock('@/store/services/company', () => ({
+	__esModule: true,
+	useGetCompanyQuery: jest.fn(() => ({ data: { uses_foreign_currency: false }, isLoading: false })),
+}));
+
 // Mock CompanyDocumentsWrapperList with typed props
 jest.mock('@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList', () => {
 	// eslint-disable-next-line @typescript-eslint/no-require-imports

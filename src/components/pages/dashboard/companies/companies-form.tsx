@@ -15,6 +15,8 @@ import {
 	useTheme,
 	useMediaQuery,
 	Alert,
+	Switch,
+	FormControlLabel,
 } from '@mui/material';
 import {
 	ArrowBack as ArrowBackIcon,
@@ -39,6 +41,7 @@ import {
 	Edit as EditIcon,
 	Add as AddIcon,
 	Warning as WarningIcon,
+	Settings as SettingsIcon,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -154,6 +157,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			cachet: rawData?.cachet ?? '',
 			cachet_cropped: rawData?.cachet_cropped ?? '',
 			managed_by: computedManagedBy,
+			uses_foreign_currency: rawData?.uses_foreign_currency ?? false,
 			globalError: '',
 		},
 		enableReinitialize: true,
@@ -255,6 +259,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			cachet: 'Cachet',
 			cachet_cropped: 'Cachet recadré',
 			managed_by: 'Utilisateurs gestionnaires',
+			uses_foreign_currency: 'Devise étrangère',
 			globalError: 'Erreur globale',
 		}),
 		[],
@@ -635,6 +640,29 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										startIcon={<FingerprintIcon fontSize="small" />}
 									/>
 								</Stack>
+							</CardContent>
+						</Card>
+
+						{/* Paramètres Card */}
+						<Card elevation={2} sx={{ borderRadius: 2 }}>
+							<CardContent sx={{ p: 3 }}>
+								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<SettingsIcon color="primary" />
+									<Typography variant="h6" fontWeight={700}>
+										Paramètres
+									</Typography>
+								</Stack>
+								<Divider sx={{ mb: 3 }} />
+								<FormControlLabel
+									control={
+										<Switch
+											checked={formik.values.uses_foreign_currency}
+											onChange={(e) => formik.setFieldValue('uses_foreign_currency', e.target.checked)}
+											color="primary"
+										/>
+									}
+									label="Utiliser des devises étrangères (EUR, USD)"
+								/>
 							</CardContent>
 						</Card>
 

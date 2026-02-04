@@ -53,6 +53,7 @@ export class CompanyClass {
 		public CNSS: string | null,
 		public managed_by: Array<ManagedByWriteOnlyType>,
 		public admins: Array<ManagedByType>,
+		public uses_foreign_currency: boolean,
 	) {}
 }
 
@@ -170,6 +171,7 @@ export class DeviFactureLivraisonLineClass {
 		public readonly article_designation: string | null,
 		public readonly designation: string | null,
 		public prix_achat: number,
+		public devise_prix_achat: string,
 		public prix_vente: number,
 		public quantity: number,
 		public remise_type: TypeRemiseType,

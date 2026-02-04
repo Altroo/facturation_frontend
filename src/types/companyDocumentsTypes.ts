@@ -17,6 +17,7 @@ type Ligne = {
 	article: number;
 	designation?: string | null;
 	prix_achat?: number | string | null;
+	devise_prix_achat?: string | null;
 	prix_vente?: number | string | null;
 	quantity?: number | string | null;
 	remise?: number | string | null;

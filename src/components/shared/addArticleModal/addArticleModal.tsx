@@ -4,8 +4,9 @@ import React, { useMemo } from 'react';
 import { Box, Button, Stack, Typography, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import type { ArticleClass } from '@/models/classes';
-import { DataGrid, GridColDef, GridRowId, GridRowSelectionModel } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridRowId, GridRowSelectionModel, GridRenderCellParams } from '@mui/x-data-grid';
 import { frFR } from '@mui/x-data-grid/locales';
+import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 
 interface AddArticleModalProps {
 	open: boolean;
@@ -38,14 +39,150 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 	);
 
 	const columns: GridColDef[] = [
-		{ field: 'reference', headerName: 'Référence', width: 100 },
-		{ field: 'designation', headerName: 'Désignation', width: 160 },
-		{ field: 'marque_name', headerName: 'Marque', width: 150 },
-		{ field: 'categorie_name', headerName: 'Catégorie', width: 150 },
-		{ field: 'unite_name', headerName: 'Unité', width: 100 },
-		{ field: 'emplacement_name', headerName: 'Emplacement', width: 160 },
-		{ field: 'prix_achat', headerName: "Prix d'achat", width: 140 },
-		{ field: 'prix_vente', headerName: 'Prix de vente', width: 140 },
+		{
+			field: 'reference',
+			headerName: 'Référence',
+			flex: 0.8,
+			minWidth: 90,
+			renderCell: (params: GridRenderCellParams) => {
+				const value = String(params.value ?? '');
+				return (
+					<DarkTooltip title={value}>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+								{value}
+							</Typography>
+						</Box>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'designation',
+			headerName: 'Désignation',
+			flex: 1.5,
+			minWidth: 130,
+			renderCell: (params: GridRenderCellParams) => {
+				const value = String(params.value ?? '');
+				return (
+					<DarkTooltip title={value}>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+								{value}
+							</Typography>
+						</Box>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'marque_name',
+			headerName: 'Marque',
+			flex: 1,
+			minWidth: 100,
+			renderCell: (params: GridRenderCellParams) => {
+				const value = String(params.value ?? '');
+				return (
+					<DarkTooltip title={value}>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+								{value}
+							</Typography>
+						</Box>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'categorie_name',
+			headerName: 'Catégorie',
+			flex: 1,
+			minWidth: 100,
+			renderCell: (params: GridRenderCellParams) => {
+				const value = String(params.value ?? '');
+				return (
+					<DarkTooltip title={value}>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+								{value}
+							</Typography>
+						</Box>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'unite_name',
+			headerName: 'Unité',
+			flex: 0.7,
+			minWidth: 80,
+			renderCell: (params: GridRenderCellParams) => {
+				const value = String(params.value ?? '');
+				return (
+					<DarkTooltip title={value}>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+								{value}
+							</Typography>
+						</Box>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'emplacement_name',
+			headerName: 'Emplacement',
+			flex: 1.2,
+			minWidth: 120,
+			renderCell: (params: GridRenderCellParams) => {
+				const value = String(params.value ?? '');
+				return (
+					<DarkTooltip title={value}>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+								{value}
+							</Typography>
+						</Box>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'prix_achat',
+			headerName: "Prix d'achat",
+			flex: 1,
+			minWidth: 110,
+			renderCell: (params: GridRenderCellParams) => {
+				const value = Number(params.row.prix_achat ?? 0) + ' ' + (params.row.devise_prix_achat || 'MAD');
+				return (
+					<DarkTooltip title={value}>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+								{value}
+							</Typography>
+						</Box>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'prix_vente',
+			headerName: 'Prix de vente',
+			flex: 1,
+			minWidth: 110,
+			renderCell: (params: GridRenderCellParams) => {
+				const value = Number(params.row.prix_vente ?? 0) + ' MAD';
+				return (
+					<DarkTooltip title={value}>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+								{value}
+							</Typography>
+						</Box>
+					</DarkTooltip>
+				);
+			},
+		},
 	];
 
 	// Build the selection object expected by MUI v6: { type: 'include'|'exclude', ids: Set<GridRowId> }

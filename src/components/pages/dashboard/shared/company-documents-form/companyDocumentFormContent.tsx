@@ -649,6 +649,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 					article: articleId,
 					designation: article.designation || '',
 					prix_achat: article.prix_achat || 0,
+					devise_prix_achat: article.devise_prix_achat || 'MAD',
 					prix_vente: article.prix_vente || 0,
 					quantity: 1,
 					remise_type: '' as '' | 'Pourcentage' | 'Fixe' | undefined,
@@ -862,7 +863,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			{
 				field: 'photo',
 				headerName: 'Photo',
-				width: 70,
+				flex: 0.5, minWidth: 60,
 				sortable: false,
 				filterable: false,
 				editable: false,
@@ -908,7 +909,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			{
 				field: 'reference',
 				headerName: 'Référence',
-				width: 110,
+				flex: 0.8, minWidth: 90,
 				renderCell: (params: GridRenderCellParams) => {
 					const article = getArticleById(params.row.article);
 					const value = article?.reference ?? '';
@@ -926,7 +927,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			{
 				field: 'designation',
 				headerName: 'Désignation',
-				width: 150,
+				flex: 1, minWidth: 90,
 				renderCell: (params: GridRenderCellParams) => {
 					const value = params.row.designation ?? '';
 					return (
@@ -943,7 +944,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			{
 				field: 'marque',
 				headerName: 'Marque',
-				width: 130,
+				flex: 1, minWidth: 100,
 				renderCell: (params: GridRenderCellParams) => {
 					const article = getArticleById(params.row.article);
 					const value = article?.marque_name ?? '';
@@ -961,7 +962,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			{
 				field: 'categorie',
 				headerName: 'Catégorie',
-				width: 130,
+				flex: 1, minWidth: 100,
 				renderCell: (params: GridRenderCellParams) => {
 					const article = getArticleById(params.row.article);
 					const value = article?.categorie_name ?? '';
@@ -979,9 +980,9 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			{
 				field: 'prix_achat',
 				headerName: "Prix d'achat",
-				width: 120,
+				flex: 1, minWidth: 110,
 				renderCell: (params: GridRenderCellParams) => {
-					const value = Number(params.row.prix_achat ?? 0) + ' MAD';
+					const value = Number(params.row.prix_achat ?? 0) + ' ' + (params.row.devise_prix_achat || 'MAD');
 					return (
 						<DarkTooltip title={value}>
 							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
@@ -993,12 +994,12 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 					);
 				},
 			},
-			{ field: 'prix_vente', headerName: 'Prix de vente', width: 150, renderCell: renderPrixVenteCell },
-			{ field: 'quantity', headerName: 'Quantité', width: 120, renderCell: renderQuantityCell },
+			{ field: 'prix_vente', headerName: 'Prix de vente', flex: 1.5, minWidth: 150, renderCell: renderPrixVenteCell },
+			{ field: 'quantity', headerName: 'Quantité', flex: 0.8, minWidth: 90, renderCell: renderQuantityCell },
 			{
 				field: 'remise_type',
 				headerName: 'Type remise',
-				width: 210,
+				flex: 1.5, minWidth: 180,
 				renderCell: (params: GridRenderCellParams) => {
 					const rowIndex = getRowIndexFromParams(params);
 					const value = getLines()[rowIndex]?.remise_type ?? '';
@@ -1023,11 +1024,11 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 					);
 				},
 			},
-			{ field: 'remise', headerName: 'Remise', width: 170, renderCell: renderRemiseCell },
+			{ field: 'remise', headerName: 'Remise', flex: 1.2, minWidth: 120, renderCell: renderRemiseCell },
 			{
 				field: 'actions',
 				headerName: 'Actions',
-				width: 100,
+				flex: 0.6, minWidth: 70,
 				sortable: false,
 				filterable: false,
 				renderCell: (params: GridRenderCellParams) => {
