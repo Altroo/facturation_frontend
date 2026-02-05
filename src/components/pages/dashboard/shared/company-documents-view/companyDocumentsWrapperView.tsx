@@ -43,7 +43,6 @@ import Styles from '@/styles/dashboard/dashboard.module.sass';
 import { useAppSelector } from '@/utils/hooks';
 import { getUserCompaniesState } from '@/store/selectors';
 import { useGetArticlesListQuery } from '@/store/services/article';
-import { useGetCompanyQuery } from '@/store/services/company';
 import { formatDate } from '@/utils/helpers';
 import { getAccessTokenFromSession } from '@/store/session';
 
