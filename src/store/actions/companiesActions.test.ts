@@ -5,8 +5,18 @@ import type { CompaniesUserCompaniesType } from '@/types/companyTypes';
 describe('companiesSetUserCompaniesAction', () => {
 	it('creates an action with the correct type and data', () => {
 		const payload: CompaniesUserCompaniesType[] = [
-			{ id: 1, raison_sociale: 'Alpha Corp', role: 'Caissier' },
-			{ id: 2, raison_sociale: 'Beta LLC', role: 'Lecture' },
+			{
+				id: 1,
+				raison_sociale: 'Alpha Corp',
+				role: 'Caissier',
+				uses_foreign_currency: false,
+			},
+			{
+				id: 2,
+				raison_sociale: 'Beta LLC',
+				role: 'Lecture',
+				uses_foreign_currency: false,
+			},
 		];
 
 		const action = companiesSetUserCompaniesAction(payload);
@@ -27,7 +37,14 @@ describe('companiesSetUserCompaniesAction', () => {
 	});
 
 	it('preserves the exact payload reference', () => {
-		const payload: CompaniesUserCompaniesType[] = [{ id: 3, raison_sociale: 'Gamma Inc', role: 'Lecture' }];
+		const payload: CompaniesUserCompaniesType[] = [
+			{
+				id: 3,
+				raison_sociale: 'Gamma Inc',
+				role: 'Lecture',
+				uses_foreign_currency: false,
+			},
+		];
 
 		const action = companiesSetUserCompaniesAction(payload);
 

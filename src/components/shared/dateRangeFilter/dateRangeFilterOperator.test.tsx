@@ -314,7 +314,10 @@ describe('dateRangeFilterOperator', () => {
 
 				await act(async () => {
 					await userEvent.click(toDaySpinbutton);
+					await userEvent.clear(toDaySpinbutton);
 					await userEvent.type(toDaySpinbutton, '25');
+					// Blur to trigger onChange
+					toDaySpinbutton.blur();
 				});
 
 				expect(mockApplyValue).toHaveBeenCalled();

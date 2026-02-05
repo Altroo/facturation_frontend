@@ -177,6 +177,7 @@ describe('ArticleClass', () => {
 			100,
 			'MAD',
 			150,
+			'MAD',
 			20,
 			'Remark',
 			'2023-01-01',
@@ -251,6 +252,7 @@ describe('DeviFactureLineClass', () => {
 			50,
 			'MAD',
 			75,
+			'MAD',
 			3,
 			'Pourcentage' as TypeRemiseType,
 			10,
@@ -270,8 +272,8 @@ describe('DeviFactureLineClass', () => {
 
 describe('DeviClass', () => {
 	it('creates a devis instance with lines, totals and metadata', () => {
-		const line1 = new DeviFactureLivraisonLineClass(1, 1, 'A', 'Desc A', 20, 'MAD', 30, 1, 'AMOUNT' as TypeRemiseType, 0);
-		const line2 = new DeviFactureLivraisonLineClass(2, 2, 'B', 'Desc B', 40, 'MAD', 60, 2, 'PERCENT' as TypeRemiseType, 10);
+		const line1 = new DeviFactureLivraisonLineClass(1, 1, 'A', 'Desc A', 20, 'MAD', 30, 'MAD', 1, 'AMOUNT' as TypeRemiseType, 0);
+		const line2 = new DeviFactureLivraisonLineClass(2, 2, 'B', 'Desc B', 40, 'MAD', 60, 'MAD', 2, 'PERCENT' as TypeRemiseType, 10);
 
 		const devi = new DeviClass(
 			1,
@@ -295,6 +297,7 @@ describe('DeviClass', () => {
 			50,
 			480,
 			456,
+			'MAD',
 			[line1, line2],
 		);
 
@@ -335,6 +338,7 @@ describe('FactureProFormaClass', () => {
 			20,
 			'MAD',
 			30,
+			'MAD',
 			1,
 			'AMOUNT' as TypeRemiseType,
 			0,
@@ -347,6 +351,7 @@ describe('FactureProFormaClass', () => {
 			40,
 			'MAD',
 			60,
+			'MAD',
 			2,
 			'PERCENT' as TypeRemiseType,
 			10,
@@ -374,6 +379,7 @@ describe('FactureProFormaClass', () => {
 			20,
 			120,
 			114,
+			'MAD',
 			[line1, line2],
 		);
 
@@ -414,6 +420,7 @@ describe('BonDeLivraisonClass', () => {
 			20,
 			'MAD',
 			30,
+			'MAD',
 			1,
 			'AMOUNT' as TypeRemiseType,
 			0,
@@ -426,6 +433,7 @@ describe('BonDeLivraisonClass', () => {
 			40,
 			'MAD',
 			60,
+			'MAD',
 			2,
 			'PERCENT' as TypeRemiseType,
 			10,
@@ -455,6 +463,7 @@ describe('BonDeLivraisonClass', () => {
 			20,
 			120,
 			114,
+			'MAD',
 			[line1, line2],
 		);
 

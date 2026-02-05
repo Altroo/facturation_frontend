@@ -57,6 +57,7 @@ export type CompaniesUserCompaniesType = {
 	id: number;
 	raison_sociale: string;
 	role: string;
+	uses_foreign_currency: boolean;
 };
 
 export type setCompaniesUserSagatype = SagaPayloadType<Array<CompaniesUserCompaniesType>>;

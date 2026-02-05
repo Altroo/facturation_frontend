@@ -1,5 +1,6 @@
 import type { PaginationResponseType } from '@/types/_initTypes';
 import { ReglementClass } from '@/models/classes';
+import type { CurrencyStats } from '@/types/companyDocumentsTypes';
 
 export type ReglementStatutType = 'Valide' | 'Annulé';
 
@@ -14,7 +15,9 @@ export type ReglementSchemaType = {
 };
 
 export interface ReglementListResponseType extends PaginationResponseType<ReglementClass> {
-	chiffre_affaire_total: string;
-	total_reglements: string;
-	total_impayes: string;
+	stats_by_currency: {
+		MAD: CurrencyStats;
+		EUR: CurrencyStats;
+		USD: CurrencyStats;
+	};
 }

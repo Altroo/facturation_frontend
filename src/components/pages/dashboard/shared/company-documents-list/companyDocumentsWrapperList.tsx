@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, Container, Paper, Stack, Tab, Tabs, Typography } from '@mui/material';
 import { Business as BusinessIcon } from '@mui/icons-material';
@@ -30,12 +30,31 @@ const CompanyDocumentsWrapperList: React.FC<CompanyDocumentsListProps> = ({ sess
 	const token = getAccessTokenFromSession(session);
 	const router = useRouter();
 	const { data: companiesData, isLoading } = useGetUserCompaniesQuery(undefined, { skip: !token });
-	const [selectedIndex, setSelectedIndex] = useState(0);
+	
+	// Load saved company index from localStorage
+	const [selectedIndex, setSelectedIndex] = useState(() => {
+		if (typeof window !== 'undefined') {
+			const saved = localStorage.getItem('selectedCompanyIndex');
+			return saved !== null ? parseInt(saved, 10) : 0;
+		}
+		return 0;
+	});
+	
 	const companies = useMemo(() => (companiesData ?? []) as CompanyLike[], [companiesData]);
 	const selectedCompany = useMemo(() => companies?.[selectedIndex] ?? null, [companies, selectedIndex]);
 
+	// Validate and adjust selectedIndex if it's out of bounds
+	useEffect(() => {
+		if (companies.length > 0 && selectedIndex >= companies.length) {
+			setSelectedIndex(0);
+			localStorage.setItem('selectedCompanyIndex', '0');
+		}
+	}, [companies, selectedIndex]);
+
 	const handleChange = (_: React.SyntheticEvent, newValue: number) => {
 		setSelectedIndex(newValue);
+		// Save to localStorage
+		localStorage.setItem('selectedCompanyIndex', String(newValue));
 	};
 
 	if (isLoading) {

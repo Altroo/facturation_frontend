@@ -156,6 +156,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			prix_achat: rawData?.prix_achat ?? 0,
 			devise_prix_achat: rawData?.devise_prix_achat ?? 'MAD',
 			prix_vente: rawData?.prix_vente ?? 0,
+			devise_prix_vente: rawData?.devise_prix_vente ?? 'MAD',
 			photo: rawData?.photo ?? '',
 			photo_cropped: rawData?.photo ?? '',
 			// default 20 unless backend gives another value
@@ -457,7 +458,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								</Stack>
 								<Divider sx={{ mb: 3 }} />
 								<Stack spacing={2.5}>
-									<Stack direction="row" spacing={1} alignItems="flex-start" justifyContent="space-around">
+									<Stack direction="row" spacing={1} alignItems="flex-start">
 										<CustomTextInput
 											id="prix_achat"
 											type="text"
@@ -482,42 +483,53 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												},
 											}}
 										/>
+										<CustomDropDownSelect
+											id="devise_prix_achat"
+											size="small"
+											label="Devise"
+											items={['MAD', 'EUR', 'USD']}
+											value={formik.values.devise_prix_achat ?? 'MAD'}
+											onChange={(e) => formik.setFieldValue('devise_prix_achat', e.target.value)}
+											theme={customDropdownTheme()}
+										/>
+									</Stack>
+									<Stack direction="row" spacing={1} alignItems="flex-start">
+										<CustomTextInput
+											id="prix_vente"
+											type="text"
+											label="Prix de vente *"
+											value={String(formik.values.prix_vente) ?? ''}
+											onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+												const raw = (e.target as HTMLInputElement).value;
+												const parsed = parseNumber(raw);
+												if (parsed !== null && parsed < 0) return;
+												formik.setFieldValue('prix_vente', parsed === null ? raw : parsed);
+											}}
+											onBlur={formik.handleBlur('prix_vente')}
+											error={formik.touched.prix_vente && Boolean(formik.errors.prix_vente)}
+											helperText={formik.touched.prix_vente ? formik.errors.prix_vente : ''}
+											fullWidth={true}
+											size="small"
+											theme={inputTheme}
+											startIcon={<SellIcon fontSize="small" />}
+											slotProps={{
+												input: {
+													inputProps: { min: 0 },
+												},
+											}}
+										/>
 										{usesForeignCurrency && (
 											<CustomDropDownSelect
-												id="devise_prix_achat"
+												id="devise_prix_vente"
 												size="small"
 												label="Devise"
 												items={['MAD', 'EUR', 'USD']}
-												value={formik.values.devise_prix_achat ?? 'MAD'}
-												onChange={(e) => formik.setFieldValue('devise_prix_achat', e.target.value)}
+												value={formik.values.devise_prix_vente ?? 'MAD'}
+												onChange={(e) => formik.setFieldValue('devise_prix_vente', e.target.value)}
 												theme={customDropdownTheme()}
 											/>
 										)}
 									</Stack>
-									<CustomTextInput
-										id="prix_vente"
-										type="text"
-										label="Prix de vente *"
-										value={String(formik.values.prix_vente) ?? ''}
-										onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-											const raw = (e.target as HTMLInputElement).value;
-											const parsed = parseNumber(raw);
-											if (parsed !== null && parsed < 0) return;
-											formik.setFieldValue('prix_vente', parsed === null ? raw : parsed);
-										}}
-										onBlur={formik.handleBlur('prix_vente')}
-										error={formik.touched.prix_vente && Boolean(formik.errors.prix_vente)}
-										helperText={formik.touched.prix_vente ? formik.errors.prix_vente : ''}
-										fullWidth={false}
-										size="small"
-										theme={inputTheme}
-										startIcon={<SellIcon fontSize="small" />}
-										slotProps={{
-											input: {
-												inputProps: { min: 0 },
-											},
-										}}
-									/>
 									<CustomTextInput
 										id="tva"
 										type="text"

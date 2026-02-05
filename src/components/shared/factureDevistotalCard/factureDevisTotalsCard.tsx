@@ -8,33 +8,34 @@ interface TotalsCardProps {
 		totalTTC: number;
 		totalTTCApresRemise: number;
 	};
+	devise?: string;
 	isMobile?: boolean;
 }
 
-const FactureDevisTotalsCard: React.FC<TotalsCardProps> = ({ totals, isMobile = false }) => {
+const FactureDevisTotalsCard: React.FC<TotalsCardProps> = ({ totals, devise = 'MAD', isMobile = false }) => {
 	const items = [
 		{
 			label: 'TOTAL HT',
-			value: `${totals.totalHT.toFixed(2)} MAD`,
+			value: `${totals.totalHT.toFixed(2)} ${devise}`,
 			variant: 'h6' as const,
 			weight: 800,
 		},
 		{
 			label: 'TOTAL TVA',
-			value: `${totals.totalTVA.toFixed(2)} MAD`,
+			value: `${totals.totalTVA.toFixed(2)} ${devise}`,
 			variant: 'h6' as const,
 			weight: 800,
 		},
 		{
 			label: 'TOTAL TTC',
-			value: `${totals.totalTTC.toFixed(2)} MAD`,
+			value: `${totals.totalTTC.toFixed(2)} ${devise}`,
 			variant: 'h5' as const,
 			weight: 900,
 			color: 'primary' as const,
 		},
 		{
 			label: 'TOTAL TTC APRES REMISE',
-			value: `${totals.totalTTCApresRemise.toFixed(2)} MAD`,
+			value: `${totals.totalTTCApresRemise.toFixed(2)} ${devise}`,
 			variant: 'h5' as const,
 			weight: 900,
 			color: 'primary' as const,

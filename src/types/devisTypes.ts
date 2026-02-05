@@ -17,6 +17,7 @@ export type DeviLineSchemaType = {
 	prix_achat: number;
 	devise_prix_achat: string;
 	prix_vente: number;
+	devise_prix_vente: string;
 	quantity: number;
 	remise_type: TypeRemiseType;
 	remise: number;
@@ -29,6 +30,7 @@ export interface DeviFactureLineFormValues {
 	prix_achat: number;
 	devise_prix_achat: string;
 	prix_vente: number;
+	devise_prix_vente: string;
 	quantity: number;
 	remise_type?: TypeRemiseType;
 	remise?: number;

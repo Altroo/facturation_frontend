@@ -23,6 +23,7 @@ interface GlobalRemiseModalProps {
 	currentType: string;
 	currentValue: number;
 	onApply: (type: 'Pourcentage' | 'Fixe' | '', value: number) => void;
+	devise?: string;
 }
 
 interface ModalState {
@@ -39,6 +40,7 @@ const GlobalRemiseModalContent: React.FC<GlobalRemiseModalProps> = ({
 	currentType,
 	currentValue,
 	onApply,
+	devise = 'MAD',
 }) => {
 	const [state, setState] = useState<ModalState>({
 		type: (currentType as 'Pourcentage' | 'Fixe' | '') || '',
@@ -121,7 +123,7 @@ const GlobalRemiseModalContent: React.FC<GlobalRemiseModalProps> = ({
 						items={[
 							{ value: '', code: 'Aucune' },
 							{ value: 'Pourcentage', code: 'Pourcentage (%)' },
-							{ value: 'Fixe', code: 'Montant fixe (MAD)' },
+							{ value: 'Fixe', code: `Montant fixe (${devise})` },
 						]}
 						value={state.type}
 						onChange={(e) => handleTypeChange(e.target.value as 'Pourcentage' | 'Fixe' | '')}
@@ -132,13 +134,13 @@ const GlobalRemiseModalContent: React.FC<GlobalRemiseModalProps> = ({
 						<CustomTextInput
 							id="remise_value"
 							type="number"
-							label={state.type === 'Pourcentage' ? 'Pourcentage' : 'Montant (MAD)'}
+							label={state.type === 'Pourcentage' ? 'Pourcentage' : `Montant (${devise})`}
 							value={String(state.value)}
 							onChange={(e) => handleValueChange(parseFloat(e.target.value) || 0)}
 							fullWidth={true}
 							size="small"
 							theme={textInputTheme()}
-							endIcon={<InputAdornment position="end">{state.type === 'Pourcentage' ? '%' : 'MAD'}</InputAdornment>}
+							endIcon={<InputAdornment position="end">{state.type === 'Pourcentage' ? '%' : devise}</InputAdornment>}
 							error={!!state.error}
 							helperText={
 								state.error ||

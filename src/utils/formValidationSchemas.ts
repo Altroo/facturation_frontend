@@ -694,10 +694,26 @@ export const monthlyObjectivesSchema = z.object({
 			if (typeof val === 'string') return parseFloat(val.replace(',', '.'));
 			return val;
 		},
-		z
-			.number({ error: INPUT_REQUIRED })
-			.refine((v) => !Number.isNaN(v), { message: INPUT_REQUIRED })
+		z.number({ error: INPUT_REQUIRED }).refine((v) => !Number.isNaN(v), { message: INPUT_REQUIRED })
 			.min(0, { message: INPUT_MIN(0) }),
+	),
+	objectif_ca_eur: z.preprocess(
+		(val) => {
+			// Allow null/undefined/empty string for optional foreign currency fields
+			if (val === undefined || val === null || val === '') return null;
+			if (typeof val === 'string') return parseFloat(val.replace(',', '.'));
+			return val;
+		},
+		z.number().min(0, { message: INPUT_MIN(0) }).nullable().optional(),
+	),
+	objectif_ca_usd: z.preprocess(
+		(val) => {
+			// Allow null/undefined/empty string for optional foreign currency fields
+			if (val === undefined || val === null || val === '') return null;
+			if (typeof val === 'string') return parseFloat(val.replace(',', '.'));
+			return val;
+		},
+		z.number().min(0, { message: INPUT_MIN(0) }).nullable().optional(),
 	),
 	objectif_factures: z.preprocess(
 		(val) => {

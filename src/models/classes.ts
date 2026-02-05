@@ -107,6 +107,7 @@ export class ArticleClass {
 		public prix_achat: number | null,
 		public devise_prix_achat: CurrencyType,
 		public prix_vente: number | null,
+		public devise_prix_vente: CurrencyType,
 		public tva: number,
 		public remarque: string | null,
 		public readonly date_created: string,
@@ -173,6 +174,7 @@ export class DeviFactureLivraisonLineClass {
 		public prix_achat: number,
 		public devise_prix_achat: string,
 		public prix_vente: number,
+		public devise_prix_vente: string,
 		public quantity: number,
 		public remise_type: TypeRemiseType,
 		public remise: number,
@@ -202,6 +204,7 @@ export class DeviClass {
 		public readonly total_tva: number,
 		public readonly total_ttc: number,
 		public readonly total_ttc_apres_remise: number,
+		public readonly devise: string,
 		public lignes: Array<DeviFactureLivraisonLineClass>,
 	) {}
 }
@@ -229,6 +232,7 @@ export class FactureClass {
 		public readonly total_tva: number,
 		public readonly total_ttc: number,
 		public readonly total_ttc_apres_remise: number,
+		public readonly devise: string,
 		public lignes: Array<DeviFactureLivraisonLineClass>,
 	) {}
 }
@@ -258,6 +262,7 @@ export class BonDeLivraisonClass {
 		public readonly total_tva: number,
 		public readonly total_ttc: number,
 		public readonly total_ttc_apres_remise: number,
+		public readonly devise: string,
 		public lignes: Array<DeviFactureLivraisonLineClass>,
 	) {}
 }
@@ -273,6 +278,7 @@ export class ReglementClass {
 		public readonly mode_reglement_name: string | null,
 		public libelle: string,
 		public montant: number,
+		public readonly devise: string,
 		public date_reglement: string,
 		public date_echeance: string,
 		public statut: ReglementStatutType,

@@ -86,6 +86,18 @@ jest.mock('@/store/services/factureClient', () => ({
 	useConvertFactureClientToBonDeLivraisonMutation: jest.fn(() => [mockConvertToBonDeLivraison, { isLoading: false }]),
 }));
 
+// Mock company services
+jest.mock('@/store/services/company', () => ({
+	useGetCompanyQuery: jest.fn(() => ({
+		data: {
+			id: 1,
+			raison_sociale: 'Test Company',
+			uses_foreign_currency: false,
+		},
+		isLoading: false,
+	})),
+}));
+
 // Mock devis-list exports
 jest.mock('@/components/pages/dashboard/devis/devis-list', () => ({
 	getStatutColor: (statut: string) => {

@@ -39,7 +39,7 @@ import { useAppSelector, useToast } from '@/utils/hooks';
 import { getModePaiementState, getUserCompaniesState } from '@/store/selectors';
 import { useAddReglementMutation, useEditReglementMutation, useGetReglementQuery } from '@/store/services/reglement';
 import { useGetFactureClientForPaymentQuery } from '@/store/services/factureClient';
-import { getLabelForKey, setFormikAutoErrors, parseNumber, formatPrice } from '@/utils/helpers';
+import { getLabelForKey, setFormikAutoErrors, parseNumber, formatPrice, formatNumber } from '@/utils/helpers';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import type { ReglementSchemaType } from '@/types/reglementTypes';
 import { reglementSchema } from '@/utils/formValidationSchemas';
@@ -158,9 +158,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		if (facturesForPayment) {
 			facturesForPayment.forEach((f) => {
 				if (!items.some((item) => item.value === String(f.id))) {
+					const remaining = parseNumber(f.remaining_amount);
+					const deviseLabel = f.devise || 'MAD';
 					items.push({
 						value: String(f.id),
-						code: `${f.numero_facture} - ${f.client_name ?? 'Client inconnu'} (Reste: ${formatPrice(parseNumber(f.remaining_amount))})`,
+						code: `${f.numero_facture} - ${f.client_name ?? 'Client inconnu'} (Reste: ${formatNumber(remaining)} ${deviseLabel})`,
 					});
 				}
 			});
@@ -244,11 +246,19 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const shouldShowError = (axiosError?.status ?? 0) > 400 && !isLoading;
 
 	// Financial info for edit mode
-	const montantFacture = rawData?.montant_facture ? formatPrice(rawData.montant_facture) : null;
+	// In edit mode, use rawData.devise; in create mode, get devise from selected facture
+	const selectedFactureData = useMemo(() => {
+		const v = formik.values.facture_client;
+		if (!v || !facturesForPayment) return null;
+		return facturesForPayment.find((f) => f.id === v) ?? null;
+	}, [formik.values.facture_client, facturesForPayment]);
+	
+	const devise = rawData?.devise || selectedFactureData?.devise || 'MAD';
+	const montantFacture = rawData?.montant_facture ? `${formatNumber(rawData.montant_facture)} ${devise}` : null;
 	const totalReglementsFacture = rawData?.total_reglements_facture
-		? formatPrice(rawData.total_reglements_facture)
+		? `${formatNumber(rawData.total_reglements_facture)} ${devise}`
 		: null;
-	const resteAPayer = rawData?.reste_a_payer ? formatPrice(rawData.reste_a_payer) : 0 + ' MAD';
+	const resteAPayer = rawData?.reste_a_payer ? `${formatNumber(rawData.reste_a_payer)} ${devise}` : `0 ${devise}`;
 
 	return (
 		<Stack spacing={3} sx={{ p: { xs: 2, md: 3 } }}>
@@ -408,7 +418,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="montant"
 										type="text"
-										label="Montant (MAD) *"
+									label={`Montant (${devise}) *`}
 										value={String(formik.values.montant)}
 										onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 											const raw = e.target.value;
@@ -433,7 +443,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												: isMontantDisabled
 													? 'Veuillez sélectionner une facture'
 													: selectedFactureRemainingAmount > 0
-														? `Maximum: ${formatPrice(selectedFactureRemainingAmount)}`
+													? `Maximum: ${formatNumber(selectedFactureRemainingAmount)} ${devise}`
 														: ''
 										}
 										disabled={isMontantDisabled}

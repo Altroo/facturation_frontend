@@ -4,17 +4,12 @@ import React, { useMemo, useState } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import {
 	Box,
-	Container,
 	Divider,
-	Paper,
 	Stack,
-	Tab,
-	Tabs,
 	Typography,
 	Alert,
 } from '@mui/material';
 import {
-	Business as BusinessIcon,
 	Save as SaveIcon,
 	TrendingUp as TrendingUpIcon,
 	Receipt as ReceiptIcon,
@@ -25,13 +20,13 @@ import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import { monthlyObjectivesSchema } from '@/utils/formValidationSchemas';
 
-import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import NoPermission from '@/components/shared/noPermission/noPermission';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
+import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 
 import { getAccessTokenFromSession } from '@/store/session';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
@@ -48,15 +43,11 @@ import { textInputTheme } from '@/utils/themes';
 
 const inputTheme = textInputTheme();
 
-type CompanyLike = {
-	id: number;
-	raison_sociale: string;
-	role: string;
-};
-
 // Form values type
 type MonthlyObjectivesFormValues = {
 	objectif_ca: string | number;
+	objectif_ca_eur?: string | number | null;
+	objectif_ca_usd?: string | number | null;
 	objectif_factures: number;
 	objectif_conversion: string | number;
 	globalError: string;
@@ -66,9 +57,10 @@ type MonthlyObjectivesFormValues = {
 type FormikContentProps = {
 	companyId: number;
 	existingObjectives?: MonthlyObjectivesSettings | null;
+	usesForeignCurrency: boolean;
 };
 
-const FormikContent: React.FC<FormikContentProps> = ({ companyId, existingObjectives }) => {
+const FormikContent: React.FC<FormikContentProps> = ({ companyId, existingObjectives, usesForeignCurrency }) => {
 	const { onSuccess, onError } = useToast();
 	const isEditMode = existingObjectives !== undefined && existingObjectives !== null;
 
@@ -87,6 +79,8 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, existingObject
 	const formik = useFormik<MonthlyObjectivesFormValues>({
 		initialValues: {
 			objectif_ca: existingObjectives?.objectif_ca || '0',
+			objectif_ca_eur: existingObjectives?.objectif_ca_eur || (usesForeignCurrency ? '0' : null),
+			objectif_ca_usd: existingObjectives?.objectif_ca_usd || (usesForeignCurrency ? '0' : null),
 			objectif_factures: existingObjectives?.objectif_factures || 0,
 			objectif_conversion: existingObjectives?.objectif_conversion || '0',
 			globalError: '',
@@ -104,6 +98,10 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, existingObject
 				const submitData = {
 					company: companyId,
 					objectif_ca: payload.objectif_ca.toString(),
+					...(usesForeignCurrency && {
+						objectif_ca_eur: payload.objectif_ca_eur?.toString() || null,
+						objectif_ca_usd: payload.objectif_ca_usd?.toString() || null,
+					}),
 					objectif_factures: payload.objectif_factures,
 					objectif_conversion: payload.objectif_conversion.toString(),
 				};
@@ -214,6 +212,56 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, existingObject
 								}}
 							/>
 
+							{usesForeignCurrency && (
+								<>
+									<CustomTextInput
+										id="objectif_ca_eur"
+										type="number"
+										label="Objectif CA (EUR)"
+										value={String(formik.values.objectif_ca_eur ?? '') ?? ''}
+										onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+											const raw = (e.target as HTMLInputElement).value;
+											const parsed = parseNumber(raw);
+											if (parsed !== null && parsed < 0) return;
+											formik.setFieldValue('objectif_ca_eur', parsed === null ? (raw === '' ? null : raw) : parsed);
+										}}
+										onBlur={formik.handleBlur('objectif_ca_eur')}
+										error={formik.touched.objectif_ca_eur && Boolean(formik.errors.objectif_ca_eur)}
+									helperText={formik.touched.objectif_ca_eur && formik.errors.objectif_ca_eur ? formik.errors.objectif_ca_eur : ''}
+										fullWidth={false}
+										size="small"
+										theme={inputTheme}
+										startIcon={<TrendingUpIcon fontSize="small" />}
+										slotProps={{
+											htmlInput: { step: 0.01 },
+										}}
+									/>
+
+									<CustomTextInput
+										id="objectif_ca_usd"
+										type="number"
+										label="Objectif CA (USD)"
+										value={String(formik.values.objectif_ca_usd ?? '') ?? ''}
+										onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+											const raw = (e.target as HTMLInputElement).value;
+											const parsed = parseNumber(raw);
+											if (parsed !== null && parsed < 0) return;
+											formik.setFieldValue('objectif_ca_usd', parsed === null ? (raw === '' ? null : raw) : parsed);
+										}}
+										onBlur={formik.handleBlur('objectif_ca_usd')}
+										error={formik.touched.objectif_ca_usd && Boolean(formik.errors.objectif_ca_usd)}
+									helperText={formik.touched.objectif_ca_usd && formik.errors.objectif_ca_usd ? formik.errors.objectif_ca_usd : ''}
+										fullWidth={false}
+										size="small"
+										theme={inputTheme}
+										startIcon={<TrendingUpIcon fontSize="small" />}
+										slotProps={{
+											htmlInput: { step: 0.01 },
+										}}
+									/>
+								</>
+							)}
+
 							<CustomTextInput
 								id="objectif_factures"
 								type="number"
@@ -291,145 +339,35 @@ const MonthlyObjectivesView: React.FC<SessionProps> = ({ session }) => {
 	const token = getAccessTokenFromSession(session);
 	const profil = useAppSelector(getProfilState);
 	const is_staff = profil?.is_staff || false;
-	const { data: companiesData, isLoading: isLoadingCompanies } = useGetUserCompaniesQuery(undefined, { skip: !token });
+	const { data: companiesData } = useGetUserCompaniesQuery(undefined, { skip: !token });
 	const { data: objectivesData, isLoading: isLoadingObjectives } = useGetAllMonthlyObjectivesSettingsQuery(
 		undefined,
 		{ skip: !token },
 	);
-	const [selectedIndex, setSelectedIndex] = useState(0);
 
-	const companies = useMemo(() => (companiesData ?? []) as CompanyLike[], [companiesData]);
-	const selectedCompany = useMemo(() => companies?.[selectedIndex] ?? null, [companies, selectedIndex]);
-
-	const objectives = useMemo(() => {
-		if (!objectivesData || !selectedCompany) return undefined;
-		return objectivesData.find((obj) => obj.company === selectedCompany.id);
-	}, [objectivesData, selectedCompany]);
-
-	const handleChange = (_: React.SyntheticEvent, newValue: number) => {
-		setSelectedIndex(newValue);
-	};
-
-	if (isLoadingCompanies || isLoadingObjectives) {
+	if (isLoadingObjectives) {
 		return <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />;
 	}
 
 	if (!is_staff) {
-		return (
-			<Stack
-				direction="column"
-				spacing={2}
-				className={Styles.flexRootStack}
-				mt="40px"
-				sx={{ overflowX: 'auto', overflowY: 'hidden' }}
-			>
-				<NavigationBar title="Paramètres - Objectifs Mensuels">
-					<NoPermission />
-				</NavigationBar>
-			</Stack>
-		);
+		return <NoPermission />;
 	}
 
 	return (
-		<Stack
-			direction="column"
-			spacing={2}
-			className={Styles.flexRootStack}
-			mt="40px"
-			sx={{ overflowX: 'auto', overflowY: 'hidden' }}
-		>
-			<NavigationBar title="Paramètres - Objectifs Mensuels">
-				{!companies || companies.length === 0 ? (
-					<Container maxWidth="sm" sx={{ mt: 8 }}>
-						<Paper
-							elevation={3}
-							sx={{
-								p: 6,
-								textAlign: 'center',
-								borderRadius: 3,
-								background: 'linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%)',
-							}}
-						>
-							<Box
-								sx={{
-									width: 80,
-									height: 80,
-									borderRadius: '50%',
-									backgroundColor: 'rgba(13, 7, 11, 0.08)',
-									display: 'flex',
-									alignItems: 'center',
-									justifyContent: 'center',
-									margin: '0 auto 24px',
-								}}
-							>
-								<BusinessIcon sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
-							</Box>
-							<Typography variant="h5" fontWeight={600} color="text.primary" gutterBottom>
-								Aucune entreprise trouvée
-							</Typography>
-							<Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 3 }}>
-								Vous n&#39;avez pas encore d&#39;entreprises associées à votre compte.
-							</Typography>
-						</Paper>
-					</Container>
-				) : (
-					<>
-						<Paper
-							elevation={0}
-							sx={{
-								width: '100%',
-								borderBottom: 1,
-								borderColor: 'divider',
-								mb: 2,
-								bgcolor: 'background.paper',
-								borderRadius: '8px 8px 0 0',
-							}}
-						>
-							<Tabs
-								value={selectedIndex}
-								onChange={handleChange}
-								variant="scrollable"
-								allowScrollButtonsMobile
-								scrollButtons="auto"
-								aria-label="companies tabs"
-								sx={{
-									'& .MuiTabs-indicator': {
-										height: 3,
-										borderRadius: '3px 3px 0 0',
-									},
-									'& .MuiTab-root': {
-										textTransform: 'none',
-										fontSize: '0.95rem',
-										fontWeight: 500,
-										minHeight: 56,
-										px: 3,
-										transition: 'all 0.2s ease',
-										'&:hover': {
-											backgroundColor: 'action.hover',
-										},
-										'&.Mui-selected': {
-											fontWeight: 600,
-										},
-									},
-									'& .MuiTabs-scrollButtons': {
-										'&.Mui-disabled': {
-											opacity: 0.3,
-										},
-									},
-								}}
-							>
-								{companies.map((company) => (
-									<Tab key={company.id} label={company.raison_sociale} />
-								))}
-							</Tabs>
-						</Paper>
-						{selectedCompany ? (
-							<FormikContent companyId={selectedCompany.id} existingObjectives={objectives} />
-						) : null}
-					</>
-				)}
-			</NavigationBar>
-		</Stack>
+		<CompanyDocumentsWrapperList session={session} title="Paramètres - Objectifs Mensuels">
+			{({ company_id }) => {
+				const objectives = objectivesData?.find((obj) => obj.company === company_id);
+				const company = companiesData?.find((c) => c.id === company_id);
+				const usesForeignCurrency = company?.uses_foreign_currency ?? false;
+				return (
+					<FormikContent
+						companyId={company_id}
+						existingObjectives={objectives}
+						usesForeignCurrency={usesForeignCurrency}
+					/>
+				);
+			}}
+		</CompanyDocumentsWrapperList>
 	);
 };
 

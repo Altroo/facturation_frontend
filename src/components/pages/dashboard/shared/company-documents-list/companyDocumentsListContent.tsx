@@ -449,13 +449,17 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 				headerName: 'Total TTC après remise',
 				flex: 1.3,
 				minWidth: 130,
-				renderCell: (params: GridRenderCellParams<TDocument>) => (
-					<DarkTooltip title={params.value + ' MAD'}>
-						<Typography variant="body2" noWrap fontWeight={600} color="primary">
-							{params.value} MAD
-						</Typography>
-					</DarkTooltip>
-				),
+				renderCell: (params: GridRenderCellParams<TDocument>) => {
+					const devise = (params.row as any).devise || 'MAD';
+					const displayValue = `${params.value} ${devise}`;
+					return (
+						<DarkTooltip title={displayValue}>
+							<Typography variant="body2" noWrap fontWeight={600} color="primary">
+								{displayValue}
+							</Typography>
+						</DarkTooltip>
+					);
+				},
 			},
 			{
 				field: 'lignes_count',

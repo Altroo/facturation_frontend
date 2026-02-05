@@ -27,8 +27,18 @@ import type { CompaniesUserCompaniesType } from '@/types/companyTypes';
 
 describe('Redux selectors', () => {
 	const mockCompanies: CompaniesUserCompaniesType[] = [
-		{ id: 1, raison_sociale: 'Alpha Corp', role: 'Caissier' },
-		{ id: 2, raison_sociale: 'Beta LLC', role: 'Lecture' },
+		{
+			id: 1,
+			raison_sociale: 'Alpha Corp',
+			role: 'Caissier',
+			uses_foreign_currency: false,
+		},
+		{
+			id: 2,
+			raison_sociale: 'Beta LLC',
+			role: 'Lecture',
+			uses_foreign_currency: false,
+		},
 	];
 	const mockCategories = [new CategorieClass(1, 'Cat1'), new CategorieClass(2, 'Cat2')];
 	const mockEmplacements = [new EmplacementClass(1, 'Emp1'), new EmplacementClass(2, 'Emp2')];

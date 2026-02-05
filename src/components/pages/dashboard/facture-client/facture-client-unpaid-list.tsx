@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Card, CardContent, Stack, Typography, Divider } from '@mui/material';
+import CurrencyToggle from '@/components/shared/CurrencyToggle';
 import {
 	ReceiptLong as ReceiptLongIcon,
 	AttachMoney as AttachMoneyIcon,
@@ -16,6 +17,7 @@ import {
 	useDeleteFactureClientMutation,
 	useGetFactureClientUnpaidListQuery,
 } from '@/store/services/factureClient';
+import { useGetCompanyQuery } from '@/store/services/company';
 import { BON_DE_LIVRAISON_EDIT, FACTURE_CLIENT_ADD, FACTURE_CLIENT_EDIT, FACTURE_CLIENT_VIEW } from '@/utils/routes';
 import type { SessionProps } from '@/types/_initTypes';
 import type { FactureClientListResponseType } from '@/types/companyDocumentsTypes';
@@ -23,7 +25,7 @@ import type { FactureClass } from '@/models/classes';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import CompanyDocumentsListContent from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsListContent';
 import type { DocumentListConfig, PaginationModel } from '@/types/companyDocumentsTypes';
-import { formatPrice } from '@/utils/helpers';
+import { formatNumber } from '@/utils/helpers';
 
 const factureClientUnpaidListConfig: DocumentListConfig<FactureClass> = {
 	documentType: 'facture-client',
@@ -72,12 +74,23 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 	const router = useRouter();
 	const token = getAccessTokenFromSession(session);
 
+	const { data: companyData } = useGetCompanyQuery({ id: company_id }, { skip: !token });
+	const usesForeignCurrency = companyData?.uses_foreign_currency === true;
+
 	const [paginationModel, setPaginationModel] = useState<PaginationModel>({
 		page: 0,
 		pageSize: 10,
 	});
 	const [searchTerm, setSearchTerm] = useState<string>('');
 	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
+	const [selectedDevise, setSelectedDevise] = useState<'MAD' | 'EUR' | 'USD'>('MAD');
+
+	// Reset to MAD when company changes or doesn't use foreign currency
+	React.useEffect(() => {
+		if (!usesForeignCurrency) {
+			setSelectedDevise('MAD');
+		}
+	}, [company_id, usesForeignCurrency]);
 
 	// Extract date filter parameters from filter model
 	const getDateFilterParams = () => {
@@ -127,15 +140,21 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 		},
 	};
 
-	// Format aggregated stats
-	const chiffreAffaireTotal = data?.chiffre_affaire_total ? formatPrice(data.chiffre_affaire_total) : '0,00 MAD';
-	const totalReglements = data?.total_reglements ? formatPrice(data.total_reglements) : '0,00 MAD';
-	const totalImpayes = data?.total_impayes ? formatPrice(data.total_impayes) : '0,00 MAD';
+	// Get stats for selected currency
+	const currencyStats = data?.stats_by_currency?.[selectedDevise];
+	const chiffreAffaireTotal = currencyStats?.chiffre_affaire_total ? `${formatNumber(currencyStats.chiffre_affaire_total)} ${selectedDevise}` : `0,00 ${selectedDevise}`;
+	const totalReglements = currencyStats?.total_reglements ? `${formatNumber(currencyStats.total_reglements)} ${selectedDevise}` : `0,00 ${selectedDevise}`;
+	const totalImpayes = currencyStats?.total_impayes ? `${formatNumber(currencyStats.total_impayes)} ${selectedDevise}` : `0,00 ${selectedDevise}`;
 
 	return (
 		<>
 			{/* Stats Cards */}
 			<Box sx={{ px: { xs: 1, sm: 2, md: 3 }, mt: { xs: 1, sm: 2, md: 3 } }}>
+				<CurrencyToggle
+					selectedDevise={selectedDevise}
+					onDeviseChange={setSelectedDevise}
+					usesForeignCurrency={usesForeignCurrency}
+				/>
 				<Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 3 }}>
 					<Card elevation={2} sx={{ flex: 1, borderRadius: 2 }}>
 						<CardContent>
@@ -148,6 +167,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 									<Typography variant="h6" fontWeight={700}>
 										{chiffreAffaireTotal}
 									</Typography>
+
 								</Box>
 							</Stack>
 						</CardContent>
@@ -163,6 +183,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 									<Typography variant="h6" fontWeight={700} color="success.main">
 										{totalReglements}
 									</Typography>
+
 								</Box>
 							</Stack>
 						</CardContent>

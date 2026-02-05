@@ -51,6 +51,7 @@ export type CompanyDocumentData = TotalsFields &
 		mode_paiement_name?: string | null;
 		livre_par_name?: string | null;
 		remarque?: string | null;
+		devise?: string | null;
 	};
 
 export type Totals = {
@@ -103,6 +104,7 @@ export interface BaseDocumentData {
 	remise?: number;
 	lignes: Array<DeviLineSchemaType>;
 	statut?: TypeFactureLivraisonDevisStatus;
+	devise?: string;
 }
 
 /** Devis-specific document data */
@@ -140,6 +142,7 @@ export interface BaseDocumentFormSchema {
 	remise_type?: TypeRemiseType;
 	remise?: number;
 	lignes: Array<DeviLineSchemaType>;
+	devise?: string;
 	globalError?: string;
 }
 
@@ -383,10 +386,19 @@ export interface FactureForPayment {
 	total_paid: string;
 	remaining_amount: string;
 	statut: string;
+	devise: string;
 }
 
-export interface FactureClientListResponseType extends PaginationResponseType<FactureClass> {
+export interface CurrencyStats {
 	chiffre_affaire_total: string;
 	total_reglements: string;
 	total_impayes: string;
+}
+
+export interface FactureClientListResponseType extends PaginationResponseType<FactureClass> {
+	stats_by_currency: {
+		MAD: CurrencyStats;
+		EUR: CurrencyStats;
+		USD: CurrencyStats;
+	};
 }

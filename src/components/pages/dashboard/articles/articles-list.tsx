@@ -128,9 +128,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const handleDownloadExample = () => {
 		const rows = [
-			'reference;type_article;designation;prix_achat;devise_prix_achat;prix_vente;tva;remarque;marque;categorie;emplacement;unite',
-			';Produit;Bureau;100,00;MAD;200,00;20;Exemple de remarque;Marque A;Electronique;Entrepôt A;Pièce',
-			'ART0099;Service;Consultation;50,00;EUR;75,00;10;;;;; ',
+			'reference;type_article;designation;prix_achat;devise_prix_achat;prix_vente;devise_prix_vente;tva;remarque;marque;categorie;emplacement;unite',
+			';Produit;Bureau;100,00;MAD;200,00;MAD;20;Exemple de remarque;Marque A;Electronique;Entrepôt A;Pièce',
+			'ART0099;Service;Consultation;50,00;EUR;75,00;EUR;10;;;;; ',
 		];
 		const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8' });
 		const url = URL.createObjectURL(blob);
@@ -302,9 +302,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			flex: 1,
 			minWidth: 100,
 			renderCell: (params: GridRenderCellParams<ArticleClass>) => (
-				<DarkTooltip title={usesForeignCurrency ? params.value + ' ' + params.row.devise_prix_achat : String(params.value) + ' MAD'}>
+				<DarkTooltip
+					title={
+						usesForeignCurrency ? params.value + ' ' + params.row.devise_prix_achat : String(params.value) + ' MAD'
+					}
+				>
 					<Typography variant="body2" noWrap fontWeight={600} color="primary">
-						{params.value}{usesForeignCurrency ? ' ' + params.row.devise_prix_achat : ' MAD'}
+						{params.value}
+						{usesForeignCurrency ? ' ' + params.row.devise_prix_achat : ' MAD'}
 					</Typography>
 				</DarkTooltip>
 			),
@@ -315,9 +320,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			flex: 1,
 			minWidth: 100,
 			renderCell: (params: GridRenderCellParams<ArticleClass>) => (
-				<DarkTooltip title={params.value + ' MAD'}>
+				<DarkTooltip
+					title={
+						usesForeignCurrency ? params.value + ' ' + params.row.devise_prix_vente : String(params.value) + ' MAD'
+					}
+				>
 					<Typography variant="body2" noWrap fontWeight={600} color="primary">
-						{params.value} MAD
+						{params.value}
+						{usesForeignCurrency ? ' ' + params.row.devise_prix_vente : ' MAD'}
 					</Typography>
 				</DarkTooltip>
 			),

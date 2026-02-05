@@ -22,6 +22,7 @@ export type ArticleSchemaType = {
 	prix_achat?: number;
 	devise_prix_achat?: CurrencyType;
 	prix_vente?: number;
+	devise_prix_vente?: CurrencyType;
 	tva?: number;
 	remarque?: string;
 	globalError?: string;

@@ -220,6 +220,17 @@ jest.mock('@/store/services/dashboard', () => ({
 		createMockQueryResult(mockQueryStates['sectionMicroTrends'] || 'success', mockSectionMicroTrendsData),
 }));
 
+// Mock company service
+jest.mock('@/store/services/company', () => ({
+	__esModule: true,
+	useGetCompanyQuery: () => ({
+		data: { id: 1, uses_foreign_currency: false },
+		isLoading: false,
+		error: undefined,
+		refetch: jest.fn(),
+	}),
+}));
+
 // Mock CompanyDocumentsWrapperList
 jest.mock('@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList', () => ({
 	__esModule: true,
@@ -488,7 +499,7 @@ describe('DashboardClient', () => {
 	describe('Monthly Objectives', () => {
 		it('displays objective titles', () => {
 			render(<DashboardClient session={mockSession} />);
-			expect(screen.getByText('Objectif CA')).toBeInTheDocument();
+			expect(screen.getByText('Objectif CA (MAD)')).toBeInTheDocument();
 			expect(screen.getByText('Objectif Factures')).toBeInTheDocument();
 			expect(screen.getByText('Objectif Conversion')).toBeInTheDocument();
 		});

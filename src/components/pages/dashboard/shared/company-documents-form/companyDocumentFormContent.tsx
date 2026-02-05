@@ -36,6 +36,7 @@ import {
 	Close as CloseIcon,
 	LocalShipping as LocalShippingIcon,
 	Refresh as RefreshIcon,
+	AttachMoney as AttachMoneyIcon,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -60,6 +61,7 @@ import { useRouter } from 'next/navigation';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import { ArticleClass, ClientClass, ModePaiementClass, LivreParClass } from '@/models/classes';
 import { useGetClientsListQuery } from '@/store/services/client';
+import { useGetCompanyQuery } from '@/store/services/company';
 import { useAppSelector, useToast } from '@/utils/hooks';
 import { getModePaiementState, getLivreParState } from '@/store/selectors';
 import type { DropDownType } from '@/types/accountTypes';
@@ -249,6 +251,10 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		{ company_id, with_pagination: false },
 		{ skip: !token },
 	);
+
+	// Company query for uses_foreign_currency flag
+	const { data: companyData } = useGetCompanyQuery({ id: company_id }, { skip: !token });
+	const usesForeignCurrency = companyData?.uses_foreign_currency === true;
 	const clientsData = rawClientsData as Array<Partial<ClientClass>> | undefined;
 
 	// Mode paiement
@@ -307,6 +313,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				remarque: isEditMode ? (rawData?.remarque ?? null) : null,
 				remise_type: isEditMode ? rawData?.remise_type : undefined,
 				remise: isEditMode ? rawData?.remise : undefined,
+				devise: isEditMode ? (rawData?.devise ?? 'MAD') : 'MAD',
 				lignes: isEditMode ? (rawData?.lignes ?? []) : [],
 				globalError: '',
 			} as DevisFormSchema;
@@ -323,6 +330,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				remarque: isEditMode ? (rawData?.remarque ?? null) : null,
 				remise_type: isEditMode ? rawData?.remise_type : undefined,
 				remise: isEditMode ? rawData?.remise : undefined,
+				devise: isEditMode ? (rawData?.devise ?? 'MAD') : 'MAD',
 				lignes: isEditMode ? (rawData?.lignes ?? []) : [],
 				globalError: '',
 			} as FactureFormSchema;
@@ -340,6 +348,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				remarque: isEditMode ? (rawData?.remarque ?? null) : null,
 				remise_type: isEditMode ? rawData?.remise_type : undefined,
 				remise: isEditMode ? rawData?.remise : undefined,
+				devise: isEditMode ? (rawData?.devise ?? 'MAD') : 'MAD',
 				lignes: isEditMode ? (rawData?.lignes ?? []) : [],
 				globalError: '',
 			} as BonDeLivraisonFormSchema;
@@ -651,6 +660,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 					prix_achat: article.prix_achat || 0,
 					devise_prix_achat: article.devise_prix_achat || 'MAD',
 					prix_vente: article.prix_vente || 0,
+					devise_prix_vente: article.devise_prix_vente || article.devise_prix_achat || 'MAD',
 					quantity: 1,
 					remise_type: '' as '' | 'Pourcentage' | 'Fixe' | undefined,
 					remise: 0,
@@ -747,11 +757,13 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	>(() => {
 		const prix = (params: GridRenderCellParams) => {
 			const rowIndex = getRowIndexFromParams(params);
-			const rawValue = getLines()[rowIndex]?.prix_vente ?? '';
+			const ligne = getLines()[rowIndex];
+			const rawValue = ligne?.prix_vente ?? '';
 			const inputValue = String(safeParseForInput(String(rawValue ?? '')));
 			const errorKey = `ligne_${rowIndex}_prix_vente`;
 			const helperText = validationErrors[errorKey] || '';
 			const hasError = !!validationErrors[errorKey];
+			const devisePrixVente = ligne?.devise_prix_vente || 'MAD';
 
 			if (role === 'Commercial') {
 				return (
@@ -781,7 +793,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 								size="small"
 								theme={gridFieldTheme}
 								error={hasError}
-								endIcon={<InputAdornment position="end">MAD</InputAdornment>}
+								endIcon={<InputAdornment position="end">{devisePrixVente}</InputAdornment>}
 								slotProps={{ input: { style: { textAlign: 'center' }, inputProps: { min: 0 } } }}
 							/>
 						</Box>
@@ -846,7 +858,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 							disabled={!remiseTypeValue}
 							endIcon={
 								remiseTypeValue && (
-									<InputAdornment position="end">{remiseTypeValue === 'Pourcentage' ? '%' : 'MAD'}</InputAdornment>
+									<InputAdornment position="end">{remiseTypeValue === 'Pourcentage' ? '%' : formik.values.devise}</InputAdornment>
 								)
 							}
 							slotProps={{ input: { style: { textAlign: 'center' }, inputProps: { min: 0 } } }}
@@ -1256,6 +1268,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 							totalTTC: totals.totalTTC,
 							totalTTCApresRemise: totals.totalTTCApresRemise,
 						}}
+						devise={formik.values.devise}
 						isMobile={isMobile}
 					/>
 				)}
@@ -1442,6 +1455,43 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 								</CardContent>
 							</Card>
 
+							{/* Currency Card - Only show if company uses foreign currency */}
+							{usesForeignCurrency && (
+								<Card elevation={2} sx={{ borderRadius: 2 }}>
+									<CardContent sx={{ p: 3 }}>
+										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+											<AttachMoneyIcon color="primary" />
+											<Typography variant="h6" fontWeight={700}>
+												Devise
+											</Typography>
+										</Stack>
+										<Divider sx={{ mb: 3 }} />
+										<Stack spacing={2.5}>
+											<CustomDropDownSelect
+												id="devise"
+												size="small"
+												label="Devise du document"
+												items={[
+													{ value: 'MAD', code: 'MAD - Dirham Marocain' },
+													{ value: 'EUR', code: 'EUR - Euro' },
+													{ value: 'USD', code: 'USD - Dollar Américain' },
+												]}
+												value={formik.values.devise ?? 'MAD'}
+												onChange={(e) => formik.setFieldValue('devise', e.target.value)}
+												theme={customDropdownTheme()}
+												startIcon={<AttachMoneyIcon fontSize="small" color="action" />}
+												disabled={getLines().length > 0}
+												helperText={
+													getLines().length > 0
+														? 'La devise ne peut pas être modifiée une fois des lignes ajoutées'
+														: 'Définit la devise pour tous les articles de ce document'
+												}
+											/>
+										</Stack>
+									</CardContent>
+								</Card>
+							)}
+
 							{/* Payment Card */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
@@ -1583,7 +1633,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 											{formik.values.remise_type && formik.values.remise && formik.values.remise > 0 && (
 												<Typography variant="body2" color="text.secondary">
 													Remise appliquée: {formik.values.remise}
-													{formik.values.remise_type === 'Pourcentage' ? '%' : ' MAD'}
+													{formik.values.remise_type === 'Pourcentage' ? '%' : ` ${formik.values.devise}`}
 												</Typography>
 											)}
 										</Stack>
@@ -1663,6 +1713,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 					setSelectedArticles={setSelectedArticles}
 					onAdd={handleAddArticles}
 					existingArticleIds={existingArticleIds}
+					documentDevise={formik.values.devise}
 				/>
 			)}
 
@@ -1674,6 +1725,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 					currentType={formik.values.remise_type || ''}
 					currentValue={formik.values.remise || 0}
 					onApply={handleApplyGlobalRemise}
+					devise={formik.values.devise}
 				/>
 			)}
 

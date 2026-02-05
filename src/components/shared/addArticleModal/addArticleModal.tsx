@@ -17,6 +17,7 @@ interface AddArticleModalProps {
 	setSelectedArticles: (selection: Set<number>) => void;
 	onAdd: () => void;
 	existingArticleIds: Set<number>;
+	documentDevise?: string;
 }
 
 const AddArticleModal: React.FC<AddArticleModalProps> = ({
@@ -28,14 +29,20 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 	setSelectedArticles,
 	onAdd,
 	existingArticleIds,
+	documentDevise,
 }) => {
 	const availableArticles = useMemo(
 		() =>
 			articles.filter((article) => {
 				if (!article.id) return false;
-				return !existingArticleIds.has(article.id);
+				if (existingArticleIds.has(article.id)) return false;
+				// If document has a currency set, filter by matching devise_prix_vente
+				if (documentDevise && documentDevise !== 'MAD') {
+					return article.devise_prix_vente === documentDevise;
+				}
+				return true;
 			}),
-		[articles, existingArticleIds],
+		[articles, existingArticleIds, documentDevise],
 	);
 
 	const columns: GridColDef[] = [
@@ -171,7 +178,7 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 			flex: 1,
 			minWidth: 110,
 			renderCell: (params: GridRenderCellParams) => {
-				const value = Number(params.row.prix_vente ?? 0) + ' MAD';
+				const value = Number(params.row.prix_vente ?? 0) + ' ' + (params.row.devise_prix_vente || 'MAD');
 				return (
 					<DarkTooltip title={value}>
 						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>

@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, Typography, Chip, IconButton, Card, CardContent, Stack, Divider } from '@mui/material';
+import CurrencyToggle from '@/components/shared/CurrencyToggle';
 import {
 	Edit as EditIcon,
 	Delete as DeleteIcon,
@@ -30,12 +31,13 @@ import type { ReglementListResponseType } from '@/types/reglementTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type { ReglementClass } from '@/models/classes';
-import { formatDate, formatPrice } from '@/utils/helpers';
+import { formatDate, formatPrice, formatNumber } from '@/utils/helpers';
 import { useToast } from '@/utils/hooks';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
+import { useGetCompanyQuery } from '@/store/services/company';
 
 interface FormikContentProps extends SessionProps {
 	company_id: number;
@@ -53,6 +55,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const router = useRouter();
 	const token = getAccessTokenFromSession(session);
 
+	const { data: companyData } = useGetCompanyQuery({ id: company_id }, { skip: !token });
+	const usesForeignCurrency = companyData?.uses_foreign_currency === true;
+
 	const [paginationModel, setPaginationModel] = useState<{ page: number; pageSize: number }>({
 		page: 0,
 		pageSize: 10,
@@ -61,6 +66,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
 	const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
 	const [selectedId, setSelectedId] = useState<number | null>(null);
+	const [selectedDevise, setSelectedDevise] = useState<'MAD' | 'EUR' | 'USD'>('MAD');
+
+	// Reset to MAD when company changes or doesn't use foreign currency
+	React.useEffect(() => {
+		if (!usesForeignCurrency) {
+			setSelectedDevise('MAD');
+		}
+	}, [company_id, usesForeignCurrency]);
 
 	const [showCancelModal, setShowCancelModal] = useState<boolean>(false);
 	const [cancelTarget, setCancelTarget] = useState<number | null>(null);
@@ -269,13 +282,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			headerName: 'Montant',
 			flex: 1,
 			minWidth: 100,
-			renderCell: (params: GridRenderCellParams<ReglementClass>) => (
-				<DarkTooltip title={formatPrice(params.value)}>
-					<Typography variant="body2" noWrap fontWeight={600} color="primary">
-						{formatPrice(params.value)}
-					</Typography>
-				</DarkTooltip>
-			),
+			renderCell: (params: GridRenderCellParams<ReglementClass>) => {
+				const devise = params.row.devise || 'MAD';
+				const formattedValue = `${formatNumber(params.value)} ${devise}`;
+				return (
+					<DarkTooltip title={formattedValue}>
+						<Typography variant="body2" noWrap fontWeight={600} color="primary">
+							{formattedValue}
+						</Typography>
+					</DarkTooltip>
+				);
+			},
 		},
 		{
 			field: 'date_reglement',
@@ -389,15 +406,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		},
 	];
 
-	// Format aggregated stats
-	const chiffreAffaireTotal = data?.chiffre_affaire_total ? formatPrice(data.chiffre_affaire_total) : '0,00 MAD';
-	const totalReglements = data?.total_reglements ? formatPrice(data.total_reglements) : '0,00 MAD';
-	const totalImpayes = data?.total_impayes ? formatPrice(data.total_impayes) : '0,00 MAD';
+	// Get stats for selected currency
+	const currencyStats = data?.stats_by_currency?.[selectedDevise];
+	const chiffreAffaireTotal = currencyStats?.chiffre_affaire_total ? `${formatNumber(currencyStats.chiffre_affaire_total)} ${selectedDevise}` : `0,00 ${selectedDevise}`;
+	const totalReglements = currencyStats?.total_reglements ? `${formatNumber(currencyStats.total_reglements)} ${selectedDevise}` : `0,00 ${selectedDevise}`;
+	const totalImpayes = currencyStats?.total_impayes ? `${formatNumber(currencyStats.total_impayes)} ${selectedDevise}` : `0,00 ${selectedDevise}`;
 
 	return (
 		<>
 			{/* Stats Cards */}
 			<Box sx={{ px: { xs: 1, sm: 2, md: 3 }, mt: { xs: 1, sm: 2, md: 3 } }}>
+				<CurrencyToggle
+					selectedDevise={selectedDevise}
+					onDeviseChange={setSelectedDevise}
+					usesForeignCurrency={usesForeignCurrency}
+				/>
 				<Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 3 }}>
 					<Card elevation={2} sx={{ flex: 1, borderRadius: 2 }}>
 						<CardContent>
@@ -410,6 +433,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<Typography variant="h6" fontWeight={700}>
 										{chiffreAffaireTotal}
 									</Typography>
+
 								</Box>
 							</Stack>
 						</CardContent>
@@ -425,6 +449,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<Typography variant="h6" fontWeight={700} color="success.main">
 										{totalReglements}
 									</Typography>
+
 								</Box>
 							</Stack>
 						</CardContent>
@@ -440,6 +465,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<Typography variant="h6" fontWeight={700} color="error.main">
 										{totalImpayes}
 									</Typography>
+
 								</Box>
 							</Stack>
 						</CardContent>

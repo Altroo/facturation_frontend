@@ -55,7 +55,10 @@ import {
 	useGetMonthlyGlobalPerformanceQuery,
 	useGetSectionMicroTrendsQuery,
 	type DateFilterParams,
+	type ObjectiveData,
 } from '@/store/services/dashboard';
+import { useGetCompanyQuery } from '@/store/services/company';
+import CurrencyToggle from '@/components/shared/CurrencyToggle';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import type { SessionProps } from '@/types/_initTypes';
 import Link from 'next/link';
@@ -262,9 +265,10 @@ const DateFilter: React.FC<DateFilterProps> = ({ dateFrom, dateTo, onDateFromCha
 interface ChartProps {
 	dateParams: DateFilterParams;
 	company_id: number;
+	devise: 'MAD' | 'EUR' | 'USD';
 }
 
-const MonthlyRevenueChart: React.FC<ChartProps> = ({ dateParams, company_id }) => {
+const MonthlyRevenueChart: React.FC<ChartProps> = ({ dateParams, company_id, devise }) => {
 	const { data, isLoading, error } = useGetMonthlyRevenueEvolutionQuery({ ...dateParams, company_id });
 
 	if (isLoading) return <LoadingChart />;
@@ -274,7 +278,7 @@ const MonthlyRevenueChart: React.FC<ChartProps> = ({ dateParams, company_id }) =
 		labels: data.map((d) => d.month),
 		datasets: [
 			{
-				label: "Chiffre d'affaires (MAD)",
+				label: `Chiffre d'affaires (${devise})`,
 				data: data.map((d) => d.revenue),
 				borderColor: CHART_COLORS.primary,
 				backgroundColor: CHART_COLORS.primaryLight,
@@ -334,7 +338,7 @@ const PaymentStatusChart: React.FC<ChartProps> = ({ dateParams, company_id }) =>
 	return <Bar data={chartData} options={commonChartOptions} />;
 };
 
-const CollectionRateGauge: React.FC<ChartProps> = ({ dateParams, company_id }) => {
+const CollectionRateGauge: React.FC<ChartProps> = ({ dateParams, company_id, devise }) => {
 	const { data, isLoading, error } = useGetCollectionRateQuery({ ...dateParams, company_id });
 
 	if (isLoading) return <LoadingChart />;
@@ -370,10 +374,10 @@ const CollectionRateGauge: React.FC<ChartProps> = ({ dateParams, company_id }) =
 			<Box textAlign="center">
 				<Typography variant="h5">{data.rate.toFixed(1)}%</Typography>
 				<Typography variant="body2" color="text.secondary">
-					Facturé: {data.total_invoiced.toLocaleString()} MAD
+					Facturé: {data.total_invoiced.toLocaleString()} {devise}
 				</Typography>
 				<Typography variant="body2" color="text.secondary">
-					Encaissé: {data.total_collected.toLocaleString()} MAD
+					Encaissé: {data.total_collected.toLocaleString()} {devise}
 				</Typography>
 			</Box>
 		</Box>
@@ -381,7 +385,7 @@ const CollectionRateGauge: React.FC<ChartProps> = ({ dateParams, company_id }) =
 };
 
 // Commercial Performance Charts
-const TopClientsChart: React.FC<ChartProps> = ({ dateParams, company_id }) => {
+const TopClientsChart: React.FC<ChartProps> = ({ dateParams, company_id, devise }) => {
 	const { data, isLoading, error } = useGetTopClientsByRevenueQuery({ ...dateParams, company_id });
 
 	if (isLoading) return <LoadingChart />;
@@ -391,7 +395,7 @@ const TopClientsChart: React.FC<ChartProps> = ({ dateParams, company_id }) => {
 		labels: data.map((d) => (d.client_name.length > 15 ? d.client_name.substring(0, 15) + '...' : d.client_name)),
 		datasets: [
 			{
-				label: "Chiffre d'affaires (MAD)",
+				label: `Chiffre d'affaires (${devise})`,
 				data: data.map((d) => d.revenue),
 				backgroundColor: CHART_COLORS.primary,
 			},
@@ -458,7 +462,7 @@ const QuoteConversionChart: React.FC<ChartProps> = ({ dateParams, company_id }) 
 	return <Doughnut data={chartData} options={commonChartOptions} />;
 };
 
-const ProductPriceVolumeChart: React.FC<ChartProps> = ({ dateParams, company_id }) => {
+const ProductPriceVolumeChart: React.FC<ChartProps> = ({ dateParams, company_id, devise }) => {
 	const { data, isLoading, error } = useGetProductPriceVolumeAnalysisQuery({ ...dateParams, company_id });
 
 	if (isLoading) return <LoadingChart />;
@@ -477,7 +481,7 @@ const ProductPriceVolumeChart: React.FC<ChartProps> = ({ dateParams, company_id 
 				yAxisID: 'y',
 			},
 			{
-				label: 'Prix moyen (MAD)',
+				label: `Prix moyen (${devise})`,
 				data: topProducts.map((d) => d.average_price),
 				backgroundColor: CHART_COLORS.secondary,
 				yAxisID: 'y1',
@@ -496,7 +500,7 @@ const ProductPriceVolumeChart: React.FC<ChartProps> = ({ dateParams, company_id 
 					y1: {
 						type: 'linear',
 						position: 'right',
-						title: { display: true, text: 'Prix (MAD)' },
+						title: { display: true, text: `Prix (${devise})` },
 						grid: { drawOnChartArea: false },
 					},
 				},
@@ -563,7 +567,7 @@ const DocumentVolumeChart: React.FC<ChartProps> = ({ dateParams, company_id }) =
 };
 
 // Cash Flow Charts
-const PaymentTimelineChart: React.FC<ChartProps> = ({ dateParams, company_id }) => {
+const PaymentTimelineChart: React.FC<ChartProps> = ({ dateParams, company_id, devise }) => {
 	const { data, isLoading, error } = useGetPaymentTimelineQuery({ ...dateParams, company_id });
 
 	if (isLoading) return <LoadingChart />;
@@ -573,14 +577,14 @@ const PaymentTimelineChart: React.FC<ChartProps> = ({ dateParams, company_id }) 
 		labels: data.map((d) => d.date),
 		datasets: [
 			{
-				label: 'Facturé (MAD)',
+				label: `Facturé (${devise})`,
 				data: data.map((d) => d.invoiced),
 				borderColor: CHART_COLORS.primary,
 				backgroundColor: CHART_COLORS.primaryLight,
 				tension: 0.4,
 			},
 			{
-				label: 'Encaissé (MAD)',
+				label: `Encaissé (${devise})`,
 				data: data.map((d) => d.collected),
 				borderColor: CHART_COLORS.success,
 				backgroundColor: CHART_COLORS.successLight,
@@ -592,7 +596,7 @@ const PaymentTimelineChart: React.FC<ChartProps> = ({ dateParams, company_id }) 
 	return <Line data={chartData} options={commonChartOptions} />;
 };
 
-const OverdueReceivablesChart: React.FC<ChartProps> = ({ dateParams, company_id }) => {
+const OverdueReceivablesChart: React.FC<ChartProps> = ({ dateParams, company_id, devise }) => {
 	const { data, isLoading, error } = useGetOverdueReceivablesQuery({ ...dateParams, company_id });
 
 	if (isLoading) return <LoadingChart />;
@@ -612,7 +616,7 @@ const OverdueReceivablesChart: React.FC<ChartProps> = ({ dateParams, company_id 
 				yAxisID: 'y',
 			},
 			{
-				label: 'Montant (MAD)',
+				label: `Montant (${devise})`,
 				data: data.map((d) => d.amount),
 				backgroundColor: CHART_COLORS.error,
 				yAxisID: 'y1',
@@ -733,35 +737,42 @@ const ClientProfileMetricsChart: React.FC<ChartProps> = ({ dateParams, company_i
 };
 
 // KPI Cards
-const KPICardsSection: React.FC<ChartProps> = ({ dateParams, company_id }) => {
+const KPICardsSection: React.FC<ChartProps> = ({ dateParams, company_id, devise = 'MAD' }) => {
 	const { data, isLoading, error } = useGetKPICardsWithTrendsQuery({ ...dateParams, company_id });
 
 	if (isLoading) return <LoadingChart />;
 	if (error || !data) return <EmptyChart message="Aucune donnée KPI disponible" />;
 
+	// Get the appropriate currency data
+	const currencyData = (devise === 'EUR' 
+		? data.currency_data?.EUR 
+		: devise === 'USD' 
+		? data.currency_data?.USD 
+		: data.currency_data?.MAD) || data;
+
 	const cards = [
 		{
 			title: 'CA Mois en Cours',
-			value: `${data.current_month_revenue.value.toLocaleString()} MAD`,
-			trend: data.current_month_revenue.trend,
+			value: `${currencyData.current_month_revenue.value.toLocaleString()} ${devise}`,
+			trend: currencyData.current_month_revenue.trend,
 			tooltip: "Chiffre d'affaires total du mois en cours avec évolution sur les 5 dernières périodes",
 		},
 		{
 			title: 'Créances en Cours',
-			value: `${data.outstanding_receivables.value.toLocaleString()} MAD`,
-			trend: data.outstanding_receivables.trend,
+			value: `${currencyData.outstanding_receivables.value.toLocaleString()} ${devise}`,
+			trend: currencyData.outstanding_receivables.trend,
 			tooltip: 'Montant total des factures émises non encore encaissées',
 		},
 		{
 			title: 'Montant Moyen Facture',
-			value: `${data.average_invoice_amount.value.toLocaleString()} MAD`,
-			trend: data.average_invoice_amount.trend,
+			value: `${currencyData.average_invoice_amount.value.toLocaleString()} ${devise}`,
+			trend: currencyData.average_invoice_amount.trend,
 			tooltip: 'Montant moyen des factures émises sur la période',
 		},
 		{
 			title: 'Clients Actifs',
-			value: data.active_clients.value.toString(),
-			trend: data.active_clients.trend,
+			value: currencyData.active_clients.value.toString(),
+			trend: currencyData.active_clients.trend,
 			tooltip: 'Nombre de clients ayant au moins une transaction sur la période',
 		},
 	];
@@ -804,7 +815,7 @@ const KPICardsSection: React.FC<ChartProps> = ({ dateParams, company_id }) => {
 							<Box height={60}>
 								<Line
 									data={{
-										labels: card.trend.map((_, i) => i.toString()),
+										labels: card.trend.map((_: number, i: number) => i.toString()),
 										datasets: [
 											{
 												data: card.trend,
@@ -832,7 +843,7 @@ const KPICardsSection: React.FC<ChartProps> = ({ dateParams, company_id }) => {
 	);
 };
 
-const MonthlyObjectivesSection: React.FC<ChartProps> = ({ dateParams, company_id }) => {
+const MonthlyObjectivesSection: React.FC<ChartProps> = ({ dateParams, company_id, devise = 'MAD' }) => {
 	const { data, isLoading, error } = useGetMonthlyObjectivesQuery({ ...dateParams, company_id });
 	const { is_staff } = useAppSelector(getProfilState);
 
@@ -857,11 +868,18 @@ const MonthlyObjectivesSection: React.FC<ChartProps> = ({ dateParams, company_id
 		);
 	}
 
+	// Get the appropriate revenue data based on devise
+	const revenueData: ObjectiveData = (devise === 'EUR' 
+		? data.revenue_eur 
+		: devise === 'USD' 
+		? data.revenue_usd 
+		: data.revenue) ?? data.revenue;
+
 	const objectives = [
 		{
-			title: 'Objectif CA',
-			data: data.revenue,
-			unit: 'MAD',
+			title: `Objectif CA (${devise})`,
+			data: revenueData,
+			unit: devise,
 			tooltip: "Progression vers l'objectif de chiffre d'affaires mensuel",
 		},
 		{
@@ -943,7 +961,7 @@ const MonthlyObjectivesSection: React.FC<ChartProps> = ({ dateParams, company_id
 };
 
 // Discount & Margin Analysis Charts
-const DiscountImpactChart: React.FC<ChartProps> = ({ dateParams, company_id }) => {
+const DiscountImpactChart: React.FC<ChartProps> = ({ dateParams, company_id, devise }) => {
 	const { data, isLoading, error } = useGetDiscountImpactAnalysisQuery({ ...dateParams, company_id });
 
 	if (isLoading) return <LoadingChart />;
@@ -962,13 +980,13 @@ const DiscountImpactChart: React.FC<ChartProps> = ({ dateParams, company_id }) =
 		labels: dataWithPercentage.map((_, i) => `Doc ${i + 1}`),
 		datasets: [
 			{
-				label: 'Montant TTC (MAD)',
+				label: `Montant TTC (${devise})`,
 				data: dataWithPercentage.map((d) => d.total_amount),
 				backgroundColor: CHART_COLORS.primary,
 				yAxisID: 'y',
 			},
 			{
-				label: 'Remise (MAD)',
+				label: `Remise (${devise})`,
 				data: dataWithPercentage.map((d) => d.discount_amount),
 				backgroundColor: CHART_COLORS.warning,
 				yAxisID: 'y',
@@ -983,14 +1001,14 @@ const DiscountImpactChart: React.FC<ChartProps> = ({ dateParams, company_id }) =
 				responsive: true,
 				maintainAspectRatio: false,
 				scales: {
-					y: { title: { display: true, text: 'Montant (MAD)' } },
+					y: { title: { display: true, text: `Montant (${devise})` } },
 				},
 			}}
 		/>
 	);
 };
 
-const ProductMarginChart: React.FC<ChartProps> = ({ dateParams, company_id }) => {
+const ProductMarginChart: React.FC<ChartProps> = ({ dateParams, company_id, devise }) => {
 	const { data, isLoading, error } = useGetProductMarginVolumeQuery({ ...dateParams, company_id });
 
 	if (isLoading) return <LoadingChart />;
@@ -1003,7 +1021,7 @@ const ProductMarginChart: React.FC<ChartProps> = ({ dateParams, company_id }) =>
 		labels: topMargins.map((d) => d.designation || 'Sans nom'),
 		datasets: [
 			{
-				label: 'Marge moyenne (MAD)',
+				label: `Marge moyenne (${devise})`,
 				data: topMargins.map((d) => d.average_margin),
 				backgroundColor: CHART_COLORS.success,
 				yAxisID: 'y',
@@ -1024,7 +1042,7 @@ const ProductMarginChart: React.FC<ChartProps> = ({ dateParams, company_id }) =>
 				responsive: true,
 				maintainAspectRatio: false,
 				scales: {
-					y: { type: 'linear', position: 'left', title: { display: true, text: 'Marge (MAD)' } },
+					y: { type: 'linear', position: 'left', title: { display: true, text: `Marge (${devise})` } },
 					y1: {
 						type: 'linear',
 						position: 'right',
@@ -1161,14 +1179,19 @@ interface DashboardContentProps {
 const DashboardContent: React.FC<DashboardContentProps> = ({ company_id }) => {
 	const [dateFrom, setDateFrom] = useState<Date | null>(subMonths(new Date(), 12));
 	const [dateTo, setDateTo] = useState<Date | null>(new Date());
+	const [selectedDevise, setSelectedDevise] = useState<'MAD' | 'EUR' | 'USD'>('MAD');
+
+	const { data: companyData } = useGetCompanyQuery({ id: company_id });
+	const usesForeignCurrency = companyData?.uses_foreign_currency || false;
 
 	const dateParams = useMemo<DateFilterParams>(
 		() => ({
 			date_from: dateFrom ? format(dateFrom, 'yyyy-MM-dd') : undefined,
 			date_to: dateTo ? format(dateTo, 'yyyy-MM-dd') : undefined,
 			company_id,
+			devise: selectedDevise,
 		}),
-		[dateFrom, dateTo, company_id],
+		[dateFrom, dateTo, company_id, selectedDevise],
 	);
 
 	const handleReset = () => {
@@ -1178,14 +1201,12 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ company_id }) => {
 
 	return (
 		<Box sx={{ p: { xs: 1.5, sm: 2, md: 3 }, overflowX: 'hidden', maxWidth: '100%' }}>
-			<Typography
-				variant="h4"
-				gutterBottom
-				sx={{ mb: { xs: 2, sm: 3, md: 4 }, fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' } }}
-			>
-				Tableau de Bord
-			</Typography>
-
+			{/* Currency Toggle */}
+			<CurrencyToggle
+				selectedDevise={selectedDevise}
+				onDeviseChange={setSelectedDevise}
+				usesForeignCurrency={usesForeignCurrency}
+			/>
 			{/* Date Filter */}
 			<DateFilter
 				dateFrom={dateFrom}
@@ -1194,19 +1215,16 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ company_id }) => {
 				onDateToChange={setDateTo}
 				onReset={handleReset}
 			/>
-
 			{/* KPI Cards */}
 			<Box sx={{ mb: { xs: 3, md: 4 } }}>
 				<SectionTitle>Indicateurs Clés</SectionTitle>
-				<KPICardsSection dateParams={dateParams} company_id={company_id} />
+				<KPICardsSection dateParams={dateParams} company_id={company_id} devise={selectedDevise} />
 			</Box>
-
 			{/* Monthly Objectives */}
 			<Box sx={{ mb: { xs: 3, md: 4 } }}>
 				<SectionTitle>Objectifs Mensuels</SectionTitle>
-				<MonthlyObjectivesSection dateParams={dateParams} company_id={company_id} />
+				<MonthlyObjectivesSection dateParams={dateParams} company_id={company_id} devise={selectedDevise} />
 			</Box>
-
 			{/* Financial Overview */}
 			<Box sx={{ mb: { xs: 3, md: 4 } }}>
 				<SectionTitle>Aperçu Financier</SectionTitle>
@@ -1223,7 +1241,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ company_id }) => {
 							description="Période sélectionnée"
 							infoTooltip="Affiche l'évolution du chiffre d'affaires mois par mois. Permet d'identifier les tendances de croissance ou de déclin des revenus sur la période sélectionnée."
 						>
-							<MonthlyRevenueChart dateParams={dateParams} company_id={company_id} />
+							<MonthlyRevenueChart dateParams={dateParams} company_id={company_id} devise={selectedDevise} />
 						</ChartCard>
 					</Box>
 					<Box>
@@ -1232,7 +1250,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ company_id }) => {
 							description="Tous documents"
 							infoTooltip="Montre la distribution du chiffre d'affaires par type de document (factures, proformas, etc.). Utile pour comprendre quels types de documents génèrent le plus de revenus."
 						>
-							<RevenueByTypeChart dateParams={dateParams} company_id={company_id} />
+							<RevenueByTypeChart dateParams={dateParams} company_id={company_id} devise={selectedDevise} />
 						</ChartCard>
 					</Box>
 					<Box>
@@ -1241,7 +1259,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ company_id }) => {
 							description="Statut des factures"
 							infoTooltip="Répartition des factures selon leur statut de paiement (payé, en attente, en retard). Permet de suivre la santé du recouvrement."
 						>
-							<PaymentStatusChart dateParams={dateParams} company_id={company_id} />
+							<PaymentStatusChart dateParams={dateParams} company_id={company_id} devise={selectedDevise} />
 						</ChartCard>
 					</Box>
 					<Box>
@@ -1250,12 +1268,11 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ company_id }) => {
 							description="Encaissements vs factures"
 							infoTooltip="Pourcentage du montant facturé qui a été effectivement encaissé. Un indicateur clé de la performance de recouvrement de l'entreprise."
 						>
-							<CollectionRateGauge dateParams={dateParams} company_id={company_id} />
+							<CollectionRateGauge dateParams={dateParams} company_id={company_id} devise={selectedDevise} />
 						</ChartCard>
 					</Box>
 				</Box>
 			</Box>
-
 			{/* Commercial Performance */}
 			<Box sx={{ mb: { xs: 3, md: 4 } }}>
 				<SectionTitle>Performance Commerciale</SectionTitle>
@@ -1272,7 +1289,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ company_id }) => {
 							description="Par chiffre d'affaires"
 							infoTooltip="Classement des 10 meilleurs clients selon le montant total facturé. Identifie les clients les plus importants pour l'entreprise."
 						>
-							<TopClientsChart dateParams={dateParams} company_id={company_id} />
+							<TopClientsChart dateParams={dateParams} company_id={company_id} devise={selectedDevise} />
 						</ChartCard>
 					</Box>
 					<Box>
@@ -1281,7 +1298,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ company_id }) => {
 							description="Par quantité vendue"
 							infoTooltip="Classement des 10 produits/services les plus vendus en termes de quantité. Aide à identifier les best-sellers."
 						>
-							<TopProductsChart dateParams={dateParams} company_id={company_id} />
+							<TopProductsChart dateParams={dateParams} company_id={company_id} devise={selectedDevise} />
 						</ChartCard>
 					</Box>
 					<Box>
@@ -1290,7 +1307,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ company_id }) => {
 							description="Répartition par statut"
 							infoTooltip="Répartition des devis selon leur statut (accepté, refusé, en attente). Mesure l'efficacité commerciale de conversion des propositions."
 						>
-							<QuoteConversionChart dateParams={dateParams} company_id={company_id} />
+							<QuoteConversionChart dateParams={dateParams} company_id={company_id} devise={selectedDevise} />
 						</ChartCard>
 					</Box>
 					<Box>
@@ -1299,12 +1316,11 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ company_id }) => {
 							description="Produits"
 							infoTooltip="Relation entre le prix unitaire et le volume de vente des produits. Permet d'identifier les opportunités de tarification."
 						>
-							<ProductPriceVolumeChart dateParams={dateParams} company_id={company_id} />
+							<ProductPriceVolumeChart dateParams={dateParams} company_id={company_id} devise={selectedDevise} />
 						</ChartCard>
 					</Box>
 				</Box>
 			</Box>
-
 			{/* Operational Indicators */}
 			<Box sx={{ mb: { xs: 3, md: 4 } }}>
 				<SectionTitle>Indicateurs Opérationnels</SectionTitle>
@@ -1321,7 +1337,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ company_id }) => {
 							description="Par statut"
 							infoTooltip="Distribution des factures selon leur état (brouillon, validée, envoyée, etc.). Vue d'ensemble de la gestion des factures."
 						>
-							<InvoiceStatusChart dateParams={dateParams} company_id={company_id} />
+							<InvoiceStatusChart dateParams={dateParams} company_id={company_id} devise={selectedDevise} />
 						</ChartCard>
 					</Box>
 					<Box>
@@ -1330,12 +1346,11 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ company_id }) => {
 							description="Période sélectionnée"
 							infoTooltip="Évolution du nombre de documents créés (devis, factures, bons de livraison) par mois. Indicateur d'activité commerciale."
 						>
-							<DocumentVolumeChart dateParams={dateParams} company_id={company_id} />
+							<DocumentVolumeChart dateParams={dateParams} company_id={company_id} devise={selectedDevise} />
 						</ChartCard>
 					</Box>
 				</Box>
 			</Box>
-
 			{/* Cash Flow Analysis */}
 			<Box sx={{ mb: { xs: 3, md: 4 } }}>
 				<SectionTitle>Analyse de Trésorerie</SectionTitle>
@@ -1352,7 +1367,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ company_id }) => {
 							description="Période sélectionnée"
 							infoTooltip="Comparaison entre les montants facturés et les montants réellement encaissés au fil du temps. Identifie les écarts de trésorerie."
 						>
-							<PaymentTimelineChart dateParams={dateParams} company_id={company_id} />
+							<PaymentTimelineChart dateParams={dateParams} company_id={company_id} devise={selectedDevise} />
 						</ChartCard>
 					</Box>
 					<Box>
@@ -1361,7 +1376,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ company_id }) => {
 							description="Par période d'échéance"
 							infoTooltip="Répartition des créances en retard par tranche de temps (0-30j, 30-60j, 60-90j, >90j). Alerte sur les risques de non-paiement."
 						>
-							<OverdueReceivablesChart dateParams={dateParams} company_id={company_id} />
+							<OverdueReceivablesChart dateParams={dateParams} company_id={company_id} devise={selectedDevise} />
 						</ChartCard>
 					</Box>
 					<Box>
@@ -1370,12 +1385,11 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ company_id }) => {
 							description="Montant vs délai moyen"
 							infoTooltip="Relation entre le montant des factures et le délai de paiement moyen par client. Identifie les clients à risque ou les bons payeurs."
 						>
-							<PaymentDelayChart dateParams={dateParams} company_id={company_id} />
+							<PaymentDelayChart dateParams={dateParams} company_id={company_id} devise={selectedDevise} />
 						</ChartCard>
 					</Box>
 				</Box>
 			</Box>
-
 			{/* Client Analysis */}
 			<Box sx={{ mb: { xs: 3, md: 4 } }}>
 				<SectionTitle>Analyse Clients</SectionTitle>
@@ -1392,12 +1406,11 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ company_id }) => {
 							description="Analyse multi-dimensionnelle"
 							infoTooltip="Profil détaillé du meilleur client : volume d'achat, fréquence des commandes, montant moyen, rapidité de paiement et taux d'acceptation des devis."
 						>
-							<ClientProfileMetricsChart dateParams={dateParams} company_id={company_id} />
+							<ClientProfileMetricsChart dateParams={dateParams} company_id={company_id} devise={selectedDevise} />
 						</ChartCard>
 					</Box>
 				</Box>
 			</Box>
-
 			{/* Discount & Margin Analysis */}
 			<Box sx={{ mb: { xs: 3, md: 4 } }}>
 				<SectionTitle>Analyse Remises et Marges</SectionTitle>
@@ -1414,7 +1427,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ company_id }) => {
 							description="Montant vs remise"
 							infoTooltip="Corrélation entre le montant total des documents et les remises accordées. Aide à optimiser la politique de remises."
 						>
-							<DiscountImpactChart dateParams={dateParams} company_id={company_id} />
+							<DiscountImpactChart dateParams={dateParams} company_id={company_id} devise={selectedDevise} />
 						</ChartCard>
 					</Box>
 					<Box>
@@ -1423,12 +1436,11 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ company_id }) => {
 							description="Analyse produits"
 							infoTooltip="Relation entre la marge unitaire et le volume de vente par produit. Identifie les produits rentables et ceux à fort volume."
 						>
-							<ProductMarginChart dateParams={dateParams} company_id={company_id} />
+							<ProductMarginChart dateParams={dateParams} company_id={company_id} devise={selectedDevise} />
 						</ChartCard>
 					</Box>
 				</Box>
 			</Box>
-
 			{/* Synthetic Dashboard */}
 			<Box sx={{ mb: { xs: 3, md: 4 } }}>
 				<SectionTitle>Performance Globale</SectionTitle>
@@ -1445,7 +1457,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ company_id }) => {
 							description="Mois en cours vs précédent"
 							infoTooltip="Comparaison des indicateurs clés (CA, devis, conversion, encaissements, nouveaux clients) entre le mois en cours et le mois précédent."
 						>
-							<GlobalPerformanceComparisonChart dateParams={dateParams} company_id={company_id} />
+							<GlobalPerformanceComparisonChart dateParams={dateParams} company_id={company_id} devise={selectedDevise} />
 						</ChartCard>
 					</Box>
 					<Box>
@@ -1454,7 +1466,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ company_id }) => {
 							description="Évolution période"
 							infoTooltip="Mini-graphiques montrant l'évolution récente des indicateurs par domaine (financier, commercial, opérationnel, trésorerie). Vue rapide des tendances."
 						>
-							<SectionMicroTrendsChart dateParams={dateParams} company_id={company_id} />
+							<SectionMicroTrendsChart dateParams={dateParams} company_id={company_id} devise={selectedDevise} />
 						</ChartCard>
 					</Box>
 				</Box>

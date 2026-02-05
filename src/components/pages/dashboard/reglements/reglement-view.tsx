@@ -35,7 +35,7 @@ import Styles from '@/styles/dashboard/dashboard.module.sass';
 import { useAppSelector } from '@/utils/hooks';
 import { getUserCompaniesState } from '@/store/selectors';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
-import { formatDate, formatPrice } from '@/utils/helpers';
+import { formatDate, formatPrice, formatNumber } from '@/utils/helpers';
 import { getStatutColor } from '@/components/pages/dashboard/devis/devis-list';
 
 interface InfoRowProps {
@@ -186,7 +186,7 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 														MONTANT FACTURE
 													</Typography>
 													<Typography variant="h6" fontWeight={800} color="text.secondary">
-														{formatPrice(reglement?.montant_facture)}
+														{reglement?.montant_facture ? `${formatNumber(reglement.montant_facture)} ${reglement.devise}` : '-'}
 													</Typography>
 												</Box>
 											</Grid>
@@ -205,7 +205,7 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 														TOTAL RÈGLEMENTS
 													</Typography>
 													<Typography variant="h6" fontWeight={800} color="success.main">
-														{formatPrice(reglement?.total_reglements_facture)}
+												{reglement?.total_reglements_facture ? `${formatNumber(reglement.total_reglements_facture)} ${reglement.devise}` : '-'}
 													</Typography>
 												</Box>
 											</Grid>
@@ -224,7 +224,7 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 														RESTE À PAYER
 													</Typography>
 													<Typography variant="h5" fontWeight={900} color="error.main">
-														{formatPrice(reglement?.reste_a_payer)}
+														{reglement?.reste_a_payer !== undefined ? `${formatNumber(reglement.reste_a_payer)} ${reglement.devise}` : '-'}
 													</Typography>
 												</Box>
 											</Grid>
@@ -243,7 +243,7 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 														CE RÈGLEMENT
 													</Typography>
 													<Typography variant="h5" fontWeight={900} color="primary">
-														{formatPrice(reglement?.montant)}
+													{reglement?.montant ? `${formatNumber(reglement.montant)} ${reglement.devise}` : '-'}
 													</Typography>
 												</Box>
 											</Grid>
@@ -317,7 +317,7 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 										label="Montant"
 										value={
 											<Typography fontWeight={600} color="primary">
-												{formatPrice(reglement?.montant)}
+											{reglement?.montant ? `${formatNumber(reglement.montant)} ${reglement.devise}` : '-'}
 											</Typography>
 										}
 									/>

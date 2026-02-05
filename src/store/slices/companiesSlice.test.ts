@@ -13,8 +13,18 @@ describe('companiesSlice reducer', () => {
 
 	it('should handle setUserCompanies with a non-empty array', () => {
 		const payload: CompaniesUserCompaniesType[] = [
-			{ id: 1, raison_sociale: 'Alpha Corp', role: 'Caissier' },
-			{ id: 2, raison_sociale: 'Beta LLC', role: 'Lecture' },
+			{
+				id: 1,
+				raison_sociale: 'Alpha Corp',
+				role: 'Caissier',
+				uses_foreign_currency: false,
+			},
+			{
+				id: 2,
+				raison_sociale: 'Beta LLC',
+				role: 'Lecture',
+				uses_foreign_currency: false,
+			},
 		];
 
 		const action = setUserCompanies(payload);
@@ -28,17 +38,43 @@ describe('companiesSlice reducer', () => {
 	it('should handle setUserCompanies with an empty array', () => {
 		const payload: CompaniesUserCompaniesType[] = [];
 		const action = setUserCompanies(payload);
-		const result = reducer({ user_companies: [{ id: 99, raison_sociale: 'Old Co', role: 'Lecture' }] }, action);
+		const result = reducer(
+			{
+				user_companies: [
+					{
+						id: 99,
+						raison_sociale: 'Old Co',
+						role: 'Lecture',
+						uses_foreign_currency: false,
+					},
+				],
+			},
+			action,
+		);
 
 		expect(result.user_companies).toEqual([]);
 	});
 
 	it('should replace existing state with new payload', () => {
 		const initial: CompaniesStateInterface = {
-			user_companies: [{ id: 1, raison_sociale: 'Alpha Corp', role: 'Caissier' }],
+			user_companies: [
+				{
+					id: 1,
+					raison_sociale: 'Alpha Corp',
+					role: 'Caissier',
+					uses_foreign_currency: false,
+				},
+			],
 		};
 
-		const payload: CompaniesUserCompaniesType[] = [{ id: 2, raison_sociale: 'Beta LLC', role: 'Lecture' }];
+		const payload: CompaniesUserCompaniesType[] = [
+			{
+				id: 2,
+				raison_sociale: 'Beta LLC',
+				role: 'Lecture',
+				uses_foreign_currency: false,
+			},
+		];
 
 		const action = setUserCompanies(payload);
 		const result = reducer(initial, action);

@@ -387,8 +387,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 				headerName: "Prix d'achat",
 				flex: 1, minWidth: 110,
 				renderCell: (params: GridRenderCellParams) => {
-					const prixAchat = toNumber((params.row as { prix_achat?: unknown }).prix_achat, 0);
-					const value = usesForeignCurrency ? prixAchat + ' ' + ((params.row as { devise_prix_achat?: unknown }).devise_prix_achat || 'MAD') : String(prixAchat);
+					const value = Number(params.row.prix_achat ?? 0) + ' ' + (params.row.devise_prix_achat || 'MAD');
 					return (
 						<DarkTooltip title={value}>
 							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
@@ -405,7 +404,9 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 				headerName: 'Prix de vente',
 				flex: 1, minWidth: 110,
 				renderCell: (params: GridRenderCellParams) => {
-					const value = toNumber((params.row as { prix_vente?: unknown }).prix_vente, 0) + ' MAD';
+					const row = params.row as { prix_vente?: unknown; devise_prix_vente?: string };
+					const devise = row.devise_prix_vente || 'MAD';
+					const value = `${toNumber(row.prix_vente, 0)} ${devise}`;
 					return (
 						<DarkTooltip title={value}>
 							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
@@ -515,6 +516,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 									totalTTC: totals.totalTTC,
 									totalTTCApresRemise: totals.totalTTCApresRemise,
 								}}
+								devise={rawData?.devise ?? undefined}
 								isMobile={isMobile}
 							/>
 

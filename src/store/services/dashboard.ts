@@ -10,6 +10,7 @@ export interface DateFilterParams {
 	date_from?: string;
 	date_to?: string;
 	company_id?: number;
+	devise?: 'MAD' | 'EUR' | 'USD';
 }
 
 // Dashboard data types
@@ -114,6 +115,11 @@ export interface KPICardsData {
 	outstanding_receivables: KPICardData;
 	average_invoice_amount: KPICardData;
 	active_clients: KPICardData;
+	currency_data?: {
+		MAD: KPICardsData;
+		EUR: KPICardsData;
+		USD: KPICardsData;
+	};
 }
 
 export interface ObjectiveData {
@@ -124,6 +130,8 @@ export interface ObjectiveData {
 
 export interface MonthlyObjectivesData {
 	revenue: ObjectiveData;
+	revenue_eur?: ObjectiveData;
+	revenue_usd?: ObjectiveData;
 	invoices: ObjectiveData;
 	conversion: ObjectiveData;
 	objectives_set: boolean;
@@ -133,6 +141,8 @@ export interface MonthlyObjectivesSettings {
 	id: number;
 	company: number;
 	objectif_ca: string;
+	objectif_ca_eur: string | null;
+	objectif_ca_usd: string | null;
 	objectif_factures: number;
 	objectif_conversion: string;
 	date_created: string;
@@ -142,6 +152,8 @@ export interface MonthlyObjectivesSettings {
 export interface MonthlyObjectivesSettingsInput {
 	company: number;
 	objectif_ca: string;
+	objectif_ca_eur?: string | null;
+	objectif_ca_usd?: string | null;
 	objectif_factures: number;
 	objectif_conversion: string;
 }
@@ -187,6 +199,7 @@ const buildDateQueryString = (params?: DateFilterParams): string => {
 	if (params.date_from) searchParams.append('date_from', params.date_from);
 	if (params.date_to) searchParams.append('date_to', params.date_to);
 	if (params.company_id) searchParams.append('company_id', params.company_id.toString());
+	if (params.devise) searchParams.append('devise', params.devise);
 	const queryString = searchParams.toString();
 	return queryString ? `?${queryString}` : '';
 }
