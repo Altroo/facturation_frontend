@@ -240,9 +240,6 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 		return undefined;
 	}, [rawArticlesData]);
 
-	const { data: companyData } = useGetCompanyQuery({ id: company_id }, { skip: !token });
-	const usesForeignCurrency = companyData?.uses_foreign_currency === true;
-
 	const axiosError = useMemo(
 		() => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),
 		[error],
