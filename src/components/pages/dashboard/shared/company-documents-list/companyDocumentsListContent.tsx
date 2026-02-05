@@ -450,7 +450,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 				flex: 1.3,
 				minWidth: 130,
 				renderCell: (params: GridRenderCellParams<TDocument>) => {
-					const devise = (params.row as any).devise || 'MAD';
+					const devise = params.row.devise || 'MAD';
 					const displayValue = `${params.value} ${devise}`;
 					return (
 						<DarkTooltip title={displayValue}>

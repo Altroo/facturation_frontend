@@ -41,15 +41,32 @@ const CompanyDocumentsWrapperList: React.FC<CompanyDocumentsListProps> = ({ sess
 	});
 	
 	const companies = useMemo(() => (companiesData ?? []) as CompanyLike[], [companiesData]);
-	const selectedCompany = useMemo(() => companies?.[selectedIndex] ?? null, [companies, selectedIndex]);
+	
+	// Track previous companies length to detect changes
+	const prevCompaniesLengthRef = React.useRef(companies.length);
+	
+	// Compute valid index - automatically clamps to valid range
+	const validIndex = useMemo(() => {
+		if (companies.length === 0) return 0;
+		if (selectedIndex >= companies.length) return 0;
+		return selectedIndex;
+	}, [companies.length, selectedIndex]);
+	
+	const selectedCompany = useMemo(() => companies?.[validIndex] ?? null, [companies, validIndex]);
 
-	// Validate and adjust selectedIndex if it's out of bounds
+	// Only update when companies change and index becomes invalid
 	useEffect(() => {
-		if (companies.length > 0 && selectedIndex >= companies.length) {
-			setSelectedIndex(0);
-			localStorage.setItem('selectedCompanyIndex', '0');
+		const companiesLengthChanged = prevCompaniesLengthRef.current !== companies.length;
+		prevCompaniesLengthRef.current = companies.length;
+		
+		if (companiesLengthChanged && validIndex !== selectedIndex) {
+			// Use setTimeout to avoid setState during render
+			setTimeout(() => {
+				setSelectedIndex(validIndex);
+				localStorage.setItem('selectedCompanyIndex', String(validIndex));
+			}, 0);
 		}
-	}, [companies, selectedIndex]);
+	}, [companies.length, validIndex, selectedIndex]);
 
 	const handleChange = (_: React.SyntheticEvent, newValue: number) => {
 		setSelectedIndex(newValue);
@@ -135,7 +152,7 @@ const CompanyDocumentsWrapperList: React.FC<CompanyDocumentsListProps> = ({ sess
 							}}
 						>
 							<Tabs
-								value={selectedIndex}
+								value={validIndex}
 								onChange={handleChange}
 								variant="scrollable"
 								allowScrollButtonsMobile

@@ -39,7 +39,7 @@ import { useAppSelector, useToast } from '@/utils/hooks';
 import { getModePaiementState, getUserCompaniesState } from '@/store/selectors';
 import { useAddReglementMutation, useEditReglementMutation, useGetReglementQuery } from '@/store/services/reglement';
 import { useGetFactureClientForPaymentQuery } from '@/store/services/factureClient';
-import { getLabelForKey, setFormikAutoErrors, parseNumber, formatPrice, formatNumber } from '@/utils/helpers';
+import { getLabelForKey, setFormikAutoErrors, parseNumber, formatNumber } from '@/utils/helpers';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import type { ReglementSchemaType } from '@/types/reglementTypes';
 import { reglementSchema } from '@/utils/formValidationSchemas';

@@ -35,7 +35,7 @@ import Styles from '@/styles/dashboard/dashboard.module.sass';
 import { useAppSelector } from '@/utils/hooks';
 import { getUserCompaniesState } from '@/store/selectors';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
-import { formatDate, formatPrice, formatNumber } from '@/utils/helpers';
+import { formatDate, formatNumber } from '@/utils/helpers';
 import { getStatutColor } from '@/components/pages/dashboard/devis/devis-list';
 
 interface InfoRowProps {

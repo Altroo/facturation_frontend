@@ -463,7 +463,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 				},
 			},
 		],
-		[articlesData, usesForeignCurrency],
+		[articlesData],
 	);
 
 	const dateLabel = formatDate(getDocumentDateRaw(rawData) ?? null) || '-';

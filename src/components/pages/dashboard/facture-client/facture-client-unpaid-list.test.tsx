@@ -110,11 +110,6 @@ jest.mock('@/components/pages/dashboard/shared/company-documents-list/companyDoc
 	),
 }));
 
-// Mock helpers
-jest.mock('@/utils/helpers', () => ({
-	formatPrice: (value: number) => `${value.toFixed(2)} €`,
-}));
-
 // Import after mocks
 import FactureClientUnpaidListClient from './facture-client-unpaid-list';
 

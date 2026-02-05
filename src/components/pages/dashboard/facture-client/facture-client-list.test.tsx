@@ -218,7 +218,6 @@ jest.mock('@/components/shared/dropdownFilter/dropdownFilter', () => ({
 
 jest.mock('@/utils/helpers', () => ({
 	formatDate: (date: string | null) => (date ? new Date(date).toLocaleDateString('fr-FR') : '—'),
-	formatPrice: (price: number) => `${price.toFixed(2)} €`,
 }));
 
 // Capture configuration passed to CompanyDocumentsListContent

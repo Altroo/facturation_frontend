@@ -868,7 +868,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			);
 		};
 		return [prix, quantity, remise];
-	}, [getLines, getRowIndexFromParams, validationErrors, handleLineChangeRef, role]);
+	}, [getRowIndexFromParams, getLines, validationErrors, role, formik.values.devise]);
 
 	const linesColumns: GridColDef[] = useMemo(
 		() => [
