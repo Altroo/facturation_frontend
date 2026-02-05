@@ -101,6 +101,8 @@ import type { ValidateArticleLinesErrorType } from '@/types/devisTypes';
 const inputFieldTheme = textInputTheme();
 const gridFieldTheme = gridInputTheme();
 
+let _scrollToLinesOnNextMount = false;
+
 // Generate stable row ID
 export const generateRowId = (
 	articleRef: number | string | Partial<ArticleClass> | undefined,
@@ -289,6 +291,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	const [selectedArticles, setSelectedArticles] = useState<Set<number>>(new Set());
 	const [validationErrors, setValidationErrors] = useState<ValidateArticleLinesErrorType>({});
 	const topRef = useRef<HTMLDivElement | null>(null);
+	const linesGridRef = useRef<HTMLDivElement | null>(null);
 	const prevRawNumDataRef = useRef<DocumentNumResponse | undefined>(rawNumData);
 	// Split numero into parts
 	const initialNum = getNumeroFromData(isEditMode, rawData, rawNumData, config);
@@ -424,6 +427,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 					const response = await addData({ data: submissionData }).unwrap();
 					onSuccess(config.labels.addSuccessMessage);
 					if (response.id) {
+						_scrollToLinesOnNextMount = true;
 						router.replace(config.routes.editRoute(response.id!, company_id));
 					}
 				}
@@ -1224,6 +1228,18 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		isNumLoading;
 	const shouldShowError = (axiosError?.status ?? 0) > 400 && !isLoading;
 
+	// After creation, scroll to the "Lignes" section once data is ready
+	useEffect(() => {
+		if (!isEditMode || isLoading || !linesGridRef.current) return;
+		if (!_scrollToLinesOnNextMount) return;
+		_scrollToLinesOnNextMount = false;
+		// Small delay so the grid has finished painting
+		const id = requestAnimationFrame(() => {
+			linesGridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		});
+		return () => cancelAnimationFrame(id);
+	}, [isEditMode, isLoading]);
+
 	return (
 		<LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
 			<Stack ref={topRef} spacing={3} sx={{ p: { xs: 2, md: 3 } }}>
@@ -1584,13 +1600,15 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 
 							{/* Lines Grid - only in edit mode */}
 							{isEditMode && (
-								<LinesGrid
-									title={config.labels.linesLabel}
-									rows={dataGridRows}
-									columns={linesColumns}
-									onAddClick={() => setShowAddArticleModal(true)}
-									isLoading={isArticlesLoading}
-								/>
+								<Box ref={linesGridRef}>
+									<LinesGrid
+										title={config.labels.linesLabel}
+										rows={dataGridRows}
+										columns={linesColumns}
+										onAddClick={() => setShowAddArticleModal(true)}
+										isLoading={isArticlesLoading}
+									/>
+								</Box>
 							)}
 
 							{/* Global Remise - only in edit mode */}
