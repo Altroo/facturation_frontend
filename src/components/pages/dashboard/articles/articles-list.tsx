@@ -454,7 +454,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				toolbarActions={
 					!archived && (role === 'Caissier' || role === 'Commercial') ? (
 						<>
-							<DarkTooltip title="Envoyer exemple CSV par email">
+							<DarkTooltip title="Envoyer le guide d'importation CSV par email">
 								<IconButton
 									disabled={isSendingEmail}
 									size="small"
