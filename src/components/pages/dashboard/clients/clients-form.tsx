@@ -264,7 +264,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		isAddLoading ||
 		isUpdateLoading ||
 		isPending ||
-		isAddCityLoading ||
 		(isEditMode && isDataLoading) ||
 		(!isEditMode && isCodeLoading);
 	const shouldShowError = (axiosError?.status ?? 0) > 400 && !isLoading;
@@ -726,6 +725,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				icon={<LocationOnIcon fontSize="small" />}
 				inputTheme={inputTheme}
 				mutationFn={addCity}
+				onSuccess={(newId) => {
+					formik.setFieldValue('ville', newId);
+				}}
 			/>
 		</Stack>
 	);

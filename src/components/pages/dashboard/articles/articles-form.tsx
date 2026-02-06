@@ -304,10 +304,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		isAddLoading ||
 		isUpdateLoading ||
 		isPending ||
-		isAddCategoryLoading ||
-		isAddEmplacementLoading ||
-		isAddUniteLoading ||
-		isAddMarqueLoading ||
 		(isEditMode && isDataLoading) ||
 		(!isEditMode && isCodeLoading);
 	const shouldShowError = (axiosError?.status ?? 0) > 400 && !isLoading;
@@ -721,6 +717,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				icon={<BusinessIcon fontSize="small" />}
 				inputTheme={inputTheme}
 				mutationFn={addCategory}
+				onSuccess={(newId) => {
+					formik.setFieldValue('categorie', newId);
+				}}
 			/>
 			<AddEntityModal
 				open={openEmplacementModal}
@@ -729,6 +728,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				icon={<LocationOnIcon fontSize="small" />}
 				inputTheme={inputTheme}
 				mutationFn={addEmplacement}
+				onSuccess={(newId) => {
+					formik.setFieldValue('emplacement', newId);
+				}}
 			/>
 			<AddEntityModal
 				open={openUniteModal}
@@ -737,6 +739,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				icon={<StraightenIcon fontSize="small" />}
 				inputTheme={inputTheme}
 				mutationFn={addUnite}
+				onSuccess={(newId) => {
+					formik.setFieldValue('unite', newId);
+				}}
 			/>
 			<AddEntityModal
 				open={openMarqueModal}
@@ -745,6 +750,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				icon={<StarIcon fontSize="small" />}
 				inputTheme={inputTheme}
 				mutationFn={addMarque}
+				onSuccess={(newId) => {
+					formik.setFieldValue('marque', newId);
+				}}
 			/>
 		</Stack>
 	);

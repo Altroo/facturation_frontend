@@ -1220,7 +1220,6 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	}, [formik.submitCount, hasValidationErrors, onError]);
 
 	const isLoading =
-		isAddModePaiementLoading ||
 		isPatchLoading ||
 		isClientsLoading ||
 		isUpdateLoading ||
@@ -1777,6 +1776,9 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				icon={<PaymentIcon fontSize="small" />}
 				inputTheme={inputFieldTheme}
 				mutationFn={addModePaiement}
+				onSuccess={(newId) => {
+					formik.setFieldValue('mode_paiement', newId);
+				}}
 			/>
 			{config.documentType === 'bon-de-livraison' && (
 				<AddEntityModal
@@ -1786,6 +1788,9 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 					icon={<LocalShippingIcon fontSize="small" />}
 					inputTheme={inputFieldTheme}
 					mutationFn={addLivrePar}
+					onSuccess={(newId) => {
+						formik.setFieldValue('livre_par', newId);
+					}}
 				/>
 			)}
 		</LocalizationProvider>

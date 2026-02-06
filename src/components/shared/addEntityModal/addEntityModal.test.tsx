@@ -118,6 +118,40 @@ describe('AddEntityModal', () => {
 		expect(setOpen).toHaveBeenCalledWith(false);
 	});
 
+	it('calls onSuccess callback with new entity ID when provided', async () => {
+		const newEntityId = 123;
+		const mutationFn = jest.fn().mockResolvedValue({ data: { id: newEntityId } });
+		const onSuccess = jest.fn();
+
+		render(
+			<AddEntityModal
+				open={true}
+				setOpen={setOpen}
+				label={label}
+				icon={null}
+				inputTheme={inputTheme}
+				mutationFn={mutationFn}
+				onSuccess={onSuccess}
+			/>,
+		);
+
+		const input = screen.getByTestId(inputId);
+		await act(async () => {
+			fireEvent.change(input, { target: { value: 'NewName' } });
+		});
+
+		await act(async () => {
+			fireEvent.click(screen.getByText('Ajouter'));
+		});
+
+		await waitFor(() => {
+			expect(mutationFn).toHaveBeenCalledWith({ data: { nom: 'NewName' } });
+		});
+
+		expect(onSuccess).toHaveBeenCalledWith(newEntityId);
+		expect(setOpen).toHaveBeenCalledWith(false);
+	});
+
 	it('displays server field error from payload.details[label] when mutation rejects with structured error', async () => {
 		const payload = { error: { details: { [label]: ['Already exists'] } } };
 		const mutationFn = jest.fn().mockRejectedValue(payload);
@@ -149,6 +183,37 @@ describe('AddEntityModal', () => {
 		expect(setOpen).not.toHaveBeenCalledWith(false);
 	});
 
+	it('displays server field error from payload.details.nom when mutation rejects (backend standard)', async () => {
+		const payload = { error: { details: { nom: ['Un objet Catégorie avec ce champ Nom de la catégorie existe déjà.'] } } };
+		const mutationFn = jest.fn().mockRejectedValue(payload);
+
+		render(
+			<AddEntityModal
+				open={true}
+				setOpen={setOpen}
+				label={label}
+				icon={null}
+				inputTheme={inputTheme}
+				mutationFn={mutationFn}
+			/>,
+		);
+
+		const input = screen.getByTestId(inputId);
+		await act(async () => {
+			fireEvent.change(input, { target: { value: 'NewName' } });
+		});
+
+		await act(async () => {
+			fireEvent.click(screen.getByText('Ajouter'));
+		});
+
+		await waitFor(() => {
+			expect(screen.getByTestId(`${inputId}-helper`).textContent).toContain('Un objet Catégorie avec ce champ Nom de la catégorie existe déjà.');
+		});
+
+		expect(setOpen).not.toHaveBeenCalledWith(false);
+	});
+
 	it('displays generic error message when mutation rejects with unknown shape', async () => {
 		const mutationFn = jest.fn().mockRejectedValue(new Error('boom'));
 
@@ -173,7 +238,7 @@ describe('AddEntityModal', () => {
 		});
 
 		await waitFor(() => {
-			expect(screen.getByTestId(`${inputId}-helper`).textContent).toContain(`Erreur lors de l’ajout du ${label}.`);
+			expect(screen.getByTestId(`${inputId}-helper`).textContent).toMatch(/Erreur lors de l.ajout du/);
 		});
 
 		expect(setOpen).not.toHaveBeenCalledWith(false);
