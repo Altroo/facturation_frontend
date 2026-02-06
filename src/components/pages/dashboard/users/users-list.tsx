@@ -27,6 +27,7 @@ import { formatDate } from '@/utils/helpers';
 import { Protected } from '@/components/layouts/protected/protected';
 import { useToast } from '@/utils/hooks';
 import Image from 'next/image';
+import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
 import {
 	createBooleanFilterOperators,
 	createDropdownFilterOperators,
@@ -309,27 +310,30 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 			minWidth: 150,
 			sortable: false,
 			filterable: false,
-			renderCell: (params) => (
-				<Box sx={{ display: 'flex', gap: 1 }}>
-					<DarkTooltip title="Voir">
-						<IconButton size="small" color="info" onClick={() => router.push(USERS_VIEW(params.row.id))}>
-							<VisibilityIcon />
-						</IconButton>
-					</DarkTooltip>
+			renderCell: (params) => {
+				const actions = [
+					{
+						label: 'Voir',
+						icon: <VisibilityIcon />,
+						onClick: () => router.push(USERS_VIEW(params.row.id)),
+						color: 'info' as const,
+					},
+					{
+						label: 'Modifier',
+						icon: <EditIcon />,
+						onClick: () => router.push(USERS_EDIT(params.row.id)),
+						color: 'primary' as const,
+					},
+					{
+						label: 'Supprimer',
+						icon: <DeleteIcon />,
+						onClick: () => showDeleteModalCall(params.row.id),
+						color: 'error' as const,
+					},
+				];
 
-					<DarkTooltip title="Modifier">
-						<IconButton size="small" color="primary" onClick={() => router.push(USERS_EDIT(params.row.id))}>
-							<EditIcon />
-						</IconButton>
-					</DarkTooltip>
-
-					<DarkTooltip title="Supprimer">
-						<IconButton size="small" color="error" onClick={() => showDeleteModalCall(params.row.id)}>
-							<DeleteIcon />
-						</IconButton>
-					</DarkTooltip>
-				</Box>
-			),
+				return <MobileActionsMenu actions={actions} />;
+			},
 		},
 	];
 

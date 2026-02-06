@@ -27,6 +27,7 @@ import { useToast } from '@/utils/hooks';
 import Image from 'next/image';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
+import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
 
 export const nbrEmployeFilterOptions = [
 	{ value: '1 à 5', label: '1 à 5', color: 'default' as const },
@@ -263,27 +264,30 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 			minWidth: 130,
 			sortable: false,
 			filterable: false,
-			renderCell: (params: GridRenderCellParams<CompanyClass>) => (
-				<Box sx={{ display: 'flex', gap: 1 }}>
-					<DarkTooltip title="Voir">
-						<IconButton size="small" color="info" onClick={() => router.push(COMPANIES_VIEW(params.row.id))}>
-							<VisibilityIcon />
-						</IconButton>
-					</DarkTooltip>
+			renderCell: (params: GridRenderCellParams<CompanyClass>) => {
+				const actions = [
+					{
+						label: 'Voir',
+						icon: <VisibilityIcon />,
+						onClick: () => router.push(COMPANIES_VIEW(params.row.id)),
+						color: 'info' as const,
+					},
+					{
+						label: 'Modifier',
+						icon: <EditIcon />,
+						onClick: () => router.push(COMPANIES_EDIT(params.row.id)),
+						color: 'primary' as const,
+					},
+					{
+						label: 'Suspendre',
+						icon: <PauseIcon />,
+						onClick: () => showDeleteModalCall(params.row.id),
+						color: 'error' as const,
+					},
+				];
 
-					<DarkTooltip title="Modifier">
-						<IconButton size="small" color="primary" onClick={() => router.push(COMPANIES_EDIT(params.row.id))}>
-							<EditIcon />
-						</IconButton>
-					</DarkTooltip>
-
-					<DarkTooltip title="Suspendre">
-						<IconButton size="small" color="error" onClick={() => showDeleteModalCall(params.row.id)}>
-							<PauseIcon />
-						</IconButton>
-					</DarkTooltip>
-				</Box>
-			),
+				return <MobileActionsMenu actions={actions} />;
+			},
 		},
 	];
 

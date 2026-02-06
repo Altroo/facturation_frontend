@@ -26,6 +26,7 @@ import { useToast } from '@/utils/hooks';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
+import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
 
 interface FormikContentProps extends SessionProps {
 	company_id: number;
@@ -288,44 +289,45 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			minWidth: 150,
 			sortable: false,
 			filterable: false,
-			renderCell: (params: GridRenderCellParams<ClientClass>) => (
-				<Box sx={{ display: 'flex', gap: 1 }}>
-					{(role === 'Caissier' || role === 'Lecture' || role === 'Comptable' || role === 'Commercial') && (
-						<DarkTooltip title="Voir">
-							<IconButton
-								size="small"
-								color="info"
-								onClick={() => router.push(CLIENTS_VIEW(params.row.id, company_id))}
-							>
-								<VisibilityIcon />
-							</IconButton>
-						</DarkTooltip>
-					)}
-					{(role === 'Caissier' || role === 'Commercial') && (
-						<>
-							<DarkTooltip title="Modifier">
-								<IconButton
-									size="small"
-									color="primary"
-									onClick={() => router.push(CLIENTS_EDIT(params.row.id, company_id))}
-								>
-									<EditIcon />
-								</IconButton>
-							</DarkTooltip>
-							<DarkTooltip title="Supprimer">
-								<IconButton size="small" color="error" onClick={() => showDeleteModalCall(params.row.id)}>
-									<DeleteIcon />
-								</IconButton>
-							</DarkTooltip>
-							<DarkTooltip title={archived ? 'Désarchiver' : 'Archiver'}>
-								<IconButton size="small" color="warning" onClick={() => showArchiveModalCall(params.row.id)}>
-									{archived ? <UnarchiveIcon /> : <ArchiveIcon />}
-								</IconButton>
-							</DarkTooltip>
-						</>
-					)}
-				</Box>
-			),
+			renderCell: (params: GridRenderCellParams<ClientClass>) => {
+				const actions = [];
+
+				// View action - available for all roles
+				if (role === 'Caissier' || role === 'Lecture' || role === 'Comptable' || role === 'Commercial') {
+					actions.push({
+						label: 'Voir',
+						icon: <VisibilityIcon />,
+						onClick: () => router.push(CLIENTS_VIEW(params.row.id, company_id)),
+						color: 'info' as const,
+					});
+				}
+
+				// Edit, Delete, Archive actions - only for Caissier and Commercial
+				if (role === 'Caissier' || role === 'Commercial') {
+					actions.push(
+						{
+							label: 'Modifier',
+							icon: <EditIcon />,
+							onClick: () => router.push(CLIENTS_EDIT(params.row.id, company_id)),
+							color: 'primary' as const,
+						},
+						{
+							label: 'Supprimer',
+							icon: <DeleteIcon />,
+							onClick: () => showDeleteModalCall(params.row.id),
+							color: 'error' as const,
+						},
+						{
+							label: archived ? 'Désarchiver' : 'Archiver',
+							icon: archived ? <UnarchiveIcon /> : <ArchiveIcon />,
+							onClick: () => showArchiveModalCall(params.row.id),
+							color: 'warning' as const,
+						},
+					);
+				}
+
+				return <MobileActionsMenu actions={actions} />;
+			},
 		},
 	];
 

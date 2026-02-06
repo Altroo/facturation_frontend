@@ -39,6 +39,7 @@ import { createNumericFilterOperators } from '@/components/shared/numericFilter/
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
 import { useGetCompanyQuery } from '@/store/services/company';
+import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
 
 interface FormikContentProps extends SessionProps {
 	company_id: number;
@@ -355,55 +356,57 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			filterable: false,
 			renderCell: (params: GridRenderCellParams<ReglementClass>) => {
 				const isValid = params.row.statut === 'Valide';
-				return (
-					<Box sx={{ display: 'flex', gap: 1 }}>
-						{(role === 'Caissier' || role === 'Comptable' || role === 'Commercial' || role === 'Lecture') && (
-							<>
-								<DarkTooltip title="Voir">
-									<IconButton
-										size="small"
-										color="info"
-										onClick={() => router.push(REGLEMENTS_VIEW(params.row.id, company_id))}
-									>
-										<VisibilityIcon />
-									</IconButton>
-								</DarkTooltip>
-							</>
-						)}
-						{(role === 'Caissier' || role === 'Comptable' || role === 'Commercial') && (
-							<DarkTooltip title="Afficher le reçu de règlement">
-								<IconButton size="small" color="success" onClick={() => handlePrint(params.row.id)}>
-									<PrintIcon />
-								</IconButton>
-							</DarkTooltip>
-						)}
-						{role === 'Caissier' && isValid && (
-							<>
-								<DarkTooltip title="Modifier">
-									<IconButton
-										size="small"
-										color="primary"
-										onClick={() => router.push(REGLEMENTS_EDIT(params.row.id, company_id))}
-									>
-										<EditIcon />
-									</IconButton>
-								</DarkTooltip>
-								<DarkTooltip title="Annuler">
-									<IconButton size="small" color="error" onClick={() => showCancelModalCall(params.row.id)}>
-										<CancelIcon />
-									</IconButton>
-								</DarkTooltip>
-							</>
-						)}
-						{role === 'Caissier' && (
-							<DarkTooltip title="Supprimer">
-								<IconButton size="small" color="error" onClick={() => showDeleteModalCall(params.row.id)}>
-									<DeleteIcon />
-								</IconButton>
-							</DarkTooltip>
-						)}
-					</Box>
-				);
+				const actions = [];
+
+				// View action - available for all roles
+				if (role === 'Caissier' || role === 'Comptable' || role === 'Commercial' || role === 'Lecture') {
+					actions.push({
+						label: 'Voir',
+						icon: <VisibilityIcon />,
+						onClick: () => router.push(REGLEMENTS_VIEW(params.row.id, company_id)),
+						color: 'info' as const,
+					});
+				}
+
+				// Print action - available for Caissier, Comptable, Commercial
+				if (role === 'Caissier' || role === 'Comptable' || role === 'Commercial') {
+					actions.push({
+						label: 'Afficher le reçu de règlement',
+						icon: <PrintIcon />,
+						onClick: () => handlePrint(params.row.id),
+						color: 'success' as const,
+					});
+				}
+
+				// Edit and Cancel actions - only for Caissier and if status is Valid
+				if (role === 'Caissier' && isValid) {
+					actions.push(
+						{
+							label: 'Modifier',
+							icon: <EditIcon />,
+							onClick: () => router.push(REGLEMENTS_EDIT(params.row.id, company_id)),
+							color: 'primary' as const,
+						},
+						{
+							label: 'Annuler',
+							icon: <CancelIcon />,
+							onClick: () => showCancelModalCall(params.row.id),
+							color: 'error' as const,
+						},
+					);
+				}
+
+				// Delete action - only for Caissier
+				if (role === 'Caissier') {
+					actions.push({
+						label: 'Supprimer',
+						icon: <DeleteIcon />,
+						onClick: () => showDeleteModalCall(params.row.id),
+						color: 'error' as const,
+					});
+				}
+
+				return <MobileActionsMenu actions={actions} />;
 			},
 		},
 	];

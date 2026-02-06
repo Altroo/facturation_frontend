@@ -38,6 +38,7 @@ import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilt
 import { createNumericFilterOperators } from '@/components/shared/numericFilter/numericFilterOperator';
 import { CLIENTS_VIEW } from '@/utils/routes';
 import { getAccessTokenFromSession } from '@/store/session';
+import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
 import type {
 	DocumentListClass,
 	DocumentListConfig,
@@ -501,28 +502,71 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 				minWidth: 200,
 				sortable: false,
 				filterable: false,
-				renderCell: (params: GridRenderCellParams<TDocument>) => (
-					<Box sx={{ display: 'flex', gap: 1 }}>
-					{(role === 'Caissier' ||
-						role === 'Comptable' ||
-						role === 'Commercial' ||
-						role === 'Lecture') && (
-						<DarkTooltip title="Voir">
-							<IconButton
-								size="small"
-								color="info"
-								onClick={() => router.push(config.routes.viewRoute((params.row as DocumentListClass).id, companyId))}
-							>
-								<VisibilityIcon />
-							</IconButton>
-						</DarkTooltip>
-					)}
-					{(role === 'Caissier' || role === 'Commercial') && <>{renderMutationActions(params)}</>}
-					{(role === 'Caissier' || role === 'Comptable' || role === 'Commercial') && <>{renderPrintAction(params)}</>}
-			</Box>
-		),
-	},
-];
+				renderCell: (params: GridRenderCellParams<TDocument>) => {
+					const actions = [];
+
+					// View action - available for all roles
+					if (role === 'Caissier' || role === 'Comptable' || role === 'Commercial' || role === 'Lecture') {
+						actions.push({
+							label: 'Voir',
+							icon: <VisibilityIcon />,
+							onClick: () => router.push(config.routes.viewRoute((params.row as DocumentListClass).id, companyId)),
+							color: 'info' as const,
+						});
+					}
+
+					// Edit, Delete, Convert actions - only for Caissier and Commercial
+					if (role === 'Caissier' || role === 'Commercial') {
+						actions.push(
+							{
+								label: 'Modifier',
+								icon: <EditIcon />,
+								onClick: () => router.push(config.routes.editRoute((params.row as DocumentListClass).id, companyId)),
+								color: 'primary' as const,
+							},
+							{
+								label: 'Supprimer',
+								icon: <DeleteIcon />,
+								onClick: () => showDeleteModalCall((params.row as DocumentListClass).id),
+								color: 'error' as const,
+							},
+						);
+
+						// Convert action if available
+						if (config.convertActions && config.convertActions.length > 0) {
+							const isCurrentItemLoading = isAnyConvertLoading && selectedId === (params.row as DocumentListClass).id;
+							actions.push({
+								label: 'Convertir',
+								icon: isCurrentItemLoading ? <CircularProgress size={20} /> : <SwapHorizIcon />,
+							onClick: (e?: React.MouseEvent<HTMLElement>) => {
+								if (!isCurrentItemLoading && e) {
+									showConvertModalCall(e as React.MouseEvent<HTMLButtonElement>, (params.row as DocumentListClass).id);
+									}
+								},
+								color: 'success' as const,
+								show: !isCurrentItemLoading,
+							});
+						}
+					}
+
+					// Print action - available for Caissier, Comptable, Commercial
+					if ((role === 'Caissier' || role === 'Comptable' || role === 'Commercial') && config.printActions && config.printActions.length > 0) {
+						actions.push({
+							label: 'Afficher',
+							icon: <PrintIcon />,
+						onClick: (e?: React.MouseEvent<HTMLElement>) => {
+							if (e) {
+								showPrintMenuCall(e as React.MouseEvent<HTMLButtonElement>, (params.row as DocumentListClass).id);
+							}
+						},
+						color: 'info' as const,
+					});
+				}
+
+				return <MobileActionsMenu actions={actions} />;
+			},
+		},
+	];
 
 return baseColumns;
 }, [
@@ -530,15 +574,16 @@ config.columns.numeroField,
 config.columns.numeroHeaderName,
 config.columns.extraField,
 config.columns.extraFieldHeaderName,
-config.columns.dateField,
-config.columns.dateHeaderName,
-config.routes,
+config.printActions,
 clientFilterOptions,
 router,
 companyId,
 role,
-renderMutationActions,
-renderPrintAction,
+showDeleteModalCall,
+showConvertModalCall,
+showPrintMenuCall,
+isAnyConvertLoading,
+selectedId,
 ]);
 
 const modalsConfig = useMemo(
