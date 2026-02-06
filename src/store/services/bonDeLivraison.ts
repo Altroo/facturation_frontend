@@ -80,10 +80,11 @@ export const bonDeLivraisonApi = createApi({
 			}),
 			providesTags: ['BonDeLivraison'],
 		}),
-		getNumBonDeLivraison: builder.query<Pick<BonDeLivraisonClass, 'numero_bon_livraison'>, void>({
-			query: () => ({
+		getNumBonDeLivraison: builder.query<Pick<BonDeLivraisonClass, 'numero_bon_livraison'>, { company_id: number }>({
+			query: ({ company_id }) => ({
 				url: process.env.NEXT_PUBLIC_BON_DE_LIVRAISON_GENERATE_NUM_BON_DE_LIVRAISON,
 				method: 'GET',
+				params: { company_id },
 			}),
 			providesTags: ['BonDeLivraison'],
 		}),

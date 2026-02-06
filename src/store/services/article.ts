@@ -55,10 +55,11 @@ export const articleApi = createApi({
 			}),
 			providesTags: ['Article'],
 		}),
-		getCodeReference: builder.query<Pick<ArticleClass, 'reference'>, void>({
-			query: () => ({
+		getCodeReference: builder.query<Pick<ArticleClass, 'reference'>, { company_id: number }>({
+			query: ({ company_id }) => ({
 				url: process.env.NEXT_PUBLIC_ARTICLE_GENERATE_CODE_REFERENCE,
 				method: 'GET',
+				params: { company_id },
 			}),
 			providesTags: ['Article'],
 		}),

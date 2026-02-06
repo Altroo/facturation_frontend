@@ -11,7 +11,7 @@ beforeAll(() => {
 
 // Mock axiosBaseQuery to always succeed
 jest.mock('@/utils/axiosBaseQuery', () => ({
-	axiosBaseQuery: () => async () => ({ data: { ok: true } }),
+	axiosBaseQuery: () => async (args: unknown, api: unknown) => ({ data: { ok: true } }),
 }));
 
 describe('deviApi endpoints', () => {
@@ -38,7 +38,7 @@ describe('deviApi endpoints', () => {
 	});
 
 	it('getNumDevis query should return mocked data', async () => {
-		const result = await storeRef.store.dispatch(deviApi.endpoints.getNumDevis.initiate());
+		const result = await storeRef.store.dispatch(deviApi.endpoints.getNumDevis.initiate({ company_id: 1 }));
 		expect(result.error).toBeUndefined();
 		expect(result.data).toEqual({ ok: true });
 	});

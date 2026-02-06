@@ -54,10 +54,11 @@ export const clientApi = createApi({
 			}),
 			providesTags: ['Client'],
 		}),
-		getCodeClient: builder.query<Pick<ClientClass, 'code_client'>, void>({
-			query: () => ({
+		getCodeClient: builder.query<Pick<ClientClass, 'code_client'>, { company_id: number }>({
+			query: ({ company_id }) => ({
 				url: process.env.NEXT_PUBLIC_CLIENT_GENERATE_CODE_CLIENT,
 				method: 'GET',
+				params: { company_id },
 			}),
 			providesTags: ['Client'],
 		}),

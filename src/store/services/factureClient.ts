@@ -92,10 +92,11 @@ export const factureClientApi = createApi({
 			}),
 			providesTags: ['FactureClient'],
 		}),
-		getNumFactureClient: builder.query<Pick<FactureClass, 'numero_facture'>, void>({
-			query: () => ({
+		getNumFactureClient: builder.query<Pick<FactureClass, 'numero_facture'>, { company_id: number }>({
+			query: ({ company_id }) => ({
 				url: process.env.NEXT_PUBLIC_FACTURE_CLIENT_GENERATE_NUM_FACTURE,
 				method: 'GET',
+				params: { company_id },
 			}),
 			providesTags: ['FactureClient'],
 		}),

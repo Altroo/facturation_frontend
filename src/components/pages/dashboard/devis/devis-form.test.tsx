@@ -72,7 +72,7 @@ const mockPatchStatutMutation = jest.fn();
 jest.mock('@/store/services/devi', () => ({
 	__esModule: true,
 	useGetDeviQuery: (params: { id: number }, options: { skip: boolean }) => mockUseGetDeviQuery(params, options),
-	useGetNumDevisQuery: (params: undefined, options: { skip: boolean }) => mockUseGetNumDevisQuery(params, options),
+	useGetNumDevisQuery: (params: { company_id: number }, options: { skip: boolean }) => mockUseGetNumDevisQuery(params, options),
 	useAddDeviMutation: () => [mockAddDeviMutation, { isLoading: false, error: undefined }],
 	useEditDeviMutation: () => [mockEditDeviMutation, { isLoading: false, error: undefined }],
 	usePatchStatutMutation: () => [mockPatchStatutMutation, { isLoading: false, error: undefined }],

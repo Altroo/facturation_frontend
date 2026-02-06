@@ -53,10 +53,11 @@ export const factureProFormaApi = createApi({
 			}),
 			providesTags: ['FactureProForma'],
 		}),
-		getNumFactureProForma: builder.query<Pick<FactureClass, 'numero_facture'>, void>({
-			query: () => ({
+		getNumFactureProForma: builder.query<Pick<FactureClass, 'numero_facture'>, { company_id: number }>({
+			query: ({ company_id }) => ({
 				url: process.env.NEXT_PUBLIC_FACTURE_PROFORMA_GENERATE_NUM_FACTURE,
 				method: 'GET',
+				params: { company_id },
 			}),
 			providesTags: ['FactureProForma'],
 		}),

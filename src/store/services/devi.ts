@@ -55,10 +55,11 @@ export const deviApi = createApi({
 			}),
 			providesTags: ['Devi'],
 		}),
-		getNumDevis: builder.query<Pick<DeviClass, 'numero_devis'>, void>({
-			query: () => ({
+		getNumDevis: builder.query<Pick<DeviClass, 'numero_devis'>, { company_id: number }>({
+			query: ({ company_id }) => ({
 				url: process.env.NEXT_PUBLIC_DEVIS_GENERATE_NUM_DEVIS,
 				method: 'GET',
+				params: { company_id },
 			}),
 			providesTags: ['Devi'],
 		}),

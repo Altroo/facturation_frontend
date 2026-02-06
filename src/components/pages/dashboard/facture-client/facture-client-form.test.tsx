@@ -73,7 +73,7 @@ jest.mock('@/store/services/factureClient', () => ({
 	__esModule: true,
 	useGetFactureClientQuery: (params: { id: number }, options: { skip: boolean }) =>
 		mockUseGetFactureClientQuery(params, options),
-	useGetNumFactureClientQuery: (params: undefined, options: { skip: boolean }) =>
+	useGetNumFactureClientQuery: (params: { company_id: number }, options: { skip: boolean }) =>
 		mockUseGetNumFactureClientQuery(params, options),
 	useAddFactureClientMutation: () => [mockAddFactureClientMutation, { isLoading: false, error: undefined }],
 	useEditFactureClientMutation: () => [mockEditFactureClientMutation, { isLoading: false, error: undefined }],

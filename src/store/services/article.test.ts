@@ -10,7 +10,7 @@ beforeAll(() => {
 
 // Mock axiosBaseQuery so all endpoints succeed
 jest.mock('@/utils/axiosBaseQuery', () => ({
-	axiosBaseQuery: () => async () => ({ data: { ok: true } }),
+	axiosBaseQuery: () => async (args: unknown, api: unknown) => ({ data: { ok: true } }),
 }));
 
 describe('articleApi', () => {
@@ -36,7 +36,7 @@ describe('articleApi', () => {
 	});
 
 	it('getCodeReference query should complete without error', async () => {
-		const result = await storeRef.store.dispatch(articleApi.endpoints.getCodeReference.initiate());
+		const result = await storeRef.store.dispatch(articleApi.endpoints.getCodeReference.initiate({ company_id: 123 }));
 		expect('error' in result).toBe(false);
 	});
 

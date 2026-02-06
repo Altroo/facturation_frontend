@@ -99,7 +99,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		data: generatedCodeData,
 		isLoading: isCodeLoading,
 		refetch: refetchCodeReference,
-	} = useGetCodeReferenceQuery(undefined, {
+	} = useGetCodeReferenceQuery({ company_id }, {
 		skip: !token || isEditMode,
 	});
 	const { data: companyData, isFetching: isCompanyFetching } = useGetCompanyQuery({ id: company_id }, { skip: !token });

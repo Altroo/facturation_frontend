@@ -14,7 +14,7 @@ beforeAll(() => {
 
 // Mock axiosBaseQuery to always succeed
 jest.mock('@/utils/axiosBaseQuery', () => ({
-	axiosBaseQuery: () => async () => ({ data: { ok: true } }),
+	axiosBaseQuery: () => async (args: unknown, api: unknown) => ({ data: { ok: true } }),
 }));
 
 describe('factureClientApi endpoints', () => {
@@ -41,7 +41,7 @@ describe('factureClientApi endpoints', () => {
 	});
 
 	it('getNumFactureClient query should return mocked data', async () => {
-		const result = await storeRef.store.dispatch(factureClientApi.endpoints.getNumFactureClient.initiate());
+		const result = await storeRef.store.dispatch(factureClientApi.endpoints.getNumFactureClient.initiate({ company_id: 1 }));
 		expect(result.error).toBeUndefined();
 		expect(result.data).toEqual({ ok: true });
 	});

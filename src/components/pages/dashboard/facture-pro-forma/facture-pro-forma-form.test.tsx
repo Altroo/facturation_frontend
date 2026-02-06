@@ -73,7 +73,7 @@ jest.mock('@/store/services/factureProForma', () => ({
 	__esModule: true,
 	useGetFactureProFormaQuery: (params: { id: number }, options: { skip: boolean }) =>
 		mockUseGetFactureProFormaQuery(params, options),
-	useGetNumFactureProFormaQuery: (params: undefined, options: { skip: boolean }) =>
+	useGetNumFactureProFormaQuery: (params: { company_id: number }, options: { skip: boolean }) =>
 		mockUseGetNumFactureProFormaQuery(params, options),
 	useAddFactureProFormaMutation: () => [mockAddFactureProFormaMutation, { isLoading: false, error: undefined }],
 	useEditFactureProFormaMutation: () => [mockEditFactureProFormaMutation, { isLoading: false, error: undefined }],

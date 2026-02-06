@@ -73,7 +73,7 @@ jest.mock('@/store/services/bonDeLivraison', () => ({
 	__esModule: true,
 	useGetBonDeLivraisonQuery: (params: { id: number }, options: { skip: boolean }) =>
 		mockUseGetBonDeLivraisonQuery(params, options),
-	useGetNumBonDeLivraisonQuery: (params: undefined, options: { skip: boolean }) =>
+	useGetNumBonDeLivraisonQuery: (params: { company_id: number }, options: { skip: boolean }) =>
 		mockUseGetNumBonDeLivraisonQuery(params, options),
 	useAddBonDeLivraisonMutation: () => [mockAddBonDeLivraisonMutation, { isLoading: false, error: undefined }],
 	useEditBonDeLivraisonMutation: () => [mockEditBonDeLivraisonMutation, { isLoading: false, error: undefined }],

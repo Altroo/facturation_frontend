@@ -69,7 +69,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 		error: dataError,
 	} = useGetFactureClientQuery({ id: id! }, { skip: !token || !isEditMode });
 
-	const { data: rawNumData, isLoading: isNumLoading, refetch: refetchNum } = useGetNumFactureClientQuery(undefined, {
+	const { data: rawNumData, isLoading: isNumLoading, refetch: refetchNum } = useGetNumFactureClientQuery({ company_id }, {
 		skip: !token || isEditMode,
 	});
 
