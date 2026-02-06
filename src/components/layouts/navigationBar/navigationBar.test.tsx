@@ -169,8 +169,8 @@ describe('NavigationBar additional behaviors', () => {
 		expect(screen.getByText('Liste des articles')).toBeInTheDocument();
 	});
 
-	it('drawer toggle icon changes based on open state and mobile setting', async () => {
-		// Desktop (mockIsMobile = false) -> initial open = true -> ChevronLeftIcon shown (svg present)
+	it('drawer toggle button only appears on mobile, not on desktop', async () => {
+		// Desktop (mockIsMobile = false) -> button should NOT be visible
 		mockIsMobile = false;
 		const { rerender } = render(
 			<Provider store={store}>
@@ -180,13 +180,10 @@ describe('NavigationBar additional behaviors', () => {
 			</Provider>,
 		);
 
-		const toggleBtn = screen.getByLabelText('toggle drawer');
-		expect(toggleBtn).toBeInTheDocument();
+		// On desktop, toggle button should not exist
+		expect(screen.queryByLabelText('toggle drawer')).not.toBeInTheDocument();
 
-		// click to close -> icon should switch (still a button that can be clicked)
-		await userEvent.click(toggleBtn);
-
-		// now simulate mobile mode and rerender -> initial open false -> menu icon visible (still accessible via aria-label)
+		// now simulate mobile mode and rerender -> button should now be visible
 		mockIsMobile = true;
 		rerender(
 			<Provider store={store}>
@@ -196,8 +193,12 @@ describe('NavigationBar additional behaviors', () => {
 			</Provider>,
 		);
 
+		// On mobile, toggle button should exist and be clickable
 		const toggleBtnMobile = screen.getByLabelText('toggle drawer');
 		expect(toggleBtnMobile).toBeInTheDocument();
+		
+		// Clicking should toggle the drawer on mobile
+		await userEvent.click(toggleBtnMobile);
 	});
 	it('finds exact match for pathname and expands correct panel', () => {
 		// Set pathname to exactly match articles list path
