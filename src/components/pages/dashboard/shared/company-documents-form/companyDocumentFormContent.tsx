@@ -262,7 +262,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	const clientsData = rawClientsData as Array<Partial<ClientClass>> | undefined;
 
 	// Mode paiement
-	const [addModePaiement, { isLoading: isAddModePaiementLoading }] = useAddModePaiementMutation();
+	const [addModePaiement] = useAddModePaiementMutation();
 	const [openModePaiementModal, setOpenModePaiementModal] = useState(false);
 	const rawModePaiement = useAppSelector(getModePaiementState);
 	const normalizedModePaiement: Array<ModePaiementClass> = Array.isArray(rawModePaiement)

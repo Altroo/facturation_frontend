@@ -112,23 +112,23 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const normalizedCategories: Array<CategorieClass> = Array.isArray(rawCategories)
 		? rawCategories
 		: Object.values(rawCategories ?? {});
-	const [addCategory, { isLoading: isAddCategoryLoading }] = useAddCategorieMutation();
+	const [addCategory] = useAddCategorieMutation();
 	// Emplacements
 	const rawEmplacements = useAppSelector(getEmplacementsState);
 	const normalizedEmplacements: Array<EmplacementClass> = Array.isArray(rawEmplacements)
 		? rawEmplacements
 		: Object.values(rawEmplacements ?? {});
-	const [addEmplacement, { isLoading: isAddEmplacementLoading }] = useAddEmplacementMutation();
+	const [addEmplacement] = useAddEmplacementMutation();
 	// Unites
 	const rawUnites = useAppSelector(getUnitesState);
 	const normalizedUnites: Array<UniteClass> = Array.isArray(rawUnites) ? rawUnites : Object.values(rawUnites ?? {});
-	const [addUnite, { isLoading: isAddUniteLoading }] = useAddUniteMutation();
+	const [addUnite] = useAddUniteMutation();
 	// Marques
 	const rawMarques = useAppSelector(getMarquesState);
 	const normalizedMarques: Array<MarqueClass> = Array.isArray(rawMarques)
 		? rawMarques
 		: Object.values(rawMarques ?? {});
-	const [addMarque, { isLoading: isAddMarqueLoading }] = useAddMarqueMutation();
+	const [addMarque] = useAddMarqueMutation();
 	// Catégorie
 	const [openCategorieModal, setOpenCategorieModal] = useState(false);
 	// Emplacement

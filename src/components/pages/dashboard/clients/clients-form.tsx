@@ -102,7 +102,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	// Cities
 	const rawCities = useAppSelector(getCitiesState);
 	const normalizedCities: Array<CitiesClass> = Array.isArray(rawCities) ? rawCities : Object.values(rawCities ?? {});
-	const [addCity, { isLoading: isAddCityLoading }] = useAddCityMutation();
+	const [addCity] = useAddCityMutation();
 
 	// Local state
 	const [openCityModal, setOpenCityModal] = useState(false);
