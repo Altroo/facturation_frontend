@@ -12,12 +12,12 @@ import {
 	Add as AddIcon,
 	Close as CloseIcon,
 	FileUpload as FileUploadIcon,
-	FileDownloadOutlined as FileDownloadOutlinedIcon,
+	Email as EmailIcon,
 	Warning as WarningIcon,
 } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams, GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
-import { useDeleteArticleMutation, useGetArticlesListQuery, useImportArticlesMutation, usePatchArchiveMutation } from '@/store/services/article';
+import { useDeleteArticleMutation, useGetArticlesListQuery, useImportArticlesMutation, usePatchArchiveMutation, useSendCSVExampleEmailMutation } from '@/store/services/article';
 import { ARTICLES_ADD, ARTICLES_EDIT, ARTICLES_VIEW } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
@@ -106,6 +106,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const [deleteRecord] = useDeleteArticleMutation();
 	const [patchArchive] = usePatchArchiveMutation();
 	const [importArticles, { isLoading: isImporting }] = useImportArticlesMutation();
+	const [sendCSVExampleEmail, { isLoading: isSendingEmail }] = useSendCSVExampleEmailMutation();
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -128,19 +129,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		}
 	};
 
-	const handleDownloadExample = () => {
-		const rows = [
-			'reference;type_article;designation;prix_achat;devise_prix_achat;prix_vente;devise_prix_vente;tva;remarque;marque;categorie;emplacement;unite',
-			';Produit;Bureau;100,00;MAD;200,00;MAD;20;Exemple de remarque;Marque A;Electronique;Entrepôt A;Pièce',
-			'ART0099;Service;Consultation;50,00;EUR;75,00;EUR;10;;;;; ',
-		];
-		const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8' });
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = 'exemple_articles.csv';
-		a.click();
-		URL.revokeObjectURL(url);
+	const handleSendCSVEmail = async () => {
+		try {
+			await sendCSVExampleEmail({ company_id }).unwrap();
+			onSuccess('Email envoyé avec succès. Veuillez vérifier votre boîte de réception.');
+		} catch {
+			onError("Erreur lors de l'envoi de l'email");
+		}
 	};
 
 	const deleteHandler = async () => {
@@ -459,9 +454,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				toolbarActions={
 					!archived && (role === 'Caissier' || role === 'Commercial') ? (
 						<>
-							<DarkTooltip title="Télécharger exemple CSV">
-								<IconButton size="small" color="default" onClick={handleDownloadExample}>
-									<FileDownloadOutlinedIcon />
+							<DarkTooltip title="Envoyer exemple CSV par email">
+								<IconButton
+									disabled={isSendingEmail}
+									size="small"
+									color="default"
+									onClick={handleSendCSVEmail}
+								>
+									<EmailIcon />
 								</IconButton>
 							</DarkTooltip>
 							<DarkTooltip title="Importer CSV">

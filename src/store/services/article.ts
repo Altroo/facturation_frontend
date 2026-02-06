@@ -107,6 +107,13 @@ export const articleApi = createApi({
 			},
 			invalidatesTags: ['Article'],
 		}),
+		sendCSVExampleEmail: builder.mutation<{ message: string }, { company_id: number }>({
+			query: ({ company_id }) => ({
+				url: process.env.NEXT_PUBLIC_ARTICLE_SEND_CSV_EXAMPLE_EMAIL,
+				method: 'POST',
+				data: { company_id },
+			}),
+		}),
 	}),
 });
 
@@ -119,4 +126,5 @@ export const {
 	useAddArticleMutation,
 	usePatchArchiveMutation,
 	useImportArticlesMutation,
+	useSendCSVExampleEmailMutation,
 } = articleApi;
