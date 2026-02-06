@@ -28,7 +28,6 @@ import {
 import {
 	Menu as MenuIcon,
 	ExpandMore as ExpandMoreIcon,
-	ChevronLeft as ChevronLeftIcon,
 	Logout as LogoutIcon,
 	Dashboard as DashboardIcon,
 	LibraryBooks as LibraryBooksIcon,
@@ -241,8 +240,6 @@ const NavigationBar = (props: Props) => {
 		await signOut({ redirect: true, redirectTo: AUTH_LOGIN });
 	};
 
-	const handleDrawerOpen = () => setOpen(true);
-	const handleDrawerClose = () => setOpen(false);
 	const handleDrawerToggle = () => {
 		if (isMobile) {
 			setOpen(!open);
