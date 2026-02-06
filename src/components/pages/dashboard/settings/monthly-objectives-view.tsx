@@ -10,7 +10,8 @@ import {
 	Alert,
 } from '@mui/material';
 import {
-	Save as SaveIcon,
+	Edit as EditIcon,
+	Add as AddIcon,
 	TrendingUp as TrendingUpIcon,
 	Receipt as ReceiptIcon,
 	Percent as PercentIcon,
@@ -226,7 +227,11 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, existingObject
 										}}
 										onBlur={formik.handleBlur('objectif_ca_eur')}
 										error={formik.touched.objectif_ca_eur && Boolean(formik.errors.objectif_ca_eur)}
-										helperText={formik.touched.objectif_ca_eur && formik.errors.objectif_ca_eur ? formik.errors.objectif_ca_eur : ''}
+										helperText={
+											formik.touched.objectif_ca_eur && formik.errors.objectif_ca_eur
+												? formik.errors.objectif_ca_eur
+												: ''
+										}
 										fullWidth={false}
 										size="small"
 										theme={inputTheme}
@@ -247,7 +252,11 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, existingObject
 										}}
 										onBlur={formik.handleBlur('objectif_ca_usd')}
 										error={formik.touched.objectif_ca_usd && Boolean(formik.errors.objectif_ca_usd)}
-										helperText={formik.touched.objectif_ca_usd && formik.errors.objectif_ca_usd ? formik.errors.objectif_ca_usd : ''}
+										helperText={
+											formik.touched.objectif_ca_usd && formik.errors.objectif_ca_usd
+												? formik.errors.objectif_ca_usd
+												: ''
+										}
 										fullWidth={false}
 										size="small"
 										theme={inputTheme}
@@ -310,7 +319,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, existingObject
 								active={!isPending}
 								type="submit"
 								loading={isPending}
-								startIcon={<SaveIcon />}
+								startIcon={isEditMode ? <EditIcon /> : <AddIcon />}
 								onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
 									setHasAttemptedSubmit(true);
 									if (!formik.isValid) {
