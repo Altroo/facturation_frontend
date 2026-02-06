@@ -109,14 +109,11 @@ const PaginatedDataGrid = <T,>({
 	return (
 		<ThemeProvider theme={getDefaultTheme()}>
 			<Stack direction="column" spacing={2} mt="32px" sx={{ overflowX: 'auto', overflowY: 'hidden' }}>
-				<Box sx={{ width: '100%', position: 'relative', overflow: 'auto' }}>
+				<Box sx={{ width: '100%', position: 'relative' }}>
 					{isLoading && <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />}
-
 					<Box
 						sx={{
 							width: '100%',
-							overflowX: 'auto',
-							overflowY: 'visible',
 							WebkitOverflowScrolling: 'touch',
 							overscrollBehavior: 'contain',
 							px: { xs: 1, sm: 2, md: 3 },
