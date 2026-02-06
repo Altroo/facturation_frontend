@@ -243,7 +243,11 @@ const NavigationBar = (props: Props) => {
 
 	const handleDrawerOpen = () => setOpen(true);
 	const handleDrawerClose = () => setOpen(false);
-	const handleDrawerToggle = () => setOpen(!open);
+	const handleDrawerToggle = () => {
+		if (isMobile) {
+			setOpen(!open);
+		}
+	};
 
 	const pathname = usePathname();
 
@@ -318,14 +322,16 @@ const NavigationBar = (props: Props) => {
 					<Toolbar>
 						<Stack direction="row" justifyContent="space-between" alignItems="center" width="100%">
 							<Stack direction="row" alignItems="center" spacing={1}>
-								<IconButton
-									color="inherit"
-									aria-label="toggle drawer"
-									onClick={open ? handleDrawerClose : handleDrawerOpen}
-									size="small"
-								>
-									{open ? <ChevronLeftIcon /> : <MenuIcon />}
-								</IconButton>
+								{isMobile && (
+									<IconButton
+										color="inherit"
+										aria-label="toggle drawer"
+										onClick={handleDrawerToggle}
+										size="small"
+									>
+										<MenuIcon />
+									</IconButton>
+								)}
 								<Typography variant="h6" noWrap component="div">
 									{props.title}
 								</Typography>
