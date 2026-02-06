@@ -41,6 +41,7 @@ import {
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
+import FormattedNumberInput from '@/components/formikElements/formattedNumberInput/formattedNumberInput';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { textInputTheme, customDropdownTheme } from '@/utils/themes';
@@ -459,11 +460,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								<Divider sx={{ mb: 3 }} />
 								<Stack spacing={2.5}>
 									<Stack direction="row" spacing={1} alignItems="flex-start">
-										<CustomTextInput
+										<FormattedNumberInput
 											id="prix_achat"
 											type="text"
 											label="Prix d'achat"
-											value={String(formik.values.prix_achat) ?? ''}
+											value={formik.values.prix_achat ?? ''}
 											onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 												const raw = (e.target as HTMLInputElement).value;
 												const parsed = parseNumber(raw);
@@ -477,11 +478,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											size="small"
 											theme={inputTheme}
 											startIcon={<ShoppingCartIcon fontSize="small" />}
-											slotProps={{
-												input: {
-													inputProps: { min: 0 },
-												},
-											}}
+											decimals={2}
 										/>
 										<CustomDropDownSelect
 											id="devise_prix_achat"
@@ -494,11 +491,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										/>
 									</Stack>
 									<Stack direction="row" spacing={1} alignItems="flex-start">
-										<CustomTextInput
+										<FormattedNumberInput
 											id="prix_vente"
 											type="text"
 											label="Prix de vente *"
-											value={String(formik.values.prix_vente) ?? ''}
+											value={formik.values.prix_vente ?? ''}
 											onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 												const raw = (e.target as HTMLInputElement).value;
 												const parsed = parseNumber(raw);
@@ -512,11 +509,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											size="small"
 											theme={inputTheme}
 											startIcon={<SellIcon fontSize="small" />}
-											slotProps={{
-												input: {
-													inputProps: { min: 0 },
-												},
-											}}
+											decimals={2}
 										/>
 										{usesForeignCurrency && (
 											<CustomDropDownSelect

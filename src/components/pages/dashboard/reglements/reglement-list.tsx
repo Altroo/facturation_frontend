@@ -31,7 +31,7 @@ import type { ReglementListResponseType } from '@/types/reglementTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type { ReglementClass } from '@/models/classes';
-import { formatDate, formatNumber } from '@/utils/helpers';
+import { formatDate, formatNumberWithSpaces } from '@/utils/helpers';
 import { useToast } from '@/utils/hooks';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
@@ -286,7 +286,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			filterOperators: createNumericFilterOperators(),
 			renderCell: (params: GridRenderCellParams<ReglementClass>) => {
 				const devise = params.row.devise || 'MAD';
-				const formattedValue = `${formatNumber(params.value)} ${devise}`;
+				const formattedValue = `${formatNumberWithSpaces(params.value, 2)} ${devise}`;
 				return (
 					<DarkTooltip title={formattedValue}>
 						<Typography variant="body2" noWrap fontWeight={600} color="primary">
@@ -410,9 +410,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	// Get stats for selected currency
 	const currencyStats = data?.stats_by_currency?.[selectedDevise];
-	const chiffreAffaireTotal = currencyStats?.chiffre_affaire_total ? `${formatNumber(currencyStats.chiffre_affaire_total)} ${selectedDevise}` : `0,00 ${selectedDevise}`;
-	const totalReglements = currencyStats?.total_reglements ? `${formatNumber(currencyStats.total_reglements)} ${selectedDevise}` : `0,00 ${selectedDevise}`;
-	const totalImpayes = currencyStats?.total_impayes ? `${formatNumber(currencyStats.total_impayes)} ${selectedDevise}` : `0,00 ${selectedDevise}`;
+	const chiffreAffaireTotal = currencyStats?.chiffre_affaire_total ? `${formatNumberWithSpaces(currencyStats.chiffre_affaire_total,2)} ${selectedDevise}` : `0,00 ${selectedDevise}`;
+	const totalReglements = currencyStats?.total_reglements ? `${formatNumberWithSpaces(currencyStats.total_reglements,2)} ${selectedDevise}` : `0,00 ${selectedDevise}`;
+	const totalImpayes = currencyStats?.total_impayes ? `${formatNumberWithSpaces(currencyStats.total_impayes, 2)} ${selectedDevise}` : `0,00 ${selectedDevise}`;
 
 	return (
 		<>

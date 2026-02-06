@@ -31,7 +31,7 @@ import type { FactureClass } from '@/models/classes';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import CompanyDocumentsListContent from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsListContent';
 import type { DocumentListConfig, PaginationModel, FactureClientListResponseType } from '@/types/companyDocumentsTypes';
-import { formatNumber } from '@/utils/helpers';
+import { formatNumberWithSpaces } from '@/utils/helpers';
 
 const factureClientListConfig: DocumentListConfig<FactureClass> = {
 	documentType: 'facture-client',
@@ -172,9 +172,9 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 
 	// Get stats for selected currency
 	const currencyStats = data?.stats_by_currency?.[selectedDevise];
-	const chiffreAffaireTotal = currencyStats?.chiffre_affaire_total ? `${formatNumber(currencyStats.chiffre_affaire_total)} ${selectedDevise}` : `0,00 ${selectedDevise}`;
-	const totalReglements = currencyStats?.total_reglements ? `${formatNumber(currencyStats.total_reglements)} ${selectedDevise}` : `0,00 ${selectedDevise}`;
-	const totalImpayes = currencyStats?.total_impayes ? `${formatNumber(currencyStats.total_impayes)} ${selectedDevise}` : `0,00 ${selectedDevise}`;
+	const chiffreAffaireTotal = currencyStats?.chiffre_affaire_total ? `${formatNumberWithSpaces(currencyStats.chiffre_affaire_total, 2)} ${selectedDevise}` : `0,00 ${selectedDevise}`;
+	const totalReglements = currencyStats?.total_reglements ? `${formatNumberWithSpaces(currencyStats.total_reglements, 2)} ${selectedDevise}` : `0,00 ${selectedDevise}`;
+	const totalImpayes = currencyStats?.total_impayes ? `${formatNumberWithSpaces(currencyStats.total_impayes, 2)} ${selectedDevise}` : `0,00 ${selectedDevise}`;
 
 	return (
 		<>

@@ -25,6 +25,7 @@ import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiP
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import NoPermission from '@/components/shared/noPermission/noPermission';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
+import FormattedNumberInput from '@/components/formikElements/formattedNumberInput/formattedNumberInput';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 
@@ -189,11 +190,11 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, existingObject
 						</Stack>
 						<Divider sx={{ mb: 3 }} />
 						<Stack spacing={2.5}>
-							<CustomTextInput
+							<FormattedNumberInput
 								id="objectif_ca"
-								type="number"
+								type="text"
 								label="Objectif CA (MAD) *"
-								value={String(formik.values.objectif_ca) ?? ''}
+								value={formik.values.objectif_ca}
 								onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 									const raw = (e.target as HTMLInputElement).value;
 									const parsed = parseNumber(raw);
@@ -207,18 +208,16 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, existingObject
 								size="small"
 								theme={inputTheme}
 								startIcon={<TrendingUpIcon fontSize="small" />}
-								slotProps={{
-									htmlInput: { step: 0.01 },
-								}}
+								decimals={2}
 							/>
 
 							{usesForeignCurrency && (
 								<>
-									<CustomTextInput
+									<FormattedNumberInput
 										id="objectif_ca_eur"
-										type="number"
+										type="text"
 										label="Objectif CA (EUR)"
-										value={String(formik.values.objectif_ca_eur ?? '') ?? ''}
+										value={formik.values.objectif_ca_eur ?? ''}
 										onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 											const raw = (e.target as HTMLInputElement).value;
 											const parsed = parseNumber(raw);
@@ -227,21 +226,19 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, existingObject
 										}}
 										onBlur={formik.handleBlur('objectif_ca_eur')}
 										error={formik.touched.objectif_ca_eur && Boolean(formik.errors.objectif_ca_eur)}
-									helperText={formik.touched.objectif_ca_eur && formik.errors.objectif_ca_eur ? formik.errors.objectif_ca_eur : ''}
+										helperText={formik.touched.objectif_ca_eur && formik.errors.objectif_ca_eur ? formik.errors.objectif_ca_eur : ''}
 										fullWidth={false}
 										size="small"
 										theme={inputTheme}
 										startIcon={<TrendingUpIcon fontSize="small" />}
-										slotProps={{
-											htmlInput: { step: 0.01 },
-										}}
+										decimals={2}
 									/>
 
-									<CustomTextInput
+									<FormattedNumberInput
 										id="objectif_ca_usd"
-										type="number"
+										type="text"
 										label="Objectif CA (USD)"
-										value={String(formik.values.objectif_ca_usd ?? '') ?? ''}
+										value={formik.values.objectif_ca_usd ?? ''}
 										onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 											const raw = (e.target as HTMLInputElement).value;
 											const parsed = parseNumber(raw);
@@ -250,14 +247,12 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, existingObject
 										}}
 										onBlur={formik.handleBlur('objectif_ca_usd')}
 										error={formik.touched.objectif_ca_usd && Boolean(formik.errors.objectif_ca_usd)}
-									helperText={formik.touched.objectif_ca_usd && formik.errors.objectif_ca_usd ? formik.errors.objectif_ca_usd : ''}
+										helperText={formik.touched.objectif_ca_usd && formik.errors.objectif_ca_usd ? formik.errors.objectif_ca_usd : ''}
 										fullWidth={false}
 										size="small"
 										theme={inputTheme}
 										startIcon={<TrendingUpIcon fontSize="small" />}
-										slotProps={{
-											htmlInput: { step: 0.01 },
-										}}
+										decimals={2}
 									/>
 								</>
 							)}

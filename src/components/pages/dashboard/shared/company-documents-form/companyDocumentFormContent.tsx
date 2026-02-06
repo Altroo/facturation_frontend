@@ -45,6 +45,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { fr } from 'date-fns/locale';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
+import FormattedNumberInput from '@/components/formikElements/formattedNumberInput/formattedNumberInput';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
@@ -54,6 +55,7 @@ import {
 	safeParseForInput,
 	setFormikAutoErrors,
 	ValidatePricesHelper,
+	formatNumberWithSpaces,
 } from '@/utils/helpers';
 import { textInputTheme, customDropdownTheme, gridInputTheme, customGridDropdownTheme } from '@/utils/themes';
 import { CLIENTS_ADD } from '@/utils/routes';
@@ -783,10 +785,10 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				return (
 					<Tooltip title={helperText} arrow>
 						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-							<CustomTextInput
+							<FormattedNumberInput
 								id={`prix_vente_${rowIndex}`}
 								type="text"
-								value={inputValue}
+								value={rawValue}
 								onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 									const raw = (e.target as HTMLInputElement).value;
 									const parsed = parseNumber(raw);
@@ -798,7 +800,8 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 								theme={gridFieldTheme}
 								error={hasError}
 								endIcon={<InputAdornment position="end">{devisePrixVente}</InputAdornment>}
-								slotProps={{ input: { style: { textAlign: 'center' }, inputProps: { min: 0 } } }}
+								decimals={2}
+								slotProps={{ input: { style: { textAlign: 'center' } } }}
 							/>
 						</Box>
 					</Tooltip>
@@ -837,7 +840,6 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		const remise = (params: GridRenderCellParams) => {
 			const rowIndex = getRowIndexFromParams(params);
 			const rawValue = getLines()[rowIndex]?.remise ?? '';
-			const inputValue = String(safeParseForInput(String(rawValue ?? '')));
 			const errorKey = `ligne_${rowIndex}_remise`;
 			const helperText = validationErrors[errorKey] || '';
 			const hasError = !!validationErrors[errorKey];
@@ -845,10 +847,10 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			return (
 				<Tooltip title={helperText} arrow>
 					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-						<CustomTextInput
+						<FormattedNumberInput
 							id={`remise_${rowIndex}`}
 							type="text"
-							value={inputValue}
+							value={rawValue}
 							onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 								const raw = (e.target as HTMLInputElement).value;
 								const parsed = parseNumber(raw);
@@ -865,7 +867,8 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 									<InputAdornment position="end">{remiseTypeValue === 'Pourcentage' ? '%' : formik.values.devise}</InputAdornment>
 								)
 							}
-							slotProps={{ input: { style: { textAlign: 'center' }, inputProps: { min: 0 } } }}
+							decimals={2}
+							slotProps={{ input: { style: { textAlign: 'center' } } }}
 						/>
 					</Box>
 				</Tooltip>
@@ -998,7 +1001,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				headerName: "Prix d'achat",
 				flex: 1, minWidth: 110,
 				renderCell: (params: GridRenderCellParams) => {
-					const value = Number(params.row.prix_achat ?? 0) + ' ' + (params.row.devise_prix_achat || 'MAD');
+					const value = formatNumberWithSpaces(params.row.prix_achat ?? 0, 2) + ' ' + (params.row.devise_prix_achat || 'MAD');
 					return (
 						<DarkTooltip title={value}>
 							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>

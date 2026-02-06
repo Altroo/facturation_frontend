@@ -232,6 +232,52 @@ export const safeParseForInput = (raw: string): number | string => {
 	return parsed === null ? raw : parsed;
 };
 
+/**
+ * Formats a number with a thousand separators (spaces) for better readability.
+ * Example: 50000000.00 → "50 000 000.00"
+ * @param value - The value to format (number, string, null, or undefined)
+ * @param decimals - Number of decimal places (default: 2)
+ * @returns Formatted string with spaces as a thousand separators
+ */
+export const formatNumberWithSpaces = (
+	value: string | number | null | undefined,
+	decimals: number = 2
+): string => {
+	if (value === null || value === undefined || value === '') return '';
+	const num = typeof value === 'string' ? parseFloat(value) : value;
+	if (Number.isNaN(num)) return '';
+
+	// Use toLocaleString with French locale for space-separated thousands
+	return num.toLocaleString('fr-FR', {
+		minimumFractionDigits: decimals,
+		maximumFractionDigits: decimals,
+		useGrouping: true
+	});
+};
+
+/**
+ * Parses a formatted number string (with spaces as a thousand separators) back to a number.
+ * Example: "50 000 000.00" → 50000000.00
+ * @param value - The formatted string to parse
+ * @returns Parsed number or null if invalid
+ */
+export const parseFormattedNumber = (value: string | number): number | null => {
+	if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+	const trimmed = value.trim();
+	if (trimmed === '') return null;
+
+	// Remove all spaces (thousand separators)
+	let normalized = trimmed.replace(/\s/g, '');
+	// Replace comma with dot for decimal parsing
+	normalized = normalized.replace(',', '.');
+
+	// Return null for intermediate typing states (trailing decimal point or comma)
+	if (normalized.endsWith('.')) return null;
+
+	const n = Number(normalized);
+	return Number.isFinite(n) ? n : null;
+};
+
 // Consolidated validation helper
 export const ValidatePricesHelper = {
 	validatePrixVente(prixVente: number, prixAchat: number): string | null {

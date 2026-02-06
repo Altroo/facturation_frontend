@@ -30,7 +30,7 @@ import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkToolt
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
-import { formatDate } from '@/utils/helpers';
+import { formatDate, formatNumberWithSpaces } from '@/utils/helpers';
 import { useToast } from '@/utils/hooks';
 import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
@@ -453,7 +453,8 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 				filterOperators: createNumericFilterOperators(),
 				renderCell: (params: GridRenderCellParams<TDocument>) => {
 					const devise = params.row.devise || 'MAD';
-					const displayValue = `${params.value} ${devise}`;
+				const formattedValue = formatNumberWithSpaces(params.value, 2);
+				const displayValue = `${formattedValue} ${devise}`;
 					return (
 						<DarkTooltip title={displayValue}>
 							<Typography variant="body2" noWrap fontWeight={600} color="primary">

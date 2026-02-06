@@ -24,7 +24,7 @@ import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type { ArticleClass } from '@/models/classes';
-import { formatDate } from '@/utils/helpers';
+import { formatDate, formatNumberWithSpaces } from '@/utils/helpers';
 import { useToast } from '@/utils/hooks';
 import Image from 'next/image';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
@@ -303,18 +303,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			flex: 1,
 			minWidth: 100,
 			filterOperators: createNumericFilterOperators(),
-			renderCell: (params: GridRenderCellParams<ArticleClass>) => (
-				<DarkTooltip
-					title={
-						usesForeignCurrency ? params.value + ' ' + params.row.devise_prix_achat : String(params.value) + ' MAD'
-					}
-				>
-					<Typography variant="body2" noWrap fontWeight={600} color="primary">
-						{params.value}
-						{usesForeignCurrency ? ' ' + params.row.devise_prix_achat : ' MAD'}
-					</Typography>
-				</DarkTooltip>
-			),
+			renderCell: (params: GridRenderCellParams<ArticleClass>) => {
+				const formattedValue = formatNumberWithSpaces(params.value, 2);
+				const devise = usesForeignCurrency ? params.row.devise_prix_achat : 'MAD';
+				return (
+					<DarkTooltip title={`${formattedValue} ${devise}`}>
+						<Typography variant="body2" noWrap fontWeight={600} color="primary">
+							{formattedValue} {devise}
+						</Typography>
+					</DarkTooltip>
+				);
+			},
 		},
 		{
 			field: 'prix_vente',
@@ -322,18 +321,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			flex: 1,
 			minWidth: 100,
 			filterOperators: createNumericFilterOperators(),
-			renderCell: (params: GridRenderCellParams<ArticleClass>) => (
-				<DarkTooltip
-					title={
-						usesForeignCurrency ? params.value + ' ' + params.row.devise_prix_vente : String(params.value) + ' MAD'
-					}
-				>
-					<Typography variant="body2" noWrap fontWeight={600} color="primary">
-						{params.value}
-						{usesForeignCurrency ? ' ' + params.row.devise_prix_vente : ' MAD'}
-					</Typography>
-				</DarkTooltip>
-			),
+			renderCell: (params: GridRenderCellParams<ArticleClass>) => {
+				const formattedValue = formatNumberWithSpaces(params.value, 2);
+				const devise = usesForeignCurrency ? params.row.devise_prix_vente : 'MAD';
+				return (
+					<DarkTooltip title={`${formattedValue} ${devise}`}>
+						<Typography variant="body2" noWrap fontWeight={600} color="primary">
+							{formattedValue} {devise}
+						</Typography>
+					</DarkTooltip>
+				);
+			},
 		},
 		{
 			field: 'date_created',

@@ -7,6 +7,7 @@ import type { ArticleClass } from '@/models/classes';
 import { DataGrid, GridColDef, GridRowId, GridRowSelectionModel, GridRenderCellParams } from '@mui/x-data-grid';
 import { frFR } from '@mui/x-data-grid/locales';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
+import { formatNumberWithSpaces } from '@/utils/helpers';
 
 interface AddArticleModalProps {
 	open: boolean;
@@ -160,7 +161,7 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 			flex: 1,
 			minWidth: 110,
 			renderCell: (params: GridRenderCellParams) => {
-				const value = Number(params.row.prix_achat ?? 0) + ' ' + (params.row.devise_prix_achat || 'MAD');
+				const value = formatNumberWithSpaces(params.row.prix_achat ?? 0, 2) + ' ' + (params.row.devise_prix_achat || 'MAD');
 				return (
 					<DarkTooltip title={value}>
 						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
@@ -178,7 +179,7 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 			flex: 1,
 			minWidth: 110,
 			renderCell: (params: GridRenderCellParams) => {
-				const value = Number(params.row.prix_vente ?? 0) + ' ' + (params.row.devise_prix_vente || 'MAD');
+				const value = formatNumberWithSpaces(params.row.prix_vente ?? 0, 2) + ' ' + (params.row.devise_prix_vente || 'MAD');
 				return (
 					<DarkTooltip title={value}>
 						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
