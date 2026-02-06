@@ -52,6 +52,16 @@ jest.mock('@/components/pages/dashboard/devis/devis-list', () => ({
 jest.mock('@/utils/helpers', () => ({
 	__esModule: true,
 	formatDate: (d: unknown) => (d ? '01/01/2025' : ''),
+	formatNumberWithSpaces: (value: string | number | null | undefined, decimals: number = 2): string => {
+		if (value === null || value === undefined || value === '') return '';
+		const num = typeof value === 'string' ? parseFloat(value) : value;
+		if (Number.isNaN(num)) return '';
+		return num.toLocaleString('fr-FR', {
+			minimumFractionDigits: decimals,
+			maximumFractionDigits: decimals,
+			useGrouping: true
+		});
+	},
 }));
 
 jest.mock('@/store/session', () => ({

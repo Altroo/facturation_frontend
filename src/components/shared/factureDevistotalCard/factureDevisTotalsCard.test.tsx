@@ -21,16 +21,16 @@ describe('FactureDevisTotalsCard', () => {
 		render(<FactureDevisTotalsCard totals={totals} />, { wrapper: Wrapper });
 
 		expect(screen.getByText('TOTAL HT')).toBeInTheDocument();
-		expect(screen.getByText('100.00 MAD')).toBeInTheDocument();
+		expect(screen.getByText('100,00 MAD')).toBeInTheDocument();
 
 		expect(screen.getByText('TOTAL TVA')).toBeInTheDocument();
-		expect(screen.getByText('20.00 MAD')).toBeInTheDocument();
+		expect(screen.getByText('20,00 MAD')).toBeInTheDocument();
 
 		expect(screen.getByText('TOTAL TTC')).toBeInTheDocument();
-		expect(screen.getByText('120.00 MAD')).toBeInTheDocument();
+		expect(screen.getByText('120,00 MAD')).toBeInTheDocument();
 
 		expect(screen.getByText('TOTAL TTC APRES REMISE')).toBeInTheDocument();
-		expect(screen.getByText('110.50 MAD')).toBeInTheDocument();
+		expect(screen.getByText('110,50 MAD')).toBeInTheDocument();
 	});
 
 	test('renders correctly when isMobile is true', () => {
@@ -44,8 +44,8 @@ describe('FactureDevisTotalsCard', () => {
 	test('renders four monetary values and at least two h5 headings', () => {
 		const { container } = render(<FactureDevisTotalsCard totals={totals} />, { wrapper: Wrapper });
 
-		// Ensure there are exactly four formatted monetary values (e.g. "100.00 MAD")
-		const moneyValues = screen.getAllByText(/\d+\.\d{2}\sMAD$/);
+		// Ensure there are exactly four formatted monetary values (e.g. "100,00 MAD" with French formatting)
+		const moneyValues = screen.getAllByText(/\d+,\d{2}\s+MAD$/);
 		expect(moneyValues).toHaveLength(4);
 
 		// MUI's Typography with variant="h5" typically renders an <h5> element;

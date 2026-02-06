@@ -57,6 +57,16 @@ jest.mock('@/components/shared/dropdownFilter/dropdownFilter', () => ({
 
 jest.mock('@/utils/helpers', () => ({
 	formatDate: (date: string | null) => (date ? new Date(date).toLocaleDateString('fr-FR') : '—'),
+	formatNumberWithSpaces: (value: string | number | null | undefined, decimals: number = 2): string => {
+		if (value === null || value === undefined || value === '') return '';
+		const num = typeof value === 'string' ? parseFloat(value) : value;
+		if (Number.isNaN(num)) return '';
+		return num.toLocaleString('fr-FR', {
+			minimumFractionDigits: decimals,
+			maximumFractionDigits: decimals,
+			useGrouping: true
+		});
+	},
 }));
 
 // Mock PaginatedDataGrid
