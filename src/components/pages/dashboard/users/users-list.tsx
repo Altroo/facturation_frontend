@@ -12,7 +12,7 @@ import {
 	Add as AddIcon,
 	Close as CloseIcon,
 } from '@mui/icons-material';
-import { GridColDef, GridRenderCellParams, GridFilterModel } from '@mui/x-data-grid';
+import { GridColDef, GridRenderCellParams, GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
@@ -43,7 +43,7 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 		pageSize: 10,
 	});
 	const [searchTerm, setSearchTerm] = useState<string>('');
-	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
+	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [], logicOperator: GridLogicOperator.And });
 	const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
 	const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 

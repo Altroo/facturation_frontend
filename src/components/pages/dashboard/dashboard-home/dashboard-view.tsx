@@ -58,7 +58,7 @@ import {
 	type ObjectiveData,
 } from '@/store/services/dashboard';
 import { useGetCompanyQuery } from '@/store/services/company';
-import CurrencyToggle from '@/components/shared/CurrencyToggle';
+import CurrencyToggle from '@/components/shared/currencyToggle/currencyToggle';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import type { SessionProps } from '@/types/_initTypes';
 import Link from 'next/link';

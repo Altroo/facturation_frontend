@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Print as PrintIcon } from '@mui/icons-material';
-import { GridFilterModel } from '@mui/x-data-grid';
+import { GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import { useDeleteBonDeLivraisonMutation, useGetBonDeLivraisonListQuery } from '@/store/services/bonDeLivraison';
 import { BON_DE_LIVRAISON_ADD, BON_DE_LIVRAISON_EDIT, BON_DE_LIVRAISON_VIEW, BON_DE_LIVRAISON_PDF } from '@/utils/routes';
@@ -77,7 +77,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 		pageSize: 10,
 	});
 	const [searchTerm, setSearchTerm] = useState<string>('');
-	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
+	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [], logicOperator: GridLogicOperator.And });
 
 	const getDateFilterParams = () => {
 		const params: Record<string, string> = {};

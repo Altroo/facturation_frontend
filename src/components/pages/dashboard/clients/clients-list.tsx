@@ -12,7 +12,7 @@ import {
 	Add as AddIcon,
 	Close as CloseIcon,
 } from '@mui/icons-material';
-import { GridColDef, GridRenderCellParams, GridFilterModel } from '@mui/x-data-grid';
+import { GridColDef, GridRenderCellParams, GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import { useDeleteClientMutation, useGetClientsListQuery, usePatchArchiveMutation } from '@/store/services/client';
 import { CLIENTS_ADD, CLIENTS_EDIT, CLIENTS_VIEW } from '@/utils/routes';
@@ -49,7 +49,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		pageSize: 10,
 	});
 	const [searchTerm, setSearchTerm] = useState<string>('');
-	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
+	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [], logicOperator: GridLogicOperator.And });
 	const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
 	const [selectedId, setSelectedId] = useState<number | null>(null);
 

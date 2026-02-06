@@ -4,7 +4,7 @@ import React, { Dispatch, SetStateAction, useState } from 'react';
 import { Box, Stack, ThemeProvider } from '@mui/material';
 import { ViewColumn as ViewColumnIcon, FilterList as FilterListIcon } from '@mui/icons-material';
 import type { GridColDef, GridFilterModel } from '@mui/x-data-grid';
-import { DataGrid, GridSlotProps, ColumnsPanelTrigger, FilterPanelTrigger, ToolbarButton } from '@mui/x-data-grid';
+import { DataGrid, GridSlotProps, ColumnsPanelTrigger, FilterPanelTrigger, ToolbarButton, GridLogicOperator } from '@mui/x-data-grid';
 import { frFR } from '@mui/x-data-grid/locales';
 import { getDefaultTheme } from '@/utils/themes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
@@ -46,6 +46,7 @@ const PaginatedDataGrid = <T,>({
 }: PaginatedDataGridProps<T>) => {
 	const [internalFilterModel, setInternalFilterModel] = useState<GridFilterModel>({
 		items: [],
+		logicOperator: GridLogicOperator.And,
 	});
 
 	const filterModel = externalFilterModel ?? internalFilterModel;
@@ -93,6 +94,7 @@ const PaginatedDataGrid = <T,>({
 		// but keep items for column filters (client-side filtering)
 		const updatedModel: GridFilterModel = {
 			items: model.items,
+			logicOperator: model.logicOperator,
 		};
 
 		if (onFilterModelChange) {

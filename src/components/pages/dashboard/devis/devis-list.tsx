@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ReceiptLong as ReceiptLongIcon, ReceiptLongOutlined as ReceiptLongOutlinedIcon, Print as PrintIcon } from '@mui/icons-material';
-import { GridFilterModel } from '@mui/x-data-grid';
+import { GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import {
 	useDeleteDeviMutation,
@@ -110,7 +110,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 		pageSize: 10,
 	});
 	const [searchTerm, setSearchTerm] = useState('');
-	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
+	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [], logicOperator: GridLogicOperator.And });
 
 	// Extract date filter parameters from filter model
 	const getDateFilterParams = () => {

@@ -15,7 +15,7 @@ import {
 	FileDownloadOutlined as FileDownloadOutlinedIcon,
 	Warning as WarningIcon,
 } from '@mui/icons-material';
-import { GridColDef, GridRenderCellParams, GridFilterModel } from '@mui/x-data-grid';
+import { GridColDef, GridRenderCellParams, GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import { useDeleteArticleMutation, useGetArticlesListQuery, useImportArticlesMutation, usePatchArchiveMutation } from '@/store/services/article';
 import { ARTICLES_ADD, ARTICLES_EDIT, ARTICLES_VIEW } from '@/utils/routes';
@@ -29,6 +29,7 @@ import { useToast } from '@/utils/hooks';
 import Image from 'next/image';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
+import { createNumericFilterOperators } from '@/components/shared/numericFilter/numericFilterOperator';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import { useGetCompanyQuery } from '@/store/services/company';
 
@@ -56,7 +57,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		pageSize: 10,
 	});
 	const [searchTerm, setSearchTerm] = useState<string>('');
-	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
+	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [], logicOperator: GridLogicOperator.And });
 	const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
 	const [selectedId, setSelectedId] = useState<number | null>(null);
 
@@ -301,6 +302,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			headerName: "Prix d'achat",
 			flex: 1,
 			minWidth: 100,
+			filterOperators: createNumericFilterOperators(),
 			renderCell: (params: GridRenderCellParams<ArticleClass>) => (
 				<DarkTooltip
 					title={
@@ -319,6 +321,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			headerName: 'Prix de vente',
 			flex: 1,
 			minWidth: 100,
+			filterOperators: createNumericFilterOperators(),
 			renderCell: (params: GridRenderCellParams<ArticleClass>) => (
 				<DarkTooltip
 					title={

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Card, CardContent, Stack, Typography, Divider } from '@mui/material';
-import CurrencyToggle from '@/components/shared/CurrencyToggle';
+import CurrencyToggle from '@/components/shared/currencyToggle/currencyToggle';
 import {
 	ReceiptLong as ReceiptLongIcon,
 	AttachMoney as AttachMoneyIcon,
@@ -11,7 +11,7 @@ import {
 	Cancel as CancelIcon,
 	Print as PrintIcon,
 } from '@mui/icons-material';
-import { GridFilterModel } from '@mui/x-data-grid';
+import { GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import {
 	useConvertFactureClientToBonDeLivraisonMutation,
@@ -111,7 +111,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 		pageSize: 10,
 	});
 	const [searchTerm, setSearchTerm] = useState<string>('');
-	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
+	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [], logicOperator: GridLogicOperator.And });
 	const [selectedDevise, setSelectedDevise] = useState<'MAD' | 'EUR' | 'USD'>('MAD');
 
 	// Reset to MAD when company changes or doesn't use foreign currency

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Card, CardContent, Stack, Typography, Divider } from '@mui/material';
-import CurrencyToggle from '@/components/shared/CurrencyToggle';
+import CurrencyToggle from '@/components/shared/currencyToggle/currencyToggle';
 import {
 	ReceiptLong as ReceiptLongIcon,
 	AttachMoney as AttachMoneyIcon,

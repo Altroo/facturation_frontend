@@ -35,6 +35,7 @@ import { useToast } from '@/utils/hooks';
 import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
+import { createNumericFilterOperators } from '@/components/shared/numericFilter/numericFilterOperator';
 import { CLIENTS_VIEW } from '@/utils/routes';
 import { getAccessTokenFromSession } from '@/store/session';
 import type {
@@ -449,6 +450,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 				headerName: 'Total TTC après remise',
 				flex: 1.3,
 				minWidth: 130,
+				filterOperators: createNumericFilterOperators(),
 				renderCell: (params: GridRenderCellParams<TDocument>) => {
 					const devise = params.row.devise || 'MAD';
 					const displayValue = `${params.value} ${devise}`;

@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, Typography, Chip, IconButton, Card, CardContent, Stack, Divider } from '@mui/material';
-import CurrencyToggle from '@/components/shared/CurrencyToggle';
+import CurrencyToggle from '@/components/shared/currencyToggle/currencyToggle';
 import {
 	Edit as EditIcon,
 	Delete as DeleteIcon,
@@ -15,7 +15,7 @@ import {
 	AttachMoney as AttachMoneyIcon,
 	Print as PrintIcon,
 } from '@mui/icons-material';
-import { GridColDef, GridRenderCellParams, GridFilterModel } from '@mui/x-data-grid';
+import { GridColDef, GridRenderCellParams, GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import { getAccessTokenFromSession } from '@/store/session';
 import {
@@ -35,6 +35,7 @@ import { formatDate, formatNumber } from '@/utils/helpers';
 import { useToast } from '@/utils/hooks';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
+import { createNumericFilterOperators } from '@/components/shared/numericFilter/numericFilterOperator';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
 import { useGetCompanyQuery } from '@/store/services/company';
@@ -63,7 +64,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		pageSize: 10,
 	});
 	const [searchTerm, setSearchTerm] = useState<string>('');
-	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
+	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [], logicOperator: GridLogicOperator.And });
 	const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
 	const [selectedId, setSelectedId] = useState<number | null>(null);
 	const [selectedDevise, setSelectedDevise] = useState<'MAD' | 'EUR' | 'USD'>('MAD');
@@ -282,6 +283,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			headerName: 'Montant',
 			flex: 1,
 			minWidth: 100,
+			filterOperators: createNumericFilterOperators(),
 			renderCell: (params: GridRenderCellParams<ReglementClass>) => {
 				const devise = params.row.devise || 'MAD';
 				const formattedValue = `${formatNumber(params.value)} ${devise}`;
