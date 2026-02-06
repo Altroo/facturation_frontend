@@ -10,6 +10,7 @@ beforeAll(() => {
 
 // Mock axiosBaseQuery so all endpoints succeed
 jest.mock('@/utils/axiosBaseQuery', () => ({
+	//eslint-disable-next-line @typescript-eslint/no-unused-vars
 	axiosBaseQuery: () => async (args: unknown, api: unknown) => ({ data: { ok: true } }),
 }));
 
