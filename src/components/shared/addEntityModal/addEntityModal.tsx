@@ -75,16 +75,20 @@ const AddEntityModal: React.FC<AddEntityModalProps> = ({ open, setOpen, label, i
 								// Check if result contains an error (RTK Query pattern)
 								if (result && typeof result === 'object' && 'error' in result) {
 									// Handle RTK Query error response
-									const payload = result.error as ApiErrorResponseType;
+									// RTK Query wraps the error in { error: { status: ..., data: { ... } } }
+									const errorWrapper = result.error as { status?: number; data?: ApiErrorResponseType };
+									const payload = errorWrapper?.data || (errorWrapper as ApiErrorResponseType);
 									
-									if (payload?.details?.nom) {
-										const messages = payload.details.nom;
-										const errorMsg = Array.isArray(messages) ? messages[0] : messages;
-										setError(errorMsg);
-									} else if (payload?.details?.[label]) {
-										const messages = payload.details[label];
-										const errorMsg = Array.isArray(messages) ? messages[0] : messages;
-										setError(errorMsg);
+									// Extract error message from any field in details object
+									if (payload?.details && typeof payload.details === 'object') {
+										const detailsValues = Object.values(payload.details);
+										if (detailsValues.length > 0) {
+											const firstError = detailsValues[0];
+											const errorMsg = Array.isArray(firstError) ? firstError[0] : firstError;
+											setError(errorMsg as string);
+										} else {
+											setError(`Erreur lors de l'ajout du ${label}.`);
+										}
 									} else {
 										setError(`Erreur lors de l'ajout du ${label}.`);
 									}
@@ -115,14 +119,16 @@ const AddEntityModal: React.FC<AddEntityModalProps> = ({ open, setOpen, label, i
 									(e as { error?: ApiErrorResponseType; data?: ApiErrorResponseType }).data ??
 									(e as ApiErrorResponseType);
 
-								if (payload?.details?.nom) {
-									const messages = payload.details.nom;
-									const errorMsg = Array.isArray(messages) ? messages[0] : messages;
-									setError(errorMsg);
-								} else if (payload?.details?.[label]) {
-									const messages = payload.details[label];
-									const errorMsg = Array.isArray(messages) ? messages[0] : messages;
-									setError(errorMsg);
+								// Extract error message from any field in details object
+								if (payload?.details && typeof payload.details === 'object') {
+									const detailsValues = Object.values(payload.details);
+									if (detailsValues.length > 0) {
+										const firstError = detailsValues[0];
+										const errorMsg = Array.isArray(firstError) ? firstError[0] : firstError;
+										setError(errorMsg as string);
+									} else {
+										setError(`Erreur lors de l'ajout du ${label}.`);
+									}
 								} else {
 									setError(`Erreur lors de l'ajout du ${label}.`);
 								}
