@@ -16,6 +16,7 @@ jest.mock('@/store/services/article', () => ({
 	useDeleteArticleMutation: jest.fn(() => [jest.fn(), {}]),
 	usePatchArchiveMutation: jest.fn(() => [jest.fn(), {}]),
 	useImportArticlesMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
+	useSendCSVExampleEmailMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
 }));
 
 // Mock company service module
