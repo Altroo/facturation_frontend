@@ -103,6 +103,11 @@ const getNavigationMenu = (isStaff: boolean) => {
 			icon: <RequestQuoteIcon />,
 			items: [{ title: 'Liste des devis', label: 'Liste des devis', path: DEVIS_LIST }],
 		},
+		factures_proformat: {
+			title: 'Factures Pro-forma',
+			icon: <ReceiptLongOutlinedIcon />,
+			items: [{ title: 'Liste des factures pro-forma', label: 'Liste des factures', path: FACTURE_PRO_FORMA_LIST }],
+		},
 		factures: {
 			title: 'Factures clients',
 			icon: <ReceiptLongIcon />,
@@ -110,11 +115,6 @@ const getNavigationMenu = (isStaff: boolean) => {
 				{ title: 'Liste des factures', label: 'Liste des factures', path: FACTURE_CLIENT_LIST },
 				{ title: 'Factures impayées', label: 'Factures impayées', path: FACTURE_CLIENT_UNPAID },
 			],
-		},
-		factures_proformat: {
-			title: 'Factures Pro-forma',
-			icon: <ReceiptLongOutlinedIcon />,
-			items: [{ title: 'Liste des factures pro-forma', label: 'Liste des factures', path: FACTURE_PRO_FORMA_LIST }],
 		},
 		bonsLivraison: {
 			title: 'Bons de livraison',
