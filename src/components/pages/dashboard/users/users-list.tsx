@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Button, Stack, Typography, Avatar, IconButton } from '@mui/material';
+import { Box, Button, Stack, Typography, Avatar } from '@mui/material';
 import {
 	Edit as EditIcon,
 	Delete as DeleteIcon,

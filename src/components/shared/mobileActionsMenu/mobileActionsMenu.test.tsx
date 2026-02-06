@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import MobileActionsMenu from './mobileActionsMenu';
 import { Edit as EditIcon, Delete as DeleteIcon, Visibility as VisibilityIcon } from '@mui/icons-material';
@@ -187,7 +187,7 @@ describe('MobileActionsMenu', () => {
 
 		it('stops event propagation when clicking menu button', async () => {
 			const parentClickHandler = jest.fn();
-			const { container } = render(
+			render(
 				<div onClick={parentClickHandler}>
 					<MobileActionsMenu actions={defaultActions} />
 				</div>,

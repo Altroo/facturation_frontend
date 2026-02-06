@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Button, Typography, Chip, IconButton, Card, CardContent, Stack, Divider } from '@mui/material';
+import { Box, Button, Typography, Chip, Card, CardContent, Stack, Divider } from '@mui/material';
 import CurrencyToggle from '@/components/shared/currencyToggle/currencyToggle';
 import {
 	Edit as EditIcon,

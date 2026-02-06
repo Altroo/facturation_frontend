@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Button, Stack, Typography, Avatar, Chip, IconButton } from '@mui/material';
+import { Box, Button, Stack, Typography, Avatar, Chip } from '@mui/material';
 import {
 	Edit as EditIcon,
 	PauseCircle as PauseIcon,

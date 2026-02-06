@@ -301,76 +301,6 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 		return Object.values(convertMutations).some((m) => m.isLoading);
 	}, [convertMutations]);
 
-	const renderMutationActions = useCallback(
-		(params: GridRenderCellParams<TDocument>) => {
-			const isCurrentItemLoading = isAnyConvertLoading && selectedId === (params.row as DocumentListClass).id;
-
-			return (
-				<>
-					<DarkTooltip title="Modifier">
-						<IconButton
-							size="small"
-							color="primary"
-							onClick={() => router.push(config.routes.editRoute((params.row as DocumentListClass).id, companyId))}
-						>
-							<EditIcon fontSize="small" />
-						</IconButton>
-					</DarkTooltip>
-					<DarkTooltip title="Supprimer">
-						<IconButton
-							size="small"
-							color="error"
-							onClick={() => showDeleteModalCall((params.row as DocumentListClass).id)}
-						>
-							<DeleteIcon fontSize="small" />
-						</IconButton>
-					</DarkTooltip>
-					{config.convertActions && config.convertActions.length > 0 && (
-						<DarkTooltip title="Convertir">
-							<IconButton
-								size="small"
-								color="success"
-								onClick={(e) => showConvertModalCall(e, (params.row as DocumentListClass).id)}
-								disabled={isCurrentItemLoading}
-							>
-								{isCurrentItemLoading ? <CircularProgress size={20} /> : <SwapHorizIcon fontSize="small" />}
-							</IconButton>
-						</DarkTooltip>
-					)}
-				</>
-			);
-		},
-		[
-			router,
-			config.routes,
-			config.convertActions,
-			companyId,
-			showDeleteModalCall,
-			showConvertModalCall,
-			isAnyConvertLoading,
-			selectedId,
-		],
-	);
-
-	const renderPrintAction = useCallback(
-		(params: GridRenderCellParams<TDocument>) => (
-			<>
-				{config.printActions && config.printActions.length > 0 && (
-					<DarkTooltip title="Afficher">
-						<IconButton
-							size="small"
-							color="info"
-							onClick={(e) => showPrintMenuCall(e, (params.row as DocumentListClass).id)}
-						>
-							<PrintIcon fontSize="small" />
-						</IconButton>
-					</DarkTooltip>
-				)}
-			</>
-		),
-		[config.printActions, showPrintMenuCall],
-	);
-
 	const clientFilterOptions = useMemo(() => {
 		if (!data?.results) return [];
 
@@ -570,20 +500,24 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 
 return baseColumns;
 }, [
-config.columns.numeroField,
-config.columns.numeroHeaderName,
-config.columns.extraField,
-config.columns.extraFieldHeaderName,
-config.printActions,
-clientFilterOptions,
-router,
-companyId,
-role,
-showDeleteModalCall,
-showConvertModalCall,
-showPrintMenuCall,
-isAnyConvertLoading,
-selectedId,
+	config.columns.numeroField,
+	config.columns.numeroHeaderName,
+	config.columns.extraField,
+	config.columns.extraFieldHeaderName,
+	config.columns.dateField,
+	config.columns.dateHeaderName,
+	config.routes,
+	config.convertActions,
+	config.printActions,
+	clientFilterOptions,
+	router,
+	companyId,
+	role,
+	showDeleteModalCall,
+	showConvertModalCall,
+	showPrintMenuCall,
+	isAnyConvertLoading,
+	selectedId,
 ]);
 
 const modalsConfig = useMemo(

@@ -62,8 +62,10 @@ const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ actions }) => {
 					anchorEl={anchorEl}
 					open={open}
 					onClose={() => handleClose()}
-					MenuListProps={{
-						'aria-labelledby': 'more-actions-button',
+					slotProps={{
+						list: {
+							'aria-labelledby': 'more-actions-button',
+						},
 					}}
 					anchorOrigin={{
 						vertical: 'bottom',
