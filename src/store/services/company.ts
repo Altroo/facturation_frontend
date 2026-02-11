@@ -27,16 +27,21 @@ export const companyApi = createApi({
 				search?: string;
 				date_created_after?: string;
 				date_created_before?: string;
+				[key: string]: string | number | boolean | undefined;
 			}
 		>({
-			query: ({ with_pagination, page, pageSize, search, date_created_after, date_created_before }) => ({
-				url: with_pagination
-					? `${process.env.NEXT_PUBLIC_COMPANY_LIST}?search=${search}&page=${page}&page_size=${pageSize}`
-					: process.env.NEXT_PUBLIC_COMPANY_LIST,
+			query: ({ with_pagination, page, pageSize, search, date_created_after, date_created_before, ...extraFilters }) => ({
+				url: process.env.NEXT_PUBLIC_COMPANY_LIST,
 				method: 'GET',
-				params: with_pagination
-					? { pagination: true, date_created_after, date_created_before }
-					: { date_created_after, date_created_before },
+				params: {
+					pagination: with_pagination ? true : undefined,
+					page: with_pagination ? page : undefined,
+					page_size: with_pagination ? pageSize : undefined,
+					search: with_pagination ? search : undefined,
+					date_created_after,
+					date_created_before,
+					...extraFilters,
+				},
 			}),
 			providesTags: ['Company'],
 		}),

@@ -110,6 +110,8 @@ export interface DocumentListContentProps<TDocument extends DocumentListClass> {
 	filterModel?: GridFilterModel;
 	/** Filter model change handler */
 	onFilterModelChange?: (model: GridFilterModel) => void;
+	/** Callback emitting backend-ready custom filter params */
+	onCustomFilterParamsChange?: (params: Record<string, string>) => void;
 }
 
 function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
@@ -129,6 +131,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 		setSearchTerm,
 		filterModel,
 		onFilterModelChange,
+		onCustomFilterParamsChange,
 	} = props;
 
 	const { data: session } = useSession();
@@ -399,6 +402,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 				headerName: "Nombre d'articles",
 				flex: 1.2,
 				minWidth: 120,
+				filterOperators: createNumericFilterOperators(),
 				renderCell: (params: GridRenderCellParams<TDocument>) => (
 					<DarkTooltip title={params.value}>
 						<Typography variant="body2" noWrap>
@@ -571,6 +575,7 @@ const modalsConfig = useMemo(
 				setSearchTerm={setSearchTerm}
 				filterModel={filterModel}
 				onFilterModelChange={onFilterModelChange}
+				onCustomFilterParamsChange={onCustomFilterParamsChange}
 				toolbar={{ quickFilter: true, debounceMs: 500 }}
 			/>
 

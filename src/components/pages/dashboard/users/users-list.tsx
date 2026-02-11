@@ -47,32 +47,7 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [], logicOperator: GridLogicOperator.And });
 	const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
 	const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
-
-	// Extract date filter parameters from filter model
-	const getDateFilterParams = () => {
-		const params: Record<string, string> = {};
-		filterModel.items.forEach(item => {
-			if (item.field === 'date_joined' && item.value) {
-				const { from, to } = item.value as { from?: string; to?: string };
-				if (from) {
-					params.date_joined_after = from;
-				}
-				if (to) {
-					params.date_joined_before = to;
-				}
-			}
-			if (item.field === 'last_login' && item.value) {
-				const { from, to } = item.value as { from?: string; to?: string };
-				if (from) {
-					params.last_login_after = from;
-				}
-				if (to) {
-					params.last_login_before = to;
-				}
-			}
-		});
-		return params;
-	};
+	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
 
 	// Call query hook at component level
 	const {
@@ -85,7 +60,7 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 			page: paginationModel.page + 1,
 			pageSize: paginationModel.pageSize,
 			search: searchTerm,
-			...getDateFilterParams(),
+			...customFilterParams,
 		},
 		{ skip: !token },
 	);
@@ -383,6 +358,7 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 						setSearchTerm={setSearchTerm}
 						filterModel={filterModel}
 						onFilterModelChange={setFilterModel}
+						onCustomFilterParamsChange={setCustomFilterParams}
 						toolbar={{ quickFilter: true, debounceMs: 500 }}
 						/>
 						{showDeleteModal && (

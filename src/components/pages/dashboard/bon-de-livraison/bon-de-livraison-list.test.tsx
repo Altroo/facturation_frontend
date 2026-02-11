@@ -186,8 +186,8 @@ interface CapturedConfig {
 }
 
 let capturedConfig: CapturedConfig | null = null;
-let capturedOnFilterModelChange:
-	| ((model: { items: Array<{ field: string; value?: { from?: string; to?: string } }> }) => void)
+let capturedOnCustomFilterParamsChange:
+	| ((params: Record<string, string>) => void)
 	| null = null;
 
 jest.mock('@/components/pages/dashboard/shared/company-documents-list/companyDocumentsListContent', () => ({
@@ -195,6 +195,7 @@ jest.mock('@/components/pages/dashboard/shared/company-documents-list/companyDoc
 	default: (props: {
 		config: CapturedConfig;
 		onFilterModelChange?: (model: { items: Array<{ field: string; value?: { from?: string; to?: string } }> }) => void;
+		onCustomFilterParamsChange?: (params: Record<string, string>) => void;
 		router: ReturnType<typeof import('next/navigation').useRouter>;
 		queryResult: {
 			data?: { results: Array<{ id: number; numero_bon_livraison: string; client_name: string; statut: string }> };
@@ -202,7 +203,7 @@ jest.mock('@/components/pages/dashboard/shared/company-documents-list/companyDoc
 		};
 	}) => {
 		capturedConfig = props.config;
-		capturedOnFilterModelChange = props.onFilterModelChange || null;
+		capturedOnCustomFilterParamsChange = props.onCustomFilterParamsChange || null;
 
 		// Call printAction urlGenerators to cover them
 		if (props.config.printActions) {
@@ -460,24 +461,22 @@ describe('BonDeLivraisonListClient', () => {
 
 	describe('Date filter params', () => {
 		beforeEach(() => {
-			capturedOnFilterModelChange = null;
+			capturedOnCustomFilterParamsChange = null;
 			lastQueryArgs = null;
 		});
 
-		it('passes onFilterModelChange to CompanyDocumentsListContent', () => {
+		it('passes onCustomFilterParamsChange to CompanyDocumentsListContent', () => {
 			render(<BonDeLivraisonListClient session={mockSession} />);
-			expect(capturedOnFilterModelChange).not.toBeNull();
+			expect(capturedOnCustomFilterParamsChange).not.toBeNull();
 		});
 
 		it('calls query with date_after param when from filter is set', async () => {
 			const { rerender } = render(<BonDeLivraisonListClient session={mockSession} />);
-			expect(capturedOnFilterModelChange).not.toBeNull();
+			expect(capturedOnCustomFilterParamsChange).not.toBeNull();
 
 			await act(async () => {
-				if (capturedOnFilterModelChange) {
-					capturedOnFilterModelChange({
-						items: [{ field: 'date_bon_livraison', value: { from: '2025-01-01' } }],
-					});
+				if (capturedOnCustomFilterParamsChange) {
+					capturedOnCustomFilterParamsChange({ date_after: '2025-01-01' });
 				}
 			});
 
@@ -490,13 +489,11 @@ describe('BonDeLivraisonListClient', () => {
 
 		it('calls query with date_before param when to filter is set', async () => {
 			const { rerender } = render(<BonDeLivraisonListClient session={mockSession} />);
-			expect(capturedOnFilterModelChange).not.toBeNull();
+			expect(capturedOnCustomFilterParamsChange).not.toBeNull();
 
 			await act(async () => {
-				if (capturedOnFilterModelChange) {
-					capturedOnFilterModelChange({
-						items: [{ field: 'date_bon_livraison', value: { to: '2025-12-31' } }],
-					});
+				if (capturedOnCustomFilterParamsChange) {
+					capturedOnCustomFilterParamsChange({ date_before: '2025-12-31' });
 				}
 			});
 
@@ -508,13 +505,11 @@ describe('BonDeLivraisonListClient', () => {
 
 		it('calls query with both date params when from and to filters are set', async () => {
 			const { rerender } = render(<BonDeLivraisonListClient session={mockSession} />);
-			expect(capturedOnFilterModelChange).not.toBeNull();
+			expect(capturedOnCustomFilterParamsChange).not.toBeNull();
 
 			await act(async () => {
-				if (capturedOnFilterModelChange) {
-					capturedOnFilterModelChange({
-						items: [{ field: 'date_bon_livraison', value: { from: '2025-01-01', to: '2025-12-31' } }],
-					});
+				if (capturedOnCustomFilterParamsChange) {
+					capturedOnCustomFilterParamsChange({ date_after: '2025-01-01', date_before: '2025-12-31' });
 				}
 			});
 

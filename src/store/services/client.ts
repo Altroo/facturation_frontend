@@ -28,9 +28,10 @@ export const clientApi = createApi({
 				archived?: boolean;
 				date_created_after?: string;
 				date_created_before?: string;
+				[key: string]: string | number | boolean | undefined;
 			}
 		>({
-			query: ({ company_id, with_pagination, page, pageSize, search, archived, date_created_after, date_created_before }) => ({
+			query: ({ company_id, with_pagination, page, pageSize, search, archived, date_created_after, date_created_before, ...extraFilters }) => ({
 				url: process.env.NEXT_PUBLIC_CLIENT_LIST,
 				method: 'GET',
 				params: {
@@ -42,6 +43,7 @@ export const clientApi = createApi({
 					archived,
 					date_created_after,
 					date_created_before,
+					...extraFilters,
 				},
 			}),
 			providesTags: ['Client'],

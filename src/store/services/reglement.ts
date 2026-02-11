@@ -32,6 +32,7 @@ export const reglementApi = createApi({
 				date_reglement_before?: string;
 				date_echeance_after?: string;
 				date_echeance_before?: string;
+				[key: string]: string | number | boolean | undefined;
 			}
 		>({
 			query: ({
@@ -46,6 +47,7 @@ export const reglementApi = createApi({
 				date_reglement_before,
 				date_echeance_after,
 				date_echeance_before,
+				...extraFilters
 			}) => ({
 				url: process.env.NEXT_PUBLIC_REGLEMENT_LIST,
 				method: 'GET',
@@ -61,6 +63,7 @@ export const reglementApi = createApi({
 					date_reglement_before,
 					date_echeance_after,
 					date_echeance_before,
+					...extraFilters,
 				},
 			}),
 			providesTags: ['Reglement'],

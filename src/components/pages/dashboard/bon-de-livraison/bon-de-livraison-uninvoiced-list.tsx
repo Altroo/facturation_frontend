@@ -52,6 +52,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 		pageSize: 10,
 	});
 	const [searchTerm, setSearchTerm] = useState<string>('');
+	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
 
 	const {
 		data: rawData,
@@ -64,6 +65,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 			page: paginationModel.page + 1,
 			pageSize: paginationModel.pageSize,
 			search: searchTerm,
+			...customFilterParams,
 		},
 		{ skip: !token },
 	);
@@ -84,6 +86,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 			setPaginationModel={setPaginationModel}
 			searchTerm={searchTerm}
 			setSearchTerm={setSearchTerm}
+			onCustomFilterParamsChange={setCustomFilterParams}
 		/>
 	);
 };

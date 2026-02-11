@@ -82,31 +82,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const [showLanguageModal, setShowLanguageModal] = useState<boolean>(false);
 	const [printReglementId, setPrintReglementId] = useState<number | null>(null);
-
-	const getDateFilterParams = () => {
-		const params: Record<string, string> = {};
-		filterModel.items.forEach((item) => {
-			if (item.field === 'date_reglement' && item.value) {
-				const { from, to } = item.value as { from?: string; to?: string };
-				if (from) {
-					params.date_reglement_after = from;
-				}
-				if (to) {
-					params.date_reglement_before = to;
-				}
-			}
-			if (item.field === 'date_echeance' && item.value) {
-				const { from, to } = item.value as { from?: string; to?: string };
-				if (from) {
-					params.date_echeance_after = from;
-				}
-				if (to) {
-					params.date_echeance_before = to;
-				}
-			}
-		});
-		return params;
-	};
+	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
 
 	const {
 		data: rawData,
@@ -119,7 +95,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			page: paginationModel.page + 1,
 			pageSize: paginationModel.pageSize,
 			search: searchTerm,
-			...getDateFilterParams(),
+			...customFilterParams,
 		},
 		{ skip: !token },
 	);
@@ -514,6 +490,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				setSearchTerm={setSearchTerm}
 				filterModel={filterModel}
 				onFilterModelChange={setFilterModel}
+				onCustomFilterParamsChange={setCustomFilterParams}
 				toolbar={{ quickFilter: true, debounceMs: 500 }}
 			/>
 			{showDeleteModal && (

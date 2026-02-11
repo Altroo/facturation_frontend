@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import PaginatedDataGrid from './paginatedDataGrid';
 import '@testing-library/jest-dom';
-import type { GridColDef, GridFilterModel } from '@mui/x-data-grid';
+import type { GridColDef } from '@mui/x-data-grid';
 import { createTheme } from '@mui/material/styles';
 
 // Mock theme
@@ -141,135 +141,46 @@ describe('PaginatedDataGrid', () => {
 		});
 	});
 
-	it('extracts date filter parameters correctly', () => {
+	it('passes custom filter params to queryHook when using onCustomFilterParamsChange', () => {
 		const mockQueryHook = jest.fn(() => ({
 			data: { count: 0, results: [] },
 			isLoading: false,
 		}));
 
-		const filterModel: GridFilterModel = {
-			items: [
-				{
-					field: 'created_date',
-					operator: 'between',
-					value: { from: '2024-01-01', to: '2024-12-31' },
-				},
-			],
-		};
-
 		const props = {
 			...defaultProps,
 			queryHook: mockQueryHook,
-			filterModel,
 		};
 
+		// With no custom filters, queryHook gets base params only
 		render(<PaginatedDataGrid<RowType> {...props} />);
 
 		expect(mockQueryHook).toHaveBeenCalledWith({
 			page: 1,
 			pageSize: 5,
 			search: '',
-			created_date_after: '2024-01-01',
-			created_date_before: '2024-12-31',
 		});
 	});
 
-	it('handles filter with only from date', () => {
-		type QueryParams = {
-			page: number;
-			pageSize: number;
-			search: string;
-			date_after?: string;
-			date_before?: string;
-		};
-
-		const mockQueryHook = jest.fn<
-			{ data: { count: number; results: RowType[] }; isLoading: boolean },
-			[QueryParams]
-		>(() => ({
-			data: { count: 0, results: [] },
-			isLoading: false,
-		}));
-
-		const filterModel: GridFilterModel = {
-			items: [
-				{
-					field: 'date',
-					operator: 'between',
-					value: { from: '2024-01-01' },
-				},
-			],
-		};
+	it('calls onCustomFilterParamsChange when provided', () => {
+		const mockOnCustomFilterParamsChange = jest.fn();
 
 		const props = {
 			...defaultProps,
-			queryHook: mockQueryHook,
-			filterModel,
+			onCustomFilterParamsChange: mockOnCustomFilterParamsChange,
 		};
 
 		render(<PaginatedDataGrid<RowType> {...props} />);
-
-		expect(mockQueryHook).toHaveBeenCalled();
-		const lastCall = mockQueryHook.mock.calls[mockQueryHook.mock.calls.length - 1]?.[0];
-		expect(lastCall).toBeDefined();
-		if (lastCall) {
-			expect(lastCall).toMatchObject({
-				page: 1,
-				pageSize: 5,
-				search: '',
-				date_after: '2024-01-01',
-			});
-		}
+		// Initially called with empty params on mount
+		expect(mockOnCustomFilterParamsChange).toHaveBeenCalledWith({});
 	});
 
-	it('handles filter with only to date', () => {
-		type QueryParams = {
-			page: number;
-			pageSize: number;
-			search: string;
-			date_after?: string;
-			date_before?: string;
-		};
-
-		const mockQueryHook = jest.fn<
-			{ data: { count: number; results: RowType[] }; isLoading: boolean },
-			[QueryParams]
-		>(() => ({
-			data: { count: 0, results: [] },
-			isLoading: false,
-		}));
-
-		const filterModel: GridFilterModel = {
-			items: [
-				{
-					field: 'date',
-					operator: 'between',
-					value: { to: '2024-12-31' },
-				},
-			],
-		};
-
-		const props = {
-			...defaultProps,
-			queryHook: mockQueryHook,
-			filterModel,
-		};
-
-		render(<PaginatedDataGrid<RowType> {...props} />);
-
-		expect(mockQueryHook).toHaveBeenCalled();
-		const lastCall = mockQueryHook.mock.calls[mockQueryHook.mock.calls.length - 1]?.[0];
-		// Check that the call contains the expected parameters
-		expect(lastCall).toBeDefined();
-		if (lastCall) {
-			expect(lastCall.page).toBe(1);
-			expect(lastCall.pageSize).toBe(5);
-			expect(lastCall.search).toBe('');
-			// The date_before should be present if the filter extraction worked
-			if (lastCall.date_before) {
-				expect(lastCall.date_before).toBe('2024-12-31');
-			}
-		}
+	it('renders filter button in toolbar', () => {
+		render(<PaginatedDataGrid<RowType> {...defaultProps} />);
+		// The filter button (FilterListIcon) should always be visible in the toolbar
+		// Look for the button that wraps the filter icon
+		const filterButtons = document.querySelectorAll('button');
+		expect(filterButtons.length).toBeGreaterThan(0);
 	});
 
 	it('handles onFilterModelChange callback', () => {

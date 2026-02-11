@@ -28,9 +28,10 @@ export const bonDeLivraisonApi = createApi({
 				search?: string;
 				date_after?: string;
 				date_before?: string;
+				[key: string]: string | number | boolean | undefined;
 			}
 		>({
-			query: ({ company_id, with_pagination, page, pageSize, search, date_after, date_before }) => ({
+			query: ({ company_id, with_pagination, page, pageSize, search, date_after, date_before, ...extraFilters }) => ({
 				url: process.env.NEXT_PUBLIC_BON_DE_LIVRAISON_LIST,
 				method: 'GET',
 				params: {
@@ -41,6 +42,7 @@ export const bonDeLivraisonApi = createApi({
 					search,
 					date_after,
 					date_before,
+					...extraFilters,
 				},
 			}),
 			providesTags: ['BonDeLivraison'],
@@ -55,9 +57,10 @@ export const bonDeLivraisonApi = createApi({
 				search?: string;
 				date_after?: string;
 				date_before?: string;
+				[key: string]: string | number | boolean | undefined;
 			}
 		>({
-			query: ({ company_id, with_pagination, page, pageSize, search, date_after, date_before }) => ({
+			query: ({ company_id, with_pagination, page, pageSize, search, date_after, date_before, ...extraFilters }) => ({
 				url: process.env.NEXT_PUBLIC_BON_DE_LIVRAISON_UNINVOICED,
 				method: 'GET',
 				params: {
@@ -68,6 +71,7 @@ export const bonDeLivraisonApi = createApi({
 					search,
 					date_after,
 					date_before,
+					...extraFilters,
 				},
 			}),
 			providesTags: ['BonDeLivraison'],

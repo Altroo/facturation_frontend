@@ -78,22 +78,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 	});
 	const [searchTerm, setSearchTerm] = useState<string>('');
 	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [], logicOperator: GridLogicOperator.And });
-
-	const getDateFilterParams = () => {
-		const params: Record<string, string> = {};
-		filterModel.items.forEach(item => {
-			if (item.field === 'date_bon_livraison' && item.value) {
-				const { from, to } = item.value as { from?: string; to?: string };
-				if (from) {
-					params.date_after = from;
-				}
-				if (to) {
-					params.date_before = to;
-				}
-			}
-		});
-		return params;
-	};
+	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
 
 	const {
 		data: rawData,
@@ -106,7 +91,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 			page: paginationModel.page + 1,
 			pageSize: paginationModel.pageSize,
 			search: searchTerm,
-			...getDateFilterParams(),
+			...customFilterParams,
 		},
 		{ skip: !token },
 	);
@@ -129,6 +114,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 			setSearchTerm={setSearchTerm}
 			filterModel={filterModel}
 			onFilterModelChange={setFilterModel}
+			onCustomFilterParamsChange={setCustomFilterParams}
 		/>
 	);
 };

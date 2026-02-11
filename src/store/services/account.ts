@@ -69,14 +69,32 @@ export const usersApi = createApi({
 	endpoints: (builder) => ({
 		getUsersList: builder.query<
 			SuccessResponseType<Array<Partial<UserClass>>> | PaginationResponseType<Partial<UserClass>>,
-			{ with_pagination?: boolean; page?: number; pageSize?: number; search?: string; date_joined_after?: string; date_joined_before?: string; last_login_after?: string; last_login_before?: string }
+			{
+				with_pagination?: boolean;
+				page?: number;
+				pageSize?: number;
+				search?: string;
+				date_joined_after?: string;
+				date_joined_before?: string;
+				last_login_after?: string;
+				last_login_before?: string;
+				[key: string]: string | number | boolean | undefined;
+			}
 		>({
-			query: ({ with_pagination, page, pageSize, search, date_joined_after, date_joined_before, last_login_after, last_login_before }) => ({
-				url: with_pagination
-					? `${process.env.NEXT_PUBLIC_USERS_ROOT}?search=${search}&page=${page}&page_size=${pageSize}`
-					: process.env.NEXT_PUBLIC_USERS_ROOT,
+			query: ({ with_pagination, page, pageSize, search, date_joined_after, date_joined_before, last_login_after, last_login_before, ...extraFilters }) => ({
+				url: process.env.NEXT_PUBLIC_USERS_ROOT,
 				method: 'GET',
-				params: with_pagination ? { pagination: true, date_joined_after, date_joined_before, last_login_after, last_login_before } : { date_joined_after, date_joined_before, last_login_after, last_login_before },
+				params: {
+					pagination: with_pagination ? true : undefined,
+					page: with_pagination ? page : undefined,
+					page_size: with_pagination ? pageSize : undefined,
+					search: with_pagination ? search : undefined,
+					date_joined_after,
+					date_joined_before,
+					last_login_after,
+					last_login_before,
+					...extraFilters,
+				},
 			}),
 			providesTags: ['Users'],
 		}),
