@@ -32,7 +32,10 @@ import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDa
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type { ReglementClass } from '@/models/classes';
 import { formatDate, formatNumberWithSpaces } from '@/utils/helpers';
-import { useToast } from '@/utils/hooks';
+import { useToast, useAppSelector } from '@/utils/hooks';
+import { getModePaiementState } from '@/store/selectors';
+import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
+import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
 import { createNumericFilterOperators } from '@/components/shared/numericFilter/numericFilterOperator';
@@ -83,6 +86,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const [showLanguageModal, setShowLanguageModal] = useState<boolean>(false);
 	const [printReglementId, setPrintReglementId] = useState<number | null>(null);
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
+	const [chipFilterParams, setChipFilterParams] = useState<Record<string, string>>({});
+
+	const modePaiement = useAppSelector(getModePaiementState);
+
+	const chipFilters: ChipFilterConfig[] = React.useMemo(
+		() => [
+			{ key: 'mode_reglement', label: 'Mode de règlement', paramName: 'mode_reglement_ids', options: modePaiement },
+		],
+		[modePaiement],
+	);
+
+	const mergedFilterParams = React.useMemo(
+		() => ({ ...chipFilterParams, ...customFilterParams }),
+		[chipFilterParams, customFilterParams],
+	);
 
 	const {
 		data: rawData,
@@ -95,7 +113,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			page: paginationModel.page + 1,
 			pageSize: paginationModel.pageSize,
 			search: searchTerm,
-			...customFilterParams,
+			...mergedFilterParams,
 		},
 		{ skip: !token },
 	);
@@ -454,6 +472,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				</Stack>
 				<Divider sx={{ mb: 2 }} />
 			</Box>
+
+			<ChipSelectFilterBar filters={chipFilters} onFilterChange={setChipFilterParams} />
 
 			{(role === 'Caissier' || role === 'Commercial') && (
 				<Box

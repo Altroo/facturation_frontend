@@ -56,6 +56,7 @@ jest.mock('next/navigation', () => ({
 // Mock hooks / utilities used by the component
 jest.mock('@/utils/hooks', () => ({
 	useToast: () => ({ onSuccess: jest.fn(), onError: jest.fn() }),
+	useAppSelector: jest.fn(() => []),
 }));
 
 const mockSession = {

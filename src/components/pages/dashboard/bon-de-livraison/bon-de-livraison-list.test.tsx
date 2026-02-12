@@ -29,6 +29,7 @@ jest.mock('@/utils/hooks', () => ({
 		onSuccess: mockOnSuccess,
 		onError: mockOnError,
 	}),
+	useAppSelector: jest.fn(() => []),
 }));
 
 // Mock RTK Query hooks
@@ -277,6 +278,7 @@ jest.mock('@/utils/helpers', () => ({
 			useGrouping: true
 		});
 	},
+	hexToRGB: (hex: string, alpha?: number) => (alpha !== undefined ? `rgba(0,0,0,${alpha})` : 'rgb(0,0,0)'),
 }));
 
 // Import after mocks

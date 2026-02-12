@@ -275,6 +275,83 @@ export const customToastTheme = (primaryColor: string | undefined = undefined) =
 	});
 };
 
+export const chipSelectFilterTheme = (primaryColor: string | undefined = undefined) => {
+	const defaultTheme = getDefaultTheme(primaryColor);
+	const blueColor = '#0274d7';
+
+	return createTheme({
+		...defaultTheme,
+		components: {
+			MuiAutocomplete: {
+				styleOverrides: {
+					root: {
+						'& .MuiOutlinedInput-root': {
+							backgroundColor: '#FFFFFF',
+							borderRadius: '16px',
+							fontFamily: 'Poppins',
+							fontSize: '14px',
+							'& fieldset': {
+								borderColor: '#A3A3AD',
+								borderWidth: '1px',
+								borderRadius: '16px',
+							},
+							'&:hover fieldset': {
+								borderColor: blueColor,
+							},
+							'&.Mui-focused fieldset': {
+								borderColor: blueColor,
+								borderWidth: '2px',
+							},
+						},
+					},
+					inputRoot: {
+						flexWrap: 'wrap',
+					},
+					paper: {
+						borderRadius: '16px',
+						boxShadow: '0px 4px 16px rgba(0, 0, 0, 0.1)',
+						marginTop: '4px',
+					},
+					option: {
+						fontFamily: 'Poppins',
+						fontSize: '14px',
+					},
+				},
+			},
+			MuiInputBase: {
+				styleOverrides: {
+					input: {
+						fontFamily: 'Poppins',
+						fontSize: '14px',
+						caretColor: blueColor,
+					},
+				},
+			},
+			MuiChip: {
+				styleOverrides: {
+					root: {
+						fontFamily: 'Poppins',
+						fontSize: '12px',
+						borderRadius: '8px',
+					},
+				},
+			},
+			MuiFormLabel: {
+				styleOverrides: {
+					root: {
+						fontFamily: 'Poppins',
+						fontSize: '14px',
+						color: '#A3A3AD',
+						'&.Mui-focused': {
+							color: blueColor,
+						},
+					},
+				},
+			},
+		},
+	});
+};
+
 export const customDropdownTheme = (primaryColor: string | undefined = undefined) => {
 	const defaultTheme = getDefaultTheme(primaryColor);
 	const blueColor = '#0274d7';

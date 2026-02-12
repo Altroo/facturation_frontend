@@ -22,6 +22,10 @@ import type { FactureClass } from '@/models/classes';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import CompanyDocumentsListContent from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsListContent';
 import type { DocumentListConfig, PaginationModel } from '@/types/companyDocumentsTypes';
+import { useAppSelector } from '@/utils/hooks';
+import { getModePaiementState } from '@/store/selectors';
+import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
+import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 
 const factureProFormaListConfig: DocumentListConfig<FactureClass> = {
 	documentType: 'facture-pro-forma',
@@ -100,6 +104,21 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 	const [searchTerm, setSearchTerm] = useState<string>('');
 	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [], logicOperator: GridLogicOperator.And });
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
+	const [chipFilterParams, setChipFilterParams] = useState<Record<string, string>>({});
+
+	const modePaiement = useAppSelector(getModePaiementState);
+
+	const chipFilters: ChipFilterConfig[] = React.useMemo(
+		() => [
+			{ key: 'mode_paiement', label: 'Mode de paiement', paramName: 'mode_paiement_ids', options: modePaiement },
+		],
+		[modePaiement],
+	);
+
+	const mergedFilterParams = React.useMemo(
+		() => ({ ...chipFilterParams, ...customFilterParams }),
+		[chipFilterParams, customFilterParams],
+	);
 
 	const {
 		data: rawData,
@@ -112,7 +131,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 			page: paginationModel.page + 1,
 			pageSize: paginationModel.pageSize,
 			search: searchTerm,
-			...customFilterParams,
+			...mergedFilterParams,
 		},
 		{ skip: !token },
 	);
@@ -133,22 +152,25 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 	};
 
 	return (
-		<CompanyDocumentsListContent<FactureClass>
-			companyId={company_id}
-			role={role}
-			router={router}
-			config={factureProFormaListConfig}
-			queryResult={{ data, isLoading, refetch }}
-			deleteMutation={{ deleteRecord }}
-			convertMutations={convertMutations}
-			paginationModel={paginationModel}
-			setPaginationModel={setPaginationModel}
-			searchTerm={searchTerm}
-			setSearchTerm={setSearchTerm}
-			filterModel={filterModel}
-			onFilterModelChange={setFilterModel}
-			onCustomFilterParamsChange={setCustomFilterParams}
-		/>
+		<>
+			<ChipSelectFilterBar filters={chipFilters} onFilterChange={setChipFilterParams} />
+			<CompanyDocumentsListContent<FactureClass>
+				companyId={company_id}
+				role={role}
+				router={router}
+				config={factureProFormaListConfig}
+				queryResult={{ data, isLoading, refetch }}
+				deleteMutation={{ deleteRecord }}
+				convertMutations={convertMutations}
+				paginationModel={paginationModel}
+				setPaginationModel={setPaginationModel}
+				searchTerm={searchTerm}
+				setSearchTerm={setSearchTerm}
+				filterModel={filterModel}
+				onFilterModelChange={setFilterModel}
+				onCustomFilterParamsChange={setCustomFilterParams}
+			/>
+		</>
 	);
 };
 

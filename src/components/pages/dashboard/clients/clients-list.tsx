@@ -27,6 +27,10 @@ import { createDropdownFilterOperators } from '@/components/shared/dropdownFilte
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
+import { useAppSelector } from '@/utils/hooks';
+import { getCitiesState } from '@/store/selectors';
+import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
+import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 
 interface FormikContentProps extends SessionProps {
 	company_id: number;
@@ -57,6 +61,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const [showArchiveModal, setShowArchiveModal] = useState<boolean>(false);
 	const [archiveTarget, setArchiveTarget] = useState<number | null>(null);
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
+	const [chipFilterParams, setChipFilterParams] = useState<Record<string, string>>({});
+
+	const cities = useAppSelector(getCitiesState);
+
+	const chipFilters: ChipFilterConfig[] = React.useMemo(
+		() => [
+			{ key: 'ville', label: 'Ville', paramName: 'ville_ids', options: cities },
+		],
+		[cities],
+	);
+
+	const mergedFilterParams = React.useMemo(
+		() => ({ ...chipFilterParams, ...customFilterParams }),
+		[chipFilterParams, customFilterParams],
+	);
 
 	// Call query hook at component level
 	const {
@@ -71,7 +90,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			pageSize: paginationModel.pageSize,
 			search: searchTerm,
 			archived: archived,
-			...customFilterParams,
+			...mergedFilterParams,
 		},
 		{ skip: !token },
 	);
@@ -343,6 +362,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					</Button>
 				</Box>
 			)}
+			<ChipSelectFilterBar filters={chipFilters} onFilterChange={setChipFilterParams} />
 			<PaginatedDataGrid
 				data={data}
 				isLoading={isLoading}

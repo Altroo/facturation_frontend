@@ -33,6 +33,10 @@ import { createNumericFilterOperators } from '@/components/shared/numericFilter/
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import { useGetCompanyQuery } from '@/store/services/company';
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
+import { useAppSelector } from '@/utils/hooks';
+import { getCategoriesState, getEmplacementsState, getUnitesState, getMarquesState } from '@/store/selectors';
+import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
+import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 
 interface FormikContentProps extends SessionProps {
 	company_id: number;
@@ -66,6 +70,27 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const [archiveTarget, setArchiveTarget] = useState<number | null>(null);
 	const [importErrors, setImportErrors] = useState<{ row: number; message: string }[]>([]);
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
+	const [chipFilterParams, setChipFilterParams] = useState<Record<string, string>>({});
+
+	const categories = useAppSelector(getCategoriesState);
+	const emplacements = useAppSelector(getEmplacementsState);
+	const unites = useAppSelector(getUnitesState);
+	const marques = useAppSelector(getMarquesState);
+
+	const chipFilters: ChipFilterConfig[] = React.useMemo(
+		() => [
+			{ key: 'categorie', label: 'Catégorie', paramName: 'categorie_ids', options: categories },
+			{ key: 'emplacement', label: 'Emplacement', paramName: 'emplacement_ids', options: emplacements },
+			{ key: 'unite', label: 'Unité', paramName: 'unite_ids', options: unites },
+			{ key: 'marque', label: 'Marque', paramName: 'marque_ids', options: marques },
+		],
+		[categories, emplacements, unites, marques],
+	);
+
+	const mergedFilterParams = React.useMemo(
+		() => ({ ...chipFilterParams, ...customFilterParams }),
+		[chipFilterParams, customFilterParams],
+	);
 
 	useEffect(() => {
 		setImportErrors([]);
@@ -80,7 +105,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			pageSize: paginationModel.pageSize,
 			search: searchTerm,
 			archived,
-			...customFilterParams,
+			...mergedFilterParams,
 		},
 		{ skip: !token },
 	);
@@ -424,6 +449,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				</Box>
 			)}
 			<input ref={fileInputRef} type="file" accept=".csv" style={{ display: 'none' }} onChange={handleFileChange} />
+			<ChipSelectFilterBar filters={chipFilters} onFilterChange={setChipFilterParams} columns={2} />
 			<PaginatedDataGrid
 				data={data}
 				isLoading={isLoading}

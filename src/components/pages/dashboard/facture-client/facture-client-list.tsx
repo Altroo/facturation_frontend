@@ -32,6 +32,10 @@ import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/com
 import CompanyDocumentsListContent from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsListContent';
 import type { DocumentListConfig, PaginationModel, FactureClientListResponseType } from '@/types/companyDocumentsTypes';
 import { formatNumberWithSpaces } from '@/utils/helpers';
+import { useAppSelector } from '@/utils/hooks';
+import { getModePaiementState } from '@/store/selectors';
+import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
+import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 
 const factureClientListConfig: DocumentListConfig<FactureClass> = {
 	documentType: 'facture-client',
@@ -114,6 +118,21 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [], logicOperator: GridLogicOperator.And });
 	const [selectedDevise, setSelectedDevise] = useState<'MAD' | 'EUR' | 'USD'>('MAD');
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
+	const [chipFilterParams, setChipFilterParams] = useState<Record<string, string>>({});
+
+	const modePaiement = useAppSelector(getModePaiementState);
+
+	const chipFilters: ChipFilterConfig[] = React.useMemo(
+		() => [
+			{ key: 'mode_paiement', label: 'Mode de paiement', paramName: 'mode_paiement_ids', options: modePaiement },
+		],
+		[modePaiement],
+	);
+
+	const mergedFilterParams = React.useMemo(
+		() => ({ ...chipFilterParams, ...customFilterParams }),
+		[chipFilterParams, customFilterParams],
+	);
 
 	// Reset to MAD when company changes or doesn't use foreign currency
 	React.useEffect(() => {
@@ -133,7 +152,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 			page: paginationModel.page + 1,
 			pageSize: paginationModel.pageSize,
 			search: searchTerm,
-			...customFilterParams,
+			...mergedFilterParams,
 		},
 		{ skip: !token },
 	);
@@ -218,6 +237,8 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 				</Stack>
 				<Divider sx={{ mb: 2 }} />
 			</Box>
+
+			<ChipSelectFilterBar filters={chipFilters} onFilterChange={setChipFilterParams} />
 
 			<CompanyDocumentsListContent<FactureClass>
 				companyId={company_id}
