@@ -11,6 +11,7 @@ import type { Viewport } from 'next';
 import ThemeProvider from '@/providers/themeProvider';
 import { InitEffects } from '@/contexts/initEffects';
 import { ToastContextProvider } from '@/contexts/toastContext';
+import { ErrorBoundary } from '@/components/shared/errorBoundary';
 
 export const metadata: Metadata = {
 	title: 'Facturation - Casa Di Lusso',
@@ -71,7 +72,9 @@ const RootLayout: React.FC<EntryPointProps> = async (props) => {
 							<InitEffects />
 							<AppRouterCacheProvider>
 								<ThemeProvider>
-									<ToastContextProvider>{props.children}</ToastContextProvider>
+									<ErrorBoundary>
+										<ToastContextProvider>{props.children}</ToastContextProvider>
+									</ErrorBoundary>
 								</ThemeProvider>
 							</AppRouterCacheProvider>
 						</InitContextProvider>

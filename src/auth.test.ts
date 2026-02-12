@@ -182,16 +182,13 @@ describe('auth.ts', () => {
 			expect(result).toBeNull();
 		});
 
-		it('should return null and log error when API throws', async () => {
-			const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+		it('should return null when API throws', async () => {
 			mockedPostApi.mockRejectedValueOnce(new Error('Network error'));
 
 			const authorize = getAuthorizeFunction();
 			const result = await authorize(validCredentials);
 
 			expect(result).toBeNull();
-			expect(consoleSpy).toHaveBeenCalledWith('Login error', expect.any(Error));
-			consoleSpy.mockRestore();
 		});
 	});
 
@@ -308,7 +305,6 @@ describe('auth.ts', () => {
 		});
 
 		it('should handle refresh token failure gracefully', async () => {
-			const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 			mockedPostApi.mockRejectedValueOnce(new Error('Refresh failed'));
 
 			const callbacks = getCallbacks();
@@ -320,9 +316,7 @@ describe('auth.ts', () => {
 
 			const result = await callbacks.jwt({ token, account: undefined, user: undefined });
 
-			expect(consoleSpy).toHaveBeenCalledWith('Failed to refresh token:', expect.any(Error));
 			expect(result).toBeNull(); // jwt callback returns null on refresh failure
-			consoleSpy.mockRestore();
 		});
 
 		it('should not refresh when token is not expired', async () => {

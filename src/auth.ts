@@ -64,8 +64,8 @@ export const { handlers, auth } = NextAuth({
 					} else {
 						return null;
 					}
-				} catch (e) {
-					console.log('Login error', e);
+				} catch {
+					// Login failed — return null to indicate failure
 				}
 
 				return null;
@@ -106,16 +106,18 @@ export const { handlers, auth } = NextAuth({
 
 		async jwt({ token, account, user }) {
 			if (account && user) {
-				// On initial login
-				token.access = user.access; // access token
-				token.refresh = user.refresh; // refresh token
+				// On initial login — token is fresh, return immediately
+				token.access = user.access;
+				token.refresh = user.refresh;
 				token.access_expiration = user.access_expiration;
 				token.refresh_expiration = user.refresh_expiration;
-				token.user = user.user; // user object
+				token.user = user.user;
+				return token;
 			}
 
 			// Perform refresh token logic if the access token is expired
-			if (Date.now() >= (token.access_expiration ? Number(token.access_expiration) : 0)) {
+			const accessExpMs = token.access_expiration ? new Date(token.access_expiration).getTime() : 0;
+			if (Date.now() >= accessExpMs) {
 				try {
 					// Call your refresh token API if necessary
 					const instance = allowAnyInstance();
@@ -128,8 +130,7 @@ export const { handlers, auth } = NextAuth({
 						token.access_expiration = refreshed.data.accessTokenExpires;
 						token.refresh = refreshed.data.refresh ?? token.refresh; // Fallback to the old refresh token if not updated
 					}
-				} catch (err) {
-					console.error('Failed to refresh token:', err);
+				} catch {
 					// Return null to force re-authentication
 					return null;
 				}
@@ -142,7 +143,8 @@ export const { handlers, auth } = NextAuth({
 			session.refreshToken = token.refresh;
 			session.accessTokenExpiration = token.access_expiration;
 			session.refreshTokenExpiration = token.refresh_expiration;
-			session.user = token.user as never;
+			// @ts-expect-error — next-auth augmented AdapterUser extends User, creating an intersection type
+			session.user = token.user;
 			return session;
 		},
 	},

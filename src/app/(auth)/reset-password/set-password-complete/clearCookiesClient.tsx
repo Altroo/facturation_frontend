@@ -9,12 +9,9 @@ const ClearCookiesClient = () => {
 			pass_updated: true,
 			new_email: true,
 			code: true,
-		})
-			.then(() => console.log('Cookies cleared successfully'))
-			.catch((error) => {
-				console.error('Failed to clear cookies:', error);
-				// Continue with the flow even if cookie deletion fails
-			});
+		}).catch(() => {
+			// Continue with the flow even if cookie deletion fails
+		});
 	}, []);
 
 	return null;

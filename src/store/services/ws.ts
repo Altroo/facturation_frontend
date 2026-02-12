@@ -8,17 +8,23 @@ type WSAction = ReturnType<typeof WSUserAvatarAction>;
 
 let ws: WebSocket;
 
+const WS_MAX_RECONNECT_DELAY_MS = 30000;
+const WS_INITIAL_RECONNECT_DELAY_MS = 1000;
+
 export function initWebsocket(token: string): EventChannel<WSAction> {
 	return eventChannel<WSAction>((emitter) => {
+		let reconnectDelay = WS_INITIAL_RECONNECT_DELAY_MS;
+
 		function createWs() {
 			const wsUrl = `${process.env.NEXT_PUBLIC_ROOT_WS_URL}`;
 			if (typeof window !== 'undefined') {
 				ws = new WebSocket(`${wsUrl}?token=${token}`);
 				ws.onopen = () => {
-					console.log('Listening to ws...');
+					// Reset delay on successful connection
+					reconnectDelay = WS_INITIAL_RECONNECT_DELAY_MS;
 				};
-				ws.onerror = (error: Event) => {
-					console.log('WS error ' + error);
+				ws.onerror = () => {
+					// Errors are followed by onclose, no action needed here
 				};
 				ws.onmessage = (e: MessageEvent) => {
 					try {
@@ -31,23 +37,22 @@ export function initWebsocket(token: string): EventChannel<WSAction> {
 								emitter(WSUserAvatarAction(pk, avatar));
 							}
 						}
-					} catch (error) {
-						console.error('WS: Invalid JSON received', error);
+					} catch {
 						// Skip malformed message and continue listening
 					}
-				}; // unsubscribe function
-				ws.onclose = (e: CloseEvent) => {
-					console.log('Socket is closed Unexpectedly. Reconnect will be attempted in 1 second.', e.reason);
+				};
+				ws.onclose = () => {
 					setTimeout(() => {
 						createWs();
-					}, 1000);
+					}, reconnectDelay);
+					// Exponential backoff with cap
+					reconnectDelay = Math.min(reconnectDelay * 2, WS_MAX_RECONNECT_DELAY_MS);
 				};
 			}
 		}
 
 		createWs();
 		return () => {
-			console.log('Closing Websocket');
 			ws.close();
 		};
 	});

@@ -44,8 +44,8 @@ export function* refreshAppTokenStatesSaga(payload: { type: string; session: Rec
 				first_name: userObj.first_name,
 				last_name: userObj.last_name,
 			},
-			refresh_expiration: accessTokenExpiration,
-			access_expiration: refreshTokenExpiration,
+			refresh_expiration: refreshTokenExpiration,
+			access_expiration: accessTokenExpiration,
 		},
 	};
 	if (appToken) {

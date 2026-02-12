@@ -85,8 +85,8 @@ describe('init sagas', () => {
 					first_name: 'Jane',
 					last_name: 'Smith',
 				},
-				refresh_expiration: '2025-02-01',
-				access_expiration: '2025-02-02',
+				access_expiration: '2025-02-01',
+				refresh_expiration: '2025-02-02',
 			},
 		};
 

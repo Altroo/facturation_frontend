@@ -103,7 +103,7 @@ import type { ValidateArticleLinesErrorType } from '@/types/devisTypes';
 const inputFieldTheme = textInputTheme();
 const gridFieldTheme = gridInputTheme();
 
-let _scrollToLinesOnNextMount = false;
+const SCROLL_TO_LINES_KEY = 'scrollToLinesOnNextMount';
 
 // Generate stable row ID
 export const generateRowId = (
@@ -429,7 +429,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 					const response = await addData({ data: submissionData }).unwrap();
 					onSuccess(config.labels.addSuccessMessage);
 					if (response.id) {
-						_scrollToLinesOnNextMount = true;
+						sessionStorage.setItem(SCROLL_TO_LINES_KEY, 'true');
 						router.replace(config.routes.editRoute(response.id!, company_id));
 					}
 				}
@@ -1233,8 +1233,8 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	// After creation, scroll to the "Lignes" section once data is ready
 	useEffect(() => {
 		if (!isEditMode || isLoading || !linesGridRef.current) return;
-		if (!_scrollToLinesOnNextMount) return;
-		_scrollToLinesOnNextMount = false;
+		if (sessionStorage.getItem(SCROLL_TO_LINES_KEY) !== 'true') return;
+		sessionStorage.removeItem(SCROLL_TO_LINES_KEY);
 		// Small delay so the grid has finished painting
 		const id = requestAnimationFrame(() => {
 			linesGridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });

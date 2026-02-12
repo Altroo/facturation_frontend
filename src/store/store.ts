@@ -26,8 +26,6 @@ import { bonDeLivraisonApi } from '@/store/services/bonDeLivraison';
 import { reglementApi } from '@/store/services/reglement';
 import { dashboardApi } from '@/store/services/dashboard';
 
-const sagaMiddleware = createSagaMiddleware();
-
 const rootReducer = combineReducers({
 	_init: _initReducer,
 	account: accountReducer,
@@ -64,38 +62,55 @@ const reducers = (state: ReturnType<typeof rootReducer> | undefined, action: Act
 	return rootReducer(state, action);
 };
 
-export const store: SagaStore = configureStore({
-	reducer: reducers,
-	middleware: (getDefaultMiddleware) =>
-		getDefaultMiddleware({
-			serializableCheck: false,
-			thunk: true,
-		})
-			.concat(accountApi.middleware)
-			.concat(profilApi.middleware)
-			.concat(groupApi.middleware)
-			.concat(companyApi.middleware)
-			.concat(usersApi.middleware)
-			.concat(clientApi.middleware)
-			.concat(articleApi.middleware)
-			.concat(citiesApi.middleware)
-			.concat(emplacementApi.middleware)
-			.concat(categorieApi.middleware)
-			.concat(marqueApi.middleware)
-			.concat(uniteApi.middleware)
-			.concat(modePaiementApi.middleware)
-			.concat(livreParApi.middleware)
-			.concat(deviApi.middleware)
-			.concat(factureProFormaApi.middleware)
-			.concat(factureClientApi.middleware)
-			.concat(bonDeLivraisonApi.middleware)
-			.concat(reglementApi.middleware)
-			.concat(dashboardApi.middleware)
-			.prepend(sagaMiddleware),
-	devTools: process.env.NODE_ENV !== 'production',
-});
+export const makeStore = (): SagaStore => {
+	const sagaMw = createSagaMiddleware();
+	const s = configureStore({
+		reducer: reducers,
+		middleware: (getDefaultMiddleware) =>
+			getDefaultMiddleware({
+				serializableCheck: {
+					// RTK Query uses some non-serializable values in its internal actions
+					ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
+					// Ignore RTK Query cache metadata paths
+					ignoredPaths: [
+						'meta.arg',
+						'meta.baseQueryMeta',
+						'payload.timestamp',
+					],
+				},
+				thunk: true,
+			})
+				.prepend(sagaMw)
+				.concat(
+					accountApi.middleware,
+					profilApi.middleware,
+					groupApi.middleware,
+					companyApi.middleware,
+					usersApi.middleware,
+					clientApi.middleware,
+					articleApi.middleware,
+					citiesApi.middleware,
+					emplacementApi.middleware,
+					categorieApi.middleware,
+					marqueApi.middleware,
+					uniteApi.middleware,
+					modePaiementApi.middleware,
+					livreParApi.middleware,
+					deviApi.middleware,
+					factureProFormaApi.middleware,
+					factureClientApi.middleware,
+					bonDeLivraisonApi.middleware,
+					reglementApi.middleware,
+					dashboardApi.middleware,
+				),
+		devTools: process.env.NODE_ENV !== 'production',
+	}) as SagaStore;
+	s.sagaTask = sagaMw.run(rootSaga);
+	return s;
+};
 
-store.sagaTask = sagaMiddleware.run(rootSaga);
+// Default singleton for non-SSR usage and tests
+export const store: SagaStore = makeStore();
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch & ThunkDispatch<RootState, unknown, Action>;
