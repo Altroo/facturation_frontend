@@ -77,8 +77,8 @@ const ChipSelectFilter: React.FC<ChipSelectFilterProps> = ({
 					onInputChange={handleInputChange}
 					getOptionLabel={(option) => option.nom}
 					isOptionEqualToValue={(option, value) => option.id === value.id}
-					renderTags={(tagValue, getTagProps) =>
-						tagValue.map((option, index) => {
+					renderValue={(selected, getTagProps) =>
+						selected.map((option, index) => {
 							const { key, ...rest } = getTagProps({ index });
 							return (
 								<Chip
