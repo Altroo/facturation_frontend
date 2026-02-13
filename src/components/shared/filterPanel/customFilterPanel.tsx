@@ -102,6 +102,9 @@ function extractOperators(col: GridColDef): OperatorInfo[] {
 const CustomFilterPanel: React.FC<CustomFilterPanelProps> = ({ columns, filterModel, onChange }) => {
 	const filterableColumns = columns.filter((col) => col.field !== 'actions' && col.filterable !== false);
 
+	// Use a ref to track the filter counter for generating IDs
+	const filterCounterRef = React.useRef(0);
+
 	const handleAddFilter = () => {
 		const firstColumn = filterableColumns[0];
 		if (!firstColumn) return;
@@ -109,8 +112,10 @@ const CustomFilterPanel: React.FC<CustomFilterPanelProps> = ({ columns, filterMo
 		const operators = extractOperators(firstColumn);
 		const defaultOperator = operators[0]?.value ?? 'contains';
 
+		// Generate ID in event handler (not during render)
+		filterCounterRef.current += 1;
 		const newItem: CustomFilterItem = {
-			id: `filter-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+			id: `filter-${filterCounterRef.current}`,
 			field: firstColumn.field,
 			operator: defaultOperator,
 			value: '',
