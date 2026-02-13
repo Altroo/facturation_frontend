@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Install build deps
 COPY package.json bun.lock ./
-RUN bun install
+RUN bun install --frozen-lockfile
 
 # Copy sources and build
 COPY . .
