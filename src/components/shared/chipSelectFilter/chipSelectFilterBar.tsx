@@ -23,6 +23,9 @@ const ChipSelectFilterBar: React.FC<ChipSelectFilterBarProps> = ({
 	onFilterChange,
 	columns,
 }) => {
+	// Compute stable key representing current filter configuration
+	const filterKeys = useMemo(() => filters.map((f) => f.key).join(','), [filters]);
+
 	const [selectedMap, setSelectedMap] = useState<Record<string, number[]>>(() => {
 		const initial: Record<string, number[]> = {};
 		filters.forEach((f) => {
@@ -30,6 +33,19 @@ const ChipSelectFilterBar: React.FC<ChipSelectFilterBarProps> = ({
 		});
 		return initial;
 	});
+
+	// Track filter keys to detect changes and reset state
+	const [lastFilterKeys, setLastFilterKeys] = useState(filterKeys);
+
+	// Reset selectedMap when filter keys change (during render phase)
+	if (lastFilterKeys !== filterKeys) {
+		setLastFilterKeys(filterKeys);
+		const reset: Record<string, number[]> = {};
+		filters.forEach((f) => {
+			reset[f.key] = [];
+		});
+		setSelectedMap(reset);
+	}
 
 	const buildParams = useCallback(
 		(currentMap: Record<string, number[]>): Record<string, string> => {
@@ -55,29 +71,6 @@ const ChipSelectFilterBar: React.FC<ChipSelectFilterBarProps> = ({
 			onFilterChange(params);
 		}
 	}, [selectedMap, buildParams, onFilterChange]);
-
-	// Compute stable key representing current filter configuration
-	const filterKeys = useMemo(() => filters.map((f) => f.key).join(','), [filters]);
-
-	// Track previous filter keys to detect changes
-	const prevFilterKeysRef = useRef(filterKeys);
-
-	// Reset selected when filter keys change (company switch etc.)
-	useEffect(() => {
-		const filterKeysChanged = prevFilterKeysRef.current !== filterKeys;
-		prevFilterKeysRef.current = filterKeys;
-
-		if (filterKeysChanged) {
-			// Use setTimeout to avoid setState during render
-			setTimeout(() => {
-				const reset: Record<string, number[]> = {};
-				filters.forEach((f) => {
-					reset[f.key] = [];
-				});
-				setSelectedMap(reset);
-			}, 0);
-		}
-	}, [filterKeys, filters]);
 
 	const handleChange = useCallback(
 		(key: string, ids: number[]) => {

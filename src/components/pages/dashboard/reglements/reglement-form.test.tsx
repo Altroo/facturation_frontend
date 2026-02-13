@@ -102,7 +102,7 @@ jest.mock('@/components/shared/noPermission/noPermission', () => ({
 // Mock form sub-components
 jest.mock('@/components/formikElements/customTextInput/customTextInput', () => ({
 	__esModule: true,
-	default: ({ id, label, value, ...rest }: { id: string; label: string; value: string; [key: string]: unknown }) => (
+	default: ({ id, label, value, ...rest }: { id: string; label: string; value: string; [_key: string]: unknown }) => (
 		<div data-testid={`input-${id}`}>
 			<label>{label}</label>
 			<input id={id} value={value ?? ''} onChange={rest.onChange as React.ChangeEventHandler} readOnly={!rest.onChange} />

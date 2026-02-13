@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, Container, Paper, Stack, Tab, Tabs, Typography } from '@mui/material';
 import { Business as BusinessIcon } from '@mui/icons-material';
@@ -42,31 +42,28 @@ const CompanyDocumentsWrapperList: React.FC<CompanyDocumentsListProps> = ({ sess
 	
 	const companies = useMemo(() => (companiesData ?? []) as CompanyLike[], [companiesData]);
 	
-	// Track previous companies length to detect changes
-	const prevCompaniesLengthRef = React.useRef(companies.length);
-	
 	// Compute valid index - automatically clamps to valid range
 	const validIndex = useMemo(() => {
 		if (companies.length === 0) return 0;
 		if (selectedIndex >= companies.length) return 0;
 		return selectedIndex;
 	}, [companies.length, selectedIndex]);
+
+	// Track companies length to detect changes
+	const [lastCompaniesLength, setLastCompaniesLength] = useState(companies.length);
+
+	// Reset index when companies change and current index becomes invalid (during render phase)
+	if (lastCompaniesLength !== companies.length) {
+		setLastCompaniesLength(companies.length);
+		if (validIndex !== selectedIndex) {
+			setSelectedIndex(validIndex);
+			if (typeof window !== 'undefined') {
+				localStorage.setItem('selectedCompanyIndex', String(validIndex));
+			}
+		}
+	}
 	
 	const selectedCompany = useMemo(() => companies?.[validIndex] ?? null, [companies, validIndex]);
-
-	// Only update when companies change and index becomes invalid
-	useEffect(() => {
-		const companiesLengthChanged = prevCompaniesLengthRef.current !== companies.length;
-		prevCompaniesLengthRef.current = companies.length;
-		
-		if (companiesLengthChanged && validIndex !== selectedIndex) {
-			// Use setTimeout to avoid setState during render
-			setTimeout(() => {
-				setSelectedIndex(validIndex);
-				localStorage.setItem('selectedCompanyIndex', String(validIndex));
-			}, 0);
-		}
-	}, [companies.length, validIndex, selectedIndex]);
 
 	const handleChange = (_: React.SyntheticEvent, newValue: number) => {
 		setSelectedIndex(newValue);

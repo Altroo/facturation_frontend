@@ -135,18 +135,26 @@ const PaginatedDataGrid = <T,>({
 	const filterModel = externalFilterModel ?? internalFilterModel;
 
 	// Custom filters state (bypasses DataGrid's filterModel)
-	const [customFilters, setCustomFilters] = useState<CustomFilterModel>({
+	const [customFilters, setCustomFiltersInternal] = useState<CustomFilterModel>({
 		items: [],
 		logicOperator: GridLogicOperator.And,
 	});
 	const [showCustomFilterPanel, setShowCustomFilterPanel] = useState(false);
 
-	// Auto-hide panel when all filters are cleared
-	useEffect(() => {
-		if (customFilters.items.length === 0) {
-			setShowCustomFilterPanel(false);
-		}
-	}, [customFilters.items.length]);
+	// Wrapped setter that auto-hides panel when all filters are cleared
+	const setCustomFilters = useCallback(
+		(value: CustomFilterModel | ((prev: CustomFilterModel) => CustomFilterModel)) => {
+			setCustomFiltersInternal((prev) => {
+				const next = typeof value === 'function' ? value(prev) : value;
+				// Auto-hide panel when transitioning from filters to no filters
+				if (prev.items.length > 0 && next.items.length === 0) {
+					setShowCustomFilterPanel(false);
+				}
+				return next;
+			});
+		},
+		[],
+	);
 
 	// Extract custom filter parameters for backend API
 	const extractCustomFilterParams = useCallback((): Record<string, string> => {
