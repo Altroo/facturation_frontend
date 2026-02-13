@@ -41,12 +41,12 @@ type PaginatedDataGridProps<T> = {
 };
 
 /** Type guard for DateRangeFilterValue */
-function isDateRangeValue(value: CustomFilterValue): value is DateRangeFilterValue {
+export function isDateRangeValue(value: CustomFilterValue): value is DateRangeFilterValue {
 	return typeof value === 'object' && value !== null && 'from' in value;
 }
 
 /** Map frontend operator names to backend query param suffixes */
-function mapOperatorToParam(field: string, operator: string, value: CustomFilterValue): Record<string, string> {
+export function mapOperatorToParam(field: string, operator: string, value: CustomFilterValue): Record<string, string> {
 	const params: Record<string, string> = {};
 	const strValue = String(value);
 

@@ -240,4 +240,247 @@ describe('CompanyDocumentsView', () => {
 		fireEvent.click(screen.getByRole('button', { name: 'Back' }));
 		expect(pushMock).toHaveBeenCalledWith('/documents');
 	});
+
+	test('shows Modifier button for Commercial role', () => {
+		mockedGetAccessToken.mockReturnValue('token');
+		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Commercial' }]);
+		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
+			typeof useGetArticlesListQuery
+		>);
+
+		const props = buildProps({
+			query: { isLoading: false, error: undefined, data: { statut: 'Brouillon', lignes: [] } },
+		});
+
+		render(<CompanyDocumentsWrapperView<TestDoc> {...props} />);
+
+		expect(screen.getByRole('button', { name: /Modifier/i })).toBeInTheDocument();
+	});
+
+	test('shows ApiProgress when articles are loading', () => {
+		mockedGetAccessToken.mockReturnValue('token');
+		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: true } as unknown as ReturnType<
+			typeof useGetArticlesListQuery
+		>);
+
+		const props = buildProps({
+			query: { data: { statut: 'Brouillon', lignes: [] }, isLoading: false, error: undefined },
+		});
+
+		render(<CompanyDocumentsWrapperView<TestDoc> {...props} />);
+
+		expect(screen.getByText('ApiProgressMock')).toBeInTheDocument();
+	});
+
+	test('renders Livré par field for bon-de-livraison type', () => {
+		mockedGetAccessToken.mockReturnValue('token');
+		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
+			typeof useGetArticlesListQuery
+		>);
+
+		const props = buildProps({
+			type: 'bon-de-livraison',
+			query: {
+				isLoading: false,
+				error: undefined,
+				data: { statut: 'Brouillon', lignes: [], livre_par_name: 'Transporteur A' },
+			},
+		});
+
+		render(<CompanyDocumentsWrapperView<TestDoc> {...props} />);
+
+		expect(screen.getByText('Livré par')).toBeInTheDocument();
+		expect(screen.getByText('Transporteur A')).toBeInTheDocument();
+	});
+
+	test('renders global remise card when remise is positive and has type', () => {
+		mockedGetAccessToken.mockReturnValue('token');
+		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
+			typeof useGetArticlesListQuery
+		>);
+
+		const props = buildProps({
+			query: {
+				isLoading: false,
+				error: undefined,
+				data: {
+					statut: 'Brouillon',
+					lignes: [],
+					remise: 10,
+					remise_type: 'Pourcentage',
+				},
+			},
+		});
+
+		render(<CompanyDocumentsWrapperView<TestDoc> {...props} />);
+
+		expect(screen.getByText('Remise globale')).toBeInTheDocument();
+		expect(screen.getByText('10%')).toBeInTheDocument();
+	});
+
+	test('renders global remise card with fixed type', () => {
+		mockedGetAccessToken.mockReturnValue('token');
+		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
+			typeof useGetArticlesListQuery
+		>);
+
+		const props = buildProps({
+			query: {
+				isLoading: false,
+				error: undefined,
+				data: {
+					statut: 'Brouillon',
+					lignes: [],
+					remise: 500,
+					remise_type: 'Fixe',
+				},
+			},
+		});
+
+		render(<CompanyDocumentsWrapperView<TestDoc> {...props} />);
+
+		expect(screen.getByText('Remise globale')).toBeInTheDocument();
+		expect(screen.getByText('500 MAD')).toBeInTheDocument();
+	});
+
+	test('renders remarque card when remarque is provided', () => {
+		mockedGetAccessToken.mockReturnValue('token');
+		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
+			typeof useGetArticlesListQuery
+		>);
+
+		const props = buildProps({
+			query: {
+				isLoading: false,
+				error: undefined,
+				data: {
+					statut: 'Brouillon',
+					lignes: [],
+					remarque: 'Important note about this document',
+				},
+			},
+		});
+
+		render(<CompanyDocumentsWrapperView<TestDoc> {...props} />);
+
+		const remarqueElements = screen.getAllByText('Remarque');
+		expect(remarqueElements.length).toBeGreaterThanOrEqual(1);
+		expect(screen.getByText('Important note about this document')).toBeInTheDocument();
+	});
+
+	test('does not render remarque card when remarque is empty', () => {
+		mockedGetAccessToken.mockReturnValue('token');
+		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
+			typeof useGetArticlesListQuery
+		>);
+
+		const props = buildProps({
+			query: {
+				isLoading: false,
+				error: undefined,
+				data: {
+					statut: 'Brouillon',
+					lignes: [],
+					remarque: '',
+				},
+			},
+		});
+
+		render(<CompanyDocumentsWrapperView<TestDoc> {...props} />);
+
+		// The Remarque card should not be rendered - no card with h6 containing Remarque
+		const remarqueHeaders = screen.queryAllByRole('heading', { name: 'Remarque' });
+		expect(remarqueHeaders.length).toBe(0);
+	});
+
+	test('handles data with server totals', () => {
+		mockedGetAccessToken.mockReturnValue('token');
+		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
+			typeof useGetArticlesListQuery
+		>);
+
+		const props = buildProps({
+			query: {
+				isLoading: false,
+				error: undefined,
+				data: {
+					statut: 'Validée',
+					lignes: [],
+					total_ht: 10000,
+					total_tva: 2000,
+					total_ttc: 12000,
+					total_ttc_apres_remise: 11500,
+				},
+			},
+		});
+
+		render(<CompanyDocumentsWrapperView<TestDoc> {...props} />);
+
+		expect(screen.getByTestId('totals-card')).toBeInTheDocument();
+	});
+
+	test('renders lines in data grid with article details', () => {
+		mockedGetAccessToken.mockReturnValue('token');
+		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+		mockedUseGetArticlesListQuery.mockReturnValue({
+			data: [
+				{ id: 1, reference: 'REF-001', marque_name: 'Brand A', categorie_name: 'Cat1', tva: 20, photo: 'photo.jpg' },
+				{ id: 2, reference: 'REF-002', marque_name: 'Brand B', categorie_name: 'Cat2', tva: 20 },
+			],
+			isLoading: false,
+		} as unknown as ReturnType<typeof useGetArticlesListQuery>);
+
+		const props = buildProps({
+			query: {
+				isLoading: false,
+				error: undefined,
+				data: {
+					statut: 'Brouillon',
+					lignes: [
+						{ article: 1, designation: 'Item 1', prix_vente: 100, quantity: 2, remise: 10, remise_type: 'Pourcentage' },
+						{ article: 2, designation: 'Item 2', prix_vente: 50, quantity: 1, remise: 5, remise_type: 'Fixe' },
+					],
+				},
+			},
+		});
+
+		render(<CompanyDocumentsWrapperView<TestDoc> {...props} />);
+
+		expect(screen.getByTestId('datagrid')).toHaveTextContent('rows:2');
+	});
+
+	test('handles system info display with dates', () => {
+		mockedGetAccessToken.mockReturnValue('token');
+		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
+			typeof useGetArticlesListQuery
+		>);
+
+		const props = buildProps({
+			query: {
+				isLoading: false,
+				error: undefined,
+				data: {
+					statut: 'Brouillon',
+					lignes: [],
+					date_created: '2025-01-15T10:00:00Z',
+					date_updated: '2025-01-20T14:30:00Z',
+					created_by_user_name: 'Admin User',
+				},
+			},
+		});
+
+		render(<CompanyDocumentsWrapperView<TestDoc> {...props} />);
+
+		expect(screen.getByText('Informations système')).toBeInTheDocument();
+		expect(screen.getByText('Date de création')).toBeInTheDocument();
+		expect(screen.getByText('Admin User')).toBeInTheDocument();
+	});
 });

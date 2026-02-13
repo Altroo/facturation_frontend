@@ -1,6 +1,7 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import PaginatedDataGrid from './paginatedDataGrid';
+import { render, screen, fireEvent, act } from '@testing-library/react';
+import PaginatedDataGrid, { mapOperatorToParam, isDateRangeValue } from './paginatedDataGrid';
+import type { CustomFilterValue } from '@/components/shared/filterPanel/customFilterPanel';
 import '@testing-library/jest-dom';
 import type { GridColDef } from '@mui/x-data-grid';
 import { createTheme } from '@mui/material/styles';
@@ -243,5 +244,170 @@ describe('PaginatedDataGrid', () => {
 
 		render(<PaginatedDataGrid<RowType> {...props} />);
 		expect(screen.getByTestId('api-progress')).toBeInTheDocument();
+	});
+
+	it('toggles custom filter panel when filter button is clicked', async () => {
+		render(<PaginatedDataGrid<RowType> {...defaultProps} />);
+		// Find the filter button (the one with the Badge/FilterListIcon)
+		const buttons = Array.from(document.querySelectorAll('button'));
+		// The 2nd toolbar button is the filter toggle (after columns panel trigger)
+		const filterButton = buttons.find((b) => b.querySelector('[data-testid="FilterListIcon"]'));
+		if (filterButton) {
+			await act(async () => {
+				fireEvent.click(filterButton);
+			});
+		}
+	});
+
+	it('uses internal filter model when no external one provided', () => {
+		const props = {
+			...defaultProps,
+			filterModel: undefined,
+			onFilterModelChange: undefined,
+		};
+
+		render(<PaginatedDataGrid<RowType> {...props} />);
+		const input = document.querySelector('input[placeholder="Rechercher…"]');
+		if (input) {
+			fireEvent.change(input, { target: { value: 'abc' } });
+		}
+	});
+
+	it('renders toolbar actions when provided', () => {
+		const props = {
+			...defaultProps,
+			toolbarActions: <button data-testid="custom-action">Custom</button>,
+		};
+
+		render(<PaginatedDataGrid<RowType> {...props} />);
+		expect(screen.getByTestId('custom-action')).toBeInTheDocument();
+	});
+});
+
+describe('mapOperatorToParam', () => {
+	it('maps "contains" to icontains', () => {
+		expect(mapOperatorToParam('name', 'contains', 'test')).toEqual({ name__icontains: 'test' });
+	});
+
+	it('maps "equals" to direct field', () => {
+		expect(mapOperatorToParam('status', 'equals', 'active')).toEqual({ status: 'active' });
+	});
+
+	it('maps "=" to direct field', () => {
+		expect(mapOperatorToParam('status', '=', 'active')).toEqual({ status: 'active' });
+	});
+
+	it('maps "is" to direct field', () => {
+		expect(mapOperatorToParam('status', 'is', 'active')).toEqual({ status: 'active' });
+	});
+
+	it('maps "startsWith" to istartswith', () => {
+		expect(mapOperatorToParam('name', 'startsWith', 'abc')).toEqual({ name__istartswith: 'abc' });
+	});
+
+	it('maps "endsWith" to iendswith', () => {
+		expect(mapOperatorToParam('name', 'endsWith', 'xyz')).toEqual({ name__iendswith: 'xyz' });
+	});
+
+	it('maps "isEmpty" to isempty true', () => {
+		expect(mapOperatorToParam('email', 'isEmpty', '')).toEqual({ email__isempty: 'true' });
+	});
+
+	it('maps "isNotEmpty" to isempty false', () => {
+		expect(mapOperatorToParam('email', 'isNotEmpty', '')).toEqual({ email__isempty: 'false' });
+	});
+
+	it('maps "numEquals" to direct field', () => {
+		expect(mapOperatorToParam('amount', 'numEquals', '100')).toEqual({ amount: '100' });
+	});
+
+	it('maps "numNotEquals" to __ne', () => {
+		expect(mapOperatorToParam('amount', 'numNotEquals', '50')).toEqual({ amount__ne: '50' });
+	});
+
+	it('maps "!=" to __ne', () => {
+		expect(mapOperatorToParam('amount', '!=', '50')).toEqual({ amount__ne: '50' });
+	});
+
+	it('maps "ne" to __ne', () => {
+		expect(mapOperatorToParam('amount', 'ne', '50')).toEqual({ amount__ne: '50' });
+	});
+
+	it('maps "not" to __ne', () => {
+		expect(mapOperatorToParam('amount', 'not', '50')).toEqual({ amount__ne: '50' });
+	});
+
+	it('maps "numGreaterThan" to __gt', () => {
+		expect(mapOperatorToParam('price', 'numGreaterThan', '10')).toEqual({ price__gt: '10' });
+	});
+
+	it('maps ">" to __gt', () => {
+		expect(mapOperatorToParam('price', '>', '10')).toEqual({ price__gt: '10' });
+	});
+
+	it('maps "gt" to __gt', () => {
+		expect(mapOperatorToParam('price', 'gt', '10')).toEqual({ price__gt: '10' });
+	});
+
+	it('maps "numGreaterThanOrEqual" to __gte', () => {
+		expect(mapOperatorToParam('price', 'numGreaterThanOrEqual', '10')).toEqual({ price__gte: '10' });
+	});
+
+	it('maps ">=" to __gte', () => {
+		expect(mapOperatorToParam('price', '>=', '10')).toEqual({ price__gte: '10' });
+	});
+
+	it('maps "gte" to __gte', () => {
+		expect(mapOperatorToParam('price', 'gte', '10')).toEqual({ price__gte: '10' });
+	});
+
+	it('maps "numLessThan" to __lt', () => {
+		expect(mapOperatorToParam('price', 'numLessThan', '5')).toEqual({ price__lt: '5' });
+	});
+
+	it('maps "<" to __lt', () => {
+		expect(mapOperatorToParam('price', '<', '5')).toEqual({ price__lt: '5' });
+	});
+
+	it('maps "lt" to __lt', () => {
+		expect(mapOperatorToParam('price', 'lt', '5')).toEqual({ price__lt: '5' });
+	});
+
+	it('maps "numLessThanOrEqual" to __lte', () => {
+		expect(mapOperatorToParam('price', 'numLessThanOrEqual', '5')).toEqual({ price__lte: '5' });
+	});
+
+	it('maps "<=" to __lte', () => {
+		expect(mapOperatorToParam('price', '<=', '5')).toEqual({ price__lte: '5' });
+	});
+
+	it('maps "lte" to __lte', () => {
+		expect(mapOperatorToParam('price', 'lte', '5')).toEqual({ price__lte: '5' });
+	});
+
+	it('uses fallback for unknown operators', () => {
+		expect(mapOperatorToParam('field', 'customOp', 'val')).toEqual({ field__customOp: 'val' });
+	});
+});
+
+describe('isDateRangeValue', () => {
+	it('returns true for object with from property', () => {
+		expect(isDateRangeValue({ from: '2025-01-01' })).toBe(true);
+	});
+
+	it('returns true for object with from and to properties', () => {
+		expect(isDateRangeValue({ from: '2025-01-01', to: '2025-12-31' })).toBe(true);
+	});
+
+	it('returns false for string value', () => {
+		expect(isDateRangeValue('test')).toBe(false);
+	});
+
+	it('returns false for null-like value cast to CustomFilterValue', () => {
+		expect(isDateRangeValue(null as unknown as CustomFilterValue)).toBe(false);
+	});
+
+	it('returns false for object without from', () => {
+		expect(isDateRangeValue({ to: '2025-12-31' } as unknown as CustomFilterValue)).toBe(false);
 	});
 });

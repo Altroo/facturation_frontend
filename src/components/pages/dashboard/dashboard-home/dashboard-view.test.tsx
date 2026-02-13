@@ -588,4 +588,100 @@ describe('Chart Components Empty Data Edge Cases', () => {
 		// Should still render the financial section
 		expect(screen.getByText('Aperçu Financier')).toBeInTheDocument();
 	});
+
+	it('handles objectives with targets set to false', () => {
+		const objectivesNotSet: MonthlyObjectivesData = {
+			...mockObjectivesData,
+			objectives_set: false,
+		};
+		mockQueryStates = {
+			objectives: 'success',
+		};
+		// Override the objectives mock for this test
+		jest.doMock('@/store/services/dashboard', () => ({
+			...jest.requireActual('@/store/services/dashboard'),
+			useGetMonthlyObjectivesQuery: () => createMockQueryResult('success', objectivesNotSet),
+		}));
+		render(<DashboardClient session={mockSession} />);
+		expect(screen.getByTestId('company-documents-wrapper')).toBeInTheDocument();
+	});
+
+	it('handles KPI cards with zero values', () => {
+		const zeroKPIData: KPICardsData = {
+			current_month_revenue: { value: 0, trend: [] },
+			outstanding_receivables: { value: 0, trend: [] },
+			average_invoice_amount: { value: 0, trend: [] },
+			active_clients: { value: 0, trend: [] },
+		};
+		mockQueryStates = { kpiCards: 'success' };
+		jest.doMock('@/store/services/dashboard', () => ({
+			...jest.requireActual('@/store/services/dashboard'),
+			useGetKPICardsWithTrendsQuery: () => createMockQueryResult('success', zeroKPIData),
+		}));
+		render(<DashboardClient session={mockSession} />);
+		expect(screen.getByTestId('company-documents-wrapper')).toBeInTheDocument();
+	});
+
+	it('handles global performance data with zero previous values', () => {
+		const zeroGlobalPerf: MonthlyGlobalPerformanceData = {
+			current: { revenue: 10000, quotes: 5, conversion: 50, collection: 8000, new_clients: 2 },
+			previous: { revenue: 0, quotes: 0, conversion: 0, collection: 0, new_clients: 0 },
+		};
+		mockQueryStates = { globalPerformance: 'success' };
+		jest.doMock('@/store/services/dashboard', () => ({
+			...jest.requireActual('@/store/services/dashboard'),
+			useGetMonthlyGlobalPerformanceQuery: () => createMockQueryResult('success', zeroGlobalPerf),
+		}));
+		render(<DashboardClient session={mockSession} />);
+		expect(screen.getByTestId('company-documents-wrapper')).toBeInTheDocument();
+	});
+
+	it('handles section micro trends with empty arrays', () => {
+		const emptyTrends: SectionMicroTrendsData = {
+			financial: [],
+			commercial: [],
+			operational: [],
+			cashflow: [],
+		};
+		mockQueryStates = { sectionMicroTrends: 'success' };
+		jest.doMock('@/store/services/dashboard', () => ({
+			...jest.requireActual('@/store/services/dashboard'),
+			useGetSectionMicroTrendsQuery: () => createMockQueryResult('success', emptyTrends),
+		}));
+		render(<DashboardClient session={mockSession} />);
+		expect(screen.getByTestId('company-documents-wrapper')).toBeInTheDocument();
+	});
+
+	it('handles all queries in error state simultaneously', () => {
+		mockQueryStates = {
+			monthlyRevenue: 'error',
+			revenueByType: 'error',
+			paymentStatus: 'error',
+			topClients: 'error',
+			topProducts: 'error',
+			quoteConversion: 'error',
+			kpiCards: 'error',
+			objectives: 'error',
+		};
+
+		render(<DashboardClient session={mockSession} />);
+		// Should still render the dashboard structure
+		const titles = screen.getAllByText('Tableau de Bord');
+		expect(titles.length).toBeGreaterThan(0);
+	});
+
+	it('handles payment delay data with various delay thresholds', () => {
+		const delayData: PaymentDelayData[] = [
+			{ client_id: 1, client_name: 'Client A', average_delay_days: 15, total_amount: 5000 },
+			{ client_id: 2, client_name: 'Client B', average_delay_days: 45, total_amount: 3000 },
+			{ client_id: 3, client_name: 'Client C', average_delay_days: 75, total_amount: 2000 },
+		];
+		mockQueryStates = { paymentDelay: 'success' };
+		jest.doMock('@/store/services/dashboard', () => ({
+			...jest.requireActual('@/store/services/dashboard'),
+			useGetPaymentDelayByClientQuery: () => createMockQueryResult('success', delayData),
+		}));
+		render(<DashboardClient session={mockSession} />);
+		expect(screen.getByTestId('company-documents-wrapper')).toBeInTheDocument();
+	});
 });

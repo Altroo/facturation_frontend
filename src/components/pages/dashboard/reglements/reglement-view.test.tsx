@@ -1,59 +1,110 @@
 import React from 'react';
-import { render, screen, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import type { SessionProps, AppSession } from '@/types/_initTypes';
+import { Provider } from 'react-redux';
+import { configureStore } from '@reduxjs/toolkit';
+import type { AppSession } from '@/types/_initTypes';
 
-type ViewProps = SessionProps & {
-	company_id: number;
-	id: number;
-};
+// Minimal mock store
+const mockStore = configureStore({
+	reducer: {
+		_init: () => ({}),
+		account: () => ({}),
+	},
+	middleware: (getDefaultMiddleware) =>
+		getDefaultMiddleware({
+			serializableCheck: false,
+		}),
+});
 
-// Mock the component
-jest.mock('./reglement-view', () => ({
+// Mock next/navigation
+const mockPush = jest.fn();
+jest.mock('next/navigation', () => ({
 	__esModule: true,
-	default: (props: ViewProps) => {
-		const session = props.session;
-		return (
-			<div data-testid="reglement-view">
-				<span data-testid="session-access-token">{session?.accessToken ?? 'no-token'}</span>
-				<span data-testid="company-id">{props.company_id}</span>
-				<span data-testid="reglement-id">{props.id}</span>
-				<h2>Détails du règlement</h2>
-				<div data-testid="status-card">
-					<span>Statut</span>
-					<span data-testid="status-chip">Valide</span>
-				</div>
-				<div data-testid="facture-info">
-					<span>Numéro de facture</span>
-					<span>Client</span>
-				</div>
-				<div data-testid="payment-details">
-					<span>Mode de règlement</span>
-					<span>Montant</span>
-					<span>Libellé</span>
-				</div>
-				<div data-testid="dates-info">
-					<span>Date de règlement</span>
-					<span>Date d&apos;échéance</span>
-					<span>Date de création</span>
-				</div>
-				<div data-testid="financial-summary">
-					<span>Montant de la facture</span>
-					<span>Total règlements</span>
-					<span>Reste à payer</span>
-				</div>
-				<button data-testid="back-button">Liste des règlements</button>
-				<button data-testid="edit-button">Modifier</button>
-			</div>
-		);
+	useRouter: () => ({
+		push: mockPush,
+		back: jest.fn(),
+		replace: jest.fn(),
+		refresh: jest.fn(),
+		forward: jest.fn(),
+		prefetch: jest.fn(),
+	}),
+}));
+
+// Mock hooks
+jest.mock('@/utils/hooks', () => ({
+	__esModule: true,
+	useAppSelector: jest.fn(() => [{ id: 1, role: 'Caissier' }]),
+}));
+
+jest.mock('@/store/selectors', () => ({
+	__esModule: true,
+	getUserCompaniesState: jest.fn(),
+}));
+
+jest.mock('@/store/session', () => ({
+	__esModule: true,
+	getAccessTokenFromSession: () => 'mock-token',
+}));
+
+// Mock reglement service hooks
+const mockUseGetReglementQuery = jest.fn();
+
+jest.mock('@/store/services/reglement', () => ({
+	__esModule: true,
+	useGetReglementQuery: (params: { id: number }, options: { skip: boolean }) =>
+		mockUseGetReglementQuery(params, options),
+}));
+
+// Mock NavigationBar
+jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
+	__esModule: true,
+	default: ({ children, title }: { children: React.ReactNode; title: string }) => (
+		<div data-testid="navigation-bar">
+			<h1 data-testid="nav-title">{title}</h1>
+			{children}
+		</div>
+	),
+}));
+
+jest.mock('@/components/formikElements/apiLoading/apiProgress/apiProgress', () => ({
+	__esModule: true,
+	default: () => <div data-testid="api-loader">Loading...</div>,
+}));
+
+jest.mock('@/components/formikElements/apiLoading/apiAlert/apiAlert', () => ({
+	__esModule: true,
+	default: ({ errorDetails }: { errorDetails?: { message?: string[] } }) => (
+		<div data-testid="api-alert">{errorDetails?.message?.[0] ?? 'Error'}</div>
+	),
+}));
+
+// Mock devis-list for getStatutColor
+jest.mock('@/components/pages/dashboard/devis/devis-list', () => ({
+	__esModule: true,
+	getStatutColor: (statut: string) => {
+		if (statut === 'Valide') return 'success';
+		if (statut === 'Annulé') return 'error';
+		return 'default';
 	},
 }));
 
+jest.mock('@/utils/helpers', () => ({
+	formatDate: (date: string | null) => (date ? new Date(date).toLocaleDateString('fr-FR') : '—'),
+	formatNumber: (val: number) => (val != null ? val.toFixed(2) : '0.00'),
+}));
+
+jest.mock('@/utils/routes', () => ({
+	REGLEMENTS_LIST: '/dashboard/reglements',
+	REGLEMENTS_EDIT: jest.fn((id: number, companyId: number) => `/dashboard/reglements/${id}/edit?company_id=${companyId}`),
+}));
+
+// Import after mocks
 import ReglementViewClient from './reglement-view';
 
 const mockSession: AppSession = {
-	accessToken: 'test-access-token',
-	refreshToken: 'test-refresh-token',
+	accessToken: 'mock-token',
+	refreshToken: 'mock-refresh-token',
 	accessTokenExpiration: '2099-12-31T23:59:59Z',
 	refreshTokenExpiration: '2099-12-31T23:59:59Z',
 	expires: '2099-12-31T23:59:59Z',
@@ -69,75 +120,144 @@ const mockSession: AppSession = {
 	},
 };
 
+const mockReglement = {
+	id: 123,
+	facture_client_numero: 'FC-001',
+	client_name: 'Client A',
+	mode_reglement_name: 'Virement',
+	montant: 500.0,
+	devise: 'MAD',
+	libelle: 'Paiement test',
+	date_reglement: '2025-02-10',
+	date_echeance: '2025-03-10',
+	date_created: '2025-02-10T10:00:00Z',
+	date_updated: '2025-02-11T12:00:00Z',
+	statut: 'Valide',
+	montant_facture: 1000,
+	total_reglements_facture: 500,
+	reste_a_payer: 500,
+};
+
+const renderWithProviders = (ui: React.ReactElement) => render(<Provider store={mockStore}>{ui}</Provider>);
+
+const defaultProps = { session: mockSession, company_id: 1, id: 123 };
+
 describe('ReglementViewClient', () => {
-	afterEach(() => {
-		cleanup();
+	beforeEach(() => {
 		jest.clearAllMocks();
 	});
 
-	describe('Rendering', () => {
-		it('renders the view', () => {
-			render(<ReglementViewClient session={mockSession} id={123} company_id={456} />);
-			expect(screen.getByTestId('reglement-view')).toBeInTheDocument();
-		});
-
-		it('renders the title', () => {
-			render(<ReglementViewClient session={mockSession} id={123} company_id={456} />);
-			expect(screen.getByText('Détails du règlement')).toBeInTheDocument();
-		});
-
-		it('renders status card', () => {
-			render(<ReglementViewClient session={mockSession} id={123} company_id={456} />);
-			expect(screen.getByTestId('status-card')).toBeInTheDocument();
-			expect(screen.getByTestId('status-chip')).toBeInTheDocument();
-		});
-
-		it('renders facture information', () => {
-			render(<ReglementViewClient session={mockSession} id={123} company_id={456} />);
-			expect(screen.getByTestId('facture-info')).toBeInTheDocument();
-		});
-
-		it('renders payment details', () => {
-			render(<ReglementViewClient session={mockSession} id={123} company_id={456} />);
-			expect(screen.getByTestId('payment-details')).toBeInTheDocument();
-		});
-
-		it('renders dates information', () => {
-			render(<ReglementViewClient session={mockSession} id={123} company_id={456} />);
-			expect(screen.getByTestId('dates-info')).toBeInTheDocument();
-		});
-
-		it('renders financial summary', () => {
-			render(<ReglementViewClient session={mockSession} id={123} company_id={456} />);
-			expect(screen.getByTestId('financial-summary')).toBeInTheDocument();
-		});
-
-		it('renders navigation buttons', () => {
-			render(<ReglementViewClient session={mockSession} id={123} company_id={456} />);
-			expect(screen.getByTestId('back-button')).toBeInTheDocument();
-			expect(screen.getByTestId('edit-button')).toBeInTheDocument();
-		});
+	afterEach(() => {
+		cleanup();
 	});
 
-	describe('Props', () => {
-		it('receives correct session token', () => {
-			render(<ReglementViewClient session={mockSession} id={123} company_id={456} />);
-			expect(screen.getByTestId('session-access-token')).toHaveTextContent('test-access-token');
+	it('renders loading state', () => {
+		mockUseGetReglementQuery.mockReturnValue({ isLoading: true, data: undefined, error: undefined });
+
+		renderWithProviders(<ReglementViewClient {...defaultProps} />);
+		expect(screen.getByTestId('api-loader')).toBeInTheDocument();
+	});
+
+	it('renders error state', () => {
+		mockUseGetReglementQuery.mockReturnValue({
+			isLoading: false,
+			data: undefined,
+			error: { status: 500, data: { details: { message: ['Erreur serveur'] } } },
 		});
 
-		it('receives correct company_id', () => {
-			render(<ReglementViewClient session={mockSession} id={123} company_id={789} />);
-			expect(screen.getByTestId('company-id')).toHaveTextContent('789');
+		renderWithProviders(<ReglementViewClient {...defaultProps} />);
+		expect(screen.getByTestId('api-alert')).toBeInTheDocument();
+	});
+
+	it('renders reglement details when data is available', () => {
+		mockUseGetReglementQuery.mockReturnValue({ isLoading: false, data: mockReglement, error: undefined });
+
+		renderWithProviders(<ReglementViewClient {...defaultProps} />);
+
+		expect(screen.getByTestId('nav-title')).toHaveTextContent('Détails du règlement');
+		expect(screen.getByText('Statut')).toBeInTheDocument();
+		expect(screen.getByText('Informations de la facture')).toBeInTheDocument();
+		expect(screen.getByText('Numéro de facture')).toBeInTheDocument();
+		expect(screen.getByText('FC-001')).toBeInTheDocument();
+		expect(screen.getByText('Client A')).toBeInTheDocument();
+		expect(screen.getAllByText('Détails du règlement').length).toBeGreaterThanOrEqual(1);
+		expect(screen.getByText('Virement')).toBeInTheDocument();
+		expect(screen.getByText('Paiement test')).toBeInTheDocument();
+		expect(screen.getByText('Dates')).toBeInTheDocument();
+	});
+
+	it('renders financial summary card', () => {
+		mockUseGetReglementQuery.mockReturnValue({ isLoading: false, data: mockReglement, error: undefined });
+
+		renderWithProviders(<ReglementViewClient {...defaultProps} />);
+		expect(screen.getByText('MONTANT FACTURE')).toBeInTheDocument();
+		expect(screen.getByText('TOTAL RÈGLEMENTS')).toBeInTheDocument();
+		expect(screen.getByText('RESTE À PAYER')).toBeInTheDocument();
+		expect(screen.getByText('CE RÈGLEMENT')).toBeInTheDocument();
+	});
+
+	it('renders back button and navigates to list', () => {
+		mockUseGetReglementQuery.mockReturnValue({ isLoading: false, data: mockReglement, error: undefined });
+
+		renderWithProviders(<ReglementViewClient {...defaultProps} />);
+		const backButton = screen.getByText('Liste des règlements', { selector: 'button' });
+		expect(backButton).toBeInTheDocument();
+		fireEvent.click(backButton);
+		expect(mockPush).toHaveBeenCalled();
+	});
+
+	it('shows "Modifier" button when role is Caissier and statut is Valide', () => {
+		mockUseGetReglementQuery.mockReturnValue({ isLoading: false, data: mockReglement, error: undefined });
+
+		renderWithProviders(<ReglementViewClient {...defaultProps} />);
+		const editBtn = screen.getByText('Modifier', { selector: 'button' });
+		expect(editBtn).toBeInTheDocument();
+		fireEvent.click(editBtn);
+		expect(mockPush).toHaveBeenCalled();
+	});
+
+	it('does not show "Modifier" button when role is not Caissier', () => {
+		const { useAppSelector } = jest.requireMock('@/utils/hooks') as { useAppSelector: jest.Mock };
+		useAppSelector.mockReturnValueOnce([{ id: 1, role: 'Lecture' }]);
+		mockUseGetReglementQuery.mockReturnValue({ isLoading: false, data: mockReglement, error: undefined });
+
+		renderWithProviders(<ReglementViewClient {...defaultProps} />);
+		expect(screen.queryByText('Modifier', { selector: 'button' })).not.toBeInTheDocument();
+	});
+
+	it('does not show "Modifier" button when statut is Annulé', () => {
+		mockUseGetReglementQuery.mockReturnValue({
+			isLoading: false,
+			data: { ...mockReglement, statut: 'Annulé' },
+			error: undefined,
 		});
 
-		it('receives correct reglement id', () => {
-			render(<ReglementViewClient session={mockSession} id={999} company_id={456} />);
-			expect(screen.getByTestId('reglement-id')).toHaveTextContent('999');
+		renderWithProviders(<ReglementViewClient {...defaultProps} />);
+		expect(screen.queryByText('Modifier', { selector: 'button' })).not.toBeInTheDocument();
+	});
+
+	it('does not show "Modifier" button during loading', () => {
+		mockUseGetReglementQuery.mockReturnValue({ isLoading: true, data: undefined, error: undefined });
+
+		renderWithProviders(<ReglementViewClient {...defaultProps} />);
+		expect(screen.queryByText('Modifier', { selector: 'button' })).not.toBeInTheDocument();
+	});
+
+	it('does not show "Modifier" button on error', () => {
+		mockUseGetReglementQuery.mockReturnValue({
+			isLoading: false,
+			data: undefined,
+			error: { status: 500, data: { details: { message: ['Erreur'] } } },
 		});
 
-		it('handles undefined session gracefully', () => {
-			render(<ReglementViewClient session={undefined} id={123} company_id={456} />);
-			expect(screen.getByTestId('session-access-token')).toHaveTextContent('no-token');
-		});
+		renderWithProviders(<ReglementViewClient {...defaultProps} />);
+		expect(screen.queryByText('Modifier', { selector: 'button' })).not.toBeInTheDocument();
+	});
+
+	it('calls useGetReglementQuery with correct id', () => {
+		mockUseGetReglementQuery.mockReturnValue({ isLoading: false, data: mockReglement, error: undefined });
+
+		renderWithProviders(<ReglementViewClient {...defaultProps} />);
+		expect(mockUseGetReglementQuery).toHaveBeenCalledWith({ id: 123 }, expect.any(Object));
 	});
 });

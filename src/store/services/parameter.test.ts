@@ -6,6 +6,7 @@ import {
 	uniteApi,
 	emplacementApi,
 	modePaiementApi,
+	livreParApi,
 } from '@/store/services/parameter';
 
 // Set default env vars for each API base URL
@@ -17,6 +18,7 @@ beforeAll(() => {
 	process.env.NEXT_PUBLIC_PARAMETER_EMPLACEMENT ||= 'https://example.com/emplacements';
 	process.env.NEXT_PUBLIC_PARAMETER_MODE_PAIEMENT ||= 'https://example.com/mode-paiement';
 	process.env.NEXT_PUBLIC_PARAMETER_MODE_REGLEMENT ||= 'https://example.com/mode-reglement';
+	process.env.NEXT_PUBLIC_PARAMETER_LIVRE_PAR ||= 'https://example.com/livre-par';
 });
 
 // Mock axiosBaseQuery so all endpoints succeed
@@ -250,6 +252,44 @@ describe('modePaiementApi', () => {
 		const result = await storeRef.store.dispatch(
 			modePaiementApi.endpoints.addModePaiement.initiate({
 				data: { nom: 'New ModePaiement' },
+			}),
+		);
+		expect('error' in result).toBe(false);
+	});
+});
+
+describe('livreParApi', () => {
+	const storeRef = setupApiStore(livreParApi);
+
+	it('getLivreParList query should complete without error', async () => {
+		const result = await storeRef.store.dispatch(livreParApi.endpoints.getLivreParList.initiate());
+		expect('error' in result).toBe(false);
+	});
+
+	it('getLivrePar query should complete without error', async () => {
+		const result = await storeRef.store.dispatch(livreParApi.endpoints.getLivrePar.initiate({ id: 1 }));
+		expect('error' in result).toBe(false);
+	});
+
+	it('deleteLivrePar mutation should complete without error', async () => {
+		const result = await storeRef.store.dispatch(livreParApi.endpoints.deleteLivrePar.initiate({ id: 2 }));
+		expect('error' in result).toBe(false);
+	});
+
+	it('editLivrePar mutation should complete without error', async () => {
+		const result = await storeRef.store.dispatch(
+			livreParApi.endpoints.editLivrePar.initiate({
+				id: 3,
+				data: { nom: 'Updated LivrePar' },
+			}),
+		);
+		expect('error' in result).toBe(false);
+	});
+
+	it('addLivrePar mutation should complete without error', async () => {
+		const result = await storeRef.store.dispatch(
+			livreParApi.endpoints.addLivrePar.initiate({
+				data: { nom: 'New LivrePar' },
 			}),
 		);
 		expect('error' in result).toBe(false);

@@ -81,14 +81,23 @@ jest.mock('@/store/services/devi', () => ({
 // Mock the shared form content component
 jest.mock('@/components/pages/dashboard/shared/company-documents-form/companyDocumentFormContent', () => ({
 	__esModule: true,
-	default: (props: FormContentProps) => (
-		<div data-testid="company-document-form-content">
-			<span data-testid="form-company-id">{props.company_id}</span>
-			<span data-testid="form-is-edit-mode">{String(props.isEditMode)}</span>
-			<span data-testid="form-id">{props.id ?? 'undefined'}</span>
-			<span data-testid="form-token">{props.token ?? 'undefined'}</span>
-		</div>
-	),
+	default: (props: FormContentProps & {
+		addData?: (params: { data: Record<string, unknown> }) => { unwrap: () => Promise<unknown> };
+		updateData?: (params: { data: Record<string, unknown>; id: number }) => { unwrap: () => Promise<unknown> };
+		patchStatut?: (params: { id: number; data: { statut: string } }) => { unwrap: () => Promise<unknown> };
+	}) => {
+		return (
+			<div data-testid="company-document-form-content">
+				<span data-testid="form-company-id">{props.company_id}</span>
+				<span data-testid="form-is-edit-mode">{String(props.isEditMode)}</span>
+				<span data-testid="form-id">{props.id ?? 'undefined'}</span>
+				<span data-testid="form-token">{props.token ?? 'undefined'}</span>
+				<button data-testid="call-add" onClick={() => props.addData?.({ data: { test: true } })?.unwrap()}>Add</button>
+				<button data-testid="call-update" onClick={() => props.updateData?.({ data: { test: true }, id: 1 })?.unwrap()}>Update</button>
+				<button data-testid="call-patch" onClick={() => props.patchStatut?.({ id: 1, data: { statut: 'Validé' } })?.unwrap()}>Patch</button>
+			</div>
+		);
+	},
 }));
 
 // Mock CompanyDocumentsWrapperForm to render FormComponent directly
@@ -211,15 +220,38 @@ describe('DevisForm', () => {
 
 describe('DevisForm Configuration', () => {
 	it('uses correct devis validation schemas', () => {
-		// This test verifies the component imports correct schemas
-		// The actual validation is tested in formValidationSchemas.test.ts
 		renderWithProviders(<DevisForm session={mockSession} company_id={1} />);
 		expect(screen.getByTestId('company-document-form-content')).toBeInTheDocument();
 	});
 
 	it('uses correct devis routes', () => {
-		// Verify the component renders without errors with route configuration
 		renderWithProviders(<DevisForm session={mockSession} company_id={1} id={1} />);
 		expect(screen.getByTestId('company-document-form-content')).toBeInTheDocument();
+	});
+});
+
+describe('DevisForm mutation wrappers', () => {
+	it('addData wrapper calls addDeviMutation', async () => {
+		mockAddDeviMutation.mockReturnValue({ unwrap: jest.fn().mockResolvedValue({ id: 1 }) });
+		renderWithProviders(<DevisForm session={mockSession} company_id={1} />);
+		const addBtn = screen.getByTestId('call-add');
+		addBtn.click();
+		expect(mockAddDeviMutation).toHaveBeenCalled();
+	});
+
+	it('updateData wrapper calls editDeviMutation', async () => {
+		mockEditDeviMutation.mockReturnValue({ unwrap: jest.fn().mockResolvedValue({}) });
+		renderWithProviders(<DevisForm session={mockSession} company_id={1} id={1} />);
+		const updateBtn = screen.getByTestId('call-update');
+		updateBtn.click();
+		expect(mockEditDeviMutation).toHaveBeenCalled();
+	});
+
+	it('patchStatut wrapper calls patchStatutMutation', async () => {
+		mockPatchStatutMutation.mockReturnValue({ unwrap: jest.fn().mockResolvedValue({}) });
+		renderWithProviders(<DevisForm session={mockSession} company_id={1} id={1} />);
+		const patchBtn = screen.getByTestId('call-patch');
+		patchBtn.click();
+		expect(mockPatchStatutMutation).toHaveBeenCalled();
 	});
 });

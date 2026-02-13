@@ -6,6 +6,8 @@ beforeAll(() => {
 	process.env.NEXT_PUBLIC_ARTICLE_ROOT ||= 'https://example.com/article';
 	process.env.NEXT_PUBLIC_ARCHIVE_ARTICLE ||= 'https://example.com/article/archive/';
 	process.env.NEXT_PUBLIC_ARTICLE_GENERATE_CODE_REFERENCE ||= 'https://example.com/article/code';
+	process.env.NEXT_PUBLIC_ARTICLE_IMPORT ||= 'https://example.com/article/import/';
+	process.env.NEXT_PUBLIC_ARTICLE_SEND_CSV_EXAMPLE_EMAIL ||= 'https://example.com/article/send-csv/';
 });
 
 // Mock axiosBaseQuery so all endpoints succeed
@@ -70,6 +72,26 @@ describe('articleApi', () => {
 			articleApi.endpoints.patchArchive.initiate({
 				id: 321,
 				data: { archived: true },
+			}),
+		);
+		expect('error' in result).toBe(false);
+	});
+
+	it('importArticles mutation should complete without error', async () => {
+		const testFile = new File(['test content'], 'test.csv', { type: 'text/csv' });
+		const result = await storeRef.store.dispatch(
+			articleApi.endpoints.importArticles.initiate({
+				file: testFile,
+				company_id: 1,
+			}),
+		);
+		expect('error' in result).toBe(false);
+	});
+
+	it('sendCSVExampleEmail mutation should complete without error', async () => {
+		const result = await storeRef.store.dispatch(
+			articleApi.endpoints.sendCSVExampleEmail.initiate({
+				company_id: 1,
 			}),
 		);
 		expect('error' in result).toBe(false);

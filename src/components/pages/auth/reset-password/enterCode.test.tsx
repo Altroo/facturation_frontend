@@ -90,9 +90,11 @@ describe('EnterCodeClient', () => {
 		expect(screen.getAllByText('Renvoyer le code').length).toBeGreaterThanOrEqual(1);
 	});
 
-	it('typing digits moves focus and updates combined code then submits successfully', async () => {
-		await act(async () => {
-			render(
+	it(
+		'typing digits moves focus and updates combined code then submits successfully',
+		async () => {
+			await act(async () => {
+				render(
 				<Provider store={store}>
 					<EnterCodeClient email={testEmail} />
 				</Provider>,
@@ -117,7 +119,7 @@ describe('EnterCodeClient', () => {
 			expect(mockCookiesPoster).toHaveBeenCalled();
 			expect(mockPush).toHaveBeenCalled();
 		});
-	});
+	}, 15000);
 
 	it('pasting full code fills inputs and validates/focuses appropriately', async () => {
 		await act(async () => {

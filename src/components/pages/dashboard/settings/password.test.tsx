@@ -1,80 +1,201 @@
 import React from 'react';
 import { render, screen, cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import type { SessionProps } from '@/types/_initTypes';
+import { Provider } from 'react-redux';
+import { configureStore } from '@reduxjs/toolkit';
 
-// Mock the component to avoid Formik/Zod memory issues
-jest.mock('./password', () => ({
-	__esModule: true,
-	default: (props: SessionProps) => {
-		const session = props.session;
-		return (
-			<div data-testid="password-client">
-				<span data-testid="session-access-token">{session?.accessToken ?? 'no-token'}</span>
-				<span data-testid="session-user-pk">{session?.user?.pk ?? 'no-pk'}</span>
-				<span data-testid="session-user-email">{session?.user?.email ?? 'no-email'}</span>
-				<h2>Modifier le mot de passe</h2>
-				<form data-testid="password-form">
-					<input data-testid="old-password-input" type="password" placeholder="Ancien mot de passe" />
-					<input data-testid="new-password-input" type="password" placeholder="Nouveau mot de passe" />
-					<input
-						data-testid="confirm-password-input"
-						type="password"
-						placeholder="Confirmation du nouveau mot de passe"
-					/>
-					<button data-testid="submit-button" type="submit">
-						Modifier
-					</button>
-				</form>
-			</div>
-		);
+// Minimal mock store
+const mockStore = configureStore({
+	reducer: {
+		_init: () => ({}),
+		account: () => ({}),
 	},
+	middleware: (getDefaultMiddleware) =>
+		getDefaultMiddleware({
+			serializableCheck: false,
+		}),
+});
+
+// Mock hooks
+const mockOnSuccess = jest.fn();
+const mockOnError = jest.fn();
+jest.mock('@/utils/hooks', () => ({
+	__esModule: true,
+	useToast: () => ({
+		onSuccess: mockOnSuccess,
+		onError: mockOnError,
+	}),
+	useAppSelector: jest.fn(() => null),
 }));
 
-// Import after mocking
+jest.mock('@/store/selectors', () => ({
+	__esModule: true,
+	getProfilState: jest.fn(),
+}));
+
+// Mock RTK Query hooks
+const mockChangePassword = jest.fn();
+
+jest.mock('@/store/services/account', () => ({
+	__esModule: true,
+	useEditPasswordMutation: () => [mockChangePassword, { isLoading: false }],
+}));
+
+// Mock NavigationBar
+jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
+	__esModule: true,
+	default: ({ children, title }: { children: React.ReactNode; title: string }) => (
+		<div data-testid="navigation-bar">
+			<h1 data-testid="nav-title">{title}</h1>
+			{children}
+		</div>
+	),
+}));
+
+// Mock form sub-components
+jest.mock('@/components/formikElements/customPasswordInput/customPasswordInput', () => ({
+	__esModule: true,
+	default: ({ id, label, value }: { id: string; label: string; value: string }) => (
+		<div data-testid={`input-${id}`}>
+			<label>{label}</label>
+			<input id={id} type="password" value={value ?? ''} readOnly />
+		</div>
+	),
+}));
+
+jest.mock('@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton', () => ({
+	__esModule: true,
+	default: ({ buttonText }: { buttonText: string }) => (
+		<button data-testid="submit-button">{buttonText}</button>
+	),
+}));
+
+jest.mock('@/components/formikElements/apiLoading/apiProgress/apiProgress', () => ({
+	__esModule: true,
+	default: () => <div data-testid="api-loader">Loading...</div>,
+}));
+
+jest.mock('@/utils/themes', () => ({
+	textInputTheme: jest.fn(() => ({})),
+}));
+
+jest.mock('@/utils/formValidationSchemas', () => ({
+	changePasswordSchema: { parse: jest.fn() },
+}));
+
+jest.mock('zod-formik-adapter', () => ({
+	toFormikValidationSchema: jest.fn(() => undefined),
+}));
+
+jest.mock('@/utils/helpers', () => ({
+	setFormikAutoErrors: jest.fn(),
+}));
+
+// Import after mocks
 import PasswordClient from './password';
 
+const renderWithProviders = (ui: React.ReactElement) => render(<Provider store={mockStore}>{ui}</Provider>);
+
 describe('PasswordClient', () => {
-	afterEach(() => {
-		cleanup();
+	beforeEach(() => {
 		jest.clearAllMocks();
 	});
 
-	describe('Rendering', () => {
-		it('renders the password change form', () => {
-			render(<PasswordClient />);
-			expect(screen.getByTestId('password-client')).toBeInTheDocument();
-		});
+	afterEach(() => {
+		cleanup();
+	});
 
-		it('renders the page title', () => {
-			render(<PasswordClient />);
-			expect(screen.getByText('Modifier le mot de passe')).toBeInTheDocument();
-		});
+	it('renders the navigation bar', () => {
+		renderWithProviders(<PasswordClient />);
+		expect(screen.getByTestId('navigation-bar')).toBeInTheDocument();
+	});
 
-		it('renders the form element', () => {
-			render(<PasswordClient />);
-			expect(screen.getByTestId('password-form')).toBeInTheDocument();
-		});
+	it('renders the page title', () => {
+		renderWithProviders(<PasswordClient />);
+		expect(screen.getByText('Modifier le mot de passe')).toBeInTheDocument();
+	});
 
-		it('renders the old password input', () => {
-			render(<PasswordClient />);
-			expect(screen.getByTestId('old-password-input')).toBeInTheDocument();
-		});
+	it('renders old password input', () => {
+		renderWithProviders(<PasswordClient />);
+		expect(screen.getByTestId('input-old_password')).toBeInTheDocument();
+		expect(screen.getByText('Ancien mot de passe')).toBeInTheDocument();
+	});
 
-		it('renders the new password input', () => {
-			render(<PasswordClient />);
-			expect(screen.getByTestId('new-password-input')).toBeInTheDocument();
-		});
+	it('renders new password input', () => {
+		renderWithProviders(<PasswordClient />);
+		expect(screen.getByTestId('input-new_password')).toBeInTheDocument();
+		expect(screen.getByText('Nouveau mot de passe')).toBeInTheDocument();
+	});
 
-		it('renders the confirm password input', () => {
-			render(<PasswordClient />);
-			expect(screen.getByTestId('confirm-password-input')).toBeInTheDocument();
-		});
+	it('renders confirm password input', () => {
+		renderWithProviders(<PasswordClient />);
+		expect(screen.getByTestId('input-new_password2')).toBeInTheDocument();
+		expect(screen.getByText('Confirmation du nouveau mot de passe')).toBeInTheDocument();
+	});
 
-		it('renders the submit button', () => {
-			render(<PasswordClient />);
-			expect(screen.getByTestId('submit-button')).toBeInTheDocument();
-			expect(screen.getByText('Modifier')).toBeInTheDocument();
-		});
+	it('renders submit button', () => {
+		renderWithProviders(<PasswordClient />);
+		expect(screen.getByTestId('submit-button')).toHaveTextContent('Modifier');
+	});
+
+	it('shows default password warning when profil.default_password_set is true', () => {
+		const { useAppSelector } = jest.requireMock('@/utils/hooks') as { useAppSelector: jest.Mock };
+		useAppSelector.mockReturnValue({ default_password_set: true });
+
+		renderWithProviders(<PasswordClient />);
+		expect(
+			screen.getByText(/Il est recommandé de changer votre mot de passe par défaut/),
+		).toBeInTheDocument();
+
+		useAppSelector.mockReturnValue(null);
+	});
+
+	it('does not show default password warning when profil.default_password_set is false', () => {
+		const { useAppSelector } = jest.requireMock('@/utils/hooks') as { useAppSelector: jest.Mock };
+		useAppSelector.mockReturnValue({ default_password_set: false });
+
+		renderWithProviders(<PasswordClient />);
+		expect(
+			screen.queryByText(/Il est recommandé de changer votre mot de passe par défaut/),
+		).not.toBeInTheDocument();
+
+		useAppSelector.mockReturnValue(null);
+	});
+
+	it('renders loading state when mutation is in progress', () => {
+		const accountService = jest.requireMock('@/store/services/account') as {
+			useEditPasswordMutation: () => [jest.Mock, { isLoading: boolean }];
+		};
+		const mockMutate = jest.fn();
+		accountService.useEditPasswordMutation = () => [mockMutate, { isLoading: true }];
+
+		renderWithProviders(<PasswordClient />);
+		expect(screen.getByTestId('api-loader')).toBeInTheDocument();
+	});
+
+	it('renders when profil is undefined', () => {
+		const { useAppSelector } = jest.requireMock('@/utils/hooks') as { useAppSelector: jest.Mock };
+		useAppSelector.mockReturnValue(undefined);
+
+		renderWithProviders(<PasswordClient />);
+		expect(screen.getByTestId('navigation-bar')).toBeInTheDocument();
+		expect(
+			screen.queryByText(/Il est recommandé de changer votre mot de passe par défaut/),
+		).not.toBeInTheDocument();
+
+		useAppSelector.mockReturnValue(null);
+	});
+
+	it('renders with profil object that has no default_password_set property', () => {
+		const { useAppSelector } = jest.requireMock('@/utils/hooks') as { useAppSelector: jest.Mock };
+		useAppSelector.mockReturnValue({ id: 1, email: 'test@test.com' });
+
+		renderWithProviders(<PasswordClient />);
+		expect(screen.getByTestId('navigation-bar')).toBeInTheDocument();
+		expect(
+			screen.queryByText(/Il est recommandé de changer votre mot de passe par défaut/),
+		).not.toBeInTheDocument();
+
+		useAppSelector.mockReturnValue(null);
 	});
 });

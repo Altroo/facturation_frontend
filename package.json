@@ -70,6 +70,7 @@
   },
   "trustedDependencies": [
     "@parcel/watcher",
+    "sharp",
     "unrs-resolver"
   ]
 }

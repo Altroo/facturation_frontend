@@ -7,6 +7,8 @@ beforeAll(() => {
 	process.env.NEXT_PUBLIC_DEVIS_ROOT ||= 'https://example.com/devis';
 	process.env.NEXT_PUBLIC_DEVIS_GENERATE_NUM_DEVIS ||= 'https://example.com/devis/generate-num/';
 	process.env.NEXT_PUBLIC_DEVIS_SWITCH_STATUT ||= 'https://example.com/devis/switch-status/';
+	process.env.NEXT_PUBLIC_DEVIS_CONVERT_TO_FACTURE_PRO_FORMA ||= 'https://example.com/devis/convert-fpf/';
+	process.env.NEXT_PUBLIC_DEVIS_CONVERT_TO_FACTURE_CLIENT ||= 'https://example.com/devis/convert-fc/';
 });
 
 // Mock axiosBaseQuery to always succeed
@@ -77,6 +79,22 @@ describe('deviApi endpoints', () => {
 				id: 1,
 				data: { statut: 'Brouillon' as TypeFactureLivraisonDevisStatus },
 			}),
+		);
+		expect(result.error).toBeUndefined();
+		expect(result.data).toEqual({ ok: true });
+	});
+
+	it('convertDeviToFactureProForma mutation should return mocked data', async () => {
+		const result = await storeRef.store.dispatch(
+			deviApi.endpoints.convertDeviToFactureProForma.initiate({ id: 5 }),
+		);
+		expect(result.error).toBeUndefined();
+		expect(result.data).toEqual({ ok: true });
+	});
+
+	it('convertDeviToFactureClient mutation should return mocked data', async () => {
+		const result = await storeRef.store.dispatch(
+			deviApi.endpoints.convertDeviToFactureClient.initiate({ id: 6 }),
 		);
 		expect(result.error).toBeUndefined();
 		expect(result.data).toEqual({ ok: true });

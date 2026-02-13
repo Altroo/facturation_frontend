@@ -193,7 +193,7 @@ export interface SectionMicroTrendsData {
 }
 
 // Helper function to build query string with date params
-const buildDateQueryString = (params?: DateFilterParams): string => {
+export const buildDateQueryString = (params?: DateFilterParams): string => {
 	if (!params) return '';
 	const searchParams = new URLSearchParams();
 	if (params.date_from) searchParams.append('date_from', params.date_from);

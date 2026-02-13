@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Box } from '@mui/material';
 import ChipSelectFilter from './chipSelectFilter';
 import type { ChipSelectOption } from './chipSelectFilter';
@@ -56,19 +56,28 @@ const ChipSelectFilterBar: React.FC<ChipSelectFilterBarProps> = ({
 		}
 	}, [selectedMap, buildParams, onFilterChange]);
 
+	// Compute stable key representing current filter configuration
+	const filterKeys = useMemo(() => filters.map((f) => f.key).join(','), [filters]);
+
+	// Track previous filter keys to detect changes
+	const prevFilterKeysRef = useRef(filterKeys);
+
 	// Reset selected when filter keys change (company switch etc.)
-	const filterKeysRef = useRef<string>(filters.map((f) => f.key).join(','));
 	useEffect(() => {
-		const currentKeys = filters.map((f) => f.key).join(',');
-		if (currentKeys !== filterKeysRef.current) {
-			filterKeysRef.current = currentKeys;
-			const reset: Record<string, number[]> = {};
-			filters.forEach((f) => {
-				reset[f.key] = [];
-			});
-			setSelectedMap(reset);
+		const filterKeysChanged = prevFilterKeysRef.current !== filterKeys;
+		prevFilterKeysRef.current = filterKeys;
+
+		if (filterKeysChanged) {
+			// Use setTimeout to avoid setState during render
+			setTimeout(() => {
+				const reset: Record<string, number[]> = {};
+				filters.forEach((f) => {
+					reset[f.key] = [];
+				});
+				setSelectedMap(reset);
+			}, 0);
 		}
-	}, [filters]);
+	}, [filterKeys, filters]);
 
 	const handleChange = useCallback(
 		(key: string, ids: number[]) => {

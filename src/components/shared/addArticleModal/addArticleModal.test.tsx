@@ -1,9 +1,11 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import type { CurrencyType } from '@/types/articleTypes';
 import AddArticleModal from './addArticleModal';
 
 type Article = { id?: number; reference?: string; designation?: string };
+type ArticleWithDevise = Article & { devise_prix_vente?: CurrencyType };
 
 interface MockGridProps {
 	rows: Article[];
@@ -294,5 +296,97 @@ describe('AddArticleModal', () => {
 		expect(screen.getByTestId('row-1')).toBeInTheDocument();
 		expect(screen.queryByTestId('row-no-id')).toBeNull();
 		expect(screen.getByTestId('row-3')).toBeInTheDocument();
+	});
+
+	it('filters articles by documentDevise when set to non-MAD value', () => {
+		const setSelectedArticles = jest.fn();
+		const onAdd = jest.fn();
+		const onClose = jest.fn();
+
+		const articlesWithDevise: ArticleWithDevise[] = [
+			{ id: 1, reference: 'REF-1', designation: 'Article EUR', devise_prix_vente: 'EUR' },
+			{ id: 2, reference: 'REF-2', designation: 'Article MAD', devise_prix_vente: 'MAD' },
+			{ id: 3, reference: 'REF-3', designation: 'Article EUR 2', devise_prix_vente: 'EUR' },
+		];
+
+		render(
+			<AddArticleModal
+				open={true}
+				loading={false}
+				onClose={onClose}
+				articles={articlesWithDevise}
+				selectedArticles={new Set<number>()}
+				setSelectedArticles={setSelectedArticles}
+				onAdd={onAdd}
+				existingArticleIds={new Set<number>()}
+				documentDevise="EUR"
+			/>,
+		);
+
+		// Only EUR articles should be shown
+		expect(screen.getByTestId('row-1')).toBeInTheDocument();
+		expect(screen.queryByTestId('row-2')).toBeNull();
+		expect(screen.getByTestId('row-3')).toBeInTheDocument();
+	});
+
+	it('shows all articles when documentDevise is MAD', () => {
+		const setSelectedArticles = jest.fn();
+
+		const articlesWithDevise: ArticleWithDevise[] = [
+			{ id: 1, reference: 'REF-1', devise_prix_vente: 'EUR' },
+			{ id: 2, reference: 'REF-2', devise_prix_vente: 'MAD' },
+		];
+
+		render(
+			<AddArticleModal
+				open={true}
+				loading={false}
+				onClose={jest.fn()}
+				articles={articlesWithDevise}
+				selectedArticles={new Set<number>()}
+				setSelectedArticles={setSelectedArticles}
+				onAdd={jest.fn()}
+				existingArticleIds={new Set<number>()}
+				documentDevise="MAD"
+			/>,
+		);
+
+		// MAD doesn't filter, so all are shown
+		expect(screen.getByTestId('row-1')).toBeInTheDocument();
+		expect(screen.getByTestId('row-2')).toBeInTheDocument();
+	});
+
+	it('renders with pre-selected articles', () => {
+		render(
+			<AddArticleModal
+				open={true}
+				loading={false}
+				onClose={jest.fn()}
+				articles={articles}
+				selectedArticles={new Set<number>([1, 3])}
+				setSelectedArticles={jest.fn()}
+				onAdd={jest.fn()}
+				existingArticleIds={new Set<number>()}
+			/>,
+		);
+
+		expect(screen.getByText('Ajouter (2)')).toBeInTheDocument();
+	});
+
+	it('does not render when closed', () => {
+		render(
+			<AddArticleModal
+				open={false}
+				loading={false}
+				onClose={jest.fn()}
+				articles={articles}
+				selectedArticles={new Set<number>()}
+				setSelectedArticles={jest.fn()}
+				onAdd={jest.fn()}
+				existingArticleIds={new Set<number>()}
+			/>,
+		);
+
+		expect(screen.queryByText('Ajouter des articles')).not.toBeInTheDocument();
 	});
 });

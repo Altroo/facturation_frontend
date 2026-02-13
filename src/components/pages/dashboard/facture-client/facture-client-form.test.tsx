@@ -83,12 +83,19 @@ jest.mock('@/store/services/factureClient', () => ({
 // Mock the shared form content component
 jest.mock('@/components/pages/dashboard/shared/company-documents-form/companyDocumentFormContent', () => ({
 	__esModule: true,
-	default: (props: FormContentProps) => (
+	default: (props: FormContentProps & {
+		addData?: (params: { data: Record<string, unknown> }) => { unwrap: () => Promise<unknown> };
+		updateData?: (params: { data: Record<string, unknown>; id: number }) => { unwrap: () => Promise<unknown> };
+		patchStatut?: (params: { id: number; data: { statut: string } }) => { unwrap: () => Promise<unknown> };
+	}) => (
 		<div data-testid="company-document-form-content">
 			<span data-testid="form-company-id">{props.company_id}</span>
 			<span data-testid="form-is-edit-mode">{String(props.isEditMode)}</span>
 			<span data-testid="form-id">{props.id ?? 'undefined'}</span>
 			<span data-testid="form-token">{props.token ?? 'undefined'}</span>
+			<button data-testid="call-add" onClick={() => props.addData?.({ data: { test: true } })?.unwrap()}>Add</button>
+			<button data-testid="call-update" onClick={() => props.updateData?.({ data: { test: true }, id: 1 })?.unwrap()}>Update</button>
+			<button data-testid="call-patch" onClick={() => props.patchStatut?.({ id: 1, data: { statut: 'Validé' } })?.unwrap()}>Patch</button>
 		</div>
 	),
 }));
@@ -218,5 +225,34 @@ describe('FactureClientForm Configuration', () => {
 	it('uses correct facture client routes', () => {
 		renderWithProviders(<FactureClientForm session={mockSession} company_id={1} id={1} />);
 		expect(screen.getByTestId('company-document-form-content')).toBeInTheDocument();
+	});
+});
+
+describe('FactureClientForm mutation wrappers', () => {
+	beforeEach(() => {
+		jest.clearAllMocks();
+		mockUseGetFactureClientQuery.mockReturnValue({ data: undefined, isLoading: false, error: undefined });
+		mockUseGetNumFactureClientQuery.mockReturnValue({ data: { numero_facture: 'FC-001/25' }, isLoading: false });
+	});
+
+	it('addData wrapper calls addFactureClientMutation', () => {
+		mockAddFactureClientMutation.mockReturnValue({ unwrap: jest.fn().mockResolvedValue({ id: 1 }) });
+		renderWithProviders(<FactureClientForm session={mockSession} company_id={1} />);
+		screen.getByTestId('call-add').click();
+		expect(mockAddFactureClientMutation).toHaveBeenCalled();
+	});
+
+	it('updateData wrapper calls editFactureClientMutation', () => {
+		mockEditFactureClientMutation.mockReturnValue({ unwrap: jest.fn().mockResolvedValue({}) });
+		renderWithProviders(<FactureClientForm session={mockSession} company_id={1} id={1} />);
+		screen.getByTestId('call-update').click();
+		expect(mockEditFactureClientMutation).toHaveBeenCalled();
+	});
+
+	it('patchStatut wrapper calls patchStatutMutation', () => {
+		mockPatchStatutMutation.mockReturnValue({ unwrap: jest.fn().mockResolvedValue({}) });
+		renderWithProviders(<FactureClientForm session={mockSession} company_id={1} id={1} />);
+		screen.getByTestId('call-patch').click();
+		expect(mockPatchStatutMutation).toHaveBeenCalled();
 	});
 });
