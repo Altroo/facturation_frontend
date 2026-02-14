@@ -80,6 +80,12 @@ const mockUseGetBonDeLivraisonListQuery = jest.fn((args: QueryArgs) => {
 	};
 });
 
+// Mock parameter service
+jest.mock('@/store/services/parameter', () => ({
+	useGetModePaiementListQuery: jest.fn(() => ({ data: [], isLoading: false })),
+	useGetLivreParListQuery: jest.fn(() => ({ data: [], isLoading: false })),
+}));
+
 jest.mock('@/store/services/bonDeLivraison', () => ({
 	useGetBonDeLivraisonListQuery: (args: QueryArgs) => mockUseGetBonDeLivraisonListQuery(args),
 	useDeleteBonDeLivraisonMutation: jest.fn(() => [mockDeleteRecord, { isLoading: false }]),

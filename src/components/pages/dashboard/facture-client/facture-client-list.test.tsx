@@ -87,6 +87,11 @@ jest.mock('@/store/services/factureClient', () => ({
 	useConvertFactureClientToBonDeLivraisonMutation: jest.fn(() => [mockConvertToBonDeLivraison, { isLoading: false }]),
 }));
 
+// Mock parameter service
+jest.mock('@/store/services/parameter', () => ({
+	useGetModePaiementListQuery: jest.fn(() => ({ data: [], isLoading: false })),
+}));
+
 // Mock company services
 jest.mock('@/store/services/company', () => ({
 	useGetCompanyQuery: jest.fn(() => ({
@@ -229,7 +234,7 @@ jest.mock('@/utils/helpers', () => ({
 			useGrouping: true
 		});
 	},
-	hexToRGB: (hex: string, alpha?: number) => (alpha !== undefined ? `rgba(0,0,0,${alpha})` : 'rgb(0,0,0)'),
+	hexToRGB: (_hex: string, alpha?: number) => (alpha !== undefined ? `rgba(0,0,0,${alpha})` : 'rgb(0,0,0)'),
 }));
 
 // Capture configuration passed to CompanyDocumentsListContent

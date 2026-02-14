@@ -72,6 +72,14 @@ const mockUseGetArticlesListQuery = jest.fn(() => ({
 	refetch: mockRefetch,
 }));
 
+// Mock parameter service
+jest.mock('@/store/services/parameter', () => ({
+	useGetCategorieListQuery: jest.fn(() => ({ data: [], isLoading: false })),
+	useGetEmplacementListQuery: jest.fn(() => ({ data: [], isLoading: false })),
+	useGetUniteListQuery: jest.fn(() => ({ data: [], isLoading: false })),
+	useGetMarqueListQuery: jest.fn(() => ({ data: [], isLoading: false })),
+}));
+
 jest.mock('@/store/services/article', () => ({
 	useGetArticlesListQuery: () => mockUseGetArticlesListQuery(),
 	useDeleteArticleMutation: jest.fn(() => [mockDeleteArticle, { isLoading: false }]),
@@ -215,13 +223,6 @@ jest.mock('@/components/shared/dateRangeFilter/dateRangeFilterOperator', () => (
 
 jest.mock('@/components/shared/numericFilter/numericFilterOperator', () => ({
 	createNumericFilterOperators: jest.fn(() => []),
-}));
-
-jest.mock('@/store/selectors', () => ({
-	getCategoriesState: jest.fn(),
-	getEmplacementsState: jest.fn(),
-	getUnitesState: jest.fn(),
-	getMarquesState: jest.fn(),
 }));
 
 jest.mock('@/utils/helpers', () => ({

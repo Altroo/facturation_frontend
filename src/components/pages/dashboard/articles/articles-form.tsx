@@ -48,8 +48,7 @@ import { textInputTheme, customDropdownTheme } from '@/utils/themes';
 import { ARTICLES_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import type { DropDownType } from '@/types/accountTypes';
-import { useAppSelector, useToast } from '@/utils/hooks';
-import { getCategoriesState, getEmplacementsState, getUnitesState, getMarquesState } from '@/store/selectors';
+import { useToast } from '@/utils/hooks';
 import {
 	useAddArticleMutation,
 	useEditArticleMutation,
@@ -66,8 +65,11 @@ import {
 	useAddEmplacementMutation,
 	useAddMarqueMutation,
 	useAddUniteMutation,
+	useGetCategorieListQuery,
+	useGetEmplacementListQuery,
+	useGetUniteListQuery,
+	useGetMarqueListQuery,
 } from '@/store/services/parameter';
-import type { CategorieClass, MarqueClass, UniteClass, EmplacementClass } from '@/models/classes';
 import { articleSchema } from '@/utils/formValidationSchemas';
 import AddEntityModal from '@/components/shared/addEntityModal/addEntityModal';
 import CustomSquareImageUploading from '@/components/formikElements/customSquareImageUploading/customSquareImageUploading';
@@ -108,26 +110,16 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const [addArticle, { isLoading: isAddLoading, error: addError }] = useAddArticleMutation();
 	const [updateArticle, { isLoading: isUpdateLoading, error: updateError }] = useEditArticleMutation();
 	// Categories
-	const rawCategories = useAppSelector(getCategoriesState);
-	const normalizedCategories: Array<CategorieClass> = Array.isArray(rawCategories)
-		? rawCategories
-		: Object.values(rawCategories ?? {});
+	const { data: categoriesData } = useGetCategorieListQuery({ company_id }, { skip: !token });
 	const [addCategory] = useAddCategorieMutation();
 	// Emplacements
-	const rawEmplacements = useAppSelector(getEmplacementsState);
-	const normalizedEmplacements: Array<EmplacementClass> = Array.isArray(rawEmplacements)
-		? rawEmplacements
-		: Object.values(rawEmplacements ?? {});
+	const { data: emplacementsData } = useGetEmplacementListQuery({ company_id }, { skip: !token });
 	const [addEmplacement] = useAddEmplacementMutation();
 	// Unites
-	const rawUnites = useAppSelector(getUnitesState);
-	const normalizedUnites: Array<UniteClass> = Array.isArray(rawUnites) ? rawUnites : Object.values(rawUnites ?? {});
+	const { data: unitesData } = useGetUniteListQuery({ company_id }, { skip: !token });
 	const [addUnite] = useAddUniteMutation();
 	// Marques
-	const rawMarques = useAppSelector(getMarquesState);
-	const normalizedMarques: Array<MarqueClass> = Array.isArray(rawMarques)
-		? rawMarques
-		: Object.values(rawMarques ?? {});
+	const { data: marquesData } = useGetMarqueListQuery({ company_id }, { skip: !token });
 	const [addMarque] = useAddMarqueMutation();
 	// Catégorie
 	const [openCategorieModal, setOpenCategorieModal] = useState(false);
@@ -204,11 +196,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	// Stable categoryItems
 	const categorieItems: DropDownType[] = useMemo(
 		() =>
-			normalizedCategories.map((c) => ({
+			(categoriesData ?? []).map((c) => ({
 				value: String(c.id),
 				code: c.nom,
 			})),
-		[normalizedCategories],
+		[categoriesData],
 	);
 
 	// Derive selectedCategorie without local state or effects
@@ -221,11 +213,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	// Emplacements
 	const emplacementItems: DropDownType[] = useMemo(
 		() =>
-			normalizedEmplacements.map((e) => ({
+			(emplacementsData ?? []).map((e) => ({
 				value: String(e.id),
 				code: e.nom,
 			})),
-		[normalizedEmplacements],
+		[emplacementsData],
 	);
 
 	const selectedEmplacement = useMemo<DropDownType | null>(() => {
@@ -237,11 +229,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	// Unités
 	const uniteItems: DropDownType[] = useMemo(
 		() =>
-			normalizedUnites.map((u) => ({
+			(unitesData ?? []).map((u) => ({
 				value: String(u.id),
 				code: u.nom,
 			})),
-		[normalizedUnites],
+		[unitesData],
 	);
 
 	const selectedUnite = useMemo<DropDownType | null>(() => {
@@ -253,11 +245,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	// Marques
 	const marqueItems: DropDownType[] = useMemo(
 		() =>
-			normalizedMarques.map((m) => ({
+			(marquesData ?? []).map((m) => ({
 				value: String(m.id),
 				code: m.nom,
 			})),
-		[normalizedMarques],
+		[marquesData],
 	);
 
 	const selectedMarque = useMemo<DropDownType | null>(() => {
@@ -716,7 +708,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				label="catégorie"
 				icon={<BusinessIcon fontSize="small" />}
 				inputTheme={inputTheme}
-				mutationFn={addCategory}
+				mutationFn={(args) => addCategory({ data: { ...args.data, company: company_id } })}
 				onSuccess={(newId) => {
 					formik.setFieldValue('categorie', newId);
 				}}
@@ -727,7 +719,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				label="emplacement"
 				icon={<LocationOnIcon fontSize="small" />}
 				inputTheme={inputTheme}
-				mutationFn={addEmplacement}
+				mutationFn={(args) => addEmplacement({ data: { ...args.data, company: company_id } })}
 				onSuccess={(newId) => {
 					formik.setFieldValue('emplacement', newId);
 				}}
@@ -738,7 +730,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				label="unité"
 				icon={<StraightenIcon fontSize="small" />}
 				inputTheme={inputTheme}
-				mutationFn={addUnite}
+				mutationFn={(args) => addUnite({ data: { ...args.data, company: company_id } })}
 				onSuccess={(newId) => {
 					formik.setFieldValue('unite', newId);
 				}}
@@ -749,7 +741,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				label="marque"
 				icon={<StarIcon fontSize="small" />}
 				inputTheme={inputTheme}
-				mutationFn={addMarque}
+				mutationFn={(args) => addMarque({ data: { ...args.data, company: company_id } })}
 				onSuccess={(newId) => {
 					formik.setFieldValue('marque', newId);
 				}}

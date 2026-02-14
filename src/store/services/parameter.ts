@@ -25,10 +25,11 @@ export const citiesApi = createApi({
 		),
 	),
 	endpoints: (builder) => ({
-		getCitiesList: builder.query<Array<CitiesClass>, void>({
-			query: () => ({
+		getCitiesList: builder.query<Array<CitiesClass>, { company_id: number }>({
+			query: ({ company_id }) => ({
 				url: process.env.NEXT_PUBLIC_PARAMETER_VILLE,
 				method: 'GET',
+				params: { company_id },
 			}),
 			providesTags: ['Cities'],
 		}),
@@ -75,10 +76,11 @@ export const marqueApi = createApi({
 		),
 	),
 	endpoints: (builder) => ({
-		getMarqueList: builder.query<Array<MarqueClass>, void>({
-			query: () => ({
+		getMarqueList: builder.query<Array<MarqueClass>, { company_id: number }>({
+			query: ({ company_id }) => ({
 				url: process.env.NEXT_PUBLIC_PARAMETER_MARQUE,
 				method: 'GET',
+				params: { company_id },
 			}),
 			providesTags: ['Marque'],
 		}),
@@ -125,10 +127,11 @@ export const categorieApi = createApi({
 		),
 	),
 	endpoints: (builder) => ({
-		getCategorieList: builder.query<Array<CategorieClass>, void>({
-			query: () => ({
+		getCategorieList: builder.query<Array<CategorieClass>, { company_id: number }>({
+			query: ({ company_id }) => ({
 				url: process.env.NEXT_PUBLIC_PARAMETER_CATEGORIE,
 				method: 'GET',
+				params: { company_id },
 			}),
 			providesTags: ['Categorie'],
 		}),
@@ -177,10 +180,11 @@ export const uniteApi = createApi({
 		),
 	),
 	endpoints: (builder) => ({
-		getUniteList: builder.query<Array<UniteClass>, void>({
-			query: () => ({
+		getUniteList: builder.query<Array<UniteClass>, { company_id: number }>({
+			query: ({ company_id }) => ({
 				url: process.env.NEXT_PUBLIC_PARAMETER_UNITE,
 				method: 'GET',
+				params: { company_id },
 			}),
 			providesTags: ['Unite'],
 		}),
@@ -227,10 +231,11 @@ export const emplacementApi = createApi({
 		),
 	),
 	endpoints: (builder) => ({
-		getEmplacementList: builder.query<Array<EmplacementClass>, void>({
-			query: () => ({
+		getEmplacementList: builder.query<Array<EmplacementClass>, { company_id: number }>({
+			query: ({ company_id }) => ({
 				url: process.env.NEXT_PUBLIC_PARAMETER_EMPLACEMENT,
 				method: 'GET',
+				params: { company_id },
 			}),
 			providesTags: ['Emplacement'],
 		}),
@@ -280,10 +285,11 @@ export const modePaiementApi = createApi({
 		),
 	),
 	endpoints: (builder) => ({
-		getModePaiementList: builder.query<Array<ModePaiementClass>, void>({
-			query: () => ({
+		getModePaiementList: builder.query<Array<ModePaiementClass>, { company_id: number }>({
+			query: ({ company_id }) => ({
 				url: process.env.NEXT_PUBLIC_PARAMETER_MODE_PAIEMENT,
 				method: 'GET',
+				params: { company_id },
 			}),
 			providesTags: ['ModePaiement'],
 		}),
@@ -333,10 +339,11 @@ export const livreParApi = createApi({
 		),
 	),
 	endpoints: (builder) => ({
-		getLivreParList: builder.query<Array<LivreParClass>, void>({
-			query: () => ({
+		getLivreParList: builder.query<Array<LivreParClass>, { company_id: number }>({
+			query: ({ company_id }) => ({
 				url: process.env.NEXT_PUBLIC_PARAMETER_LIVRE_PAR,
 				method: 'GET',
+				params: { company_id },
 			}),
 			providesTags: ['LivrePar'],
 		}),

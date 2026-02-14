@@ -32,8 +32,7 @@ import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/com
 import CompanyDocumentsListContent from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsListContent';
 import type { DocumentListConfig, PaginationModel, FactureClientListResponseType } from '@/types/companyDocumentsTypes';
 import { formatNumberWithSpaces } from '@/utils/helpers';
-import { useAppSelector } from '@/utils/hooks';
-import { getModePaiementState } from '@/store/selectors';
+import { useGetModePaiementListQuery } from '@/store/services/parameter';
 import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 
@@ -120,11 +119,11 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
 	const [chipFilterParams, setChipFilterParams] = useState<Record<string, string>>({});
 
-	const modePaiement = useAppSelector(getModePaiementState);
+	const { data: modePaiement } = useGetModePaiementListQuery({ company_id }, { skip: !token });
 
 	const chipFilters: ChipFilterConfig[] = React.useMemo(
 		() => [
-			{ key: 'mode_paiement', label: 'Mode de paiement', paramName: 'mode_paiement_ids', options: modePaiement },
+			{ key: 'mode_paiement', label: 'Mode de paiement', paramName: 'mode_paiement_ids', options: modePaiement ?? [] },
 		],
 		[modePaiement],
 	);

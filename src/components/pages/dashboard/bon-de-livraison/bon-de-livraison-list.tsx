@@ -6,14 +6,13 @@ import { Print as PrintIcon } from '@mui/icons-material';
 import { GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import { useDeleteBonDeLivraisonMutation, useGetBonDeLivraisonListQuery } from '@/store/services/bonDeLivraison';
+import { useGetModePaiementListQuery, useGetLivreParListQuery } from '@/store/services/parameter';
 import { BON_DE_LIVRAISON_ADD, BON_DE_LIVRAISON_EDIT, BON_DE_LIVRAISON_VIEW, BON_DE_LIVRAISON_PDF } from '@/utils/routes';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import { BonDeLivraisonClass } from '@/models/classes';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import CompanyDocumentsListContent from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsListContent';
 import type { DocumentListConfig, PaginationModel } from '@/types/companyDocumentsTypes';
-import { useAppSelector } from '@/utils/hooks';
-import { getModePaiementState, getLivreParState } from '@/store/selectors';
 import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 
@@ -85,13 +84,13 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
 	const [chipFilterParams, setChipFilterParams] = useState<Record<string, string>>({});
 
-	const modePaiement = useAppSelector(getModePaiementState);
-	const livrePar = useAppSelector(getLivreParState);
+	const { data: modePaiement } = useGetModePaiementListQuery({ company_id }, { skip: !token });
+	const { data: livrePar } = useGetLivreParListQuery({ company_id }, { skip: !token });
 
 	const chipFilters: ChipFilterConfig[] = React.useMemo(
 		() => [
-			{ key: 'mode_paiement', label: 'Mode de paiement', paramName: 'mode_paiement_ids', options: modePaiement },
-			{ key: 'livre_par', label: 'Livré par', paramName: 'livre_par_ids', options: livrePar },
+			{ key: 'mode_paiement', label: 'Mode de paiement', paramName: 'mode_paiement_ids', options: modePaiement ?? [] },
+			{ key: 'livre_par', label: 'Livré par', paramName: 'livre_par_ids', options: livrePar ?? [] },
 		],
 		[modePaiement, livrePar],
 	);

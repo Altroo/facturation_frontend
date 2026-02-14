@@ -47,8 +47,7 @@ import { textInputTheme } from '@/utils/themes';
 import { CLIENTS_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import type { DropDownType } from '@/types/accountTypes';
-import { useAppSelector, useToast } from '@/utils/hooks';
-import { getCitiesState } from '@/store/selectors';
+import { useToast } from '@/utils/hooks';
 import {
 	useAddClientMutation,
 	useEditClientMutation,
@@ -58,8 +57,7 @@ import {
 import { getLabelForKey, setFormikAutoErrors } from '@/utils/helpers';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import type { TypeClientType, ClientSchemaType } from '@/types/clientTypes';
-import { useAddCityMutation } from '@/store/services/parameter';
-import type { CitiesClass } from '@/models/classes';
+import { useAddCityMutation, useGetCitiesListQuery } from '@/store/services/parameter';
 import { clientSchema, pmRequired, ppRequired } from '@/utils/formValidationSchemas';
 import AddEntityModal from '@/components/shared/addEntityModal/addEntityModal';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
@@ -100,8 +98,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const [updateClient, { isLoading: isUpdateLoading, error: updateError }] = useEditClientMutation();
 
 	// Cities
-	const rawCities = useAppSelector(getCitiesState);
-	const normalizedCities: Array<CitiesClass> = Array.isArray(rawCities) ? rawCities : Object.values(rawCities ?? {});
+	const { data: citiesData } = useGetCitiesListQuery({ company_id }, { skip: !token });
 	const [addCity] = useAddCityMutation();
 
 	// Local state
@@ -193,11 +190,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	// Stable cityItems
 	const cityItems: DropDownType[] = useMemo(
 		() =>
-			normalizedCities.map((c) => ({
+			(citiesData ?? []).map((c) => ({
 				value: String(c.id),
 				code: c.nom,
 			})),
-		[normalizedCities],
+		[citiesData],
 	);
 
 	// Derive selectedCity without local state or effects
@@ -620,7 +617,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										onChange={(_, newVal) => {
 											formik.setFieldValue('ville', newVal ? Number(newVal.value) : null);
 										}}
-										onBlur={formik.handleBlur('nbr_employe')}
+									onBlur={formik.handleBlur('ville')}
 										error={formik.touched.ville && Boolean(formik.errors.ville)}
 										helperText={formik.touched.ville ? formik.errors.ville : ''}
 										startIcon={<LocationOnIcon fontSize="small" />}
@@ -724,7 +721,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				label="ville"
 				icon={<LocationOnIcon fontSize="small" />}
 				inputTheme={inputTheme}
-				mutationFn={addCity}
+				mutationFn={(args) => addCity({ data: { ...args.data, company: company_id } })}
 				onSuccess={(newId) => {
 					formik.setFieldValue('ville', newId);
 				}}

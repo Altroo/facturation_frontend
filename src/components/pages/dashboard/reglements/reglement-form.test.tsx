@@ -44,7 +44,12 @@ jest.mock('@/utils/hooks', () => ({
 jest.mock('@/store/selectors', () => ({
 	__esModule: true,
 	getUserCompaniesState: jest.fn(),
-	getModePaiementState: jest.fn(() => []),
+}));
+
+// Mock parameter service
+jest.mock('@/store/services/parameter', () => ({
+	__esModule: true,
+	useGetModePaiementListQuery: jest.fn(() => ({ data: [], isLoading: false })),
 }));
 
 jest.mock('@/store/session', () => ({
@@ -99,7 +104,7 @@ jest.mock('@/components/shared/noPermission/noPermission', () => ({
 	default: () => <div data-testid="no-permission">Accès refusé</div>,
 }));
 
-// Mock form sub-components
+// Mock form subcomponents
 jest.mock('@/components/formikElements/customTextInput/customTextInput', () => ({
 	__esModule: true,
 	default: ({ id, label, value, ...rest }: { id: string; label: string; value: string; [_key: string]: unknown }) => (
@@ -347,26 +352,32 @@ describe('ReglementForm', () => {
 
 	describe('Rich data rendering', () => {
 		it('renders with non-empty mode paiement data', () => {
-			const selectors = jest.requireMock('@/store/selectors') as {
-				getModePaiementState: jest.Mock;
+			const paramService = jest.requireMock('@/store/services/parameter') as {
+				useGetModePaiementListQuery: jest.Mock;
 			};
-			selectors.getModePaiementState.mockReturnValue([
-				{ id: 1, nom: 'Chèque' },
-				{ id: 2, nom: 'Virement' },
-				{ id: 3, nom: 'Espèces' },
-			]);
+			paramService.useGetModePaiementListQuery.mockReturnValue({
+				data: [
+					{ id: 1, nom: 'Chèque' },
+					{ id: 2, nom: 'Virement' },
+					{ id: 3, nom: 'Espèces' },
+				],
+				isLoading: false,
+			});
 			renderWithProviders(<ReglementForm session={mockSession} company_id={1} />);
 			expect(screen.getByTestId('navigation-bar')).toBeInTheDocument();
 		});
 
 		it('renders edit mode with full reglement data and matching mode', () => {
-			const selectors = jest.requireMock('@/store/selectors') as {
-				getModePaiementState: jest.Mock;
+			const paramService = jest.requireMock('@/store/services/parameter') as {
+				useGetModePaiementListQuery: jest.Mock;
 			};
-			selectors.getModePaiementState.mockReturnValue([
-				{ id: 1, nom: 'Chèque' },
-				{ id: 2, nom: 'Virement' },
-			]);
+			paramService.useGetModePaiementListQuery.mockReturnValue({
+				data: [
+					{ id: 1, nom: 'Chèque' },
+					{ id: 2, nom: 'Virement' },
+				],
+				isLoading: false,
+			});
 			mockUseGetReglementQuery.mockReturnValue({
 				data: {
 					id: 200,
@@ -392,10 +403,10 @@ describe('ReglementForm', () => {
 		});
 
 		it('renders with mode paiement as object instead of array', () => {
-			const selectors = jest.requireMock('@/store/selectors') as {
-				getModePaiementState: jest.Mock;
+			const paramService = jest.requireMock('@/store/services/parameter') as {
+				useGetModePaiementListQuery: jest.Mock;
 			};
-			selectors.getModePaiementState.mockReturnValue({ '1': { id: 1, nom: 'Espèces' } });
+			paramService.useGetModePaiementListQuery.mockReturnValue({ data: [{ id: 1, nom: 'Espèces' }], isLoading: false });
 			renderWithProviders(<ReglementForm session={mockSession} company_id={1} />);
 			expect(screen.getByTestId('navigation-bar')).toBeInTheDocument();
 		});
@@ -440,19 +451,19 @@ describe('ReglementForm', () => {
 		});
 
 		it('renders with empty mode paiement list', () => {
-			const selectors = jest.requireMock('@/store/selectors') as {
-				getModePaiementState: jest.Mock;
+			const paramService = jest.requireMock('@/store/services/parameter') as {
+				useGetModePaiementListQuery: jest.Mock;
 			};
-			selectors.getModePaiementState.mockReturnValue([]);
+			paramService.useGetModePaiementListQuery.mockReturnValue({ data: [], isLoading: false });
 			renderWithProviders(<ReglementForm session={mockSession} company_id={1} />);
 			expect(screen.getByTestId('navigation-bar')).toBeInTheDocument();
 		});
 
 		it('renders with null mode paiement state', () => {
-			const selectors = jest.requireMock('@/store/selectors') as {
-				getModePaiementState: jest.Mock;
+			const paramService = jest.requireMock('@/store/services/parameter') as {
+				useGetModePaiementListQuery: jest.Mock;
 			};
-			selectors.getModePaiementState.mockReturnValue(null);
+			paramService.useGetModePaiementListQuery.mockReturnValue({ data: null, isLoading: false });
 			renderWithProviders(<ReglementForm session={mockSession} company_id={1} />);
 			expect(screen.getByTestId('navigation-bar')).toBeInTheDocument();
 		});
@@ -531,10 +542,10 @@ describe('ReglementForm', () => {
 		});
 
 		it('renders with mode paiement not matching selected value', () => {
-			const selectors = jest.requireMock('@/store/selectors') as {
-				getModePaiementState: jest.Mock;
+			const paramService = jest.requireMock('@/store/services/parameter') as {
+				useGetModePaiementListQuery: jest.Mock;
 			};
-			selectors.getModePaiementState.mockReturnValue([{ id: 99, nom: 'Other Mode' }]);
+			paramService.useGetModePaiementListQuery.mockReturnValue({ data: [{ id: 99, nom: 'Other Mode' }], isLoading: false });
 			mockUseGetReglementQuery.mockReturnValue({
 				data: {
 					id: 400,

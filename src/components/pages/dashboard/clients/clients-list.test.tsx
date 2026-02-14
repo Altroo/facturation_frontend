@@ -99,7 +99,9 @@ jest.mock('@/components/htmlElements/tooltip/darkTooltip/darkTooltip', () => ({
 
 jest.mock('@/components/shared/dropdownFilter/dropdownFilter', () => ({ createDropdownFilterOperators: jest.fn(() => []) }));
 jest.mock('@/components/shared/dateRangeFilter/dateRangeFilterOperator', () => ({ createDateRangeFilterOperator: jest.fn(() => []) }));
-jest.mock('@/store/selectors', () => ({ getCitiesState: jest.fn() }));
+jest.mock('@/store/services/parameter', () => ({
+	useGetCitiesListQuery: jest.fn(() => ({ data: [], isLoading: false })),
+}));
 jest.mock('@/utils/helpers', () => ({
 	formatDate: (date: string | null) => (date ? new Date(date).toLocaleDateString('fr-FR') : '—'),
 }));

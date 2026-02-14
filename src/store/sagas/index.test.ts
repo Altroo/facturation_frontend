@@ -3,7 +3,7 @@ import { watchWS } from '@/store/sagas/wsSaga';
 import { AllEffect, ForkEffect } from 'redux-saga/effects';
 
 describe('rootSaga', () => {
-	it('should spawn watchInit, watchAccount, watchParameter with retry logic, and fork watchWS', () => {
+	it('should spawn watchInit, watchAccount, watchCompanies with retry logic, and fork watchWS', () => {
 		const generator = rootSaga();
 		const effect = generator.next().value as AllEffect<ForkEffect>;
 
@@ -34,8 +34,8 @@ describe('rootSaga', () => {
 				}),
 			]),
 		});
-		// 5 sagas currently:
-		// watchInit, watchAccount, watchWS, watchParameter, watchCompanies
-		expect(effect.payload).toHaveLength(5);
+		// 4 sagas currently:
+		// watchInit, watchAccount, watchCompanies, watchWS
+		expect(effect.payload).toHaveLength(4);
 	});
 });

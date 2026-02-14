@@ -106,18 +106,16 @@ export const { handlers, auth } = NextAuth({
 
 		async jwt({ token, account, user }) {
 			if (account && user) {
-				// On initial login — token is fresh, return immediately
-				token.access = user.access;
-				token.refresh = user.refresh;
+				// On initial login
+				token.access = user.access; // access token
+				token.refresh = user.refresh; // refresh token
 				token.access_expiration = user.access_expiration;
 				token.refresh_expiration = user.refresh_expiration;
-				token.user = user.user;
-				return token;
+				token.user = user.user; // user object
 			}
 
 			// Perform refresh token logic if the access token is expired
-			const accessExpMs = token.access_expiration ? new Date(token.access_expiration).getTime() : 0;
-			if (Date.now() >= accessExpMs) {
+			if (Date.now() >= (token.access_expiration ? Number(token.access_expiration) : 0)) {
 				try {
 					// Call your refresh token API if necessary
 					const instance = allowAnyInstance();

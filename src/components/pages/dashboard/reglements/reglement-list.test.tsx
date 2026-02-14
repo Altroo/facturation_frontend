@@ -20,8 +20,8 @@ jest.mock('@/utils/hooks', () => ({
 	useAppSelector: jest.fn(() => [{ id: 1, name: 'Chèque' }, { id: 2, name: 'Virement' }]),
 }));
 
-jest.mock('@/store/selectors', () => ({
-	getModePaiementState: jest.fn(),
+jest.mock('@/store/services/parameter', () => ({
+	useGetModePaiementListQuery: jest.fn(() => ({ data: [], isLoading: false })),
 }));
 
 const mockRefetch = jest.fn();

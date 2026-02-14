@@ -39,7 +39,6 @@ jest.mock('@/utils/hooks', () => ({
 jest.mock('@/store/selectors', () => ({
 	__esModule: true,
 	getUserCompaniesState: jest.fn(),
-	getCitiesState: jest.fn(() => []),
 }));
 
 jest.mock('@/store/session', () => ({
@@ -67,6 +66,7 @@ jest.mock('@/store/services/client', () => ({
 // Mock parameter service
 jest.mock('@/store/services/parameter', () => ({
 	__esModule: true,
+	useGetCitiesListQuery: jest.fn(() => ({ data: [], isLoading: false })),
 	useAddCityMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
 }));
 
@@ -87,7 +87,7 @@ jest.mock('@/components/shared/noPermission/noPermission', () => ({
 	default: () => <div data-testid="no-permission">Accès refusé</div>,
 }));
 
-// Mock form sub-components
+// Mock form subcomponents
 jest.mock('@/components/formikElements/customTextInput/customTextInput', () => ({
 	__esModule: true,
 	default: ({ id, label }: { id: string; label: string }) => (
@@ -293,22 +293,25 @@ describe('ClientsForm', () => {
 
 	describe('Rich data rendering', () => {
 		it('renders with non-empty cities data', () => {
-			const selectors = jest.requireMock('@/store/selectors') as {
-				getCitiesState: jest.Mock;
+			const paramService = jest.requireMock('@/store/services/parameter') as {
+				useGetCitiesListQuery: jest.Mock;
 			};
-			selectors.getCitiesState.mockReturnValue([
-				{ id: 1, nom: 'Casablanca' },
-				{ id: 2, nom: 'Rabat' },
-			]);
+			paramService.useGetCitiesListQuery.mockReturnValue({
+				data: [
+					{ id: 1, nom: 'Casablanca' },
+					{ id: 2, nom: 'Rabat' },
+				],
+				isLoading: false,
+			});
 			renderWithProviders(<ClientsForm session={mockSession} company_id={1} />);
 			expect(screen.getByTestId('navigation-bar')).toBeInTheDocument();
 		});
 
 		it('renders edit mode with PM client data and matching city', () => {
-			const selectors = jest.requireMock('@/store/selectors') as {
-				getCitiesState: jest.Mock;
+			const paramService = jest.requireMock('@/store/services/parameter') as {
+				useGetCitiesListQuery: jest.Mock;
 			};
-			selectors.getCitiesState.mockReturnValue([{ id: 5, nom: 'Tanger' }]);
+			paramService.useGetCitiesListQuery.mockReturnValue({ data: [{ id: 5, nom: 'Tanger' }], isLoading: false });
 			mockUseGetClientQuery.mockReturnValue({
 				data: {
 					id: 99,
@@ -334,10 +337,10 @@ describe('ClientsForm', () => {
 		});
 
 		it('renders PP client type in edit mode', () => {
-			const selectors = jest.requireMock('@/store/selectors') as {
-				getCitiesState: jest.Mock;
+			const paramService = jest.requireMock('@/store/services/parameter') as {
+				useGetCitiesListQuery: jest.Mock;
 			};
-			selectors.getCitiesState.mockReturnValue([{ id: 3, nom: 'Fès' }]);
+			paramService.useGetCitiesListQuery.mockReturnValue({ data: [{ id: 3, nom: 'Fès' }], isLoading: false });
 			mockUseGetClientQuery.mockReturnValue({
 				data: {
 					id: 77,
@@ -359,10 +362,10 @@ describe('ClientsForm', () => {
 		});
 
 		it('renders with cities as object instead of array', () => {
-			const selectors = jest.requireMock('@/store/selectors') as {
-				getCitiesState: jest.Mock;
+			const paramService = jest.requireMock('@/store/services/parameter') as {
+				useGetCitiesListQuery: jest.Mock;
 			};
-			selectors.getCitiesState.mockReturnValue({ '1': { id: 1, nom: 'Marrakech' } });
+			paramService.useGetCitiesListQuery.mockReturnValue({ data: [{ id: 1, nom: 'Marrakech' }], isLoading: false });
 			renderWithProviders(<ClientsForm session={mockSession} company_id={1} />);
 			expect(screen.getByTestId('navigation-bar')).toBeInTheDocument();
 		});
@@ -403,19 +406,19 @@ describe('ClientsForm', () => {
 		});
 
 		it('handles empty city list', () => {
-			const selectors = jest.requireMock('@/store/selectors') as {
-				getCitiesState: jest.Mock;
+			const paramService = jest.requireMock('@/store/services/parameter') as {
+				useGetCitiesListQuery: jest.Mock;
 			};
-			selectors.getCitiesState.mockReturnValue([]);
+			paramService.useGetCitiesListQuery.mockReturnValue({ data: [], isLoading: false });
 			renderWithProviders(<ClientsForm session={mockSession} company_id={1} />);
 			expect(screen.getByTestId('navigation-bar')).toBeInTheDocument();
 		});
 
 		it('handles null cities state', () => {
-			const selectors = jest.requireMock('@/store/selectors') as {
-				getCitiesState: jest.Mock;
+			const paramService = jest.requireMock('@/store/services/parameter') as {
+				useGetCitiesListQuery: jest.Mock;
 			};
-			selectors.getCitiesState.mockReturnValue(null);
+			paramService.useGetCitiesListQuery.mockReturnValue({ data: null, isLoading: false });
 			renderWithProviders(<ClientsForm session={mockSession} company_id={1} />);
 			expect(screen.getByTestId('navigation-bar')).toBeInTheDocument();
 		});
@@ -477,10 +480,10 @@ describe('ClientsForm', () => {
 		});
 
 		it('handles edit mode with city not matching any available city', () => {
-			const selectors = jest.requireMock('@/store/selectors') as {
-				getCitiesState: jest.Mock;
+			const paramService = jest.requireMock('@/store/services/parameter') as {
+				useGetCitiesListQuery: jest.Mock;
 			};
-			selectors.getCitiesState.mockReturnValue([{ id: 999, nom: 'Unknown City' }]);
+			paramService.useGetCitiesListQuery.mockReturnValue({ data: [{ id: 999, nom: 'Unknown City' }], isLoading: false });
 			mockUseGetClientQuery.mockReturnValue({
 				data: {
 					id: 50,

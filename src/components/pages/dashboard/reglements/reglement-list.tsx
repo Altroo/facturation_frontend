@@ -32,8 +32,8 @@ import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDa
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type { ReglementClass } from '@/models/classes';
 import { formatDate, formatNumberWithSpaces } from '@/utils/helpers';
-import { useToast, useAppSelector } from '@/utils/hooks';
-import { getModePaiementState } from '@/store/selectors';
+import { useToast } from '@/utils/hooks';
+import { useGetModePaiementListQuery } from '@/store/services/parameter';
 import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
@@ -88,11 +88,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
 	const [chipFilterParams, setChipFilterParams] = useState<Record<string, string>>({});
 
-	const modePaiement = useAppSelector(getModePaiementState);
+	const { data: modePaiement } = useGetModePaiementListQuery({ company_id }, { skip: !token });
 
 	const chipFilters: ChipFilterConfig[] = React.useMemo(
 		() => [
-			{ key: 'mode_reglement', label: 'Mode de règlement', paramName: 'mode_reglement_ids', options: modePaiement },
+			{ key: 'mode_reglement', label: 'Mode de règlement', paramName: 'mode_reglement_ids', options: modePaiement ?? [] },
 		],
 		[modePaiement],
 	);

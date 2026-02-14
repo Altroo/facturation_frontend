@@ -30,7 +30,7 @@ describe('citiesApi', () => {
 	const storeRef = setupApiStore(citiesApi);
 
 	it('getCitiesList query should complete without error', async () => {
-		const result = await storeRef.store.dispatch(citiesApi.endpoints.getCitiesList.initiate());
+		const result = await storeRef.store.dispatch(citiesApi.endpoints.getCitiesList.initiate({ company_id: 1 }));
 		expect('error' in result).toBe(false);
 	});
 
@@ -72,7 +72,7 @@ describe('marqueApi', () => {
 	const storeRef = setupApiStore(marqueApi);
 
 	it('getMarqueList query should complete without error', async () => {
-		const result = await storeRef.store.dispatch(marqueApi.endpoints.getMarqueList.initiate());
+		const result = await storeRef.store.dispatch(marqueApi.endpoints.getMarqueList.initiate({ company_id: 1 }));
 		expect('error' in result).toBe(false);
 	});
 
@@ -110,7 +110,7 @@ describe('categorieApi', () => {
 	const storeRef = setupApiStore(categorieApi);
 
 	it('getCategorieList query should complete without error', async () => {
-		const result = await storeRef.store.dispatch(categorieApi.endpoints.getCategorieList.initiate());
+		const result = await storeRef.store.dispatch(categorieApi.endpoints.getCategorieList.initiate({ company_id: 1 }));
 		expect('error' in result).toBe(false);
 	});
 
@@ -148,7 +148,7 @@ describe('uniteApi', () => {
 	const storeRef = setupApiStore(uniteApi);
 
 	it('getUniteList query should complete without error', async () => {
-		const result = await storeRef.store.dispatch(uniteApi.endpoints.getUniteList.initiate());
+		const result = await storeRef.store.dispatch(uniteApi.endpoints.getUniteList.initiate({ company_id: 1 }));
 		expect('error' in result).toBe(false);
 	});
 
@@ -186,7 +186,7 @@ describe('emplacementApi', () => {
 	const storeRef = setupApiStore(emplacementApi);
 
 	it('getEmplacementList query should complete without error', async () => {
-		const result = await storeRef.store.dispatch(emplacementApi.endpoints.getEmplacementList.initiate());
+		const result = await storeRef.store.dispatch(emplacementApi.endpoints.getEmplacementList.initiate({ company_id: 1 }));
 		expect('error' in result).toBe(false);
 	});
 
@@ -224,7 +224,7 @@ describe('modePaiementApi', () => {
 	const storeRef = setupApiStore(modePaiementApi);
 
 	it('getModePaiementList query should complete without error', async () => {
-		const result = await storeRef.store.dispatch(modePaiementApi.endpoints.getModePaiementList.initiate());
+		const result = await storeRef.store.dispatch(modePaiementApi.endpoints.getModePaiementList.initiate({ company_id: 1 }));
 		expect('error' in result).toBe(false);
 	});
 
@@ -262,7 +262,7 @@ describe('livreParApi', () => {
 	const storeRef = setupApiStore(livreParApi);
 
 	it('getLivreParList query should complete without error', async () => {
-		const result = await storeRef.store.dispatch(livreParApi.endpoints.getLivreParList.initiate());
+		const result = await storeRef.store.dispatch(livreParApi.endpoints.getLivreParList.initiate({ company_id: 1 }));
 		expect('error' in result).toBe(false);
 	});
 

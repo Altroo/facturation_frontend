@@ -11,10 +11,6 @@ jest.mock('@/store/slices/accountSlice', () => ({
 	__esModule: true,
 	default: (state = { account: true }) => state,
 }));
-jest.mock('@/store/slices/parameterSlice', () => ({
-	__esModule: true,
-	default: (state = { parameter: true }) => state,
-}));
 jest.mock('@/store/slices/companiesSlice', () => ({
 	__esModule: true,
 	default: (state = { companies: true }) => state,
@@ -102,7 +98,6 @@ describe('Redux Saga Store', () => {
 		const state: RootState = store.getState();
 		expect(state).toHaveProperty('_init');
 		expect(state).toHaveProperty('account');
-		expect(state).toHaveProperty('parameter');
 		expect(state).toHaveProperty('companies');
 		expect(state).toHaveProperty('accountApi');
 		expect(state).toHaveProperty('profilApi');

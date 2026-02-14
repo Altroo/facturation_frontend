@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
-import { AUTH_LOGIN, CLIENTS_LIST } from '@/utils/routes';
+import { AUTH_LOGIN, ARTICLES_LIST } from '@/utils/routes';
 import ArticlesForm from '@/components/pages/dashboard/articles/articles-form';
 import { Metadata } from 'next';
 
@@ -23,7 +23,7 @@ const ArticleNewCompanyIDPage = async (props: PageProps) => {
 	}
 
 	if (!company_id || isNaN(Number(company_id))) {
-		redirect(CLIENTS_LIST);
+		redirect(ARTICLES_LIST);
 	}
 
 	return <ArticlesForm session={session} company_id={Number(company_id)} />;

@@ -20,6 +20,14 @@ jest.mock('next/navigation', () => ({
 	redirect: mockRedirect,
 }));
 
+const AUTH_LOGIN = '/login';
+const ARTICLES_LIST = '/articles';
+jest.mock('@/utils/routes', () => ({
+	__esModule: true,
+	AUTH_LOGIN,
+	ARTICLES_LIST,
+}));
+
 // mock ArticlesForm
 jest.mock('@/components/pages/dashboard/articles/articles-form', () => ({
 	__esModule: true,
@@ -32,14 +40,6 @@ jest.mock('@/components/pages/dashboard/articles/articles-form', () => ({
 			`ARTICLES_FORM_MARKER:${JSON.stringify(props?.session ?? null)}:ID=${props?.id ?? ''}:COMPANY_ID=${props?.company_id ?? ''}`,
 		);
 	},
-}));
-
-const AUTH_LOGIN = '/login';
-const CLIENTS_LIST = '/clients';
-jest.mock('@/utils/routes', () => ({
-	__esModule: true,
-	AUTH_LOGIN,
-	CLIENTS_LIST,
 }));
 
 beforeEach(() => {
@@ -69,7 +69,7 @@ describe('ArticleEditPage server component', () => {
 		expect(mockRedirect).toHaveBeenCalledWith(AUTH_LOGIN);
 	});
 
-	it('redirects to CLIENTS_LIST when id or company_id is invalid', async () => {
+	it('redirects to ARTICLES_LIST when id or company_id is invalid', async () => {
 		const sessionValue: Session = { user: { pk: 1, email: 'article@site.com' } };
 		mockAuth.mockResolvedValueOnce(sessionValue);
 
@@ -85,11 +85,11 @@ describe('ArticleEditPage server component', () => {
 
 		// invalid id
 		await Page!({ params: Promise.resolve({ id: 'abc' }), searchParams: Promise.resolve({ company_id: '456' }) });
-		expect(mockRedirect).toHaveBeenCalledWith(CLIENTS_LIST);
+		expect(mockRedirect).toHaveBeenCalledWith(ARTICLES_LIST);
 
 		// invalid company_id
 		await Page!({ params: Promise.resolve({ id: '123' }), searchParams: Promise.resolve({ company_id: 'xyz' }) });
-		expect(mockRedirect).toHaveBeenCalledWith(CLIENTS_LIST);
+		expect(mockRedirect).toHaveBeenCalledWith(ARTICLES_LIST);
 	});
 
 	it('renders ArticlesForm with session, id, and company_id when valid', async () => {

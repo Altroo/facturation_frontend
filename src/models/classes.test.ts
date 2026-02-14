@@ -150,9 +150,10 @@ describe('ClientClass', () => {
 
 describe('CitiesClass', () => {
 	it('creates a city instance with given properties', () => {
-		const city = new CitiesClass(1, 'Tanger');
+		const city = new CitiesClass(1, 'Tanger', 1);
 		expect(city.id).toBe(1);
 		expect(city.nom).toBe('Tanger');
+		expect(city.company).toBe(1);
 	});
 });
 
@@ -204,41 +205,46 @@ describe('ArticleClass', () => {
 
 describe('MarqueClass', () => {
 	it('creates a marque instance with given properties', () => {
-		const marque = new MarqueClass(1, 'BrandA');
+		const marque = new MarqueClass(1, 'BrandA', 1);
 		expect(marque.id).toBe(1);
 		expect(marque.nom).toBe('BrandA');
+		expect(marque.company).toBe(1);
 	});
 });
 
 describe('CategorieClass', () => {
 	it('creates a categorie instance with given properties', () => {
-		const categorie = new CategorieClass(1, 'CategoryA');
+		const categorie = new CategorieClass(1, 'CategoryA', 1);
 		expect(categorie.id).toBe(1);
 		expect(categorie.nom).toBe('CategoryA');
+		expect(categorie.company).toBe(1);
 	});
 });
 
 describe('UniteClass', () => {
 	it('creates a unite instance with given properties', () => {
-		const unite = new UniteClass(1, 'Kg');
+		const unite = new UniteClass(1, 'Kg', 1);
 		expect(unite.id).toBe(1);
 		expect(unite.nom).toBe('Kg');
+		expect(unite.company).toBe(1);
 	});
 });
 
 describe('EmplacementClass', () => {
 	it('creates an emplacement instance with given properties', () => {
-		const emplacement = new EmplacementClass(1, 'WarehouseA');
+		const emplacement = new EmplacementClass(1, 'WarehouseA', 1);
 		expect(emplacement.id).toBe(1);
 		expect(emplacement.nom).toBe('WarehouseA');
+		expect(emplacement.company).toBe(1);
 	});
 });
 
 describe('ModePaiementClass', () => {
 	it('creates a mode paiement instance with given properties', () => {
-		const modePaiement = new ModePaiementClass(1, 'Cash');
+		const modePaiement = new ModePaiementClass(1, 'Cash', 1);
 		expect(modePaiement.id).toBe(1);
 		expect(modePaiement.nom).toBe('Cash');
+		expect(modePaiement.company).toBe(1);
 	});
 });
 

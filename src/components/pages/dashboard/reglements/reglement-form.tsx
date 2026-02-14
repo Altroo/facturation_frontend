@@ -36,7 +36,7 @@ import { FACTURE_CLIENT_ADD, REGLEMENTS_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import type { DropDownType } from '@/types/accountTypes';
 import { useAppSelector, useToast } from '@/utils/hooks';
-import { getModePaiementState, getUserCompaniesState } from '@/store/selectors';
+import { getUserCompaniesState } from '@/store/selectors';
 import { useAddReglementMutation, useEditReglementMutation, useGetReglementQuery } from '@/store/services/reglement';
 import { useGetFactureClientForPaymentQuery } from '@/store/services/factureClient';
 import { getLabelForKey, setFormikAutoErrors, parseNumber, formatNumber } from '@/utils/helpers';
@@ -46,7 +46,7 @@ import { reglementSchema } from '@/utils/formValidationSchemas';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { getAccessTokenFromSession } from '@/store/session';
-import { ModePaiementClass } from '@/models/classes';
+import { useGetModePaiementListQuery } from '@/store/services/parameter';
 import NoPermission from '@/components/shared/noPermission/noPermission';
 
 const inputTheme = textInputTheme();
@@ -84,10 +84,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const [updateReglement, { isLoading: isUpdateLoading, error: updateError }] = useEditReglementMutation();
 
 	// Modes Règlement
-	const rawModesReglements = useAppSelector(getModePaiementState);
-	const normalizedModesReglements: Array<ModePaiementClass> = Array.isArray(rawModesReglements)
-		? rawModesReglements
-		: Object.values(rawModesReglements ?? {});
+	const { data: modesReglementsData } = useGetModePaiementListQuery({ company_id }, { skip: !token });
 
 	const [isPending, setIsPending] = useState(false);
 	const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
@@ -201,11 +198,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	// Modes Règlement dropdown items
 	const modeReglementItems: DropDownType[] = useMemo(
 		() =>
-			normalizedModesReglements.map((m) => ({
+			(modesReglementsData ?? []).map((m) => ({
 				value: String(m.id),
 				code: m.nom,
 			})),
-		[normalizedModesReglements],
+		[modesReglementsData],
 	);
 
 	const selectedModeReglement = useMemo<DropDownType | null>(() => {

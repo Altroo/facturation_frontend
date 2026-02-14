@@ -87,6 +87,11 @@ jest.mock('@/store/services/factureProForma', () => ({
 	useConvertFactureProFormaToFactureMutation: jest.fn(() => [mockConvertToClient, { isLoading: false }]),
 }));
 
+// Mock parameter service
+jest.mock('@/store/services/parameter', () => ({
+	useGetModePaiementListQuery: jest.fn(() => ({ data: [], isLoading: false })),
+}));
+
 // Mock devis-list exports
 jest.mock('@/components/pages/dashboard/devis/devis-list', () => ({
 	getStatutColor: (statut: string) => {
@@ -225,7 +230,7 @@ jest.mock('@/utils/helpers', () => ({
 			useGrouping: true
 		});
 	},
-	hexToRGB: (hex: string, alpha?: number) => (alpha !== undefined ? `rgba(0,0,0,${alpha})` : 'rgb(0,0,0)'),
+	hexToRGB: (_hex: string, alpha?: number) => (alpha !== undefined ? `rgba(0,0,0,${alpha})` : 'rgb(0,0,0)'),
 }));
 
 // Capture configuration passed to CompanyDocumentsListContent

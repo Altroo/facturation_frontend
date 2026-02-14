@@ -2,10 +2,9 @@ import { all, spawn, call, fork } from 'redux-saga/effects';
 import { watchInit } from '@/store/sagas/_initSaga';
 import { watchWS } from '@/store/sagas/wsSaga';
 import { watchAccount } from '@/store/sagas/accountSaga';
-import { watchParameter } from '@/store/sagas/parameterSaga';
 import { watchCompanies } from '@/store/sagas/companiesSaga';
 
-const sagas = [watchInit, watchAccount, watchParameter, watchCompanies];
+const sagas = [watchInit, watchAccount, watchCompanies];
 
 // spawn : whenever a watcher get crashed somehow,
 // we use spawn to respawn it back. (except it's unblocking)

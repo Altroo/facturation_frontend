@@ -54,7 +54,7 @@ jest.mock('@/utils/hooks', () => ({
 jest.mock('@/store/selectors', () => ({
 	__esModule: true,
 	getUserCompaniesState: jest.fn(),
-	getModePaiementState: jest.fn(() => []),
+
 }));
 
 jest.mock('@/store/session', () => ({

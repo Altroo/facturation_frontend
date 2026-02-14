@@ -61,11 +61,10 @@ import { textInputTheme, customDropdownTheme, gridInputTheme, customGridDropdown
 import { CLIENTS_ADD } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
-import { ArticleClass, ClientClass, ModePaiementClass, LivreParClass } from '@/models/classes';
+import { ArticleClass, ClientClass } from '@/models/classes';
 import { useGetClientsListQuery } from '@/store/services/client';
 import { useGetCompanyQuery } from '@/store/services/company';
-import { useAppSelector, useToast } from '@/utils/hooks';
-import { getModePaiementState, getLivreParState } from '@/store/selectors';
+import { useToast } from '@/utils/hooks';
 import type { DropDownType } from '@/types/accountTypes';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import { useGetArticlesListQuery } from '@/store/services/article';
@@ -75,7 +74,7 @@ import AddArticleModal from '@/components/shared/addArticleModal/addArticleModal
 import GlobalRemiseModal from '@/components/shared/globalRemiseModal/globalRemiseModal';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import { bonDeLivraisonStatusItemsList, devisFactureStatusItemsList, remiseTypeItemsList } from '@/utils/rawData';
-import { useAddModePaiementMutation, useAddLivreParMutation } from '@/store/services/parameter';
+import { useAddModePaiementMutation, useAddLivreParMutation, useGetModePaiementListQuery, useGetLivreParListQuery } from '@/store/services/parameter';
 import AddEntityModal from '@/components/shared/addEntityModal/addEntityModal';
 import FactureDevisTotalsCard from '@/components/shared/factureDevistotalCard/factureDevisTotalsCard';
 import LinesGrid from '@/components/shared/linesGrid/linesGrid';
@@ -264,18 +263,12 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	// Mode paiement
 	const [addModePaiement] = useAddModePaiementMutation();
 	const [openModePaiementModal, setOpenModePaiementModal] = useState(false);
-	const rawModePaiement = useAppSelector(getModePaiementState);
-	const normalizedModePaiement: Array<ModePaiementClass> = Array.isArray(rawModePaiement)
-		? rawModePaiement
-		: Object.values(rawModePaiement ?? {});
+	const { data: modePaiementData } = useGetModePaiementListQuery({ company_id }, { skip: !token });
 
 	// Livre par
 	const [addLivrePar] = useAddLivreParMutation();
 	const [openLivreParModal, setOpenLivreParModal] = useState(false);
-	const rawLivrePar = useAppSelector(getLivreParState);
-	const normalizedLivrePar: Array<LivreParClass> = Array.isArray(rawLivrePar)
-		? rawLivrePar
-		: Object.values(rawLivrePar ?? {});
+	const { data: livreParData } = useGetLivreParListQuery({ company_id }, { skip: !token });
 
 	// Error handling
 	const error = isEditMode ? dataError || updateError || patchError : addError;
@@ -472,8 +465,8 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 
 	// Mode paiement items
 	const modePaiementItems: DropDownType[] = useMemo(
-		() => normalizedModePaiement.map((c) => ({ value: String(c.id), code: c.nom })),
-		[normalizedModePaiement],
+		() => (modePaiementData ?? []).map((c) => ({ value: String(c.id), code: c.nom })),
+		[modePaiementData],
 	);
 
 	const selectedModePaiement = useMemo<DropDownType | null>(() => {
@@ -484,8 +477,8 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 
 	// Livre par items
 	const livreParItems: DropDownType[] = useMemo(
-		() => (normalizedLivrePar || []).map((c) => ({ value: String(c.id), code: c.nom })),
-		[normalizedLivrePar],
+		() => (livreParData ?? []).map((c) => ({ value: String(c.id), code: c.nom })),
+		[livreParData],
 	);
 
 	const livreParValue = (formik.values as { livre_par?: number | null }).livre_par;
@@ -1775,7 +1768,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				label="mode de paiement"
 				icon={<PaymentIcon fontSize="small" />}
 				inputTheme={inputFieldTheme}
-				mutationFn={addModePaiement}
+				mutationFn={(args) => addModePaiement({ data: { ...args.data, company: company_id } })}
 				onSuccess={(newId) => {
 					formik.setFieldValue('mode_paiement', newId);
 				}}
@@ -1787,7 +1780,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 					label="livreur"
 					icon={<LocalShippingIcon fontSize="small" />}
 					inputTheme={inputFieldTheme}
-					mutationFn={addLivrePar}
+					mutationFn={(args) => addLivrePar({ data: { ...args.data, company: company_id } })}
 					onSuccess={(newId) => {
 						formik.setFieldValue('livre_par', newId);
 					}}

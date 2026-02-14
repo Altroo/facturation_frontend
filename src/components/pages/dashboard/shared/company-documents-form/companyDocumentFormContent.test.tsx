@@ -49,10 +49,6 @@ jest.mock('@/utils/hooks', () => ({
 	useAppSelector: jest.fn(() => []),
 	useToast: jest.fn(() => ({ onSuccess: jest.fn(), onError: jest.fn() })),
 }));
-jest.mock('@/store/selectors', () => ({
-	getModePaiementState: jest.fn(),
-	getLivreParState: jest.fn(),
-}));
 jest.mock('@/store/services/client', () => ({
 	useGetClientsListQuery: jest.fn(() => ({ data: [], isLoading: false })),
 }));
@@ -63,6 +59,8 @@ jest.mock('@/store/services/article', () => ({
 	useGetArticlesListQuery: jest.fn(() => ({ data: [], isLoading: false })),
 }));
 jest.mock('@/store/services/parameter', () => ({
+	useGetModePaiementListQuery: jest.fn(() => ({ data: [], isLoading: false })),
+	useGetLivreParListQuery: jest.fn(() => ({ data: [], isLoading: false })),
 	useAddModePaiementMutation: jest.fn(() => [jest.fn()]),
 	useAddLivreParMutation: jest.fn(() => [jest.fn()]),
 }));

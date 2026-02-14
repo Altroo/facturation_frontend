@@ -89,6 +89,11 @@ jest.mock('@/store/services/devi', () => ({
 	useConvertDeviToFactureClientMutation: jest.fn(() => [mockConvertToClient, { isLoading: false }]),
 }));
 
+// Mock parameter service
+jest.mock('@/store/services/parameter', () => ({
+	useGetModePaiementListQuery: jest.fn(() => ({ data: [], isLoading: false })),
+}));
+
 // Mock CompanyDocumentsWrapperList
 jest.mock('@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList', () => ({
 	__esModule: true,
@@ -200,7 +205,7 @@ jest.mock('@/utils/helpers', () => ({
 			useGrouping: true
 		});
 	},
-	hexToRGB: (hex: string, alpha?: number) => (alpha !== undefined ? `rgba(0,0,0,${alpha})` : 'rgb(0,0,0)'),
+	hexToRGB: (_hex: string, alpha?: number) => (alpha !== undefined ? `rgba(0,0,0,${alpha})` : 'rgb(0,0,0)'),
 }));
 interface PrintAction {
 	key: string;

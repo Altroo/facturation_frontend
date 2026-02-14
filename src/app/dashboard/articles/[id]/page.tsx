@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
-import { AUTH_LOGIN, CLIENTS_LIST } from '@/utils/routes';
+import { AUTH_LOGIN, ARTICLES_LIST } from '@/utils/routes';
 import ArticlesViewClient from '@/components/pages/dashboard/articles/articles-view';
 import { Metadata } from 'next';
 
@@ -25,7 +25,7 @@ const ArticlesViewPage = async (props: PageProps) => {
 	}
 
 	if (!id || isNaN(Number(id)) || !company_id || isNaN(Number(company_id))) {
-		redirect(CLIENTS_LIST);
+		redirect(ARTICLES_LIST);
 	}
 
 	return <ArticlesViewClient session={session} id={Number(id)} company_id={Number(company_id)} />;

@@ -32,9 +32,8 @@ import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilt
 import { createNumericFilterOperators } from '@/components/shared/numericFilter/numericFilterOperator';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import { useGetCompanyQuery } from '@/store/services/company';
+import { useGetCategorieListQuery, useGetEmplacementListQuery, useGetUniteListQuery, useGetMarqueListQuery } from '@/store/services/parameter';
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
-import { useAppSelector } from '@/utils/hooks';
-import { getCategoriesState, getEmplacementsState, getUnitesState, getMarquesState } from '@/store/selectors';
 import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 
@@ -72,17 +71,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
 	const [chipFilterParams, setChipFilterParams] = useState<Record<string, string>>({});
 
-	const categories = useAppSelector(getCategoriesState);
-	const emplacements = useAppSelector(getEmplacementsState);
-	const unites = useAppSelector(getUnitesState);
-	const marques = useAppSelector(getMarquesState);
+	const { data: categories } = useGetCategorieListQuery({ company_id }, { skip: !token });
+	const { data: emplacements } = useGetEmplacementListQuery({ company_id }, { skip: !token });
+	const { data: unites } = useGetUniteListQuery({ company_id }, { skip: !token });
+	const { data: marques } = useGetMarqueListQuery({ company_id }, { skip: !token });
 
 	const chipFilters: ChipFilterConfig[] = React.useMemo(
 		() => [
-			{ key: 'categorie', label: 'Catégorie', paramName: 'categorie_ids', options: categories },
-			{ key: 'emplacement', label: 'Emplacement', paramName: 'emplacement_ids', options: emplacements },
-			{ key: 'unite', label: 'Unité', paramName: 'unite_ids', options: unites },
-			{ key: 'marque', label: 'Marque', paramName: 'marque_ids', options: marques },
+			{ key: 'categorie', label: 'Catégorie', paramName: 'categorie_ids', options: categories ?? [] },
+			{ key: 'emplacement', label: 'Emplacement', paramName: 'emplacement_ids', options: emplacements ?? [] },
+			{ key: 'unite', label: 'Unité', paramName: 'unite_ids', options: unites ?? [] },
+			{ key: 'marque', label: 'Marque', paramName: 'marque_ids', options: marques ?? [] },
 		],
 		[categories, emplacements, unites, marques],
 	);

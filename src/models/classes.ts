@@ -120,6 +120,7 @@ export class CitiesClass {
 	constructor(
 		public readonly id: number,
 		public nom: string,
+		public company: number,
 	) {}
 }
 
@@ -127,6 +128,7 @@ export class MarqueClass {
 	constructor(
 		public readonly id: number,
 		public nom: string,
+		public company: number,
 	) {}
 }
 
@@ -134,6 +136,7 @@ export class CategorieClass {
 	constructor(
 		public readonly id: number,
 		public nom: string,
+		public company: number,
 	) {}
 }
 
@@ -141,6 +144,7 @@ export class UniteClass {
 	constructor(
 		public readonly id: number,
 		public nom: string,
+		public company: number,
 	) {}
 }
 
@@ -148,6 +152,7 @@ export class EmplacementClass {
 	constructor(
 		public readonly id: number,
 		public nom: string,
+		public company: number,
 	) {}
 }
 
@@ -155,6 +160,7 @@ export class ModePaiementClass {
 	constructor(
 		public readonly id: number,
 		public nom: string,
+		public company: number,
 	) {}
 }
 
@@ -162,6 +168,7 @@ export class LivreParClass {
 	constructor(
 		public readonly id: number,
 		public nom: string,
+		public company: number,
 	) {}
 }
 

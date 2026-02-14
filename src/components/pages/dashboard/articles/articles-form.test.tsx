@@ -39,10 +39,6 @@ jest.mock('@/utils/hooks', () => ({
 jest.mock('@/store/selectors', () => ({
 	__esModule: true,
 	getUserCompaniesState: jest.fn(),
-	getCategoriesState: jest.fn(() => []),
-	getEmplacementsState: jest.fn(() => []),
-	getUnitesState: jest.fn(() => []),
-	getMarquesState: jest.fn(() => []),
 }));
 
 jest.mock('@/store/session', () => ({
@@ -91,6 +87,10 @@ jest.mock('@/store/services/article', () => ({
 // Mock parameter service
 jest.mock('@/store/services/parameter', () => ({
 	__esModule: true,
+	useGetCategorieListQuery: jest.fn(() => ({ data: [], isLoading: false })),
+	useGetEmplacementListQuery: jest.fn(() => ({ data: [], isLoading: false })),
+	useGetUniteListQuery: jest.fn(() => ({ data: [], isLoading: false })),
+	useGetMarqueListQuery: jest.fn(() => ({ data: [], isLoading: false })),
 	useAddCategorieMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
 	useAddEmplacementMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
 	useAddMarqueMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
@@ -360,25 +360,31 @@ describe('ArticlesForm', () => {
 
 	describe('Rich data rendering', () => {
 		beforeEach(() => {
-			const selectors = jest.requireMock('@/store/selectors') as {
-				getCategoriesState: jest.Mock;
-				getEmplacementsState: jest.Mock;
-				getUnitesState: jest.Mock;
-				getMarquesState: jest.Mock;
+			const paramService = jest.requireMock('@/store/services/parameter') as {
+				useGetCategorieListQuery: jest.Mock;
+				useGetEmplacementListQuery: jest.Mock;
+				useGetUniteListQuery: jest.Mock;
+				useGetMarqueListQuery: jest.Mock;
 			};
-			selectors.getCategoriesState.mockReturnValue([
-				{ id: 10, nom: 'Cat-A' },
-				{ id: 20, nom: 'Cat-B' },
-			]);
-			selectors.getEmplacementsState.mockReturnValue([
-				{ id: 30, nom: 'Emp-A' },
-			]);
-			selectors.getUnitesState.mockReturnValue([
-				{ id: 40, nom: 'Un-A' },
-			]);
-			selectors.getMarquesState.mockReturnValue([
-				{ id: 50, nom: 'Mar-A' },
-			]);
+			paramService.useGetCategorieListQuery.mockReturnValue({
+				data: [
+					{ id: 10, nom: 'Cat-A' },
+					{ id: 20, nom: 'Cat-B' },
+				],
+				isLoading: false,
+			});
+			paramService.useGetEmplacementListQuery.mockReturnValue({
+				data: [{ id: 30, nom: 'Emp-A' }],
+				isLoading: false,
+			});
+			paramService.useGetUniteListQuery.mockReturnValue({
+				data: [{ id: 40, nom: 'Un-A' }],
+				isLoading: false,
+			});
+			paramService.useGetMarqueListQuery.mockReturnValue({
+				data: [{ id: 50, nom: 'Mar-A' }],
+				isLoading: false,
+			});
 		});
 
 		it('renders with non-empty category, emplacement, unite, marque items', () => {
@@ -426,32 +432,32 @@ describe('ArticlesForm', () => {
 		});
 
 		it('renders with selectors returning object instead of array', () => {
-			const selectors = jest.requireMock('@/store/selectors') as {
-				getCategoriesState: jest.Mock;
-				getEmplacementsState: jest.Mock;
-				getUnitesState: jest.Mock;
-				getMarquesState: jest.Mock;
+			const paramService = jest.requireMock('@/store/services/parameter') as {
+				useGetCategorieListQuery: jest.Mock;
+				useGetEmplacementListQuery: jest.Mock;
+				useGetUniteListQuery: jest.Mock;
+				useGetMarqueListQuery: jest.Mock;
 			};
-			selectors.getCategoriesState.mockReturnValue({ '10': { id: 10, nom: 'Cat-A' } });
-			selectors.getEmplacementsState.mockReturnValue({ '30': { id: 30, nom: 'Emp-A' } });
-			selectors.getUnitesState.mockReturnValue({ '40': { id: 40, nom: 'Un-A' } });
-			selectors.getMarquesState.mockReturnValue({ '50': { id: 50, nom: 'Mar-A' } });
+			paramService.useGetCategorieListQuery.mockReturnValue({ data: [{ id: 10, nom: 'Cat-A' }], isLoading: false });
+			paramService.useGetEmplacementListQuery.mockReturnValue({ data: [{ id: 30, nom: 'Emp-A' }], isLoading: false });
+			paramService.useGetUniteListQuery.mockReturnValue({ data: [{ id: 40, nom: 'Un-A' }], isLoading: false });
+			paramService.useGetMarqueListQuery.mockReturnValue({ data: [{ id: 50, nom: 'Mar-A' }], isLoading: false });
 
 			renderWithProviders(<ArticlesForm session={mockSession} company_id={1} />);
 			expect(screen.getByTestId('select-categorie')).toBeInTheDocument();
 		});
 
 		it('renders with null/undefined selector values', () => {
-			const selectors = jest.requireMock('@/store/selectors') as {
-				getCategoriesState: jest.Mock;
-				getEmplacementsState: jest.Mock;
-				getUnitesState: jest.Mock;
-				getMarquesState: jest.Mock;
+			const paramService = jest.requireMock('@/store/services/parameter') as {
+				useGetCategorieListQuery: jest.Mock;
+				useGetEmplacementListQuery: jest.Mock;
+				useGetUniteListQuery: jest.Mock;
+				useGetMarqueListQuery: jest.Mock;
 			};
-			selectors.getCategoriesState.mockReturnValue(null);
-			selectors.getEmplacementsState.mockReturnValue(undefined);
-			selectors.getUnitesState.mockReturnValue(null);
-			selectors.getMarquesState.mockReturnValue(undefined);
+			paramService.useGetCategorieListQuery.mockReturnValue({ data: null, isLoading: false });
+			paramService.useGetEmplacementListQuery.mockReturnValue({ data: undefined, isLoading: false });
+			paramService.useGetUniteListQuery.mockReturnValue({ data: null, isLoading: false });
+			paramService.useGetMarqueListQuery.mockReturnValue({ data: undefined, isLoading: false });
 
 			renderWithProviders(<ArticlesForm session={mockSession} company_id={1} />);
 			expect(screen.getByTestId('select-categorie')).toBeInTheDocument();
