@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Button, Typography, Chip, IconButton, Avatar, Alert } from '@mui/material';
+import { Box, Button, Typography, Chip, IconButton, Avatar, Alert, CircularProgress } from '@mui/material';
 import {
 	Edit as EditIcon,
 	Delete as DeleteIcon,
@@ -471,7 +471,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									color="default"
 									onClick={handleSendCSVEmail}
 								>
-									<EmailIcon />
+									{isSendingEmail ? <CircularProgress size={20} /> : <EmailIcon />}
 								</IconButton>
 							</DarkTooltip>
 							<DarkTooltip title="Importer CSV">
@@ -481,7 +481,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									color="default"
 									onClick={() => fileInputRef.current?.click()}
 								>
-									<FileUploadIcon />
+									{isImporting ? <CircularProgress size={20} /> : <FileUploadIcon />}
 								</IconButton>
 							</DarkTooltip>
 						</>
