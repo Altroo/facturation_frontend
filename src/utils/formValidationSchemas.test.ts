@@ -77,14 +77,14 @@ describe('Zod Schema Validation', () => {
 
 	// ✅ passwordResetCodeSchema
 	describe('passwordResetCodeSchema', () => {
-		it('validates 4 digits', () => {
-			expect(() => passwordResetCodeSchema.parse({ one: '1', two: '2', three: '3', four: '4' })).not.toThrow();
+		it('validates 6 digits', () => {
+			expect(() => passwordResetCodeSchema.parse({ one: '1', two: '2', three: '3', four: '4', five: '5', six: '6' })).not.toThrow();
 		});
 		it('fails with non-digit input', () => {
-			expect(() => passwordResetCodeSchema.parse({ one: 'a', two: '2', three: '3', four: '4' })).toThrow();
+			expect(() => passwordResetCodeSchema.parse({ one: 'a', two: '2', three: '3', four: '4', five: '5', six: '6' })).toThrow();
 		});
 		it('fails with missing digit', () => {
-			expect(() => passwordResetCodeSchema.parse({ one: '1', two: '2', three: '3' })).toThrow();
+			expect(() => passwordResetCodeSchema.parse({ one: '1', two: '2', three: '3', four: '4', five: '5' })).toThrow();
 		});
 	});
 
@@ -2530,13 +2530,13 @@ describe('Zod Schema Validation', () => {
 	describe('passwordResetCodeSchema additional branches', () => {
 		it('fails with multi-digit input', () => {
 			expect(() =>
-				passwordResetCodeSchema.parse({ one: '12', two: '2', three: '3', four: '4' }),
+				passwordResetCodeSchema.parse({ one: '12', two: '2', three: '3', four: '4', five: '5', six: '6' }),
 			).toThrow();
 		});
 
 		it('fails with empty string', () => {
 			expect(() =>
-				passwordResetCodeSchema.parse({ one: '', two: '2', three: '3', four: '4' }),
+				passwordResetCodeSchema.parse({ one: '', two: '2', three: '3', four: '4', five: '5', six: '6' }),
 			).toThrow();
 		});
 	});

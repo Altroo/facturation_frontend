@@ -26,8 +26,8 @@ type EnterCodePageContentProps = {
 	email: string;
 };
 
-type FieldKey = 'one' | 'two' | 'three' | 'four';
-const fields: FieldKey[] = ['one', 'two', 'three', 'four'];
+type FieldKey = 'one' | 'two' | 'three' | 'four' | 'five' | 'six';
+const fields: FieldKey[] = ['one', 'two', 'three', 'four', 'five', 'six'];
 
 const EnterCodePageContent = ({ email }: EnterCodePageContentProps) => {
 	const router = useRouter();
@@ -41,6 +41,8 @@ const EnterCodePageContent = ({ email }: EnterCodePageContentProps) => {
 		two: useRef<HTMLInputElement | null>(null),
 		three: useRef<HTMLInputElement | null>(null),
 		four: useRef<HTMLInputElement | null>(null),
+		five: useRef<HTMLInputElement | null>(null),
+		six: useRef<HTMLInputElement | null>(null),
 	};
 
 	// input/onChange handler attached to native input (htmlInput)
@@ -97,12 +99,12 @@ const EnterCodePageContent = ({ email }: EnterCodePageContentProps) => {
 	};
 
 	const formik = useFormik({
-		initialValues: { one: '', two: '', three: '', four: '', globalError: '' },
+		initialValues: { one: '', two: '', three: '', four: '', five: '', six: '', globalError: '' },
 		validateOnMount: true,
 		validationSchema: toFormikValidationSchema(passwordResetCodeSchema),
 		onSubmit: async (values, { setFieldError }) => {
 			setIsPending(true);
-			const code = values.one + values.two + values.three + values.four;
+			const code = values.one + values.two + values.three + values.four + values.five + values.six;
 			try {
 				await passwordReset({ email, code }).unwrap();
 				await cookiesPoster('/cookies', { code });

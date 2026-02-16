@@ -107,6 +107,8 @@ describe('EnterCodeClient', () => {
 		await userEvent.type(inputs[1], '2');
 		await userEvent.type(inputs[2], '3');
 		await userEvent.type(inputs[3], '4');
+		await userEvent.type(inputs[4], '5');
+		await userEvent.type(inputs[5], '6');
 
 		// click confirm -> should call passwordReset and cookiesPoster and navigate
 		const confirmBtn = screen.getAllByRole('button', { name: /Confirmer le code/i })[0];
@@ -133,7 +135,7 @@ describe('EnterCodeClient', () => {
 		const inputs = screen.getAllByRole('textbox') as HTMLInputElement[];
 		// simulate paste into first input
 		const pasteEvent = {
-			clipboardData: { getData: () => '9876' },
+			clipboardData: { getData: () => '987654' },
 		} as unknown as ClipboardEvent;
 		await act(async () => {
 			fireEvent.paste(inputs[0], pasteEvent);
@@ -144,6 +146,8 @@ describe('EnterCodeClient', () => {
 		expect((inputs[1] as HTMLInputElement).value).toBe('8');
 		expect((inputs[2] as HTMLInputElement).value).toBe('7');
 		expect((inputs[3] as HTMLInputElement).value).toBe('6');
+		expect((inputs[4] as HTMLInputElement).value).toBe('5');
+		expect((inputs[5] as HTMLInputElement).value).toBe('4');
 	});
 
 	it('calls setFormikAutoErrors when passwordReset throws', async () => {
@@ -162,6 +166,8 @@ describe('EnterCodeClient', () => {
 		await userEvent.type(inputs[1], '2');
 		await userEvent.type(inputs[2], '3');
 		await userEvent.type(inputs[3], '4');
+		await userEvent.type(inputs[4], '5');
+		await userEvent.type(inputs[5], '6');
 
 		const confirmBtn = screen.getAllByRole('button', { name: /Confirmer le code/i })[0];
 		await act(async () => {

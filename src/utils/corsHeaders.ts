@@ -1,7 +1,6 @@
 // change on production to specific domains
-const allowedOrigins: string | string[] = process.env.NODE_ENV !== 'production'
-	? '*'
-	: process.env.ALLOWED_ORIGINS?.split(',').map(o => o.trim()) || [];
+const allowedOrigins: string[] = process.env.ALLOWED_ORIGINS?.split(',').map(o => o.trim()).filter(Boolean)
+	|| (process.env.NODE_ENV !== 'production' ? ['http://localhost:3000'] : []);
 
 export const getCorsHeaders = (origin: string | null): HeadersInit => {
 	const headers: HeadersInit = {
@@ -10,9 +9,7 @@ export const getCorsHeaders = (origin: string | null): HeadersInit => {
 		'Access-Control-Allow-Credentials': 'true',
 	};
 
-	if (allowedOrigins === '*') {
-		headers['Access-Control-Allow-Origin'] = '*';
-	} else if (origin && allowedOrigins.includes(origin)) {
+	if (origin && allowedOrigins.includes(origin)) {
 		headers['Access-Control-Allow-Origin'] = origin;
 	}
 

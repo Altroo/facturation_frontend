@@ -64,8 +64,8 @@ export const { handlers, auth } = NextAuth({
 					} else {
 						return null;
 					}
-				} catch {
-					// Login failed — return null to indicate failure
+				} catch (error) {
+					console.error('[Auth] Login failed:', error instanceof Error ? error.message : error);
 				}
 
 				return null;
@@ -128,7 +128,8 @@ export const { handlers, auth } = NextAuth({
 						token.access_expiration = refreshed.data.accessTokenExpires;
 						token.refresh = refreshed.data.refresh ?? token.refresh; // Fallback to the old refresh token if not updated
 					}
-				} catch {
+				} catch (error) {
+					console.error('[Auth] Token refresh failed:', error instanceof Error ? error.message : error);
 					// Return null to force re-authentication
 					return null;
 				}
@@ -141,7 +142,7 @@ export const { handlers, auth } = NextAuth({
 			session.refreshToken = token.refresh;
 			session.accessTokenExpiration = token.access_expiration;
 			session.refreshTokenExpiration = token.refresh_expiration;
-			// @ts-expect-error — next-auth augmented AdapterUser extends User, creating an intersection type
+			// @ts-expect-error next-auth augmented AdapterUser extends User, creating an intersection type
 			session.user = token.user;
 			return session;
 		},

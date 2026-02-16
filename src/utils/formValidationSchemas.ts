@@ -149,6 +149,8 @@ export const passwordResetCodeSchema = z.object({
 	two: singleDigit,
 	three: singleDigit,
 	four: singleDigit,
+	five: singleDigit,
+	six: singleDigit,
 	globalError: optionalTextField(1, 500),
 });
 

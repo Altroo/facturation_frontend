@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, Container, Paper, Stack, Tab, Tabs, Typography } from '@mui/material';
 import { Business as BusinessIcon } from '@mui/icons-material';
@@ -41,34 +41,35 @@ const CompanyDocumentsWrapperList: React.FC<CompanyDocumentsListProps> = ({ sess
 	});
 	
 	const companies = useMemo(() => (companiesData ?? []) as CompanyLike[], [companiesData]);
-	
+
 	// Compute valid index - automatically clamps to valid range
+	// This is our source of truth for the actual selected index
 	const validIndex = useMemo(() => {
 		if (companies.length === 0) return 0;
 		if (selectedIndex >= companies.length) return 0;
 		return selectedIndex;
 	}, [companies.length, selectedIndex]);
 
-	// Track companies length to detect changes
-	const [lastCompaniesLength, setLastCompaniesLength] = useState(companies.length);
+	// Sync localStorage (external system) when validIndex changes
+	const prevValidIndexRef = useRef(validIndex);
 
-	// Reset index when companies change and current index becomes invalid (during render phase)
-	if (lastCompaniesLength !== companies.length) {
-		setLastCompaniesLength(companies.length);
-		if (validIndex !== selectedIndex) {
-			setSelectedIndex(validIndex);
+	useEffect(() => {
+		if (prevValidIndexRef.current !== validIndex) {
+			prevValidIndexRef.current = validIndex;
 			if (typeof window !== 'undefined') {
 				localStorage.setItem('selectedCompanyIndex', String(validIndex));
 			}
 		}
-	}
-	
+	}, [validIndex]);
+
 	const selectedCompany = useMemo(() => companies?.[validIndex] ?? null, [companies, validIndex]);
 
 	const handleChange = (_: React.SyntheticEvent, newValue: number) => {
 		setSelectedIndex(newValue);
 		// Save to localStorage
-		localStorage.setItem('selectedCompanyIndex', String(newValue));
+		if (typeof window !== 'undefined') {
+			localStorage.setItem('selectedCompanyIndex', String(newValue));
+		}
 	};
 
 	if (isLoading) {
