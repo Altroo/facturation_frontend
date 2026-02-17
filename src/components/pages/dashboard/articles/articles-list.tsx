@@ -447,7 +447,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					</Button>
 				</Box>
 			)}
-			<input ref={fileInputRef} type="file" accept=".csv" style={{ display: 'none' }} onChange={handleFileChange} />
+			<input ref={fileInputRef} type="file" accept=".csv,.xls,.xlsx" style={{ display: 'none' }} onChange={handleFileChange} />
 			<ChipSelectFilterBar filters={chipFilters} onFilterChange={setChipFilterParams} columns={2} />
 			<PaginatedDataGrid
 				data={data}
@@ -464,7 +464,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				toolbarActions={
 					!archived && (role === 'Caissier' || role === 'Commercial') ? (
 						<>
-							<DarkTooltip title="Envoyer le guide d'importation CSV par email">
+							<DarkTooltip title="Envoyer le guide d'importation par email">
 								<IconButton
 									disabled={isSendingEmail}
 									size="small"
@@ -474,7 +474,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									{isSendingEmail ? <CircularProgress size={20} /> : <EmailIcon />}
 								</IconButton>
 							</DarkTooltip>
-							<DarkTooltip title="Importer CSV">
+							<DarkTooltip title="Importer CSV ou Excel">
 								<IconButton
 									disabled={isImporting}
 									size="small"
