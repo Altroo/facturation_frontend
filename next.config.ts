@@ -12,12 +12,16 @@ const remotePatterns: RemotePattern[] = [
 	{
 		protocol: 'https',
 		hostname: 'api.elbouazzatiholding.ma',
+		port: '',
 		pathname: '/media/**',
+		search: '',
 	},
 	{
 		protocol: 'http',
 		hostname: 'api.elbouazzatiholding.ma',
+		port: '',
 		pathname: '/media/**',
+		search: '',
 	},
 ];
 
@@ -62,33 +66,6 @@ const nextConfig: NextConfig = {
 
 	async headers() {
 		return [
-			// Security headers for all routes
-			{
-				source: '/(.*)',
-				headers: [
-					{
-						key: 'Content-Security-Policy',
-						value: [
-							"default-src 'self'",
-							"script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-							"style-src 'self' 'unsafe-inline'",
-							`img-src 'self' data: blob: https://api.elbouazzatiholding.ma${isDev ? ' http://localhost:8000 http://127.0.0.1:8000' : ''}`,
-							"font-src 'self'",
-							`connect-src 'self' https://api.elbouazzatiholding.ma wss://api.elbouazzatiholding.ma${isDev ? ' http://localhost:8000 http://127.0.0.1:8000 ws://localhost:8000 ws://127.0.0.1:8000' : ''}`,
-							"frame-ancestors 'self'",
-							"base-uri 'self'",
-							"form-action 'self'",
-						].join('; '),
-					},
-					{ key: 'X-Content-Type-Options', value: 'nosniff' },
-					{ key: 'X-Frame-Options', value: 'SAMEORIGIN' },
-					{ key: 'X-XSS-Protection', value: '1; mode=block' },
-					{ key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-					{ key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()' },
-					{ key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains; preload' },
-				],
-			},
-
 			// Next.js static files - long cache
 			{
 				source: '/_next/static/:path*',
