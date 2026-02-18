@@ -49,3 +49,9 @@ next-env.d.ts
 
 # Archives
 /archives
+# Serena
+.serena/
+.serena/*
+# Claude
+.claude/
+.claude/*
