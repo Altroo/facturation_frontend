@@ -61,7 +61,7 @@ import { textInputTheme, customDropdownTheme, gridInputTheme, customGridDropdown
 import { CLIENTS_ADD } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
-import { ArticleClass, ClientClass } from '@/models/classes';
+import type { ArticleClass, ClientClass } from '@/models/classes';
 import { useGetClientsListQuery } from '@/store/services/client';
 import { useGetCompanyQuery } from '@/store/services/company';
 import { useToast } from '@/utils/hooks';
@@ -79,7 +79,7 @@ import AddEntityModal from '@/components/shared/addEntityModal/addEntityModal';
 import FactureDevisTotalsCard from '@/components/shared/factureDevistotalCard/factureDevisTotalsCard';
 import LinesGrid from '@/components/shared/linesGrid/linesGrid';
 import Image from 'next/image';
-import {
+import type {
 	DocumentFormConfig,
 	DocumentFormSchema,
 	DevisFormSchema,

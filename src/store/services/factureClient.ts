@@ -2,7 +2,7 @@ import { createApi } from '@reduxjs/toolkit/query/react';
 import { isAuthenticatedInstance } from '@/utils/helpers';
 import { axiosBaseQuery } from '@/utils/axiosBaseQuery';
 import { getInitStateToken } from '@/store/selectors';
-import { FactureClass } from '@/models/classes';
+import type { FactureClass } from '@/models/classes';
 import type { ApiErrorResponseType, SuccessResponseType } from '@/types/_initTypes';
 import type { FactureClientListResponseType, FactureForPayment } from '@/types/companyDocumentsTypes';
 import type { RootState } from '@/store/store';

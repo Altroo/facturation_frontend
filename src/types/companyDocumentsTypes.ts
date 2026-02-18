@@ -6,7 +6,7 @@ import type {
 	TypeFactureLivraisonDevisStatus,
 } from '@/types/devisTypes';
 import type { SessionProps } from '@/types/_initTypes';
-import { BonDeLivraisonClass, DeviClass, FactureClass } from '@/models/classes';
+import type { BonDeLivraisonClass, DeviClass, FactureClass } from '@/models/classes';
 import type { PaginationResponseType } from '@/types/_initTypes';
 import type { GridColDef } from '@mui/x-data-grid';
 import React from 'react';

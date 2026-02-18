@@ -6,7 +6,7 @@ import { getUserCompaniesState } from '@/store/selectors';
 import { getAccessTokenFromSession } from '@/store/session';
 import { useAppSelector } from '@/utils/hooks';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import { SessionProps } from '@/types/_initTypes';
+import type { SessionProps } from '@/types/_initTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import NoPermission from '@/components/shared/noPermission/noPermission';
 

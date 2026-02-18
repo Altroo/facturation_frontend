@@ -16,7 +16,7 @@ import {
 	SHORT_INPUT_REQUIRED,
 	TVA_INPUT_INVALID,
 } from '@/utils/formValidationErrorMessages';
-import { ClientSchemaType } from '@/types/clientTypes';
+import type { ClientSchemaType } from '@/types/clientTypes';
 
 const base64ImageField = z.url().or(z.string().startsWith('data:image/')).nullable().optional();
 

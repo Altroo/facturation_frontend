@@ -13,14 +13,14 @@ import {
 	usePatchStatutMutation,
 	useGetNumBonDeLivraisonQuery,
 } from '@/store/services/bonDeLivraison';
-import {
+import type {
 	DocumentFormConfig,
 	DocumentFormSchema,
 	BonDeLivraisonDocumentData,
 	BonDeLivraisonNumResponse,
 } from '@/types/companyDocumentsTypes';
 import type { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
-import { BonDeLivraisonClass } from '@/models/classes';
+import type { BonDeLivraisonClass } from '@/models/classes';
 
 // Configuration for bon de livraison form
 const bonDeLivraisonFormConfig: DocumentFormConfig<BonDeLivraisonClass> = {

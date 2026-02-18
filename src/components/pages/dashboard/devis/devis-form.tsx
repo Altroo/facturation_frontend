@@ -20,7 +20,7 @@ import type {
 	DocumentFormSchema,
 } from '@/types/companyDocumentsTypes';
 import type { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
-import { DeviClass } from '@/models/classes';
+import type { DeviClass } from '@/models/classes';
 
 // Configuration for devis form
 const devisFormConfig: DocumentFormConfig<DeviClass> = {

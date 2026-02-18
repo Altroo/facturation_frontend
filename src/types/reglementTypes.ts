@@ -1,5 +1,5 @@
 import type { PaginationResponseType } from '@/types/_initTypes';
-import { ReglementClass } from '@/models/classes';
+import type { ReglementClass } from '@/models/classes';
 import type { CurrencyStats } from '@/types/companyDocumentsTypes';
 
 export type ReglementStatutType = 'Valide' | 'Annulé';

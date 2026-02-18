@@ -1,5 +1,5 @@
 import type { RootState } from '@/store/store';
-import { UserClass } from '@/models/classes';
+import type { UserClass } from '@/models/classes';
 import type { CompaniesUserCompaniesType } from '@/types/companyTypes';
 import type { InitStateToken } from '@/types/_initTypes';
 

@@ -4,7 +4,7 @@ import '@testing-library/jest-dom';
 import FactureProFormaForm from './facture-pro-forma-form';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import { AppSession } from '@/types/_initTypes';
+import type { AppSession } from '@/types/_initTypes';
 
 // Create a minimal mock store for testing
 const mockStore = configureStore({

@@ -5,7 +5,7 @@ import { DEVIS_EDIT, DEVIS_LIST } from '@/utils/routes';
 import { useGetDeviQuery } from '@/store/services/devi';
 import type { SessionProps } from '@/types/_initTypes';
 import CompanyDocumentsWrapperView from '@/components/pages/dashboard/shared/company-documents-view/companyDocumentsWrapperView';
-import { CompanyDocumentData } from '@/types/companyDocumentsTypes';
+import type { CompanyDocumentData } from '@/types/companyDocumentsTypes';
 
 type DevisData = CompanyDocumentData & {
 	numero_devis?: string | number | null;

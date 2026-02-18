@@ -4,7 +4,7 @@ import '@testing-library/jest-dom';
 import BonDeLivraisonForm from './bon-de-livraison-form';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import { AppSession } from '@/types/_initTypes';
+import type { AppSession } from '@/types/_initTypes';
 
 // Minimal mock store
 const mockStore = configureStore({

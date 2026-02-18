@@ -5,7 +5,7 @@ import { FACTURE_PRO_FORMA_EDIT, FACTURE_PRO_FORMA_LIST } from '@/utils/routes';
 import { useGetFactureProFormaQuery } from '@/store/services/factureProForma';
 import type { SessionProps } from '@/types/_initTypes';
 import CompanyDocumentsWrapperView from '@/components/pages/dashboard/shared/company-documents-view/companyDocumentsWrapperView';
-import { CompanyDocumentData } from '@/types/companyDocumentsTypes';
+import type { CompanyDocumentData } from '@/types/companyDocumentsTypes';
 
 type FactureProFormaData = CompanyDocumentData & {
 	numero_facture?: string | number | null;

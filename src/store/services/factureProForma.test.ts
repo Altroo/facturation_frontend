@@ -1,6 +1,6 @@
 import { factureProFormaApi } from '@/store/services/factureProForma';
 import { setupApiStore } from '@/store/setupApiStore';
-import { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
+import type { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
 
 beforeAll(() => {
 	process.env.NEXT_PUBLIC_FACTURE_PROFORMA_LIST ||= 'https://example.com/facture-proforma/';

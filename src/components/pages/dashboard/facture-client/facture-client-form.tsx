@@ -20,7 +20,7 @@ import type {
 	DocumentFormSchema,
 } from '@/types/companyDocumentsTypes';
 import type { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
-import { FactureClass } from '@/models/classes';
+import type { FactureClass } from '@/models/classes';
 
 // Configuration for facture client form
 const factureClientFormConfig: DocumentFormConfig<FactureClass> = {

@@ -6,7 +6,7 @@ import type { DeviClass } from '@/models/classes';
 import type { ApiErrorResponseType, PaginationResponseType, SuccessResponseType } from '@/types/_initTypes';
 import type { RootState } from '@/store/store';
 import { initToken } from '@/store/slices/_initSlice';
-import { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
+import type { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
 import { factureProFormaApi } from '@/store/services/factureProForma';
 import { factureClientApi } from '@/store/services/factureClient';
 

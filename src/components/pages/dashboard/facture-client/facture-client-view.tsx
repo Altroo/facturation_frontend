@@ -5,7 +5,7 @@ import { FACTURE_CLIENT_EDIT, FACTURE_CLIENT_LIST } from '@/utils/routes';
 import { useGetFactureClientQuery } from '@/store/services/factureClient';
 import type { SessionProps } from '@/types/_initTypes';
 import CompanyDocumentsWrapperView from '@/components/pages/dashboard/shared/company-documents-view/companyDocumentsWrapperView';
-import { CompanyDocumentData } from '@/types/companyDocumentsTypes';
+import type { CompanyDocumentData } from '@/types/companyDocumentsTypes';
 
 type FactureClientData = CompanyDocumentData & {
 	numero_facture?: string | number | null;

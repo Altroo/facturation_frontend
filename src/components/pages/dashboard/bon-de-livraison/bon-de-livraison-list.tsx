@@ -9,7 +9,7 @@ import { useDeleteBonDeLivraisonMutation, useGetBonDeLivraisonListQuery } from '
 import { useGetModePaiementListQuery, useGetLivreParListQuery } from '@/store/services/parameter';
 import { BON_DE_LIVRAISON_ADD, BON_DE_LIVRAISON_EDIT, BON_DE_LIVRAISON_VIEW, BON_DE_LIVRAISON_PDF } from '@/utils/routes';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
-import { BonDeLivraisonClass } from '@/models/classes';
+import type { BonDeLivraisonClass } from '@/models/classes';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import CompanyDocumentsListContent from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsListContent';
 import type { DocumentListConfig, PaginationModel } from '@/types/companyDocumentsTypes';

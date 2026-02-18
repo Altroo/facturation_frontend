@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { SessionProps } from '@/types/_initTypes';
+import type { SessionProps } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';

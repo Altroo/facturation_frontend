@@ -5,7 +5,7 @@ import { BON_DE_LIVRAISON_EDIT, BON_DE_LIVRAISON_LIST } from '@/utils/routes';
 import { useGetBonDeLivraisonQuery } from '@/store/services/bonDeLivraison';
 import type { SessionProps } from '@/types/_initTypes';
 import CompanyDocumentsWrapperView from '@/components/pages/dashboard/shared/company-documents-view/companyDocumentsWrapperView';
-import { CompanyDocumentData } from '@/types/companyDocumentsTypes';
+import type { CompanyDocumentData } from '@/types/companyDocumentsTypes';
 
 type BonDeLivraisonData = CompanyDocumentData & {
 	numero_bon_livraison?: string | number | null;

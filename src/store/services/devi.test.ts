@@ -1,6 +1,6 @@
 import { deviApi } from '@/store/services/devi';
 import { setupApiStore } from '@/store/setupApiStore';
-import { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
+import type { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
 
 beforeAll(() => {
 	process.env.NEXT_PUBLIC_DEVIS_LIST ||= 'https://example.com/devis/';
