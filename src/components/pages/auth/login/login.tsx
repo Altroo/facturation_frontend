@@ -104,6 +104,7 @@ const LoginPageContent = () => {
 					/>
 					<CustomPasswordInput
 						id="password"
+						name="password"
 						value={formik.values.password}
 						onChange={formik.handleChange('password')}
 						onBlur={formik.handleBlur('password')}
@@ -115,6 +116,9 @@ const LoginPageContent = () => {
 						placeholder="Mot de passe"
 						theme={inputTheme}
 						startIcon={<LockIcon fontSize="small" />}
+						required
+						autoComplete="current-password"
+						maxLength={128}
 					/>
 					{formik.errors.globalError && <span className={Styles.errorMessage}>{formik.errors.globalError}</span>}
 					<TextButton
