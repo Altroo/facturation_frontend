@@ -62,6 +62,9 @@ const nextConfig: NextConfig = {
 		imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
 		minimumCacheTTL: 60,
 		remotePatterns,
+		// Allow fetching images from private IPs (needed because api.elbouazzatiholding.ma
+		// resolves to Docker host bridge 172.17.0.1 inside the container)
+		dangerouslyAllowLocalIP: isProd,
 	},
 
 	async headers() {
@@ -111,6 +114,32 @@ const nextConfig: NextConfig = {
 				source: '/assets/:path*',
 				headers: [
 					{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+				],
+			},
+
+			// Security & privacy headers for all pages
+			{
+				source: '/(.*)',
+				headers: [
+					{ key: 'X-Content-Type-Options', value: 'nosniff' },
+					{ key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+					{ key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+					{ key: 'X-XSS-Protection', value: '1; mode=block' },
+					{ key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), payment=()' },
+					{
+						key: 'Content-Security-Policy',
+						value: [
+							"default-src 'self'",
+							"script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+							"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+							"font-src 'self' https://fonts.gstatic.com data:",
+							`img-src 'self' https://api.elbouazzatiholding.ma data: blob:`,
+							`connect-src 'self' https://api.elbouazzatiholding.ma wss://api.elbouazzatiholding.ma${isDev ? ' http://localhost:8000 http://127.0.0.1:8000' : ''}`,
+							"frame-ancestors 'self'",
+							"base-uri 'self'",
+							"form-action 'self'",
+						].join('; '),
+					},
 				],
 			},
 		];
