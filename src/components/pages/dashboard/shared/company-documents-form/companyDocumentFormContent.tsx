@@ -14,7 +14,6 @@ import {
 	useTheme,
 	useMediaQuery,
 	InputAdornment,
-	Avatar,
 	Tooltip,
 	IconButton,
 	Alert,
@@ -33,7 +32,6 @@ import {
 	Warning as WarningIcon,
 	Edit as EditIcon,
 	Add as AddIcon,
-	Close as CloseIcon,
 	LocalShipping as LocalShippingIcon,
 	Refresh as RefreshIcon,
 	AttachMoney as AttachMoneyIcon,
@@ -45,19 +43,16 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { fr } from 'date-fns/locale';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
-import FormattedNumberInput from '@/components/formikElements/formattedNumberInput/formattedNumberInput';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import {
 	getCompanyDocumentLabelForKey,
 	parseNumber,
-	safeParseForInput,
 	setFormikAutoErrors,
 	ValidatePricesHelper,
-	formatNumberWithSpaces,
 } from '@/utils/helpers';
-import { textInputTheme, customDropdownTheme, gridInputTheme, customGridDropdownTheme } from '@/utils/themes';
+import { textInputTheme, customDropdownTheme } from '@/utils/themes';
 import { CLIENTS_ADD } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
@@ -68,17 +63,10 @@ import { useToast } from '@/utils/hooks';
 import type { DropDownType } from '@/types/accountTypes';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import { useGetArticlesListQuery } from '@/store/services/article';
-import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
-import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
-import AddArticleModal from '@/components/shared/addArticleModal/addArticleModal';
-import GlobalRemiseModal from '@/components/shared/globalRemiseModal/globalRemiseModal';
-import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
-import { bonDeLivraisonStatusItemsList, devisFactureStatusItemsList, remiseTypeItemsList } from '@/utils/rawData';
+import { bonDeLivraisonStatusItemsList, devisFactureStatusItemsList } from '@/utils/rawData';
 import { useAddModePaiementMutation, useAddLivreParMutation, useGetModePaiementListQuery, useGetLivreParListQuery } from '@/store/services/parameter';
-import AddEntityModal from '@/components/shared/addEntityModal/addEntityModal';
 import FactureDevisTotalsCard from '@/components/shared/factureDevistotalCard/factureDevisTotalsCard';
 import LinesGrid from '@/components/shared/linesGrid/linesGrid';
-import Image from 'next/image';
 import type {
 	DocumentFormConfig,
 	DocumentFormSchema,
@@ -98,9 +86,10 @@ import type {
 	BonDeLivraisonFormSchema,
 } from '@/types/companyDocumentsTypes';
 import type { ValidateArticleLinesErrorType } from '@/types/devisTypes';
+import { useDocumentLinesColumns } from './useDocumentLinesColumns';
+import DocumentFormModals from './DocumentFormModals';
 
 const inputFieldTheme = textInputTheme();
-const gridFieldTheme = gridInputTheme();
 
 const SCROLL_TO_LINES_KEY = 'scrollToLinesOnNextMount';
 
@@ -294,6 +283,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 
 	// Build initial values based on document type
 	const getInitialValues = (): DocumentFormSchema => {
+		const today = new Date().toISOString().split('T')[0];
 		const devisData = rawData as DevisDocumentData | undefined;
 		const factureData = rawData as FactureDocumentData | undefined;
 		const bonDeLivraisonData = rawData as BonDeLivraisonDocumentData | undefined;
@@ -304,8 +294,8 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				year_part: numYearPart,
 				client: isEditMode ? (rawData?.client ?? null) : null,
 				date_devis: isEditMode
-					? (devisData?.date_devis ?? new Date().toISOString().split('T')[0])
-					: new Date().toISOString().split('T')[0],
+					? (devisData?.date_devis ?? today)
+					: today,
 				numero_demande_prix_client: isEditMode ? (devisData?.numero_demande_prix_client ?? null) : null,
 				mode_paiement: isEditMode ? (rawData?.mode_paiement ?? null) : null,
 				remarque: isEditMode ? (rawData?.remarque ?? null) : null,
@@ -321,8 +311,8 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				year_part: numYearPart,
 				client: isEditMode ? (rawData?.client ?? null) : null,
 				date_facture: isEditMode
-					? (factureData?.date_facture ?? new Date().toISOString().split('T')[0])
-					: new Date().toISOString().split('T')[0],
+					? (factureData?.date_facture ?? today)
+					: today,
 				numero_bon_commande_client: isEditMode ? (factureData?.numero_bon_commande_client ?? null) : null,
 				mode_paiement: isEditMode ? (rawData?.mode_paiement ?? null) : null,
 				remarque: isEditMode ? (rawData?.remarque ?? null) : null,
@@ -338,8 +328,8 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				year_part: numYearPart,
 				client: isEditMode ? (rawData?.client ?? null) : null,
 				date_bon_livraison: isEditMode
-					? (bonDeLivraisonData?.date_bon_livraison ?? new Date().toISOString().split('T')[0])
-					: new Date().toISOString().split('T')[0],
+					? (bonDeLivraisonData?.date_bon_livraison ?? today)
+					: today,
 				numero_bon_commande_client: isEditMode ? (factureData?.numero_bon_commande_client ?? null) : null,
 				mode_paiement: isEditMode ? (rawData?.mode_paiement ?? null) : null,
 				livre_par: isEditMode ? (bonDeLivraisonData?.livre_par ?? null) : null,
@@ -737,337 +727,15 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		}
 	}, [formik.errors.lignes]);
 
-	const getRowIndexFromParams = useCallback(
-		(params: GridRenderCellParams): number => {
-			const idStr = String(params.id);
-			const lines = getLines();
-			const idx = lines.findIndex((l, i) => generateRowId(l.article, i) === idStr);
-			return idx >= 0 ? idx : 0;
-		},
-		[getLines],
-	);
-
-	const [renderPrixVenteCell, renderQuantityCell, renderRemiseCell] = useMemo<
-		[
-			(params: GridRenderCellParams) => React.JSX.Element,
-			(params: GridRenderCellParams) => React.JSX.Element,
-			(params: GridRenderCellParams) => React.JSX.Element,
-		]
-	>(() => {
-		const prix = (params: GridRenderCellParams) => {
-			const rowIndex = getRowIndexFromParams(params);
-			const ligne = getLines()[rowIndex];
-			const rawValue = ligne?.prix_vente ?? '';
-			const inputValue = String(safeParseForInput(String(rawValue ?? '')));
-			const errorKey = `ligne_${rowIndex}_prix_vente`;
-			const helperText = validationErrors[errorKey] || '';
-			const hasError = !!validationErrors[errorKey];
-			const devisePrixVente = ligne?.devise_prix_vente || 'MAD';
-
-			if (role === 'Commercial') {
-				return (
-					<DarkTooltip title={inputValue}>
-						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
-								{inputValue}
-							</Typography>
-						</Box>
-					</DarkTooltip>
-				);
-			} else {
-				return (
-					<Tooltip title={helperText} arrow>
-						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-							<FormattedNumberInput
-								id={`prix_vente_${rowIndex}`}
-								type="text"
-								value={rawValue}
-								onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-									const raw = (e.target as HTMLInputElement).value;
-									const parsed = parseNumber(raw);
-									if (parsed !== null && parsed < 0) return;
-									handleLineChangeRef.current(rowIndex, 'prix_vente', parsed === null ? raw : parsed);
-								}}
-								fullWidth
-								size="small"
-								theme={gridFieldTheme}
-								error={hasError}
-								endIcon={<InputAdornment position="end">{devisePrixVente}</InputAdornment>}
-								decimals={2}
-								slotProps={{ input: { style: { textAlign: 'center' } } }}
-							/>
-						</Box>
-					</Tooltip>
-				);
-			}
-		};
-		const quantity = (params: GridRenderCellParams) => {
-			const rowIndex = getRowIndexFromParams(params);
-			const rawValue = getLines()[rowIndex]?.quantity ?? '';
-			const inputValue = String(safeParseForInput(String(rawValue ?? '')));
-			const errorKey = `ligne_${rowIndex}_quantity`;
-			const hasError = !!validationErrors[errorKey];
-			return (
-				<Tooltip title={validationErrors[errorKey] || ''} arrow>
-					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-						<CustomTextInput
-							id={`quantity_${rowIndex}`}
-							type="number"
-							value={inputValue}
-							onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-								const raw = (e.target as HTMLInputElement).value;
-								const parsed = parseNumber(raw);
-								if (parsed !== null && parsed < 1) return;
-								handleLineChangeRef.current(rowIndex, 'quantity', parsed === null ? raw : parsed);
-							}}
-							fullWidth
-							size="small"
-							theme={gridFieldTheme}
-							error={hasError}
-							slotProps={{ input: { style: { textAlign: 'center' }, inputProps: { min: 1 } } }}
-						/>
-					</Box>
-				</Tooltip>
-			);
-		};
-		const remise = (params: GridRenderCellParams) => {
-			const rowIndex = getRowIndexFromParams(params);
-			const rawValue = getLines()[rowIndex]?.remise ?? '';
-			const errorKey = `ligne_${rowIndex}_remise`;
-			const helperText = validationErrors[errorKey] || '';
-			const hasError = !!validationErrors[errorKey];
-			const remiseTypeValue = getLines()[rowIndex]?.remise_type;
-			return (
-				<Tooltip title={helperText} arrow>
-					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-						<FormattedNumberInput
-							id={`remise_${rowIndex}`}
-							type="text"
-							value={rawValue}
-							onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-								const raw = (e.target as HTMLInputElement).value;
-								const parsed = parseNumber(raw);
-								if (parsed !== null && parsed < 0) return;
-								handleLineChangeRef.current(rowIndex, 'remise', parsed === null ? raw : parsed);
-							}}
-							fullWidth
-							size="small"
-							theme={gridFieldTheme}
-							error={hasError}
-							disabled={!remiseTypeValue}
-							endIcon={
-								remiseTypeValue && (
-									<InputAdornment position="end">{remiseTypeValue === 'Pourcentage' ? '%' : formik.values.devise}</InputAdornment>
-								)
-							}
-							decimals={2}
-							slotProps={{ input: { style: { textAlign: 'center' } } }}
-						/>
-					</Box>
-				</Tooltip>
-			);
-		};
-		return [prix, quantity, remise];
-	}, [getRowIndexFromParams, getLines, validationErrors, role, formik.values.devise]);
-
-	const linesColumns: GridColDef[] = useMemo(
-		() => [
-			{
-				field: 'photo',
-				headerName: 'Photo',
-				flex: 0.5, minWidth: 60,
-				sortable: false,
-				filterable: false,
-				editable: false,
-				renderCell: (params: GridRenderCellParams) => {
-					const article = getArticleById(params.row.article);
-					return (
-						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-							<DarkTooltip
-								title={
-									article?.photo ? (
-										<Box
-											sx={{ width: 260, height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-										>
-											<Image
-												src={article.photo as string}
-												alt={article?.reference as string}
-												width={260}
-												height={260}
-												style={{ objectFit: 'contain', display: 'block' }}
-											/>
-										</Box>
-									) : (
-										''
-									)
-								}
-								placement="right"
-								arrow
-								enterDelay={100}
-								leaveDelay={200}
-								slotProps={{ tooltip: { sx: { pointerEvents: 'auto' } } }}
-							>
-								<Avatar
-									src={(article?.photo as string) ?? undefined}
-									alt={article?.reference as string | undefined}
-									variant="rounded"
-									sx={{ width: 40, height: 40 }}
-								/>
-							</DarkTooltip>
-						</Box>
-					);
-				},
-			},
-			{
-				field: 'reference',
-				headerName: 'Référence',
-				flex: 0.8, minWidth: 90,
-				renderCell: (params: GridRenderCellParams) => {
-					const article = getArticleById(params.row.article);
-					const value = article?.reference ?? '';
-					return (
-						<DarkTooltip title={value}>
-							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-								<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
-									{value}
-								</Typography>
-							</Box>
-						</DarkTooltip>
-					);
-				},
-			},
-			{
-				field: 'designation',
-				headerName: 'Désignation',
-				flex: 1, minWidth: 90,
-				renderCell: (params: GridRenderCellParams) => {
-					const value = params.row.designation ?? '';
-					return (
-						<DarkTooltip title={value}>
-							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-								<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
-									{value}
-								</Typography>
-							</Box>
-						</DarkTooltip>
-					);
-				},
-			},
-			{
-				field: 'marque',
-				headerName: 'Marque',
-				flex: 1, minWidth: 100,
-				renderCell: (params: GridRenderCellParams) => {
-					const article = getArticleById(params.row.article);
-					const value = article?.marque_name ?? '';
-					return (
-						<DarkTooltip title={value}>
-							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-								<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
-									{value}
-								</Typography>
-							</Box>
-						</DarkTooltip>
-					);
-				},
-			},
-			{
-				field: 'categorie',
-				headerName: 'Catégorie',
-				flex: 1, minWidth: 100,
-				renderCell: (params: GridRenderCellParams) => {
-					const article = getArticleById(params.row.article);
-					const value = article?.categorie_name ?? '';
-					return (
-						<DarkTooltip title={value}>
-							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-								<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
-									{value}
-								</Typography>
-							</Box>
-						</DarkTooltip>
-					);
-				},
-			},
-			{
-				field: 'prix_achat',
-				headerName: "Prix d'achat",
-				flex: 1, minWidth: 110,
-				renderCell: (params: GridRenderCellParams) => {
-					const value = formatNumberWithSpaces(params.row.prix_achat ?? 0, 2) + ' ' + (params.row.devise_prix_achat || 'MAD');
-					return (
-						<DarkTooltip title={value}>
-							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-								<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
-									{value}
-								</Typography>
-							</Box>
-						</DarkTooltip>
-					);
-				},
-			},
-			{ field: 'prix_vente', headerName: 'Prix de vente', flex: 1.5, minWidth: 150, renderCell: renderPrixVenteCell },
-			{ field: 'quantity', headerName: 'Quantité', flex: 0.8, minWidth: 90, renderCell: renderQuantityCell },
-			{
-				field: 'remise_type',
-				headerName: 'Type remise',
-				flex: 1.5, minWidth: 180,
-				renderCell: (params: GridRenderCellParams) => {
-					const rowIndex = getRowIndexFromParams(params);
-					const value = getLines()[rowIndex]?.remise_type ?? '';
-					const errorKey = `ligne_${rowIndex}_remise`;
-					const helperText = validationErrors[errorKey] || '';
-					const hasError = !!validationErrors[errorKey];
-					return (
-						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-							<Tooltip title={helperText} arrow>
-								<CustomDropDownSelect
-									id={`remise_type_${rowIndex}`}
-									label=""
-									size="small"
-									error={hasError}
-									items={remiseTypeItemsList}
-									value={value}
-									onChange={(e) => handleLineChangeRef.current(rowIndex, 'remise_type', e.target.value)}
-									theme={customGridDropdownTheme()}
-								/>
-							</Tooltip>
-						</Box>
-					);
-				},
-			},
-			{ field: 'remise', headerName: 'Remise', flex: 1.2, minWidth: 120, renderCell: renderRemiseCell },
-			{
-				field: 'actions',
-				headerName: 'Actions',
-				flex: 0.6, minWidth: 70,
-				sortable: false,
-				filterable: false,
-				renderCell: (params: GridRenderCellParams) => {
-					const rowIndex = getRowIndexFromParams(params);
-					return (
-						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-							<Tooltip title="Supprimer">
-								<IconButton size="small" color="error" onClick={() => handleDeleteLine(rowIndex)}>
-									<DeleteIcon />
-								</IconButton>
-							</Tooltip>
-						</Box>
-					);
-				},
-			},
-		],
-		[
-			renderPrixVenteCell,
-			renderQuantityCell,
-			renderRemiseCell,
-			getArticleById,
-			getRowIndexFromParams,
-			getLines,
-			validationErrors,
-			handleDeleteLine,
-		],
-	);
+	const { linesColumns } = useDocumentLinesColumns({
+		getLines,
+		validationErrors,
+		role,
+		devise: formik.values.devise ?? 'MAD',
+		handleLineChangeRef,
+		handleDeleteLine,
+		getArticleById,
+	});
 
 	const existingArticleIds = useMemo(() => new Set(getLines().map((l) => l.article)), [getLines]);
 
@@ -1370,6 +1038,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 															}
 														}}
 														sx={{ mt: 1 }}
+														aria-label="Réinitialiser le numéro"
 													>
 														<RefreshIcon fontSize="small" />
 													</IconButton>
@@ -1706,86 +1375,35 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				)}
 			</Stack>
 
-			{/* Add Article Modal - only in edit mode */}
-			{isEditMode && (
-				<AddArticleModal
-					open={showAddArticleModal}
-					loading={isArticlesLoading}
-					onClose={() => {
-						setShowAddArticleModal(false);
-						setSelectedArticles(new Set());
-					}}
-					articles={(articlesData || []).map((a) => ({
-						...a,
-						designation: a.designation ?? undefined,
-						reference: a.reference ?? undefined,
-						marque_name: a.marque_name ?? undefined,
-						categorie_name: a.categorie_name ?? undefined,
-					}))}
-					selectedArticles={selectedArticles}
-					setSelectedArticles={setSelectedArticles}
-					onAdd={handleAddArticles}
-					existingArticleIds={existingArticleIds}
-					documentDevise={formik.values.devise}
-				/>
-			)}
-
-			{/* Global Remise Modal - only in edit mode */}
-			{isEditMode && (
-				<GlobalRemiseModal
-					open={showGlobalRemiseModal}
-					onClose={() => setShowGlobalRemiseModal(false)}
-					currentType={formik.values.remise_type || ''}
-					currentValue={formik.values.remise || 0}
-					onApply={handleApplyGlobalRemise}
-					devise={formik.values.devise}
-				/>
-			)}
-
-			{/* Delete Confirmation Modal */}
-			{showDeleteConfirm && (
-				<ActionModals
-					titleIcon={<DeleteIcon />}
-					titleIconColor="#D32F2F"
-					title="Supprimer la ligne"
-					body="Êtes-vous sûr de vouloir supprimer cette ligne ?"
-					actions={[
-						{
-							active: false,
-							text: 'Non',
-							onClick: () => setShowDeleteConfirm(false),
-							icon: <CloseIcon />,
-							color: '#6B6B6B',
-						},
-						{ active: true, text: 'Oui', onClick: confirmDeleteLine, icon: <DeleteIcon />, color: '#D32F2F' },
-					]}
-				/>
-			)}
-
-			<AddEntityModal
-				open={openModePaiementModal}
-				setOpen={setOpenModePaiementModal}
-				label="mode de paiement"
-				icon={<PaymentIcon fontSize="small" />}
-				inputTheme={inputFieldTheme}
-				mutationFn={(args) => addModePaiement({ data: { ...args.data, company: company_id } })}
-				onSuccess={(newId) => {
-					formik.setFieldValue('mode_paiement', newId);
-				}}
+			<DocumentFormModals
+				isEditMode={isEditMode}
+				config={config}
+				showAddArticleModal={showAddArticleModal}
+				setShowAddArticleModal={setShowAddArticleModal}
+				isArticlesLoading={isArticlesLoading}
+				articlesData={articlesData}
+				selectedArticles={selectedArticles}
+				setSelectedArticles={setSelectedArticles}
+				handleAddArticles={handleAddArticles}
+				existingArticleIds={existingArticleIds}
+				documentDevise={formik.values.devise ?? 'MAD'}
+				showGlobalRemiseModal={showGlobalRemiseModal}
+				setShowGlobalRemiseModal={setShowGlobalRemiseModal}
+				currentRemiseType={formik.values.remise_type || ''}
+				currentRemiseValue={formik.values.remise || 0}
+				handleApplyGlobalRemise={handleApplyGlobalRemise}
+				showDeleteConfirm={showDeleteConfirm}
+				setShowDeleteConfirm={setShowDeleteConfirm}
+				confirmDeleteLine={confirmDeleteLine}
+				openModePaiementModal={openModePaiementModal}
+				setOpenModePaiementModal={setOpenModePaiementModal}
+				addModePaiement={(args) => addModePaiement({ data: { ...args.data, company: company_id } })}
+				onModePaiementSuccess={(newId) => formik.setFieldValue('mode_paiement', newId)}
+				openLivreParModal={openLivreParModal}
+				setOpenLivreParModal={setOpenLivreParModal}
+				addLivrePar={(args) => addLivrePar({ data: { ...args.data, company: company_id } })}
+				onLivreParSuccess={(newId) => formik.setFieldValue('livre_par', newId)}
 			/>
-			{config.documentType === 'bon-de-livraison' && (
-				<AddEntityModal
-					open={openLivreParModal}
-					setOpen={setOpenLivreParModal}
-					label="livreur"
-					icon={<LocalShippingIcon fontSize="small" />}
-					inputTheme={inputFieldTheme}
-					mutationFn={(args) => addLivrePar({ data: { ...args.data, company: company_id } })}
-					onSuccess={(newId) => {
-						formik.setFieldValue('livre_par', newId);
-					}}
-				/>
-			)}
 		</LocalizationProvider>
 	);
 };

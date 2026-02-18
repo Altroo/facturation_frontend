@@ -3,15 +3,19 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import CustomSquareImageUploading from './customSquareImageUploading';
 import '@testing-library/jest-dom';
 
+interface MockCallbacks {
+	readyCallback: (() => void) | null;
+	cropendCallback: (() => void) | null;
+	cropperRef: { cropper: { getCroppedCanvas: () => HTMLCanvasElement | null } } | null;
+}
+
 // Store callback refs for testing - use object to avoid reassignment
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(global as any).__mockCallbacks = {
+(global as unknown as { __mockCallbacks: MockCallbacks }).__mockCallbacks = {
 	readyCallback: null as (() => void) | null,
 	cropendCallback: null as (() => void) | null,
 	cropperRef: null as { cropper: { getCroppedCanvas: () => HTMLCanvasElement | null } } | null,
 };
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockCallbacks = (global as any).__mockCallbacks;
+const mockCallbacks = (global as unknown as { __mockCallbacks: MockCallbacks }).__mockCallbacks;
 
 jest.mock('@mui/icons-material/HighlightOffOutlined', () => {
 	return {
@@ -48,8 +52,7 @@ jest.mock('react-cropper', () => {
 			ref: React.Ref<{ cropper: { getCroppedCanvas: () => HTMLCanvasElement | null } }>,
 		) {
 			// Store callbacks for manual triggering via global
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			const mockCallbacksRef = (global as any).__mockCallbacks;
+			const mockCallbacksRef = (global as unknown as { __mockCallbacks: MockCallbacks }).__mockCallbacks;
 			// eslint-disable-next-line react-hooks/immutability
 			mockCallbacksRef.readyCallback = props.ready || null;
 			// eslint-disable-next-line react-hooks/immutability
