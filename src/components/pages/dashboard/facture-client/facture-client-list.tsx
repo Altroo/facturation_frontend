@@ -194,7 +194,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 								<AttachMoneyIcon color="primary" />
 								<Box>
 									<Typography variant="body2" color="text.secondary">
-										Chiffre d&#39;affaires total
+										Chiffre d&#39;affaire total
 									</Typography>
 									<Typography variant="h6" fontWeight={700}>
 										{chiffreAffaireTotal}

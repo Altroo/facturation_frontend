@@ -5,7 +5,6 @@ import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from
 
 type Props = {
 	id: string;
-	name?: string;
 	value: string;
 	onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 	theme: Theme;
@@ -20,13 +19,10 @@ type Props = {
 	disabled?: boolean;
 	startIcon?: React.ReactNode;
 	onClick?: () => void;
-	required?: boolean;
-	autoComplete?: string;
-	maxLength?: number;
 };
 
 const CustomPasswordInput = forwardRef<HTMLInputElement, Props>((props: Props, ref: ForwardedRef<HTMLInputElement>) => {
-	const { cssClass, theme, startIcon, maxLength, ...restOfProps } = props;
+	const { cssClass, theme, startIcon, ...restOfProps } = props;
 	const [showpassword, setshowpassword] = useState<boolean>(false);
 
 	const handleClickShowPassword = () => {
@@ -40,7 +36,6 @@ const CustomPasswordInput = forwardRef<HTMLInputElement, Props>((props: Props, r
 				{...restOfProps}
 				type={showpassword ? 'text' : 'password'}
 				id={props.id}
-				name={props.name}
 				value={props.value}
 				onChange={props.onChange}
 				onBlur={props.onBlur}
@@ -55,7 +50,6 @@ const CustomPasswordInput = forwardRef<HTMLInputElement, Props>((props: Props, r
 				color="primary"
 				disabled={props.disabled}
 				slotProps={{
-					htmlInput: { maxLength },
 					input: {
 						startAdornment: startIcon ? <InputAdornment position="start">{startIcon}</InputAdornment> : undefined,
 						endAdornment: (

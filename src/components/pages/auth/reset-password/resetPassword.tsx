@@ -55,7 +55,8 @@ const ResetPasswordPageContent = () => {
 		<Stack direction="column" className={Styles.contentWrapper} spacing={4}>
 			<Stack direction="column" spacing={1} alignItems="flex-start" width="100%">
 				<Stack direction="column">
-					<h1 className={Styles.content}>Récupération du mot de passe</h1>
+					<span className={Styles.content}>Récupération</span>
+					<span className={Styles.subContent}>du mot de passe</span>
 				</Stack>
 				<span className={Styles.paragraphe}>
 					Entrez votre email pour recevoir un code et modifier votre mot de passe.
