@@ -181,7 +181,7 @@ describe('ReglementListClient', () => {
 	describe('Stats cards', () => {
 		it('renders chiffre affaire total', () => {
 			render(<ReglementListClient session={mockSession} />);
-			expect(screen.getByText("Chiffre d'affaire total")).toBeInTheDocument();
+			expect(screen.getByText("Chiffre d'affaires total")).toBeInTheDocument();
 			expect(screen.getByText('50 000.00 MAD')).toBeInTheDocument();
 		});
 

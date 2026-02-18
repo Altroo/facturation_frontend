@@ -6,8 +6,13 @@ import type { APIContentTypeInterface, ApiErrorResponseType, InitStateToken } fr
 
 /**
  * Handles unauthorized response by clearing cookies, signing out, and resetting token.
+ * Dispatches a custom 'session-expired' event to notify the UI.
  */
 export const handleUnauthorized = async (onResetToken?: () => void) => {
+	// Notify UI about session expiration
+	if (typeof window !== 'undefined') {
+		window.dispatchEvent(new CustomEvent('session-expired'));
+	}
 	await signOut({ redirect: false, redirectTo: SITE_ROOT });
 	if (onResetToken) {
 		onResetToken();
@@ -234,10 +239,10 @@ export const safeParseForInput = (raw: string): number | string => {
 
 /**
  * Formats a number with a thousand separators (spaces) for better readability.
- * Example: 50000000.00 → "50 000 000.00"
+ * Example: 50000000.00 → "50 000 000,00"
  * @param value - The value to format (number, string, null, or undefined)
  * @param decimals - Number of decimal places (default: 2)
- * @returns Formatted string with spaces as a thousand separators
+ * @returns Formatted string with spaces as a thousand separators (French locale)
  */
 export const formatNumberWithSpaces = (
 	value: string | number | null | undefined,
@@ -282,7 +287,7 @@ export const parseFormattedNumber = (value: string | number): number | null => {
 export const ValidatePricesHelper = {
 	validatePrixVente(prixVente: number, prixAchat: number): string | null {
 		if (prixVente < prixAchat) {
-			return `Le prix de vente (${prixVente.toFixed(2)} MAD) doit être supérieur ou égal au prix d'achat (${prixAchat.toFixed(2)} MAD)`;
+			return `Le prix de vente (${formatNumber(prixVente)} MAD) doit être supérieur ou égal au prix d'achat (${formatNumber(prixAchat)} MAD)`;
 		}
 		return null;
 	},
@@ -301,7 +306,7 @@ export const ValidatePricesHelper = {
 		}
 
 		if (remiseType === 'Fixe' && remise > baseAmount) {
-			return `La remise fixe (${remise.toFixed(2)} MAD) ne peut pas dépasser le total (${baseAmount.toFixed(2)} MAD)`;
+			return `La remise fixe (${formatNumber(remise)} MAD) ne peut pas dépasser le total (${formatNumber(baseAmount)} MAD)`;
 		}
 
 		return null;
@@ -321,7 +326,7 @@ export const ValidatePricesHelper = {
 		}
 
 		if (remiseType === 'Fixe' && remise > totalHTBeforeGlobal) {
-			return `La remise fixe globale (${remise.toFixed(2)} MAD) ne peut pas dépasser le total HT du devis (${totalHTBeforeGlobal.toFixed(2)} MAD)`;
+			return `La remise fixe globale (${formatNumber(remise)} MAD) ne peut pas dépasser le total HT du devis (${formatNumber(totalHTBeforeGlobal)} MAD)`;
 		}
 
 		return null;

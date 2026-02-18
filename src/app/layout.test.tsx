@@ -59,7 +59,15 @@ jest.mock('@/contexts/toastContext', () => ({
 		return React.createElement('div', null, 'TOAST_PROVIDER', props.children);
 	},
 }));
-
+// Mock SessionExpiredListener
+jest.mock('@/components/shared/sessionExpiredListener/sessionExpiredListener', () => ({
+	__esModule: true,
+	default: () => {
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		const React = require('react');
+		return React.createElement('div', null, 'SESSION_EXPIRED_LISTENER');
+	},
+}));
 jest.mock('@mui/material-nextjs/v15-appRouter', () => ({
 	__esModule: true,
 	AppRouterCacheProvider: (props: { children?: React.ReactNode }) => {

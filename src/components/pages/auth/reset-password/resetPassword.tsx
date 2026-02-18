@@ -18,7 +18,10 @@ import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadi
 import { useSendPasswordResetCodeMutation } from '@/store/services/account';
 import { useSession } from 'next-auth/react';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
-import { Send as SendIcon, Email as EmailIcon } from '@mui/icons-material';
+import { Send as SendIcon, Email as EmailIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-material';
+import { AUTH_LOGIN } from '@/utils/routes';
+
+import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
 
 const inputTheme = textInputTheme();
 const ResetPasswordPageContent = () => {
@@ -60,10 +63,11 @@ const ResetPasswordPageContent = () => {
 				</span>
 			</Stack>
 			<Divider orientation="horizontal" flexItem className={Styles.divider} />
-			<form style={{ width: '100%' }} onSubmit={(e) => e.preventDefault()}>
+			<form style={{ width: '100%' }} onSubmit={formik.handleSubmit} method="post">
 				<Stack direction="column" spacing={4}>
 					<CustomTextInput
 						id="email"
+						name="email"
 						value={formik.values.email}
 						onChange={formik.handleChange('email')}
 						onBlur={formik.handleBlur('email')}
@@ -76,15 +80,22 @@ const ResetPasswordPageContent = () => {
 						placeholder="Adresse email"
 						theme={inputTheme}
 						startIcon={<EmailIcon fontSize="small" />}
+						required
+						autoComplete="email"
+						maxLength={254}
 					/>
 					<PrimaryLoadingButton
 						buttonText="Renvoyer le code"
 						active={!isResendLoading && !isPending}
-						onClick={formik.handleSubmit}
 						cssClass={Styles.emailRegisterButton}
 						type="submit"
 						startIcon={<SendIcon />}
 						loading={isResendLoading || isPending}
+					/>
+					<TextButton
+						buttonText="Retour à la connexion"
+						startIcon={<ArrowBackIcon />}
+						onClick={() => router.push(AUTH_LOGIN)}
 					/>
 				</Stack>
 			</form>

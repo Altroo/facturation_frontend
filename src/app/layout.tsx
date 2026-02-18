@@ -12,6 +12,7 @@ import ThemeProvider from '@/providers/themeProvider';
 import { InitEffects } from '@/contexts/initEffects';
 import { ToastContextProvider } from '@/contexts/toastContext';
 import { ErrorBoundary } from '@/components/shared/errorBoundary';
+import SessionExpiredListener from '@/components/shared/sessionExpiredListener/sessionExpiredListener';
 
 export const metadata: Metadata = {
 	title: 'Facturation - Casa Di Lusso',
@@ -45,7 +46,7 @@ export const metadata: Metadata = {
 	other: {
 		'msapplication-TileColor': '#ffffff',
 		'msapplication-TileImage': '/assets/ico/ms-icon-144x144.png',
-		copyright: 'Copyright - Casa Di Lusso © 2025',
+		copyright: `Copyright - Casa Di Lusso © ${new Date().getFullYear()}`,
 		rating: 'general',
 		expires: 'never',
 	},
@@ -66,6 +67,9 @@ const RootLayout: React.FC<EntryPointProps> = async (props) => {
 	return (
 		<html lang="fr" data-scroll-behavior="smooth">
 			<body>
+				<a href="#main-content" className="skip-to-content">
+					Aller au contenu principal
+				</a>
 				<SessionProvider session={session}>
 					<StoreProvider>
 						<InitContextProvider>
@@ -73,7 +77,10 @@ const RootLayout: React.FC<EntryPointProps> = async (props) => {
 							<AppRouterCacheProvider>
 								<ThemeProvider>
 									<ErrorBoundary>
-										<ToastContextProvider>{props.children}</ToastContextProvider>
+										<ToastContextProvider>
+									<SessionExpiredListener />
+									{props.children}
+								</ToastContextProvider>
 									</ErrorBoundary>
 								</ThemeProvider>
 							</AppRouterCacheProvider>

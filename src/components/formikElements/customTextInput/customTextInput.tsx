@@ -23,10 +23,14 @@ type Props = {
 	startIcon?: React.ReactNode;
 	endIcon?: React.ReactNode;
 	slotProps?: TextFieldProps['slotProps'];
+	name?: string;
+	required?: boolean;
+	autoComplete?: string;
+	maxLength?: number;
 };
 
 const CustomTextInput = forwardRef<HTMLInputElement, Props>((props: Props, ref: ForwardedRef<HTMLInputElement>) => {
-	const { cssClass, theme, startIcon, endIcon, ...restOfProps } = props;
+	const { cssClass, theme, startIcon, endIcon, maxLength, ...restOfProps } = props;
 
 	return (
 		<ThemeProvider theme={theme}>
@@ -36,6 +40,7 @@ const CustomTextInput = forwardRef<HTMLInputElement, Props>((props: Props, ref: 
 				variant={props.variant}
 				type={props.type}
 				id={props.id}
+				name={props.name || props.id}
 				value={props.value}
 				onChange={props.onChange}
 				onBlur={props.onBlur}
@@ -49,12 +54,17 @@ const CustomTextInput = forwardRef<HTMLInputElement, Props>((props: Props, ref: 
 				onClick={props.onClick}
 				color="primary"
 				disabled={props.disabled}
+				required={props.required}
+				autoComplete={props.autoComplete}
 				slotProps={{
 					...props.slotProps,
 					input: {
 						...props.slotProps?.input,
 						startAdornment: startIcon ? <InputAdornment position="start">{startIcon}</InputAdornment> : undefined,
 						endAdornment: endIcon ? <InputAdornment position="end">{endIcon}</InputAdornment> : undefined,
+					},
+					htmlInput: {
+						...(maxLength ? { maxLength } : {}),
 					},
 				}}
 			/>

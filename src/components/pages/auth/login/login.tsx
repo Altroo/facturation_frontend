@@ -75,16 +75,17 @@ const LoginPageContent = () => {
 	return (
 		<Stack direction="column" spacing={4} className={Styles.contentWrapper}>
 			<Stack direction="column" justifyContent="flex-start" alignItems="flex-start" width="100%">
-				<h2 className={Styles.content}>Connexion</h2>
+				<h1 className={Styles.content}>Connexion</h1>
 			</Stack>
 			<Stack direction="column" spacing={2} className={Styles.mobileWidth}>
 				{errorState && <span className={Styles.errorMessage}>{errorState}</span>}
 			</Stack>
 			<Divider orientation="horizontal" flexItem className={Styles.dividerNoMargin} />
-			<form style={{ width: '100%' }} onSubmit={(e) => e.preventDefault()}>
+			<form style={{ width: '100%' }} onSubmit={formik.handleSubmit} method="post">
 				<Stack direction="column" spacing={2}>
 					<CustomTextInput
 						id="email"
+						name="email"
 						value={formik.values.email}
 						onChange={formik.handleChange('email')}
 						onBlur={formik.handleBlur('email')}
@@ -97,6 +98,9 @@ const LoginPageContent = () => {
 						placeholder="Adresse email"
 						theme={inputTheme}
 						startIcon={<EmailIcon fontSize="small" />}
+						required
+						autoComplete="email"
+						maxLength={254}
 					/>
 					<CustomPasswordInput
 						id="password"
@@ -123,7 +127,6 @@ const LoginPageContent = () => {
 					<PrimaryLoadingButton
 						buttonText="Me connecter"
 						active={!isPending}
-						onClick={formik.handleSubmit}
 						cssClass={Styles.emailRegisterButton}
 						startIcon={<LoginIcon fontSize="small" />}
 						type="submit"

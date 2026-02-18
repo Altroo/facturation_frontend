@@ -122,8 +122,8 @@ describe('LoginClient', () => {
 			);
 		});
 
-		const emailInput = screen.getByLabelText('Adresse email') as HTMLInputElement;
-		const passwordInput = screen.getByLabelText('Mot de passe') as HTMLInputElement;
+		const emailInput = screen.getByLabelText(/Adresse email/i) as HTMLInputElement;
+		const passwordInput = screen.getByLabelText(/Mot de passe/i) as HTMLInputElement;
 		const submitButton = screen.getAllByRole('button', { name: /Me connecter/i })[0];
 
 		await act(async () => {
@@ -152,8 +152,8 @@ describe('LoginClient', () => {
 			);
 		});
 
-		const emailInput = screen.getByLabelText('Adresse email') as HTMLInputElement;
-		const passwordInput = screen.getByLabelText('Mot de passe') as HTMLInputElement;
+		const emailInput = screen.getByLabelText(/Adresse email/i) as HTMLInputElement;
+		const passwordInput = screen.getByLabelText(/Mot de passe/i) as HTMLInputElement;
 		const submitButton = screen.getAllByRole('button', { name: /Me connecter/i })[0];
 
 		// Use valid credentials so validation does not prevent submission

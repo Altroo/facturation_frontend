@@ -36,7 +36,7 @@ describe('SetPasswordCompleteClient', () => {
 		});
 		expect(headers.length).toBeGreaterThanOrEqual(1);
 
-		const subHeaders = screen.getAllByText(/Votre mot de passe a été modifier, connectez-vous/i);
+		const subHeaders = screen.getAllByText(/Votre mot de passe a été modifié, connectez-vous/i);
 		expect(subHeaders.length).toBeGreaterThanOrEqual(1);
 
 		const loginButtons = screen.getAllByRole('link', {

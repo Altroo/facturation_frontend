@@ -223,7 +223,7 @@ describe('API Utilities', () => {
 		describe('validatePrixVente', () => {
 			it('returns error when prixVente < prixAchat', () => {
 				const msg = ValidatePricesHelper.validatePrixVente(50, 100);
-				expect(msg).toBe("Le prix de vente (50.00 MAD) doit être supérieur ou égal au prix d'achat (100.00 MAD)");
+				expect(msg).toBe("Le prix de vente (50,00 MAD) doit être supérieur ou égal au prix d'achat (100,00 MAD)");
 			});
 
 			it('returns null when prixVente >= prixAchat', () => {
@@ -245,7 +245,7 @@ describe('API Utilities', () => {
 
 			it('rejects fixed remise larger than base amount', () => {
 				const msg = ValidatePricesHelper.validateRemise(200, 'Fixe', 150);
-				expect(msg).toBe('La remise fixe (200.00 MAD) ne peut pas dépasser le total (150.00 MAD)');
+				expect(msg).toBe('La remise fixe (200,00 MAD) ne peut pas dépasser le total (150,00 MAD)');
 			});
 
 			it('accepts valid remise values', () => {
@@ -268,7 +268,7 @@ describe('API Utilities', () => {
 
 			it('rejects fixed global remise larger than totalHTBeforeGlobal', () => {
 				expect(ValidatePricesHelper.validateGlobalRemise(1100, 'Fixe', 1000)).toBe(
-					'La remise fixe globale (1100.00 MAD) ne peut pas dépasser le total HT du devis (1000.00 MAD)',
+					'La remise fixe globale (1\u202f100,00 MAD) ne peut pas dépasser le total HT du devis (1\u202f000,00 MAD)',
 				);
 			});
 

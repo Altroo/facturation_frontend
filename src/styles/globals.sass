@@ -23,6 +23,31 @@ a
 
 *
   box-sizing: border-box
+
+// Skip-to-content link for accessibility
+.skip-to-content
+  position: absolute
+  left: -9999px
+  top: auto
+  width: 1px
+  height: 1px
+  overflow: hidden
+  z-index: 9999
+  background: #ffffff
+  color: #1976d2
+  padding: 8px 16px
+  border: 2px solid #1976d2
+  border-radius: 4px
+  font-size: 14px
+  font-weight: 600
+  text-decoration: none
+  &:focus
+    position: fixed
+    left: 10px
+    top: 10px
+    width: auto
+    height: auto
+    overflow: visible
 // Mobile color picker active bullet
 span.activekBullet
   background: $primary
