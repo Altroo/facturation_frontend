@@ -5,6 +5,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { fr } from 'date-fns/locale';
+import { formatLocalDate } from '@/utils/helpers';
 
 interface DateRangeValue {
 	from?: string;
@@ -29,8 +30,8 @@ const DateRangeFilterInput: React.FC<GridFilterInputValueProps> = (props) => {
 		}
 		
 		const newValue: DateRangeValue = {
-			from: date ? date.toISOString().split('T')[0] : undefined,
-			to: effectiveToDate ? effectiveToDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+			from: date ? formatLocalDate(date) : undefined,
+			to: effectiveToDate ? formatLocalDate(effectiveToDate) : formatLocalDate(new Date()),
 		};
 		applyValue({ ...item, value: newValue });
 	};
@@ -42,8 +43,8 @@ const DateRangeFilterInput: React.FC<GridFilterInputValueProps> = (props) => {
 		}
 		setToDate(date);
 		const newValue: DateRangeValue = {
-			from: fromDate ? fromDate.toISOString().split('T')[0] : undefined,
-			to: date ? date.toISOString().split('T')[0] : undefined,
+			from: fromDate ? formatLocalDate(fromDate) : undefined,
+			to: date ? formatLocalDate(date) : undefined,
 		};
 		applyValue({ ...item, value: newValue });
 	};

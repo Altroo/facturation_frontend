@@ -212,6 +212,13 @@ export const formatDate = (value: string | null) => {
 	}).format(date);
 };
 
+export const formatLocalDate = (date: Date): string => {
+	const year = date.getFullYear();
+	const month = String(date.getMonth() + 1).padStart(2, '0');
+	const day = String(date.getDate()).padStart(2, '0');
+	return `${year}-${month}-${day}`;
+};
+
 export const formatNumber = (value: string | number | null | undefined): string => {
 	if (value === null || value === undefined) return '0,00';
 	const num = typeof value === 'string' ? parseFloat(value) : value;

@@ -155,6 +155,7 @@ jest.mock('@/utils/helpers', () => ({
 		return Number.isNaN(n) ? null : n;
 	}),
 	formatNumber: jest.fn((val: number) => val?.toFixed(2) ?? '0.00'),
+	formatLocalDate: jest.fn(() => '2025-01-01'),
 }));
 
 jest.mock('@/utils/formValidationSchemas', () => ({

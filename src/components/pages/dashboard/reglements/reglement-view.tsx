@@ -47,7 +47,11 @@ interface InfoRowProps {
 const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-	const displayValue = React.isValidElement(value) ? value : value && value.toString().length > 0 ? value : '-';
+	const displayValue =
+		React.isValidElement(value) ||
+		(value !== null && value !== undefined && value.toString().length > 0)
+			? value
+			: '-';
 
 	return (
 		<Stack
@@ -186,7 +190,9 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 														MONTANT FACTURE
 													</Typography>
 													<Typography variant="h6" fontWeight={800} color="text.secondary">
-														{reglement?.montant_facture ? `${formatNumber(reglement.montant_facture)} ${reglement.devise}` : '-'}
+														{reglement?.montant_facture !== undefined && reglement?.montant_facture !== null
+															? `${formatNumber(reglement.montant_facture)} ${reglement.devise}`
+															: '-'}
 													</Typography>
 												</Box>
 											</Grid>
@@ -205,7 +211,9 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 														TOTAL RÈGLEMENTS
 													</Typography>
 													<Typography variant="h6" fontWeight={800} color="success.main">
-												{reglement?.total_reglements_facture ? `${formatNumber(reglement.total_reglements_facture)} ${reglement.devise}` : '-'}
+														{reglement?.total_reglements_facture !== undefined && reglement?.total_reglements_facture !== null
+															? `${formatNumber(reglement.total_reglements_facture)} ${reglement.devise}`
+															: '-'}
 													</Typography>
 												</Box>
 											</Grid>
@@ -243,7 +251,9 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 														CE RÈGLEMENT
 													</Typography>
 													<Typography variant="h5" fontWeight={900} color="primary">
-													{reglement?.montant ? `${formatNumber(reglement.montant)} ${reglement.devise}` : '-'}
+														{reglement?.montant !== undefined && reglement?.montant !== null
+															? `${formatNumber(reglement.montant)} ${reglement.devise}`
+															: '-'}
 													</Typography>
 												</Box>
 											</Grid>

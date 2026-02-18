@@ -219,7 +219,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 	);
 
 	const handleLanguageSelect = useCallback(
-		(language: 'fr' | 'en') => {
+		async (language: 'fr' | 'en') => {
 			setShowLanguageModal(false);
 
 			if (!selectedPrintAction || printMenuItemId === null) {
@@ -233,14 +233,32 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 				return;
 			}
 
-			// Generate URL with selected language
-			const url = selectedPrintAction.urlGenerator(printMenuItemId, companyId, language);
-			const urlWithToken = `${url}&token=${encodeURIComponent(accessToken)}`;
-			window.open(urlWithToken, '_blank');
+			try {
+				const url = selectedPrintAction.urlGenerator(printMenuItemId, companyId, language);
+				const response = await fetch(url, {
+					method: 'GET',
+					headers: {
+						Authorization: `Bearer ${accessToken}`,
+					},
+				});
 
-			// Reset states
-			setSelectedPrintAction(null);
-			setPrintMenuItemId(null);
+				if (!response.ok) {
+					throw new Error(`Failed to fetch PDF (${response.status})`);
+				}
+
+				const blob = await response.blob();
+				const blobUrl = window.URL.createObjectURL(blob);
+				window.open(blobUrl, '_blank');
+
+				setTimeout(() => {
+					window.URL.revokeObjectURL(blobUrl);
+				}, 60_000);
+			} catch {
+				onError("Erreur lors de l'ouverture du document.");
+			} finally {
+				setSelectedPrintAction(null);
+				setPrintMenuItemId(null);
+			}
 		},
 		[selectedPrintAction, printMenuItemId, session, companyId, onError],
 	);

@@ -261,8 +261,8 @@ describe('auth.ts', () => {
 			mockedPostApi.mockResolvedValueOnce({
 				status: 200,
 				data: {
-					accessToken: 'new-access-token',
-					accessTokenExpires: '2026-01-01',
+					access: 'new-access-token',
+					access_expiration: '2026-01-01T00:00:00Z',
 					refresh: 'new-refresh-token',
 				},
 			});
@@ -278,7 +278,7 @@ describe('auth.ts', () => {
 
 			expect(mockedPostApi).toHaveBeenCalled();
 			expect(result.access).toBe('new-access-token');
-			expect(result.access_expiration).toBe('2026-01-01');
+			expect(result.access_expiration).toBe('2026-01-01T00:00:00Z');
 			expect(result.refresh).toBe('new-refresh-token');
 		});
 
@@ -286,7 +286,7 @@ describe('auth.ts', () => {
 			mockedPostApi.mockResolvedValueOnce({
 				status: 200,
 				data: {
-					accessToken: 'new-access-token',
+					access: 'new-access-token',
 					accessTokenExpires: '2026-01-01',
 					// No refresh token in response
 				},

@@ -39,7 +39,7 @@ import { useAppSelector, useToast } from '@/utils/hooks';
 import { getUserCompaniesState } from '@/store/selectors';
 import { useAddReglementMutation, useEditReglementMutation, useGetReglementQuery } from '@/store/services/reglement';
 import { useGetFactureClientForPaymentQuery } from '@/store/services/factureClient';
-import { getLabelForKey, setFormikAutoErrors, parseNumber, formatNumber } from '@/utils/helpers';
+import { getLabelForKey, setFormikAutoErrors, parseNumber, formatNumber, formatLocalDate } from '@/utils/helpers';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import type { ReglementSchemaType } from '@/types/reglementTypes';
 import { reglementSchema } from '@/utils/formValidationSchemas';
@@ -90,7 +90,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 
 	// Initial date as YYYY-MM-DD
-	const today = new Date().toISOString().split('T')[0];
+	const today = formatLocalDate(new Date());
 
 	// Formik
 	const formik = useFormik<ReglementSchemaType>({
@@ -251,11 +251,15 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	}, [formik.values.facture_client, facturesForPayment]);
 	
 	const devise = rawData?.devise || selectedFactureData?.devise || 'MAD';
-	const montantFacture = rawData?.montant_facture ? `${formatNumber(rawData.montant_facture)} ${devise}` : null;
-	const totalReglementsFacture = rawData?.total_reglements_facture
+	const montantFacture = rawData?.montant_facture !== undefined && rawData?.montant_facture !== null
+		? `${formatNumber(rawData.montant_facture)} ${devise}`
+		: null;
+	const totalReglementsFacture = rawData?.total_reglements_facture !== undefined && rawData?.total_reglements_facture !== null
 		? `${formatNumber(rawData.total_reglements_facture)} ${devise}`
 		: null;
-	const resteAPayer = rawData?.reste_a_payer ? `${formatNumber(rawData.reste_a_payer)} ${devise}` : `0 ${devise}`;
+	const resteAPayer = rawData?.reste_a_payer !== undefined && rawData?.reste_a_payer !== null
+		? `${formatNumber(rawData.reste_a_payer)} ${devise}`
+		: `0 ${devise}`;
 
 	return (
 		<Stack spacing={3} sx={{ p: { xs: 2, md: 3 } }}>
@@ -299,7 +303,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				<form onSubmit={formik.handleSubmit}>
 					<Stack spacing={3}>
 						{/* Financial info card for edit mode */}
-						{isEditMode && montantFacture && (
+						{isEditMode && montantFacture !== null && (
 							<Card elevation={2} sx={{ borderRadius: 2, bgcolor: 'grey.50' }}>
 								<CardContent sx={{ p: 3 }}>
 									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>

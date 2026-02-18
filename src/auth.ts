@@ -5,6 +5,45 @@ import { allowAnyInstance } from '@/utils/helpers';
 import { postApi } from '@/utils/apiHelpers';
 import type { AccountPostLoginResponseType } from '@/types/accountTypes';
 
+const parseExpirationToMs = (expiration: unknown): number => {
+	if (typeof expiration === 'number') {
+		return Number.isFinite(expiration) ? expiration : 0;
+	}
+
+	if (typeof expiration === 'string') {
+		const parsedDate = Date.parse(expiration);
+		if (!Number.isNaN(parsedDate)) {
+			return parsedDate;
+		}
+
+		const parsedNumber = Number(expiration);
+		if (Number.isFinite(parsedNumber)) {
+			return parsedNumber;
+		}
+	}
+
+	return 0;
+};
+
+const getJwtExpirationIso = (token: string): string | null => {
+	try {
+		const payload = token.split('.')[1];
+		if (!payload) {
+			return null;
+		}
+
+		const decodedPayload = Buffer.from(payload, 'base64url').toString('utf8');
+		const parsed = JSON.parse(decodedPayload) as { exp?: number };
+		if (!parsed.exp || !Number.isFinite(parsed.exp)) {
+			return null;
+		}
+
+		return new Date(parsed.exp * 1000).toISOString();
+	} catch {
+		return null;
+	}
+};
+
 export const { handlers, auth } = NextAuth({
 	providers: [
 		Credentials({
@@ -112,10 +151,11 @@ export const { handlers, auth } = NextAuth({
 				token.access_expiration = user.access_expiration;
 				token.refresh_expiration = user.refresh_expiration;
 				token.user = user.user; // user object
+				return token;
 			}
 
 			// Perform refresh token logic if the access token is expired
-			if (Date.now() >= (token.access_expiration ? Number(token.access_expiration) : 0)) {
+			if (Date.now() >= parseExpirationToMs(token.access_expiration)) {
 				try {
 					// Call your refresh token API if necessary
 					const instance = allowAnyInstance();
@@ -124,8 +164,20 @@ export const { handlers, auth } = NextAuth({
 					});
 
 					if (refreshed.status === 200) {
-						token.access = refreshed.data.accessToken;
-						token.access_expiration = refreshed.data.accessTokenExpires;
+						const refreshedAccessToken = refreshed.data.access ?? refreshed.data.accessToken;
+						if (!refreshedAccessToken) {
+							return null;
+						}
+
+						token.access = refreshedAccessToken;
+						const refreshedAccessExpiration =
+							refreshed.data.access_expiration ??
+							refreshed.data.accessTokenExpires ??
+							getJwtExpirationIso(refreshedAccessToken);
+
+						if (refreshedAccessExpiration) {
+							token.access_expiration = String(refreshedAccessExpiration);
+						}
 						token.refresh = refreshed.data.refresh ?? token.refresh; // Fallback to the old refresh token if not updated
 					}
 				} catch (error) {

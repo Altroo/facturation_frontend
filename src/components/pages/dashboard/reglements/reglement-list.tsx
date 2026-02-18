@@ -205,7 +205,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		setShowLanguageModal(true);
 	};
 
-	const handleLanguageSelect = (language: 'fr' | 'en') => {
+	const handleLanguageSelect = async (language: 'fr' | 'en') => {
 		setShowLanguageModal(false);
 
 		if (!printReglementId) {
@@ -217,10 +217,31 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			return;
 		}
 
-		const url = `${REGLEMENT_PDF(printReglementId, company_id, language)}&token=${encodeURIComponent(token)}`;
-		window.open(url, '_blank');
+		try {
+			const url = REGLEMENT_PDF(printReglementId, company_id, language);
+			const response = await fetch(url, {
+				method: 'GET',
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			});
 
-		setPrintReglementId(null);
+			if (!response.ok) {
+				throw new Error(`Failed to fetch PDF (${response.status})`);
+			}
+
+			const blob = await response.blob();
+			const blobUrl = window.URL.createObjectURL(blob);
+			window.open(blobUrl, '_blank');
+
+			setTimeout(() => {
+				window.URL.revokeObjectURL(blobUrl);
+			}, 60_000);
+		} catch {
+			onError("Erreur lors de l'ouverture du document.");
+		} finally {
+			setPrintReglementId(null);
+		}
 	};
 
 	const handleLanguageModalClose = () => {

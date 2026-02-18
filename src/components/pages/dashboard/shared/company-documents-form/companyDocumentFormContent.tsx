@@ -51,6 +51,7 @@ import {
 	parseNumber,
 	setFormikAutoErrors,
 	ValidatePricesHelper,
+	formatLocalDate,
 } from '@/utils/helpers';
 import { textInputTheme, customDropdownTheme } from '@/utils/themes';
 import { CLIENTS_ADD } from '@/utils/routes';
@@ -283,7 +284,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 
 	// Build initial values based on document type
 	const getInitialValues = (): DocumentFormSchema => {
-		const today = new Date().toISOString().split('T')[0];
+		const today = formatLocalDate(new Date());
 		const devisData = rawData as DevisDocumentData | undefined;
 		const factureData = rawData as FactureDocumentData | undefined;
 		const bonDeLivraisonData = rawData as BonDeLivraisonDocumentData | undefined;
@@ -1049,7 +1050,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 											label={config.labels.dateLabel}
 											value={getDateValue() ? new Date(getDateValue()) : null}
 											onChange={(date) =>
-												formik.setFieldValue(config.fields.dateField, date ? date.toISOString().split('T')[0] : '')
+												formik.setFieldValue(config.fields.dateField, date ? formatLocalDate(date) : '')
 											}
 											format="dd/MM/yyyy"
 											slotProps={{

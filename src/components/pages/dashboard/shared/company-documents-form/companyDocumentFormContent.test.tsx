@@ -76,6 +76,7 @@ jest.mock('@/utils/helpers', () => ({
 	setFormikAutoErrors: jest.fn(),
 	ValidatePricesHelper: jest.fn(() => ({})),
 	formatNumberWithSpaces: jest.fn((v) => String(v)),
+	formatLocalDate: jest.fn(() => '2025-01-01'),
 }));
 jest.mock('@/utils/themes', () => ({
 	textInputTheme: jest.fn(() => ({})),

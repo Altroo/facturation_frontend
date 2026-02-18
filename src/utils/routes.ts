@@ -84,7 +84,7 @@ export const USERS_ADD = `${SITE_ROOT}dashboard/users/new`;
 export const USERS_VIEW = (id: number) => `${SITE_ROOT}dashboard/users/${id}`;
 export const USERS_EDIT = (id: number) => `${SITE_ROOT}dashboard/users/${id}/edit`;
 
-// PDF Routes (without token - token is added dynamically when opening)
+// PDF Routes (authentication is sent via Authorization header by the caller)
 export const DEVIS_PDF = (id: number, company_id: number, type: 'avec_remise' | 'sans_remise' | 'avec_unite', language: 'fr' | 'en' = 'fr') =>
 	`${process.env.NEXT_PUBLIC_ROOT_API_URL}/devi/pdf/${language}/${id}/?company_id=${company_id}&type=${type}`;
 
