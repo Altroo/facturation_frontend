@@ -43,13 +43,13 @@ import Styles from '@/styles/dashboard/dashboard.module.sass';
 import { useAppSelector } from '@/utils/hooks';
 import { getUserCompaniesState } from '@/store/selectors';
 import { useGetArticlesListQuery } from '@/store/services/article';
-import { formatDate } from '@/utils/helpers';
+import { formatDate, formatNumberWithSpaces } from '@/utils/helpers';
 import { getAccessTokenFromSession } from '@/store/session';
 
 import type { ArticleClass } from '@/models/classes';
 import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import { getStatutColor } from '@/components/pages/dashboard/devis/devis-list';
-import { CompanyDocumentData, CompanyDocumentsViewProps, Totals } from '@/types/companyDocumentsTypes';
+import type { CompanyDocumentData, CompanyDocumentsViewProps, Totals } from '@/types/companyDocumentsTypes';
 
 interface InfoRowProps {
 	icon: React.ReactNode;
@@ -383,7 +383,8 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 				headerName: "Prix d'achat",
 				flex: 1, minWidth: 110,
 				renderCell: (params: GridRenderCellParams) => {
-					const value = Number(params.row.prix_achat ?? 0) + ' ' + (params.row.devise_prix_achat || 'MAD');
+					const value = formatNumberWithSpaces(params.row.prix_achat ?? 0, 2) + ' ' +
+						(params.row.devise_prix_achat || 'MAD');
 					return (
 						<DarkTooltip title={value}>
 							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
@@ -400,9 +401,8 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 				headerName: 'Prix de vente',
 				flex: 1, minWidth: 110,
 				renderCell: (params: GridRenderCellParams) => {
-					const row = params.row as { prix_vente?: unknown; devise_prix_vente?: string };
-					const devise = row.devise_prix_vente || 'MAD';
-					const value = `${toNumber(row.prix_vente, 0)} ${devise}`;
+					const value =
+						formatNumberWithSpaces(params.row.prix_vente ?? 0, 2) + ' ' + (params.row.devise_prix_vente || 'MAD');
 					return (
 						<DarkTooltip title={value}>
 							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
