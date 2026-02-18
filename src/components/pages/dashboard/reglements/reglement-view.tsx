@@ -190,7 +190,7 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 														MONTANT FACTURE
 													</Typography>
 													<Typography variant="h6" fontWeight={800} color="text.secondary">
-														{reglement?.montant_facture !== undefined && reglement?.montant_facture !== null
+														{reglement?.montant_facture !== null
 															? `${formatNumber(reglement.montant_facture)} ${reglement.devise}`
 															: '-'}
 													</Typography>
