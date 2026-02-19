@@ -11,11 +11,15 @@ describe('API utility functions', () => {
 
 	describe('cookiesPoster', () => {
 		it('should post to the given URL with body and return status', async () => {
-			mockedAxios.post.mockResolvedValueOnce({ status: 200 });
+			const mockInstance = { post: jest.fn().mockResolvedValueOnce({ status: 200 }) };
+			mockedAxios.create.mockReturnValueOnce(mockInstance as any);
 
 			const result = await cookiesPoster('/api/cookies', { token: 'abc123' });
 
-			expect(mockedAxios.post).toHaveBeenCalledWith(
+			expect(mockedAxios.create).toHaveBeenCalledWith({
+				baseURL: process.env.NEXT_PUBLIC_BACKEND_API,
+			});
+			expect(mockInstance.post).toHaveBeenCalledWith(
 				'/api/cookies',
 				{ token: 'abc123', maxAge: 86400 },
 				{ headers: { 'Content-Type': 'application/json' } },
@@ -26,11 +30,15 @@ describe('API utility functions', () => {
 
 	describe('cookiesDeleter', () => {
 		it('should delete from the given URL with body and return status', async () => {
-			mockedAxios.delete.mockResolvedValueOnce({ status: 204 });
+			const mockInstance = { delete: jest.fn().mockResolvedValueOnce({ status: 204 }) };
+			mockedAxios.create.mockReturnValueOnce(mockInstance as any);
 
 			const result = await cookiesDeleter('/api/cookies', { token: 'abc123' });
 
-			expect(mockedAxios.delete).toHaveBeenCalledWith('/api/cookies', {
+			expect(mockedAxios.create).toHaveBeenCalledWith({
+				baseURL: process.env.NEXT_PUBLIC_BACKEND_API,
+			});
+			expect(mockInstance.delete).toHaveBeenCalledWith('/api/cookies', {
 				data: { token: 'abc123' },
 			});
 			expect(result).toEqual({ status: 204 });

@@ -1,23 +1,21 @@
 import axios, { type AxiosInstance } from 'axios';
 
-axios.defaults.baseURL = `${process.env.NEXT_PUBLIC_ROOT_API_URL}`;
-
 // POST Next api/cookies
 export const cookiesPoster = async (url: string, body: object) => {
-    const instance = axios.create({ baseURL: process.env.NEXT_PUBLIC_BACKEND_API });
-    const response = await instance.post(
-        url,
-        { ...body, maxAge: 86400 },
-        { headers: { 'Content-Type': 'application/json' } },
-    );
-    return { status: response.status };
+	const instance = axios.create({ baseURL: process.env.NEXT_PUBLIC_BACKEND_API });
+	const response = await instance.post(
+		url,
+		{ ...body, maxAge: 86400 },
+		{ headers: { 'Content-Type': 'application/json' } },
+	);
+	return { status: response.status };
 };
 
 // DELETE Next api/cookies
 export const cookiesDeleter = async (url: string, body: object) => {
-    const instance = axios.create({ baseURL: process.env.NEXT_PUBLIC_BACKEND_API });
-    const response = await instance.delete(url, { data: body });
-    return { status: response.status };
+	const instance = axios.create({ baseURL: process.env.NEXT_PUBLIC_BACKEND_API });
+	const response = await instance.delete(url, { data: body });
+	return { status: response.status };
 };
 
 /*** Base Axios JSON Api call [POST] */
