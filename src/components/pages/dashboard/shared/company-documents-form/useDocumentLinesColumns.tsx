@@ -308,7 +308,7 @@ export const useDocumentLinesColumns = ({
 				},
 			},
 			{ field: 'prix_vente', headerName: 'Prix de vente', flex: 1.5, minWidth: 150, renderCell: renderPrixVenteCell },
-			{ field: 'quantity', headerName: 'Quantité', flex: 0.8, minWidth: 90, renderCell: renderQuantityCell },
+			{ field: 'quantity', headerName: 'Quantité', flex: 1, minWidth: 120, renderCell: renderQuantityCell },
 			{
 				field: 'remise_type',
 				headerName: 'Type remise',

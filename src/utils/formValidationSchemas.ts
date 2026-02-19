@@ -326,6 +326,7 @@ export const articleSchema = z
 		prix_achat: optionalNumberField(0).nullable(),
 		devise_prix_achat: z.enum(['MAD', 'EUR', 'USD']).default('MAD'),
 		prix_vente: optionalNumberField(0).nullable(),
+		devise_prix_vente: z.enum(['MAD', 'EUR', 'USD']).default('MAD'),
 		tva: optionalTVANumberField(0),
 		remarque: optionalTextField(2, 500).nullable(),
 		globalError: optionalTextField(1, 500),
@@ -335,7 +336,12 @@ export const articleSchema = z
 			const a = data.prix_achat;
 			const v = data.prix_vente;
 			if (a === undefined || a === null || v === undefined || v === null) return true;
-			return v > a;
+			const rates: Record<'MAD' | 'EUR' | 'USD', number> = { MAD: 1, EUR: 10, USD: 9 };
+			const deviseAchat = (data.devise_prix_achat ?? 'MAD') as 'MAD' | 'EUR' | 'USD';
+			const deviseVente = (data.devise_prix_vente ?? 'MAD') as 'MAD' | 'EUR' | 'USD';
+			const aInMAD = a * rates[deviseAchat];
+			const vInMAD = v * rates[deviseVente];
+			return vInMAD >= aInMAD;
 		},
 		{ error: INPUT_PRICE_VENTE_ACHAT, path: ['prix_vente'] },
 	);

@@ -64,6 +64,7 @@ const CustomTextInput = forwardRef<HTMLInputElement, Props>((props: Props, ref: 
 						endAdornment: endIcon ? <InputAdornment position="end">{endIcon}</InputAdornment> : undefined,
 					},
 					htmlInput: {
+						...props.slotProps?.htmlInput,
 						...(maxLength ? { maxLength } : {}),
 					},
 				}}

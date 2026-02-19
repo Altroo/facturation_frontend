@@ -60,8 +60,10 @@ const FormattedNumberInput = forwardRef<HTMLInputElement, Props>((props: Props, 
 
 	const handleFocus = () => {
 		setIsFocused(true);
-		// Set edit value to the raw value when focusing
-		setEditValue(value === null || value === undefined ? '' : String(value));
+		// Parse the value to strip trailing zeros (e.g. "1.00" → "1") so typing feels natural
+		const raw = value === null || value === undefined ? '' : String(value);
+		const parsed = parseFormattedNumber(raw);
+		setEditValue(parsed !== null ? String(parsed) : raw);
 	};
 
 	const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
