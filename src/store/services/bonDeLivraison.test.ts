@@ -1,6 +1,6 @@
 import { bonDeLivraisonApi } from '@/store/services/bonDeLivraison';
 import { setupApiStore } from '@/store/setupApiStore';
-import { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
+import type { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
 
 beforeAll(() => {
 	process.env.NEXT_PUBLIC_BON_DE_LIVRAISON_LIST ||= 'https://example.com/bon-de-livraison/';
