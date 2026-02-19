@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { type AxiosInstance } from 'axios';
 import { cookiesPoster, cookiesDeleter, postApi } from './apiHelpers';
 
 jest.mock('axios');
@@ -11,8 +11,10 @@ describe('API utility functions', () => {
 
 	describe('cookiesPoster', () => {
 		it('should post to the given URL with body and return status', async () => {
-			const mockInstance = { post: jest.fn().mockResolvedValueOnce({ status: 200 }) };
-			mockedAxios.create.mockReturnValueOnce(mockInstance as any);
+			const mockInstance = {
+				post: jest.fn().mockResolvedValueOnce({ status: 200 }),
+			} satisfies Partial<AxiosInstance>;
+			mockedAxios.create.mockReturnValueOnce(mockInstance as unknown as AxiosInstance);
 
 			const result = await cookiesPoster('/api/cookies', { token: 'abc123' });
 
@@ -30,8 +32,10 @@ describe('API utility functions', () => {
 
 	describe('cookiesDeleter', () => {
 		it('should delete from the given URL with body and return status', async () => {
-			const mockInstance = { delete: jest.fn().mockResolvedValueOnce({ status: 204 }) };
-			mockedAxios.create.mockReturnValueOnce(mockInstance as any);
+			const mockInstance = {
+				delete: jest.fn().mockResolvedValueOnce({ status: 204 }),
+			} satisfies Partial<AxiosInstance>;
+			mockedAxios.create.mockReturnValueOnce(mockInstance as unknown as AxiosInstance);
 
 			const result = await cookiesDeleter('/api/cookies', { token: 'abc123' });
 

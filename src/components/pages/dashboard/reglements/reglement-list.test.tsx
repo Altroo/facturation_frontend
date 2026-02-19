@@ -166,6 +166,12 @@ describe('ReglementListClient', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
 		Object.defineProperty(window, 'open', { value: mockOpen, writable: true });
+		global.fetch = jest.fn().mockResolvedValue({
+			ok: true,
+			blob: () => Promise.resolve(new Blob(['PDF'], { type: 'application/pdf' })),
+		} as Response);
+		Object.defineProperty(window.URL, 'createObjectURL', { value: jest.fn(() => 'blob:mock-url'), writable: true, configurable: true });
+		Object.defineProperty(window.URL, 'revokeObjectURL', { value: jest.fn(), writable: true, configurable: true });
 	});
 	afterEach(() => cleanup());
 

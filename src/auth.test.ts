@@ -69,11 +69,11 @@ describe('auth.ts', () => {
 			expect(config).toBeDefined();
 			expect(config.session).toEqual({
 				strategy: 'jwt',
-				maxAge: 30 * 24 * 60 * 60,
+				maxAge: 6 * 24 * 60 * 60,
 				updateAge: 60 * 60,
 			});
 			expect(config.jwt).toEqual({
-				maxAge: 30 * 24 * 60 * 60,
+				maxAge: 6 * 24 * 60 * 60,
 			});
 			expect(config.pages).toEqual({
 				signIn: 'login',

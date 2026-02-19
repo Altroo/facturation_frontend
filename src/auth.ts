@@ -115,11 +115,11 @@ export const { handlers, auth } = NextAuth({
 	secret: process.env.NEXTAUTH_SECRET, // Ensure this is set securely
 	session: {
 		strategy: 'jwt', // Persist the session using JWTs
-		maxAge: 30 * 24 * 60 * 60, // 30 days
+		maxAge: 6 * 24 * 60 * 60,    // 6 days — safely within 7-day backend refresh window
 		updateAge: 60 * 60, // Update JWT every 1 hour
 	},
 	jwt: {
-		maxAge: 30 * 24 * 60 * 60, // 30 days
+		maxAge: 6 * 24 * 60 * 60,    // 6 days
 	},
 
 	pages: {
@@ -152,6 +152,11 @@ export const { handlers, auth } = NextAuth({
 				token.refresh_expiration = user.refresh_expiration;
 				token.user = user.user; // user object
 				return token;
+			}
+
+			// NEW GUARD: if refresh token is itself expired, force re-auth immediately
+			if (token.refresh_expiration && Date.now() >= parseExpirationToMs(token.refresh_expiration)) {
+				return null;
 			}
 
 			// Perform refresh token logic if the access token is expired
