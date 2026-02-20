@@ -115,6 +115,14 @@ export const factureProFormaApi = createApi({
 				}
 			},
 		}),
+		bulkDeleteFactureProForma: builder.mutation<void | ApiErrorResponseType, { ids: number[] }>({
+			query: ({ ids }) => ({
+				url: `${process.env.NEXT_PUBLIC_FACTURE_PROFORMA_ROOT}/bulk_delete/`,
+				method: 'DELETE',
+				data: { ids },
+			}),
+			invalidatesTags: ['FactureProForma', 'Dashboard'],
+		}),
 	}),
 });
 
@@ -127,4 +135,5 @@ export const {
 	useAddFactureProFormaMutation,
 	usePatchStatutMutation,
 	useConvertFactureProFormaToFactureMutation,
+	useBulkDeleteFactureProFormaMutation,
 } = factureProFormaApi;

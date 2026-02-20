@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Print as PrintIcon } from '@mui/icons-material';
 import { GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
-import { useDeleteBonDeLivraisonMutation, useGetBonDeLivraisonListQuery } from '@/store/services/bonDeLivraison';
+import { useDeleteBonDeLivraisonMutation, useGetBonDeLivraisonListQuery, useBulkDeleteBonDeLivraisonMutation } from '@/store/services/bonDeLivraison';
 import { useGetModePaiementListQuery, useGetLivreParListQuery } from '@/store/services/parameter';
 import { BON_DE_LIVRAISON_ADD, BON_DE_LIVRAISON_EDIT, BON_DE_LIVRAISON_VIEW, BON_DE_LIVRAISON_PDF } from '@/utils/routes';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
@@ -119,10 +119,10 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 	const data = rawData as PaginationResponseType<BonDeLivraisonClass> | undefined;
 
 	const [deleteRecord] = useDeleteBonDeLivraisonMutation();
+	const [bulkDeleteRecords] = useBulkDeleteBonDeLivraisonMutation();
 
 	return (
 		<>
-			<ChipSelectFilterBar filters={chipFilters} onFilterChange={setChipFilterParams} />
 			<CompanyDocumentsListContent<BonDeLivraisonClass>
 				companyId={company_id}
 				role={role}
@@ -130,6 +130,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 				config={bonDeLivraisonListConfig}
 				queryResult={{ data, isLoading, refetch }}
 				deleteMutation={{ deleteRecord }}
+				bulkDeleteMutation={{ bulkDeleteRecords }}
 				paginationModel={paginationModel}
 				setPaginationModel={setPaginationModel}
 				searchTerm={searchTerm}
@@ -137,6 +138,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 				filterModel={filterModel}
 				onFilterModelChange={setFilterModel}
 				onCustomFilterParamsChange={setCustomFilterParams}
+				chipFilterBar={<ChipSelectFilterBar filters={chipFilters} onFilterChange={setChipFilterParams} />}
 			/>
 		</>
 	);

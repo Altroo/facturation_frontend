@@ -89,6 +89,7 @@ jest.mock('@/store/services/parameter', () => ({
 jest.mock('@/store/services/bonDeLivraison', () => ({
 	useGetBonDeLivraisonListQuery: (args: QueryArgs) => mockUseGetBonDeLivraisonListQuery(args),
 	useDeleteBonDeLivraisonMutation: jest.fn(() => [mockDeleteRecord, { isLoading: false }]),
+	useBulkDeleteBonDeLivraisonMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
 }));
 
 // Mock CompanyDocumentsWrapperList

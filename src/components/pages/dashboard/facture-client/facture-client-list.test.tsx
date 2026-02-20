@@ -84,6 +84,7 @@ const mockUseGetFactureClientListQuery = jest.fn((args: QueryArgs) => {
 jest.mock('@/store/services/factureClient', () => ({
 	useGetFactureClientListQuery: (args: QueryArgs) => mockUseGetFactureClientListQuery(args),
 	useDeleteFactureClientMutation: jest.fn(() => [mockDeleteRecord, { isLoading: false }]),
+	useBulkDeleteFactureClientMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
 	useConvertFactureClientToBonDeLivraisonMutation: jest.fn(() => [mockConvertToBonDeLivraison, { isLoading: false }]),
 }));
 

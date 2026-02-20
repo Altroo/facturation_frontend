@@ -95,15 +95,34 @@ export const clientApi = createApi({
 			}),
 			invalidatesTags: ['Client', 'Dashboard'],
 		}),
+		bulkDeleteClients: builder.mutation<void | ApiErrorResponseType, { ids: number[] }>({
+			query: ({ ids }) => ({
+				url: `${process.env.NEXT_PUBLIC_CLIENT_ROOT}/bulk_delete/`,
+				method: 'DELETE',
+				data: { ids },
+			}),
+			invalidatesTags: ['Client', 'Dashboard'],
+		}),
+		bulkArchiveClients: builder.mutation<{ updated: number } | ApiErrorResponseType, { ids: number[]; archived: boolean }>({
+			query: ({ ids, archived }) => ({
+				url: `${process.env.NEXT_PUBLIC_CLIENT_ROOT}/bulk_archive/`,
+				method: 'PATCH',
+				data: { ids, archived },
+			}),
+			invalidatesTags: ['Client', 'Dashboard'],
+		}),
 	}),
 });
 
 export const {
 	useGetClientsListQuery,
+	useLazyGetClientsListQuery,
 	useDeleteClientMutation,
 	useEditClientMutation,
 	useGetCodeClientQuery,
 	useGetClientQuery,
 	useAddClientMutation,
 	usePatchArchiveMutation,
+	useBulkDeleteClientsMutation,
+	useBulkArchiveClientsMutation,
 } = clientApi;

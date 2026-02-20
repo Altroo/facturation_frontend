@@ -17,6 +17,7 @@ import {
 	useConvertFactureClientToBonDeLivraisonMutation,
 	useDeleteFactureClientMutation,
 	useGetFactureClientListQuery,
+	useBulkDeleteFactureClientMutation,
 } from '@/store/services/factureClient';
 import { useGetCompanyQuery } from '@/store/services/company';
 import {
@@ -159,6 +160,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 	const data = rawData as FactureClientListResponseType | undefined;
 
 	const [deleteRecord] = useDeleteFactureClientMutation();
+	const [bulkDeleteRecords] = useBulkDeleteFactureClientMutation();
 
 	// Convert mutations map - empty for now since bon de livraison is not implemented
 	const [convertToBonDeLivraison, { isLoading: isConvertToBonDeLivraisonLoading }] =
@@ -237,8 +239,6 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 				<Divider sx={{ mb: 2 }} />
 			</Box>
 
-			<ChipSelectFilterBar filters={chipFilters} onFilterChange={setChipFilterParams} />
-
 			<CompanyDocumentsListContent<FactureClass>
 				companyId={company_id}
 				role={role}
@@ -246,6 +246,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 				config={factureClientListConfig}
 				queryResult={{ data, isLoading, refetch }}
 				deleteMutation={{ deleteRecord }}
+				bulkDeleteMutation={{ bulkDeleteRecords }}
 				convertMutations={convertMutations}
 				paginationModel={paginationModel}
 				setPaginationModel={setPaginationModel}
@@ -254,6 +255,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 				filterModel={filterModel}
 				onFilterModelChange={setFilterModel}
 				onCustomFilterParamsChange={setCustomFilterParams}
+				chipFilterBar={<ChipSelectFilterBar filters={chipFilters} onFilterChange={setChipFilterParams} />}
 			/>
 		</>
 	);

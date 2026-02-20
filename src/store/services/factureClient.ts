@@ -156,6 +156,14 @@ export const factureClientApi = createApi({
 			}),
 			invalidatesTags: ['FactureClient', 'Dashboard'],
 		}),
+		bulkDeleteFactureClient: builder.mutation<void | ApiErrorResponseType, { ids: number[] }>({
+			query: ({ ids }) => ({
+				url: `${process.env.NEXT_PUBLIC_FACTURE_CLIENT_ROOT}/bulk_delete/`,
+				method: 'DELETE',
+				data: { ids },
+			}),
+			invalidatesTags: ['FactureClient', 'Dashboard'],
+		}),
 	}),
 });
 
@@ -170,4 +178,5 @@ export const {
 	useAddFactureClientMutation,
 	useConvertFactureClientToBonDeLivraisonMutation,
 	usePatchStatutMutation,
+	useBulkDeleteFactureClientMutation,
 } = factureClientApi;

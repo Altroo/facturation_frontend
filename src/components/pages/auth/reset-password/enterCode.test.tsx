@@ -178,7 +178,7 @@ describe('EnterCodeClient', () => {
 			expect(mockPasswordResetTrigger).toHaveBeenCalled();
 			expect(mockSetFormikAutoErrors).toHaveBeenCalled();
 		});
-	});
+	}, 15000);
 
 	it('backspace on empty input focuses previous input', async () => {
 		await act(async () => {

@@ -129,6 +129,14 @@ export const bonDeLivraisonApi = createApi({
 			}),
 			invalidatesTags: ['BonDeLivraison', 'Dashboard'],
 		}),
+		bulkDeleteBonDeLivraison: builder.mutation<void | ApiErrorResponseType, { ids: number[] }>({
+			query: ({ ids }) => ({
+				url: `${process.env.NEXT_PUBLIC_BON_DE_LIVRAISON_ROOT}/bulk_delete/`,
+				method: 'DELETE',
+				data: { ids },
+			}),
+			invalidatesTags: ['BonDeLivraison', 'Dashboard'],
+		}),
 	}),
 });
 
@@ -141,4 +149,5 @@ export const {
 	useGetBonDeLivraisonQuery,
 	useAddBonDeLivraisonMutation,
 	usePatchStatutMutation,
+	useBulkDeleteBonDeLivraisonMutation,
 } = bonDeLivraisonApi;

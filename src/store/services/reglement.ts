@@ -116,6 +116,14 @@ export const reglementApi = createApi({
 			}),
 			invalidatesTags: ['Reglement', 'Dashboard'],
 		}),
+		bulkDeleteReglements: builder.mutation<void | ApiErrorResponseType, { ids: number[] }>({
+			query: ({ ids }) => ({
+				url: `${process.env.NEXT_PUBLIC_REGLEMENT_ROOT}/bulk_delete/`,
+				method: 'DELETE',
+				data: { ids },
+			}),
+			invalidatesTags: ['Reglement', 'Dashboard'],
+		}),
 	}),
 });
 
@@ -126,4 +134,5 @@ export const {
 	useEditReglementMutation,
 	useAddReglementMutation,
 	usePatchReglementStatutMutation,
+	useBulkDeleteReglementsMutation,
 } = reglementApi;

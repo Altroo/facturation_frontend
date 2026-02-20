@@ -18,10 +18,12 @@ import {
 import { GridColDef, GridRenderCellParams, GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import { getAccessTokenFromSession } from '@/store/session';
+import { fetchPdfBlob } from '@/utils/apiHelpers';
 import {
 	useDeleteReglementMutation,
 	useGetReglementsListQuery,
 	usePatchReglementStatutMutation,
+	useBulkDeleteReglementsMutation,
 } from '@/store/services/reglement';
 import { REGLEMENTS_ADD, REGLEMENTS_EDIT, REGLEMENTS_VIEW, CLIENTS_VIEW, REGLEMENT_PDF } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
@@ -88,6 +90,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
 	const [chipFilterParams, setChipFilterParams] = useState<Record<string, string>>({});
 
+	// Bulk selection state
+	const [selectedIds, setSelectedIds] = useState<number[]>([]);
+	const [showBulkDeleteModal, setShowBulkDeleteModal] = useState<boolean>(false);
+
 	const { data: modePaiement } = useGetModePaiementListQuery({ company_id }, { skip: !token });
 
 	const chipFilters: ChipFilterConfig[] = React.useMemo(
@@ -134,6 +140,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	}, [data?.results]);
 
 	const [deleteRecord] = useDeleteReglementMutation();
+	const [bulkDeleteReglements] = useBulkDeleteReglementsMutation();
 	const [patchStatut] = usePatchReglementStatutMutation();
 
 	const deleteHandler = async () => {
@@ -157,6 +164,28 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		setSelectedId(id);
 		setShowDeleteModal(true);
 	};
+
+	const handleSelectionChange = (ids: number[]) => {
+		setSelectedIds(ids);
+	};
+
+	const bulkDeleteHandler = async () => {
+		try {
+			await bulkDeleteReglements({ ids: selectedIds }).unwrap();
+			onSuccess(`${selectedIds.length} règlement(s) supprimé(s) avec succès`);
+		} catch {
+			onError(`Erreur lors de la suppression`);
+		} finally {
+			setSelectedIds([]);
+			setShowBulkDeleteModal(false);
+			refetch();
+		}
+	};
+
+	const bulkDeleteModalActions = [
+		{ text: 'Annuler', active: false, onClick: () => setShowBulkDeleteModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
+		{ text: `Supprimer (${selectedIds.length})`, active: true, onClick: bulkDeleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
+	];
 
 	const cancelHandler = async () => {
 		if (!cancelTarget) return;
@@ -219,18 +248,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 		try {
 			const url = REGLEMENT_PDF(printReglementId, company_id, language);
-			const response = await fetch(url, {
-				method: 'GET',
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			});
-
-			if (!response.ok) {
-				throw new Error(`Failed to fetch PDF (${response.status})`);
-			}
-
-			const blob = await response.blob();
+			const blob = await fetchPdfBlob(url, token);
 			const blobUrl = window.URL.createObjectURL(blob);
 			window.open(blobUrl, '_blank');
 
@@ -494,15 +512,15 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				<Divider sx={{ mb: 2 }} />
 			</Box>
 
-			<ChipSelectFilterBar filters={chipFilters} onFilterChange={setChipFilterParams} />
-
 			{(role === 'Caissier' || role === 'Commercial') && (
 				<Box
 					sx={{
 						width: '100%',
 						display: 'flex',
 						justifyContent: 'flex-start',
+						gap: 2,
 						px: { xs: 1, sm: 2, md: 3 },
+						mt: { xs: 1, sm: 2, md: 3 },
 						mb: { xs: 1, sm: 2, md: 3 },
 					}}
 				>
@@ -519,8 +537,25 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					>
 						Nouveau règlement
 					</Button>
+					{role === 'Caissier' && selectedIds.length > 0 && (
+						<Button
+							variant="outlined"
+							color="error"
+							onClick={() => setShowBulkDeleteModal(true)}
+							startIcon={<DeleteIcon fontSize="small" />}
+							sx={{
+								whiteSpace: 'nowrap',
+								px: { xs: 1.5, sm: 2, md: 3 },
+								py: { xs: 0.8, sm: 1, md: 1 },
+								fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
+							}}
+						>
+							Supprimer ({selectedIds.length})
+						</Button>
+					)}
 				</Box>
 			)}
+			<ChipSelectFilterBar filters={chipFilters} onFilterChange={setChipFilterParams} />
 			<PaginatedDataGrid
 				data={data}
 				isLoading={isLoading}
@@ -533,6 +568,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				onFilterModelChange={setFilterModel}
 				onCustomFilterParamsChange={setCustomFilterParams}
 				toolbar={{ quickFilter: true, debounceMs: 500 }}
+				checkboxSelection={role === 'Caissier'}
+				onSelectionChange={handleSelectionChange}
+				selectedIds={selectedIds}
 			/>
 			{showDeleteModal && (
 				<ActionModals
@@ -550,6 +588,15 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					titleIconColor="#D32F2F"
 					body="Êtes‑vous sûr de vouloir annuler ce règlement? Cette action est irréversible."
 					actions={cancelModalActions}
+				/>
+			)}
+			{showBulkDeleteModal && (
+				<ActionModals
+					title={`Supprimer ${selectedIds.length} règlement(s) ?`}
+					body={`Êtes-vous sûr de vouloir supprimer les ${selectedIds.length} règlement(s) sélectionné(s) ?`}
+					actions={bulkDeleteModalActions}
+					titleIcon={<DeleteIcon />}
+					titleIconColor="#D32F2F"
 				/>
 			)}
 			{showLanguageModal && (

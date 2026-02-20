@@ -71,6 +71,7 @@ const mockUseGetUsersListQuery = jest.fn(() => ({
 jest.mock('@/store/services/account', () => ({
 	useGetUsersListQuery: () => mockUseGetUsersListQuery(),
 	useDeleteUserMutation: jest.fn(() => [mockDeleteUser, { isLoading: false }]),
+	useBulkDeleteUsersMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
 }));
 
 // Mock NavigationBar

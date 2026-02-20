@@ -10,6 +10,7 @@ import {
 	useGetDevisListQuery,
 	useConvertDeviToFactureProFormaMutation,
 	useConvertDeviToFactureClientMutation,
+	useBulkDeleteDevisMutation,
 } from '@/store/services/devi';
 import { DEVIS_EDIT, DEVIS_VIEW, DEVIS_ADD, FACTURE_PRO_FORMA_EDIT, FACTURE_CLIENT_EDIT, DEVIS_PDF } from '@/utils/routes';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
@@ -152,6 +153,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 
 	// Mutations
 	const [deleteRecord] = useDeleteDeviMutation();
+	const [bulkDeleteRecords] = useBulkDeleteDevisMutation();
 	const [convertToFactureProforma, { isLoading: isConvertToFactureProFormaLoading }] =
 		useConvertDeviToFactureProFormaMutation();
 	const [convertToFactureClient, { isLoading: isConvertToFactureClientLoading }] =
@@ -171,7 +173,6 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 
 	return (
 		<>
-			<ChipSelectFilterBar filters={chipFilters} onFilterChange={setChipFilterParams} />
 			<CompanyDocumentsListContent<DeviClass>
 				companyId={company_id}
 				role={role}
@@ -179,6 +180,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 				config={devisListConfig}
 				queryResult={{ data, isLoading, refetch }}
 				deleteMutation={{ deleteRecord }}
+				bulkDeleteMutation={{ bulkDeleteRecords }}
 				convertMutations={convertMutations}
 				paginationModel={paginationModel}
 				setPaginationModel={setPaginationModel}
@@ -187,6 +189,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 				filterModel={filterModel}
 				onFilterModelChange={setFilterModel}
 				onCustomFilterParamsChange={setCustomFilterParams}
+				chipFilterBar={<ChipSelectFilterBar filters={chipFilters} onFilterChange={setChipFilterParams} />}
 			/>
 		</>
 	);

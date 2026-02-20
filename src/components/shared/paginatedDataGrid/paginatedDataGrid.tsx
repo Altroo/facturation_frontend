@@ -1,9 +1,9 @@
 'use client';
 
-import React, { Dispatch, SetStateAction, useState, useEffect, useCallback, useRef } from 'react';
-import { Badge, Box, Stack, ThemeProvider } from '@mui/material';
+import React, { Dispatch, SetStateAction, useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { Badge, Box, Button, CircularProgress, Stack, ThemeProvider, Typography } from '@mui/material';
 import { ViewColumn as ViewColumnIcon, FilterList as FilterListIcon } from '@mui/icons-material';
-import type { GridColDef, GridFilterModel } from '@mui/x-data-grid';
+import type { GridColDef, GridFilterModel, GridRowSelectionModel, GridRowId } from '@mui/x-data-grid';
 import { DataGrid, GridSlotProps, ColumnsPanelTrigger, ToolbarButton, GridLogicOperator } from '@mui/x-data-grid';
 import { frFR } from '@mui/x-data-grid/locales';
 import { getDefaultTheme } from '@/utils/themes';
@@ -38,6 +38,22 @@ type PaginatedDataGridProps<T> = {
 	};
 	/** Extra toolbar action buttons (CSV import, etc.) shown alongside filter/column buttons */
 	toolbarActions?: React.ReactNode;
+	/** Enable checkbox row selection */
+	checkboxSelection?: boolean;
+	/** Callback fired with the list of selected row IDs (as numbers) whenever selection changes */
+	onSelectionChange?: (ids: number[]) => void;
+	/** Currently selected IDs – used to compute controlled row selection and banner visibility */
+	selectedIds?: number[];
+	/** Total matching count shown in the ‘select all matching’ banner */
+	totalMatchingCount?: number;
+	/** Called when the user clicks ‘Select all N matching’ */
+	onSelectAllMatchingClick?: () => void;
+	/** Whether the select-all-matching fetch is in progress */
+	selectAllMatchingLoading?: boolean;
+	/** Whether all matching items across all pages are currently selected */
+	isAllMatchingSelected?: boolean;
+	/** Called when the user clears the all-matching selection */
+	onClearAllMatchingSelected?: () => void;
 };
 
 /** Type guard for DateRangeFilterValue */
@@ -126,6 +142,14 @@ const PaginatedDataGrid = <T,>({
 	onCustomFilterParamsChange,
 	toolbar = { quickFilter: true, debounceMs: 500 },
 	toolbarActions,
+	checkboxSelection,
+	onSelectionChange,
+	selectedIds,
+	totalMatchingCount,
+	onSelectAllMatchingClick,
+	selectAllMatchingLoading,
+	isAllMatchingSelected,
+	onClearAllMatchingSelected,
 }: PaginatedDataGridProps<T>) => {
 	const [internalFilterModel, setInternalFilterModel] = useState<GridFilterModel>({
 		items: [],
@@ -211,7 +235,70 @@ const PaginatedDataGrid = <T,>({
 	const data = queryResult?.data ?? externalData;
 	const isLoading = queryResult?.isLoading ?? externalIsLoading ?? false;
 
-	const rows = data?.results ?? [];
+	const rows = useMemo(() => data?.results ?? [], [data?.results]);
+
+	// Derive a fully-controlled row selection model from the parent's selectedIds, restricted to
+	// rows visible on the current page.
+	// Using a stable empty-set object avoids referential churn on re-renders.
+	const computedRowSelectionModel = useMemo((): GridRowSelectionModel => {
+		if (!checkboxSelection || selectedIds == null) {
+			return { type: 'include', ids: new Set<GridRowId>() };
+		}
+		const pageIdSet = new Set(
+			(rows as Array<{ id?: number | string | null }>)
+				.map((r) => r.id)
+				.filter((id): id is number | string => id != null)
+				.map((id) => id as GridRowId),
+		);
+		return {
+			type: 'include',
+			ids: new Set(
+				selectedIds
+					.filter((id) => pageIdSet.has(id as GridRowId))
+					.map((id) => id as GridRowId),
+			),
+		};
+	}, [checkboxSelection, selectedIds, rows]);
+
+	// Is every row on the current page included in the parent's selected IDs?
+	const isCurrentPageFullySelected =
+		rows.length > 0 &&
+		selectedIds != null &&
+		rows.every((row) => selectedIds.includes((row as { id?: number }).id ?? -1));
+
+	// Show the "select all matching" prompt when current page is fully selected but not all matches are
+	const showSelectAllMatchingBanner =
+		!isAllMatchingSelected &&
+		isCurrentPageFullySelected &&
+		onSelectAllMatchingClick != null &&
+		(totalMatchingCount ?? 0) > rows.length;
+
+	const handleRowSelectionModelChange = (newSelection: GridRowSelectionModel | GridRowId[]) => {
+		if (!onSelectionChange) return;
+		// Extract the IDs the DataGrid reports as selected on the current page
+		let pageSelectedIds: GridRowId[] = [];
+		if (Array.isArray(newSelection)) {
+			pageSelectedIds = newSelection;
+		} else if (newSelection && typeof newSelection === 'object' && 'ids' in newSelection) {
+			const sel = newSelection as { type?: 'include' | 'exclude'; ids: Set<GridRowId> };
+			if (!sel.type || sel.type === 'include') {
+				pageSelectedIds = Array.from(sel.ids);
+			} else if (sel.type === 'exclude') {
+				pageSelectedIds = (rows as Array<{ id?: GridRowId }>)
+					.map((r) => r.id)
+					.filter((id): id is GridRowId => id !== undefined && !sel.ids.has(id));
+			}
+		}
+		// Merge: preserve selections from other pages, apply the new page selection
+		// This prevents the DataGrid's row-reconciliation callbacks from wiping cross-page selections
+		const pageIdSet = new Set(
+			(rows as Array<{ id?: unknown }>)
+				.map((r) => r.id)
+				.filter((id): id is number => typeof id === 'number'),
+		);
+		const prevOutsidePage = (selectedIds ?? []).filter((id) => !pageIdSet.has(id));
+		onSelectionChange([...prevOutsidePage, ...pageSelectedIds.map((id) => Number(id))]);
+	};
 
 	const handleFilterChange = (model: GridFilterModel) => {
 		// Extract quickFilter value for server-side search
@@ -292,7 +379,58 @@ const PaginatedDataGrid = <T,>({
 								},
 							}}
 						>
-							{/* Custom Filter Panel */}
+							{/* Select-all-matching banner */}
+							{(showSelectAllMatchingBanner || isAllMatchingSelected) && (
+								<Box
+									sx={{
+										bgcolor: '#E3F2FD',
+										px: 2,
+										py: 1,
+										display: 'flex',
+										alignItems: 'center',
+										flexWrap: 'wrap',
+										gap: 1,
+										mb: 1,
+										borderRadius: 1,
+									}}
+								>
+									{isAllMatchingSelected ? (
+										<>
+											<Typography variant="body2">
+												Les <strong>{totalMatchingCount}</strong> éléments correspondant aux filtres sont sélectionnés.
+											</Typography>
+											<Button
+												size="small"
+												onClick={onClearAllMatchingSelected}
+												sx={{ textTransform: 'none', fontWeight: 600, p: 0.5, minWidth: 'auto' }}
+											>
+												Effacer la sélection
+											</Button>
+										</>
+									) : (
+										<>
+											<Typography variant="body2">
+												Les <strong>{rows.length}</strong> éléments de cette page sont sélectionnés.
+											</Typography>
+											<Button
+												size="small"
+												onClick={onSelectAllMatchingClick}
+												disabled={selectAllMatchingLoading}
+												sx={{ textTransform: 'none', fontWeight: 600, p: 0.5, minWidth: 'auto' }}
+											>
+												{selectAllMatchingLoading ? (
+													<Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+														<CircularProgress size={12} />
+														<span>Chargement...</span>
+													</Box>
+												) : (
+													`Sélectionner les ${totalMatchingCount} éléments correspondant aux filtres`
+												)}
+											</Button>
+										</>
+									)}
+								</Box>
+							)}
 							{showCustomFilterPanel && (
 								<Box sx={{ mb: 2 }}>
 									<CustomFilterPanel
@@ -314,6 +452,10 @@ const PaginatedDataGrid = <T,>({
 								pageSizeOptions={[5, 10, 25, 50, 100]}
 								localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
 								disableRowSelectionOnClick
+								keepNonExistentRowsSelected
+							checkboxSelection={checkboxSelection && rows.length > 0}
+							rowSelectionModel={computedRowSelectionModel}
+							onRowSelectionModelChange={checkboxSelection && rows.length > 0 ? handleRowSelectionModelChange : undefined}
 								showToolbar
 								slotProps={{
 									toolbar: {

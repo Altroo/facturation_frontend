@@ -130,6 +130,14 @@ export const deviApi = createApi({
 			}),
 			invalidatesTags: ['Devi', 'Dashboard'],
 		}),
+		bulkDeleteDevis: builder.mutation<void | ApiErrorResponseType, { ids: number[] }>({
+			query: ({ ids }) => ({
+				url: `${process.env.NEXT_PUBLIC_DEVIS_ROOT}/bulk_delete/`,
+				method: 'DELETE',
+				data: { ids },
+			}),
+			invalidatesTags: ['Devi', 'Dashboard'],
+		}),
 	}),
 });
 
@@ -143,4 +151,5 @@ export const {
 	usePatchStatutMutation,
 	useConvertDeviToFactureProFormaMutation,
 	useConvertDeviToFactureClientMutation,
+	useBulkDeleteDevisMutation,
 } = deviApi;

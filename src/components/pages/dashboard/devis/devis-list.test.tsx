@@ -85,6 +85,7 @@ const mockUseGetDevisListQuery = jest.fn((args: QueryArgs) => {
 jest.mock('@/store/services/devi', () => ({
 	useGetDevisListQuery: (args: QueryArgs) => mockUseGetDevisListQuery(args),
 	useDeleteDeviMutation: jest.fn(() => [mockDeleteRecord, { isLoading: false }]),
+	useBulkDeleteDevisMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
 	useConvertDeviToFactureProFormaMutation: jest.fn(() => [mockConvertToProForma, { isLoading: false }]),
 	useConvertDeviToFactureClientMutation: jest.fn(() => [mockConvertToClient, { isLoading: false }]),
 }));

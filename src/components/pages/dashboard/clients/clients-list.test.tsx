@@ -41,6 +41,9 @@ jest.mock('@/store/services/client', () => ({
 	useGetClientsListQuery: () => mockUseGetClientsListQuery(),
 	useDeleteClientMutation: jest.fn(() => [mockDeleteClient, { isLoading: false }]),
 	usePatchArchiveMutation: jest.fn(() => [mockPatchArchive, { isLoading: false }]),
+	useBulkDeleteClientsMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
+	useBulkArchiveClientsMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
+	useLazyGetClientsListQuery: jest.fn(() => [jest.fn(), { isLoading: false }]),
 }));
 
 jest.mock('@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList', () => ({

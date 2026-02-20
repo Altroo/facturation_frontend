@@ -9,6 +9,7 @@ import {
 	useDeleteFactureProFormaMutation,
 	useGetFactureProFormaListQuery,
 	useConvertFactureProFormaToFactureMutation,
+	useBulkDeleteFactureProFormaMutation,
 } from '@/store/services/factureProForma';
 import {
 	FACTURE_CLIENT_EDIT,
@@ -139,6 +140,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 
 	// Mutations
 	const [deleteRecord] = useDeleteFactureProFormaMutation();
+	const [bulkDeleteRecords] = useBulkDeleteFactureProFormaMutation();
 	const [convertToFactureClient, { isLoading: isConvertToFactureClientLoading }] =
 		useConvertFactureProFormaToFactureMutation();
 
@@ -152,7 +154,6 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 
 	return (
 		<>
-			<ChipSelectFilterBar filters={chipFilters} onFilterChange={setChipFilterParams} />
 			<CompanyDocumentsListContent<FactureClass>
 				companyId={company_id}
 				role={role}
@@ -160,6 +161,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 				config={factureProFormaListConfig}
 				queryResult={{ data, isLoading, refetch }}
 				deleteMutation={{ deleteRecord }}
+				bulkDeleteMutation={{ bulkDeleteRecords }}
 				convertMutations={convertMutations}
 				paginationModel={paginationModel}
 				setPaginationModel={setPaginationModel}
@@ -168,6 +170,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 				filterModel={filterModel}
 				onFilterModelChange={setFilterModel}
 				onCustomFilterParamsChange={setCustomFilterParams}
+				chipFilterBar={<ChipSelectFilterBar filters={chipFilters} onFilterChange={setChipFilterParams} />}
 			/>
 		</>
 	);

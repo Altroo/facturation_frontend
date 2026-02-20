@@ -116,11 +116,28 @@ export const articleApi = createApi({
 				data: { company_id },
 			}),
 		}),
+		bulkDeleteArticles: builder.mutation<void | ApiErrorResponseType, { ids: number[] }>({
+			query: ({ ids }) => ({
+				url: `${process.env.NEXT_PUBLIC_ARTICLE_ROOT}/bulk_delete/`,
+				method: 'DELETE',
+				data: { ids },
+			}),
+			invalidatesTags: ['Article'],
+		}),
+		bulkArchiveArticles: builder.mutation<{ updated: number } | ApiErrorResponseType, { ids: number[]; archived: boolean }>({
+			query: ({ ids, archived }) => ({
+				url: `${process.env.NEXT_PUBLIC_ARTICLE_ROOT}/bulk_archive/`,
+				method: 'PATCH',
+				data: { ids, archived },
+			}),
+			invalidatesTags: ['Article'],
+		}),
 	}),
 });
 
 export const {
 	useGetArticlesListQuery,
+	useLazyGetArticlesListQuery,
 	useDeleteArticleMutation,
 	useEditArticleMutation,
 	useGetCodeReferenceQuery,
@@ -129,4 +146,6 @@ export const {
 	usePatchArchiveMutation,
 	useImportArticlesMutation,
 	useSendCSVExampleEmailMutation,
+	useBulkDeleteArticlesMutation,
+	useBulkArchiveArticlesMutation,
 } = articleApi;

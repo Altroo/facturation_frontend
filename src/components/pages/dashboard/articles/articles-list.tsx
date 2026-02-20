@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, Typography, Chip, IconButton, Avatar, Alert, CircularProgress } from '@mui/material';
 import {
@@ -17,7 +17,7 @@ import {
 } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams, GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
-import { useDeleteArticleMutation, useGetArticlesListQuery, useImportArticlesMutation, usePatchArchiveMutation, useSendCSVExampleEmailMutation } from '@/store/services/article';
+import { useDeleteArticleMutation, useGetArticlesListQuery, useImportArticlesMutation, usePatchArchiveMutation, useSendCSVExampleEmailMutation, useBulkDeleteArticlesMutation, useBulkArchiveArticlesMutation, useLazyGetArticlesListQuery } from '@/store/services/article';
 import { ARTICLES_ADD, ARTICLES_EDIT, ARTICLES_VIEW } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
@@ -71,6 +71,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
 	const [chipFilterParams, setChipFilterParams] = useState<Record<string, string>>({});
 
+	// Bulk selection state
+	const [selectedIds, setSelectedIds] = useState<number[]>([]);
+	const [showBulkDeleteModal, setShowBulkDeleteModal] = useState<boolean>(false);
+	const [showBulkArchiveModal, setShowBulkArchiveModal] = useState<boolean>(false);
+	const [bulkArchiveAction, setBulkArchiveAction] = useState<'archive' | 'unarchive'>('archive');
+	// Select-all-matching state
+	const [isAllMatchingSelected, setIsAllMatchingSelected] = useState<boolean>(false);
+
 	const { data: categories } = useGetCategorieListQuery({ company_id }, { skip: !token });
 	const { data: emplacements } = useGetEmplacementListQuery({ company_id }, { skip: !token });
 	const { data: unites } = useGetUniteListQuery({ company_id }, { skip: !token });
@@ -115,6 +123,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const [patchArchive] = usePatchArchiveMutation();
 	const [importArticles, { isLoading: isImporting }] = useImportArticlesMutation();
 	const [sendCSVExampleEmail, { isLoading: isSendingEmail }] = useSendCSVExampleEmailMutation();
+	const [bulkDeleteArticles] = useBulkDeleteArticlesMutation();
+	const [bulkArchiveArticles] = useBulkArchiveArticlesMutation();
+	const [fetchAllArticleIds, { isLoading: isLoadingAllIds }] = useLazyGetArticlesListQuery();
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -155,6 +166,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			onError("Erreur lors de la suppression d'article");
 		} finally {
 			setShowDeleteModal(false);
+			// Remove only the deleted item from selection (preserve remaining bulk selection)
+			// Do NOT clear isAllMatchingSelected — user stays in 'all matching' mode minus this one item
+			setSelectedIds((prev) => prev.filter((id) => id !== selectedId));
 		}
 	};
 
@@ -190,6 +204,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		} finally {
 			setShowArchiveModal(false);
 			setArchiveTarget(null);
+			// Remove only the archived item from selection (preserve remaining bulk selection)
+			// Do NOT clear isAllMatchingSelected — user stays in 'all matching' mode minus this one item
+			setSelectedIds((prev) => prev.filter((id) => id !== archiveTarget));
 		}
 	};
 
@@ -217,6 +234,83 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		setArchiveTarget(id);
 		setShowArchiveModal(true);
 	};
+
+	const handleSelectionChange = useCallback((ids: number[]) => {
+		setSelectedIds(ids);
+		setIsAllMatchingSelected(false);
+	}, []);
+
+	const handleSelectAllMatching = useCallback(async () => {
+		try {
+			const result = await fetchAllArticleIds({
+				company_id,
+				with_pagination: false,
+				archived,
+				...mergedFilterParams,
+			}).unwrap();
+			const allIds = (result as Partial<ArticleClass>[]).map((a) => a.id!).filter(Boolean);
+			setSelectedIds(allIds);
+			setIsAllMatchingSelected(true);
+		} catch {
+			onError('Erreur lors de la sélection de tous les éléments');
+		}
+	}, [company_id, archived, mergedFilterParams, fetchAllArticleIds, onError]);
+
+	const handleClearAllMatching = useCallback(() => {
+		setIsAllMatchingSelected(false);
+		setSelectedIds([]);
+	}, []);
+
+	const bulkDeleteHandler = async () => {
+		try {
+			await bulkDeleteArticles({ ids: selectedIds }).unwrap();
+			onSuccess(`${selectedIds.length} article(s) supprimé(s) avec succès`);
+		} catch {
+			onError("Erreur lors de la suppression des articles");
+		} finally {
+			setSelectedIds([]);
+			setIsAllMatchingSelected(false);
+			setShowBulkDeleteModal(false);
+			refetch();
+		}
+	};
+
+	const bulkDeleteModalActions = [
+		{ text: 'Annuler', active: false, onClick: () => setShowBulkDeleteModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
+		{ text: `Supprimer (${selectedIds.length})`, active: true, onClick: bulkDeleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
+	];
+
+	const bulkArchiveHandler = async () => {
+		const archiving = bulkArchiveAction === 'archive';
+		try {
+			await bulkArchiveArticles({ ids: selectedIds, archived: archiving }).unwrap();
+			onSuccess(`${selectedIds.length} article(s) ${archiving ? 'archivé(s)' : 'désarchivé(s)'} avec succès`);
+		} catch {
+			onError(`Erreur lors de l'${archiving ? 'archivage' : 'désarchivage'} des articles`);
+		} finally {
+			setSelectedIds([]);
+			setIsAllMatchingSelected(false);
+			setShowBulkArchiveModal(false);
+			refetch();
+		}
+	};
+
+	const bulkArchiveModalActions = [
+		{
+			text: 'Annuler',
+			active: false,
+			onClick: () => setShowBulkArchiveModal(false),
+			icon: <CloseIcon />,
+			color: '#6B6B6B',
+		},
+		{
+			text: bulkArchiveAction === 'archive' ? `Archiver (${selectedIds.length})` : `Désarchiver (${selectedIds.length})`,
+			active: true,
+			onClick: bulkArchiveHandler,
+			icon: bulkArchiveAction === 'archive' ? <ArchiveIcon /> : <UnarchiveIcon />,
+			color: '#ED6C02',
+		},
+	];
 
 	const columns: GridColDef[] = [
 		{
@@ -421,30 +515,69 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					</ul>
 				</Alert>
 			)}
-			{!archived && (role === 'Caissier' || role === 'Commercial') && (
+			{(role === 'Caissier' || role === 'Commercial') && (!archived || selectedIds.length > 0) && (
 				<Box
 					sx={{
 						width: '100%',
 						display: 'flex',
+						flexWrap: 'wrap',
+						gap: 1,
 						justifyContent: 'flex-start',
 						px: { xs: 1, sm: 2, md: 3 },
 						mt: { xs: 1, sm: 2, md: 3 },
 						mb: { xs: 1, sm: 2, md: 3 },
 					}}
 				>
-					<Button
-						variant="contained"
-						onClick={() => router.push(ARTICLES_ADD(company_id))}
-						sx={{
-							whiteSpace: 'nowrap',
-							px: { xs: 1.5, sm: 2, md: 3 },
-							py: { xs: 0.8, sm: 1, md: 1 },
-							fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
-						}}
-						startIcon={<AddIcon fontSize="small" />}
-					>
-						Nouvel article
-					</Button>
+					{!archived && (
+						<Button
+							variant="contained"
+							onClick={() => router.push(ARTICLES_ADD(company_id))}
+							sx={{
+								whiteSpace: 'nowrap',
+								px: { xs: 1.5, sm: 2, md: 3 },
+								py: { xs: 0.8, sm: 1, md: 1 },
+								fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
+							}}
+							startIcon={<AddIcon fontSize="small" />}
+						>
+							Nouvel article
+						</Button>
+					)}
+					{selectedIds.length > 0 && role === 'Caissier' && (
+						<Button
+							variant="outlined"
+							color="error"
+							onClick={() => setShowBulkDeleteModal(true)}
+							sx={{
+								whiteSpace: 'nowrap',
+								px: { xs: 1.5, sm: 2, md: 3 },
+								py: { xs: 0.8, sm: 1, md: 1 },
+								fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
+							}}
+							startIcon={<DeleteIcon fontSize="small" />}
+						>
+							Supprimer ({selectedIds.length})
+						</Button>
+					)}
+					{selectedIds.length > 0 && (
+						<Button
+							variant="outlined"
+							color="warning"
+							onClick={() => {
+								setBulkArchiveAction(archived ? 'unarchive' : 'archive');
+								setShowBulkArchiveModal(true);
+							}}
+							sx={{
+								whiteSpace: 'nowrap',
+								px: { xs: 1.5, sm: 2, md: 3 },
+								py: { xs: 0.8, sm: 1, md: 1 },
+								fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
+							}}
+							startIcon={archived ? <UnarchiveIcon fontSize="small" /> : <ArchiveIcon fontSize="small" />}
+						>
+							{archived ? 'Désarchiver' : 'Archiver'} ({selectedIds.length})
+						</Button>
+					)}
 				</Box>
 			)}
 			<input ref={fileInputRef} type="file" accept=".csv,.xls,.xlsx" style={{ display: 'none' }} onChange={handleFileChange} />
@@ -461,6 +594,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				onFilterModelChange={setFilterModel}
 				onCustomFilterParamsChange={setCustomFilterParams}
 				toolbar={{ quickFilter: true, debounceMs: 500 }}
+				checkboxSelection={role === 'Caissier' || role === 'Commercial'}
+				onSelectionChange={handleSelectionChange}
+				selectedIds={selectedIds}
+				totalMatchingCount={data?.count}
+				onSelectAllMatchingClick={handleSelectAllMatching}
+				selectAllMatchingLoading={isLoadingAllIds}
+				isAllMatchingSelected={isAllMatchingSelected}
+				onClearAllMatchingSelected={handleClearAllMatching}
 				toolbarActions={
 					!archived && (role === 'Caissier' || role === 'Commercial') ? (
 						<>
@@ -508,6 +649,27 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 							: 'Êtes‑vous sûr de vouloir archiver cette article?'
 					}
 					actions={archiveModalActions}
+				/>
+			)}
+			{showBulkDeleteModal && (
+				<ActionModals
+					title={`Supprimer ${selectedIds.length} article(s) ?`}
+					titleIcon={<DeleteIcon />}
+					titleIconColor="#D32F2F"
+					body={`Êtes-vous sûr de vouloir supprimer les ${selectedIds.length} article(s) sélectionné(s) ?`}
+					actions={bulkDeleteModalActions}
+				/>
+			)}
+			{showBulkArchiveModal && (
+				<ActionModals
+					title={bulkArchiveAction === 'archive' ? `Archiver ${selectedIds.length} article(s) ?` : `Désarchiver ${selectedIds.length} article(s) ?`}
+					titleIcon={bulkArchiveAction === 'archive' ? <ArchiveIcon /> : <UnarchiveIcon />}
+					titleIconColor="#ED6C02"
+					body={bulkArchiveAction === 'archive'
+						? `Êtes-vous sûr de vouloir archiver les ${selectedIds.length} article(s) sélectionné(s) ?`
+						: `Êtes-vous sûr de vouloir désarchiver les ${selectedIds.length} article(s) sélectionné(s) ?`
+					}
+					actions={bulkArchiveModalActions}
 				/>
 			)}
 		</>

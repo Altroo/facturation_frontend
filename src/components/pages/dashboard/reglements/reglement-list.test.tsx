@@ -52,6 +52,7 @@ jest.mock('@/store/services/reglement', () => ({
 	useGetReglementsListQuery: () => mockUseGetReglementsListQuery(),
 	useDeleteReglementMutation: jest.fn(() => [mockDeleteReglement, { isLoading: false }]),
 	usePatchReglementStatutMutation: jest.fn(() => [mockPatchStatut, { isLoading: false }]),
+	useBulkDeleteReglementsMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
 }));
 
 jest.mock('@/store/services/company', () => ({
@@ -136,6 +137,10 @@ jest.mock('@/components/shared/pdfLanguageModal/pdfLanguageModal', () => ({
 			<button onClick={onClose}>Close</button>
 		</div>
 	),
+}));
+
+jest.mock('@/utils/apiHelpers', () => ({
+	fetchPdfBlob: jest.fn(() => Promise.resolve(new Blob(['PDF'], { type: 'application/pdf' }))),
 }));
 
 jest.mock('@/components/shared/dropdownFilter/dropdownFilter', () => ({ createDropdownFilterOperators: jest.fn(() => []) }));

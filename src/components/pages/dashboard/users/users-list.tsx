@@ -16,7 +16,7 @@ import { GridColDef, GridRenderCellParams, GridFilterModel, GridLogicOperator } 
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import { useDeleteUserMutation, useGetUsersListQuery } from '@/store/services/account';
+import { useDeleteUserMutation, useGetUsersListQuery, useBulkDeleteUsersMutation } from '@/store/services/account';
 import { USERS_VIEW, USERS_EDIT, USERS_ADD } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
@@ -49,6 +49,10 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 	const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
 
+	// Bulk selection state
+	const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
+	const [showBulkDeleteModal, setShowBulkDeleteModal] = useState<boolean>(false);
+
 	// Call query hook at component level
 	const {
 		data: rawData,
@@ -68,6 +72,7 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 	const data = rawData as PaginationResponseType<UserClass> | undefined;
 
 	const [deleteRecord] = useDeleteUserMutation();
+	const [bulkDeleteUsers] = useBulkDeleteUsersMutation();
 
 	const deleteHandler = async () => {
 		try {
@@ -93,6 +98,28 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 		setSelectedUserId(id);
 		setShowDeleteModal(true);
 	};
+
+	const handleSelectionChange = (ids: number[]) => {
+		setSelectedUserIds(ids);
+	};
+
+	const bulkDeleteHandler = async () => {
+		try {
+			await bulkDeleteUsers({ ids: selectedUserIds }).unwrap();
+			onSuccess(`${selectedUserIds.length} utilisateur(s) supprimé(s) avec succès`);
+		} catch {
+			onError(`Erreur lors de la suppression`);
+		} finally {
+			setSelectedUserIds([]);
+			setShowBulkDeleteModal(false);
+			refetch();
+		}
+	};
+
+	const bulkDeleteModalActions = [
+		{ text: 'Annuler', active: false, onClick: () => setShowBulkDeleteModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
+		{ text: `Supprimer (${selectedUserIds.length})`, active: true, onClick: bulkDeleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
+	];
 
 	const genderFilterOptions = React.useMemo(
 		() => [
@@ -328,27 +355,44 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 								width: '100%',
 								display: 'flex',
 								justifyContent: 'flex-start',
-								px: { xs: 1, sm: 2, md: 3 },
-								mt: { xs: 1, sm: 2, md: 3 },
-								mb: { xs: 1, sm: 2, md: 3 },
+							gap: 2,
+							px: { xs: 1, sm: 2, md: 3 },
+							mt: { xs: 1, sm: 2, md: 3 },
+							mb: { xs: 1, sm: 2, md: 3 },
+						}}
+					>
+						<Button
+							variant="contained"
+							onClick={() => router.push(USERS_ADD)}
+							sx={{
+								whiteSpace: 'nowrap',
+								px: { xs: 1.5, sm: 2, md: 3 },
+								py: { xs: 0.8, sm: 1, md: 1 },
+								fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
 							}}
+							startIcon={<AddIcon fontSize="small" />}
 						>
+							Nouveau utilisateur
+						</Button>
+						{selectedUserIds.length > 0 && (
 							<Button
-								variant="contained"
-								onClick={() => router.push(USERS_ADD)}
+								variant="outlined"
+								color="error"
+								onClick={() => setShowBulkDeleteModal(true)}
+								startIcon={<DeleteIcon fontSize="small" />}
 								sx={{
 									whiteSpace: 'nowrap',
 									px: { xs: 1.5, sm: 2, md: 3 },
 									py: { xs: 0.8, sm: 1, md: 1 },
 									fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
 								}}
-								startIcon={<AddIcon fontSize="small" />}
 							>
-								Nouveau utilisateur
+								Supprimer ({selectedUserIds.length})
 							</Button>
-						</Box>
+						)}
+					</Box>
 
-						<PaginatedDataGrid
+					<PaginatedDataGrid
 						data={data}
 						isLoading={isLoading}
 						columns={columns}
@@ -360,12 +404,24 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 						onFilterModelChange={setFilterModel}
 						onCustomFilterParamsChange={setCustomFilterParams}
 						toolbar={{ quickFilter: true, debounceMs: 500 }}
-						/>
+						checkboxSelection
+						onSelectionChange={handleSelectionChange}
+						selectedIds={selectedUserIds}
+					/>
 						{showDeleteModal && (
 							<ActionModals
 								title="Supprimer ce utilisateur ?"
 								body="Êtes‑vous sûr de vouloir supprimer ce utilisateur?"
 								actions={deleteModalActions}
+								titleIcon={<DeleteIcon />}
+								titleIconColor="#D32F2F"
+							/>
+						)}
+						{showBulkDeleteModal && (
+							<ActionModals
+								title={`Supprimer ${selectedUserIds.length} utilisateur(s) ?`}
+								body={`Êtes-vous sûr de vouloir supprimer les ${selectedUserIds.length} utilisateur(s) sélectionné(s) ?`}
+								actions={bulkDeleteModalActions}
 								titleIcon={<DeleteIcon />}
 								titleIconColor="#D32F2F"
 							/>

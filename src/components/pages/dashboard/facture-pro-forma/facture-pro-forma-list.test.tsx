@@ -85,6 +85,8 @@ jest.mock('@/store/services/factureProForma', () => ({
 	useGetFactureProFormaListQuery: (args: QueryArgs) => mockUseGetFactureProFormaListQuery(args),
 	useDeleteFactureProFormaMutation: jest.fn(() => [mockDeleteRecord, { isLoading: false }]),
 	useConvertFactureProFormaToFactureMutation: jest.fn(() => [mockConvertToClient, { isLoading: false }]),
+	useBulkDeleteFactureProFormaMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
+	useBulkArchiveFactureProFormaMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
 }));
 
 // Mock parameter service

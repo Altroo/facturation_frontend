@@ -137,6 +137,14 @@ export const usersApi = createApi({
 			}),
 			invalidatesTags: ['Users'],
 		}),
+		bulkDeleteUsers: builder.mutation<void | ApiErrorResponseType, { ids: number[] }>({
+			query: ({ ids }) => ({
+				url: `${process.env.NEXT_PUBLIC_USERS_ROOT}bulk_delete/`,
+				method: 'DELETE',
+				data: { ids },
+			}),
+			invalidatesTags: ['Users'],
+		}),
 	}),
 });
 
@@ -186,4 +194,5 @@ export const {
 	useGetUserQuery,
 	useAddUserMutation,
 	useCheckEmailMutation,
+	useBulkDeleteUsersMutation,
 } = usersApi;

@@ -86,6 +86,9 @@ jest.mock('@/store/services/article', () => ({
 	usePatchArchiveMutation: jest.fn(() => [mockPatchArchive, { isLoading: false }]),
 	useImportArticlesMutation: jest.fn(() => [mockImportArticles, { isLoading: false }]),
 	useSendCSVExampleEmailMutation: jest.fn(() => [mockSendCSVExampleEmail, { isLoading: false }]),
+	useBulkDeleteArticlesMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
+	useBulkArchiveArticlesMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
+	useLazyGetArticlesListQuery: jest.fn(() => [jest.fn(), { isLoading: false }]),
 }));
 
 jest.mock('@/store/services/company', () => ({

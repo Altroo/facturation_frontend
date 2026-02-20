@@ -37,12 +37,14 @@ import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilt
 import { createNumericFilterOperators } from '@/components/shared/numericFilter/numericFilterOperator';
 import { CLIENTS_VIEW } from '@/utils/routes';
 import { getAccessTokenFromSession } from '@/store/session';
+import { fetchPdfBlob } from '@/utils/apiHelpers';
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
 import type {
 	DocumentListClass,
 	DocumentListConfig,
 	DocumentListQueryResult,
 	DocumentDeleteMutationResult,
+	DocumentBulkDeleteMutationResult,
 	DocumentConvertMutationResult,
 	PaginationModel,
 	PrintAction,
@@ -96,6 +98,8 @@ export interface DocumentListContentProps<TDocument extends DocumentListClass> {
 	queryResult: DocumentListQueryResult<TDocument>;
 	/** Delete mutation function */
 	deleteMutation: DocumentDeleteMutationResult;
+	/** Optional single-request bulk delete mutation */
+	bulkDeleteMutation?: DocumentBulkDeleteMutationResult;
 	/** Convert mutations - key is action key, value is mutation result */
 	convertMutations?: Record<string, DocumentConvertMutationResult>;
 	/** Pagination model state */
@@ -112,6 +116,8 @@ export interface DocumentListContentProps<TDocument extends DocumentListClass> {
 	onFilterModelChange?: (model: GridFilterModel) => void;
 	/** Callback emitting backend-ready custom filter params */
 	onCustomFilterParamsChange?: (params: Record<string, string>) => void;
+	/** Optional chip filter bar rendered between the action buttons and the data grid */
+	chipFilterBar?: React.ReactNode;
 }
 
 function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
@@ -124,6 +130,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 		config,
 		queryResult,
 		deleteMutation,
+		bulkDeleteMutation,
 		convertMutations,
 		paginationModel,
 		setPaginationModel,
@@ -132,6 +139,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 		filterModel,
 		onFilterModelChange,
 		onCustomFilterParamsChange,
+	chipFilterBar,
 	} = props;
 
 	const { data: session } = useSession();
@@ -151,6 +159,10 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 	const [showLanguageModal, setShowLanguageModal] = useState(false);
 	const [selectedPrintAction, setSelectedPrintAction] = useState<PrintAction | null>(null);
 
+	// Bulk selection state
+	const [selectedIds, setSelectedIds] = useState<number[]>([]);
+	const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+
 	const deleteHandler = useCallback(async () => {
 		try {
 			await deleteRecord({ id: selectedId! }).unwrap();
@@ -167,6 +179,34 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 		setSelectedId(id);
 		setShowDeleteModal(true);
 	}, []);
+
+	const handleSelectionChange = useCallback((ids: number[]) => {
+		setSelectedIds(ids);
+	}, []);
+
+	const bulkDeleteHandler = useCallback(async () => {
+		if (bulkDeleteMutation) {
+			try {
+				await bulkDeleteMutation.bulkDeleteRecords({ ids: selectedIds }).unwrap();
+				onSuccess(`${selectedIds.length} ${config.labels.documentTypeName}(s) supprimé(s) avec succès`);
+			} catch {
+				onError(`Erreur lors de la suppression`);
+			}
+		} else {
+			const results = await Promise.allSettled(
+				selectedIds.map((id) => deleteRecord({ id }).unwrap()),
+			);
+			const failures = results.filter((r): r is PromiseRejectedResult => r.status === 'rejected');
+			if (failures.length === 0) {
+				onSuccess(`${selectedIds.length} ${config.labels.documentTypeName}(s) supprimé(s) avec succès`);
+			} else {
+				onError(`${failures.length} suppression(s) ont échoué`);
+			}
+		}
+		setSelectedIds([]);
+		setShowBulkDeleteModal(false);
+		refetch();
+	}, [selectedIds, bulkDeleteMutation, deleteRecord, onSuccess, onError, refetch, config.labels]);
 
 	const handleConvertAction = useCallback(
 		async (actionKey: string) => {
@@ -235,18 +275,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 
 			try {
 				const url = selectedPrintAction.urlGenerator(printMenuItemId, companyId, language);
-				const response = await fetch(url, {
-					method: 'GET',
-					headers: {
-						Authorization: `Bearer ${accessToken}`,
-					},
-				});
-
-				if (!response.ok) {
-					throw new Error(`Failed to fetch PDF (${response.status})`);
-				}
-
-				const blob = await response.blob();
+				const blob = await fetchPdfBlob(url, accessToken);
 				const blobUrl = window.URL.createObjectURL(blob);
 				window.open(blobUrl, '_blank');
 
@@ -286,6 +315,26 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 			{ text: 'Supprimer', active: true, onClick: deleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
 		],
 		[deleteHandler],
+	);
+
+	const bulkDeleteModalActions = useMemo(
+		() => [
+			{
+				text: 'Annuler',
+				active: false,
+				onClick: () => setShowBulkDeleteModal(false),
+				icon: <CloseIcon />,
+				color: '#6B6B6B',
+			},
+			{
+				text: `Supprimer (${selectedIds.length})`,
+				active: true,
+				onClick: bulkDeleteHandler,
+				icon: <DeleteIcon />,
+				color: '#D32F2F',
+			},
+		],
+		[bulkDeleteHandler, selectedIds.length],
 	);
 
 	const convertModalActionsMap = useMemo(() => {
@@ -562,6 +611,7 @@ const modalsConfig = useMemo(
 						width: '100%',
 						display: 'flex',
 						justifyContent: 'flex-start',
+						gap: 2,
 						px: { xs: 1, sm: 2, md: 3 },
 						mt: { xs: 1, sm: 2, md: 3 },
 						mb: { xs: 1, sm: 2, md: 3 },
@@ -580,8 +630,26 @@ const modalsConfig = useMemo(
 					>
 						{config.labels.addButtonText}
 					</Button>
+					{selectedIds.length > 0 && (
+						<Button
+							variant="outlined"
+							color="error"
+							onClick={() => setShowBulkDeleteModal(true)}
+							startIcon={<DeleteIcon fontSize="small" />}
+							sx={{
+								whiteSpace: 'nowrap',
+								px: { xs: 1.5, sm: 2, md: 3 },
+								py: { xs: 0.8, sm: 1, md: 1 },
+								fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
+							}}
+						>
+							Supprimer ({selectedIds.length})
+						</Button>
+					)}
 				</Box>
 			)}
+
+			{chipFilterBar}
 
 			<PaginatedDataGrid
 				data={data}
@@ -595,9 +663,22 @@ const modalsConfig = useMemo(
 				onFilterModelChange={onFilterModelChange}
 				onCustomFilterParamsChange={onCustomFilterParamsChange}
 				toolbar={{ quickFilter: true, debounceMs: 500 }}
+				checkboxSelection={role === 'Caissier' || role === 'Commercial'}
+				onSelectionChange={handleSelectionChange}
+				selectedIds={selectedIds}
 			/>
 
 			{showDeleteModal && <ActionModals {...modalsConfig.delete} />}
+
+			{showBulkDeleteModal && (
+				<ActionModals
+					title={`Supprimer ${selectedIds.length} élément(s) ?`}
+					body={`Êtes-vous sûr de vouloir supprimer les ${selectedIds.length} ${config.labels.documentTypeName}(s) sélectionné(s) ?`}
+					actions={bulkDeleteModalActions}
+					titleIcon={<DeleteIcon />}
+					titleIconColor="#D32F2F"
+				/>
+			)}
 
 			{config.convertActions?.map(
 				(action) =>

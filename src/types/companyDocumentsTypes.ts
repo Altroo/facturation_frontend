@@ -354,6 +354,11 @@ export interface DocumentConvertMutationResult {
 	isLoading: boolean;
 }
 
+/** Bulk delete mutation result interface */
+export interface DocumentBulkDeleteMutationResult {
+	bulkDeleteRecords: (params: { ids: number[] }) => { unwrap: () => Promise<unknown> };
+}
+
 /** Complete configuration for document list component */
 export interface DocumentListConfig<TDocument extends DocumentListClass> {
 	/** Document type identifier */

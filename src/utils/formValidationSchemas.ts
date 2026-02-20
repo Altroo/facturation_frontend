@@ -341,7 +341,7 @@ export const articleSchema = z
 			const deviseVente = (data.devise_prix_vente ?? 'MAD') as 'MAD' | 'EUR' | 'USD';
 			const aInMAD = a * rates[deviseAchat];
 			const vInMAD = v * rates[deviseVente];
-			return vInMAD >= aInMAD;
+			return vInMAD > aInMAD;
 		},
 		{ error: INPUT_PRICE_VENTE_ACHAT, path: ['prix_vente'] },
 	);
