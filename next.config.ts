@@ -11,14 +11,14 @@ type http = 'http' | 'https' | undefined;
 const remotePatterns: RemotePattern[] = [
 	{
 		protocol: 'https',
-		hostname: 'api.elbouazzatiholding.ma',
+		hostname: 'facturation-api.elbouazzatiholding.ma',
 		port: '',
 		pathname: '/media/**',
 		search: '',
 	},
 	{
 		protocol: 'http',
-		hostname: 'api.elbouazzatiholding.ma',
+		hostname: 'facturation-api.elbouazzatiholding.ma',
 		port: '',
 		pathname: '/media/**',
 		search: '',
@@ -62,7 +62,7 @@ const nextConfig: NextConfig = {
 		imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
 		minimumCacheTTL: 60,
 		remotePatterns,
-		// Allow fetching images from private IPs (needed because api.elbouazzatiholding.ma
+				// Allow fetching images from private IPs (needed because facturation-api.elbouazzatiholding.ma
 		// resolves to Docker host bridge 172.17.0.1 inside the container)
 		dangerouslyAllowLocalIP: isProd,
 	},
@@ -133,8 +133,8 @@ const nextConfig: NextConfig = {
 							"script-src 'self' 'unsafe-inline' 'unsafe-eval'",
 							"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
 							"font-src 'self' https://fonts.gstatic.com data:",
-							`img-src 'self' https://api.elbouazzatiholding.ma data: blob:${isDev ? ' http://localhost:8000 http://127.0.0.1:8000' : ''}`,
-							`connect-src 'self' https://api.elbouazzatiholding.ma wss://api.elbouazzatiholding.ma${isDev ? ' http://localhost:8000 http://127.0.0.1:8000 ws://localhost:8000 ws://127.0.0.1:8000' : ''}`,
+					`img-src 'self' https://facturation-api.elbouazzatiholding.ma data: blob:${isDev ? ' http://localhost:8000 http://127.0.0.1:8000' : ''}`,
+					`connect-src 'self' https://facturation-api.elbouazzatiholding.ma wss://facturation-api.elbouazzatiholding.ma${isDev ? ' http://localhost:8000 http://127.0.0.1:8000 ws://localhost:8000 ws://127.0.0.1:8000' : ''}`,
 							"frame-ancestors 'self'",
 							"base-uri 'self'",
 							"form-action 'self'",
