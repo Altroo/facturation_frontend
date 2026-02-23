@@ -31,6 +31,7 @@ jest.mock('@/store/session', () => ({
 // Mock selector
 jest.mock('@/utils/hooks', () => ({
 	useAppSelector: jest.fn(),
+	useToast: jest.fn(() => ({ onSuccess: jest.fn(), onError: jest.fn() })),
 }));
 
 const mockSession = {
@@ -195,7 +196,7 @@ describe('DevisViewClient UI and navigation', () => {
 	});
 
 	it('does not show "Modifier" button when role is Lecture', () => {
-		(useAppSelector as jest.Mock).mockReturnValueOnce([{ id: 1, role: 'Lecture' }]);
+		(useAppSelector as jest.Mock).mockReturnValue([{ id: 1, role: 'Lecture' }]);
 
 		useGetDeviQuery.mockReturnValue({ isLoading: false, data: mockDevis, error: undefined });
 		useGetArticlesListQuery.mockReturnValue({ isLoading: false, data: [mockArticle], error: undefined });

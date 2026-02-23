@@ -31,6 +31,7 @@ jest.mock('@/store/session', () => ({
 // Mock selector hook
 jest.mock('@/utils/hooks', () => ({
 	useAppSelector: jest.fn(),
+	useToast: jest.fn(() => ({ onSuccess: jest.fn(), onError: jest.fn() })),
 }));
 
 const mockSession = {
@@ -188,7 +189,7 @@ describe('FactureClientViewClient UI and navigation', () => {
 	});
 
 	it('does not show "Modifier" button when company role is not Admin', () => {
-		(useAppSelector as jest.Mock).mockReturnValueOnce([{ id: 1, role: 'Lecture' }]);
+		(useAppSelector as jest.Mock).mockReturnValue([{ id: 1, role: 'Lecture' }]);
 
 		useGetFactureClientQuery.mockReturnValue({ isLoading: false, data: mockFacture, error: undefined });
 		useGetArticlesListQuery.mockReturnValue({ isLoading: false, data: [mockArticle], error: undefined });

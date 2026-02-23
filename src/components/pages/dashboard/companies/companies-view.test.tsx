@@ -29,6 +29,7 @@ jest.mock('@/store/services/company', () => {
 jest.mock('@/utils/hooks', () => ({
 	useAppSelector: jest.fn(),
 	usePermission: () => ({ is_staff: true }),
+	useToast: jest.fn(() => ({ onSuccess: jest.fn(), onError: jest.fn() })),
 }));
 
 // Mock selectors

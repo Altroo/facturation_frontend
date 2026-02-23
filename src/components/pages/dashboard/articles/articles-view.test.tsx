@@ -29,6 +29,7 @@ jest.mock('@/store/session', () => ({
 // Mock selector
 jest.mock('@/utils/hooks', () => ({
 	useAppSelector: jest.fn(),
+	useToast: jest.fn(() => ({ onSuccess: jest.fn(), onError: jest.fn() })),
 }));
 
 const mockSession: AppSession = {

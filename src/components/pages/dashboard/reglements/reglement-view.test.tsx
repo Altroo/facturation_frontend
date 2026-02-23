@@ -35,6 +35,7 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/utils/hooks', () => ({
 	__esModule: true,
 	useAppSelector: jest.fn(() => [{ id: 1, role: 'Caissier' }]),
+	useToast: jest.fn(() => ({ onSuccess: jest.fn(), onError: jest.fn() })),
 }));
 
 jest.mock('@/store/selectors', () => ({
@@ -54,6 +55,7 @@ jest.mock('@/store/services/reglement', () => ({
 	__esModule: true,
 	useGetReglementQuery: (params: { id: number }, options: { skip: boolean }) =>
 		mockUseGetReglementQuery(params, options),
+	useDeleteReglementMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
 }));
 
 // Mock NavigationBar
