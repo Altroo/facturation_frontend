@@ -220,6 +220,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 	termsSecondLabel,
 	getTermsSecondValue,
 	query,
+	headerActions,
 }: CompanyDocumentsViewProps<TData>) => {
 	const token = getAccessTokenFromSession(session);
 	const companies = useAppSelector(getUserCompaniesState);
@@ -468,26 +469,29 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 		<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
 			<NavigationBar title={title}>
 				<Stack spacing={3} sx={{ p: { xs: 2, md: 3 }, mt: 2 }}>
-					<Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between" spacing={2}>
-						<Button
-							variant="outlined"
-							startIcon={<ArrowBackIcon />}
-							onClick={() => router.push(backTo)}
-							sx={{ width: isMobile ? '100%' : 'auto' }}
-						>
-							{backLabel}
-						</Button>
-					{!isLoading &&
-						!error &&
-						(company?.role === 'Caissier' || company?.role === 'Commercial') && (
-							<Button
-								variant="contained"
-								startIcon={<EditIcon />}
-								onClick={() => router.push(editTo(id, company_id))}
-								sx={{ width: isMobile ? '100%' : 'auto' }}
-							>
-								Modifier
-							</Button>
+<Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between" alignItems={isMobile ? 'stretch' : 'center'} spacing={2}>
+					<Button
+						variant="outlined"
+						startIcon={<ArrowBackIcon />}
+						onClick={() => router.push(backTo)}
+						sx={{ width: isMobile ? '100%' : 'auto' }}
+					>
+						{backLabel}
+					</Button>
+					{!isLoading && !error && (
+						<Stack direction="row" gap={1} flexWrap="wrap">
+							{(company?.role === 'Caissier' || company?.role === 'Commercial') && (
+								<Button
+									variant="outlined"
+									size="small"
+									startIcon={<EditIcon />}
+									onClick={() => router.push(editTo(id, company_id))}
+								>
+									Modifier
+								</Button>
+							)}
+							{headerActions}
+						</Stack>
 						)}
 				</Stack>
 

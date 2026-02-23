@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useMemo, isValidElement } from 'react';
+import React, { useMemo, isValidElement, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
-import { useGetUserQuery } from '@/store/services/account';
+import { useGetUserQuery, useDeleteUserMutation } from '@/store/services/account';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import {
@@ -23,6 +23,7 @@ import {
 } from '@mui/material';
 import {
 	ArrowBack as ArrowBackIcon,
+	Delete as DeleteIcon,
 	Edit as EditIcon,
 	Email as EmailIcon,
 	Person as PersonIcon,
@@ -38,6 +39,8 @@ import {
 import { USERS_LIST, USERS_EDIT } from '@/utils/routes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { formatDate } from '@/utils/helpers';
+import { useToast } from '@/utils/hooks';
+import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import { Protected } from '@/components/layouts/protected/protected';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 
@@ -122,12 +125,45 @@ const UsersViewClient: React.FC<Props> = ({ session, id }) => {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
+	const [deleteRecord] = useDeleteUserMutation();
+	const { onSuccess, onError } = useToast();
+	const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+	const handleDelete = async () => {
+		try {
+			await deleteRecord({ id }).unwrap();
+			onSuccess('Utilisateur supprimé avec succès');
+			router.push(USERS_LIST);
+		} catch {
+			onError('Erreur lors de la suppression de l’utilisateur');
+		} finally {
+			setShowDeleteModal(false);
+		}
+	};
+
+	const deleteModalActions = [
+		{
+			text: 'Annuler',
+			active: false,
+			onClick: () => setShowDeleteModal(false),
+			icon: <ArrowBackIcon />,
+			color: '#6B6B6B',
+		},
+		{
+			text: 'Supprimer',
+			active: true,
+			onClick: handleDelete,
+			icon: <DeleteIcon />,
+			color: '#D32F2F',
+		},
+	];
+
 	return (
 		<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
 			<NavigationBar title="Détails de l'utilisateur">
 				<Protected>
 					<Stack spacing={3} sx={{ p: { xs: 2, md: 3 }, mt: 2 }}>
-						<Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between" spacing={2}>
+						<Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between" alignItems={isMobile ? 'stretch' : 'center'} spacing={2}>
 							<Button
 								variant="outlined"
 								startIcon={<ArrowBackIcon />}
@@ -137,14 +173,25 @@ const UsersViewClient: React.FC<Props> = ({ session, id }) => {
 								Liste des utilisateurs
 							</Button>
 							{!isLoading && !error && (
-								<Button
-									variant="contained"
-									startIcon={<EditIcon />}
-									onClick={() => router.push(USERS_EDIT(id))}
-									sx={{ width: isMobile ? '100%' : 'auto' }}
-								>
-									Modifier
-								</Button>
+								<Stack direction="row" gap={1} flexWrap="wrap">
+									<Button
+										variant="outlined"
+										size="small"
+										startIcon={<EditIcon />}
+										onClick={() => router.push(USERS_EDIT(id))}
+									>
+										Modifier
+									</Button>
+									<Button
+										variant="outlined"
+										color="error"
+										size="small"
+										startIcon={<DeleteIcon />}
+										onClick={() => setShowDeleteModal(true)}
+									>
+										Supprimer
+									</Button>
+								</Stack>
 							)}
 						</Stack>
 						{isLoading ? (
@@ -366,6 +413,15 @@ const UsersViewClient: React.FC<Props> = ({ session, id }) => {
 					</Stack>
 				</Protected>
 			</NavigationBar>
+		{showDeleteModal && (
+			<ActionModals
+				title="Supprimer cet utilisateur ?"
+				body="Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible."
+				actions={deleteModalActions}
+				titleIcon={<DeleteIcon />}
+				titleIconColor="#D32F2F"
+			/>
+		)}
 		</Stack>
 	);
 };

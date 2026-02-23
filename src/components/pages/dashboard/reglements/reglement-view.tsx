@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, isValidElement } from 'react';
+import React, { useMemo, isValidElement, useState } from 'react';
 import {
 	Box,
 	Stack,
@@ -15,7 +15,9 @@ import {
 } from '@mui/material';
 import {
 	ArrowBack as ArrowBackIcon,
+	Delete as DeleteIcon,
 	Edit as EditIcon,
+	PictureAsPdf as PictureAsPdfIcon,
 	Receipt as ReceiptIcon,
 	Payment as PaymentIcon,
 	CalendarToday as CalendarTodayIcon,
@@ -25,18 +27,21 @@ import {
 } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import { REGLEMENTS_LIST, REGLEMENTS_EDIT } from '@/utils/routes';
+import { REGLEMENTS_LIST, REGLEMENTS_EDIT, REGLEMENT_PDF } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
-import { useGetReglementQuery } from '@/store/services/reglement';
+import { useGetReglementQuery, useDeleteReglementMutation } from '@/store/services/reglement';
 import { getAccessTokenFromSession } from '@/store/session';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
-import { useAppSelector } from '@/utils/hooks';
+import { useAppSelector, useToast } from '@/utils/hooks';
 import { getUserCompaniesState } from '@/store/selectors';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import { formatDate, formatNumber } from '@/utils/helpers';
 import { getStatutColor } from '@/components/pages/dashboard/devis/devis-list';
+import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
+import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
+import { fetchPdfBlob } from '@/utils/apiHelpers';
 
 interface InfoRowProps {
 	icon: React.ReactNode;
@@ -128,32 +133,110 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 		return companies?.find((comp) => comp.id === company_id);
 	}, [companies, company_id]);
 
+	const [deleteRecord] = useDeleteReglementMutation();
+	const { onSuccess, onError } = useToast();
+	const [showDeleteModal, setShowDeleteModal] = useState(false);
+	const [showLanguageModal, setShowLanguageModal] = useState(false);
+
+	const handleDelete = async () => {
+		try {
+			await deleteRecord({ id }).unwrap();
+			onSuccess('Règlement supprimé avec succès');
+			router.push(REGLEMENTS_LIST);
+		} catch {
+			onError('Erreur lors de la suppression du règlement');
+		} finally {
+			setShowDeleteModal(false);
+		}
+	};
+
+	const deleteModalActions = [
+		{
+			text: 'Annuler',
+			active: false,
+			onClick: () => setShowDeleteModal(false),
+			icon: <ArrowBackIcon />,
+			color: '#6B6B6B',
+		},
+		{
+			text: 'Supprimer',
+			active: true,
+			onClick: handleDelete,
+			icon: <DeleteIcon />,
+			color: '#D32F2F',
+		},
+	];
+
+	const handleLanguageSelect = async (language: 'fr' | 'en') => {
+		setShowLanguageModal(false);
+		if (!token) {
+			onError("Erreur d'authentification. Veuillez vous reconnecter.");
+			return;
+		}
+		try {
+			const url = REGLEMENT_PDF(id, company_id, language);
+			const blob = await fetchPdfBlob(url, token);
+			const blobUrl = window.URL.createObjectURL(blob);
+			window.open(blobUrl, '_blank');
+			setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60_000);
+		} catch {
+			onError("Erreur lors de l'ouverture du document.");
+		}
+	};
+
+	const handleLanguageModalClose = () => {
+		setShowLanguageModal(false);
+	};
+
 	return (
 		<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
 			<NavigationBar title="Détails du règlement">
 				<Stack spacing={3} sx={{ p: { xs: 2, md: 3 }, mt: 2 }}>
-					<Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between" spacing={2}>
-						<Button
-							variant="outlined"
-							startIcon={<ArrowBackIcon />}
-							onClick={() => router.push(REGLEMENTS_LIST)}
-							sx={{ width: isMobile ? '100%' : 'auto' }}
-						>
-							Liste des règlements
-						</Button>
-						{!isLoading &&
-							!error &&
-							company?.role === 'Caissier' &&
-							reglement?.statut === 'Valide' && (
+<Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between" alignItems={isMobile ? 'stretch' : 'center'} spacing={2}>
+					<Button
+						variant="outlined"
+						startIcon={<ArrowBackIcon />}
+						onClick={() => router.push(REGLEMENTS_LIST)}
+						sx={{ width: isMobile ? '100%' : 'auto' }}
+					>
+						Liste des règlements
+					</Button>
+					{!isLoading && !error && (
+						<Stack direction="row" gap={1} flexWrap="wrap">
+							{(company?.role === 'Caissier' || company?.role === 'Comptable' || company?.role === 'Commercial') && (
 								<Button
-									variant="contained"
+									variant="outlined"
+									color="error"
+									size="small"
+									startIcon={<PictureAsPdfIcon />}
+									onClick={() => setShowLanguageModal(true)}
+								>
+									PDF
+								</Button>
+							)}
+							{company?.role === 'Caissier' && reglement?.statut === 'Valide' && (
+								<Button
+									variant="outlined"
+									size="small"
 									startIcon={<EditIcon />}
 									onClick={() => router.push(REGLEMENTS_EDIT(id, company_id))}
-									sx={{ width: isMobile ? '100%' : 'auto' }}
 								>
 									Modifier
 								</Button>
 							)}
+							{company?.role === 'Caissier' && (
+								<Button
+									variant="outlined"
+									color="error"
+									size="small"
+									startIcon={<DeleteIcon />}
+									onClick={() => setShowDeleteModal(true)}
+								>
+									Supprimer
+								</Button>
+							)}
+						</Stack>
+					)}
 					</Stack>
 
 					{isLoading ? (
@@ -375,6 +458,21 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 					)}
 				</Stack>
 			</NavigationBar>
+		{showLanguageModal && (
+			<PdfLanguageModal
+				onSelectLanguage={handleLanguageSelect}
+				onClose={handleLanguageModalClose}
+			/>
+		)}
+		{showDeleteModal && (
+			<ActionModals
+				title="Supprimer ce règlement ?"
+				body="Êtes-vous sûr de vouloir supprimer ce règlement ? Cette action est irréversible."
+				actions={deleteModalActions}
+				titleIcon={<DeleteIcon />}
+				titleIconColor="#D32F2F"
+			/>
+		)}
 		</Stack>
 	);
 };

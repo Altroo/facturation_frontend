@@ -92,6 +92,9 @@ export interface CompanyDocumentsViewProps<TData extends CompanyDocumentData> ex
 
 	// already-fetched document query result
 	query: QueryResult<TData>;
+
+	// optional extra action buttons rendered beside the back/edit buttons
+	headerActions?: React.ReactNode;
 }
 
 /** Base interface for document data (common fields between devis and facture) */

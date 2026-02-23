@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, isValidElement } from 'react';
+import React, { useMemo, isValidElement, useState } from 'react';
 import {
 	Avatar,
 	Box,
@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import {
 	ArrowBack as ArrowBackIcon,
+	Delete as DeleteIcon,
 	Edit as EditIcon,
 	Description as DescriptionIcon,
 	CreditCard as CreditCardIcon,
@@ -33,12 +34,13 @@ import {
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { ARTICLES_LIST, ARTICLES_EDIT } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
-import { useGetArticleQuery } from '@/store/services/article';
+import { useGetArticleQuery, useDeleteArticleMutation } from '@/store/services/article';
 import { getAccessTokenFromSession } from '@/store/session';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
-import { useAppSelector } from '@/utils/hooks';
+import { useAppSelector, useToast } from '@/utils/hooks';
+import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import { getUserCompaniesState } from '@/store/selectors';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import { formatDate } from '@/utils/helpers';
@@ -129,31 +131,73 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 		return companies?.find((comp) => comp.id === company_id);
 	}, [companies, company_id]);
 
+	const [deleteRecord] = useDeleteArticleMutation();
+	const { onSuccess, onError } = useToast();
+	const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+	const handleDelete = async () => {
+		try {
+			await deleteRecord({ id }).unwrap();
+			onSuccess('Article supprimé avec succès');
+			router.push(ARTICLES_LIST);
+		} catch {
+			onError('Erreur lors de la suppression de l’article');
+		} finally {
+			setShowDeleteModal(false);
+		}
+	};
+
+	const deleteModalActions = [
+		{
+			text: 'Annuler',
+			active: false,
+			onClick: () => setShowDeleteModal(false),
+			icon: <ArrowBackIcon />,
+			color: '#6B6B6B',
+		},
+		{
+			text: 'Supprimer',
+			active: true,
+			onClick: handleDelete,
+			icon: <DeleteIcon />,
+			color: '#D32F2F',
+		},
+	];
+
 	return (
 		<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
 			<NavigationBar title="Détails de l'article">
 				<Stack spacing={3} sx={{ p: { xs: 2, md: 3 }, mt: 2 }}>
-					<Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between" spacing={2}>
-						<Button
-							variant="outlined"
-							startIcon={<ArrowBackIcon />}
-							onClick={() => router.push(ARTICLES_LIST)}
-							sx={{ width: isMobile ? '100%' : 'auto' }}
-						>
-							Liste des articles
-						</Button>
-						{!isLoading &&
-							!error &&
-							(company?.role === 'Caissier' || company?.role === 'Commercial') && (
-								<Button
-									variant="contained"
-									startIcon={<EditIcon />}
-									onClick={() => router.push(ARTICLES_EDIT(id, company_id))}
-									sx={{ width: isMobile ? '100%' : 'auto' }}
-								>
-									Modifier
-								</Button>
-							)}
+<Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between" alignItems={isMobile ? 'stretch' : 'center'} spacing={2}>
+					<Button
+						variant="outlined"
+						startIcon={<ArrowBackIcon />}
+						onClick={() => router.push(ARTICLES_LIST)}
+						sx={{ width: isMobile ? '100%' : 'auto' }}
+					>
+						Liste des articles
+					</Button>
+					{!isLoading && !error && (company?.role === 'Caissier' || company?.role === 'Commercial') && (
+						<Stack direction="row" gap={1} flexWrap="wrap">
+							<Button
+								variant="outlined"
+								size="small"
+								startIcon={<EditIcon />}
+								onClick={() => router.push(ARTICLES_EDIT(id, company_id))}
+							>
+								Modifier
+							</Button>
+							<Button
+								variant="outlined"
+								color="error"
+								size="small"
+								startIcon={<DeleteIcon />}
+								onClick={() => setShowDeleteModal(true)}
+							>
+								Supprimer
+							</Button>
+						</Stack>
+					)}
 					</Stack>
 
 					{isLoading ? (
@@ -303,6 +347,15 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 					)}
 				</Stack>
 			</NavigationBar>
+		{showDeleteModal && (
+			<ActionModals
+				title="Supprimer cet article ?"
+				body="Êtes-vous sûr de vouloir supprimer cet article ? Cette action est irréversible."
+				actions={deleteModalActions}
+				titleIcon={<DeleteIcon />}
+				titleIconColor="#D32F2F"
+			/>
+		)}
 		</Stack>
 	);
 };

@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useMemo, isValidElement } from 'react';
+import React, { useMemo, isValidElement, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import { getAccessTokenFromSession } from '@/store/session';
-import { useGetCompanyQuery } from '@/store/services/company';
+import { useGetCompanyQuery, useSuspendCompanyMutation } from '@/store/services/company';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import {
@@ -23,6 +23,7 @@ import {
 } from '@mui/material';
 import {
 	ArrowBack as ArrowBackIcon,
+	PauseCircle as PauseIcon,
 	Person as PersonIcon,
 	Edit as EditIcon,
 	Business as BusinessIcon,
@@ -51,6 +52,8 @@ import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiP
 import { Protected } from '@/components/layouts/protected/protected';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import { formatDate } from '@/utils/helpers';
+import { useToast } from '@/utils/hooks';
+import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 
 interface InfoRowProps {
 	icon: React.ReactNode;
@@ -126,29 +129,73 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
+	const [suspendRecord] = useSuspendCompanyMutation();
+	const { onSuccess, onError } = useToast();
+	const [showSuspendModal, setShowSuspendModal] = useState(false);
+
+	const handleSuspend = async () => {
+		try {
+			await suspendRecord({ id }).unwrap();
+			onSuccess('Entreprise suspendue avec succès');
+			router.push(COMPANIES_LIST);
+		} catch {
+			onError("Erreur lors de la suspension de l'entreprise");
+		} finally {
+			setShowSuspendModal(false);
+		}
+	};
+
+	const suspendModalActions = [
+		{
+			text: 'Annuler',
+			active: false,
+			onClick: () => setShowSuspendModal(false),
+			icon: <ArrowBackIcon />,
+			color: '#6B6B6B',
+		},
+		{
+			text: 'Suspendre',
+			active: true,
+			onClick: handleSuspend,
+			icon: <PauseIcon />,
+			color: '#D32F2F',
+		},
+	];
+
 	return (
 		<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
 			<NavigationBar title="Détails de l'entreprise">
 				<Protected>
 					<Stack spacing={3} sx={{ p: { xs: 2, md: 3 }, mt: 2 }}>
-						<Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between" spacing={2}>
-							<Button
-								variant="outlined"
-								startIcon={<ArrowBackIcon />}
-								onClick={() => router.push(COMPANIES_LIST)}
-								sx={{ width: isMobile ? '100%' : 'auto' }}
-							>
-								Liste des entreprises
-							</Button>
-							{!isLoading && !error && (
+<Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between" alignItems={isMobile ? 'stretch' : 'center'} spacing={2}>
+						<Button
+							variant="outlined"
+							startIcon={<ArrowBackIcon />}
+							onClick={() => router.push(COMPANIES_LIST)}
+							sx={{ width: isMobile ? '100%' : 'auto' }}
+						>
+							Liste des entreprises
+						</Button>
+						{!isLoading && !error && (
+							<Stack direction="row" gap={1} flexWrap="wrap">
 								<Button
-									variant="contained"
+									variant="outlined"
+									size="small"
 									startIcon={<EditIcon />}
 									onClick={() => router.push(COMPANIES_EDIT(id))}
-									sx={{ width: isMobile ? '100%' : 'auto' }}
 								>
 									Modifier
 								</Button>
+								<Button
+									variant="outlined"
+									color="error"
+									size="small"
+									startIcon={<PauseIcon />}
+									onClick={() => setShowSuspendModal(true)}
+								>
+									Suspendre
+								</Button>
+							</Stack>
 							)}
 						</Stack>
 
@@ -444,6 +491,15 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 					</Stack>
 				</Protected>
 			</NavigationBar>
+		{showSuspendModal && (
+			<ActionModals
+				title="Suspendre cette entreprise ?"
+				body="Êtes-vous sûr de vouloir suspendre cette entreprise ? L'accès sera désactivé."
+				actions={suspendModalActions}
+				titleIcon={<PauseIcon />}
+				titleIconColor="#D32F2F"
+			/>
+		)}
 		</Stack>
 	);
 };
