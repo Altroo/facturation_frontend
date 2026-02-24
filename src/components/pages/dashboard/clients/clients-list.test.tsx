@@ -107,6 +107,7 @@ jest.mock('@/store/services/parameter', () => ({
 }));
 jest.mock('@/utils/helpers', () => ({
 	formatDate: (date: string | null) => (date ? new Date(date).toLocaleDateString('fr-FR') : '—'),
+	extractApiErrorMessage: (error: unknown, fallback: string) => fallback,
 }));
 
 import ClientsListClient, { typeFilterOptions } from './clients-list';

@@ -240,6 +240,7 @@ jest.mock('@/utils/helpers', () => ({
 			useGrouping: true,
 		});
 	},
+	extractApiErrorMessage: (error: unknown, fallback: string) => fallback,
 }));
 
 jest.mock('next/image', () => ({

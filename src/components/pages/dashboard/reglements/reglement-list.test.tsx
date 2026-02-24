@@ -149,6 +149,7 @@ jest.mock('@/components/shared/numericFilter/numericFilterOperator', () => ({ cr
 jest.mock('@/utils/helpers', () => ({
 	formatDate: (date: string | null) => (date ? new Date(date).toLocaleDateString('fr-FR') : '—'),
 	formatNumberWithSpaces: (n: number, d: number) => (n != null ? n.toFixed(d).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') : '0.00'),
+	extractApiErrorMessage: (error: unknown, fallback: string) => fallback,
 }));
 jest.mock('@/utils/routes', () => ({
 	REGLEMENTS_ADD: (companyId: number) => `/dashboard/${companyId}/reglements/add`,
