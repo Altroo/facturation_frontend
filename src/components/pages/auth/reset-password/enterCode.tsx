@@ -46,7 +46,7 @@ const EnterCodePageContent = ({ email }: EnterCodePageContentProps) => {
 	};
 
 	// input/onChange handler attached to native input (htmlInput)
-	const handleInput = (field: FieldKey, e: React.FormEvent<HTMLInputElement> | React.ChangeEvent<HTMLInputElement>) => {
+	const handleInput = (field: FieldKey, e: React.InputEvent<HTMLInputElement> | React.ChangeEvent<HTMLInputElement>) => {
 		const val = (e.currentTarget as HTMLInputElement).value.replace(/\D/g, '').slice(0, 1);
 		formik.setFieldValue(field, val);
 
@@ -164,7 +164,7 @@ const EnterCodePageContent = ({ email }: EnterCodePageContentProps) => {
 									slotProps={{
 										htmlInput: {
 											maxLength: 1,
-											onInput: (e: React.FormEvent<HTMLInputElement>) => handleInput(field, e),
+											onInput: (e: React.InputEvent<HTMLInputElement>) => handleInput(field, e),
 											onChange: (e: React.ChangeEvent<HTMLInputElement>) => handleInput(field, e),
 											onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => handleKeyDown(field, e),
 											onPaste: (e: React.ClipboardEvent<HTMLInputElement>) => handlePaste(e),

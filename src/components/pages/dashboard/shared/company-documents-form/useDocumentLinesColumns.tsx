@@ -4,7 +4,6 @@ import React, { useMemo, useCallback } from 'react';
 import { Box, Typography, Tooltip, InputAdornment, IconButton, Avatar } from '@mui/material';
 import { Delete as DeleteIcon } from '@mui/icons-material';
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
-import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import FormattedNumberInput from '@/components/formikElements/formattedNumberInput/formattedNumberInput';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
@@ -104,28 +103,32 @@ export const useDocumentLinesColumns = ({
 		};
 		const quantity = (params: GridRenderCellParams) => {
 			const rowIndex = getRowIndexFromParams(params);
-			const rawValue = getLines()[rowIndex]?.quantity ?? '';
-			const inputValue = String(safeParseForInput(String(rawValue ?? '')));
+			const ligne = getLines()[rowIndex];
+			const rawValue = ligne?.quantity ?? '';
 			const errorKey = `ligne_${rowIndex}_quantity`;
 			const hasError = !!validationErrors[errorKey];
+			const article = getArticleById(ligne?.article);
+			const uniteName = article?.unite_name || '';
 			return (
 				<Tooltip title={validationErrors[errorKey] || ''} arrow>
 					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-						<CustomTextInput
+						<FormattedNumberInput
 							id={`quantity_${rowIndex}`}
-							type="number"
-							value={inputValue}
+							type="text"
+							value={rawValue}
 							onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 								const raw = (e.target as HTMLInputElement).value;
 								const parsed = parseNumber(raw);
-								if (parsed !== null && parsed < 1) return;
+								if (parsed !== null && parsed < 0.01) return;
 								handleLineChangeRef.current(rowIndex, 'quantity', parsed === null ? raw : parsed);
 							}}
 							fullWidth
 							size="small"
 							theme={gridFieldTheme}
 							error={hasError}
-							slotProps={{ input: { style: { textAlign: 'center' }, inputProps: { min: 1 } } }}
+							endIcon={uniteName ? <InputAdornment position="end">{uniteName}</InputAdornment> : undefined}
+							decimals={2}
+							slotProps={{ input: { style: { textAlign: 'center' } } }}
 						/>
 					</Box>
 				</Tooltip>
@@ -169,7 +172,7 @@ export const useDocumentLinesColumns = ({
 			);
 		};
 		return [prix, quantity, remise];
-	}, [getRowIndexFromParams, getLines, validationErrors, role, devise, handleLineChangeRef]);
+	}, [getRowIndexFromParams, getLines, validationErrors, role, devise, handleLineChangeRef, getArticleById]);
 
 	const linesColumns: GridColDef[] = useMemo(
 		() => [
@@ -307,12 +310,12 @@ export const useDocumentLinesColumns = ({
 					);
 				},
 			},
-			{ field: 'prix_vente', headerName: 'Prix de vente', flex: 1.5, minWidth: 150, renderCell: renderPrixVenteCell },
-			{ field: 'quantity', headerName: 'Quantité', flex: 1, minWidth: 120, renderCell: renderQuantityCell },
+			{ field: 'prix_vente', headerName: 'Prix de vente', flex: 1.8, minWidth: 170, renderCell: renderPrixVenteCell },
+			{ field: 'quantity', headerName: 'Quantité', flex: 1.5, minWidth: 160, renderCell: renderQuantityCell },
 			{
 				field: 'remise_type',
 				headerName: 'Type remise',
-				flex: 1.5, minWidth: 180,
+				flex: 1.2, minWidth: 150,
 				renderCell: (params: GridRenderCellParams) => {
 					const rowIndex = getRowIndexFromParams(params);
 					const value = getLines()[rowIndex]?.remise_type ?? '';

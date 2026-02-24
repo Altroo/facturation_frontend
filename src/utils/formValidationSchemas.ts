@@ -352,9 +352,17 @@ export const devisLivraisonFactureLineSchema = z
 		prix_achat: optionalNumberField(0).nullable(),
 		devise_prix_achat: z.string().default('MAD'),
 		prix_vente: optionalNumberField(0).nullable(),
-		quantity: requiredNumberField(1).refine((val) => Number.isInteger(val), {
-			error: INPUT_QUANTITY_INT,
-		}),
+		quantity: z.preprocess(
+			(val) => {
+				if (val === undefined || val === null) return NaN;
+				if (typeof val === 'string') return parseFloat(val.replace(',', '.')) || NaN;
+				return Number(val);
+			},
+			z
+				.number({ error: INPUT_REQUIRED })
+				.refine((val) => !Number.isNaN(val), { error: INPUT_REQUIRED })
+				.min(0.01, { error: INPUT_MIN(0.01) }),
+		),
 		remise_type: z.enum(['Pourcentage', 'Fixe']).optional().nullable(),
 		remise: z.preprocess(
 			(val) => (typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val),

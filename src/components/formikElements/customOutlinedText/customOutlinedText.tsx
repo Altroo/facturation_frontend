@@ -8,7 +8,7 @@ type Props = {
 	id: string;
 	value: string;
 	onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-	onInput?: (e: React.FormEvent<HTMLInputElement>) => void;
+	onInput?: (e: React.InputEvent<HTMLInputElement>) => void;
 	onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
 	onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 	onPaste?: (e: React.ClipboardEvent<HTMLInputElement>) => void;
