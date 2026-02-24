@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { type Key } from 'react';
 import TextField, { type TextFieldProps } from '@mui/material/TextField';
 import { ThemeProvider } from '@mui/material/styles';
 import type { Theme } from '@mui/material/styles';
 import type { DropDownType } from '@/types/accountTypes';
-import { Autocomplete, InputAdornment } from '@mui/material';
+import { Autocomplete, InputAdornment, Box, Typography } from '@mui/material';
 
 type Props = {
 	id: string;
@@ -22,6 +22,7 @@ type Props = {
 	startIcon?: React.ReactNode;
 	endIcon?: React.ReactNode;
 	slotProps?: TextFieldProps['slotProps'];
+	renderOption?: (props: React.HTMLAttributes<HTMLLIElement> & { key: Key }, option: DropDownType) => React.ReactNode;
 };
 
 const CustomAutoCompleteSelect: React.FC<Props> = ({
@@ -41,7 +42,24 @@ const CustomAutoCompleteSelect: React.FC<Props> = ({
 	onBlur,
 	error,
 	helperText,
+	renderOption: renderOptionProp,
 }) => {
+	const defaultRenderOption = (props: React.HTMLAttributes<HTMLLIElement> & { key: Key }, option: DropDownType) => {
+		const { key, ...rest } = props;
+		return (
+			<Box component="li" key={key} {...rest}>
+				<Typography variant="body2" noWrap sx={{ flex: 1 }}>
+					{option.code}
+				</Typography>
+				{option.archived && (
+					<Typography variant="caption" sx={{ color: '#ED6C02', fontWeight: 600, ml: 1, whiteSpace: 'nowrap' }}>
+						(Archivé)
+					</Typography>
+				)}
+			</Box>
+		);
+	};
+
 	return (
 		<ThemeProvider theme={theme}>
 			<Autocomplete
@@ -50,7 +68,7 @@ const CustomAutoCompleteSelect: React.FC<Props> = ({
 				fullWidth={fullWidth}
 				noOptionsText={noOptionsText}
 				options={items}
-				getOptionLabel={(option) => option.code}
+				getOptionLabel={(option) => option.archived ? `${option.code} (Archivé)` : option.code}
 				getOptionKey={(option) => option.value}
 				filterOptions={(options, state) =>
 					options.filter((opt) => opt.code.toLowerCase().includes(state.inputValue.toLowerCase()))
@@ -60,6 +78,7 @@ const CustomAutoCompleteSelect: React.FC<Props> = ({
 				disabled={disabled}
 				isOptionEqualToValue={(option, val) => option.value === val.value}
 				onBlur={onBlur}
+				renderOption={(props, option) => (renderOptionProp || defaultRenderOption)(props as React.HTMLAttributes<HTMLLIElement> & { key: Key }, option)}
 				renderInput={(params) => (
 					<TextField
 						{...params}

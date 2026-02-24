@@ -457,7 +457,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				client.client_type === 'Personne physique'
 					? `${client.nom || ''} ${client.prenom || ''}`.trim()
 					: client.raison_sociale || '';
-			return { code: label, value: String(client.id) };
+			return { code: label, value: String(client.id), archived: !!client.archived };
 		}) as Array<DropDownType>;
 	}, [clientsData]);
 
@@ -650,6 +650,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				if (!article) return null;
 				return {
 					article: articleId,
+					reference: (article.reference as string) || '',
 					designation: article.designation || '',
 					prix_achat: article.prix_achat || 0,
 					devise_prix_achat: article.devise_prix_achat || 'MAD',

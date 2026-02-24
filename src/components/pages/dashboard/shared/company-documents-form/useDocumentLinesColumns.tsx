@@ -228,13 +228,19 @@ export const useDocumentLinesColumns = ({
 				flex: 0.8, minWidth: 90,
 				renderCell: (params: GridRenderCellParams) => {
 					const article = getArticleById(params.row.article);
-					const value = article?.reference ?? '';
+					const value = params.row.reference || article?.reference || '';
+					const isArchived = article?.archived === true;
 					return (
-						<DarkTooltip title={value}>
-							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-								<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+						<DarkTooltip title={isArchived ? `${value} (Archivé)` : value}>
+							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+								<Typography variant="body2" noWrap sx={{ textAlign: 'left' }}>
 									{value}
 								</Typography>
+								{isArchived && (
+									<Typography variant="caption" noWrap sx={{ color: '#ED6C02', fontWeight: 600, whiteSpace: 'nowrap' }}>
+										(Archivé)
+									</Typography>
+								)}
 							</Box>
 						</DarkTooltip>
 					);

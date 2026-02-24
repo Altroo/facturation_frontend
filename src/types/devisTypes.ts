@@ -26,6 +26,7 @@ export type DeviLineSchemaType = {
 export interface DeviFactureLineFormValues {
 	id?: string | number;
 	article: number;
+	reference?: string;
 	designation: string;
 	prix_achat: number;
 	devise_prix_achat: string;

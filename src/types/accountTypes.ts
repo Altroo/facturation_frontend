@@ -30,6 +30,7 @@ export type AccountGenderCodeValueType = {
 export type DropDownType = {
 	code: string;
 	value: string;
+	archived?: boolean;
 };
 
 export type setProfilPayloadType = SagaPayloadType<UserClass>;
