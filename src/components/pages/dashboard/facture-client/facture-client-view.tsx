@@ -12,6 +12,7 @@ import { FACTURE_CLIENT_EDIT, FACTURE_CLIENT_LIST, FACTURE_CLIENT_PDF } from '@/
 import { useGetFactureClientQuery, useDeleteFactureClientMutation } from '@/store/services/factureClient';
 import { getAccessTokenFromSession } from '@/store/session';
 import { useAppSelector, useToast } from '@/utils/hooks';
+import { extractApiErrorMessage } from '@/utils/helpers';
 import { getUserCompaniesState } from '@/store/selectors';
 import { fetchPdfBlob } from '@/utils/apiHelpers';
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
@@ -48,8 +49,8 @@ const FactureClientViewClient: React.FC<Props> = ({ session, company_id, id }) =
 			await deleteRecord({ id }).unwrap();
 			onSuccess('Facture client supprimée avec succès');
 			router.push(FACTURE_CLIENT_LIST);
-		} catch {
-			onError('Erreur lors de la suppression de la facture client');
+		} catch (err) {
+			onError(extractApiErrorMessage(err, 'Erreur lors de la suppression de la facture client'));
 		} finally {
 			setShowDeleteModal(false);
 		}

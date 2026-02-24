@@ -12,6 +12,7 @@ import { BON_DE_LIVRAISON_EDIT, BON_DE_LIVRAISON_LIST, BON_DE_LIVRAISON_PDF } fr
 import { useGetBonDeLivraisonQuery, useDeleteBonDeLivraisonMutation } from '@/store/services/bonDeLivraison';
 import { getAccessTokenFromSession } from '@/store/session';
 import { useAppSelector, useToast } from '@/utils/hooks';
+import { extractApiErrorMessage } from '@/utils/helpers';
 import { getUserCompaniesState } from '@/store/selectors';
 import { fetchPdfBlob } from '@/utils/apiHelpers';
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
@@ -48,8 +49,8 @@ const BonDeLivraisonViewClient: React.FC<Props> = ({ session, company_id, id }) 
 			await deleteRecord({ id }).unwrap();
 			onSuccess('Bon de livraison supprimé avec succès');
 			router.push(BON_DE_LIVRAISON_LIST);
-		} catch {
-			onError('Erreur lors de la suppression du bon de livraison');
+		} catch (err) {
+			onError(extractApiErrorMessage(err, 'Erreur lors de la suppression du bon de livraison'));
 		} finally {
 			setShowDeleteModal(false);
 		}

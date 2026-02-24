@@ -12,6 +12,7 @@ import { FACTURE_PRO_FORMA_EDIT, FACTURE_PRO_FORMA_LIST, FACTURE_PRO_FORMA_PDF }
 import { useGetFactureProFormaQuery, useDeleteFactureProFormaMutation } from '@/store/services/factureProForma';
 import { getAccessTokenFromSession } from '@/store/session';
 import { useAppSelector, useToast } from '@/utils/hooks';
+import { extractApiErrorMessage } from '@/utils/helpers';
 import { getUserCompaniesState } from '@/store/selectors';
 import { fetchPdfBlob } from '@/utils/apiHelpers';
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
@@ -48,8 +49,8 @@ const FactureProFormaViewClient: React.FC<Props> = ({ session, company_id, id })
 			await deleteRecord({ id }).unwrap();
 			onSuccess('Facture pro-forma supprimée avec succès');
 			router.push(FACTURE_PRO_FORMA_LIST);
-		} catch {
-			onError('Erreur lors de la suppression de la facture pro-forma');
+		} catch (err) {
+			onError(extractApiErrorMessage(err, 'Erreur lors de la suppression de la facture pro-forma'));
 		} finally {
 			setShowDeleteModal(false);
 		}

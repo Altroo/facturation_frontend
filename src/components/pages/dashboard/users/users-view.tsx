@@ -38,7 +38,7 @@ import {
 } from '@mui/icons-material';
 import { USERS_LIST, USERS_EDIT } from '@/utils/routes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
-import { formatDate } from '@/utils/helpers';
+import { formatDate, extractApiErrorMessage } from '@/utils/helpers';
 import { useToast } from '@/utils/hooks';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import { Protected } from '@/components/layouts/protected/protected';
@@ -134,8 +134,8 @@ const UsersViewClient: React.FC<Props> = ({ session, id }) => {
 			await deleteRecord({ id }).unwrap();
 			onSuccess('Utilisateur supprimé avec succès');
 			router.push(USERS_LIST);
-		} catch {
-			onError('Erreur lors de la suppression de l’utilisateur');
+		} catch (err) {
+			onError(extractApiErrorMessage(err, 'Erreur lors de la suppression de l’utilisateur'));
 		} finally {
 			setShowDeleteModal(false);
 		}

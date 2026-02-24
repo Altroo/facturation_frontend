@@ -24,7 +24,7 @@ import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type { ArticleClass } from '@/models/classes';
-import { formatDate, formatNumberWithSpaces } from '@/utils/helpers';
+import { formatDate, formatNumberWithSpaces, extractApiErrorMessage } from '@/utils/helpers';
 import { useToast } from '@/utils/hooks';
 import Image from 'next/image';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
@@ -162,8 +162,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			await deleteRecord({ id: selectedId! }).unwrap();
 			onSuccess('Article supprimé avec succès');
 			refetch();
-		} catch {
-			onError("Erreur lors de la suppression d'article");
+		} catch (err) {
+			onError(extractApiErrorMessage(err, "Erreur lors de la suppression d'article"));
 		} finally {
 			setShowDeleteModal(false);
 			// Remove only the deleted item from selection (preserve remaining bulk selection)
@@ -265,8 +265,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		try {
 			await bulkDeleteArticles({ ids: selectedIds }).unwrap();
 			onSuccess(`${selectedIds.length} article(s) supprimé(s) avec succès`);
-		} catch {
-			onError("Erreur lors de la suppression des articles");
+		} catch (err) {
+			onError(extractApiErrorMessage(err, "Erreur lors de la suppression des articles"));
 		} finally {
 			setSelectedIds([]);
 			setIsAllMatchingSelected(false);

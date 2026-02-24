@@ -21,7 +21,7 @@ import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type { ClientClass } from '@/models/classes';
-import { formatDate } from '@/utils/helpers';
+import { formatDate, extractApiErrorMessage } from '@/utils/helpers';
 import { useToast } from '@/utils/hooks';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
@@ -114,8 +114,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			await deleteRecord({ id: selectedId! }).unwrap();
 			onSuccess('Client supprimé avec succès');
 			refetch();
-		} catch {
-			onError('Erreur lors de la suppression du client');
+		} catch (err) {
+			onError(extractApiErrorMessage(err, 'Erreur lors de la suppression du client'));
 		} finally {
 			setShowDeleteModal(false);
 			// Remove only the deleted item from selection (preserve remaining bulk selection)
@@ -217,8 +217,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		try {
 			await bulkDeleteClients({ ids: selectedIds }).unwrap();
 			onSuccess(`${selectedIds.length} client(s) supprimé(s) avec succès`);
-		} catch {
-			onError('Erreur lors de la suppression des clients');
+		} catch (err) {
+			onError(extractApiErrorMessage(err, 'Erreur lors de la suppression des clients'));
 		} finally {
 			setSelectedIds([]);
 			setIsAllMatchingSelected(false);

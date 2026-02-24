@@ -12,6 +12,7 @@ import { DEVIS_EDIT, DEVIS_LIST, DEVIS_PDF } from '@/utils/routes';
 import { useGetDeviQuery, useDeleteDeviMutation } from '@/store/services/devi';
 import { getAccessTokenFromSession } from '@/store/session';
 import { useAppSelector, useToast } from '@/utils/hooks';
+import { extractApiErrorMessage } from '@/utils/helpers';
 import { getUserCompaniesState } from '@/store/selectors';
 import { fetchPdfBlob } from '@/utils/apiHelpers';
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
@@ -48,8 +49,8 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 			await deleteRecord({ id }).unwrap();
 			onSuccess('Devis supprimé avec succès');
 			router.push(DEVIS_LIST);
-		} catch {
-			onError('Erreur lors de la suppression du devis');
+		} catch (err) {
+			onError(extractApiErrorMessage(err, 'Erreur lors de la suppression du devis'));
 		} finally {
 			setShowDeleteModal(false);
 		}

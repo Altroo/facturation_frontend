@@ -33,7 +33,7 @@ import type { ReglementListResponseType } from '@/types/reglementTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type { ReglementClass } from '@/models/classes';
-import { formatDate, formatNumberWithSpaces } from '@/utils/helpers';
+import { formatDate, formatNumberWithSpaces, extractApiErrorMessage } from '@/utils/helpers';
 import { useToast } from '@/utils/hooks';
 import { useGetModePaiementListQuery } from '@/store/services/parameter';
 import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
@@ -148,8 +148,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			await deleteRecord({ id: selectedId! }).unwrap();
 			onSuccess('Règlement supprimé avec succès');
 			refetch();
-		} catch {
-			onError('Erreur lors de la suppression du règlement');
+		} catch (err) {
+			onError(extractApiErrorMessage(err, 'Erreur lors de la suppression du règlement'));
 		} finally {
 			setShowDeleteModal(false);
 		}
@@ -173,8 +173,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		try {
 			await bulkDeleteReglements({ ids: selectedIds }).unwrap();
 			onSuccess(`${selectedIds.length} règlement(s) supprimé(s) avec succès`);
-		} catch {
-			onError(`Erreur lors de la suppression`);
+		} catch (err) {
+			onError(extractApiErrorMessage(err, `Erreur lors de la suppression`));
 		} finally {
 			setSelectedIds([]);
 			setShowBulkDeleteModal(false);

@@ -33,7 +33,7 @@ import { useAppSelector, useToast } from '@/utils/hooks';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import { getUserCompaniesState } from '@/store/selectors';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
-import { formatDate } from '@/utils/helpers';
+import { formatDate, extractApiErrorMessage } from '@/utils/helpers';
 
 interface InfoRowProps {
 	icon: React.ReactNode;
@@ -130,8 +130,8 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 			await deleteRecord({ id }).unwrap();
 			onSuccess('Client supprimé avec succès');
 			router.push(CLIENTS_LIST);
-		} catch {
-			onError('Erreur lors de la suppression du client');
+		} catch (err) {
+			onError(extractApiErrorMessage(err, 'Erreur lors de la suppression du client'));
 		} finally {
 			setShowDeleteModal(false);
 		}

@@ -37,7 +37,7 @@ import Styles from '@/styles/dashboard/dashboard.module.sass';
 import { useAppSelector, useToast } from '@/utils/hooks';
 import { getUserCompaniesState } from '@/store/selectors';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
-import { formatDate, formatNumber } from '@/utils/helpers';
+import { formatDate, formatNumber, extractApiErrorMessage } from '@/utils/helpers';
 import { getStatutColor } from '@/components/pages/dashboard/devis/devis-list';
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
@@ -143,8 +143,8 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 			await deleteRecord({ id }).unwrap();
 			onSuccess('Règlement supprimé avec succès');
 			router.push(REGLEMENTS_LIST);
-		} catch {
-			onError('Erreur lors de la suppression du règlement');
+		} catch (err) {
+			onError(extractApiErrorMessage(err, 'Erreur lors de la suppression du règlement'));
 		} finally {
 			setShowDeleteModal(false);
 		}

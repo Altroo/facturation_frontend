@@ -23,7 +23,7 @@ import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type { UserClass } from '@/models/classes';
-import { formatDate } from '@/utils/helpers';
+import { formatDate, extractApiErrorMessage } from '@/utils/helpers';
 import { Protected } from '@/components/layouts/protected/protected';
 import { useToast } from '@/utils/hooks';
 import Image from 'next/image';
@@ -81,9 +81,9 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 			onSuccess('Utilisateur supprimée avec succès');
 			// refresh the page / data
 			refetch();
-		} catch {
+		} catch (err) {
 			// error toast
-			onError('Erreur lors de la suppression de l’utilisateur');
+			onError(extractApiErrorMessage(err, 'Erreur lors de la suppression de l’utilisateur'));
 		} finally {
 			setShowDeleteModal(false);
 		}
@@ -107,8 +107,8 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 		try {
 			await bulkDeleteUsers({ ids: selectedUserIds }).unwrap();
 			onSuccess(`${selectedUserIds.length} utilisateur(s) supprimé(s) avec succès`);
-		} catch {
-			onError(`Erreur lors de la suppression`);
+		} catch (err) {
+			onError(extractApiErrorMessage(err, `Erreur lors de la suppression`));
 		} finally {
 			setSelectedUserIds([]);
 			setShowBulkDeleteModal(false);

@@ -29,7 +29,7 @@ import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkToolt
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
-import { formatDate, formatNumberWithSpaces } from '@/utils/helpers';
+import { formatDate, formatNumberWithSpaces, extractApiErrorMessage } from '@/utils/helpers';
 import { useToast } from '@/utils/hooks';
 import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
@@ -168,8 +168,8 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 			await deleteRecord({ id: selectedId! }).unwrap();
 			onSuccess(config.labels.deleteSuccessMessage);
 			refetch();
-		} catch {
-			onError(config.labels.deleteErrorMessage);
+		} catch (err) {
+			onError(extractApiErrorMessage(err, config.labels.deleteErrorMessage));
 		} finally {
 			setShowDeleteModal(false);
 		}
@@ -189,8 +189,8 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 			try {
 				await bulkDeleteMutation.bulkDeleteRecords({ ids: selectedIds }).unwrap();
 				onSuccess(`${selectedIds.length} ${config.labels.documentTypeName}(s) supprimé(s) avec succès`);
-			} catch {
-				onError(`Erreur lors de la suppression`);
+			} catch (err) {
+				onError(extractApiErrorMessage(err, `Erreur lors de la suppression`));
 			}
 		} else {
 			const results = await Promise.allSettled(
@@ -200,7 +200,8 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 			if (failures.length === 0) {
 				onSuccess(`${selectedIds.length} ${config.labels.documentTypeName}(s) supprimé(s) avec succès`);
 			} else {
-				onError(`${failures.length} suppression(s) ont échoué`);
+				const firstError = failures[0].reason;
+				onError(extractApiErrorMessage(firstError, `${failures.length} suppression(s) ont échoué`));
 			}
 		}
 		setSelectedIds([]);
