@@ -198,26 +198,33 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 	const router = useRouter();
 
-	// Articles query
+	// Articles query — non-archived (for the article picker)
 	const { data: rawArticlesData, isLoading: isArticlesLoading } = useGetArticlesListQuery(
 		{ company_id, with_pagination: false, archived: false },
 		{ skip: !token },
 	);
 	const articlesData = rawArticlesData as Array<Partial<ArticleClass>> | undefined;
 
+	// All articles query — including archived (for map lookups: totals, unité display, etc.)
+	const { data: rawAllArticlesData, isLoading: isAllArticlesLoading } = useGetArticlesListQuery(
+		{ company_id, with_pagination: false },
+		{ skip: !token },
+	);
+	const allArticlesData = rawAllArticlesData as Array<Partial<ArticleClass>> | undefined;
+
 	// Articles map ref (doesn't trigger re-renders)
 	const articlesMapRef = useRef<Map<number, Partial<ArticleClass>>>(new Map());
 	const [articlesMapSize, setArticlesMapSize] = useState<number>(0);
 
-	// Update ref when data changes
+	// Update ref when data changes — use allArticlesData so archived articles are included
 	useEffect(() => {
 		const m = new Map<number, Partial<ArticleClass>>();
-		(articlesData || []).forEach((a) => {
+		(allArticlesData || []).forEach((a) => {
 			if (a?.id != null) m.set(a.id, a);
 		});
 		articlesMapRef.current = m;
 		setArticlesMapSize(m.size);
-	}, [articlesData]);
+	}, [allArticlesData]);
 
 	// Stable getArticleById callback
 	const getArticleById = useCallback(
@@ -483,8 +490,6 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		let total = 0;
 		const lignes = getLines();
 		lignes.forEach((ligne) => {
-			const article = getArticleById(ligne.article);
-			if (!article) return;
 			const prixVente = parseNumber(ligne.prix_vente ?? '') ?? 0;
 			const quantity = parseNumber(ligne.quantity ?? '') ?? 1;
 			const baseHT = prixVente * (isFinite(quantity) ? quantity : 1);
@@ -500,11 +505,11 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			if (Number.isFinite(discountedHT)) total += discountedHT;
 		});
 		return total;
-	}, [getLines, getArticleById]);
+	}, [getLines]);
 
 	// Calculate totals
 	const totals = useMemo(() => {
-		if (isArticlesLoading && articlesMapRef.current.size === 0) {
+		if (isAllArticlesLoading && articlesMapRef.current.size === 0) {
 			return {
 				totalHT: 0,
 				totalTVA: 0,
@@ -519,7 +524,6 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		const lignes = getLines();
 		lignes.forEach((ligne) => {
 			const article = getArticleById(ligne.article);
-			if (!article) return;
 			const prixVente = parseNumber(ligne.prix_vente ?? '') ?? 0;
 			const quantity = parseNumber(ligne.quantity ?? '') ?? 1;
 			const baseHT = prixVente * (isFinite(quantity) ? quantity : 1);
@@ -529,7 +533,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				if (ligne.remise_type === 'Pourcentage') discountedHT = baseHT * (1 - remiseVal / 100);
 				else if (ligne.remise_type === 'Fixe') discountedHT = Math.max(0, baseHT - remiseVal);
 			}
-			const tvaRate = parseNumber(article.tva ?? '') ?? 0;
+			const tvaRate = parseNumber(article?.tva ?? '') ?? 0;
 			const lineTVA = discountedHT * (tvaRate / 100);
 			if (Number.isFinite(discountedHT)) rawTotalHT += discountedHT;
 			if (Number.isFinite(lineTVA)) rawTotalTVA += lineTVA;
@@ -555,7 +559,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			totalTTCApresRemise: Math.max(0, Number.isFinite(finalTotalTTC) ? finalTotalTTC : 0),
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [isArticlesLoading, getLines, formik.values.remise, formik.values.remise_type, getArticleById, articlesMapSize]);
+	}, [isAllArticlesLoading, getLines, formik.values.remise, formik.values.remise_type, getArticleById, articlesMapSize]);
 
 	// Handle line changes with validation
 	const handleLineChange = useCallback(
