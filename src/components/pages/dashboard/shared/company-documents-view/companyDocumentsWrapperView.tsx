@@ -422,9 +422,12 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 				renderCell: (params: GridRenderCellParams) => {
 					const raw = (params.row as { quantity?: unknown }).quantity;
 					const value = raw === null || raw === undefined ? 1 : String(raw);
+					const articleId = toNumber((params.row as { article?: unknown }).article, NaN);
+					const article = Number.isFinite(articleId) ? articlesData?.find((a) => a.id === articleId) : undefined;
+					const uniteName = article?.unite_name ? String(article.unite_name) : '';
 					return (
 						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-							<Typography variant="body2">{value}</Typography>
+							<Typography variant="body2">{value}{uniteName ? ` ${uniteName}` : ''}</Typography>
 						</Box>
 					);
 				},
