@@ -355,7 +355,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		initialValues: getInitialValues(),
 		enableReinitialize: true,
 		validationSchema: toFormikValidationSchema(isEditMode ? config.validation.editSchema : config.validation.addSchema),
-		validateOnMount: true,
+		validateOnMount: false,
 		onSubmit: async (data, { setFieldError }) => {
 			// Check if articles list is empty
 			if (isEditMode) {
