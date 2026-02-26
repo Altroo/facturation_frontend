@@ -904,7 +904,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		sessionStorage.removeItem(SCROLL_TO_LINES_KEY);
 		// Small delay so the grid has finished painting
 		const id = requestAnimationFrame(() => {
-			linesGridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			linesGridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 		});
 		return () => cancelAnimationFrame(id);
 	}, [isEditMode, isLoading]);

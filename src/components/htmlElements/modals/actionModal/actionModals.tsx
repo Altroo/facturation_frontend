@@ -18,14 +18,20 @@ type Props = {
 	children?: React.ReactNode;
 	titleIcon?: React.ReactNode;
 	titleIconColor?: string;
+	/** Called when the dialog is dismissed via backdrop click or Escape key. */
+	onClose?: () => void;
 };
 
-const ActionModals: React.FC<Props> = ({ title, actions, actionsStyle, body, children, titleIcon, titleIconColor }) => {
+const ActionModals: React.FC<Props> = ({ title, actions, actionsStyle, body, children, titleIcon, titleIconColor, onClose }) => {
 	const handleClose = () => {
-		// Find the first active action and click it (usually the cancel/close button)
-		const activeAction = actions.find(a => a.active);
-		if (activeAction) {
-			activeAction.onClick();
+		if (onClose) {
+			onClose();
+			return;
+		}
+		// Fallback: find the first non-active action (typically the cancel button)
+		const cancelAction = actions.find(a => !a.active);
+		if (cancelAction) {
+			cancelAction.onClick();
 		}
 	};
 

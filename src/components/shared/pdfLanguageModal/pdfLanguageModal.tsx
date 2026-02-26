@@ -10,6 +10,7 @@ interface PdfLanguageModalProps {
 const PdfLanguageModal: React.FC<PdfLanguageModalProps> = ({ onSelectLanguage, onClose }) => {
 	return (
 		<ActionModals
+			onClose={onClose}
 			title="Génération du PDF"
 			body="Choisissez la langue dans laquelle vous souhaitez générer le document PDF."
 			actions={[
