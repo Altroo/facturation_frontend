@@ -216,21 +216,16 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	// Keep isAllArticlesLoading as an alias so downstream code doesn't break
 	const isAllArticlesLoading = isArticlesLoading;
 
-	// Articles map ref (doesn't trigger re-renders)
-	const articlesMapRef = useRef<Map<number, Partial<ArticleClass>>>(new Map());
-	const [articlesMapSize, setArticlesMapSize] = useState<number>(0);
-
-	// Update ref when data changes — use allArticlesData so archived articles are included
-	useEffect(() => {
+	// Derived articles map — recomputes when data arrives, driving
+	// getArticleById identity change which propagates to columns, rows & totals.
+	const articlesMap = useMemo(() => {
 		const m = new Map<number, Partial<ArticleClass>>();
 		(allArticlesData || []).forEach((a) => {
 			if (a?.id != null) m.set(a.id, a);
 		});
-		articlesMapRef.current = m;
-		setArticlesMapSize(m.size);
+		return m;
 	}, [allArticlesData]);
 
-	// Stable getArticleById callback
 	const getArticleById = useCallback(
 		(articleRef: number | string | Partial<ArticleClass> | undefined): Partial<ArticleClass> | undefined => {
 			if (articleRef == null) return undefined;
@@ -245,9 +240,9 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				idNum = maybeId != null ? Number(maybeId) : undefined;
 			}
 			if (idNum == null || !Number.isFinite(idNum)) return undefined;
-			return articlesMapRef.current.get(Number(idNum));
+			return articlesMap.get(Number(idNum));
 		},
-		[],
+		[articlesMap],
 	);
 
 	// Clients query
@@ -513,7 +508,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 
 	// Calculate totals
 	const totals = useMemo(() => {
-		if (isAllArticlesLoading && articlesMapRef.current.size === 0) {
+		if (isAllArticlesLoading) {
 			return {
 				totalHT: 0,
 				totalTVA: 0,
@@ -562,8 +557,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			totalTVAAfterRemise: Math.max(0, Number.isFinite(finalTotalTVA) ? finalTotalTVA : 0),
 			totalTTCApresRemise: Math.max(0, Number.isFinite(finalTotalTTC) ? finalTotalTTC : 0),
 		};
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [isAllArticlesLoading, getLines, formik.values.remise, formik.values.remise_type, getArticleById, articlesMapSize]);
+	}, [isAllArticlesLoading, getLines, formik.values.remise, formik.values.remise_type, getArticleById]);
 
 	// Handle line changes with validation
 	const handleLineChange = useCallback(
@@ -793,8 +787,21 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 
 	const dataGridRows = useMemo(() => {
 		const lignes = getLines();
-		return lignes.map((ligne, index) => ({ ...ligne, id: generateRowId(ligne.article, index), rowIndex: index }));
-	}, [getLines]);
+		return lignes.map((ligne, index) => {
+			const article = getArticleById(ligne.article);
+			return {
+				...ligne,
+				id: generateRowId(ligne.article, index),
+				rowIndex: index,
+				// Embed article fields so the DataGrid re-renders cells
+				// (marque, catégorie, photo) once articles data arrives.
+				marque_name: article?.marque_name ?? '',
+				categorie_name: article?.categorie_name ?? '',
+				photo: article?.photo ?? null,
+				archived: article?.archived ?? false,
+			};
+		});
+	}, [getLines, getArticleById]);
 
 	// Get date value based on document type
 	const getDateValue = (): string => {
@@ -961,6 +968,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 						}}
 						devise={formik.values.devise}
 						isMobile={isMobile}
+						isLoading={isAllArticlesLoading}
 					/>
 				)}
 

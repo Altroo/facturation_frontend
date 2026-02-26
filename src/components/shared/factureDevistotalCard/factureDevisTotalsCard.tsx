@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent, Grid, Box, Typography } from '@mui/material';
+import { Card, CardContent, Grid, Box, Typography, Skeleton } from '@mui/material';
 import { formatNumberWithSpaces } from '@/utils/helpers';
 
 interface TotalsCardProps {
@@ -11,9 +11,10 @@ interface TotalsCardProps {
 	};
 	devise?: string;
 	isMobile?: boolean;
+	isLoading?: boolean;
 }
 
-const FactureDevisTotalsCard: React.FC<TotalsCardProps> = ({ totals, devise = 'MAD', isMobile = false }) => {
+const FactureDevisTotalsCard: React.FC<TotalsCardProps> = ({ totals, devise = 'MAD', isMobile = false, isLoading = false }) => {
 	const items = [
 		{
 			label: 'TOTAL HT',
@@ -62,9 +63,13 @@ const FactureDevisTotalsCard: React.FC<TotalsCardProps> = ({ totals, devise = 'M
 								<Typography variant="subtitle2" fontWeight={600} color="text.secondary" sx={{ mb: 0.5 }}>
 									{item.label}
 								</Typography>
-								<Typography variant={item.variant} fontWeight={item.weight} color={item.color ?? 'text.secondary'}>
-									{item.value}
-								</Typography>
+								{isLoading ? (
+									<Skeleton variant="text" width={100} sx={{ fontSize: item.variant === 'h5' ? '1.5rem' : '1.25rem' }} />
+								) : (
+									<Typography variant={item.variant} fontWeight={item.weight} color={item.color ?? 'text.secondary'}>
+										{item.value}
+									</Typography>
+								)}
 							</Box>
 						</Grid>
 					))}
