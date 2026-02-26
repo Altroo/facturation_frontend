@@ -198,19 +198,23 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 	const router = useRouter();
 
-	// Articles query — non-archived (for the article picker)
-	const { data: rawArticlesData, isLoading: isArticlesLoading } = useGetArticlesListQuery(
-		{ company_id, with_pagination: false, archived: false },
-		{ skip: !token },
-	);
-	const articlesData = rawArticlesData as Array<Partial<ArticleClass>> | undefined;
-
-	// All articles query — including archived (for map lookups: totals, unité display, etc.)
-	const { data: rawAllArticlesData, isLoading: isAllArticlesLoading } = useGetArticlesListQuery(
+	// Single articles query — fetch ALL articles (including archived) for both
+	// the picker and the map lookups.  The non-archived subset for the picker
+	// is derived client-side via useMemo, eliminating a second network request.
+	const { data: rawAllArticlesData, isLoading: isArticlesLoading } = useGetArticlesListQuery(
 		{ company_id, with_pagination: false },
 		{ skip: !token },
 	);
 	const allArticlesData = rawAllArticlesData as Array<Partial<ArticleClass>> | undefined;
+
+	// Derive non-archived articles for the picker (avoids a second API call)
+	const articlesData = useMemo(
+		() => allArticlesData?.filter((a) => !a.archived),
+		[allArticlesData],
+	);
+
+	// Keep isAllArticlesLoading as an alias so downstream code doesn't break
+	const isAllArticlesLoading = isArticlesLoading;
 
 	// Articles map ref (doesn't trigger re-renders)
 	const articlesMapRef = useRef<Map<number, Partial<ArticleClass>>>(new Map());
@@ -886,14 +890,16 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		}
 	}, [formik.submitCount, hasValidationErrors, onError]);
 
+	// Core loading: blocks the entire form.  Only wait for the document
+	// detail (edit) or numero generation (add) plus active mutations.
+	// Articles & clients load in the background – their dropdowns show
+	// individual loading states, but the form skeleton renders immediately.
 	const isLoading =
 		isPatchLoading ||
-		isClientsLoading ||
 		isUpdateLoading ||
 		isAddLoading ||
 		isPending ||
 		isDataLoading ||
-		isArticlesLoading ||
 		isNumLoading;
 	const shouldShowError = (axiosError?.status ?? 0) > 400 && !isLoading;
 
