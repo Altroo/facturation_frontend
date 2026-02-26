@@ -1,20 +1,21 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Button, Stack, Typography, Avatar, Chip } from '@mui/material';
+import { Box, Button, Stack, Typography, Chip } from '@mui/material';
 import {
 	Edit as EditIcon,
 	PauseCircle as PauseIcon,
 	Visibility as VisibilityIcon,
 	Add as AddIcon,
 	Close as CloseIcon,
+	Business as BusinessIcon,
 } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams, GridFilterModel } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import { useSuspendCompanyMutation, useGetCompaniesListQuery } from '@/store/services/company';
+import { useSuspendCompanyMutation, useGetCompaniesListQuery, useBulkSuspendCompaniesMutation, useLazyGetCompaniesListQuery } from '@/store/services/company';
 import { COMPANIES_ADD, COMPANIES_VIEW, COMPANIES_EDIT } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
@@ -51,6 +52,11 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 	const [selectedId, setSelectedId] = useState<number | null>(null);
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
 
+	// Bulk selection state
+	const [selectedIds, setSelectedIds] = useState<number[]>([]);
+	const [showBulkSuspendModal, setShowBulkSuspendModal] = useState<boolean>(false);
+	const [isAllMatchingSelected, setIsAllMatchingSelected] = useState<boolean>(false);
+
 	// Call query hook at component level
 	const {
 		data: rawData,
@@ -70,21 +76,59 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 	const data = rawData as PaginationResponseType<CompanyClass> | undefined;
 
 	const [suspendRecord] = useSuspendCompanyMutation();
+	const [bulkSuspendCompanies] = useBulkSuspendCompaniesMutation();
+	const [fetchAllCompanyIds, { isLoading: isLoadingAllIds }] = useLazyGetCompaniesListQuery();
 
 	const suspendHandler = async () => {
 		try {
 			await suspendRecord({ id: selectedId! }).unwrap();
-			// success toast
 			onSuccess('Entreprise suspendue avec succès');
-			// refresh the page / data
 			refetch();
 		} catch {
-			// error toast
 			onError("Erreur lors de la suspension de l'entreprise");
 		} finally {
 			setShowSuspendModal(false);
+			setSelectedIds((prev) => prev.filter((id) => id !== selectedId));
 		}
 	};
+
+	const bulkSuspendHandler = async () => {
+		try {
+			const result = await bulkSuspendCompanies({ ids: selectedIds }).unwrap();
+			onSuccess(`${result.suspended} entreprise(s) suspendue(s) avec succès`);
+			refetch();
+		} catch {
+			onError('Erreur lors de la suspension des entreprises');
+		} finally {
+			setShowBulkSuspendModal(false);
+			setSelectedIds([]);
+			setIsAllMatchingSelected(false);
+		}
+	};
+
+	const handleSelectionChange = useCallback((ids: number[]) => {
+		setSelectedIds(ids);
+		setIsAllMatchingSelected(false);
+	}, []);
+
+	const handleSelectAllMatching = useCallback(async () => {
+		try {
+			const result = await fetchAllCompanyIds({
+				with_pagination: false,
+				...customFilterParams,
+			}).unwrap();
+			const allIds = (result as Array<Partial<CompanyClass>>).map((c) => c.id).filter((id): id is number => id !== undefined);
+			setSelectedIds(allIds);
+			setIsAllMatchingSelected(true);
+		} catch {
+			onError('Erreur lors de la récupération des identifiants');
+		}
+	}, [fetchAllCompanyIds, customFilterParams, onError]);
+
+	const handleClearAllMatching = useCallback(() => {
+		setSelectedIds([]);
+		setIsAllMatchingSelected(false);
+	}, []);
 
 	const deleteModalActions = [
 		{
@@ -133,12 +177,28 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 						leaveDelay={200}
 						slotProps={{ tooltip: { sx: { pointerEvents: 'auto' } } }}
 					>
-						<Avatar
-							src={src ?? undefined}
-							alt={params.row.raison_sociale}
-							variant="rounded"
-							sx={{ width: 40, height: 40 }}
-						/>
+						{src ? (
+							<Box
+								component="img"
+								src={src}
+								alt={params.row.raison_sociale}
+								sx={{ width: 40, height: 40, borderRadius: 1, objectFit: 'cover' }}
+							/>
+						) : (
+							<Box
+								sx={{
+									width: 40,
+									height: 40,
+									borderRadius: 1,
+									backgroundColor: '#E0E0E0',
+									display: 'flex',
+									alignItems: 'center',
+									justifyContent: 'center',
+								}}
+							>
+								<BusinessIcon sx={{ fontSize: 20, color: '#9E9E9E' }} />
+							</Box>
+						)}
 					</DarkTooltip>
 				);
 			},
@@ -290,6 +350,8 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 							sx={{
 								width: '100%',
 								display: 'flex',
+								flexWrap: 'wrap',
+								gap: 1,
 								justifyContent: 'flex-start',
 								px: { xs: 1, sm: 2, md: 3 },
 								mt: { xs: 1, sm: 2, md: 3 },
@@ -309,6 +371,22 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 							>
 								Nouvelle entreprise
 							</Button>
+							{selectedIds.length > 0 && (
+								<Button
+									variant="outlined"
+									color="error"
+									onClick={() => setShowBulkSuspendModal(true)}
+									sx={{
+										whiteSpace: 'nowrap',
+										px: { xs: 1.5, sm: 2, md: 3 },
+										py: { xs: 0.8, sm: 1, md: 1 },
+										fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
+									}}
+									startIcon={<PauseIcon fontSize="small" />}
+								>
+									Suspendre ({selectedIds.length})
+								</Button>
+							)}
 						</Box>
 						<PaginatedDataGrid
 							data={data}
@@ -322,12 +400,44 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 							onFilterModelChange={setFilterModel}
 							onCustomFilterParamsChange={setCustomFilterParams}
 							toolbar={{ quickFilter: true, debounceMs: 500 }}
+							checkboxSelection
+							onSelectionChange={handleSelectionChange}
+							selectedIds={selectedIds}
+							totalMatchingCount={data?.count}
+							onSelectAllMatchingClick={handleSelectAllMatching}
+							selectAllMatchingLoading={isLoadingAllIds}
+							isAllMatchingSelected={isAllMatchingSelected}
+							onClearAllMatchingSelected={handleClearAllMatching}
 						/>
 						{showSuspendModal && (
 							<ActionModals
 								title="Suspendre cette entreprise ?"
 								body="Êtes‑vous sûr de vouloir suspendre cette entreprise ? Cette action est irréversible."
 								actions={deleteModalActions}
+								titleIcon={<PauseIcon />}
+								titleIconColor="#D32F2F"
+							/>
+						)}
+						{showBulkSuspendModal && (
+							<ActionModals
+								title={`Suspendre ${selectedIds.length} entreprise(s) ?`}
+								body={`Êtes-vous sûr de vouloir suspendre les ${selectedIds.length} entreprise(s) sélectionnée(s) ? Cette action est irréversible.`}
+								actions={[
+									{
+										text: 'Annuler',
+										active: false,
+										onClick: () => setShowBulkSuspendModal(false),
+										icon: <CloseIcon />,
+										color: '#6B6B6B',
+									},
+									{
+										text: 'Suspendre',
+										active: true,
+										onClick: bulkSuspendHandler,
+										icon: <PauseIcon />,
+										color: '#D32F2F',
+									},
+								]}
 								titleIcon={<PauseIcon />}
 								titleIconColor="#D32F2F"
 							/>

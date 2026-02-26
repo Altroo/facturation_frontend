@@ -2,7 +2,6 @@
 
 import React, { useMemo } from 'react';
 import {
-	Avatar,
 	Box,
 	Button,
 	Card,
@@ -18,6 +17,7 @@ import {
 	ArrowBack as ArrowBackIcon,
 	CalendarToday as CalendarTodayIcon,
 	Description as DescriptionIcon,
+	Inventory2 as Inventory2Icon,
 	Discount as DiscountIcon,
 	Edit as EditIcon,
 	Notes as NotesIcon,
@@ -291,12 +291,28 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 								leaveDelay={200}
 								slotProps={{ tooltip: { sx: { pointerEvents: 'auto' } } }}
 							>
-								<Avatar
-									src={article?.photo ? String(article.photo) : undefined}
-									alt={article?.reference ? String(article.reference) : undefined}
-									variant="rounded"
-									sx={{ width: 40, height: 40 }}
-								/>
+								{article?.photo ? (
+									<Box
+										component="img"
+										src={String(article.photo)}
+										alt={article?.reference ? String(article.reference) : undefined}
+										sx={{ width: 40, height: 40, borderRadius: 1, objectFit: 'cover' }}
+									/>
+								) : (
+									<Box
+										sx={{
+											width: 40,
+											height: 40,
+											borderRadius: 1,
+											backgroundColor: '#E0E0E0',
+											display: 'flex',
+											alignItems: 'center',
+											justifyContent: 'center',
+										}}
+									>
+										<Inventory2Icon sx={{ fontSize: 20, color: '#9E9E9E' }} />
+									</Box>
+								)}
 							</DarkTooltip>
 						</Box>
 					);

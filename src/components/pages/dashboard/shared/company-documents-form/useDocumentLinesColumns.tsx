@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useMemo, useCallback } from 'react';
-import { Box, Typography, Tooltip, InputAdornment, IconButton, Avatar } from '@mui/material';
-import { Delete as DeleteIcon } from '@mui/icons-material';
+import { Box, Typography, Tooltip, InputAdornment, IconButton } from '@mui/material';
+import { Delete as DeleteIcon, Inventory2 as Inventory2Icon } from '@mui/icons-material';
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import FormattedNumberInput from '@/components/formikElements/formattedNumberInput/formattedNumberInput';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
@@ -211,12 +211,28 @@ export const useDocumentLinesColumns = ({
 								leaveDelay={200}
 								slotProps={{ tooltip: { sx: { pointerEvents: 'auto' } } }}
 							>
-								<Avatar
-									src={(article?.photo as string) ?? undefined}
-									alt={article?.reference as string | undefined}
-									variant="rounded"
-									sx={{ width: 40, height: 40 }}
-								/>
+								{article?.photo ? (
+									<Box
+										component="img"
+										src={article.photo as string}
+										alt={article?.reference as string | undefined}
+										sx={{ width: 40, height: 40, borderRadius: 1, objectFit: 'cover' }}
+									/>
+								) : (
+									<Box
+										sx={{
+											width: 40,
+											height: 40,
+											borderRadius: 1,
+											backgroundColor: '#E0E0E0',
+											display: 'flex',
+											alignItems: 'center',
+											justifyContent: 'center',
+										}}
+									>
+										<Inventory2Icon sx={{ fontSize: 20, color: '#9E9E9E' }} />
+									</Box>
+								)}
 							</DarkTooltip>
 						</Box>
 					);

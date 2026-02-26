@@ -79,7 +79,7 @@ const RootLayout: React.FC<EntryPointProps> = async (props) => {
 									<ErrorBoundary>
 										<ToastContextProvider>
 									<SessionExpiredListener />
-									<main id="main-content">{props.children}</main>
+									<div id="main-content">{props.children}</div>
 								</ToastContextProvider>
 									</ErrorBoundary>
 								</ThemeProvider>

@@ -32,6 +32,9 @@ a
   width: 1px
   height: 1px
   overflow: hidden
+  clip: rect(0, 0, 0, 0)
+  clip-path: inset(50%)
+  white-space: nowrap
   z-index: 9999
   background: #ffffff
   color: #1976d2
@@ -48,6 +51,9 @@ a
     width: auto
     height: auto
     overflow: visible
+    clip: auto
+    clip-path: none
+    white-space: normal
 // Mobile color picker active bullet
 span.activekBullet
   background: $primary

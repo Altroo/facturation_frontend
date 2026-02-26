@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Button, Typography, Chip, IconButton, Avatar, Alert, CircularProgress } from '@mui/material';
+import { Box, Button, Typography, Chip, IconButton, Alert, CircularProgress } from '@mui/material';
 import {
 	Edit as EditIcon,
 	Delete as DeleteIcon,
@@ -14,6 +14,7 @@ import {
 	FileUpload as FileUploadIcon,
 	Email as EmailIcon,
 	Warning as WarningIcon,
+	Inventory2 as Inventory2Icon,
 } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams, GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
@@ -343,12 +344,28 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						leaveDelay={200}
 						slotProps={{ tooltip: { sx: { pointerEvents: 'auto' } } }}
 					>
-						<Avatar
-							src={src ?? undefined}
-							alt={params.row.reference}
-							variant="rounded"
-							sx={{ width: 40, height: 40 }}
-						/>
+						{src ? (
+							<Box
+								component="img"
+								src={src}
+								alt={params.row.reference}
+								sx={{ width: 40, height: 40, borderRadius: 1, objectFit: 'cover' }}
+							/>
+						) : (
+							<Box
+								sx={{
+									width: 40,
+									height: 40,
+									borderRadius: 1,
+									backgroundColor: '#E0E0E0',
+									display: 'flex',
+									alignItems: 'center',
+									justifyContent: 'center',
+								}}
+							>
+								<Inventory2Icon sx={{ fontSize: 20, color: '#9E9E9E' }} />
+							</Box>
+						)}
 					</DarkTooltip>
 				);
 			},

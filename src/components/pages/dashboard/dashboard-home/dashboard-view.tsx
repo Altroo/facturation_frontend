@@ -472,19 +472,22 @@ const ProductPriceVolumeChart: React.FC<ChartProps> = ({ dateParams, company_id,
 	const topProducts = [...data].sort((a, b) => b.total_quantity - a.total_quantity).slice(0, 10);
 
 	const chartData = {
-		labels: topProducts.map((d) => d.designation || 'Sans nom'),
+		labels: topProducts.map((d) => {
+			const name = d.designation || 'Sans nom';
+			return name.length > 25 ? name.slice(0, 22) + '…' : name;
+		}),
 		datasets: [
 			{
 				label: 'Quantité vendue',
 				data: topProducts.map((d) => d.total_quantity),
 				backgroundColor: CHART_COLORS.primary,
-				yAxisID: 'y',
+				xAxisID: 'x',
 			},
 			{
 				label: `Prix moyen (${devise})`,
 				data: topProducts.map((d) => d.average_price),
 				backgroundColor: CHART_COLORS.secondary,
-				yAxisID: 'y1',
+				xAxisID: 'x1',
 			},
 		],
 	};
@@ -493,15 +496,32 @@ const ProductPriceVolumeChart: React.FC<ChartProps> = ({ dateParams, company_id,
 		<Bar
 			data={chartData}
 			options={{
+				indexAxis: 'y',
 				responsive: true,
 				maintainAspectRatio: false,
 				scales: {
-					y: { type: 'linear', position: 'left', title: { display: true, text: 'Quantité' } },
-					y1: {
+					y: {
+						ticks: {
+							autoSkip: false,
+							font: { size: 11 },
+						},
+					},
+					x: { type: 'linear', position: 'bottom', title: { display: true, text: 'Quantité' } },
+					x1: {
 						type: 'linear',
-						position: 'right',
+						position: 'top',
 						title: { display: true, text: `Prix (${devise})` },
 						grid: { drawOnChartArea: false },
+					},
+				},
+				plugins: {
+					tooltip: {
+						callbacks: {
+							title: (items) => {
+								const idx = items[0]?.dataIndex;
+								return idx !== undefined ? (topProducts[idx]?.designation || 'Sans nom') : '';
+							},
+						},
 					},
 				},
 			}}
@@ -1018,19 +1038,22 @@ const ProductMarginChart: React.FC<ChartProps> = ({ dateParams, company_id, devi
 	const topMargins = [...data].sort((a, b) => b.average_margin - a.average_margin).slice(0, 10);
 
 	const chartData = {
-		labels: topMargins.map((d) => d.designation || 'Sans nom'),
+		labels: topMargins.map((d) => {
+			const name = d.designation || 'Sans nom';
+			return name.length > 25 ? name.slice(0, 22) + '…' : name;
+		}),
 		datasets: [
 			{
 				label: `Marge moyenne (${devise})`,
 				data: topMargins.map((d) => d.average_margin),
 				backgroundColor: CHART_COLORS.success,
-				yAxisID: 'y',
+				xAxisID: 'x',
 			},
 			{
 				label: 'Quantité vendue',
 				data: topMargins.map((d) => d.total_quantity),
 				backgroundColor: CHART_COLORS.info,
-				yAxisID: 'y1',
+				xAxisID: 'x1',
 			},
 		],
 	};
@@ -1039,15 +1062,32 @@ const ProductMarginChart: React.FC<ChartProps> = ({ dateParams, company_id, devi
 		<Bar
 			data={chartData}
 			options={{
+				indexAxis: 'y',
 				responsive: true,
 				maintainAspectRatio: false,
 				scales: {
-					y: { type: 'linear', position: 'left', title: { display: true, text: `Marge (${devise})` } },
-					y1: {
+					y: {
+						ticks: {
+							autoSkip: false,
+							font: { size: 11 },
+						},
+					},
+					x: { type: 'linear', position: 'bottom', title: { display: true, text: `Marge (${devise})` } },
+					x1: {
 						type: 'linear',
-						position: 'right',
+						position: 'top',
 						title: { display: true, text: 'Quantité' },
 						grid: { drawOnChartArea: false },
+					},
+				},
+				plugins: {
+					tooltip: {
+						callbacks: {
+							title: (items) => {
+								const idx = items[0]?.dataIndex;
+								return idx !== undefined ? (topMargins[idx]?.designation || 'Sans nom') : '';
+							},
+						},
 					},
 				},
 			}}

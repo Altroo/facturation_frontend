@@ -82,12 +82,22 @@ export const companyApi = createApi({
 			}),
 			invalidatesTags: ['Company'],
 		}),
+		bulkSuspendCompanies: builder.mutation<{ suspended: number }, { ids: number[] }>({
+			query: ({ ids }) => ({
+				url: `${process.env.NEXT_PUBLIC_COMPANY_ROOT}/bulk-suspend/`,
+				method: 'POST',
+				data: { ids },
+			}),
+			invalidatesTags: ['Company'],
+		}),
 	}),
 });
 
 export const {
 	useGetCompaniesListQuery,
+	useLazyGetCompaniesListQuery,
 	useSuspendCompanyMutation,
+	useBulkSuspendCompaniesMutation,
 	useEditCompanyMutation,
 	useGetCompanyQuery,
 	useAddCompanyMutation,

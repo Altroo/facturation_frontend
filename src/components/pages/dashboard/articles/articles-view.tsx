@@ -2,7 +2,6 @@
 
 import React, { useMemo, isValidElement, useState } from 'react';
 import {
-	Avatar,
 	Box,
 	Stack,
 	Typography,
@@ -30,6 +29,7 @@ import {
 	LocationOn as LocationOnIcon,
 	Notes as NotesIcon,
 	CalendarToday as CalendarTodayIcon,
+	Inventory2 as Inventory2Icon,
 } from '@mui/icons-material';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { ARTICLES_LIST, ARTICLES_EDIT } from '@/utils/routes';
