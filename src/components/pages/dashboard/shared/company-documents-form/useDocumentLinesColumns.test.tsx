@@ -5,6 +5,7 @@ import '@testing-library/jest-dom';
 // ── Mock dependencies ──────────────────────────────────────────────
 jest.mock('next/image', () => ({
 	__esModule: true,
+	// eslint-disable-next-line @next/next/no-img-element
 	default: (props: Record<string, unknown>) => <img {...props} alt={(props.alt as string) ?? ''} />,
 }));
 jest.mock('@/utils/helpers', () => ({

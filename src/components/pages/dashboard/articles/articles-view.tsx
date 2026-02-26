@@ -228,17 +228,39 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 										spacing={3}
 										alignItems={isMobile ? 'center' : 'flex-start'}
 									>
-										<Avatar
-											variant="square"
-											src={`${client?.photo}`}
+									{client?.photo ? (
+										<Box
+											component="img"
+											src={`${client.photo}`}
+											alt={client?.designation ?? 'Photo article'}
 											sx={{
 												width: isMobile ? 200 : 300,
 												height: isMobile ? 200 : 300,
+												borderRadius: 2,
+												objectFit: 'cover',
 												border: '4px solid',
 												borderColor: 'primary.light',
 												boxShadow: 3,
 											}}
 										/>
+									) : (
+										<Box
+											sx={{
+												width: isMobile ? 200 : 300,
+												height: isMobile ? 200 : 300,
+												borderRadius: 2,
+												backgroundColor: '#E0E0E0',
+												display: 'flex',
+												alignItems: 'center',
+												justifyContent: 'center',
+												border: '4px solid',
+												borderColor: 'primary.light',
+												boxShadow: 3,
+											}}
+										>
+											<Inventory2Icon sx={{ fontSize: isMobile ? 60 : 80, color: '#BDBDBD' }} />
+										</Box>
+									)}
 									</Stack>
 								</CardContent>
 							</Card>
