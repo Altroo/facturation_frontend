@@ -251,7 +251,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	);
 
 	// Clients query
-	const { data: rawClientsData, isLoading: isClientsLoading } = useGetClientsListQuery(
+	const { data: rawClientsData } = useGetClientsListQuery(
 		{ company_id, with_pagination: false },
 		{ skip: !token },
 	);
