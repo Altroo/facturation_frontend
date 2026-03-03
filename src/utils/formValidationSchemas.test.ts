@@ -1466,7 +1466,7 @@ describe('Zod Schema Validation', () => {
 			).toThrow();
 		});
 
-		it('PM: fails when registre_de_commerce is empty string', () => {
+		it('PM: passes when registre_de_commerce is empty string (now optional)', () => {
 			expect(() =>
 				clientSchema.parse({
 					code_client: 'CL103',
@@ -1479,7 +1479,7 @@ describe('Zod Schema Validation', () => {
 					registre_de_commerce: '',
 					delai_de_paiement: 30,
 				}),
-			).toThrow();
+			).not.toThrow();
 		});
 
 		it('PM: fails when delai_de_paiement is null', () => {

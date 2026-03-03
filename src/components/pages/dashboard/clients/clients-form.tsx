@@ -150,7 +150,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								...newPayload,
 								nom: null,
 								prenom: null,
-								adresse: null,
 								tel: null,
 							}
 						: {
@@ -431,7 +430,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										<CustomTextInput
 											id="registre_de_commerce"
 											type="text"
-											label={`Registre de commerce${isRequiredPM('registre_de_commerce') ? ' *' : ''}`}
+											label="Registre de commerce"
 											value={formik.values.registre_de_commerce ?? ''}
 											onChange={formik.handleChange('registre_de_commerce')}
 											onBlur={formik.handleBlur('registre_de_commerce')}
@@ -441,6 +440,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											size="small"
 											theme={inputTheme}
 											startIcon={<BadgeIcon fontSize="small" />}
+										/>
+
+										<CustomTextInput
+											id="adresse"
+											type="text"
+											label="Adresse"
+											value={formik.values.adresse ?? ''}
+											onChange={formik.handleChange('adresse')}
+											onBlur={formik.handleBlur('adresse')}
+											error={formik.touched.adresse && Boolean(formik.errors.adresse)}
+											helperText={formik.touched.adresse ? formik.errors.adresse : ''}
+											fullWidth={false}
+											size="small"
+											theme={inputTheme}
+											startIcon={<LocationOnIcon fontSize="small" />}
 										/>
 									</Stack>
 								) : (

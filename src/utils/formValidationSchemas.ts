@@ -228,7 +228,7 @@ export const userSchema = z.object({
 	globalError: optionalTextField(1, 500),
 });
 
-export const pmRequired = ['raison_sociale', 'ville', 'ICE', 'registre_de_commerce', 'delai_de_paiement'] as const;
+export const pmRequired = ['raison_sociale', 'ville', 'ICE', 'delai_de_paiement'] as const;
 export const ppRequired = ['nom', 'prenom', 'adresse', 'ville', 'tel', 'delai_de_paiement'] as const;
 
 export const clientSchema = z
@@ -267,16 +267,7 @@ export const clientSchema = z
 					ctx.addIssue({
 						path: [key],
 						code: 'custom',
-						message:
-							key === 'raison_sociale'
-								? INPUT_REQUIRED
-								: key === 'ville'
-									? INPUT_REQUIRED
-									: key === 'ICE'
-										? INPUT_REQUIRED
-										: key === 'registre_de_commerce'
-											? INPUT_REQUIRED
-											: INPUT_REQUIRED,
+						message: INPUT_REQUIRED,
 					});
 				}
 			});
@@ -292,18 +283,7 @@ export const clientSchema = z
 					ctx.addIssue({
 						path: [key],
 						code: 'custom',
-						message:
-							key === 'nom'
-								? INPUT_REQUIRED
-								: key === 'prenom'
-									? INPUT_REQUIRED
-									: key === 'adresse'
-										? INPUT_REQUIRED
-										: key === 'ville'
-											? INPUT_REQUIRED
-											: key === 'tel'
-												? INPUT_REQUIRED
-												: INPUT_REQUIRED,
+						message: INPUT_REQUIRED,
 					});
 				}
 			});

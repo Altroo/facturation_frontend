@@ -38,6 +38,8 @@ const mockUseGetCompaniesListQuery = jest.fn(() => ({
 jest.mock('@/store/services/company', () => ({
 	useGetCompaniesListQuery: () => mockUseGetCompaniesListQuery(),
 	useSuspendCompanyMutation: jest.fn(() => [mockSuspend, { isLoading: false }]),
+	useBulkSuspendCompaniesMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
+	useLazyGetCompaniesListQuery: jest.fn(() => [jest.fn(), { isLoading: false }]),
 }));
 
 jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
