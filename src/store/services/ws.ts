@@ -1,5 +1,5 @@
 import type { EventChannel } from 'redux-saga';
-import { eventChannel } from 'redux-saga';
+import { END, eventChannel } from 'redux-saga';
 import type { WSEvent, WSEventType, WSUserAvatar } from '@/types/wsTypes';
 import { WSUserAvatarAction } from '@/store/actions/wsActions';
 
@@ -41,7 +41,12 @@ export function initWebsocket(token: string): EventChannel<WSAction> {
 						// Skip malformed message and continue listening
 					}
 				};
-				ws.onclose = () => {
+	            ws.onclose = (e: CloseEvent) => {
+					// 4001 = auth rejected by server — no point retrying
+					if (e.code === 4001) {
+						emitter(END);
+						return;
+					}
 					setTimeout(() => {
 						createWs();
 					}, reconnectDelay);
