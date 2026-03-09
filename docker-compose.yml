@@ -2,6 +2,7 @@
 services:
   web:
     build: .
+    container_name: facturation_frontend_web
     restart: always
     env_file:
       - .env.production
@@ -13,9 +14,16 @@ services:
       - webnet
     expose:
       - '3000'
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f bun || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
 
   nginx:
     image: nginx:1.25-alpine
+    container_name: facturation_frontend_nginx
     restart: always
     ports:
       - '80:80'
