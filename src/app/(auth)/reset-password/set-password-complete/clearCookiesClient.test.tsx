@@ -19,7 +19,7 @@ describe('ClearCookiesClient', () => {
 			expect(cookiesDeleter).toHaveBeenCalledTimes(1);
 		});
 
-		expect(cookiesDeleter).toHaveBeenCalledWith('/cookies', {
+		expect(cookiesDeleter).toHaveBeenCalledWith('/api/cookies', {
 			pass_updated: true,
 			new_email: true,
 			code: true,
