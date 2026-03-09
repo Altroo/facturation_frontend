@@ -28,6 +28,8 @@ import {
 	Email as EmailIcon,
 	Lock as LockIcon,
 } from '@mui/icons-material';
+import Image from 'next/image';
+import Logo from '../../../../../public/assets/images/facturation-logo.png';
 
 const inputTheme = textInputTheme();
 
@@ -176,6 +178,9 @@ const LoginClient: React.FC = () => {
 			<TabletAndMobile>
 				<div style={{ display: 'flex', width: '100%', height: '100%' }}>
 					<main className={Styles.main}>
+						<Stack direction="row" alignItems="center" justifyContent="center">
+							<Image src={Logo} alt="" width="0" height="0" sizes="100vw" className={Styles.logo} />
+						</Stack>
 						<LoginPageContent />
 					</main>
 				</div>
