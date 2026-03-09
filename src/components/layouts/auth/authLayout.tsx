@@ -3,6 +3,8 @@
 import React, { ForwardedRef, forwardRef, useState } from 'react';
 import Styles from './authLayout.module.sass';
 import { Box, Stack } from '@mui/material';
+import Image from 'next/image';
+import Logo from '../../../../public/assets/images/facturation-logo.png';
 import InvoiceSVG from '../../../../public/assets/images/auth_illu/invoice.svg';
 import ReceiptSVG from '../../../../public/assets/images/auth_illu/receipt.svg';
 import CalculatorSVG from '../../../../public/assets/images/auth_illu/calculator.svg';
@@ -56,7 +58,9 @@ const AuthLayout = forwardRef<HTMLAnchorElement, Props>((props: Props, ref: Forw
 						}', sizingMethod='scale')`,
 						backgroundSize: 'contain',
 					}}
-				></Box>
+				>
+					<Image src={Logo} alt="" width="0" height="0" sizes="100vw" className={Styles.logo} />
+				</Box>
 				{/* Right side */}
 				<Box className={Styles.rightBox}>
 					{/* Children content */}
