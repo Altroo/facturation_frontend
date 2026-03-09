@@ -5,7 +5,7 @@ import { cookiesDeleter } from '@/utils/apiHelpers';
 
 const ClearCookiesClient = () => {
 	useEffect(() => {
-		cookiesDeleter('/cookies', {
+		cookiesDeleter('/api/cookies', {
 			pass_updated: true,
 			new_email: true,
 			code: true,

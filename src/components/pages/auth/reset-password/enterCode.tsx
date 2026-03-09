@@ -107,7 +107,7 @@ const EnterCodePageContent = ({ email }: EnterCodePageContentProps) => {
 			const code = values.one + values.two + values.three + values.four + values.five + values.six;
 			try {
 				await passwordReset({ email, code }).unwrap();
-				await cookiesPoster('/cookies', { code });
+				await cookiesPoster('/api/cookies', { code });
 				router.push(AUTH_RESET_PASSWORD_SET_PASSWORD);
 			} catch (e) {
 				setFormikAutoErrors({ e, setFieldError });

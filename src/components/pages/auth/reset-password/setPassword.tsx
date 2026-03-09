@@ -47,7 +47,7 @@ const SetPasswordPageContent: React.FC<SetPasswordPageContentProps> = ({ email, 
 					new_password: values.new_password,
 					new_password2: values.new_password2,
 				}).unwrap();
-				await cookiesPoster('/cookies', { pass_updated: 1 });
+				await cookiesPoster('/api/cookies', { pass_updated: 1 });
 				router.push(AUTH_RESET_PASSWORD_COMPLETE);
 			} catch (e) {
 				setFormikAutoErrors({ e, setFieldError });

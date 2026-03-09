@@ -41,7 +41,7 @@ const ResetPasswordPageContent = () => {
 			setIsPending(true);
 			try {
 				await reSendPasswordResetCode({ email: values.email }).unwrap();
-				await cookiesPoster('/cookies', { new_email: values.email });
+				await cookiesPoster('/api/cookies', { new_email: values.email });
 				router.push(AUTH_RESET_PASSWORD_ENTER_CODE);
 			} catch (e) {
 				setFormikAutoErrors({ e, setFieldError });

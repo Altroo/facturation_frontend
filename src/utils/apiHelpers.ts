@@ -2,7 +2,7 @@ import axios, { type AxiosInstance } from 'axios';
 
 // POST Next api/cookies
 export const cookiesPoster = async (url: string, body: object) => {
-	const instance = axios.create({ baseURL: process.env.NEXT_PUBLIC_BACKEND_API });
+	const instance = axios.create();
 	const response = await instance.post(
 		url,
 		{ ...body, maxAge: 86400 },
@@ -13,7 +13,7 @@ export const cookiesPoster = async (url: string, body: object) => {
 
 // DELETE Next api/cookies
 export const cookiesDeleter = async (url: string, body: object) => {
-	const instance = axios.create({ baseURL: process.env.NEXT_PUBLIC_BACKEND_API });
+	const instance = axios.create();
 	const response = await instance.delete(url, { data: body });
 	return { status: response.status };
 };

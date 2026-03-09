@@ -232,7 +232,7 @@ const NavigationBar = (props: Props) => {
 	const loading = status === 'loading';
 
 	const logOutHandler = async () => {
-		await cookiesDeleter('/cookies', {
+		await cookiesDeleter('/api/cookies', {
 			pass_updated: true,
 			new_email: true,
 			code: true,

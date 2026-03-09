@@ -18,9 +18,7 @@ describe('API utility functions', () => {
 
 			const result = await cookiesPoster('/api/cookies', { token: 'abc123' });
 
-			expect(mockedAxios.create).toHaveBeenCalledWith({
-				baseURL: process.env.NEXT_PUBLIC_BACKEND_API,
-			});
+			expect(mockedAxios.create).toHaveBeenCalledWith();
 			expect(mockInstance.post).toHaveBeenCalledWith(
 				'/api/cookies',
 				{ token: 'abc123', maxAge: 86400 },
@@ -39,9 +37,7 @@ describe('API utility functions', () => {
 
 			const result = await cookiesDeleter('/api/cookies', { token: 'abc123' });
 
-			expect(mockedAxios.create).toHaveBeenCalledWith({
-				baseURL: process.env.NEXT_PUBLIC_BACKEND_API,
-			});
+			expect(mockedAxios.create).toHaveBeenCalledWith();
 			expect(mockInstance.delete).toHaveBeenCalledWith('/api/cookies', {
 				data: { token: 'abc123' },
 			});
