@@ -2,7 +2,7 @@
 services:
   web:
     build: .
-    container_name: facturation_web
+    container_name: facturation_frontend_web
     restart: always
     env_file:
       - .env.production
