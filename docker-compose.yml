@@ -2,7 +2,7 @@
 services:
   web:
     build: .
-    container_name: facturation_frontend_web
+    container_name: facturation_web
     restart: always
     env_file:
       - .env.production
@@ -23,7 +23,7 @@ services:
 
   nginx:
     image: nginx:1.25-alpine
-    container_name: facturation_frontend_nginx
+    container_name: nginx
     restart: always
     ports:
       - '80:80'
