@@ -59,7 +59,7 @@ const AuthLayout = forwardRef<HTMLAnchorElement, Props>((props: Props, ref: Forw
 						backgroundSize: 'contain',
 					}}
 				>
-					<Image src={Logo} alt="" width="0" height="0" sizes="100vw" className={Styles.logo} />
+					<Image src={Logo} alt="E.B.H Facturation - Logo" width="0" height="0" sizes="100vw" className={Styles.logo} />
 				</Box>
 				{/* Right side */}
 				<Box className={Styles.rightBox}>

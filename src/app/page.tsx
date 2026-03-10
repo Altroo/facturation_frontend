@@ -5,7 +5,7 @@ import { AUTH_LOGIN, DASHBOARD } from '@/utils/routes';
 
 export const metadata: Metadata = {
 	title: 'Accueil',
-	description: "Page d'accueil de l'application de facturation",
+	description: "Page d'accueil de l'application E.B.H Facturation.",
 };
 
 const HomePage = async () => {
