@@ -1,40 +1,30 @@
 'use client';
 
-import React, { useMemo, isValidElement, useState } from 'react';
-import {
-	Box,
-	Stack,
-	Typography,
-	Card,
-	CardContent,
-	Divider,
-	Button,
-	useTheme,
-	useMediaQuery,
-} from '@mui/material';
+import React, { isValidElement, useMemo, useState } from 'react';
+import { Box, Button, Card, CardContent, Divider, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import {
 	ArrowBack as ArrowBackIcon,
-	Delete as DeleteIcon,
-	Edit as EditIcon,
-	Description as DescriptionIcon,
-	CreditCard as CreditCardIcon,
-	Fingerprint as FingerprintIcon,
-	Category as CategoryIcon,
-	ShoppingCart as ShoppingCartIcon,
-	Sell as SellIcon,
-	Receipt as ReceiptIcon,
 	Business as BusinessIcon,
-	Star as StarIcon,
-	Straighten as StraightenIcon,
+	CalendarToday as CalendarTodayIcon,
+	Category as CategoryIcon,
+	CreditCard as CreditCardIcon,
+	Delete as DeleteIcon,
+	Description as DescriptionIcon,
+	Edit as EditIcon,
+	Fingerprint as FingerprintIcon,
+	Inventory2 as Inventory2Icon,
 	LocationOn as LocationOnIcon,
 	Notes as NotesIcon,
-	CalendarToday as CalendarTodayIcon,
-	Inventory2 as Inventory2Icon,
+	Receipt as ReceiptIcon,
+	Sell as SellIcon,
+	ShoppingCart as ShoppingCartIcon,
+	Star as StarIcon,
+	Straighten as StraightenIcon,
 } from '@mui/icons-material';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import { ARTICLES_LIST, ARTICLES_EDIT } from '@/utils/routes';
+import { ARTICLES_EDIT, ARTICLES_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
-import { useGetArticleQuery, useDeleteArticleMutation } from '@/store/services/article';
+import { useDeleteArticleMutation, useGetArticleQuery } from '@/store/services/article';
 import { getAccessTokenFromSession } from '@/store/session';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
@@ -43,7 +33,7 @@ import { useAppSelector, useToast } from '@/utils/hooks';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import { getUserCompaniesState } from '@/store/selectors';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
-import { formatDate, extractApiErrorMessage } from '@/utils/helpers';
+import { extractApiErrorMessage, formatDate } from '@/utils/helpers';
 
 interface InfoRowProps {
 	icon: React.ReactNode;
@@ -168,36 +158,41 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 		<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
 			<NavigationBar title="Détails de l'article">
 				<Stack spacing={3} sx={{ p: { xs: 2, md: 3 }, mt: 2 }}>
-<Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between" alignItems={isMobile ? 'stretch' : 'center'} spacing={2}>
-					<Button
-						variant="outlined"
-						startIcon={<ArrowBackIcon />}
-						onClick={() => router.push(ARTICLES_LIST)}
-						sx={{ width: isMobile ? '100%' : 'auto' }}
+					<Stack
+						direction={isMobile ? 'column' : 'row'}
+						justifyContent="space-between"
+						alignItems={isMobile ? 'stretch' : 'center'}
+						spacing={2}
 					>
-						Liste des articles
-					</Button>
-					{!isLoading && !error && (company?.role === 'Caissier' || company?.role === 'Commercial') && (
-						<Stack direction="row" gap={1} flexWrap="wrap">
-							<Button
-								variant="outlined"
-								size="small"
-								startIcon={<EditIcon />}
-								onClick={() => router.push(ARTICLES_EDIT(id, company_id))}
-							>
-								Modifier
-							</Button>
-							<Button
-								variant="outlined"
-								color="error"
-								size="small"
-								startIcon={<DeleteIcon />}
-								onClick={() => setShowDeleteModal(true)}
-							>
-								Supprimer
-							</Button>
-						</Stack>
-					)}
+						<Button
+							variant="outlined"
+							startIcon={<ArrowBackIcon />}
+							onClick={() => router.push(ARTICLES_LIST)}
+							sx={{ width: isMobile ? '100%' : 'auto' }}
+						>
+							Liste des articles
+						</Button>
+						{!isLoading && !error && (company?.role === 'Caissier' || company?.role === 'Commercial') && (
+							<Stack direction="row" gap={1} flexWrap="wrap">
+								<Button
+									variant="outlined"
+									size="small"
+									startIcon={<EditIcon />}
+									onClick={() => router.push(ARTICLES_EDIT(id, company_id))}
+								>
+									Modifier
+								</Button>
+								<Button
+									variant="outlined"
+									color="error"
+									size="small"
+									startIcon={<DeleteIcon />}
+									onClick={() => setShowDeleteModal(true)}
+								>
+									Supprimer
+								</Button>
+							</Stack>
+						)}
 					</Stack>
 
 					{isLoading ? (
@@ -228,39 +223,39 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 										spacing={3}
 										alignItems={isMobile ? 'center' : 'flex-start'}
 									>
-									{client?.photo ? (
-										<Box
-											component="img"
-											src={`${client.photo}`}
-											alt={client?.designation ?? 'Photo article'}
-											sx={{
-												width: isMobile ? 200 : 300,
-												height: isMobile ? 200 : 300,
-												borderRadius: 2,
-												objectFit: 'cover',
-												border: '4px solid',
-												borderColor: 'primary.light',
-												boxShadow: 3,
-											}}
-										/>
-									) : (
-										<Box
-											sx={{
-												width: isMobile ? 200 : 300,
-												height: isMobile ? 200 : 300,
-												borderRadius: 2,
-												backgroundColor: '#E0E0E0',
-												display: 'flex',
-												alignItems: 'center',
-												justifyContent: 'center',
-												border: '4px solid',
-												borderColor: 'primary.light',
-												boxShadow: 3,
-											}}
-										>
-											<Inventory2Icon sx={{ fontSize: isMobile ? 60 : 80, color: '#BDBDBD' }} />
-										</Box>
-									)}
+										{client?.photo ? (
+											<Box
+												component="img"
+												src={`${client.photo}`}
+												alt={client?.designation ?? 'Photo article'}
+												sx={{
+													width: isMobile ? 200 : 300,
+													height: isMobile ? 200 : 300,
+													borderRadius: 2,
+													objectFit: 'cover',
+													border: '4px solid',
+													borderColor: 'primary.light',
+													boxShadow: 3,
+												}}
+											/>
+										) : (
+											<Box
+												sx={{
+													width: isMobile ? 200 : 300,
+													height: isMobile ? 200 : 300,
+													borderRadius: 2,
+													backgroundColor: '#E0E0E0',
+													display: 'flex',
+													alignItems: 'center',
+													justifyContent: 'center',
+													border: '4px solid',
+													borderColor: 'primary.light',
+													boxShadow: 3,
+												}}
+											>
+												<Inventory2Icon sx={{ fontSize: isMobile ? 60 : 80, color: '#BDBDBD' }} />
+											</Box>
+										)}
 									</Stack>
 								</CardContent>
 							</Card>
@@ -295,7 +290,11 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 									<Stack spacing={0}>
-										<InfoRow icon={<ShoppingCartIcon />} label="Prix d'achat" value={client?.prix_achat != null ? `${client.prix_achat} ${client.devise_prix_achat}` : null} />
+										<InfoRow
+											icon={<ShoppingCartIcon />}
+											label="Prix d'achat"
+											value={client?.prix_achat != null ? `${client.prix_achat} ${client.devise_prix_achat}` : null}
+										/>
 										<Divider />
 										<InfoRow icon={<SellIcon />} label="Prix de vente" value={client?.prix_vente} />
 										<Divider />
@@ -369,15 +368,15 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 					)}
 				</Stack>
 			</NavigationBar>
-		{showDeleteModal && (
-			<ActionModals
-				title="Supprimer cet article ?"
-				body="Êtes-vous sûr de vouloir supprimer cet article ? Cette action est irréversible."
-				actions={deleteModalActions}
-				titleIcon={<DeleteIcon />}
-				titleIconColor="#D32F2F"
-			/>
-		)}
+			{showDeleteModal && (
+				<ActionModals
+					title="Supprimer cet article ?"
+					body="Êtes-vous sûr de vouloir supprimer cet article ? Cette action est irréversible."
+					actions={deleteModalActions}
+					titleIcon={<DeleteIcon />}
+					titleIconColor="#D32F2F"
+				/>
+			)}
 		</Stack>
 	);
 };
