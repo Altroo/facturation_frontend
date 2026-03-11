@@ -4,30 +4,35 @@ import React, { useMemo, useState } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import {
+	Alert,
 	Box,
 	Button,
-	Stack,
-	Typography,
 	Card,
 	CardContent,
 	Divider,
-	useTheme,
+	Stack,
+	Typography,
 	useMediaQuery,
-	Alert,
+	useTheme,
 } from '@mui/material';
 import {
-	ArrowBack as ArrowBackIcon,
-	Receipt as ReceiptIcon,
-	Payment as PaymentIcon,
-	CalendarToday as CalendarTodayIcon,
-	Notes as NotesIcon,
-	AttachMoney as AttachMoneyIcon,
 	Add as AddIcon,
+	ArrowBack as ArrowBackIcon,
+	AttachMoney as AttachMoneyIcon,
+	CalendarToday as CalendarTodayIcon,
 	Edit as EditIcon,
+	Notes as NotesIcon,
+	Payment as PaymentIcon,
+	Receipt as ReceiptIcon,
 	Warning as WarningIcon,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { fr } from 'date-fns/locale';
+import { InputAdornment } from '@mui/material';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
@@ -39,7 +44,7 @@ import { useAppSelector, useToast } from '@/utils/hooks';
 import { getUserCompaniesState } from '@/store/selectors';
 import { useAddReglementMutation, useEditReglementMutation, useGetReglementQuery } from '@/store/services/reglement';
 import { useGetFactureClientForPaymentQuery } from '@/store/services/factureClient';
-import { getLabelForKey, setFormikAutoErrors, parseNumber, formatNumber, formatLocalDate } from '@/utils/helpers';
+import { formatLocalDate, formatNumber, getLabelForKey, parseNumber, setFormikAutoErrors } from '@/utils/helpers';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import type { ReglementSchemaType } from '@/types/reglementTypes';
 import { reglementSchema } from '@/utils/formValidationSchemas';
@@ -249,300 +254,319 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		if (!v || !facturesForPayment) return null;
 		return facturesForPayment.find((f) => f.id === v) ?? null;
 	}, [formik.values.facture_client, facturesForPayment]);
-	
+
 	const devise = rawData?.devise || selectedFactureData?.devise || 'MAD';
-	const montantFacture = rawData?.montant_facture !== undefined && rawData?.montant_facture !== null
-		? `${formatNumber(rawData.montant_facture)} ${devise}`
-		: null;
-	const totalReglementsFacture = rawData?.total_reglements_facture !== undefined && rawData?.total_reglements_facture !== null
-		? `${formatNumber(rawData.total_reglements_facture)} ${devise}`
-		: null;
-	const resteAPayer = rawData?.reste_a_payer !== undefined && rawData?.reste_a_payer !== null
-		? `${formatNumber(rawData.reste_a_payer)} ${devise}`
-		: `0 ${devise}`;
+	const montantFacture =
+		rawData?.montant_facture !== undefined && rawData?.montant_facture !== null
+			? `${formatNumber(rawData.montant_facture)} ${devise}`
+			: null;
+	const totalReglementsFacture =
+		rawData?.total_reglements_facture !== undefined && rawData?.total_reglements_facture !== null
+			? `${formatNumber(rawData.total_reglements_facture)} ${devise}`
+			: null;
+	const resteAPayer =
+		rawData?.reste_a_payer !== undefined && rawData?.reste_a_payer !== null
+			? `${formatNumber(rawData.reste_a_payer)} ${devise}`
+			: `0 ${devise}`;
 
 	return (
-		<Stack spacing={3} sx={{ p: { xs: 2, md: 3 } }}>
-			<Stack direction={isMobile ? 'column' : 'row'} pt={2} justifyContent="space-between" spacing={2}>
-				<Button
-					variant="outlined"
-					startIcon={<ArrowBackIcon />}
-					onClick={() => router.push(REGLEMENTS_LIST)}
-					sx={{
-						whiteSpace: 'nowrap',
-						px: { xs: 1.5, sm: 2, md: 3 },
-						py: { xs: 0.8, sm: 1, md: 1 },
-						fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
-					}}
-				>
-					Liste des règlements
-				</Button>
-			</Stack>
-			{hasValidationErrors && (
-				<Alert severity="error" icon={<WarningIcon />} sx={{ mb: 2 }}>
-					<Typography variant="subtitle2" fontWeight={600}>
-						Erreurs de validation détectées:
-					</Typography>
-					<ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
-						{Object.entries(validationErrors).map(([key, errorText]) => (
-							<li key={key}>
-								<Typography variant="body2">
-									{getLabelForKey(fieldLabels, key)} : {errorText}
-								</Typography>
-							</li>
-						))}
-					</ul>
-				</Alert>
-			)}
-			{formik.errors.globalError && <span className={Styles.errorMessage}>{formik.errors.globalError}</span>}
-			{isLoading ? (
-				<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
-			) : shouldShowError ? (
-				<ApiAlert errorDetails={axiosError?.data.details} />
-			) : (
-				<form onSubmit={formik.handleSubmit}>
-					<Stack spacing={3}>
-						{/* Financial info card for edit mode */}
-						{isEditMode && montantFacture !== null && (
-							<Card elevation={2} sx={{ borderRadius: 2, bgcolor: 'grey.50' }}>
+		<LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
+			<Stack spacing={3} sx={{ p: { xs: 2, md: 3 } }}>
+				<Stack direction={isMobile ? 'column' : 'row'} pt={2} justifyContent="space-between" spacing={2}>
+					<Button
+						variant="outlined"
+						startIcon={<ArrowBackIcon />}
+						onClick={() => router.push(REGLEMENTS_LIST)}
+						sx={{
+							whiteSpace: 'nowrap',
+							px: { xs: 1.5, sm: 2, md: 3 },
+							py: { xs: 0.8, sm: 1, md: 1 },
+							fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
+						}}
+					>
+						Liste des règlements
+					</Button>
+				</Stack>
+				{hasValidationErrors && (
+					<Alert severity="error" icon={<WarningIcon />} sx={{ mb: 2 }}>
+						<Typography variant="subtitle2" fontWeight={600}>
+							Erreurs de validation détectées:
+						</Typography>
+						<ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
+							{Object.entries(validationErrors).map(([key, errorText]) => (
+								<li key={key}>
+									<Typography variant="body2">
+										{getLabelForKey(fieldLabels, key)} : {errorText}
+									</Typography>
+								</li>
+							))}
+						</ul>
+					</Alert>
+				)}
+				{formik.errors.globalError && <span className={Styles.errorMessage}>{formik.errors.globalError}</span>}
+				{isLoading ? (
+					<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
+				) : shouldShowError ? (
+					<ApiAlert errorDetails={axiosError?.data.details} />
+				) : (
+					<form onSubmit={formik.handleSubmit}>
+						<Stack spacing={3}>
+							{/* Financial info card for edit mode */}
+							{isEditMode && montantFacture !== null && (
+								<Card elevation={2} sx={{ borderRadius: 2, bgcolor: 'grey.50' }}>
+									<CardContent sx={{ p: 3 }}>
+										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+											<AttachMoneyIcon color="primary" />
+											<Typography variant="h6" fontWeight={700}>
+												Informations financières
+											</Typography>
+										</Stack>
+										<Divider sx={{ mb: 3 }} />
+										<Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
+											<Box>
+												<Typography variant="body2" color="text.secondary">
+													Montant de la facture
+												</Typography>
+												<Typography variant="h6" fontWeight={600}>
+													{montantFacture}
+												</Typography>
+											</Box>
+											<Box>
+												<Typography variant="body2" color="text.secondary">
+													Total règlements
+												</Typography>
+												<Typography variant="h6" fontWeight={600} color="success.main">
+													{totalReglementsFacture}
+												</Typography>
+											</Box>
+											<Box>
+												<Typography variant="body2" color="text.secondary">
+													Reste à payer
+												</Typography>
+												<Typography variant="h6" fontWeight={600} color="error.main">
+													{resteAPayer}
+												</Typography>
+											</Box>
+										</Stack>
+									</CardContent>
+								</Card>
+							)}
+
+							{/* Facture Selection Card */}
+							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
 									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-										<AttachMoneyIcon color="primary" />
+										<ReceiptIcon color="primary" />
 										<Typography variant="h6" fontWeight={700}>
-											Informations financières
+											Facture client
 										</Typography>
 									</Stack>
 									<Divider sx={{ mb: 3 }} />
-									<Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
-										<Box>
-											<Typography variant="body2" color="text.secondary">
-												Montant de la facture
-											</Typography>
-											<Typography variant="h6" fontWeight={600}>
-												{montantFacture}
-											</Typography>
-										</Box>
-										<Box>
-											<Typography variant="body2" color="text.secondary">
-												Total règlements
-											</Typography>
-											<Typography variant="h6" fontWeight={600} color="success.main">
-												{totalReglementsFacture}
-											</Typography>
-										</Box>
-										<Box>
-											<Typography variant="body2" color="text.secondary">
-												Reste à payer
-											</Typography>
-											<Typography variant="h6" fontWeight={600} color="error.main">
-												{resteAPayer}
-											</Typography>
-										</Box>
+									<Stack spacing={2.5}>
+										<CustomAutoCompleteSelect
+											id="facture_client"
+											size="small"
+											noOptionsText="Aucune facture trouvée"
+											label="Facture client *"
+											theme={theme}
+											items={factureItems}
+											value={selectedFacture}
+											fullWidth
+											onChange={(_, newValue) => {
+												formik.setFieldValue('facture_client', newValue?.value ? Number(newValue.value) : 0);
+											}}
+											onBlur={formik.handleBlur('facture_client')}
+											error={formik.touched.facture_client && Boolean(formik.errors.facture_client)}
+											helperText={formik.touched.facture_client ? formik.errors.facture_client : ''}
+											disabled={isEditMode}
+											startIcon={<ReceiptIcon fontSize="small" />}
+											endIcon={
+												!isEditMode && (
+													<Button
+														size="small"
+														variant="outlined"
+														onClick={() => router.push(FACTURE_CLIENT_ADD(company_id))}
+														sx={{ ml: 1 }}
+													>
+														Ajouter
+													</Button>
+												)
+											}
+										/>
 									</Stack>
 								</CardContent>
 							</Card>
-						)}
 
-						{/* Facture Selection Card */}
-						<Card elevation={2} sx={{ borderRadius: 2 }}>
-							<CardContent sx={{ p: 3 }}>
-								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-									<ReceiptIcon color="primary" />
-									<Typography variant="h6" fontWeight={700}>
-										Facture client
-									</Typography>
-								</Stack>
-								<Divider sx={{ mb: 3 }} />
-								<Stack spacing={2.5}>
-									<CustomAutoCompleteSelect
-										id="facture_client"
-										size="small"
-										noOptionsText="Aucune facture trouvée"
-										label="Facture client *"
-										theme={theme}
-										items={factureItems}
-										value={selectedFacture}
-										fullWidth
-										onChange={(_, newValue) => {
-											formik.setFieldValue('facture_client', newValue?.value ? Number(newValue.value) : 0);
-										}}
-										onBlur={formik.handleBlur('facture_client')}
-										error={formik.touched.facture_client && Boolean(formik.errors.facture_client)}
-										helperText={formik.touched.facture_client ? formik.errors.facture_client : ''}
-										disabled={isEditMode}
-										startIcon={<ReceiptIcon fontSize="small" />}
-										endIcon={
-											!isEditMode && (
-												<Button
-													size="small"
-													variant="outlined"
-													onClick={() => router.push(FACTURE_CLIENT_ADD(company_id))}
-													sx={{ ml: 1 }}
-												>
-													Ajouter
-												</Button>
-											)
-										}
-									/>
-								</Stack>
-							</CardContent>
-						</Card>
-
-						{/* Payment Details Card */}
-						<Card elevation={2} sx={{ borderRadius: 2 }}>
-							<CardContent sx={{ p: 3 }}>
-								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-									<PaymentIcon color="primary" />
-									<Typography variant="h6" fontWeight={700}>
-										Détails du règlement
-									</Typography>
-								</Stack>
-								<Divider sx={{ mb: 3 }} />
-								<Stack spacing={2.5}>
-									<CustomAutoCompleteSelect
-										id="mode_reglement"
-										size="small"
-										noOptionsText="Aucun mode de règlement trouvé"
-										label="Mode de règlement"
-										theme={theme}
-										items={modeReglementItems}
-										value={selectedModeReglement}
-										fullWidth
-										onChange={(_, newValue) => {
-											formik.setFieldValue('mode_reglement', newValue?.value ? Number(newValue.value) : null);
-										}}
-										onBlur={formik.handleBlur('mode_reglement')}
-										error={formik.touched.mode_reglement && Boolean(formik.errors.mode_reglement)}
-										helperText={formik.touched.mode_reglement ? formik.errors.mode_reglement : ''}
-										startIcon={<PaymentIcon fontSize="small" />}
-									/>
-									<CustomTextInput
-										id="montant"
-										type="text"
-									label={`Montant (${devise}) *`}
-										value={String(formik.values.montant)}
-										onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-											const raw = e.target.value;
-											const parsed = parseNumber(raw);
-											if (parsed !== null && parsed < 0) return;
-											// Enforce max value as remaining amount
-											if (
-												parsed !== null &&
-												selectedFactureRemainingAmount > 0 &&
-												parsed > selectedFactureRemainingAmount
-											) {
-												formik.setFieldValue('montant', selectedFactureRemainingAmount);
-												return;
+							{/* Payment Details Card */}
+							<Card elevation={2} sx={{ borderRadius: 2 }}>
+								<CardContent sx={{ p: 3 }}>
+									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<PaymentIcon color="primary" />
+										<Typography variant="h6" fontWeight={700}>
+											Détails du règlement
+										</Typography>
+									</Stack>
+									<Divider sx={{ mb: 3 }} />
+									<Stack spacing={2.5}>
+										<CustomAutoCompleteSelect
+											id="mode_reglement"
+											size="small"
+											noOptionsText="Aucun mode de règlement trouvé"
+											label="Mode de règlement"
+											theme={theme}
+											items={modeReglementItems}
+											value={selectedModeReglement}
+											fullWidth
+											onChange={(_, newValue) => {
+												formik.setFieldValue('mode_reglement', newValue?.value ? Number(newValue.value) : null);
+											}}
+											onBlur={formik.handleBlur('mode_reglement')}
+											error={formik.touched.mode_reglement && Boolean(formik.errors.mode_reglement)}
+											helperText={formik.touched.mode_reglement ? formik.errors.mode_reglement : ''}
+											startIcon={<PaymentIcon fontSize="small" />}
+										/>
+										<CustomTextInput
+											id="montant"
+											type="text"
+											label={`Montant (${devise}) *`}
+											value={String(formik.values.montant)}
+											onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+												const raw = e.target.value;
+												const parsed = parseNumber(raw);
+												if (parsed !== null && parsed < 0) return;
+												// Enforce max value as remaining amount
+												if (
+													parsed !== null &&
+													selectedFactureRemainingAmount > 0 &&
+													parsed > selectedFactureRemainingAmount
+												) {
+													formik.setFieldValue('montant', selectedFactureRemainingAmount);
+													return;
+												}
+												formik.setFieldValue('montant', parsed === null ? raw : parsed);
+											}}
+											onBlur={formik.handleBlur('montant')}
+											error={formik.touched.montant && Boolean(formik.errors.montant)}
+											helperText={
+												formik.touched.montant
+													? formik.errors.montant
+													: isMontantDisabled
+														? 'Veuillez sélectionner une facture'
+														: selectedFactureRemainingAmount > 0
+															? `Maximum: ${formatNumber(selectedFactureRemainingAmount)} ${devise}`
+															: ''
 											}
-											formik.setFieldValue('montant', parsed === null ? raw : parsed);
-										}}
-										onBlur={formik.handleBlur('montant')}
-										error={formik.touched.montant && Boolean(formik.errors.montant)}
-										helperText={
-											formik.touched.montant
-												? formik.errors.montant
-												: isMontantDisabled
-													? 'Veuillez sélectionner une facture'
-													: selectedFactureRemainingAmount > 0
-													? `Maximum: ${formatNumber(selectedFactureRemainingAmount)} ${devise}`
-														: ''
+											disabled={isMontantDisabled}
+											fullWidth={false}
+											size="small"
+											theme={inputTheme}
+											startIcon={<AttachMoneyIcon fontSize="small" />}
+											slotProps={{
+												input: {
+													inputProps: { min: 0, step: '0.01' },
+												},
+											}}
+										/>
+										<CustomTextInput
+											id="libelle"
+											type="text"
+											label="Libellé"
+											value={formik.values.libelle ?? ''}
+											onChange={formik.handleChange('libelle')}
+											onBlur={formik.handleBlur('libelle')}
+											error={formik.touched.libelle && Boolean(formik.errors.libelle)}
+											helperText={formik.touched.libelle ? formik.errors.libelle : ''}
+											fullWidth={false}
+											size="small"
+											theme={inputTheme}
+											startIcon={<NotesIcon fontSize="small" />}
+										/>
+									</Stack>
+								</CardContent>
+							</Card>
+
+							{/* Dates Card */}
+							<Card elevation={2} sx={{ borderRadius: 2 }}>
+								<CardContent sx={{ p: 3 }}>
+									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<CalendarTodayIcon color="primary" />
+										<Typography variant="h6" fontWeight={700}>
+											Dates
+										</Typography>
+									</Stack>
+									<Divider sx={{ mb: 3 }} />
+									<Stack spacing={2.5}>
+										<DatePicker
+											label="Date de règlement *"
+											value={formik.values.date_reglement ? new Date(formik.values.date_reglement) : null}
+											onChange={(date) =>
+												formik.setFieldValue('date_reglement', date ? formatLocalDate(date) : '')
+											}
+											format="dd/MM/yyyy"
+											slotProps={{
+												textField: {
+													size: 'small',
+													fullWidth: true,
+													InputProps: {
+														startAdornment: (
+															<InputAdornment position="start">
+																<CalendarTodayIcon fontSize="small" color="action" />
+															</InputAdornment>
+														),
+													},
+												},
+											}}
+										/>
+										<DatePicker
+											label="Date d'échéance *"
+											value={formik.values.date_echeance ? new Date(formik.values.date_echeance) : null}
+											onChange={(date) =>
+												formik.setFieldValue('date_echeance', date ? formatLocalDate(date) : '')
+											}
+											format="dd/MM/yyyy"
+											slotProps={{
+												textField: {
+													size: 'small',
+													fullWidth: true,
+													InputProps: {
+														startAdornment: (
+															<InputAdornment position="start">
+																<CalendarTodayIcon fontSize="small" color="action" />
+															</InputAdornment>
+														),
+													},
+												},
+											}}
+										/>
+									</Stack>
+								</CardContent>
+							</Card>
+
+							{/* Submit Button */}
+							<Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+								<PrimaryLoadingButton
+									buttonText={isEditMode ? 'Mettre à jour' : 'Ajouter le règlement'}
+									active={!isPending}
+									onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+										setHasAttemptedSubmit(true);
+										if (!formik.isValid) {
+											e.preventDefault();
+											formik.handleSubmit();
+											onError('Veuillez corriger les erreurs de validation avant de soumettre.');
+											window.scrollTo({ top: 0, behavior: 'smooth' });
 										}
-										disabled={isMontantDisabled}
-										fullWidth={false}
-										size="small"
-										theme={inputTheme}
-										startIcon={<AttachMoneyIcon fontSize="small" />}
-										slotProps={{
-											input: {
-												inputProps: { min: 0, step: '0.01' },
-											},
-										}}
-									/>
-									<CustomTextInput
-										id="libelle"
-										type="text"
-										label="Libellé"
-										value={formik.values.libelle ?? ''}
-										onChange={formik.handleChange('libelle')}
-										onBlur={formik.handleBlur('libelle')}
-										error={formik.touched.libelle && Boolean(formik.errors.libelle)}
-										helperText={formik.touched.libelle ? formik.errors.libelle : ''}
-										fullWidth={false}
-										size="small"
-										theme={inputTheme}
-										startIcon={<NotesIcon fontSize="small" />}
-									/>
-								</Stack>
-							</CardContent>
-						</Card>
-
-						{/* Dates Card */}
-						<Card elevation={2} sx={{ borderRadius: 2 }}>
-							<CardContent sx={{ p: 3 }}>
-								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-									<CalendarTodayIcon color="primary" />
-									<Typography variant="h6" fontWeight={700}>
-										Dates
-									</Typography>
-								</Stack>
-								<Divider sx={{ mb: 3 }} />
-								<Stack spacing={2.5}>
-									<CustomTextInput
-										id="date_reglement"
-										type="date"
-										label="Date de règlement *"
-										value={formik.values.date_reglement}
-										onChange={formik.handleChange('date_reglement')}
-										onBlur={formik.handleBlur('date_reglement')}
-										error={formik.touched.date_reglement && Boolean(formik.errors.date_reglement)}
-										helperText={formik.touched.date_reglement ? formik.errors.date_reglement : ''}
-										fullWidth={false}
-										size="small"
-										theme={inputTheme}
-										startIcon={<CalendarTodayIcon fontSize="small" />}
-									/>
-									<CustomTextInput
-										id="date_echeance"
-										type="date"
-										label="Date d'échéance *"
-										value={formik.values.date_echeance}
-										onChange={formik.handleChange('date_echeance')}
-										onBlur={formik.handleBlur('date_echeance')}
-										error={formik.touched.date_echeance && Boolean(formik.errors.date_echeance)}
-										helperText={formik.touched.date_echeance ? formik.errors.date_echeance : ''}
-										fullWidth={false}
-										size="small"
-										theme={inputTheme}
-										startIcon={<CalendarTodayIcon fontSize="small" />}
-									/>
-								</Stack>
-							</CardContent>
-						</Card>
-
-						{/* Submit Button */}
-						<Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-							<PrimaryLoadingButton
-								buttonText={isEditMode ? 'Mettre à jour' : 'Ajouter le règlement'}
-								active={!isPending}
-								onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-									setHasAttemptedSubmit(true);
-									if (!formik.isValid) {
-										e.preventDefault();
-										formik.handleSubmit();
-										onError('Veuillez corriger les erreurs de validation avant de soumettre.');
-										window.scrollTo({ top: 0, behavior: 'smooth' });
-									}
-								}}
-								cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}
-								type="submit"
-								startIcon={isEditMode ? <EditIcon /> : <AddIcon />}
-								loading={isPending}
-							/>
-						</Box>
-					</Stack>
-				</form>
-			)}
-		</Stack>
+									}}
+									cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}
+									type="submit"
+									startIcon={isEditMode ? <EditIcon /> : <AddIcon />}
+									loading={isPending}
+								/>
+							</Box>
+						</Stack>
+					</form>
+				)}
+			</Stack>
+		</LocalizationProvider>
 	);
 };
 
