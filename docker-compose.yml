@@ -29,8 +29,8 @@ services:
       - '80:80'
       - '443:443'
     volumes:
-      - /etc/nginx/conf.d:/etc/nginx/conf.d:ro
-      - /etc/nginx/certs:/etc/ssl/certs:ro
+      - /etc/facturation_frontend/nginx/conf.d:/etc/nginx/conf.d:ro
+      - /etc/facturation_frontend/nginx/certs:/etc/ssl/certs:ro
     depends_on:
       - web
     extra_hosts:
