@@ -320,12 +320,7 @@ const NavigationBar = (props: Props) => {
 						<Stack direction="row" justifyContent="space-between" alignItems="center" width="100%">
 							<Stack direction="row" alignItems="center" spacing={1}>
 								{isMobile && (
-									<IconButton
-										color="inherit"
-										aria-label="toggle drawer"
-										onClick={handleDrawerToggle}
-										size="small"
-									>
+									<IconButton color="inherit" aria-label="toggle drawer" onClick={handleDrawerToggle} size="small">
 										<MenuIcon />
 									</IconButton>
 								)}
@@ -338,7 +333,14 @@ const NavigationBar = (props: Props) => {
 									<>
 										<Desktop>
 											{is_staff && (
-												<Button variant="text" color="inherit" href={BACKEND_SITE_ADMIN} target="_blank" rel="noopener" endIcon={<DomainIcon />}>
+												<Button
+													variant="text"
+													color="inherit"
+													href={BACKEND_SITE_ADMIN}
+													target="_blank"
+													rel="noopener"
+													endIcon={<DomainIcon />}
+												>
 													Site d’administration
 												</Button>
 											)}
@@ -347,9 +349,11 @@ const NavigationBar = (props: Props) => {
 											</Button>
 										</Desktop>
 										<TabletAndMobile>
-											<IconButton color="inherit" href={BACKEND_SITE_ADMIN} target="_blank" rel="noopener">
-												<DomainIcon />
-											</IconButton>
+											{is_staff && (
+												<IconButton color="inherit" href={BACKEND_SITE_ADMIN} target="_blank" rel="noopener">
+													<DomainIcon />
+												</IconButton>
+											)}
 											<IconButton color="inherit" onClick={logOutHandler}>
 												<LogoutIcon />
 											</IconButton>
