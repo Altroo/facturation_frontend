@@ -36,3 +36,12 @@ export const postApi = async (url: string | undefined, instance: AxiosInstance, 
 		data: response.data,
 	};
 };
+
+/*** Base Axios JSON Api call [GET] */
+export const getApi = async (url: string | undefined, instance: AxiosInstance, queryParams?: object) => {
+	const response = await instance.get(`${url}`, { params: queryParams });
+	return {
+		status: response.status,
+		data: response.data,
+	};
+};

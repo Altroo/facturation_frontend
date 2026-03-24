@@ -1,4 +1,5 @@
 // Initialize the APP
+export const INIT_APP = 'INIT_APP';
 export const INIT_APP_SESSION_TOKENS = 'INIT_APP_SESSION_TOKENS';
 export const REFRESH_APP_TOKEN_STATES = 'REFRESH_APP_TOKEN_STATES';
 // Account

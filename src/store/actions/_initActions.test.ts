@@ -1,8 +1,15 @@
 import * as types from './index';
-import { initAppSessionTokensAction, refreshAppTokenStatesAction } from './_initActions';
+import { initAppAction, initAppSessionTokensAction, refreshAppTokenStatesAction } from './_initActions';
 import { Session } from 'next-auth';
 
 describe('Redux Actions', () => {
+	it('initAppAction should create INIT_APP action', () => {
+		const action = initAppAction();
+		expect(action).toEqual({
+			type: types.INIT_APP,
+		});
+	});
+
 	it('initAppSessionTokensAction should create INIT_APP_SESSION_TOKENS action with session', () => {
 		const mockSession: Session = {
 			user: {

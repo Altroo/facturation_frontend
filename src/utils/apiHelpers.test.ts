@@ -1,5 +1,5 @@
 import axios, { type AxiosInstance } from 'axios';
-import { cookiesPoster, cookiesDeleter, postApi } from './apiHelpers';
+import { cookiesPoster, cookiesDeleter, getApi, postApi } from './apiHelpers';
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -58,6 +58,22 @@ describe('API utility functions', () => {
 
 			expect(mockInstance.post).toHaveBeenCalledWith('/submit', { name: 'Al' });
 			expect(result).toEqual({ status: 201, data: { success: true } });
+		});
+	});
+
+	describe('getApi', () => {
+		it('should get using the provided Axios instance and return status and data', async () => {
+			const mockInstance = {
+				get: jest.fn().mockResolvedValue({
+					status: 200,
+					data: { maintenance: true },
+				}),
+			} as unknown as typeof axios;
+
+			const result = await getApi('/ws/maintenance/', mockInstance);
+
+			expect(mockInstance.get).toHaveBeenCalledWith('/ws/maintenance/', { params: undefined });
+			expect(result).toEqual({ status: 200, data: { maintenance: true } });
 		});
 	});
 });

@@ -1,8 +1,20 @@
-import { put, takeLatest } from 'redux-saga/effects';
+import { call, put, takeLatest } from 'redux-saga/effects';
 import * as Types from '../actions';
 import type { InitStateInterface, InitStateToken } from '@/types/_initTypes';
 import { setInitState } from '../slices/_initSlice';
 import type { Session } from 'next-auth';
+import { setWSMaintenance } from '../slices/wsSlice';
+import { allowAnyInstance } from '@/utils/helpers';
+import { getApi } from '@/utils/apiHelpers';
+import type { ResponseDataInterface } from '@/types/_initTypes';
+import type { WSMaintenanceBootstrap } from '@/types/wsTypes';
+import type { AxiosInstance } from 'axios';
+
+type MaintenanceGetRootResponseType = ResponseDataInterface<WSMaintenanceBootstrap>;
+
+export function* initAppSaga() {
+	yield call(initMaintenanceSaga);
+}
 
 export function* initAppSessionTokensSaga(payload: { type: string; session: Session }) {
 	const stateToken = {
@@ -16,6 +28,21 @@ export function* initAppSessionTokensSaga(payload: { type: string; session: Sess
 		initStateToken: stateToken as InitStateToken,
 	};
 	yield put(setInitState(appToken));
+}
+
+export function* initMaintenanceSaga() {
+	const url = process.env.NEXT_PUBLIC_WS_MAINTENANCE_ROOT;
+
+	if (!url) {
+		return;
+	}
+
+	const instance: AxiosInstance = yield call(() => allowAnyInstance());
+	const response: MaintenanceGetRootResponseType = yield call(() => getApi(url, instance));
+
+	if (response.status === 200) {
+		yield put(setWSMaintenance(response.data.maintenance));
+	}
 }
 
 export function* refreshAppTokenStatesSaga(payload: { type: string; session: Record<string, unknown> }) {
@@ -54,6 +81,7 @@ export function* refreshAppTokenStatesSaga(payload: { type: string; session: Rec
 }
 
 export function* watchInit() {
+	yield takeLatest(Types.INIT_APP, initAppSaga);
 	yield takeLatest(Types.INIT_APP_SESSION_TOKENS, initAppSessionTokensSaga);
 	yield takeLatest(Types.REFRESH_APP_TOKEN_STATES, refreshAppTokenStatesSaga);
 }

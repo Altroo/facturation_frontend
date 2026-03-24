@@ -24,3 +24,7 @@ export interface WSUserAvatar extends WSRootType {
 export interface WSMaintenance extends WSRootType {
 	maintenance: boolean;
 }
+
+export interface WSMaintenanceBootstrap {
+	maintenance: boolean;
+}

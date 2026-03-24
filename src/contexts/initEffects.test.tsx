@@ -49,6 +49,7 @@ describe('InitEffects', () => {
 		render(<InitEffects />);
 
 		await waitFor(() => {
+			expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'INIT_APP' }));
 			expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'INIT_APP_SESSION_TOKENS' }));
 		});
 	});

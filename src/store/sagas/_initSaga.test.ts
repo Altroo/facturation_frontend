@@ -1,12 +1,27 @@
 import { runSaga } from 'redux-saga';
 import * as Types from '../actions';
-import { initAppSessionTokensSaga, refreshAppTokenStatesSaga, watchInit } from './_initSaga';
+import { initAppSaga, initAppSessionTokensSaga, initMaintenanceSaga, refreshAppTokenStatesSaga, watchInit } from './_initSaga';
 import { setInitState } from '../slices/_initSlice';
 import type { Session } from 'next-auth';
 import type { InitStateInterface, InitStateToken } from '@/types/_initTypes';
-import { takeLatest } from 'redux-saga/effects';
+import { call, takeLatest } from 'redux-saga/effects';
+import { setWSMaintenance } from '../slices/wsSlice';
+import { allowAnyInstance } from '@/utils/helpers';
+import { getApi } from '@/utils/apiHelpers';
+
+jest.mock('@/utils/helpers', () => ({
+	allowAnyInstance: jest.fn(),
+}));
+
+jest.mock('@/utils/apiHelpers', () => ({
+	getApi: jest.fn(),
+}));
 
 describe('init sagas', () => {
+	beforeEach(() => {
+		process.env.NEXT_PUBLIC_WS_MAINTENANCE_ROOT = '/ws/maintenance/';
+	});
+
 	it('initAppSessionTokensSaga should dispatch setInitState with correct payload', async () => {
 		const mockSession: Session = {
 			user: {
@@ -93,8 +108,34 @@ describe('init sagas', () => {
 		expect(dispatched).toEqual([setInitState(expectedAppToken)]);
 	});
 
+	it('initMaintenanceSaga should dispatch setWSMaintenance with server value', async () => {
+		const dispatched: unknown[] = [];
+		(allowAnyInstance as jest.Mock).mockReturnValue({ get: jest.fn() });
+		(getApi as jest.Mock).mockResolvedValue({
+			status: 200,
+			data: {
+				maintenance: true,
+			},
+		});
+
+		await runSaga(
+			{
+				dispatch: (action: unknown) => dispatched.push(action),
+			},
+			initMaintenanceSaga,
+		).toPromise();
+
+		expect(dispatched).toEqual([setWSMaintenance(true)]);
+	});
+
+	it('initAppSaga should call initMaintenanceSaga', () => {
+		const gen = initAppSaga();
+		expect(gen.next().value).toEqual(call(initMaintenanceSaga));
+	});
+
 	it('watchInit should register sagas with takeLatest', () => {
 		const gen = watchInit();
+		expect(gen.next().value).toEqual(takeLatest(Types.INIT_APP, initAppSaga));
 		expect(gen.next().value).toEqual(takeLatest(Types.INIT_APP_SESSION_TOKENS, initAppSessionTokensSaga));
 		expect(gen.next().value).toEqual(takeLatest(Types.REFRESH_APP_TOKEN_STATES, refreshAppTokenStatesSaga));
 	});
