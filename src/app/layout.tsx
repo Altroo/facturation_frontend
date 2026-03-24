@@ -13,6 +13,7 @@ import { InitEffects } from '@/contexts/initEffects';
 import { ToastContextProvider } from '@/contexts/toastContext';
 import { ErrorBoundary } from '@/components/shared/errorBoundary';
 import SessionExpiredListener from '@/components/shared/sessionExpiredListener/sessionExpiredListener';
+import Maintenance from '@/components/shared/maintenance/Maintenance';
 
 export const metadata: Metadata = {
 	title: 'E.B.H - Facturation',
@@ -83,9 +84,10 @@ const RootLayout: React.FC<EntryPointProps> = async (props) => {
 								<ThemeProvider>
 									<ErrorBoundary>
 										<ToastContextProvider>
-									<SessionExpiredListener />
-									<div id="main-content">{props.children}</div>
-								</ToastContextProvider>
+											<SessionExpiredListener />
+											<Maintenance />
+											<div id="main-content">{props.children}</div>
+										</ToastContextProvider>
 									</ErrorBoundary>
 								</ThemeProvider>
 							</AppRouterCacheProvider>

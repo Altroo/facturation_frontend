@@ -1,10 +1,36 @@
 import type { EventChannel } from 'redux-saga';
 import { END, eventChannel } from 'redux-saga';
-import type { WSEvent, WSEventType, WSUserAvatar } from '@/types/wsTypes';
-import { WSUserAvatarAction } from '@/store/actions/wsActions';
+import { WSMaintenanceAction, WSUserAvatarAction } from '@/store/actions/wsActions';
 
-// Add multiple WS action types as needed
-type WSAction = ReturnType<typeof WSUserAvatarAction>;
+type WSAction = ReturnType<typeof WSUserAvatarAction> | ReturnType<typeof WSMaintenanceAction>;
+
+type WSMessage = {
+	type: string;
+	pk?: number;
+	avatar?: string;
+	maintenance?: boolean;
+};
+
+type WSEnvelope = {
+	message: WSMessage;
+};
+
+const isObjectRecord = (value: unknown): value is Record<string, unknown> => {
+	return typeof value === 'object' && value !== null;
+};
+
+const isWSEnvelope = (value: unknown): value is WSEnvelope => {
+	if (!isObjectRecord(value)) {
+		return false;
+	}
+
+	const message = value.message;
+	if (!isObjectRecord(message)) {
+		return false;
+	}
+
+	return typeof message.type === 'string';
+};
 
 let ws: WebSocket;
 
@@ -28,21 +54,26 @@ export function initWebsocket(token: string): EventChannel<WSAction> {
 				};
 				ws.onmessage = (e: MessageEvent) => {
 					try {
-						const msg = JSON.parse(e.data);
-						if (msg) {
-							const { message } = msg;
-							const signalType: WSEventType = message.type;
+						const parsedMessage: unknown = JSON.parse(e.data);
+						if (isWSEnvelope(parsedMessage)) {
+							const { message } = parsedMessage;
+							const signalType = message.type;
 							if (signalType === 'USER_AVATAR') {
-								const { pk, avatar } = (msg as WSEvent<WSUserAvatar>).message;
-								emitter(WSUserAvatarAction(pk, avatar));
+								if (typeof message.pk === 'number' && typeof message.avatar === 'string') {
+									emitter(WSUserAvatarAction(message.pk, message.avatar));
+								}
+							} else if (signalType === 'MAINTENANCE') {
+								if (typeof message.maintenance === 'boolean') {
+									emitter(WSMaintenanceAction(message.maintenance));
+								}
 							}
 						}
 					} catch {
 						// Skip malformed message and continue listening
 					}
 				};
-	            ws.onclose = (e: CloseEvent) => {
-					// 4001 = auth rejected by server — no point retrying
+				ws.onclose = (e: CloseEvent) => {
+					// 4001 = auth rejected by server - no point retrying
 					if (e.code === 4001) {
 						emitter(END);
 						return;

@@ -4,6 +4,12 @@ import { getAccessToken } from '@/store/selectors';
 import type { RootState } from '@/store/store';
 import type { Action } from 'redux';
 import type { EventChannel, SagaIterator } from 'redux-saga';
+import * as Types from '@/store/actions';
+import { setWSMaintenance } from '@/store/slices/wsSlice';
+
+type WSChannelAction = Action & {
+	maintenance?: boolean;
+};
 
 function* monitorToken(
 	selector: (state: RootState) => string | null,
@@ -23,11 +29,15 @@ export function* watchWS(): SagaIterator<void> {
 	const token: string | null = yield call(monitorToken, getAccessToken, null);
 
 	if (token) {
-		const channel: EventChannel<Action> = yield call(initWebsocket, token);
+		const channel: EventChannel<WSChannelAction> = yield call(initWebsocket, token);
 
 		while (true) {
-			const action: Action = yield take(channel);
-			yield put(action);
+			const action: WSChannelAction = yield take(channel);
+			if (action.type === Types.WS_MAINTENANCE && typeof action.maintenance === 'boolean') {
+				yield put(setWSMaintenance(action.maintenance));
+			} else {
+				yield put(action);
+			}
 		}
 	}
 }

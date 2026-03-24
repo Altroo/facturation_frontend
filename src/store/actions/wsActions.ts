@@ -7,3 +7,10 @@ export const WSUserAvatarAction = (pk: number, avatar: string) => {
 		avatar,
 	};
 };
+
+export const WSMaintenanceAction = (maintenance: boolean) => {
+	return {
+		type: types.WS_MAINTENANCE,
+		maintenance,
+	};
+};

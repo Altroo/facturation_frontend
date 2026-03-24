@@ -1,4 +1,4 @@
-export type WSEventType = 'USER_AVATAR';
+export type WSEventType = 'USER_AVATAR' | 'MAINTENANCE';
 
 export type WSEvent<T> = {
 	message: T;
@@ -18,4 +18,9 @@ interface WSRootType {
 export interface WSUserAvatar extends WSRootType {
 	pk: number;
 	avatar: string;
+}
+
+// MAINTENANCE
+export interface WSMaintenance extends WSRootType {
+	maintenance: boolean;
 }

@@ -4,6 +4,7 @@ import {
 	getProfilState,
 	getGroupesState,
 	getUserCompaniesState,
+	getWSMaintenanceState,
 } from './index';
 
 import { UserClass } from '@/models/classes';
@@ -52,6 +53,9 @@ describe('Redux selectors', () => {
 		companies: {
 			user_companies: mockCompanies,
 		},
+		ws: {
+			maintenance: true,
+		},
 	};
 
 	it('getInitStateToken should return the initStateToken object', () => {
@@ -82,5 +86,9 @@ describe('Redux selectors', () => {
 		expect(companies).toEqual(mockCompanies);
 		expect(companies[0].raison_sociale).toBe('Alpha Corp');
 		expect(companies[1].role).toBe('Lecture');
+	});
+
+	it('getWSMaintenanceState should return the maintenance flag', () => {
+		expect(getWSMaintenanceState(mockState)).toBe(true);
 	});
 });

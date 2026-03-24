@@ -4,6 +4,8 @@ import { initWebsocket } from '@/store/services/ws';
 import { getAccessToken } from '@/store/selectors';
 import type { Action } from 'redux';
 import { eventChannel } from 'redux-saga';
+import * as Types from '@/store/actions';
+import { setWSMaintenance } from '@/store/slices/wsSlice';
 
 jest.mock('@/store/services/ws', () => ({
 	initWebsocket: jest.fn(),
@@ -44,4 +46,33 @@ describe('watchWS saga', () => {
 		expect(initWebsocket).toHaveBeenCalledWith(mockToken);
 		expect(dispatched).toContainEqual(mockAction);
 	}, 10000); // Optional: increase timeout to 10s
+
+	it('should map WS_MAINTENANCE to setWSMaintenance', async () => {
+		const dispatched: Action[] = [];
+		const mockToken = 'mock-token';
+		const mockAction = { type: Types.WS_MAINTENANCE, maintenance: true };
+
+		(getAccessToken as jest.Mock).mockReturnValue(mockToken);
+
+		const mockChannel = eventChannel((emit) => {
+			const timer = setTimeout(() => emit(mockAction), 10);
+			return () => clearTimeout(timer);
+		});
+
+		(initWebsocket as jest.Mock).mockReturnValue(mockChannel);
+
+		const task = runSaga(
+			{
+				dispatch: (action: Action) => dispatched.push(action),
+				getState: () => ({ auth: { token: mockToken } }),
+			},
+			watchWS,
+		);
+
+		setTimeout(() => task.cancel(), 100);
+		await task.toPromise();
+
+		expect(initWebsocket).toHaveBeenCalledWith(mockToken);
+		expect(dispatched).toContainEqual(setWSMaintenance(true));
+	});
 });

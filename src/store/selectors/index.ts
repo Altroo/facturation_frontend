@@ -14,3 +14,6 @@ export const getGroupesState = (state: RootState): Array<string> => state.accoun
 // Companies
 export const getUserCompaniesState = (state: RootState): Array<CompaniesUserCompaniesType> =>
 	state.companies.user_companies;
+
+// WS
+export const getWSMaintenanceState = (state: RootState): boolean => state.ws.maintenance;

@@ -1,6 +1,5 @@
 import { initWebsocket } from './ws';
-import { WSUserAvatarAction } from '@/store/actions/wsActions';
-import type { EventChannel } from 'redux-saga';
+import { WSMaintenanceAction, WSUserAvatarAction } from '@/store/actions/wsActions';
 
 class MockWebSocket implements WebSocket {
 	url: string;
@@ -62,7 +61,7 @@ describe('initWebsocket', () => {
 		process.env.NEXT_PUBLIC_ROOT_WS_URL = 'ws://localhost';
 
 		type ExpectedAction = ReturnType<typeof WSUserAvatarAction>;
-		const channel: EventChannel<ExpectedAction> = initWebsocket('test-token');
+		const channel = initWebsocket('test-token');
 
 		const emitted = await new Promise<ExpectedAction>((resolve) => {
 			// start listening on the channel
@@ -90,6 +89,45 @@ describe('initWebsocket', () => {
 		});
 
 		expect(emitted).toEqual(WSUserAvatarAction(42, 'https://example.com/avatar.png'));
+
+		channel.close();
+	});
+
+	it('emits WSMaintenanceAction when MAINTENANCE message is received', async () => {
+		let createdSocket: MockWebSocket | null = null;
+
+		global.WebSocket = jest.fn((url: string) => {
+			createdSocket = new MockWebSocket(url);
+			return createdSocket as unknown as WebSocket;
+		}) as unknown as typeof WebSocket;
+
+		process.env.NEXT_PUBLIC_ROOT_WS_URL = 'ws://localhost';
+
+		type ExpectedAction = ReturnType<typeof WSMaintenanceAction>;
+		const channel = initWebsocket('test-token');
+
+		const emitted = await new Promise<ExpectedAction>((resolve) => {
+			channel.take((action) => {
+				resolve(action as ExpectedAction);
+			});
+
+			const sendMessage = () => {
+				if (createdSocket == null) {
+					setTimeout(sendMessage, 0);
+					return;
+				}
+				const ev = new MessageEvent('message', {
+					data: JSON.stringify({
+						message: { type: 'MAINTENANCE', maintenance: true },
+					}),
+				});
+				createdSocket.onmessage?.(ev);
+			};
+
+			sendMessage();
+		});
+
+		expect(emitted).toEqual(WSMaintenanceAction(true));
 
 		channel.close();
 	});
