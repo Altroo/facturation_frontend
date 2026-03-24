@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import {
@@ -193,12 +193,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const isMontantDisabled = !formik.values.facture_client || formik.values.facture_client === 0;
 
 	// Handle facture selection change - clear montant when facture is removed
-	React.useEffect(() => {
-		if (!formik.values.facture_client || formik.values.facture_client === 0) {
+	// Only call setFieldValue when montant actually differs to avoid needless state updates
+	useEffect(() => {
+		if ((!formik.values.facture_client || formik.values.facture_client === 0) && formik.values.montant !== 0) {
 			formik.setFieldValue('montant', 0);
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [formik.values.facture_client]);
+	}, [formik.values.facture_client, formik.values.montant]);
 
 	// Modes Règlement dropdown items
 	const modeReglementItems: DropDownType[] = useMemo(
@@ -499,14 +500,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										<DatePicker
 											label="Date de règlement *"
 											value={formik.values.date_reglement ? new Date(formik.values.date_reglement) : null}
-											onChange={(date) =>
-												formik.setFieldValue('date_reglement', date ? formatLocalDate(date) : '')
-											}
+											onChange={(date) => formik.setFieldValue('date_reglement', date ? formatLocalDate(date) : '')}
 											format="dd/MM/yyyy"
 											slotProps={{
 												textField: {
 													size: 'small',
 													fullWidth: true,
+													inputProps: { 'data-testid': 'input-date_reglement' },
 													InputProps: {
 														startAdornment: (
 															<InputAdornment position="start">
@@ -520,14 +520,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										<DatePicker
 											label="Date d'échéance *"
 											value={formik.values.date_echeance ? new Date(formik.values.date_echeance) : null}
-											onChange={(date) =>
-												formik.setFieldValue('date_echeance', date ? formatLocalDate(date) : '')
-											}
+											onChange={(date) => formik.setFieldValue('date_echeance', date ? formatLocalDate(date) : '')}
 											format="dd/MM/yyyy"
 											slotProps={{
 												textField: {
 													size: 'small',
 													fullWidth: true,
+													inputProps: { 'data-testid': 'input-date_echeance' },
 													InputProps: {
 														startAdornment: (
 															<InputAdornment position="start">
