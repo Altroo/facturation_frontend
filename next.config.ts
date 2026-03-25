@@ -68,24 +68,27 @@ const nextConfig: NextConfig = {
 	},
 
 	async headers() {
-		return [
-			// Next.js static files - long cache
-			{
-				source: '/_next/static/:path*',
-				headers: [
-					{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
-				],
-			},
+		const headers: {
+			source: string;
+			headers: { key: string; value: string }[];
+		}[] = [];
 
-			// Manifest file
+		if (isProd) {
+			headers.push({
+				source: '/_next/static/:path*',
+				headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+			});
+		}
+
+		headers.push(
 			{
+				// Manifest file
 				source: '/assets/ico/manifest.json',
 				headers: [
 					{ key: 'Content-Type', value: 'application/manifest+json' },
 					{ key: 'Cache-Control', value: 'public, max-age=604800, immutable' },
 				],
 			},
-
 			// Fonts - long cache + CORS
 			{
 				source: '/assets/fonts/:path*',
@@ -94,29 +97,20 @@ const nextConfig: NextConfig = {
 					{ key: 'Access-Control-Allow-Origin', value: '*' },
 				],
 			},
-
 			// Images and icons - long cache
 			{
 				source: '/assets/images/:path*',
-				headers: [
-					{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
-				],
+				headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
 			},
 			{
 				source: '/assets/ico/:path*',
-				headers: [
-					{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
-				],
+				headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
 			},
-
 			// Catch-all for other assets
 			{
 				source: '/assets/:path*',
-				headers: [
-					{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
-				],
+				headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
 			},
-
 			// Security & privacy headers for all pages
 			{
 				source: '/(.*)',
@@ -133,8 +127,8 @@ const nextConfig: NextConfig = {
 							"script-src 'self' 'unsafe-inline' 'unsafe-eval'",
 							"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
 							"font-src 'self' https://fonts.gstatic.com data:",
-					`img-src 'self' https://facturation-api.elbouazzatiholding.ma data: blob:${isDev ? ' http://localhost:8000 http://127.0.0.1:8000' : ''}`,
-					`connect-src 'self' https://facturation-api.elbouazzatiholding.ma wss://facturation-api.elbouazzatiholding.ma${isDev ? ' http://localhost:8000 http://127.0.0.1:8000 ws://localhost:8000 ws://127.0.0.1:8000' : ''}`,
+							`img-src 'self' https://facturation-api.elbouazzatiholding.ma data: blob:${isDev ? ' http://localhost:8000 http://127.0.0.1:8000' : ''}`,
+							`connect-src 'self' https://facturation-api.elbouazzatiholding.ma wss://facturation-api.elbouazzatiholding.ma${isDev ? ' http://localhost:8000 http://127.0.0.1:8000 ws://localhost:8000 ws://127.0.0.1:8000' : ''}`,
 							"frame-ancestors 'self'",
 							"base-uri 'self'",
 							"form-action 'self'",
@@ -142,7 +136,8 @@ const nextConfig: NextConfig = {
 					},
 				],
 			},
-		];
+		);
+		return headers;
 	},
 };
 
