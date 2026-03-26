@@ -3,7 +3,7 @@
 import React from 'react';
 import { Stack, Box } from '@mui/material';
 import { getUserCompaniesState } from '@/store/selectors';
-import { getAccessTokenFromSession } from '@/store/session';
+import { useInitAccessToken } from '@/contexts/InitContext';
 import { useAppSelector } from '@/utils/hooks';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import type { SessionProps } from '@/types/_initTypes';
@@ -30,7 +30,7 @@ interface Props extends SessionProps {
 
 const CompanyDocumentsWrapperForm: React.FC<Props> = (props: Props) => {
 	const { session, company_id, id, documentConfig, FormComponent } = props;
-	const token = getAccessTokenFromSession(session);
+	const token = useInitAccessToken(session);
 	const companies = useAppSelector(getUserCompaniesState);
 	const company = companies?.find((comp) => comp.id === company_id);
 	const isEditMode = !!id;

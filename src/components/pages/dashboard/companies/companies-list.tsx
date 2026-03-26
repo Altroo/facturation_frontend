@@ -12,7 +12,7 @@ import {
 	Business as BusinessIcon,
 } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams, GridFilterModel } from '@mui/x-data-grid';
-import { getAccessTokenFromSession } from '@/store/session';
+import { useInitAccessToken } from '@/contexts/InitContext';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { useSuspendCompanyMutation, useGetCompaniesListQuery, useBulkSuspendCompaniesMutation, useLazyGetCompaniesListQuery } from '@/store/services/company';
@@ -41,7 +41,7 @@ export const nbrEmployeFilterOptions = [
 const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 	const router = useRouter();
 	const { onSuccess, onError } = useToast();
-	const token = getAccessTokenFromSession(session);
+	const token = useInitAccessToken(session);
 	const [paginationModel, setPaginationModel] = useState<{ page: number; pageSize: number }>({
 		page: 0,
 		pageSize: 10,

@@ -25,7 +25,7 @@ import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { ARTICLES_EDIT, ARTICLES_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import { useDeleteArticleMutation, useGetArticleQuery } from '@/store/services/article';
-import { getAccessTokenFromSession } from '@/store/session';
+import { useInitAccessToken } from '@/contexts/InitContext';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
@@ -106,7 +106,7 @@ interface Props extends SessionProps {
 }
 
 const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
-	const token = getAccessTokenFromSession(session);
+	const token = useInitAccessToken(session);
 	const companies = useAppSelector(getUserCompaniesState);
 	const router = useRouter();
 	const theme = useTheme();

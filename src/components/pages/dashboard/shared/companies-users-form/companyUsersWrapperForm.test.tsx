@@ -1,12 +1,12 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { getAccessTokenFromSession } from '@/store/session';
 import CompanyUsersWrapperForm from './companyUsersWrapperForm';
 import { Session } from 'next-auth';
+import { useInitAccessToken } from '@/contexts/InitContext';
 
-jest.mock('@/store/session', () => ({
-	getAccessTokenFromSession: jest.fn(),
+jest.mock('@/contexts/InitContext', () => ({
+	useInitAccessToken: jest.fn(() => 'test-token'),
 }));
 
 jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
@@ -53,8 +53,7 @@ describe('CompanyUsersForm', () => {
 	});
 
 	it('renders FormikComponent in edit mode and passes token, id and extra props', () => {
-		(getAccessTokenFromSession as jest.Mock).mockReturnValue('token-123');
-
+		(useInitAccessToken as jest.Mock).mockReturnValue('token-123');
 		const FormikCalled = jest.fn() as jest.Mock<void, [FormikComponentProps]>;
 		const FormikComponent: React.FC<FormikComponentProps> = (props) => {
 			FormikCalled(props);
@@ -84,8 +83,7 @@ describe('CompanyUsersForm', () => {
 	});
 
 	it('renders FormikComponent in add mode and passes token and extra props with undefined id', () => {
-		(getAccessTokenFromSession as jest.Mock).mockReturnValue('token-xyz');
-
+		(useInitAccessToken as jest.Mock).mockReturnValue('token-xyz');
 		const FormikCalled = jest.fn() as jest.Mock<void, [FormikComponentProps]>;
 		const FormikComponent: React.FC<FormikComponentProps> = (props) => {
 			FormikCalled(props);
@@ -113,3 +111,5 @@ describe('CompanyUsersForm', () => {
 		expect(calledProps.name).toBe('NewCo');
 	});
 });
+
+

@@ -44,7 +44,7 @@ import { useAppSelector } from '@/utils/hooks';
 import { getUserCompaniesState } from '@/store/selectors';
 import { useGetArticlesListQuery } from '@/store/services/article';
 import { formatDate, formatNumberWithSpaces } from '@/utils/helpers';
-import { getAccessTokenFromSession } from '@/store/session';
+import { useInitAccessToken } from '@/contexts/InitContext';
 
 import type { ArticleClass } from '@/models/classes';
 import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
@@ -222,7 +222,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 	query,
 	headerActions,
 }: CompanyDocumentsViewProps<TData>) => {
-	const token = getAccessTokenFromSession(session);
+	const token = useInitAccessToken(session);
 	const companies = useAppSelector(getUserCompaniesState);
 	const router = useRouter();
 	const theme = useTheme();

@@ -12,7 +12,7 @@ import {
 	Print as PrintIcon,
 } from '@mui/icons-material';
 import { GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
-import { getAccessTokenFromSession } from '@/store/session';
+import { useInitAccessToken } from '@/contexts/InitContext';
 import {
 	useConvertFactureClientToBonDeLivraisonMutation,
 	useDeleteFactureClientMutation,
@@ -105,7 +105,7 @@ interface FormikContentProps extends SessionProps {
 const FormikContent: React.FC<FormikContentProps> = (props) => {
 	const { session, company_id, role } = props;
 	const router = useRouter();
-	const token = getAccessTokenFromSession(session);
+	const token = useInitAccessToken(session);
 
 	const { data: companyData } = useGetCompanyQuery({ id: company_id }, { skip: !token });
 	const usesForeignCurrency = companyData?.uses_foreign_currency === true;

@@ -1,13 +1,13 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { getAccessTokenFromSession } from '@/store/session';
 import { useAppSelector } from '@/utils/hooks';
 import ClientArticleWrapperForm from './clientArticleWrapperForm';
 import { Session } from 'next-auth';
+import { useInitAccessToken } from '@/contexts/InitContext';
 
-jest.mock('@/store/session', () => ({
-	getAccessTokenFromSession: jest.fn(),
+jest.mock('@/contexts/InitContext', () => ({
+	useInitAccessToken: jest.fn(() => 'test-token'),
 }));
 
 jest.mock('@/utils/hooks', () => ({
@@ -54,7 +54,7 @@ describe('ClientArticleFormWrapper', () => {
 	});
 
 	it('renders FormikComponent when company role is Caissier and passes token and props', () => {
-		(getAccessTokenFromSession as jest.Mock).mockReturnValue('token-123');
+		(useInitAccessToken as jest.Mock).mockReturnValue('token-123');
 		const companies = [{ id: 42, role: 'Caissier' }];
 		(useAppSelector as jest.Mock).mockImplementation(() => companies);
 
@@ -86,7 +86,6 @@ describe('ClientArticleFormWrapper', () => {
 	});
 
 	it('renders denied message when company role is not Admin and does not render FormikComponent', () => {
-		(getAccessTokenFromSession as jest.Mock).mockReturnValue('token-xyz');
 		const companies = [{ id: 100, role: 'Lecture' }];
 		(useAppSelector as jest.Mock).mockImplementation(() => companies);
 

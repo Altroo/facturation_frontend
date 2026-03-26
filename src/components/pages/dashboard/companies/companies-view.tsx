@@ -3,7 +3,7 @@
 import React, { useMemo, isValidElement, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
-import { getAccessTokenFromSession } from '@/store/session';
+import { useInitAccessToken } from '@/contexts/InitContext';
 import { useGetCompanyQuery, useSuspendCompanyMutation } from '@/store/services/company';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
@@ -120,7 +120,7 @@ interface Props extends SessionProps {
 
 const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 	const router = useRouter();
-	const token = getAccessTokenFromSession(session);
+	const token = useInitAccessToken(session);
 	const { data: companyData, isLoading, error } = useGetCompanyQuery({ id }, { skip: !token });
 	const axiosError = useMemo(
 		() => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),

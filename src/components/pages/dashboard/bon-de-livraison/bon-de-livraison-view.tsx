@@ -10,7 +10,7 @@ import {
 } from '@mui/icons-material';
 import { BON_DE_LIVRAISON_EDIT, BON_DE_LIVRAISON_LIST, BON_DE_LIVRAISON_PDF } from '@/utils/routes';
 import { useGetBonDeLivraisonQuery, useDeleteBonDeLivraisonMutation } from '@/store/services/bonDeLivraison';
-import { getAccessTokenFromSession } from '@/store/session';
+import { useInitAccessToken } from '@/contexts/InitContext';
 import { useAppSelector, useToast } from '@/utils/hooks';
 import { extractApiErrorMessage } from '@/utils/helpers';
 import { getUserCompaniesState } from '@/store/selectors';
@@ -35,7 +35,7 @@ interface Props extends SessionProps {
 const BonDeLivraisonViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const query = useGetBonDeLivraisonQuery({ id });
 	const router = useRouter();
-	const token = getAccessTokenFromSession(session);
+	const token = useInitAccessToken(session);
 	const companies = useAppSelector(getUserCompaniesState);
 	const company = useMemo(() => companies?.find((c) => c.id === company_id), [companies, company_id]);
 	const [deleteRecord] = useDeleteBonDeLivraisonMutation();

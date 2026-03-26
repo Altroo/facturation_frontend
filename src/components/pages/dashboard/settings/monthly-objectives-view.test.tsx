@@ -3,10 +3,10 @@ import { render, screen, cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import type { AppSession } from '@/types/_initTypes';
 
-// Mock session helper
-jest.mock('@/store/session', () => ({
+// Mock InitContext
+jest.mock('@/contexts/InitContext', () => ({
 	__esModule: true,
-	getAccessTokenFromSession: () => 'mock-token',
+	useInitAccessToken: () => 'test-token',
 }));
 
 // Mock hooks

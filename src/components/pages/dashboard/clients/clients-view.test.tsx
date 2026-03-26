@@ -21,9 +21,9 @@ jest.mock('@/store/services/client', () => {
 	return { ...actual, useGetClientQuery: jest.fn() };
 });
 
-// Session util mock
-jest.mock('@/store/session', () => ({
-	getAccessTokenFromSession: () => 'mock-token',
+// InitContext mock
+jest.mock('@/contexts/InitContext', () => ({
+	useInitAccessToken: () => 'test-token',
 }));
 
 // Selector mock

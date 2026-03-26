@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Print as PrintIcon } from '@mui/icons-material';
 import { GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
-import { getAccessTokenFromSession } from '@/store/session';
+import { useInitAccessToken } from '@/contexts/InitContext';
 import { useDeleteBonDeLivraisonMutation, useGetBonDeLivraisonListQuery, useBulkDeleteBonDeLivraisonMutation } from '@/store/services/bonDeLivraison';
 import { useGetModePaiementListQuery, useGetLivreParListQuery } from '@/store/services/parameter';
 import { BON_DE_LIVRAISON_ADD, BON_DE_LIVRAISON_EDIT, BON_DE_LIVRAISON_VIEW, BON_DE_LIVRAISON_PDF } from '@/utils/routes';
@@ -73,7 +73,7 @@ interface FormikContentProps extends SessionProps {
 const FormikContent: React.FC<FormikContentProps> = (props) => {
 	const { session, company_id, role } = props;
 	const router = useRouter();
-	const token = getAccessTokenFromSession(session);
+	const token = useInitAccessToken(session);
 
 	const [paginationModel, setPaginationModel] = useState<PaginationModel>({
 		page: 0,

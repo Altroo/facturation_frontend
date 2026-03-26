@@ -50,7 +50,7 @@ import type { ReglementSchemaType } from '@/types/reglementTypes';
 import { reglementSchema } from '@/utils/formValidationSchemas';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import { getAccessTokenFromSession } from '@/store/session';
+import { useInitAccessToken } from '@/contexts/InitContext';
 import { useGetModePaiementListQuery } from '@/store/services/parameter';
 import NoPermission from '@/components/shared/noPermission/noPermission';
 
@@ -576,7 +576,7 @@ interface Props extends SessionProps {
 }
 
 const ReglementForm: React.FC<Props> = ({ session, company_id, id, facture_client_id }) => {
-	const token = getAccessTokenFromSession(session);
+	const token = useInitAccessToken(session);
 	const companies = useAppSelector(getUserCompaniesState);
 	const company = companies?.find((comp) => comp.id === company_id);
 

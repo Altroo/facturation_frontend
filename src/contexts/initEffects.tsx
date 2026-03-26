@@ -1,24 +1,23 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { useAppDispatch, useAppSelector } from '@/utils/hooks';
+import { useAppDispatch } from '@/utils/hooks';
 import { useSession } from 'next-auth/react';
 import { useRouter, usePathname } from 'next/navigation';
 import { initAppAction, initAppSessionTokensAction } from '@/store/actions/_initActions';
-import { getAccessToken } from '@/store/selectors';
 import { useGetProfilQuery, useGetGroupsQuery } from '@/store/services/account';
 import { accountSetGroupesAction, accountSetProfilAction } from '@/store/actions/accountActions';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 import { companiesSetUserCompaniesAction } from '@/store/actions/companiesActions';
 import { DASHBOARD_PASSWORD } from '@/utils/routes';
+import { useInitAccessToken } from '@/contexts/InitContext';
 
 export const InitEffects: React.FC = () => {
 	const { data: session, status } = useSession();
 	const dispatch = useAppDispatch();
 	const router = useRouter();
 	const pathname = usePathname();
-	const initState = useAppSelector(getAccessToken);
-	const accessToken = initState ?? undefined;
+	const accessToken = useInitAccessToken();
 	const skip = !accessToken || status !== 'authenticated';
 
 	const appInitializedRef = useRef(false);

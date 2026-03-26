@@ -57,9 +57,9 @@ jest.mock('@/store/selectors', () => ({
 
 }));
 
-jest.mock('@/store/session', () => ({
+jest.mock('@/contexts/InitContext', () => ({
 	__esModule: true,
-	getAccessTokenFromSession: () => 'mock-token',
+	useInitAccessToken: () => 'test-token',
 }));
 
 // Mock the facture pro forma service hooks

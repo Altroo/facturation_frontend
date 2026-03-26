@@ -1,6 +1,6 @@
 import React from 'react';
 import type { SessionProps } from '@/types/_initTypes';
-import { getAccessTokenFromSession } from '@/store/session';
+import { useInitAccessToken } from '@/contexts/InitContext';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { Box, Stack } from '@mui/material';
@@ -15,7 +15,7 @@ interface Props<TFormikProps> extends SessionProps {
 
 const CompanyUsersWrapperForm = <TFormikProps extends { id?: number }>(props: Props<TFormikProps>) => {
 	const { session, id, entityName, FormikComponent, extraFormikProps } = props;
-	const token = getAccessTokenFromSession(session);
+	const token = useInitAccessToken(session);
 	const isEditMode = id !== undefined;
 
 	const titles: Record<'entreprise' | 'utilisateur', { add: string; edit: string }> = {

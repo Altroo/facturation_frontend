@@ -64,9 +64,9 @@ jest.mock('@/utils/helpers', () => ({
 	},
 }));
 
-jest.mock('@/store/session', () => ({
+jest.mock('@/contexts/InitContext', () => ({
 	__esModule: true,
-	getAccessTokenFromSession: jest.fn(),
+	useInitAccessToken: jest.fn(() => 'test-token'),
 }));
 
 jest.mock('@/utils/hooks', () => ({
@@ -95,11 +95,9 @@ jest.mock('next/navigation', () => ({
 	useRouter: () => ({ push: pushMock }),
 }));
 
-import { getAccessTokenFromSession } from '@/store/session';
 import { useAppSelector } from '@/utils/hooks';
 import { useGetArticlesListQuery } from '@/store/services/article';
 
-const mockedGetAccessToken = getAccessTokenFromSession as jest.MockedFunction<typeof getAccessTokenFromSession>;
 const mockedUseAppSelector = useAppSelector as jest.MockedFunction<typeof useAppSelector>;
 const mockedUseGetArticlesListQuery = useGetArticlesListQuery as jest.MockedFunction<typeof useGetArticlesListQuery>;
 
@@ -139,7 +137,6 @@ describe('CompanyDocumentsView', () => {
 	});
 
 	test('shows ApiProgress while loading', () => {
-		mockedGetAccessToken.mockReturnValue('token');
 		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
@@ -155,7 +152,7 @@ describe('CompanyDocumentsView', () => {
 	});
 
 	test('shows ApiAlert when error status \\> 400', () => {
-		mockedGetAccessToken.mockReturnValue('token');
+
 		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
@@ -173,8 +170,7 @@ describe('CompanyDocumentsView', () => {
 	});
 
 	test('renders content and shows \\`Modifier\\` button for Caissier, clicking navigates to edit route', () => {
-		mockedGetAccessToken.mockReturnValue('token');
-		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
@@ -208,8 +204,7 @@ describe('CompanyDocumentsView', () => {
 	});
 
 	test('does not show \\`Modifier\\` button for Lecture', () => {
-		mockedGetAccessToken.mockReturnValue('token');
-		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Lecture' }]);
+mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Lecture' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
@@ -224,8 +219,7 @@ describe('CompanyDocumentsView', () => {
 	});
 
 	test('clicking back button navigates to back route', () => {
-		mockedGetAccessToken.mockReturnValue('token');
-		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
@@ -242,8 +236,7 @@ describe('CompanyDocumentsView', () => {
 	});
 
 	test('shows Modifier button for Commercial role', () => {
-		mockedGetAccessToken.mockReturnValue('token');
-		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Commercial' }]);
+mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Commercial' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
@@ -258,8 +251,7 @@ describe('CompanyDocumentsView', () => {
 	});
 
 	test('shows ApiProgress when articles are loading', () => {
-		mockedGetAccessToken.mockReturnValue('token');
-		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: true } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
@@ -274,8 +266,7 @@ describe('CompanyDocumentsView', () => {
 	});
 
 	test('renders Livré par field for bon-de-livraison type', () => {
-		mockedGetAccessToken.mockReturnValue('token');
-		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
@@ -296,8 +287,7 @@ describe('CompanyDocumentsView', () => {
 	});
 
 	test('renders global remise card when remise is positive and has type', () => {
-		mockedGetAccessToken.mockReturnValue('token');
-		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
@@ -322,8 +312,7 @@ describe('CompanyDocumentsView', () => {
 	});
 
 	test('renders global remise card with fixed type', () => {
-		mockedGetAccessToken.mockReturnValue('token');
-		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
@@ -348,8 +337,7 @@ describe('CompanyDocumentsView', () => {
 	});
 
 	test('renders remarque card when remarque is provided', () => {
-		mockedGetAccessToken.mockReturnValue('token');
-		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
@@ -374,8 +362,7 @@ describe('CompanyDocumentsView', () => {
 	});
 
 	test('does not render remarque card when remarque is empty', () => {
-		mockedGetAccessToken.mockReturnValue('token');
-		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
@@ -400,8 +387,7 @@ describe('CompanyDocumentsView', () => {
 	});
 
 	test('handles data with server totals', () => {
-		mockedGetAccessToken.mockReturnValue('token');
-		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
@@ -427,8 +413,7 @@ describe('CompanyDocumentsView', () => {
 	});
 
 	test('renders lines in data grid with article details', () => {
-		mockedGetAccessToken.mockReturnValue('token');
-		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({
 			data: [
 				{ id: 1, reference: 'REF-001', marque_name: 'Brand A', categorie_name: 'Cat1', tva: 20, photo: 'photo.jpg' },
@@ -457,8 +442,7 @@ describe('CompanyDocumentsView', () => {
 	});
 
 	test('handles system info display with dates', () => {
-		mockedGetAccessToken.mockReturnValue('token');
-		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
@@ -484,3 +468,4 @@ describe('CompanyDocumentsView', () => {
 		expect(screen.getByText('Admin User')).toBeInTheDocument();
 	});
 });
+

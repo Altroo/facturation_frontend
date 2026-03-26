@@ -30,7 +30,7 @@ import FormattedNumberInput from '@/components/formikElements/formattedNumberInp
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 
-import { getAccessTokenFromSession } from '@/store/session';
+import { useInitAccessToken } from '@/contexts/InitContext';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 import { useAppSelector, useToast } from '@/utils/hooks';
 import { getProfilState } from '@/store/selectors';
@@ -340,7 +340,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, existingObject
 };
 
 const MonthlyObjectivesView: React.FC<SessionProps> = ({ session }) => {
-	const token = getAccessTokenFromSession(session);
+	const token = useInitAccessToken(session);
 	const profil = useAppSelector(getProfilState);
 	const is_staff = profil?.is_staff || false;
 	const { data: companiesData } = useGetUserCompaniesQuery(undefined, { skip: !token });

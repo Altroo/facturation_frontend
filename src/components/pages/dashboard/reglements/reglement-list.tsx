@@ -17,7 +17,7 @@ import {
 } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams, GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
-import { getAccessTokenFromSession } from '@/store/session';
+import { useInitAccessToken } from '@/contexts/InitContext';
 import { fetchPdfBlob } from '@/utils/apiHelpers';
 import {
 	useDeleteReglementMutation,
@@ -60,7 +60,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const { session, company_id, role } = props;
 	const { onSuccess, onError } = useToast();
 	const router = useRouter();
-	const token = getAccessTokenFromSession(session);
+	const token = useInitAccessToken(session);
 
 	const { data: companyData } = useGetCompanyQuery({ id: company_id }, { skip: !token });
 	const usesForeignCurrency = companyData?.uses_foreign_currency === true;

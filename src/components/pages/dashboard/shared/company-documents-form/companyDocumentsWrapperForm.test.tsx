@@ -1,13 +1,13 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { getAccessTokenFromSession } from '@/store/session';
 import { useAppSelector } from '@/utils/hooks';
 import CompanyDocumentsParentForm from './companyDocumentsWrapperForm';
 import { Session } from 'next-auth';
+import { useInitAccessToken } from '@/contexts/InitContext';
 
-jest.mock('@/store/session', () => ({
-	getAccessTokenFromSession: jest.fn(),
+jest.mock('@/contexts/InitContext', () => ({
+	useInitAccessToken: jest.fn(() => 'test-token'),
 }));
 
 jest.mock('@/utils/hooks', () => ({
@@ -59,7 +59,7 @@ describe('CompanyDocumentsParentForm', () => {
 
 	it('renders FormComponent when company role is Caissier and passes token and props', () => {
 		// Arrange: mock token and companies
-		(getAccessTokenFromSession as jest.Mock).mockReturnValue('token-123');
+		(useInitAccessToken as jest.Mock).mockReturnValue('token-123');
 		const companies = [{ id: 42, role: 'Caissier' }];
 		(useAppSelector as jest.Mock).mockImplementation(() => companies);
 
@@ -93,8 +93,7 @@ describe('CompanyDocumentsParentForm', () => {
 	});
 
 	it('renders denied message when company role is not Admin and does not render FormComponent', () => {
-		(getAccessTokenFromSession as jest.Mock).mockReturnValue('token-xyz');
-		const companies = [{ id: 100, role: 'Lecture' }];
+const companies = [{ id: 100, role: 'Lecture' }];
 		(useAppSelector as jest.Mock).mockImplementation(() => companies);
 
 		const FormComponent: React.FC<FormComponentProps> = () => <div data-testid="should-not-render">NO</div>;
@@ -112,3 +111,5 @@ describe('CompanyDocumentsParentForm', () => {
 		expect(screen.getByText(docConfig.accessDeniedMessage)).toBeInTheDocument();
 	});
 });
+
+

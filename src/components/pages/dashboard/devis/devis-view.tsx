@@ -10,7 +10,7 @@ import {
 } from '@mui/icons-material';
 import { DEVIS_EDIT, DEVIS_LIST, DEVIS_PDF } from '@/utils/routes';
 import { useGetDeviQuery, useDeleteDeviMutation } from '@/store/services/devi';
-import { getAccessTokenFromSession } from '@/store/session';
+import { useInitAccessToken } from '@/contexts/InitContext';
 import { useAppSelector, useToast } from '@/utils/hooks';
 import { extractApiErrorMessage } from '@/utils/helpers';
 import { getUserCompaniesState } from '@/store/selectors';
@@ -35,7 +35,7 @@ interface Props extends SessionProps {
 const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const query = useGetDeviQuery({ id });
 	const router = useRouter();
-	const token = getAccessTokenFromSession(session);
+	const token = useInitAccessToken(session);
 	const companies = useAppSelector(getUserCompaniesState);
 	const company = useMemo(() => companies?.find((c) => c.id === company_id), [companies, company_id]);
 	const [deleteRecord] = useDeleteDeviMutation();

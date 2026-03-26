@@ -17,7 +17,7 @@ import {
 	Inventory2 as Inventory2Icon,
 } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams, GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
-import { getAccessTokenFromSession } from '@/store/session';
+import { useInitAccessToken } from '@/contexts/InitContext';
 import { useDeleteArticleMutation, useGetArticlesListQuery, useImportArticlesMutation, usePatchArchiveMutation, useSendCSVExampleEmailMutation, useBulkDeleteArticlesMutation, useBulkArchiveArticlesMutation, useLazyGetArticlesListQuery } from '@/store/services/article';
 import { ARTICLES_ADD, ARTICLES_EDIT, ARTICLES_VIEW } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
@@ -53,7 +53,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const { session, company_id, archived, role } = props;
 	const { onSuccess, onError } = useToast();
 	const router = useRouter();
-	const token = getAccessTokenFromSession(session);
+	const token = useInitAccessToken(session);
 	const { data: companyData } = useGetCompanyQuery({ id: company_id }, { skip: !token });
 	const usesForeignCurrency = companyData?.uses_foreign_currency === true;
 

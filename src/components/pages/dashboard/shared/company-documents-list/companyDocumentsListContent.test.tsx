@@ -36,6 +36,11 @@ jest.mock('@/utils/hooks', () => ({
 	}),
 }));
 
+jest.mock('@/contexts/InitContext', () => ({
+	__esModule: true,
+	useInitAccessToken: jest.fn(() => 'mock-token'),
+}));
+
 // Mock dependencies
 jest.mock('@/components/htmlElements/tooltip/darkTooltip/darkTooltip', () => ({
 	__esModule: true,

@@ -4,14 +4,17 @@ import { InitEffects } from './initEffects';
 import { useSession } from 'next-auth/react';
 import { useGetProfilQuery, useGetGroupsQuery } from '@/store/services/account';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
-import { useAppDispatch, useAppSelector } from '@/utils/hooks';
-import { getAccessToken } from '@/store/selectors';
+import { useAppDispatch } from '@/utils/hooks';
+import { useInitAccessToken } from './InitContext';
 
 jest.mock('next-auth/react');
 jest.mock('@/store/services/account');
 jest.mock('@/store/services/company');
 jest.mock('@/utils/hooks');
-jest.mock('@/store/selectors');
+jest.mock('./InitContext', () => ({
+	__esModule: true,
+	useInitAccessToken: jest.fn(),
+}));
 
 // Mock next/navigation hooks
 jest.mock('next/navigation', () => ({
@@ -28,10 +31,7 @@ describe('InitEffects', () => {
 		jest.clearAllMocks();
 
 		(useAppDispatch as jest.Mock).mockReturnValue(mockDispatch);
-		(useAppSelector as jest.Mock).mockImplementation((selector) => {
-			if (selector === getAccessToken) return { access: 'mock-token' };
-			return undefined;
-		});
+		(useInitAccessToken as jest.Mock).mockReturnValue('mock-token');
 
 		// Provide simple router mocks to satisfy next/navigation usage
 		(useRouter as jest.Mock).mockReturnValue({ push: jest.fn() });

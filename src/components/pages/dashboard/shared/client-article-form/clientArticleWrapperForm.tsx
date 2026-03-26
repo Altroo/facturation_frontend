@@ -2,7 +2,7 @@
 
 import React from 'react';
 import type { SessionProps } from '@/types/_initTypes';
-import { getAccessTokenFromSession } from '@/store/session';
+import { useInitAccessToken } from '@/contexts/InitContext';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { Box, Stack } from '@mui/material';
@@ -18,7 +18,7 @@ interface Props extends SessionProps {
 }
 
 const ClientArticleWrapperForm: React.FC<Props> = ({ session, company_id, id, entityName, FormikComponent }) => {
-	const token = getAccessTokenFromSession(session);
+	const token = useInitAccessToken(session);
 	const companies = useAppSelector(getUserCompaniesState);
 	const company = companies?.find((comp) => comp.id === company_id);
 

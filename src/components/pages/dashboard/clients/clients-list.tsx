@@ -13,7 +13,7 @@ import {
 	Close as CloseIcon,
 } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams, GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
-import { getAccessTokenFromSession } from '@/store/session';
+import { useInitAccessToken } from '@/contexts/InitContext';
 import { useDeleteClientMutation, useGetClientsListQuery, usePatchArchiveMutation, useBulkDeleteClientsMutation, useBulkArchiveClientsMutation, useLazyGetClientsListQuery } from '@/store/services/client';
 import { CLIENTS_ADD, CLIENTS_EDIT, CLIENTS_VIEW } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
@@ -46,7 +46,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const { session, company_id, archived, role } = props;
 	const { onSuccess, onError } = useToast();
 	const router = useRouter();
-	const token = getAccessTokenFromSession(session);
+	const token = useInitAccessToken(session);
 
 	const [paginationModel, setPaginationModel] = useState<{ page: number; pageSize: number }>({
 		page: 0,

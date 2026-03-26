@@ -9,7 +9,7 @@ import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 
-import { getAccessTokenFromSession } from '@/store/session';
+import { useInitAccessToken } from '@/contexts/InitContext';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 import { COMPANIES_ADD } from '@/utils/routes';
 
@@ -27,7 +27,7 @@ export type CompanyDocumentsListProps = SessionProps & {
 };
 
 const CompanyDocumentsWrapperList: React.FC<CompanyDocumentsListProps> = ({ session, title, children }) => {
-	const token = getAccessTokenFromSession(session);
+	const token = useInitAccessToken(session);
 	const router = useRouter();
 	const { data: companiesData, isLoading } = useGetUserCompaniesQuery(undefined, { skip: !token });
 	

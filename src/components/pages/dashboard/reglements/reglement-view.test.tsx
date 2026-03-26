@@ -43,9 +43,9 @@ jest.mock('@/store/selectors', () => ({
 	getUserCompaniesState: jest.fn(),
 }));
 
-jest.mock('@/store/session', () => ({
+jest.mock('@/contexts/InitContext', () => ({
 	__esModule: true,
-	getAccessTokenFromSession: () => 'mock-token',
+	useInitAccessToken: () => 'test-token',
 }));
 
 // Mock reglement service hooks

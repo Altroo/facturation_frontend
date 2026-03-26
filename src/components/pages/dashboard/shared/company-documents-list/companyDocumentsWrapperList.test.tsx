@@ -13,9 +13,9 @@ jest.mock('@/components/formikElements/apiLoading/apiProgress/apiProgress', () =
 	default: () => <div>ApiProgressMock</div>,
 }));
 
-jest.mock('@/store/session', () => ({
+jest.mock('@/contexts/InitContext', () => ({
 	__esModule: true,
-	getAccessTokenFromSession: jest.fn(),
+	useInitAccessToken: jest.fn(() => 'test-token'),
 }));
 
 jest.mock('@/store/services/company', () => ({
@@ -30,10 +30,8 @@ jest.mock('next/navigation', () => ({
 	useRouter: () => ({ push: pushMock }),
 }));
 
-import { getAccessTokenFromSession } from '@/store/session';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 
-const mockedGetAccessToken = getAccessTokenFromSession as jest.MockedFunction<typeof getAccessTokenFromSession>;
 const mockedUseGetUserCompaniesQuery = useGetUserCompaniesQuery as jest.MockedFunction<
 	(...args: unknown[]) => { data?: unknown; isLoading: boolean }
 >;
@@ -50,7 +48,6 @@ describe('CompanyDocumentsList', () => {
 	});
 
 	test('shows ApiProgress while loading', () => {
-		mockedGetAccessToken.mockReturnValue('token');
 		mockedUseGetUserCompaniesQuery.mockReturnValue({ data: undefined, isLoading: true });
 
 		render(
@@ -63,7 +60,6 @@ describe('CompanyDocumentsList', () => {
 	});
 
 	test('renders empty state when no companies and shows Caissier branch correctly (no create button)', () => {
-		mockedGetAccessToken.mockReturnValue('token');
 		mockedUseGetUserCompaniesQuery.mockReturnValue({ data: [], isLoading: false });
 
 		render(
@@ -79,7 +75,6 @@ describe('CompanyDocumentsList', () => {
 	});
 
 	test('renders tabs and invokes children with selected company props', () => {
-		mockedGetAccessToken.mockReturnValue('token');
 		const companies = [
 			{ id: 1, raison_sociale: 'Company One', role: 'Caissier' },
 			{ id: 2, raison_sociale: 'Company Two', role: 'Lecture' },

@@ -8,8 +8,8 @@ jest.mock('next/navigation', () => ({
 	useRouter: () => ({ push: mockPush, back: jest.fn(), forward: jest.fn(), refresh: jest.fn(), replace: jest.fn(), prefetch: jest.fn() }),
 }));
 
-jest.mock('@/store/session', () => ({
-	getAccessTokenFromSession: jest.fn((session: AppSession) => session?.accessToken || null),
+jest.mock('@/contexts/InitContext', () => ({
+	useInitAccessToken: jest.fn(() => 'test-token'),
 }));
 
 const mockOnSuccess = jest.fn();

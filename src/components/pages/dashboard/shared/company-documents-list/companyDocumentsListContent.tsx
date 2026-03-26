@@ -23,7 +23,6 @@ import {
 	Print as PrintIcon,
 } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams, GridFilterModel } from '@mui/x-data-grid';
-import { useSession } from 'next-auth/react';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
@@ -36,8 +35,8 @@ import { createDropdownFilterOperators } from '@/components/shared/dropdownFilte
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
 import { createNumericFilterOperators } from '@/components/shared/numericFilter/numericFilterOperator';
 import { CLIENTS_VIEW } from '@/utils/routes';
-import { getAccessTokenFromSession } from '@/store/session';
 import { fetchPdfBlob } from '@/utils/apiHelpers';
+import { useInitAccessToken } from '@/contexts/InitContext';
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
 import type {
 	DocumentListClass,
@@ -142,8 +141,8 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 	chipFilterBar,
 	} = props;
 
-	const { data: session } = useSession();
 	const { onSuccess, onError } = useToast();
+	const accessToken = useInitAccessToken();
 
 	const { data, isLoading, refetch } = queryResult;
 	const { deleteRecord } = deleteMutation;
@@ -267,8 +266,6 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 				return;
 			}
 
-			const accessToken = getAccessTokenFromSession(session ?? undefined);
-
 			if (!accessToken) {
 				onError("Erreur d'authentification. Veuillez vous reconnecter.");
 				return;
@@ -290,7 +287,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 				setPrintMenuItemId(null);
 			}
 		},
-		[selectedPrintAction, printMenuItemId, session, companyId, onError],
+		[selectedPrintAction, printMenuItemId, accessToken, companyId, onError],
 	);
 
 	const handleLanguageModalClose = useCallback(() => {

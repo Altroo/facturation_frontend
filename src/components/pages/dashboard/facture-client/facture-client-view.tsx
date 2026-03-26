@@ -10,7 +10,7 @@ import {
 } from '@mui/icons-material';
 import { FACTURE_CLIENT_EDIT, FACTURE_CLIENT_LIST, FACTURE_CLIENT_PDF } from '@/utils/routes';
 import { useGetFactureClientQuery, useDeleteFactureClientMutation } from '@/store/services/factureClient';
-import { getAccessTokenFromSession } from '@/store/session';
+import { useInitAccessToken } from '@/contexts/InitContext';
 import { useAppSelector, useToast } from '@/utils/hooks';
 import { extractApiErrorMessage } from '@/utils/helpers';
 import { getUserCompaniesState } from '@/store/selectors';
@@ -35,7 +35,7 @@ interface Props extends SessionProps {
 const FactureClientViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const query = useGetFactureClientQuery({ id });
 	const router = useRouter();
-	const token = getAccessTokenFromSession(session);
+	const token = useInitAccessToken(session);
 	const companies = useAppSelector(getUserCompaniesState);
 	const company = useMemo(() => companies?.find((c) => c.id === company_id), [companies, company_id]);
 	const [deleteRecord] = useDeleteFactureClientMutation();
