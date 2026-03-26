@@ -87,6 +87,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 			searchTerm={searchTerm}
 			setSearchTerm={setSearchTerm}
 			onCustomFilterParamsChange={setCustomFilterParams}
+			accessToken={token}
 		/>
 	);
 };

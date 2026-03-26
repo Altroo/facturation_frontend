@@ -36,11 +36,6 @@ jest.mock('@/utils/hooks', () => ({
 	}),
 }));
 
-jest.mock('@/contexts/InitContext', () => ({
-	__esModule: true,
-	useInitAccessToken: jest.fn(() => 'mock-token'),
-}));
-
 // Mock dependencies
 jest.mock('@/components/htmlElements/tooltip/darkTooltip/darkTooltip', () => ({
 	__esModule: true,
@@ -280,6 +275,7 @@ const mockPaginationModel: PaginationModel = {
 
 const mockSetPaginationModel = jest.fn();
 const mockSetSearchTerm = jest.fn();
+const mockToken = 'ABC-123';
 
 describe('CompanyDocumentsListContent', () => {
 	beforeEach(() => {
@@ -362,6 +358,7 @@ describe('CompanyDocumentsListContent', () => {
 					setPaginationModel={mockSetPaginationModel}
 					searchTerm=""
 					setSearchTerm={mockSetSearchTerm}
+					accessToken={mockToken}
 				/>,
 			);
 			expect(screen.getByTestId('paginated-data-grid')).toBeInTheDocument();
@@ -381,6 +378,7 @@ describe('CompanyDocumentsListContent', () => {
 					setPaginationModel={mockSetPaginationModel}
 					searchTerm=""
 					setSearchTerm={mockSetSearchTerm}
+					accessToken={mockToken}
 				/>,
 			);
 			expect(screen.getByText('Nouveau devis')).toBeInTheDocument();
@@ -400,6 +398,7 @@ describe('CompanyDocumentsListContent', () => {
 					setPaginationModel={mockSetPaginationModel}
 					searchTerm=""
 					setSearchTerm={mockSetSearchTerm}
+					accessToken={mockToken}
 				/>,
 			);
 			expect(screen.queryByText('Nouveau devis')).not.toBeInTheDocument();
@@ -419,6 +418,7 @@ describe('CompanyDocumentsListContent', () => {
 					setPaginationModel={mockSetPaginationModel}
 					searchTerm=""
 					setSearchTerm={mockSetSearchTerm}
+					accessToken={mockToken}
 				/>,
 			);
 			expect(screen.getByTestId('row-1')).toBeInTheDocument();
@@ -439,6 +439,7 @@ describe('CompanyDocumentsListContent', () => {
 					setPaginationModel={mockSetPaginationModel}
 					searchTerm=""
 					setSearchTerm={mockSetSearchTerm}
+					accessToken={mockToken}
 				/>,
 			);
 			expect(screen.getByText('Numéro devis')).toBeInTheDocument();
@@ -467,6 +468,7 @@ describe('CompanyDocumentsListContent', () => {
 					setPaginationModel={mockSetPaginationModel}
 					searchTerm=""
 					setSearchTerm={mockSetSearchTerm}
+					accessToken={mockToken}
 				/>,
 			);
 			const addButton = screen.getByText('Nouveau devis');
@@ -490,6 +492,7 @@ describe('CompanyDocumentsListContent', () => {
 					setPaginationModel={mockSetPaginationModel}
 					searchTerm=""
 					setSearchTerm={mockSetSearchTerm}
+					accessToken={mockToken}
 				/>,
 			);
 
@@ -521,6 +524,7 @@ describe('CompanyDocumentsListContent', () => {
 					setPaginationModel={mockSetPaginationModel}
 					searchTerm=""
 					setSearchTerm={mockSetSearchTerm}
+					accessToken={mockToken}
 				/>,
 			);
 
@@ -559,6 +563,7 @@ describe('CompanyDocumentsListContent', () => {
 					setPaginationModel={mockSetPaginationModel}
 					searchTerm=""
 					setSearchTerm={mockSetSearchTerm}
+					accessToken={mockToken}
 				/>,
 			);
 
@@ -591,6 +596,7 @@ describe('CompanyDocumentsListContent', () => {
 					setPaginationModel={mockSetPaginationModel}
 					searchTerm=""
 					setSearchTerm={mockSetSearchTerm}
+					accessToken={mockToken}
 				/>,
 			);
 
@@ -636,6 +642,7 @@ describe('CompanyDocumentsListContent', () => {
 					setPaginationModel={mockSetPaginationModel}
 					searchTerm=""
 					setSearchTerm={mockSetSearchTerm}
+					accessToken={mockToken}
 				/>,
 			);
 
@@ -682,6 +689,7 @@ describe('CompanyDocumentsListContent', () => {
 					setPaginationModel={mockSetPaginationModel}
 					searchTerm=""
 					setSearchTerm={mockSetSearchTerm}
+					accessToken={mockToken}
 				/>,
 			);
 
@@ -727,6 +735,7 @@ describe('CompanyDocumentsListContent', () => {
 					setPaginationModel={mockSetPaginationModel}
 					searchTerm=""
 					setSearchTerm={mockSetSearchTerm}
+					accessToken={mockToken}
 				/>,
 			);
 
@@ -765,6 +774,7 @@ describe('CompanyDocumentsListContent', () => {
 					setPaginationModel={mockSetPaginationModel}
 					searchTerm=""
 					setSearchTerm={mockSetSearchTerm}
+					accessToken={mockToken}
 				/>,
 			);
 
@@ -807,6 +817,7 @@ describe('CompanyDocumentsListContent', () => {
 					setPaginationModel={mockSetPaginationModel}
 					searchTerm=""
 					setSearchTerm={mockSetSearchTerm}
+					accessToken={mockToken}
 				/>,
 			);
 
@@ -854,6 +865,7 @@ describe('CompanyDocumentsListContent', () => {
 					setPaginationModel={mockSetPaginationModel}
 					searchTerm=""
 					setSearchTerm={mockSetSearchTerm}
+					accessToken={mockToken}
 				/>,
 			);
 			expect(screen.getByTestId('paginated-data-grid')).toBeInTheDocument();
@@ -881,6 +893,7 @@ describe('CompanyDocumentsListContent', () => {
 					setPaginationModel={mockSetPaginationModel}
 					searchTerm=""
 					setSearchTerm={mockSetSearchTerm}
+					accessToken={mockToken}
 				/>,
 			);
 			expect(screen.getByTestId('paginated-data-grid')).toBeInTheDocument();
@@ -907,6 +920,7 @@ describe('CompanyDocumentsListContent', () => {
 					setPaginationModel={mockSetPaginationModel}
 					searchTerm=""
 					setSearchTerm={mockSetSearchTerm}
+					accessToken={mockToken}
 				/>,
 			);
 			expect(screen.getByTestId('paginated-data-grid')).toBeInTheDocument();
@@ -933,6 +947,7 @@ describe('CompanyDocumentsListContent', () => {
 					setPaginationModel={mockSetPaginationModel}
 					searchTerm=""
 					setSearchTerm={mockSetSearchTerm}
+					accessToken={mockToken}
 				/>,
 			);
 			expect(screen.getByTestId('paginated-data-grid')).toBeInTheDocument();
@@ -965,6 +980,7 @@ describe('CompanyDocumentsListContent', () => {
 					setPaginationModel={mockSetPaginationModel}
 					searchTerm=""
 					setSearchTerm={mockSetSearchTerm}
+					accessToken={mockToken}
 				/>,
 			);
 			expect(screen.getByTestId('paginated-data-grid')).toBeInTheDocument();
@@ -986,6 +1002,7 @@ describe('CompanyDocumentsListContent', () => {
 					setPaginationModel={mockSetPaginationModel}
 					searchTerm=""
 					setSearchTerm={mockSetSearchTerm}
+					accessToken={mockToken}
 				/>,
 			);
 			expect(screen.getByTestId('paginated-data-grid')).toBeInTheDocument();

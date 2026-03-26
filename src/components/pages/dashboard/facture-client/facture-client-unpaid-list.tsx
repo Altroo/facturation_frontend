@@ -151,7 +151,6 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 									<Typography variant="h6" fontWeight={700}>
 										{chiffreAffaireTotal}
 									</Typography>
-
 								</Box>
 							</Stack>
 						</CardContent>
@@ -167,7 +166,6 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 									<Typography variant="h6" fontWeight={700} color="success.main">
 										{totalReglements}
 									</Typography>
-
 								</Box>
 							</Stack>
 						</CardContent>
@@ -206,6 +204,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 				filterModel={filterModel}
 				onFilterModelChange={setFilterModel}
 				onCustomFilterParamsChange={setCustomFilterParams}
+				accessToken={token}
 			/>
 		</>
 	);

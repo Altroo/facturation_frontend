@@ -190,6 +190,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 				onFilterModelChange={setFilterModel}
 				onCustomFilterParamsChange={setCustomFilterParams}
 				chipFilterBar={<ChipSelectFilterBar filters={chipFilters} onFilterChange={setChipFilterParams} />}
+				accessToken={token}
 			/>
 		</>
 	);

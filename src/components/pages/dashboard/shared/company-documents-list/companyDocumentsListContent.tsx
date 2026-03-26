@@ -36,7 +36,6 @@ import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilt
 import { createNumericFilterOperators } from '@/components/shared/numericFilter/numericFilterOperator';
 import { CLIENTS_VIEW } from '@/utils/routes';
 import { fetchPdfBlob } from '@/utils/apiHelpers';
-import { useInitAccessToken } from '@/contexts/InitContext';
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
 import type {
 	DocumentListClass,
@@ -117,6 +116,7 @@ export interface DocumentListContentProps<TDocument extends DocumentListClass> {
 	onCustomFilterParamsChange?: (params: Record<string, string>) => void;
 	/** Optional chip filter bar rendered between the action buttons and the data grid */
 	chipFilterBar?: React.ReactNode;
+	accessToken?: string;
 }
 
 function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
@@ -138,11 +138,11 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 		filterModel,
 		onFilterModelChange,
 		onCustomFilterParamsChange,
-	chipFilterBar,
+		chipFilterBar,
+		accessToken,
 	} = props;
 
 	const { onSuccess, onError } = useToast();
-	const accessToken = useInitAccessToken();
 
 	const { data, isLoading, refetch } = queryResult;
 	const { deleteRecord } = deleteMutation;
