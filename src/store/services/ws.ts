@@ -77,7 +77,11 @@ export function initWebsocket(token: string): EventChannel<WSAction> {
 
 		createWs();
 		return () => {
-			ws.close();
+			try {
+				ws.close();
+			} catch {
+				// ignore
+			}
 		};
 	});
 }
