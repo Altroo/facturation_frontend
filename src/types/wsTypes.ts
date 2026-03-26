@@ -1,29 +1,17 @@
-export type WSEventType = 'USER_AVATAR' | 'MAINTENANCE';
+import { WSMaintenanceAction, WSUserAvatarAction } from '@/store/actions/wsActions';
 
-export type WSEvent<T> = {
-	message: T;
+export type WSAction = ReturnType<typeof WSUserAvatarAction> | ReturnType<typeof WSMaintenanceAction>;
+
+type WSMessage = {
+	type: string;
+	pk?: number;
+	avatar?: string;
+	maintenance?: boolean;
 };
 
-interface WSRootType {
-	type: WSEventType;
-}
-
-/*
-"message": {
-	"pk": object_.pk,
-	"avatar": object_.get_absolute_avatar_thumbnail,
-}
- */
-// USER_AVATAR
-export interface WSUserAvatar extends WSRootType {
-	pk: number;
-	avatar: string;
-}
-
-// MAINTENANCE
-export interface WSMaintenance extends WSRootType {
-	maintenance: boolean;
-}
+export type WSEnvelope = {
+	message: WSMessage;
+};
 
 export interface WSMaintenanceBootstrap {
 	maintenance: boolean;

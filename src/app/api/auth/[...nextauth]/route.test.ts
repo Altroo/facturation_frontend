@@ -1,4 +1,5 @@
 import type { NextRequest } from 'next/server';
+import { GET, OPTIONS, POST } from './route';
 
 // Mock handlers
 const mockHandlersGET = jest.fn();
@@ -46,8 +47,6 @@ jest.mock('next/server', () => {
 		},
 	};
 });
-
-import { GET, POST, OPTIONS } from './route';
 
 // Helper to create mock NextRequest
 const createMockRequest = (method: string, origin?: string): NextRequest => {

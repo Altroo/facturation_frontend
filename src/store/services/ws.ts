@@ -1,19 +1,7 @@
 import type { EventChannel } from 'redux-saga';
 import { END, eventChannel } from 'redux-saga';
 import { WSMaintenanceAction, WSUserAvatarAction } from '@/store/actions/wsActions';
-
-type WSAction = ReturnType<typeof WSUserAvatarAction> | ReturnType<typeof WSMaintenanceAction>;
-
-type WSMessage = {
-	type: string;
-	pk?: number;
-	avatar?: string;
-	maintenance?: boolean;
-};
-
-type WSEnvelope = {
-	message: WSMessage;
-};
+import { WSAction, WSEnvelope } from '@/types/wsTypes';
 
 const isObjectRecord = (value: unknown): value is Record<string, unknown> => {
 	return typeof value === 'object' && value !== null;
