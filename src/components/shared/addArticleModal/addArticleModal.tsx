@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Box, Button, Stack, Typography, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import type { ArticleClass } from '@/models/classes';
@@ -56,8 +56,15 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 	documentDevise,
 }) => {
 	const [articlePopupValues, setArticlePopupValues] = useState<Record<number, ArticlePopupValues>>({});
-	const existingArticleLineValuesRef = useRef(existingArticleLineValues);
-	existingArticleLineValuesRef.current = existingArticleLineValues;
+	const [prevOpen, setPrevOpen] = useState(false);
+
+	// Derived state: reset popup values when modal closes
+	if (prevOpen !== open) {
+		setPrevOpen(open);
+		if (!open) {
+			setArticlePopupValues({});
+		}
+	}
 
 	const availableArticles = useMemo(
 		() =>
@@ -71,28 +78,6 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 			}),
 		[articles, documentDevise],
 	);
-
-	useEffect(() => {
-		if (!open) {
-			setArticlePopupValues({});
-			return;
-		}
-
-		setArticlePopupValues((prev) => {
-			const next: Record<number, ArticlePopupValues> = { ...prev };
-			availableArticles.forEach((article) => {
-				if (!article.id) return;
-				if (next[article.id]) return;
-				const existingLine = existingArticleLineValuesRef.current[article.id];
-				next[article.id] = {
-					quantity: existingLine?.quantity ?? 1,
-					remise_type: existingLine?.remise_type ?? '',
-					remise: existingLine?.remise ?? 0,
-				};
-			});
-			return next;
-		});
-	}, [open, availableArticles]);
 
 	const getRowPopupValues = (articleId: number): ArticlePopupValues => {
 		const existingValues = articlePopupValues[articleId];
@@ -118,20 +103,16 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 		}));
 	};
 
-	const rows = useMemo(
-		() =>
-			availableArticles.map((article) => {
-				const popupValues = article.id ? getRowPopupValues(article.id) : { quantity: 1, remise_type: '', remise: 0 };
-				return {
-					...article,
-					quantity: popupValues.quantity,
-					remise_type: popupValues.remise_type,
-					remise: popupValues.remise,
-					status: article.id && existingArticleIds.has(article.id) ? 'Déjà ajouté' : 'Nouveau',
-				};
-			}),
-		[availableArticles, articlePopupValues, existingArticleIds],
-	);
+	const rows = availableArticles.map((article) => {
+		const popupValues = article.id ? getRowPopupValues(article.id) : { quantity: 1, remise_type: '' as TypeRemiseType, remise: 0 };
+		return {
+			...article,
+			quantity: popupValues.quantity,
+			remise_type: popupValues.remise_type,
+			remise: popupValues.remise,
+			status: article.id && existingArticleIds.has(article.id) ? 'Déjà ajouté' : 'Nouveau',
+		};
+	});
 
 	const columns: GridColDef[] = [
 		{
