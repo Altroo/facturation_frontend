@@ -6,12 +6,14 @@ import { Protected } from './protected';
 // 🧩 Mock hooks module
 jest.mock('@/utils/hooks', () => ({
 	usePermission: jest.fn(),
+	useAppSelector: jest.fn(),
 }));
 
-import { usePermission } from '@/utils/hooks';
+import { usePermission, useAppSelector } from '@/utils/hooks';
 
 describe('Protected component', () => {
 	it('renders children when is_staff is true', () => {
+		(useAppSelector as jest.Mock).mockReturnValue({ id: 1 });
 		(usePermission as jest.Mock).mockReturnValue({ is_staff: true });
 
 		render(
@@ -25,6 +27,7 @@ describe('Protected component', () => {
 	});
 
 	it('renders access denied message when is_staff is false', () => {
+		(useAppSelector as jest.Mock).mockReturnValue({ id: 1 });
 		(usePermission as jest.Mock).mockReturnValue({ is_staff: false });
 
 		render(

@@ -36,7 +36,7 @@ jest.mock('@/utils/hooks', () => ({
 
 // 🧩 Mock selectors
 jest.mock('@/store/selectors', () => ({
-	getProfilState: jest.fn(() => ({ is_staff: true })),
+	getProfilState: jest.fn(() => ({ id: 1, is_staff: true })),
 }));
 
 // 🧩 Minimal test store
@@ -97,7 +97,7 @@ describe('UsersViewClient navigation and permissions', () => {
 		});
 
 		// Default: Caissier role
-		(useAppSelector as jest.Mock).mockReturnValue([{ id: 1, role: 'Caissier' }]);
+		(useAppSelector as jest.Mock).mockImplementation((selector) => selector({}));
 	});
 
 	afterEach(() => {

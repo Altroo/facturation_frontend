@@ -34,7 +34,7 @@ jest.mock('@/utils/hooks', () => ({
 
 // Mock selectors
 jest.mock('@/store/selectors', () => ({
-	getProfilState: jest.fn(() => ({ is_staff: true })),
+	getProfilState: jest.fn(() => ({ id: 1, is_staff: true })),
 }));
 
 // Minimal test store
@@ -81,7 +81,7 @@ describe('CompaniesViewClient', () => {
 		});
 
 		// Default: user is staff/admin so "Modifier" can render when not loading/error
-		(useAppSelector as jest.Mock).mockImplementation((selector: RootState) => selector({ profil: { is_staff: true } }));
+		(useAppSelector as jest.Mock).mockImplementation((selector) => selector({ account: { profil: { id: 1, is_staff: true } } }));
 	});
 
 	afterEach(() => {
