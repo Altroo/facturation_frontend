@@ -8,7 +8,6 @@ import '@testing-library/jest-dom';
 import type { AppSession } from '@/types/_initTypes';
 import { useRouter } from 'next/navigation';
 import { useAppSelector } from '@/utils/hooks';
-import type { RootState } from '@/store/store';
 
 // Mock Next.js App Router as jest.fn so we can control return values
 jest.mock('next/navigation', () => ({
