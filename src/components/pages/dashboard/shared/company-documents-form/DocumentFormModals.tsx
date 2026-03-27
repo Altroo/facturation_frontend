@@ -13,7 +13,9 @@ import GlobalRemiseModal from '@/components/shared/globalRemiseModal/globalRemis
 import AddEntityModal from '@/components/shared/addEntityModal/addEntityModal';
 import { textInputTheme } from '@/utils/themes';
 import type { ArticleClass } from '@/models/classes';
+import type { TypeRemiseType } from '@/types/devisTypes';
 import type { DocumentFormConfig, DocumentListClass } from '@/types/companyDocumentsTypes';
+import type { SelectedArticlePopupValues } from '@/components/shared/addArticleModal/addArticleModal';
 
 const inputFieldTheme = textInputTheme();
 
@@ -27,8 +29,9 @@ export interface DocumentFormModalsProps<TDocument extends DocumentListClass = D
 	articlesData: Array<Partial<ArticleClass>> | undefined;
 	selectedArticles: Set<number>;
 	setSelectedArticles: (v: Set<number>) => void;
-	handleAddArticles: () => void;
+	handleAddArticles: (selectedArticlesData: SelectedArticlePopupValues[]) => void;
 	existingArticleIds: Set<number>;
+	existingArticleLineValues?: Record<number, { quantity: string | number; remise_type: TypeRemiseType; remise: string | number }>;
 	documentDevise: string;
 	// Global Remise modal
 	showGlobalRemiseModal: boolean;
@@ -63,6 +66,7 @@ const DocumentFormModals = <TDocument extends DocumentListClass = DocumentListCl
 	setSelectedArticles,
 	handleAddArticles,
 	existingArticleIds,
+	existingArticleLineValues = {},
 	documentDevise,
 	showGlobalRemiseModal,
 	setShowGlobalRemiseModal,
@@ -103,6 +107,7 @@ const DocumentFormModals = <TDocument extends DocumentListClass = DocumentListCl
 					setSelectedArticles={setSelectedArticles}
 					onAdd={handleAddArticles}
 					existingArticleIds={existingArticleIds}
+					existingArticleLineValues={existingArticleLineValues}
 					documentDevise={documentDevise}
 				/>
 			)}

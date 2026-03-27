@@ -74,7 +74,7 @@ describe('AddArticleModal', () => {
 		capturedOnRowSelectionModelChange = null;
 	});
 
-	it('renders modal, excludes existingArticleIds and shows rows', () => {
+	it('renders modal and shows all rows including existing ones', () => {
 		const setSelectedArticles = jest.fn();
 		const onAdd = jest.fn();
 		const onClose = jest.fn();
@@ -97,9 +97,9 @@ describe('AddArticleModal', () => {
 		// Add button shows count from prop
 		expect(screen.getByText('Ajouter (0)')).toBeInTheDocument();
 
-		// rows 1 and 3 should be present, 2 excluded
+		// all rows should be present; article 2 is already added but still shown
 		expect(screen.getByTestId('row-1')).toBeInTheDocument();
-		expect(screen.queryByTestId('row-2')).toBeNull();
+		expect(screen.getByTestId('row-2')).toBeInTheDocument();
 		expect(screen.getByTestId('row-3')).toBeInTheDocument();
 	});
 

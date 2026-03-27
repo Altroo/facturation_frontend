@@ -89,6 +89,7 @@ import type {
 import type { ValidateArticleLinesErrorType } from '@/types/devisTypes';
 import { useDocumentLinesColumns } from './useDocumentLinesColumns';
 import DocumentFormModals from './DocumentFormModals';
+import type { SelectedArticlePopupValues } from '@/components/shared/addArticleModal/addArticleModal';
 
 const inputFieldTheme = textInputTheme();
 
@@ -639,29 +640,54 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		[getLines, formik],
 	);
 
-	// Handle adding articles
-	const handleAddArticles = useCallback(() => {
-		const selectedIds = Array.from(selectedArticles ?? new Set());
-		const newLines = selectedIds
-			.map((articleId) => {
-				const article = getArticleById(articleId);
-				if (!article) return null;
-				return {
-					article: articleId,
-					reference: (article.reference as string) || '',
-					designation: article.designation || '',
-					prix_achat: article.prix_achat || 0,
-					devise_prix_achat: article.devise_prix_achat || 'MAD',
-					prix_vente: article.prix_vente || 0,
-					devise_prix_vente: article.devise_prix_vente || article.devise_prix_achat || 'MAD',
-					quantity: 1,
-					remise_type: '' as '' | 'Pourcentage' | 'Fixe' | undefined,
-					remise: 0,
-				} as DeviFactureLineFormValues;
-			})
-			.filter((line): line is DeviFactureLineFormValues => line !== null);
+	// Handle adding/updating articles from popup selections
+	const handleAddArticles = useCallback((selectedArticlesData: SelectedArticlePopupValues[]) => {
 		const currentLines = getLines();
-		formik.setFieldValue('lignes', [...currentLines, ...newLines]);
+		const updatedLines = [...currentLines];
+		const lineIndexByArticleId = new Map<number, number>();
+
+		currentLines.forEach((line, index) => {
+			if (!lineIndexByArticleId.has(line.article)) {
+				lineIndexByArticleId.set(line.article, index);
+			}
+		});
+
+		selectedArticlesData.forEach((selection) => {
+			const article = getArticleById(selection.articleId);
+			if (!article) return;
+
+			const parsedQuantity = parseNumber(selection.quantity) ?? 1;
+			const normalizedQuantity = parsedQuantity < 0.01 ? 1 : parsedQuantity;
+			const normalizedRemiseType = (selection.remise_type || '') as '' | 'Pourcentage' | 'Fixe';
+			const parsedRemise = parseNumber(selection.remise) ?? 0;
+			const normalizedRemise = parsedRemise < 0 ? 0 : parsedRemise;
+
+			const existingIndex = lineIndexByArticleId.get(selection.articleId);
+			if (existingIndex !== undefined) {
+				updatedLines[existingIndex] = {
+					...updatedLines[existingIndex],
+					quantity: normalizedQuantity,
+					remise_type: normalizedRemiseType,
+					remise: normalizedRemiseType ? normalizedRemise : 0,
+				};
+				return;
+			}
+
+			updatedLines.push({
+				article: selection.articleId,
+				reference: (article.reference as string) || '',
+				designation: article.designation || '',
+				prix_achat: article.prix_achat || 0,
+				devise_prix_achat: article.devise_prix_achat || 'MAD',
+				prix_vente: article.prix_vente || 0,
+				devise_prix_vente: article.devise_prix_vente || article.devise_prix_achat || 'MAD',
+				quantity: normalizedQuantity,
+				remise_type: normalizedRemiseType,
+				remise: normalizedRemiseType ? normalizedRemise : 0,
+			} as DeviFactureLineFormValues);
+		});
+
+		formik.setFieldValue('lignes', updatedLines);
 
 		// Clear lignes_empty validation error when articles are added
 		setValidationErrors((prev) => {
@@ -672,7 +698,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 
 		setShowAddArticleModal(false);
 		setSelectedArticles(new Set());
-	}, [selectedArticles, getArticleById, getLines, formik]);
+	}, [getArticleById, getLines, formik]);
 
 	// Handle delete line
 	const handleDeleteLine = useCallback((index: number) => {
@@ -742,6 +768,19 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	});
 
 	const existingArticleIds = useMemo(() => new Set(getLines().map((l) => l.article)), [getLines]);
+
+	const existingArticleLineValues = useMemo(() => {
+		const lineValues: Record<number, { quantity: string | number; remise_type: '' | 'Pourcentage' | 'Fixe'; remise: string | number }> = {};
+		getLines().forEach((line) => {
+			if (lineValues[line.article]) return;
+			lineValues[line.article] = {
+				quantity: line.quantity ?? 1,
+				remise_type: (line.remise_type || '') as '' | 'Pourcentage' | 'Fixe',
+				remise: line.remise ?? 0,
+			};
+		});
+		return lineValues;
+	}, [getLines]);
 
 	const handleStatutChange = async (newValue: string) => {
 		try {
@@ -1406,6 +1445,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				setSelectedArticles={setSelectedArticles}
 				handleAddArticles={handleAddArticles}
 				existingArticleIds={existingArticleIds}
+				existingArticleLineValues={existingArticleLineValues}
 				documentDevise={formik.values.devise ?? 'MAD'}
 				showGlobalRemiseModal={showGlobalRemiseModal}
 				setShowGlobalRemiseModal={setShowGlobalRemiseModal}

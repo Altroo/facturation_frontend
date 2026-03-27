@@ -1,13 +1,34 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Box, Button, Stack, Typography, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import type { ArticleClass } from '@/models/classes';
 import { DataGrid, GridColDef, GridRowId, GridRowSelectionModel, GridRenderCellParams } from '@mui/x-data-grid';
 import { frFR } from '@mui/x-data-grid/locales';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
-import { formatNumberWithSpaces } from '@/utils/helpers';
+import { formatNumberWithSpaces, parseNumber } from '@/utils/helpers';
+import FormattedNumberInput from '@/components/formikElements/formattedNumberInput/formattedNumberInput';
+import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
+import { gridInputTheme, customGridDropdownTheme } from '@/utils/themes';
+import { remiseTypeItemsList } from '@/utils/rawData';
+import type { TypeRemiseType } from '@/types/devisTypes';
+
+const gridFieldTheme = gridInputTheme();
+const gridSelectTheme = customGridDropdownTheme();
+
+export interface SelectedArticlePopupValues {
+	articleId: number;
+	quantity: string | number;
+	remise_type: TypeRemiseType;
+	remise: string | number;
+}
+
+type ArticlePopupValues = {
+	quantity: string | number;
+	remise_type: TypeRemiseType;
+	remise: string | number;
+};
 
 interface AddArticleModalProps {
 	open: boolean;
@@ -16,8 +37,9 @@ interface AddArticleModalProps {
 	articles: Array<Partial<ArticleClass>>;
 	selectedArticles: Set<number>;
 	setSelectedArticles: (selection: Set<number>) => void;
-	onAdd: () => void;
+	onAdd: (selectedArticlesData: SelectedArticlePopupValues[]) => void;
 	existingArticleIds: Set<number>;
+	existingArticleLineValues?: Record<number, ArticlePopupValues>;
 	documentDevise?: string;
 }
 
@@ -30,23 +52,107 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 	setSelectedArticles,
 	onAdd,
 	existingArticleIds,
+	existingArticleLineValues = {},
 	documentDevise,
 }) => {
+	const [articlePopupValues, setArticlePopupValues] = useState<Record<number, ArticlePopupValues>>({});
+	const existingArticleLineValuesRef = useRef(existingArticleLineValues);
+	existingArticleLineValuesRef.current = existingArticleLineValues;
+
 	const availableArticles = useMemo(
 		() =>
 			articles.filter((article) => {
 				if (!article.id) return false;
-				if (existingArticleIds.has(article.id)) return false;
 				// If document has a currency set, filter by matching devise_prix_vente
 				if (documentDevise && documentDevise !== 'MAD') {
 					return article.devise_prix_vente === documentDevise;
 				}
 				return true;
 			}),
-		[articles, existingArticleIds, documentDevise],
+		[articles, documentDevise],
+	);
+
+	useEffect(() => {
+		if (!open) {
+			setArticlePopupValues({});
+			return;
+		}
+
+		setArticlePopupValues((prev) => {
+			const next: Record<number, ArticlePopupValues> = { ...prev };
+			availableArticles.forEach((article) => {
+				if (!article.id) return;
+				if (next[article.id]) return;
+				const existingLine = existingArticleLineValuesRef.current[article.id];
+				next[article.id] = {
+					quantity: existingLine?.quantity ?? 1,
+					remise_type: existingLine?.remise_type ?? '',
+					remise: existingLine?.remise ?? 0,
+				};
+			});
+			return next;
+		});
+	}, [open, availableArticles]);
+
+	const getRowPopupValues = (articleId: number): ArticlePopupValues => {
+		const existingValues = articlePopupValues[articleId];
+		const existingLine = existingArticleLineValues[articleId];
+		return {
+			quantity: existingValues?.quantity ?? existingLine?.quantity ?? 1,
+			remise_type: existingValues?.remise_type ?? existingLine?.remise_type ?? '',
+			remise: existingValues?.remise ?? existingLine?.remise ?? 0,
+		};
+	};
+
+	const setRowPopupValues = (articleId: number, values: Partial<ArticlePopupValues>) => {
+		setArticlePopupValues((prev) => ({
+			...prev,
+			[articleId]: {
+				...(prev[articleId] ?? {
+					quantity: existingArticleLineValues[articleId]?.quantity ?? 1,
+					remise_type: existingArticleLineValues[articleId]?.remise_type ?? '',
+					remise: existingArticleLineValues[articleId]?.remise ?? 0,
+				}),
+				...values,
+			},
+		}));
+	};
+
+	const rows = useMemo(
+		() =>
+			availableArticles.map((article) => {
+				const popupValues = article.id ? getRowPopupValues(article.id) : { quantity: 1, remise_type: '', remise: 0 };
+				return {
+					...article,
+					quantity: popupValues.quantity,
+					remise_type: popupValues.remise_type,
+					remise: popupValues.remise,
+					status: article.id && existingArticleIds.has(article.id) ? 'Déjà ajouté' : 'Nouveau',
+				};
+			}),
+		[availableArticles, articlePopupValues, existingArticleIds],
 	);
 
 	const columns: GridColDef[] = [
+		{
+			field: 'status',
+			headerName: 'Statut',
+			flex: 0.8,
+			minWidth: 110,
+			renderCell: (params: GridRenderCellParams) => {
+				const value = String(params.value ?? 'Nouveau');
+				const color = value === 'Déjà ajouté' ? '#0274d7' : '#2e7d32';
+				return (
+					<DarkTooltip title={value}>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%', color, fontWeight: 600 }}>
+								{value}
+							</Typography>
+						</Box>
+					</DarkTooltip>
+				);
+			},
+		},
 		{
 			field: 'reference',
 			headerName: 'Référence',
@@ -191,6 +297,118 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 				);
 			},
 		},
+		{
+			field: 'quantity',
+			headerName: 'Quantité',
+			flex: 0.9,
+			minWidth: 120,
+			sortable: false,
+			filterable: false,
+			renderCell: (params: GridRenderCellParams) => {
+				const articleId = Number(params.row.id);
+				const rowValues = getRowPopupValues(articleId);
+				const uniteName = String(params.row.unite_name ?? '');
+				return (
+					<Box
+						sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}
+						onClick={(e) => e.stopPropagation()}
+					>
+						<FormattedNumberInput
+							id={`popup_quantity_${articleId}`}
+							type="text"
+							value={rowValues.quantity}
+							onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+								const raw = (e.target as HTMLInputElement).value;
+								const parsed = parseNumber(raw);
+								if (parsed !== null && parsed < 0.01) return;
+								setRowPopupValues(articleId, { quantity: parsed === null ? raw : parsed });
+							}}
+							fullWidth
+							size="small"
+							theme={gridFieldTheme}
+							decimals={2}
+							endIcon={uniteName ? <Typography variant="caption">{uniteName}</Typography> : undefined}
+							slotProps={{ input: { style: { textAlign: 'center' } } }}
+						/>
+					</Box>
+				);
+			},
+		},
+		{
+			field: 'remise_type',
+			headerName: 'Type remise',
+			flex: 1,
+			minWidth: 140,
+			sortable: false,
+			filterable: false,
+			renderCell: (params: GridRenderCellParams) => {
+				const articleId = Number(params.row.id);
+				const rowValues = getRowPopupValues(articleId);
+				return (
+					<Box
+						sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}
+						onClick={(e) => e.stopPropagation()}
+					>
+						<CustomDropDownSelect
+							id={`popup_remise_type_${articleId}`}
+							label="Type"
+							items={remiseTypeItemsList}
+							theme={gridSelectTheme}
+							size="small"
+							value={rowValues.remise_type || ''}
+							onChange={(e) => {
+								const nextType = (e.target.value as TypeRemiseType) || '';
+								setRowPopupValues(articleId, {
+									remise_type: nextType,
+									remise: nextType ? rowValues.remise : 0,
+								});
+							}}
+						/>
+					</Box>
+				);
+			},
+		},
+		{
+			field: 'remise',
+			headerName: 'Remise',
+			flex: 0.9,
+			minWidth: 130,
+			sortable: false,
+			filterable: false,
+			renderCell: (params: GridRenderCellParams) => {
+				const articleId = Number(params.row.id);
+				const rowValues = getRowPopupValues(articleId);
+				return (
+					<Box
+						sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}
+						onClick={(e) => e.stopPropagation()}
+					>
+						<FormattedNumberInput
+							id={`popup_remise_${articleId}`}
+							type="text"
+							value={rowValues.remise}
+							onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+								const raw = (e.target as HTMLInputElement).value;
+								const parsed = parseNumber(raw);
+								if (parsed !== null && parsed < 0) return;
+								setRowPopupValues(articleId, { remise: parsed === null ? raw : parsed });
+							}}
+							fullWidth
+							size="small"
+							theme={gridFieldTheme}
+							disabled={!rowValues.remise_type}
+							decimals={2}
+							endIcon={
+								<Typography variant="caption">
+									{rowValues.remise_type === 'Pourcentage' ? '%' : (params.row.devise_prix_vente || documentDevise || 'MAD')}
+								</Typography>
+							}
+							slotProps={{ input: { style: { textAlign: 'center' } } }}
+						/>
+					</Box>
+				);
+			},
+		},
 	];
 
 	// Build the selection object expected by MUI v6: { type: 'include'|'exclude', ids: Set<GridRowId> }
@@ -220,7 +438,7 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 								},
 							}}
 							loading={loading}
-							rows={availableArticles}
+							rows={rows}
 							columns={columns}
 							checkboxSelection
 							disableRowSelectionOnClick
@@ -237,7 +455,7 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 										idsArray = Array.from(sel.ids);
 									} else if (sel.type === 'exclude') {
 										// "all except these" -> compute selected as all available row ids minus excluded ones
-										idsArray = availableArticles
+										idsArray = rows
 											.map((a) => a.id)
 											.filter((id) => id !== undefined && !sel.ids.has(id as GridRowId)) as GridRowId[];
 									}
@@ -261,7 +479,23 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 
 			<DialogActions>
 				<Button onClick={onClose}>Annuler</Button>
-				<Button variant="contained" onClick={onAdd} disabled={selectedArticles.size === 0} startIcon={<AddIcon />}>
+				<Button
+					variant="contained"
+					onClick={() => {
+						const payload: SelectedArticlePopupValues[] = Array.from(selectedArticles).map((articleId) => {
+							const values = getRowPopupValues(articleId);
+							return {
+								articleId,
+								quantity: values.quantity,
+								remise_type: values.remise_type || '',
+								remise: values.remise,
+							};
+						});
+						onAdd(payload);
+					}}
+					disabled={selectedArticles.size === 0}
+					startIcon={<AddIcon />}
+				>
 					Ajouter ({selectedArticles.size})
 				</Button>
 			</DialogActions>
