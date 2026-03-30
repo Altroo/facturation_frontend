@@ -6,7 +6,6 @@ import SessionProvider from '@/providers/sessionProvider';
 import StoreProvider from '@/providers/storeProvider';
 import type { AppProps } from 'next/app';
 import { InitContextProvider } from '@/contexts/InitContext';
-import { auth } from '@/auth';
 import type { Viewport } from 'next';
 import ThemeProvider from '@/providers/themeProvider';
 import { InitEffects } from '@/contexts/initEffects';
@@ -68,15 +67,14 @@ interface EntryPointProps extends AppProps {
 	children: React.ReactNode;
 }
 
-const RootLayout: React.FC<EntryPointProps> = async (props) => {
-	const session = await auth();
+const RootLayout: React.FC<EntryPointProps> = (props) => {
 	return (
 		<html lang="fr" data-scroll-behavior="smooth">
 			<body>
 				<a href="#main-content" className="skip-to-content">
 					Aller au contenu principal
 				</a>
-				<SessionProvider session={session}>
+				<SessionProvider>
 					<StoreProvider>
 						<InitContextProvider>
 							<InitEffects />
