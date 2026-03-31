@@ -520,7 +520,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			};
 		}
 		let rawTotalHT = 0;
-		let rawTotalTVA = 0;
+		const linesData: Array<{ lineHT: number; tvaRate: number }> = [];
 		const lignes = getLines();
 		lignes.forEach((ligne) => {
 			const article = getArticleById(ligne.article);
@@ -534,26 +534,34 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				else if (ligne.remise_type === 'Fixe') discountedHT = Math.max(0, baseHT - remiseVal);
 			}
 			const tvaRate = parseNumber(article?.tva ?? '') ?? 0;
-			const lineTVA = discountedHT * (tvaRate / 100);
-			if (Number.isFinite(discountedHT)) rawTotalHT += discountedHT;
-			if (Number.isFinite(lineTVA)) rawTotalTVA += lineTVA;
+			if (Number.isFinite(discountedHT)) {
+				rawTotalHT += discountedHT;
+				linesData.push({ lineHT: discountedHT, tvaRate });
+			}
 		});
-		const rawTotalTTC = rawTotalHT + rawTotalTVA;
-		let finalTotalHT = rawTotalHT,
-			finalTotalTVA = rawTotalTVA,
-			finalTotalTTC = rawTotalTTC;
+
+		// Apply global remise on HT
+		let finalTotalHT = rawTotalHT;
 		const globalRemiseVal = parseNumber(formik.values.remise ?? '') ?? 0;
 		if (globalRemiseVal > 0 && formik.values.remise_type) {
 			if (formik.values.remise_type === 'Pourcentage') finalTotalHT = rawTotalHT * (1 - globalRemiseVal / 100);
 			else if (formik.values.remise_type === 'Fixe') finalTotalHT = Math.max(0, rawTotalHT - globalRemiseVal);
-			const ratio = rawTotalHT > 0 ? finalTotalHT / rawTotalHT : 0;
-			finalTotalTVA = rawTotalTVA * ratio;
-			finalTotalTTC = finalTotalHT + finalTotalTVA;
 		}
+
+		// Recalculate TVA on HT après remise (per-line for mixed TVA rates)
+		const ratio = rawTotalHT > 0 ? finalTotalHT / rawTotalHT : 0;
+		let finalTotalTVA = 0;
+		for (const { lineHT, tvaRate } of linesData) {
+			const adjustedLineHT = lineHT * ratio;
+			finalTotalTVA += adjustedLineHT * (tvaRate / 100);
+		}
+
+		const finalTotalTTC = finalTotalHT + finalTotalTVA;
+
 		return {
 			totalHT: Math.max(0, Number.isFinite(rawTotalHT) ? rawTotalHT : 0),
-			totalTVA: Math.max(0, Number.isFinite(rawTotalTVA) ? rawTotalTVA : 0),
-			totalTTC: Math.max(0, Number.isFinite(rawTotalTTC) ? rawTotalTTC : 0),
+			totalTVA: Math.max(0, Number.isFinite(finalTotalTVA) ? finalTotalTVA : 0),
+			totalTTC: Math.max(0, Number.isFinite(finalTotalTTC) ? finalTotalTTC : 0),
 			totalHTAfterRemise: Math.max(0, Number.isFinite(finalTotalHT) ? finalTotalHT : 0),
 			totalTVAAfterRemise: Math.max(0, Number.isFinite(finalTotalTVA) ? finalTotalTVA : 0),
 			totalTTCApresRemise: Math.max(0, Number.isFinite(finalTotalTTC) ? finalTotalTTC : 0),
