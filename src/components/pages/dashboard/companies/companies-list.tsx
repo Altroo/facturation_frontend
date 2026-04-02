@@ -147,6 +147,17 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		setShowSuspendModal(true);
 	};
 
+	const localNbrEmployeFilterOptions = React.useMemo(
+		() => [
+			{ value: '1 à 5', label: t.rawData.employeeRanges['1to5'], color: 'default' as const },
+			{ value: '5 à 10', label: t.rawData.employeeRanges['5to10'], color: 'default' as const },
+			{ value: '10 à 50', label: t.rawData.employeeRanges['10to50'], color: 'default' as const },
+			{ value: '50 à 100', label: t.rawData.employeeRanges['50to100'], color: 'default' as const },
+			{ value: 'plus que 100', label: t.rawData.employeeRanges.moreThan100, color: 'default' as const },
+		],
+		[t],
+	);
+
 	const columns: GridColDef[] = [
 		{
 			field: 'logo',
@@ -278,19 +289,23 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 			headerName: t.companies.colEmployes,
 			flex: 0.8,
 			minWidth: 100,
-			filterOperators: createDropdownFilterOperators(nbrEmployeFilterOptions, t.companies.allEmployeeCounts, true),
-			renderCell: (params: GridRenderCellParams<CompanyClass>) => (
-				<DarkTooltip title={params.value}>
-					<Chip label={params.value} size="small" variant="outlined" />
-				</DarkTooltip>
-			),
+			filterOperators: createDropdownFilterOperators(localNbrEmployeFilterOptions, t.companies.allEmployeeCounts, true, t.filterPanel.is),
+			renderCell: (params: GridRenderCellParams<CompanyClass>) => {
+				const option = localNbrEmployeFilterOptions.find((o) => o.value === (params.value as string));
+				const label = option?.label ?? (params.value as string);
+				return (
+					<DarkTooltip title={label}>
+						<Chip label={label} size="small" variant="outlined" />
+					</DarkTooltip>
+				);
+			},
 		},
 		{
 			field: 'date_created',
 			headerName: t.common.dateCreation,
 			flex: 1.5,
 			minWidth: 150,
-			filterOperators: createDateRangeFilterOperator(),
+			filterOperators: createDateRangeFilterOperator(t.filterPanel.between),
 			renderCell: (params: GridRenderCellParams<CompanyClass>) => {
 				const formatted = formatDate(params.value as string | null);
 				return (

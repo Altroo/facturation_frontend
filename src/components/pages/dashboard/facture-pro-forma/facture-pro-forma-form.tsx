@@ -30,9 +30,9 @@ const createFactureProFormaFormConfig = (t: TranslationDictionary): DocumentForm
 	labels: {
 		documentTypeName: 'facture pro-forma',
 		listLabel: t.facturesProforma.backToList,
-		dateLabel: 'Date de la facture',
-		statusLabel: 'Statut de la facture',
-		linesLabel: 'Lignes de la facture',
+		dateLabel: t.facturesProforma.fieldDate,
+		statusLabel: t.facturesProforma.fieldStatut,
+		linesLabel: t.facturesProforma.linesTitle,
 		deleteLineMessage: t.facturesProforma.deleteLineBody,
 		addSuccessMessage: t.facturesProforma.addSuccess,
 		updateSuccessMessage: t.facturesProforma.updateSuccess,

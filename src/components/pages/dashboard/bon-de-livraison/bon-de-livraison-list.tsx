@@ -36,11 +36,11 @@ const createBonDeLivraisonListConfig = (t: TranslationDictionary): DocumentListC
 	},
 	columns: {
 		numeroField: 'numero_bon_livraison',
-		numeroHeaderName: 'Numéro bon livraison',
+		numeroHeaderName: t.bonsLivraison.colNumeroBL,
 		dateField: 'date_bon_livraison',
-		dateHeaderName: 'Date bon livraison',
+		dateHeaderName: t.bonsLivraison.colDateBL,
 		extraField: 'numero_bon_commande_client',
-		extraFieldHeaderName: 'N° bon commande client',
+		extraFieldHeaderName: t.bonsLivraison.colNumeroBonCommande,
 	},
 	printActions: [
 		{

@@ -251,7 +251,7 @@ jest.mock('next/image', () => ({
 }));
 
 // Import after mocks
-import ArticlesListClient, { typeFilterOptions } from './articles-list';
+import ArticlesListClient from './articles-list';
 
 const mockSession: AppSession = {
 	accessToken: 'test-access-token',
@@ -552,11 +552,10 @@ describe('ArticlesListClient', () => {
 	});
 
 	describe('Exports', () => {
-		it('exports typeFilterOptions with correct values', () => {
-			expect(typeFilterOptions).toEqual([
-				{ value: 'Produit', label: 'Produit', color: 'default' },
-				{ value: 'Service', label: 'Service', color: 'default' },
-			]);
+		it('type_article chip displays translated label', () => {
+			render(<ArticlesListClient session={mockSession} archived={false} />);
+			expect(screen.getByText('Produit')).toBeInTheDocument();
+			expect(screen.getByText('Service')).toBeInTheDocument();
 		});
 	});
 });

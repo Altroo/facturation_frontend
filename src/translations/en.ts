@@ -1087,6 +1087,14 @@ export const en: TranslationDictionary = {
 	filterPanel: {
 		and: 'AND',
 		or: 'OR',
+		contains: 'contains',
+		equals: 'equals',
+		startsWith: 'starts with',
+		endsWith: 'ends with',
+		isEmpty: 'is empty',
+		isNotEmpty: 'is not empty',
+		between: 'between',
+		is: 'is',
 	},
 	dateRange: {
 		from: 'From',

@@ -74,6 +74,23 @@ export const getStatutColor = (
 	}
 };
 
+export const getStatutLabel = (
+	statut: string,
+	t: import('@/types/languageTypes').TranslationDictionary,
+): string => {
+	switch (statut) {
+		case 'Brouillon': return t.rawData.documentStatuses.draft;
+		case 'Envoyé':    return t.rawData.documentStatuses.sent;
+		case 'Accepté':   return t.rawData.documentStatuses.accepted;
+		case 'Facturé':   return t.rawData.documentStatuses.invoiced;
+		case 'Refusé':    return t.rawData.documentStatuses.refused;
+		case 'Annulé':    return t.rawData.documentStatuses.cancelled;
+		case 'Expiré':    return t.rawData.documentStatuses.expired;
+		case 'Valide':    return t.common.validShort;
+		default:          return statut;
+	}
+};
+
 export const createStatutFilterOptions = (t: import('@/types/languageTypes').TranslationDictionary) => [
 	{ value: 'Brouillon', label: t.rawData.documentStatuses.draft, color: 'default' as const },
 	{ value: 'Envoyé', label: t.rawData.documentStatuses.sent, color: 'info' as const },
@@ -389,6 +406,8 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 		}));
 	}, [data?.results]);
 
+	const localStatutFilterOptions = useMemo(() => createStatutFilterOptions(t), [t]);
+
 	const columns: GridColDef[] = useMemo(() => {
 		const baseColumns: GridColDef[] = [
 			{
@@ -409,7 +428,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 				headerName: t.documentList.colClient,
 				flex: 1.5,
 				minWidth: 140,
-				filterOperators: createDropdownFilterOperators(clientFilterOptions, t.documentList.allClients),
+				filterOperators: createDropdownFilterOperators(clientFilterOptions, t.documentList.allClients, undefined, t.filterPanel.is),
 				renderCell: (params: GridRenderCellParams<TDocument>) => (
 					<DarkTooltip title={params.value}>
 						<Typography variant="body2" noWrap>
@@ -440,12 +459,15 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 				headerName: t.documentList.colStatut,
 				flex: 0.8,
 				minWidth: 100,
-				filterOperators: createDropdownFilterOperators(statutFilterOptions, t.common.allStatuses, true),
-				renderCell: (params: GridRenderCellParams<TDocument>) => (
-					<DarkTooltip title={params.value}>
-						<Chip label={params.value || '-'} color={getStatutColor(params.value || '')} variant="outlined" />
-					</DarkTooltip>
-				),
+				filterOperators: createDropdownFilterOperators(localStatutFilterOptions, t.common.allStatuses, true, t.filterPanel.is),
+				renderCell: (params: GridRenderCellParams<TDocument>) => {
+					const statutLabel = getStatutLabel(params.value || '', t);
+					return (
+						<DarkTooltip title={statutLabel}>
+							<Chip label={statutLabel || '-'} color={getStatutColor(params.value || '')} variant="outlined" />
+						</DarkTooltip>
+					);
+				},
 			},
 			{
 				field: 'total_ttc_apres_remise',
@@ -485,7 +507,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 				headerName: config.columns.dateHeaderName,
 				flex: 1,
 				minWidth: 110,
-				filterOperators: createDateRangeFilterOperator(),
+				filterOperators: createDateRangeFilterOperator(t.filterPanel.between),
 				renderCell: (params: GridRenderCellParams<TDocument>) => {
 					const formatted = formatDate(params.value as string | null).split(',')[0];
 					return (
@@ -582,6 +604,7 @@ return baseColumns;
 	config.convertActions,
 	config.printActions,
 	clientFilterOptions,
+	localStatutFilterOptions,
 	router,
 	companyId,
 	role,

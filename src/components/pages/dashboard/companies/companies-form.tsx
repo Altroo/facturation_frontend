@@ -699,7 +699,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									onSelectChange: (_e, newUser) => setSelectedUser(newUser),
 									selectIcon: <PersonIcon fontSize="small" />,
 									roleId: 'new_company_role',
-									roleLabel: 'Rôle',
+										roleLabel: t.shared.role,
 									roleOptions,
 									roleValue: selectedRole,
 									onRoleChange: (e) => setSelectedRole(e.target.value as string),

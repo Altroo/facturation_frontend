@@ -1,6 +1,6 @@
 import type { EventChannel } from 'redux-saga';
 import { END, eventChannel } from 'redux-saga';
-import { WSMaintenanceAction, WSUserAvatarAction } from '@/store/actions/wsActions';
+import { WSMaintenanceAction, WSUserAvatarAction, WSReconnectedAction } from '@/store/actions/wsActions';
 import { WSAction, WSEnvelope } from '@/types/wsTypes';
 
 const isObjectRecord = (value: unknown): value is Record<string, unknown> => {
@@ -29,6 +29,8 @@ export function initWebsocket(token: string): EventChannel<WSAction> {
 	return eventChannel<WSAction>((emitter) => {
 		let reconnectDelay = WS_INITIAL_RECONNECT_DELAY_MS;
 
+		let hasConnectedBefore = false;
+
 		function createWs() {
 			const wsUrl = `${process.env.NEXT_PUBLIC_ROOT_WS_URL}`;
 			if (typeof window !== 'undefined') {
@@ -36,6 +38,10 @@ export function initWebsocket(token: string): EventChannel<WSAction> {
 				ws.onopen = () => {
 					// Reset delay on successful connection
 					reconnectDelay = WS_INITIAL_RECONNECT_DELAY_MS;
+					if (hasConnectedBefore) {
+						emitter(WSReconnectedAction());
+					}
+					hasConnectedBefore = true;
 				};
 				ws.onerror = () => {
 					// Errors are followed by onclose, no action needed here

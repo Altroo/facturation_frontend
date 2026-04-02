@@ -57,11 +57,11 @@ const createFactureClientListConfig = (t: TranslationDictionary): DocumentListCo
 	},
 	columns: {
 		numeroField: 'numero_facture',
-		numeroHeaderName: 'Numéro facture',
+		numeroHeaderName: t.facturesClient.colNumeroFacture,
 		dateField: 'date_facture',
-		dateHeaderName: 'Date facture',
+		dateHeaderName: t.facturesClient.colDateFacture,
 		extraField: 'numero_bon_commande_client',
-		extraFieldHeaderName: 'N° bon commande client',
+		extraFieldHeaderName: t.facturesClient.colNumeroBonCommande,
 	},
 	convertActions: [
 		{
@@ -77,21 +77,21 @@ const createFactureClientListConfig = (t: TranslationDictionary): DocumentListCo
 	printActions: [
 		{
 			key: 'avec_remise',
-			label: 'Afficher Facture client avec remise',
+			label: t.common.pdfWithDiscount,
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#1976d2',
 			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') => FACTURE_CLIENT_PDF(id, companyId, 'avec_remise', language),
 		},
 		{
 			key: 'sans_remise',
-			label: 'Afficher Facture client sans remise',
+			label: t.common.pdfWithoutDiscount,
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#2e7d32',
 			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') => FACTURE_CLIENT_PDF(id, companyId, 'sans_remise', language),
 		},
 		{
 			key: 'avec_unite',
-			label: 'Afficher Facture client avec unité',
+			label: t.common.pdfWithUnit,
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#ed6c02',
 			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') => FACTURE_CLIENT_PDF(id, companyId, 'avec_unite', language),

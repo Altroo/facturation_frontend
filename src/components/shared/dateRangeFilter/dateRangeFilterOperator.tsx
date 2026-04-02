@@ -83,9 +83,9 @@ const DateRangeFilterInput: React.FC<GridFilterInputValueProps> = (props) => {
 	);
 };
 
-export const createDateRangeFilterOperator = <T extends Record<string, unknown>>(): GridFilterOperator<T>[] => [
+export const createDateRangeFilterOperator = <T extends Record<string, unknown>>(filterLabel?: string): GridFilterOperator<T>[] => [
 	{
-		label: 'entre',
+		label: filterLabel ?? 'entre',
 		value: 'between',
 		getApplyFilterFn: () => {
 			// Return null to indicate server-side filtering

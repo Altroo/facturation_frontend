@@ -1086,6 +1086,14 @@ export type TranslationDictionary = {
 	filterPanel: {
 		and: string;
 		or: string;
+		contains: string;
+		equals: string;
+		startsWith: string;
+		endsWith: string;
+		isEmpty: string;
+		isNotEmpty: string;
+		between: string;
+		is: string;
 	};
 	dateRange: {
 		from: string;

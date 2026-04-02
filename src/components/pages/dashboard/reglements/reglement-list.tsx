@@ -61,8 +61,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
 	const statutFilterOptions = [
-		{ value: t.reglements.statusValide, label: t.reglements.statusValide, color: 'success' as const },
-		{ value: t.reglements.statusAnnule, label: t.reglements.statusAnnule, color: 'error' as const },
+		{ value: 'Valide', label: t.reglements.statusValide, color: 'success' as const },
+		{ value: 'Annulé', label: t.reglements.statusAnnule, color: 'error' as const },
 	];
 	const router = useRouter();
 	const token = useInitAccessToken(session);
@@ -291,7 +291,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			headerName: t.reglements.colClient,
 			flex: 1.5,
 			minWidth: 150,
-			filterOperators: createDropdownFilterOperators(clientFilterOptions, t.documentList.allClients),
+			filterOperators: createDropdownFilterOperators(clientFilterOptions, t.documentList.allClients, undefined, t.filterPanel.is),
 			renderCell: (params: GridRenderCellParams<ReglementClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -340,7 +340,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			headerName: t.reglements.colDateReglement,
 			flex: 1.5,
 			minWidth: 150,
-			filterOperators: createDateRangeFilterOperator(),
+			filterOperators: createDateRangeFilterOperator(t.filterPanel.between),
 			renderCell: (params: GridRenderCellParams<ReglementClass>) => {
 				const formatted = formatDate(params.value as string | null);
 				return (
@@ -357,7 +357,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			headerName: t.reglements.colDateEcheance,
 			flex: 1.5,
 			minWidth: 150,
-			filterOperators: createDateRangeFilterOperator(),
+			filterOperators: createDateRangeFilterOperator(t.filterPanel.between),
 			renderCell: (params: GridRenderCellParams<ReglementClass>) => {
 				const formatted = formatDate(params.value as string | null);
 				return (
@@ -374,13 +374,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			headerName: t.reglements.colStatut,
 			flex: 0.8,
 			minWidth: 100,
-			filterOperators: createDropdownFilterOperators(statutFilterOptions, t.reglements.allStatuts, true),
+			filterOperators: createDropdownFilterOperators(statutFilterOptions, t.reglements.allStatuts, true, t.filterPanel.is),
 			renderCell: (params: GridRenderCellParams<ReglementClass>) => {
 				const statut = params.value as string;
-				const isValid = statut === t.reglements.statusValide;
+				const isValid = statut === 'Valide';
+				const label = isValid ? t.reglements.statusValide : t.reglements.statusAnnule;
 				return (
-					<DarkTooltip title={statut}>
-						<Chip label={statut} size="small" color={isValid ? 'success' : 'error'} variant="outlined" />
+					<DarkTooltip title={label}>
+						<Chip label={label} size="small" color={isValid ? 'success' : 'error'} variant="outlined" />
 					</DarkTooltip>
 				);
 			},
@@ -393,7 +394,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			sortable: false,
 			filterable: false,
 			renderCell: (params: GridRenderCellParams<ReglementClass>) => {
-				const isValid = params.row.statut === t.reglements.statusValide;
+				const isValid = params.row.statut === 'Valide';
 				const actions = [];
 
 				// View action - available for all roles

@@ -14,3 +14,9 @@ export const WSMaintenanceAction = (maintenance: boolean) => {
 		maintenance,
 	};
 };
+
+export const WSReconnectedAction = () => {
+	return {
+		type: types.WS_RECONNECTED,
+	};
+};

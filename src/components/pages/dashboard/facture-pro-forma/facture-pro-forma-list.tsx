@@ -47,16 +47,16 @@ const createFactureProFormaListConfig = (t: TranslationDictionary): DocumentList
 	},
 	columns: {
 		numeroField: 'numero_facture',
-		numeroHeaderName: 'Numéro facture',
+		numeroHeaderName: t.facturesProforma.colNumeroFacture,
 		dateField: 'date_facture',
-		dateHeaderName: 'Date facture',
+		dateHeaderName: t.facturesProforma.colDateFacture,
 		extraField: 'numero_bon_commande_client',
-		extraFieldHeaderName: 'N° bon commande client',
+		extraFieldHeaderName: t.facturesProforma.colNumeroBonCommande,
 	},
 	convertActions: [
 		{
 			key: 'facture_client',
-			label: 'Facture',
+			label: t.facturesProforma.labelFactureClient,
 			icon: <ReceiptLongIcon fontSize="small" color="success" />,
 			modalTitle: t.facturesProforma.convertToFactureTitle,
 			modalBody: t.facturesProforma.convertToFactureBody,
@@ -67,21 +67,21 @@ const createFactureProFormaListConfig = (t: TranslationDictionary): DocumentList
 	printActions: [
 		{
 			key: 'avec_remise',
-			label: 'Afficher Facture pro forma avec remise',
+			label: t.common.pdfWithDiscount,
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#1976d2',
 			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') => FACTURE_PRO_FORMA_PDF(id, companyId, 'avec_remise', language),
 		},
 		{
 			key: 'sans_remise',
-			label: 'Afficher Facture pro forma sans remise',
+			label: t.common.pdfWithoutDiscount,
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#2e7d32',
 			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') => FACTURE_PRO_FORMA_PDF(id, companyId, 'sans_remise', language),
 		},
 		{
 			key: 'avec_unite',
-			label: 'Afficher Facture pro forma avec unité',
+			label: t.common.pdfWithUnit,
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#ed6c02',
 			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') => FACTURE_PRO_FORMA_PDF(id, companyId, 'avec_unite', language),

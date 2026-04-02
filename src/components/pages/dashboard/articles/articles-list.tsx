@@ -44,16 +44,16 @@ interface FormikContentProps extends SessionProps {
 	role: string;
 }
 
-export const typeFilterOptions = [
-	{ value: 'Produit', label: 'Produit', color: 'default' as const },
-	{ value: 'Service', label: 'Service', color: 'default' as const },
-];
-
 const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
 	const { session, company_id, archived, role } = props;
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
 	const router = useRouter();
+
+	const typeFilterOptions = [
+		{ value: 'Produit', label: t.articles.typeProduit, color: 'default' as const },
+		{ value: 'Service', label: t.articles.typeService, color: 'default' as const },
+	];
 	const token = useInitAccessToken(session);
 	const { data: companyData } = useGetCompanyQuery({ id: company_id }, { skip: !token });
 	const usesForeignCurrency = companyData?.uses_foreign_currency === true;
@@ -391,11 +391,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			headerName: t.articles.colType,
 			flex: 0.9,
 			minWidth: 90,
-			filterOperators: createDropdownFilterOperators(typeFilterOptions, t.articles.allTypes, true),
+			filterOperators: createDropdownFilterOperators(typeFilterOptions, t.articles.allTypes, true, t.filterPanel.is),
 			renderCell: (params: GridRenderCellParams<ArticleClass>) => {
+				const label = params.value === 'Produit' ? t.articles.typeProduit : params.value === 'Service' ? t.articles.typeService : params.value;
 				return (
-					<DarkTooltip title={params.value}>
-						<Chip label={params.value} size="small" variant="outlined" />
+					<DarkTooltip title={label}>
+						<Chip label={label} size="small" variant="outlined" />
 					</DarkTooltip>
 				);
 			},
@@ -454,7 +455,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			headerName: t.common.dateCreation,
 			flex: 1.4,
 			minWidth: 140,
-			filterOperators: createDateRangeFilterOperator(),
+			filterOperators: createDateRangeFilterOperator(t.filterPanel.between),
 			renderCell: (params: GridRenderCellParams<ArticleClass>) => {
 				const formatted = formatDate(params.value as string | null);
 				return (

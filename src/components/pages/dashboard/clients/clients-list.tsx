@@ -37,16 +37,16 @@ interface FormikContentProps extends SessionProps {
 	role: string;
 }
 
-export const typeFilterOptions = [
-	{ value: 'Personne physique', label: 'Personne physique', color: 'default' as const },
-	{ value: 'Personne morale', label: 'Personne morale', color: 'default' as const },
-];
-
 const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
 	const { session, company_id, archived, role } = props;
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
 	const router = useRouter();
+
+	const typeFilterOptions = [
+		{ value: 'Personne physique', label: t.clients.typePersonnePhysique, color: 'default' as const },
+		{ value: 'Personne morale', label: t.clients.typePersonneMorale, color: 'default' as const },
+	];
 	const token = useInitAccessToken(session);
 
 	const [paginationModel, setPaginationModel] = useState<{ page: number; pageSize: number }>({
@@ -300,11 +300,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			headerName: t.clients.colType,
 			flex: 1.2,
 			minWidth: 120,
-			filterOperators: createDropdownFilterOperators(typeFilterOptions, t.clients.allTypes, true),
+			filterOperators: createDropdownFilterOperators(typeFilterOptions, t.clients.allTypes, true, t.filterPanel.is),
 			renderCell: (params: GridRenderCellParams<ClientClass>) => {
+				const label =
+					params.value === 'Personne physique'
+						? t.clients.typePersonnePhysique
+						: params.value === 'Personne morale'
+							? t.clients.typePersonneMorale
+							: (params.value as string);
 				return (
-					<DarkTooltip title={params.value}>
-						<Chip label={params.value} size="small" variant="outlined" />
+					<DarkTooltip title={label}>
+						<Chip label={label} size="small" variant="outlined" />
 					</DarkTooltip>
 				);
 			},
@@ -353,7 +359,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			headerName: t.clients.colVille,
 			flex: 1,
 			minWidth: 100,
-			filterOperators: createDropdownFilterOperators(villeFilterOptions, t.clients.allVilles),
+			filterOperators: createDropdownFilterOperators(villeFilterOptions, t.clients.allVilles, undefined, t.filterPanel.is),
 			renderCell: (params: GridRenderCellParams<ClientClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -367,7 +373,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			headerName: t.common.dateCreation,
 			flex: 1.4,
 			minWidth: 140,
-			filterOperators: createDateRangeFilterOperator(),
+			filterOperators: createDateRangeFilterOperator(t.filterPanel.between),
 			renderCell: (params: GridRenderCellParams<ClientClass>) => {
 				const formatted = formatDate(params.value as string | null);
 				return (

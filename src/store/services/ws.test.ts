@@ -1,5 +1,5 @@
 import { initWebsocket } from './ws';
-import { WSMaintenanceAction, WSUserAvatarAction } from '@/store/actions/wsActions';
+import { WSMaintenanceAction, WSReconnectedAction, WSUserAvatarAction } from '@/store/actions/wsActions';
 
 class MockWebSocket implements WebSocket {
 	url: string;
@@ -282,6 +282,83 @@ describe('initWebsocket', () => {
 		});
 
 		expect(createdSocket).not.toBeNull();
+		channel.close();
+	});
+
+	it('does NOT emit WSReconnectedAction on first onopen', async () => {
+		let createdSocket: MockWebSocket | null = null;
+
+		global.WebSocket = jest.fn((url: string) => {
+			createdSocket = new MockWebSocket(url);
+			return createdSocket as unknown as WebSocket;
+		}) as unknown as typeof WebSocket;
+
+		process.env.NEXT_PUBLIC_ROOT_WS_URL = 'ws://localhost';
+
+		type ExpectedAction = ReturnType<typeof WSUserAvatarAction>;
+		const channel = initWebsocket('test-token');
+
+		// Set up take FIRST, then trigger events — same pattern as other tests
+		const emitted = await new Promise<ExpectedAction>((resolve) => {
+			channel.take((action) => resolve(action as ExpectedAction));
+
+			const trigger = () => {
+				if (createdSocket == null) { setTimeout(trigger, 0); return; }
+				// First open — hasConnectedBefore is false, should NOT emit WSReconnectedAction
+				createdSocket.onopen?.call(createdSocket, new Event('open'));
+				// Send a regular message to have something to take
+				const ev = new MessageEvent('message', {
+					data: JSON.stringify({ message: { type: 'USER_AVATAR', pk: 7, avatar: 'test.png' } }),
+				});
+				createdSocket.onmessage?.(ev);
+			};
+			trigger();
+		});
+
+		// The first emitted action should be USER_AVATAR, not WS_RECONNECTED
+		expect(emitted).toEqual(WSUserAvatarAction(7, 'test.png'));
+		expect(emitted).not.toEqual(WSReconnectedAction());
+		channel.close();
+	});
+
+	it('emits WSReconnectedAction on second onopen (reconnect)', async () => {
+		jest.useFakeTimers();
+		const sockets: MockWebSocket[] = [];
+
+		global.WebSocket = jest.fn((url: string) => {
+			const socket = new MockWebSocket(url);
+			sockets.push(socket);
+			return socket as unknown as WebSocket;
+		}) as unknown as typeof WebSocket;
+
+		process.env.NEXT_PUBLIC_ROOT_WS_URL = 'ws://localhost';
+
+		const channel = initWebsocket('test-token');
+
+		// Wait for first socket to be created
+		await jest.advanceTimersByTimeAsync(0);
+		expect(sockets).toHaveLength(1);
+
+		// First open — hasConnectedBefore = false, no emission
+		sockets[0].onopen?.call(sockets[0], new Event('open'));
+
+		// Simulate close to trigger reconnect
+		sockets[0].onclose?.call(sockets[0], new CloseEvent('close'));
+
+		// Advance initial 1000ms reconnect delay
+		await jest.advanceTimersByTimeAsync(1000);
+		expect(sockets).toHaveLength(2);
+
+		// Set up take, then trigger second open — should emit WSReconnectedAction
+		type ReconnectedAction = ReturnType<typeof WSReconnectedAction>;
+		const emitted = new Promise<ReconnectedAction>((resolve) => {
+			channel.take((action) => resolve(action as ReconnectedAction));
+			// Second open — hasConnectedBefore = true, emit WSReconnectedAction
+			sockets[1].onopen?.call(sockets[1], new Event('open'));
+		});
+
+		const result = await emitted;
+		expect(result).toEqual(WSReconnectedAction());
 		channel.close();
 	});
 

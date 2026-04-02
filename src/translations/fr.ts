@@ -1088,6 +1088,14 @@ export const fr: TranslationDictionary = {
 	filterPanel: {
 		and: 'ET',
 		or: 'OU',
+		contains: 'contient',
+		equals: 'égal à',
+		startsWith: 'commence par',
+		endsWith: 'finit par',
+		isEmpty: 'est vide',
+		isNotEmpty: "n'est pas vide",
+		between: 'entre',
+		is: 'est',
 	},
 	dateRange: {
 		from: 'De',

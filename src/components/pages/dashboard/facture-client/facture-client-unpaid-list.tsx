@@ -47,11 +47,11 @@ const createFactureClientUnpaidListConfig = (t: TranslationDictionary): Document
 	},
 	columns: {
 		numeroField: 'numero_facture',
-		numeroHeaderName: 'Numéro facture',
+		numeroHeaderName: t.facturesClient.colNumeroFacture,
 		dateField: 'date_facture',
-		dateHeaderName: 'Date facture',
+		dateHeaderName: t.facturesClient.colDateFacture,
 		extraField: 'numero_bon_commande_client',
-		extraFieldHeaderName: 'N° bon commande client',
+		extraFieldHeaderName: t.facturesClient.colNumeroBonCommande,
 	},
 	convertActions: [
 		{

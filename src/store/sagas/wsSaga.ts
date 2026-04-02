@@ -6,6 +6,7 @@ import type { Action } from 'redux';
 import type { EventChannel, SagaIterator } from 'redux-saga';
 import * as Types from '@/store/actions';
 import { setWSMaintenance } from '@/store/slices/wsSlice';
+import { initMaintenanceSaga } from '@/store/sagas/_initSaga';
 
 type WSChannelAction = Action & {
 	maintenance?: boolean;
@@ -35,6 +36,8 @@ export function* watchWS(): SagaIterator<void> {
 			const action: WSChannelAction = yield take(channel);
 			if (action.type === Types.WS_MAINTENANCE && typeof action.maintenance === 'boolean') {
 				yield put(setWSMaintenance(action.maintenance));
+			} else if (action.type === Types.WS_RECONNECTED) {
+				yield call(initMaintenanceSaga);
 			} else {
 				yield put(action);
 			}

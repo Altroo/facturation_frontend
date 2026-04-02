@@ -225,7 +225,7 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 			headerName: t.users.colSexe,
 			flex: 0.7,
 			minWidth: 80,
-			filterOperators: createDropdownFilterOperators(genderFilterOptions, t.users.filterBothSexes),
+			filterOperators: createDropdownFilterOperators(genderFilterOptions, t.users.filterBothSexes, undefined, t.filterPanel.is),
 			renderCell: (params: GridRenderCellParams<UserClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -239,7 +239,7 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 			headerName: t.users.colAdmin,
 			flex: 0.6,
 			minWidth: 70,
-			filterOperators: createBooleanFilterOperators(TrueFalseFilterOptions, t.users.filterBothSexes),
+			filterOperators: createBooleanFilterOperators(TrueFalseFilterOptions, t.users.filterBothSexes, t.filterPanel.is),
 			renderCell: (params: GridRenderCellParams<UserClass>) => {
 				const isAdmin = Boolean(params.value);
 				return (
@@ -258,7 +258,7 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 			headerName: t.users.colActive,
 			flex: 0.6,
 			minWidth: 70,
-			filterOperators: createBooleanFilterOperators(TrueFalseFilterOptions, t.users.filterBothSexes),
+			filterOperators: createBooleanFilterOperators(TrueFalseFilterOptions, t.users.filterBothSexes, t.filterPanel.is),
 			renderCell: (params: GridRenderCellParams<UserClass>) => {
 				const isActive = Boolean(params.value);
 				return (
@@ -277,7 +277,7 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 			headerName: t.users.colDateInscription,
 			flex: 1.2,
 			minWidth: 150,
-			filterOperators: createDateRangeFilterOperator(),
+			filterOperators: createDateRangeFilterOperator(t.filterPanel.between),
 			renderCell: (params: GridRenderCellParams<UserClass>) => {
 				const formatted = formatDate(params.value as string | null);
 				return (
@@ -294,7 +294,7 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 			headerName: t.users.colDerniereConnexion,
 			flex: 1.2,
 			minWidth: 150,
-			filterOperators: createDateRangeFilterOperator(),
+			filterOperators: createDateRangeFilterOperator(t.filterPanel.between),
 			renderCell: (params: GridRenderCellParams<UserClass>) => {
 				const formatted = formatDate(params.value as string | null);
 				return (

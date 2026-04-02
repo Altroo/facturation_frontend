@@ -4,6 +4,7 @@ import { Add as AddIcon, Close as CloseIcon } from '@mui/icons-material';
 import type { GridColDef } from '@mui/x-data-grid';
 import { GridLogicOperator } from '@mui/x-data-grid';
 import { useLanguage } from '@/utils/hooks';
+import type { TranslationDictionary } from '@/types/languageTypes';
 
 export interface DateRangeFilterValue {
 	from?: string;
@@ -44,14 +45,14 @@ interface OperatorInfo {
 /** Operators that don't require a value input */
 const VALUE_LESS_OPERATORS = new Set(['isEmpty', 'isNotEmpty']);
 
-// Default text operators
-const DEFAULT_TEXT_OPERATORS: OperatorInfo[] = [
-	{ value: 'contains', label: 'contient' },
-	{ value: 'equals', label: 'égal à' },
-	{ value: 'startsWith', label: 'commence par' },
-	{ value: 'endsWith', label: 'finit par' },
-	{ value: 'isEmpty', label: 'est vide' },
-	{ value: 'isNotEmpty', label: "n'est pas vide" },
+// Default text operators (translated)
+const getDefaultTextOperators = (t: TranslationDictionary): OperatorInfo[] => [
+	{ value: 'contains', label: t.filterPanel.contains },
+	{ value: 'equals', label: t.filterPanel.equals },
+	{ value: 'startsWith', label: t.filterPanel.startsWith },
+	{ value: 'endsWith', label: t.filterPanel.endsWith },
+	{ value: 'isEmpty', label: t.filterPanel.isEmpty },
+	{ value: 'isNotEmpty', label: t.filterPanel.isNotEmpty },
 ];
 
 /** Check if a filter item has a meaningful value */
@@ -90,7 +91,7 @@ const TextFilterInput: React.FC<FilterValueInputProps> = ({ item, applyValue }) 
 };
 
 // Extract operators from column definition
-function extractOperators(col: GridColDef): OperatorInfo[] {
+function extractOperators(col: GridColDef, t: TranslationDictionary): OperatorInfo[] {
 	if (col.filterOperators && col.filterOperators.length > 0) {
 		return col.filterOperators.map((op) => ({
 			value: op.value,
@@ -98,7 +99,7 @@ function extractOperators(col: GridColDef): OperatorInfo[] {
 			InputComponent: op.InputComponent as React.ComponentType<FilterValueInputProps> | undefined,
 		}));
 	}
-	return DEFAULT_TEXT_OPERATORS;
+	return getDefaultTextOperators(t);
 }
 
 const CustomFilterPanel: React.FC<CustomFilterPanelProps> = ({ columns, filterModel, onChange }) => {
@@ -112,7 +113,7 @@ const CustomFilterPanel: React.FC<CustomFilterPanelProps> = ({ columns, filterMo
 		const firstColumn = filterableColumns[0];
 		if (!firstColumn) return;
 
-		const operators = extractOperators(firstColumn);
+		const operators = extractOperators(firstColumn, t);
 		const defaultOperator = operators[0]?.value ?? 'contains';
 
 		// Generate ID in event handler (not during render)
@@ -161,7 +162,7 @@ const CustomFilterPanel: React.FC<CustomFilterPanelProps> = ({ columns, filterMo
 		const column = columns.find((col) => col.field === field);
 		if (!column) return;
 
-		const operators = extractOperators(column);
+		const operators = extractOperators(column, t);
 		const defaultOperator = operators[0]?.value ?? 'contains';
 
 		handleItemChange(id, {
@@ -190,7 +191,7 @@ const CustomFilterPanel: React.FC<CustomFilterPanelProps> = ({ columns, filterMo
 			<Stack spacing={1.5}>
 				{filterModel.items.map((item, index) => {
 					const column = columns.find((col) => col.field === item.field);
-					const operators = column ? extractOperators(column) : DEFAULT_TEXT_OPERATORS;
+					const operators = column ? extractOperators(column, t) : getDefaultTextOperators(t);
 					const currentOperator = operators.find((op) => op.value === item.operator);
 					const InputComponent = currentOperator?.InputComponent ?? TextFilterInput;
 

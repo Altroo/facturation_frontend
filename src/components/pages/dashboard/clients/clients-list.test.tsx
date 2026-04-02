@@ -111,7 +111,7 @@ jest.mock('@/utils/helpers', () => ({
 	extractApiErrorMessage: (error: unknown, fallback: string) => fallback,
 }));
 
-import ClientsListClient, { typeFilterOptions } from './clients-list';
+import ClientsListClient from './clients-list';
 
 const mockSession: AppSession = {
 	accessToken: 'test-access-token', refreshToken: 'test-refresh-token',
@@ -309,12 +309,5 @@ describe('ClientsListClient', () => {
 			expect(screen.getByTestId('paginated-data-grid')).toBeInTheDocument();
 		});
 	});
-
-	describe('Exports', () => {
-		it('exports typeFilterOptions', () => {
-			expect(typeFilterOptions).toHaveLength(2);
-			expect(typeFilterOptions[0].value).toBe('Personne physique');
-			expect(typeFilterOptions[1].value).toBe('Personne morale');
-		});
-	});
 });
+
