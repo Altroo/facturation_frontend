@@ -32,7 +32,6 @@ import {
 import {
 	Menu as MenuIcon,
 	ExpandMore as ExpandMoreIcon,
-	Language as LanguageIcon,
 	Logout as LogoutIcon,
 	MoreVert as MoreVertIcon,
 	Dashboard as DashboardIcon,
@@ -377,7 +376,7 @@ const NavigationBar = (props: Props) => {
 											transformOrigin={{ vertical: 'top', horizontal: 'right' }}
 										>
 											<MenuItem onClick={() => { setLanguage(language === 'fr' ? 'en' : 'fr'); setMobileMenuAnchor(null); }}>
-												<MenuListItemIcon><LanguageIcon fontSize="small" /></MenuListItemIcon>
+											<MenuListItemIcon><span style={{ fontSize: '1.2rem', lineHeight: 1 }}>{language === 'fr' ? '🇬🇧' : '🇫🇷'}</span></MenuListItemIcon>
 												<MenuListItemText>{language === 'fr' ? 'English' : 'Français'}</MenuListItemText>
 											</MenuItem>
 											{is_staff && (
