@@ -26,6 +26,7 @@ const mockOnSuccess = jest.fn();
 const mockOnError = jest.fn();
 jest.mock('@/utils/hooks', () => ({
 	useToast: () => ({ onSuccess: mockOnSuccess, onError: mockOnError }),
+	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
 }));
 
 // Mock RTK Query hooks
@@ -307,7 +308,7 @@ describe('UsersListClient', () => {
 			render(<UsersListClient session={mockSession} />);
 			await act(async () => { fireEvent.click(screen.getAllByText('Supprimer')[0]); });
 			expect(screen.getByTestId('action-modal')).toBeInTheDocument();
-			expect(screen.getByText('Supprimer ce utilisateur ?')).toBeInTheDocument();
+			expect(screen.getByText('Supprimer cet utilisateur ?')).toBeInTheDocument();
 		});
 
 		it('closes delete modal on Annuler', async () => {
@@ -335,7 +336,7 @@ describe('UsersListClient', () => {
 			const btns = screen.getAllByText('Supprimer');
 			await act(async () => { fireEvent.click(btns[btns.length - 1]); });
 			await waitFor(() => {
-				expect(mockOnError).toHaveBeenCalledWith('Erreur lors de la suppression de l\u2019utilisateur');
+				expect(mockOnError).toHaveBeenCalledWith("Erreur lors de la suppression de l'utilisateur");
 			});
 		});
 	});

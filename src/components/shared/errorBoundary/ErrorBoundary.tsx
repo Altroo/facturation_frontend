@@ -4,6 +4,7 @@ import React, { Component } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
 import { Box, Typography, Button, Paper } from '@mui/material';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import { LanguageContext } from '@/contexts/languageContext';
 
 interface ErrorBoundaryProps {
 	children: ReactNode;
@@ -20,6 +21,9 @@ interface ErrorBoundaryState {
  * component tree and display a fallback UI instead of crashing the whole app.
  */
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+	static contextType = LanguageContext;
+	declare context: React.ContextType<typeof LanguageContext>;
+
 	constructor(props: ErrorBoundaryProps) {
 		super(props);
 		this.state = { hasError: false, error: null };
@@ -70,10 +74,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 					>
 						<ErrorOutlineIcon sx={{ fontSize: 64, color: 'error.main', mb: 2 }} />
 						<Typography variant="h5" gutterBottom>
-							Une erreur est survenue
+							{this.context.t.errors.errorOccurred}
 						</Typography>
 						<Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-							Nous nous excusons pour ce désagrément. Veuillez réessayer ou actualiser la page.
+							{this.context.t.errors.errorOccurredMessage}
 						</Typography>
 						{process.env.NODE_ENV !== 'production' && this.state.error && (
 							<Typography
@@ -94,10 +98,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 						)}
 						<Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
 							<Button variant="contained" onClick={this.handleReset}>
-								Réessayer
+								{this.context.t.common.retry}
 							</Button>
 							<Button variant="outlined" onClick={() => window.location.reload()}>
-								Actualiser la page
+								{this.context.t.common.refreshPage}
 							</Button>
 						</Box>
 					</Paper>

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import type { TranslationDictionary } from '@/types/languageTypes';
 import { useRouter } from 'next/navigation';
 import { Print as PrintIcon } from '@mui/icons-material';
 import { GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
@@ -15,17 +16,18 @@ import CompanyDocumentsListContent from '@/components/pages/dashboard/shared/com
 import type { DocumentListConfig, PaginationModel } from '@/types/companyDocumentsTypes';
 import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
+import { useLanguage } from '@/utils/hooks';
 
-const bonDeLivraisonListConfig: DocumentListConfig<BonDeLivraisonClass> = {
+const createBonDeLivraisonListConfig = (t: TranslationDictionary): DocumentListConfig<BonDeLivraisonClass> => ({
 	documentType: 'bon-de-livraison',
 	labels: {
-		documentTypeName: 'bon de livraison',
-		pageTitle: 'Liste des Bons de Livraison',
-		addButtonText: 'Nouveau bon de livraison',
-		deleteSuccessMessage: 'Bon de livraison supprimé avec succès',
-		deleteErrorMessage: 'Erreur lors de la suppression du bon de livraison',
-		deleteConfirmTitle: 'Supprimer ce bon de livraison ?',
-		deleteConfirmBody: 'Êtes‑vous sûr de vouloir supprimer ce bon de livraison ?',
+		documentTypeName: t.bonsLivraison.documentTypeName,
+		pageTitle: t.bonsLivraison.listTitle,
+		addButtonText: t.bonsLivraison.newBL,
+		deleteSuccessMessage: t.bonsLivraison.deleteSuccess,
+		deleteErrorMessage: t.bonsLivraison.deleteError,
+		deleteConfirmTitle: t.bonsLivraison.deleteModalTitle,
+		deleteConfirmBody: t.bonsLivraison.deleteModalBody,
 	},
 	routes: {
 		addRoute: BON_DE_LIVRAISON_ADD,
@@ -43,28 +45,27 @@ const bonDeLivraisonListConfig: DocumentListConfig<BonDeLivraisonClass> = {
 	printActions: [
 		{
 			key: 'normal',
-			label: 'Afficher le bon de livraison',
+			label: t.common.pdfNormal,
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#1976d2',
 			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') => BON_DE_LIVRAISON_PDF(id, companyId, 'normal', language),
 		},
 		{
 			key: 'quantity_only',
-			label: 'Afficher le bon de livraison (quantité seulement)',
+			label: t.common.pdfQuantityOnly,
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#2e7d32',
 			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') => BON_DE_LIVRAISON_PDF(id, companyId, 'quantity_only', language),
 		},
 		{
 			key: 'avec_unite',
-			label: 'Afficher le bon de livraison avec unité',
+			label: t.common.pdfWithUnit,
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#ed6c02',
 			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') => BON_DE_LIVRAISON_PDF(id, companyId, 'avec_unite', language),
 		},
 	],
-};
-
+});
 interface FormikContentProps extends SessionProps {
 	company_id: number;
 	role: string;
@@ -73,6 +74,8 @@ interface FormikContentProps extends SessionProps {
 const FormikContent: React.FC<FormikContentProps> = (props) => {
 	const { session, company_id, role } = props;
 	const router = useRouter();
+	const { t } = useLanguage();
+	const bonDeLivraisonListConfig = React.useMemo(() => createBonDeLivraisonListConfig(t), [t]);
 	const token = useInitAccessToken(session);
 
 	const [paginationModel, setPaginationModel] = useState<PaginationModel>({
@@ -89,10 +92,10 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 
 	const chipFilters: ChipFilterConfig[] = React.useMemo(
 		() => [
-			{ key: 'mode_paiement', label: 'Mode de paiement', paramName: 'mode_paiement_ids', options: modePaiement ?? [] },
-			{ key: 'livre_par', label: 'Livré par', paramName: 'livre_par_ids', options: livrePar ?? [] },
+			{ key: 'mode_paiement', label: t.bonsLivraison.filterModePaiement, paramName: 'mode_paiement_ids', options: modePaiement ?? [] },
+			{ key: 'livre_par', label: t.bonsLivraison.filterLivrePar, paramName: 'livre_par_ids', options: livrePar ?? [] },
 		],
-		[modePaiement, livrePar],
+		[modePaiement, livrePar, t],
 	);
 
 	const mergedFilterParams = React.useMemo(
@@ -146,8 +149,9 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 };
 
 const BonDeLivraisonListClient: React.FC<SessionProps> = ({ session }) => {
+	const { t } = useLanguage();
 	return (
-		<CompanyDocumentsWrapperList session={session} title="Liste des Bons de Livraison">
+		<CompanyDocumentsWrapperList session={session} title={t.bonsLivraison.listTitle}>
 			{({ company_id, role }) => <FormikContent session={session} company_id={company_id} role={role} />}
 		</CompanyDocumentsWrapperList>
 	);

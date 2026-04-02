@@ -27,6 +27,7 @@ const mockOnError = jest.fn();
 jest.mock('@/utils/hooks', () => ({
 	useToast: () => ({ onSuccess: mockOnSuccess, onError: mockOnError }),
 	useAppSelector: jest.fn(() => []),
+	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
 }));
 
 // Mock RTK Query hooks
@@ -485,7 +486,7 @@ describe('ArticlesListClient', () => {
 				fireEvent.click(archiveBtns[archiveBtns.length - 1]);
 			});
 			await waitFor(() => {
-				expect(mockOnError).toHaveBeenCalledWith("Erreur lors de l\u2019archivage d'article");
+				expect(mockOnError).toHaveBeenCalledWith("Erreur lors de l'archivage de l'article");
 			});
 		});
 

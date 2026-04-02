@@ -18,6 +18,7 @@ const mockOnError = jest.fn();
 jest.mock('@/utils/hooks', () => ({
 	useToast: () => ({ onSuccess: mockOnSuccess, onError: mockOnError }),
 	useAppSelector: jest.fn(() => [{ id: 1, name: 'Chèque' }, { id: 2, name: 'Virement' }]),
+	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
 }));
 
 jest.mock('@/store/services/parameter', () => ({

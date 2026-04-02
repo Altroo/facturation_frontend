@@ -17,6 +17,7 @@ jest.mock('@/utils/hooks', () => ({
 		onError: jest.fn(),
 	}),
 	useAppSelector: jest.fn(() => ({ is_staff: true })),
+	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
 }));
 
 jest.mock('@/store/selectors', () => ({

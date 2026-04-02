@@ -2,6 +2,7 @@ import React from 'react';
 import { Alert } from '@mui/material';
 import type { SxProps } from '@mui/system';
 import type { Theme } from '@mui/material/styles';
+import { useLanguage } from '@/utils/hooks';
 
 type Props = {
 	errorDetails?: Record<string, string[]> | { error: string[] } | null;
@@ -10,6 +11,7 @@ type Props = {
 };
 
 const ApiAlert: React.FC<Props> = (props: Props) => {
+	const { t } = useLanguage();
 	const errorDetails = props.errorDetails;
 	const errorMessage: Array<Record<string, Array<string>>> = [];
 
@@ -42,7 +44,7 @@ const ApiAlert: React.FC<Props> = (props: Props) => {
 							return `${k} : ${error[k]}`;
 						});
 					})
-				: 'Une erreur est survenue. Veuillez réessayer plus tard.'}
+				: t.common.genericError}
 		</Alert>
 	);
 };

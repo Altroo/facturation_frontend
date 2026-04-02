@@ -29,10 +29,15 @@ jest.mock('@/contexts/InitContext', () => ({
 }));
 
 // Mock selector
-jest.mock('@/utils/hooks', () => ({
-	useAppSelector: jest.fn(),
-	useToast: jest.fn(() => ({ onSuccess: jest.fn(), onError: jest.fn() })),
-}));
+jest.mock('@/utils/hooks', () => {
+	const { translations } = jest.requireActual('@/translations');
+	return {
+		useAppSelector: jest.fn(),
+		useToast: jest.fn(() => ({ onSuccess: jest.fn(), onError: jest.fn() })),
+		useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: translations.fr }),
+		useIsClient: () => true,
+	};
+});
 
 const mockSession = {
 	accessToken: 'mock-token',
@@ -178,7 +183,7 @@ describe('BonDeLivraisonViewClient UI and navigation', () => {
 		useGetArticlesListQuery.mockReturnValue({ isLoading: false, data: [mockArticle], error: undefined });
 
 		renderWithProviders(<BonDeLivraisonViewClient {...defaultProps} />);
-		fireEvent.click(screen.getByText('Liste des bon de livraison', { selector: 'button' }));
+		fireEvent.click(screen.getByText('Liste des bons de livraison', { selector: 'button' }));
 		expect(mockPush).toHaveBeenCalled();
 	});
 

@@ -22,7 +22,7 @@ import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDa
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type { ClientClass } from '@/models/classes';
 import { formatDate, extractApiErrorMessage } from '@/utils/helpers';
-import { useToast } from '@/utils/hooks';
+import { useToast, useLanguage } from '@/utils/hooks';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
@@ -45,6 +45,7 @@ export const typeFilterOptions = [
 const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
 	const { session, company_id, archived, role } = props;
 	const { onSuccess, onError } = useToast();
+	const { t } = useLanguage();
 	const router = useRouter();
 	const token = useInitAccessToken(session);
 
@@ -74,9 +75,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const chipFilters: ChipFilterConfig[] = React.useMemo(
 		() => [
-			{ key: 'ville', label: 'Ville', paramName: 'ville_ids', options: cities ?? [] },
+			{ key: 'ville', label: t.clients.filterVille, paramName: 'ville_ids', options: cities ?? [] },
 		],
-		[cities],
+		[cities, t],
 	);
 
 	const mergedFilterParams = React.useMemo(
@@ -112,10 +113,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const deleteHandler = async () => {
 		try {
 			await deleteRecord({ id: selectedId! }).unwrap();
-			onSuccess('Client supprimé avec succès');
+			onSuccess(t.clients.deleteSuccess);
 			refetch();
 		} catch (err) {
-			onError(extractApiErrorMessage(err, 'Erreur lors de la suppression du client'));
+			onError(extractApiErrorMessage(err, t.clients.deleteError));
 		} finally {
 			setShowDeleteModal(false);
 			// Remove only the deleted item from selection (preserve remaining bulk selection)
@@ -125,8 +126,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	};
 
 	const deleteModalActions = [
-		{ text: 'Annuler', active: false, onClick: () => setShowDeleteModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
-		{ text: 'Supprimer', active: true, onClick: deleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
+		{ text: t.common.cancel, active: false, onClick: () => setShowDeleteModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
+		{ text: t.common.delete, active: true, onClick: deleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
 	];
 
 	const showDeleteModalCall = (id: number) => {
@@ -142,16 +143,16 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				data: { archived: !archived },
 			}).unwrap();
 			if (archived) {
-				onSuccess('Client désarchivé avec succès');
+				onSuccess(t.clients.unarchiveSuccess);
 			} else {
-				onSuccess('Client archivé avec succès');
+				onSuccess(t.clients.archiveSuccess);
 			}
 			refetch();
 		} catch {
 			if (archived) {
-				onError('Erreur lors de la désarchivation du client');
+				onError(t.clients.unarchiveError);
 			} else {
-				onError('Erreur lors de l’archivage du client');
+				onError(t.clients.archiveError);
 			}
 		} finally {
 			setShowArchiveModal(false);
@@ -164,7 +165,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const archiveModalActions = [
 		{
-			text: 'Annuler',
+			text: t.common.cancel,
 			active: false,
 			onClick: () => {
 				setShowArchiveModal(false);
@@ -174,7 +175,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			color: '#6B6B6B',
 		},
 		{
-			text: archived ? 'Désarchiver' : 'Archiver',
+			text: archived ? t.common.unarchive : t.common.archive,
 			active: true,
 			onClick: archiveHandler,
 			icon: <ArchiveIcon />,
@@ -204,9 +205,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			setSelectedIds(allIds);
 			setIsAllMatchingSelected(true);
 		} catch {
-			onError('Erreur lors de la sélection de tous les éléments');
+			onError(t.shared.selectionError);
 		}
-	}, [company_id, archived, mergedFilterParams, fetchAllClientIds, onError]);
+	}, [company_id, archived, mergedFilterParams, fetchAllClientIds, onError, t]);
 
 	const handleClearAllMatching = useCallback(() => {
 		setIsAllMatchingSelected(false);
@@ -216,9 +217,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const bulkDeleteHandler = async () => {
 		try {
 			await bulkDeleteClients({ ids: selectedIds }).unwrap();
-			onSuccess(`${selectedIds.length} client(s) supprimé(s) avec succès`);
+			onSuccess(t.clients.bulkDeleteSuccess(selectedIds.length));
 		} catch (err) {
-			onError(extractApiErrorMessage(err, 'Erreur lors de la suppression des clients'));
+			onError(extractApiErrorMessage(err, t.clients.bulkDeleteError));
 		} finally {
 			setSelectedIds([]);
 			setIsAllMatchingSelected(false);
@@ -228,17 +229,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	};
 
 	const bulkDeleteModalActions = [
-		{ text: 'Annuler', active: false, onClick: () => setShowBulkDeleteModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
-		{ text: `Supprimer (${selectedIds.length})`, active: true, onClick: bulkDeleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
+		{ text: t.common.cancel, active: false, onClick: () => setShowBulkDeleteModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
+		{ text: t.clients.bulkDeleteBtn(selectedIds.length), active: true, onClick: bulkDeleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
 	];
 
 	const bulkArchiveHandler = async () => {
 		const archiving = bulkArchiveAction === 'archive';
 		try {
 			await bulkArchiveClients({ ids: selectedIds, archived: archiving }).unwrap();
-			onSuccess(`${selectedIds.length} client(s) ${archiving ? 'archivé(s)' : 'désarchivé(s)'} avec succès`);
+			onSuccess(bulkArchiveAction === 'archive' ? t.clients.bulkArchiveSuccess(selectedIds.length) : t.clients.bulkUnarchiveSuccess(selectedIds.length));
 		} catch {
-			onError(`Erreur lors de l'${archiving ? 'archivage' : 'désarchivage'} des clients`);
+			onError(bulkArchiveAction === 'archive' ? t.clients.bulkArchiveError : t.clients.bulkUnarchiveError);
 		} finally {
 			setSelectedIds([]);
 			setIsAllMatchingSelected(false);
@@ -249,14 +250,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const bulkArchiveModalActions = [
 		{
-			text: 'Annuler',
+			text: t.common.cancel,
 			active: false,
 			onClick: () => setShowBulkArchiveModal(false),
 			icon: <CloseIcon />,
 			color: '#6B6B6B',
 		},
 		{
-			text: bulkArchiveAction === 'archive' ? `Archiver (${selectedIds.length})` : `Désarchiver (${selectedIds.length})`,
+			text: bulkArchiveAction === 'archive' ? t.clients.bulkArchiveBtn(selectedIds.length) : t.clients.bulkUnarchiveBtn(selectedIds.length),
 			active: true,
 			onClick: bulkArchiveHandler,
 			icon: bulkArchiveAction === 'archive' ? <ArchiveIcon /> : <UnarchiveIcon />,
@@ -283,7 +284,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const columns: GridColDef[] = [
 		{
 			field: 'code_client',
-			headerName: 'Code Client',
+			headerName: t.clients.colCodeClient,
 			flex: 0.8,
 			minWidth: 100,
 			renderCell: (params: GridRenderCellParams<ClientClass>) => (
@@ -296,10 +297,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		},
 		{
 			field: 'client_type',
-			headerName: 'Type',
+			headerName: t.clients.colType,
 			flex: 1.2,
 			minWidth: 120,
-			filterOperators: createDropdownFilterOperators(typeFilterOptions, 'Tous les types', true),
+			filterOperators: createDropdownFilterOperators(typeFilterOptions, t.clients.allTypes, true),
 			renderCell: (params: GridRenderCellParams<ClientClass>) => {
 				return (
 					<DarkTooltip title={params.value}>
@@ -310,7 +311,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		},
 		{
 			field: 'raison_sociale',
-			headerName: 'Raison Sociale',
+			headerName: t.clients.colRaisonSociale,
 			flex: 1.3,
 			minWidth: 130,
 			renderCell: (params: GridRenderCellParams<ClientClass>) => (
@@ -323,7 +324,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		},
 		{
 			field: 'nom',
-			headerName: 'Nom',
+			headerName: t.clients.colNom,
 			flex: 1.2,
 			minWidth: 120,
 			renderCell: (params: GridRenderCellParams<ClientClass>) => (
@@ -336,7 +337,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		},
 		{
 			field: 'prenom',
-			headerName: 'Prénom',
+			headerName: t.clients.colPrenom,
 			flex: 1.2,
 			minWidth: 120,
 			renderCell: (params: GridRenderCellParams<ClientClass>) => (
@@ -349,10 +350,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		},
 		{
 			field: 'ville_name',
-			headerName: 'Ville',
+			headerName: t.clients.colVille,
 			flex: 1,
 			minWidth: 100,
-			filterOperators: createDropdownFilterOperators(villeFilterOptions, 'Tous les villes'),
+			filterOperators: createDropdownFilterOperators(villeFilterOptions, t.clients.allVilles),
 			renderCell: (params: GridRenderCellParams<ClientClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -363,7 +364,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		},
 		{
 			field: 'date_created',
-			headerName: 'Date de création',
+			headerName: t.common.dateCreation,
 			flex: 1.4,
 			minWidth: 140,
 			filterOperators: createDateRangeFilterOperator(),
@@ -380,7 +381,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		},
 		{
 			field: 'actions',
-			headerName: 'Actions',
+			headerName: t.common.actions,
 			flex: 1.5,
 			minWidth: 150,
 			sortable: false,
@@ -391,7 +392,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				// View action - available for all roles
 				if (role === 'Caissier' || role === 'Lecture' || role === 'Comptable' || role === 'Commercial') {
 					actions.push({
-						label: 'Voir',
+						label: t.common.view,
 						icon: <VisibilityIcon />,
 						onClick: () => router.push(CLIENTS_VIEW(params.row.id, company_id)),
 						color: 'info' as const,
@@ -402,19 +403,19 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				if (role === 'Caissier' || role === 'Commercial') {
 					actions.push(
 						{
-							label: 'Modifier',
+							label: t.common.edit,
 							icon: <EditIcon />,
 							onClick: () => router.push(CLIENTS_EDIT(params.row.id, company_id)),
 							color: 'primary' as const,
 						},
 						{
-							label: 'Supprimer',
+							label: t.common.delete,
 							icon: <DeleteIcon />,
 							onClick: () => showDeleteModalCall(params.row.id),
 							color: 'error' as const,
 						},
 						{
-							label: archived ? 'Désarchiver' : 'Archiver',
+							label: archived ? t.common.unarchive : t.common.archive,
 							icon: archived ? <UnarchiveIcon /> : <ArchiveIcon />,
 							onClick: () => showArchiveModalCall(params.row.id),
 							color: 'warning' as const,
@@ -454,7 +455,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 							}}
 							startIcon={<AddIcon fontSize="small" />}
 						>
-							Nouveau client
+							{t.clients.newClient}
 						</Button>
 					)}
 					{selectedIds.length > 0 && role === 'Caissier' && (
@@ -470,7 +471,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 							}}
 							startIcon={<DeleteIcon fontSize="small" />}
 						>
-							Supprimer ({selectedIds.length})
+							{t.clients.bulkDeleteBtn(selectedIds.length)}
 						</Button>
 					)}
 					{selectedIds.length > 0 && (
@@ -489,7 +490,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 							}}
 							startIcon={archived ? <UnarchiveIcon fontSize="small" /> : <ArchiveIcon fontSize="small" />}
 						>
-							{archived ? 'Désarchiver' : 'Archiver'} ({selectedIds.length})
+					{archived ? t.clients.bulkUnarchiveBtn(selectedIds.length) : t.clients.bulkArchiveBtn(selectedIds.length)}
 						</Button>
 					)}
 				</Box>
@@ -519,43 +520,43 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			/>
 			{showDeleteModal && (
 				<ActionModals
-					title="Supprimer ce client ?"
+					title={t.clients.deleteModalTitle}
 					titleIcon={<DeleteIcon />}
 					titleIconColor="#D32F2F"
-					body="Êtes‑vous sûr de vouloir supprimer ce client?"
+					body={t.clients.deleteModalBody}
 					actions={deleteModalActions}
 				/>
 			)}
 			{showArchiveModal && (
 				<ActionModals
-					title={archived ? 'Désarchiver ce client ?' : 'Archiver ce client ?'}
+					title={archived ? t.clients.unarchiveModalTitle : t.clients.archiveModalTitle}
 					titleIcon={<ArchiveIcon />}
 					titleIconColor="#ED6C02"
 					body={
 						archived
-							? 'Êtes‑vous sûr de vouloir désarchiver ce client?'
-							: 'Êtes‑vous sûr de vouloir archiver ce client?'
+							? t.clients.unarchiveModalBody
+							: t.clients.archiveModalBody
 					}
 					actions={archiveModalActions}
 				/>
 			)}
 			{showBulkDeleteModal && (
 				<ActionModals
-					title={`Supprimer ${selectedIds.length} client(s) ?`}
+					title={t.clients.bulkDeleteModalTitle(selectedIds.length)}
 					titleIcon={<DeleteIcon />}
 					titleIconColor="#D32F2F"
-					body={`Êtes-vous sûr de vouloir supprimer les ${selectedIds.length} client(s) sélectionné(s) ?`}
+					body={t.clients.bulkDeleteModalBody(selectedIds.length)}
 					actions={bulkDeleteModalActions}
 				/>
 			)}
 			{showBulkArchiveModal && (
 				<ActionModals
-					title={bulkArchiveAction === 'archive' ? `Archiver ${selectedIds.length} client(s) ?` : `Désarchiver ${selectedIds.length} client(s) ?`}
+					title={bulkArchiveAction === 'archive' ? t.clients.bulkArchiveModalTitle(selectedIds.length) : t.clients.bulkUnarchiveModalTitle(selectedIds.length)}
 					titleIcon={bulkArchiveAction === 'archive' ? <ArchiveIcon /> : <UnarchiveIcon />}
 					titleIconColor="#ED6C02"
 					body={bulkArchiveAction === 'archive'
-						? `Êtes-vous sûr de vouloir archiver les ${selectedIds.length} client(s) sélectionné(s) ?`
-						: `Êtes-vous sûr de vouloir désarchiver les ${selectedIds.length} client(s) sélectionné(s) ?`
+						? t.clients.bulkArchiveModalBody(selectedIds.length)
+						: t.clients.bulkUnarchiveModalBody(selectedIds.length)
 					}
 					actions={bulkArchiveModalActions}
 				/>
@@ -569,8 +570,9 @@ interface Props extends SessionProps {
 }
 
 const ClientsListClient: React.FC<Props> = ({ session, archived }) => {
+	const { t } = useLanguage();
 	return (
-		<CompanyDocumentsWrapperList session={session} title={archived ? 'Clients Archivés' : 'Liste des Clients'}>
+		<CompanyDocumentsWrapperList session={session} title={archived ? t.clients.archivedTitle : t.clients.listTitle}>
 			{({ company_id, role }) => (
 				<FormikContent archived={archived} session={session} company_id={company_id} role={role} />
 			)}

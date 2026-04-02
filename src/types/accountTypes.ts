@@ -24,7 +24,7 @@ export type AccountPostLoginResponseType = ResponseDataInterface<InitStateTokenN
 
 export type AccountGenderCodeValueType = {
 	code: 'H' | 'F';
-	value: 'Homme' | 'Femme';
+	value: string;
 };
 
 export type DropDownType = {

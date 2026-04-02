@@ -8,6 +8,7 @@ import { Add as AddIcon } from '@mui/icons-material';
 import type { DropDownType } from '@/types/accountTypes';
 import type { SelectChangeEvent } from '@mui/material/Select';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
+import { useLanguage } from '@/utils/hooks';
 
 export interface AddManagedBySectionProps {
 	title: string;
@@ -49,7 +50,9 @@ const AddManagedBySection: React.FC<AddManagedBySectionProps> = ({
 	onAdd,
 	isAddDisabled,
 	sx,
-}) => (
+}) => {
+	const { t } = useLanguage();
+	return (
 	<Box sx={{ mt: 3, ...sx }}>
 		<Typography variant="subtitle1" fontWeight={600} gutterBottom>
 			{title}
@@ -61,7 +64,7 @@ const AddManagedBySection: React.FC<AddManagedBySectionProps> = ({
 					id={selectId}
 					label={selectLabel}
 					fullWidth
-					noOptionsText="Aucun résultat"
+					noOptionsText={t.common.noResults}
 					items={selectItems}
 					value={selectValue}
 					onChange={onSelectChange}
@@ -88,10 +91,11 @@ const AddManagedBySection: React.FC<AddManagedBySectionProps> = ({
 				disabled={isAddDisabled}
 				sx={{ minWidth: 120, height: 'fit-content' }}
 			>
-				Ajouter
+				{t.common.add}
 			</Button>
 		</Stack>
 	</Box>
-);
+	);
+};
 
 export default AddManagedBySection;

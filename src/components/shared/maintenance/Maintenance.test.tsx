@@ -22,6 +22,7 @@ jest.mock('next/image', () => ({
 
 jest.mock('@/utils/hooks', () => ({
 	useAppSelector: jest.fn(),
+	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
 }));
 
 const mockedUseAppSelector = useAppSelector as jest.MockedFunction<typeof useAppSelector>;

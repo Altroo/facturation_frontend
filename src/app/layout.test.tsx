@@ -59,6 +59,16 @@ jest.mock('@/contexts/toastContext', () => ({
 		return React.createElement('div', null, 'TOAST_PROVIDER', props.children);
 	},
 }));
+
+// ✅ Mock LanguageContextProvider
+jest.mock('@/contexts/languageContext', () => ({
+	__esModule: true,
+	LanguageContextProvider: (props: { children?: React.ReactNode }) => {
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		const React = require('react');
+		return React.createElement('div', null, 'LANGUAGE_PROVIDER', props.children);
+	},
+}));
 // Mock SessionExpiredListener
 jest.mock('@/components/shared/sessionExpiredListener/sessionExpiredListener', () => ({
 	__esModule: true,

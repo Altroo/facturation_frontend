@@ -11,7 +11,7 @@ import {
 import { DEVIS_EDIT, DEVIS_LIST, DEVIS_PDF } from '@/utils/routes';
 import { useGetDeviQuery, useDeleteDeviMutation } from '@/store/services/devi';
 import { useInitAccessToken } from '@/contexts/InitContext';
-import { useAppSelector, useToast } from '@/utils/hooks';
+import { useAppSelector, useToast, useLanguage } from '@/utils/hooks';
 import { extractApiErrorMessage } from '@/utils/helpers';
 import { getUserCompaniesState } from '@/store/selectors';
 import { fetchPdfBlob } from '@/utils/apiHelpers';
@@ -40,6 +40,7 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const company = useMemo(() => companies?.find((c) => c.id === company_id), [companies, company_id]);
 	const [deleteRecord] = useDeleteDeviMutation();
 	const { onSuccess, onError } = useToast();
+	const { t } = useLanguage();
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
 	const [showLanguageModal, setShowLanguageModal] = useState(false);
 	const [pendingPdfType, setPendingPdfType] = useState<'avec_remise' | 'sans_remise' | 'avec_unite' | null>(null);
@@ -47,18 +48,18 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const handleDelete = async () => {
 		try {
 			await deleteRecord({ id }).unwrap();
-			onSuccess('Devis supprimé avec succès');
+			onSuccess(t.devis.deleteSuccess);
 			router.push(DEVIS_LIST);
 		} catch (err) {
-			onError(extractApiErrorMessage(err, 'Erreur lors de la suppression du devis'));
+			onError(extractApiErrorMessage(err, t.devis.deleteError));
 		} finally {
 			setShowDeleteModal(false);
 		}
 	};
 
 	const deleteModalActions = [
-		{ text: 'Annuler', active: false, onClick: () => setShowDeleteModal(false), icon: <ArrowBackIcon />, color: '#6B6B6B' },
-		{ text: 'Supprimer', active: true, onClick: handleDelete, icon: <DeleteIcon />, color: '#D32F2F' },
+		{ text: t.common.cancel, active: false, onClick: () => setShowDeleteModal(false), icon: <ArrowBackIcon />, color: '#6B6B6B' },
+		{ text: t.common.delete, active: true, onClick: handleDelete, icon: <DeleteIcon />, color: '#D32F2F' },
 	];
 
 	const openPdf = (type: 'avec_remise' | 'sans_remise' | 'avec_unite') => {
@@ -76,7 +77,7 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 			window.open(blobUrl, '_blank');
 			setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60_000);
 		} catch {
-			onError("Erreur lors de l'ouverture du document.");
+			onError(t.errors.documentOpenError);
 		} finally {
 			setPendingPdfType(null);
 		}
@@ -93,16 +94,16 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 						PDF (remise)
 					</Button>
 					<Button variant="outlined" size="small" startIcon={<PictureAsPdfIcon />} onClick={() => openPdf('sans_remise')}>
-						PDF (sans remise)
+						{t.common.pdfWithoutDiscount}
 					</Button>
 					<Button variant="outlined" color="warning" size="small" startIcon={<PictureAsPdfIcon />} onClick={() => openPdf('avec_unite')}>
-						PDF (unité)
+						{t.common.pdfUnit}
 					</Button>
 				</>
 			)}
 			{isCaissier && (
 				<Button variant="outlined" color="error" size="small" startIcon={<DeleteIcon />} onClick={() => setShowDeleteModal(true)}>
-					Supprimer
+					{t.common.delete}
 				</Button>
 			)}
 		</>
@@ -115,17 +116,17 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 				company_id={company_id}
 				id={id}
 				type="devis"
-				title="Détails du devis"
-				backLabel="Liste des devis"
+				title={t.devis.detailsTitle}
+				backLabel={t.devis.backToList}
 				backTo={DEVIS_LIST}
 				editTo={DEVIS_EDIT}
-				documentNumberLabel="Numéro du devis"
+				documentNumberLabel={t.devis.documentNumberLabel}
 				getDocumentNumber={(d) => d?.numero_devis}
-				documentDateLabel="Date du devis"
+				documentDateLabel={t.devis.documentDateLabel}
 				getDocumentDateRaw={(d) => d?.date_devis}
-				statusTitle="Statut du devis"
-				linesTitle="Lignes du devis"
-				termsSecondLabel="Numéro demande prix client"
+				statusTitle={t.devis.statusTitle}
+				linesTitle={t.devis.linesTitle}
+				termsSecondLabel={t.devis.fieldNumeroDemandePrix}
 				getTermsSecondValue={(d) => d?.numero_demande_prix_client}
 				query={query}
 				headerActions={headerActions}
@@ -138,8 +139,8 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 			)}
 			{showDeleteModal && (
 				<ActionModals
-					title="Supprimer ce devis ?"
-					body="Êtes-vous sûr de vouloir supprimer ce devis ? Cette action est irréversible."
+					title={t.devis.deleteModalTitle}
+					body={t.devis.deleteModalBody}
 					actions={deleteModalActions}
 					titleIcon={<DeleteIcon />}
 					titleIconColor="#D32F2F"

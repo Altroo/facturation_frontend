@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import type { TranslationDictionary } from '@/types/languageTypes';
 import type { SessionProps } from '@/types/_initTypes';
 import CompanyDocumentsWrapperForm from '@/components/pages/dashboard/shared/company-documents-form/companyDocumentsWrapperForm';
 import CompanyDocumentFormContent from '@/components/pages/dashboard/shared/company-documents-form/companyDocumentFormContent';
@@ -21,27 +22,28 @@ import type {
 } from '@/types/companyDocumentsTypes';
 import type { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
 import type { FactureClass } from '@/models/classes';
+import { useLanguage } from '@/utils/hooks';
 
 // Configuration for facture client form
-const factureClientFormConfig: DocumentFormConfig<FactureClass> = {
+const createFactureClientFormConfig = (t: TranslationDictionary): DocumentFormConfig<FactureClass> => ({
 	documentType: 'facture-client',
 	labels: {
 		documentTypeName: 'facture client',
-		listLabel: 'Liste des factures client',
-		dateLabel: 'Date de la facture',
-		statusLabel: 'Statut de la facture',
-		linesLabel: 'Lignes de la facture',
-		deleteLineMessage: 'Êtes-vous sûr de vouloir supprimer cette ligne de la facture ?',
-		addSuccessMessage: 'Facture client créée avec succès.',
-		updateSuccessMessage: 'Facture client mise à jour avec succès.',
-		addErrorMessage: 'Échec de la création de la facture client.',
-		updateErrorMessage: 'Échec de la mise à jour de la facture client.',
+		listLabel: t.facturesClient.backToList,
+		dateLabel: t.facturesClient.fieldDate,
+		statusLabel: t.facturesClient.fieldStatut,
+		linesLabel: t.facturesClient.linesTitle,
+		deleteLineMessage: t.facturesClient.deleteLineBody,
+		addSuccessMessage: t.facturesClient.addSuccess,
+		updateSuccessMessage: t.facturesClient.updateSuccess,
+		addErrorMessage: t.facturesClient.addError,
+		updateErrorMessage: t.facturesClient.updateError,
 	},
 	fields: {
 		numeroField: 'numero_facture',
 		dateField: 'date_facture',
 		extraField: 'numero_bon_commande_client',
-		extraFieldLabel: 'N° bon de commande client',
+		extraFieldLabel: t.facturesClient.fieldNumeroBonCommande,
 	},
 	routes: {
 		listRoute: FACTURE_CLIENT_LIST,
@@ -51,8 +53,7 @@ const factureClientFormConfig: DocumentFormConfig<FactureClass> = {
 		editSchema: factureClientProformaSchema,
 		addSchema: factureClientProformaAddSchema,
 	},
-};
-
+});
 type FormikContentProps = {
 	token?: string;
 	company_id: number;
@@ -62,6 +63,8 @@ type FormikContentProps = {
 };
 
 const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, isEditMode, role }) => {
+	const { t } = useLanguage();
+	const factureClientFormConfig = React.useMemo(() => createFactureClientFormConfig(t), [t]);
 	// Queries
 	const {
 		data: rawData,
@@ -124,14 +127,15 @@ interface Props extends SessionProps {
 }
 
 const FactureClientForm: React.FC<Props> = ({ session, company_id, id }) => {
+	const { t } = useLanguage();
 	return (
 		<CompanyDocumentsWrapperForm
 			session={session}
 			company_id={company_id}
 			id={id}
 			documentConfig={{
-				addTitle: 'Ajouter une facture client',
-				editTitle: 'Modifier facture client',
+				addTitle: t.facturesClient.addTitle,
+				editTitle: t.facturesClient.editTitle,
 			}}
 			FormComponent={FormikContent}
 		/>

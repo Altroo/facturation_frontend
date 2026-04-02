@@ -8,6 +8,7 @@ import { DataGrid, GridSlotProps, ColumnsPanelTrigger, ToolbarButton, GridLogicO
 import { frFR } from '@mui/x-data-grid/locales';
 import { getDefaultTheme } from '@/utils/themes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
+import { useLanguage } from '@/utils/hooks';
 import CustomFilterPanel, {
 	CustomFilterModel,
 	CustomFilterItem,
@@ -151,6 +152,7 @@ const PaginatedDataGrid = <T,>({
 	isAllMatchingSelected,
 	onClearAllMatchingSelected,
 }: PaginatedDataGridProps<T>) => {
+	const { t } = useLanguage();
 	const [internalFilterModel, setInternalFilterModel] = useState<GridFilterModel>({
 		items: [],
 		logicOperator: GridLogicOperator.And,
@@ -397,20 +399,20 @@ const PaginatedDataGrid = <T,>({
 									{isAllMatchingSelected ? (
 										<>
 											<Typography variant="body2">
-												Les <strong>{totalMatchingCount}</strong> éléments correspondant aux filtres sont sélectionnés.
+												{t.shared.allMatchingSelected(totalMatchingCount!)}
 											</Typography>
 											<Button
 												size="small"
 												onClick={onClearAllMatchingSelected}
 												sx={{ textTransform: 'none', fontWeight: 600, p: 0.5, minWidth: 'auto' }}
 											>
-												Effacer la sélection
+												{t.shared.clearSelection}
 											</Button>
 										</>
 									) : (
 										<>
 											<Typography variant="body2">
-												Les <strong>{rows.length}</strong> éléments de cette page sont sélectionnés.
+												{t.shared.selectAllPage(rows.length)}
 											</Typography>
 											<Button
 												size="small"
@@ -421,10 +423,10 @@ const PaginatedDataGrid = <T,>({
 												{selectAllMatchingLoading ? (
 													<Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
 														<CircularProgress size={12} />
-														<span>Chargement...</span>
+														<span>{t.shared.loadingIds}</span>
 													</Box>
 												) : (
-													`Sélectionner les ${totalMatchingCount} éléments correspondant aux filtres`
+													t.shared.selectAllMatching(totalMatchingCount!)
 												)}
 											</Button>
 										</>

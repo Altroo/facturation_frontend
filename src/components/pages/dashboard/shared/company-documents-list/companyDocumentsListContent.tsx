@@ -29,7 +29,7 @@ import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDa
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
 import { formatDate, formatNumberWithSpaces, extractApiErrorMessage } from '@/utils/helpers';
-import { useToast } from '@/utils/hooks';
+import { useToast, useLanguage } from '@/utils/hooks';
 import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
@@ -74,14 +74,17 @@ export const getStatutColor = (
 	}
 };
 
-export const statutFilterOptions = [
-	{ value: 'Brouillon', label: 'Brouillon', color: 'default' as const },
-	{ value: 'Envoyé', label: 'Envoyé', color: 'info' as const },
-	{ value: 'Accepté', label: 'Accepté', color: 'success' as const },
-	{ value: 'Refusé', label: 'Refusé', color: 'error' as const },
-	{ value: 'Annulé', label: 'Annulé', color: 'error' as const },
-	{ value: 'Expiré', label: 'Expiré', color: 'warning' as const },
+export const createStatutFilterOptions = (t: import('@/types/languageTypes').TranslationDictionary) => [
+	{ value: 'Brouillon', label: t.rawData.documentStatuses.draft, color: 'default' as const },
+	{ value: 'Envoyé', label: t.rawData.documentStatuses.sent, color: 'info' as const },
+	{ value: 'Accepté', label: t.rawData.documentStatuses.accepted, color: 'success' as const },
+	{ value: 'Refusé', label: t.rawData.documentStatuses.refused, color: 'error' as const },
+	{ value: 'Annulé', label: t.rawData.documentStatuses.cancelled, color: 'error' as const },
+	{ value: 'Expiré', label: t.rawData.documentStatuses.expired, color: 'warning' as const },
 ];
+
+/** @deprecated Use createStatutFilterOptions(t) inside a component */
+export const statutFilterOptions = createStatutFilterOptions({ rawData: { documentStatuses: { draft: 'Brouillon', sent: 'Envoyé', accepted: 'Accepté', refused: 'Refusé', cancelled: 'Annulé', expired: 'Expiré', invoiced: 'Facturé' } } } as import('@/types/languageTypes').TranslationDictionary);
 
 export interface DocumentListContentProps<TDocument extends DocumentListClass> {
 	/** Company ID */
@@ -143,6 +146,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 	} = props;
 
 	const { onSuccess, onError } = useToast();
+	const { t } = useLanguage();
 
 	const { data, isLoading, refetch } = queryResult;
 	const { deleteRecord } = deleteMutation;
@@ -187,7 +191,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 		if (bulkDeleteMutation) {
 			try {
 				await bulkDeleteMutation.bulkDeleteRecords({ ids: selectedIds }).unwrap();
-				onSuccess(`${selectedIds.length} ${config.labels.documentTypeName}(s) supprimé(s) avec succès`);
+				onSuccess(t.documentList.bulkDeleteSuccess(selectedIds.length, config.labels.documentTypeName));
 			} catch (err) {
 				onError(extractApiErrorMessage(err, `Erreur lors de la suppression`));
 			}
@@ -197,16 +201,16 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 			);
 			const failures = results.filter((r): r is PromiseRejectedResult => r.status === 'rejected');
 			if (failures.length === 0) {
-				onSuccess(`${selectedIds.length} ${config.labels.documentTypeName}(s) supprimé(s) avec succès`);
+				onSuccess(t.documentList.bulkDeleteSuccess(selectedIds.length, config.labels.documentTypeName));
 			} else {
 				const firstError = failures[0].reason;
-				onError(extractApiErrorMessage(firstError, `${failures.length} suppression(s) ont échoué`));
+				onError(extractApiErrorMessage(firstError, t.documentList.bulkDeletePartialError(failures.length)));
 			}
 		}
 		setSelectedIds([]);
 		setShowBulkDeleteModal(false);
 		refetch();
-	}, [selectedIds, bulkDeleteMutation, deleteRecord, onSuccess, onError, refetch, config.labels]);
+	}, [selectedIds, bulkDeleteMutation, deleteRecord, onSuccess, onError, refetch, config.labels, t]);
 
 	const handleConvertAction = useCallback(
 		async (actionKey: string) => {
@@ -217,15 +221,15 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 
 			try {
 				const response = await mutation.convertMutation({ id: selectedId }).unwrap();
-				onSuccess(`${config.labels.documentTypeName} converti(e) avec succès`);
+				onSuccess(t.documentList.convertSuccess(config.labels.documentTypeName));
 				router.push(action.redirectRoute(response.id, companyId));
 			} catch {
-				onError(`Erreur lors de la conversion du ${config.labels.documentTypeName}`);
+				onError(t.documentList.convertError(config.labels.documentTypeName));
 			} finally {
 				setActiveConvertAction(null);
 			}
 		},
-		[convertMutations, config, selectedId, onSuccess, router, companyId, onError],
+		[convertMutations, config, selectedId, onSuccess, router, companyId, onError, t],
 	);
 
 	const showConvertModalCall = useCallback((e: React.MouseEvent<HTMLButtonElement, MouseEvent>, id: number) => {
@@ -267,7 +271,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 			}
 
 			if (!accessToken) {
-				onError("Erreur d'authentification. Veuillez vous reconnecter.");
+				onError(t.documentList.authError);
 				return;
 			}
 
@@ -281,13 +285,13 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 					window.URL.revokeObjectURL(blobUrl);
 				}, 60_000);
 			} catch {
-				onError("Erreur lors de l'ouverture du document.");
+				onError(t.errors.documentOpenError);
 			} finally {
 				setSelectedPrintAction(null);
 				setPrintMenuItemId(null);
 			}
 		},
-		[selectedPrintAction, printMenuItemId, accessToken, companyId, onError],
+		[selectedPrintAction, printMenuItemId, accessToken, companyId, onError, t],
 	);
 
 	const handleLanguageModalClose = useCallback(() => {
@@ -304,35 +308,35 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 	const deleteModalActions = useMemo(
 		() => [
 			{
-				text: 'Annuler',
+				text: t.common.cancel,
 				active: false,
 				onClick: () => setShowDeleteModal(false),
 				icon: <CloseIcon />,
 				color: '#6B6B6B',
 			},
-			{ text: 'Supprimer', active: true, onClick: deleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
+			{ text: t.common.delete, active: true, onClick: deleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
 		],
-		[deleteHandler],
+		[deleteHandler, t],
 	);
 
 	const bulkDeleteModalActions = useMemo(
 		() => [
 			{
-				text: 'Annuler',
+				text: t.common.cancel,
 				active: false,
 				onClick: () => setShowBulkDeleteModal(false),
 				icon: <CloseIcon />,
 				color: '#6B6B6B',
 			},
 			{
-				text: `Supprimer (${selectedIds.length})`,
+				text: t.documentList.bulkDeleteBtn(selectedIds.length),
 				active: true,
 				onClick: bulkDeleteHandler,
 				icon: <DeleteIcon />,
 				color: '#D32F2F',
 			},
 		],
-		[bulkDeleteHandler, selectedIds.length],
+		[bulkDeleteHandler, selectedIds.length, t],
 	);
 
 	const convertModalActionsMap = useMemo(() => {
@@ -344,14 +348,14 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 			map[action.key] = {
 				actions: [
 					{
-						text: 'Annuler',
+						text: t.common.cancel,
 						active: false,
 						onClick: () => setActiveConvertAction(null),
 						icon: <CloseIcon />,
 						color: '#6B6B6B',
 					},
 					{
-						text: 'Convertir',
+						text: t.common.convert,
 						active: true,
 						onClick: () => handleConvertAction(action.key),
 						icon: action.icon,
@@ -361,7 +365,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 			};
 		});
 		return map;
-	}, [config.convertActions, handleConvertAction]);
+	}, [config.convertActions, handleConvertAction, t]);
 
 	const isAnyConvertLoading = useMemo(() => {
 		if (!convertMutations) return false;
@@ -402,10 +406,10 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 			},
 			{
 				field: 'client_name',
-				headerName: 'Client',
+				headerName: t.documentList.colClient,
 				flex: 1.5,
 				minWidth: 140,
-				filterOperators: createDropdownFilterOperators(clientFilterOptions, 'Tous les clients'),
+				filterOperators: createDropdownFilterOperators(clientFilterOptions, t.documentList.allClients),
 				renderCell: (params: GridRenderCellParams<TDocument>) => (
 					<DarkTooltip title={params.value}>
 						<Typography variant="body2" noWrap>
@@ -433,10 +437,10 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 			},
 			{
 				field: 'statut',
-				headerName: 'Statut',
+				headerName: t.documentList.colStatut,
 				flex: 0.8,
 				minWidth: 100,
-				filterOperators: createDropdownFilterOperators(statutFilterOptions, 'Tous les statuts', true),
+				filterOperators: createDropdownFilterOperators(statutFilterOptions, t.common.allStatuses, true),
 				renderCell: (params: GridRenderCellParams<TDocument>) => (
 					<DarkTooltip title={params.value}>
 						<Chip label={params.value || '-'} color={getStatutColor(params.value || '')} variant="outlined" />
@@ -445,7 +449,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 			},
 			{
 				field: 'total_ttc_apres_remise',
-				headerName: 'Total TTC après remise',
+				headerName: t.documentList.colTotalTTC,
 				flex: 1.3,
 				minWidth: 130,
 				filterOperators: createNumericFilterOperators(),
@@ -464,7 +468,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 			},
 			{
 				field: 'lignes_count',
-				headerName: "Nombre d'articles",
+				headerName: t.documentList.colNombreArticles,
 				flex: 1.2,
 				minWidth: 120,
 				filterOperators: createNumericFilterOperators(),
@@ -495,7 +499,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 			},
 			{
 				field: 'actions',
-				headerName: 'Actions',
+				headerName: t.common.actions,
 				flex: 2,
 				minWidth: 200,
 				sortable: false,
@@ -506,7 +510,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 					// View action - available for all roles
 					if (role === 'Caissier' || role === 'Comptable' || role === 'Commercial' || role === 'Lecture') {
 						actions.push({
-							label: 'Voir',
+							label: t.common.view,
 							icon: <VisibilityIcon />,
 							onClick: () => router.push(config.routes.viewRoute((params.row as DocumentListClass).id, companyId)),
 							color: 'info' as const,
@@ -517,13 +521,13 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 					if (role === 'Caissier' || role === 'Commercial') {
 						actions.push(
 							{
-								label: 'Modifier',
+								label: t.common.edit,
 								icon: <EditIcon />,
 								onClick: () => router.push(config.routes.editRoute((params.row as DocumentListClass).id, companyId)),
 								color: 'primary' as const,
 							},
 							{
-								label: 'Supprimer',
+								label: t.common.delete,
 								icon: <DeleteIcon />,
 								onClick: () => showDeleteModalCall((params.row as DocumentListClass).id),
 								color: 'error' as const,
@@ -534,7 +538,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 						if (config.convertActions && config.convertActions.length > 0) {
 							const isCurrentItemLoading = isAnyConvertLoading && selectedId === (params.row as DocumentListClass).id;
 							actions.push({
-								label: 'Convertir',
+								label: t.common.convert,
 								icon: isCurrentItemLoading ? <CircularProgress size={20} /> : <SwapHorizIcon />,
 							onClick: (e?: React.MouseEvent<HTMLElement>) => {
 								if (!isCurrentItemLoading && e) {
@@ -550,7 +554,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 					// Print action - available for Caissier, Comptable, Commercial
 					if ((role === 'Caissier' || role === 'Comptable' || role === 'Commercial') && config.printActions && config.printActions.length > 0) {
 						actions.push({
-							label: 'Afficher',
+							label: t.common.display,
 							icon: <PrintIcon />,
 						onClick: (e?: React.MouseEvent<HTMLElement>) => {
 							if (e) {
@@ -586,8 +590,7 @@ return baseColumns;
 	showPrintMenuCall,
 	isAnyConvertLoading,
 	selectedId,
-]);
-
+		t,]);
 const modalsConfig = useMemo(
 () => ({
 	delete: {
@@ -670,8 +673,8 @@ const modalsConfig = useMemo(
 
 			{showBulkDeleteModal && (
 				<ActionModals
-					title={`Supprimer ${selectedIds.length} élément(s) ?`}
-					body={`Êtes-vous sûr de vouloir supprimer les ${selectedIds.length} ${config.labels.documentTypeName}(s) sélectionné(s) ?`}
+					title={t.documentList.bulkDeleteTitle(selectedIds.length)}
+					body={t.documentList.bulkDeleteBody(selectedIds.length, config.labels.documentTypeName)}
 					actions={bulkDeleteModalActions}
 					titleIcon={<DeleteIcon />}
 					titleIconColor="#D32F2F"

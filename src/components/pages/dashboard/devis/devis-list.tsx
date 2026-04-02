@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import type { TranslationDictionary } from '@/types/languageTypes';
 import { useRouter } from 'next/navigation';
 import { ReceiptLong as ReceiptLongIcon, ReceiptLongOutlined as ReceiptLongOutlinedIcon, Print as PrintIcon } from '@mui/icons-material';
 import { GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
@@ -21,22 +22,23 @@ import type { DocumentListConfig, PaginationModel } from '@/types/companyDocumen
 import { useGetModePaiementListQuery } from '@/store/services/parameter';
 import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
+import { useLanguage } from '@/utils/hooks';
 
 export {
 	getStatutColor,
 	statutFilterOptions,
 } from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsListContent';
 
-const devisListConfig: DocumentListConfig<DeviClass> = {
+const createDevisListConfig = (t: TranslationDictionary): DocumentListConfig<DeviClass> => ({
 	documentType: 'devis',
 	labels: {
 		documentTypeName: 'devis',
-		pageTitle: 'Liste des Devis',
-		addButtonText: 'Nouveau devis',
-		deleteSuccessMessage: 'Devis supprimé avec succès',
-		deleteErrorMessage: 'Erreur lors de la suppression du devis',
-		deleteConfirmTitle: 'Supprimer ce devis ?',
-		deleteConfirmBody: 'Êtes‑vous sûr de vouloir supprimer ce devis ?',
+		pageTitle: t.devis.listTitle,
+		addButtonText: t.devis.newDevis,
+		deleteSuccessMessage: t.devis.deleteSuccess,
+		deleteErrorMessage: t.devis.deleteError,
+		deleteConfirmTitle: t.devis.deleteModalTitle,
+		deleteConfirmBody: t.devis.deleteModalBody,
 	},
 	routes: {
 		addRoute: DEVIS_ADD,
@@ -45,28 +47,28 @@ const devisListConfig: DocumentListConfig<DeviClass> = {
 	},
 	columns: {
 		numeroField: 'numero_devis',
-		numeroHeaderName: 'Numéro devis',
+		numeroHeaderName: t.devis.colNumeroDevis,
 		dateField: 'date_devis',
-		dateHeaderName: 'Date devis',
+		dateHeaderName: t.devis.colDateDevis,
 		extraField: 'numero_demande_prix_client',
-		extraFieldHeaderName: 'N° demande de prix',
+		extraFieldHeaderName: t.devis.colNumeroDemandePrix,
 	},
 	convertActions: [
 		{
 			key: 'facture_pro_forma',
-			label: 'Facture pro-forma',
+			label: t.devis.labelFactureProforma,
 			icon: <ReceiptLongOutlinedIcon fontSize="small" color="success" />,
-			modalTitle: 'Convertir en facture pro-forma ?',
-			modalBody: 'Êtes-vous sûr de vouloir convertir ce devis en facture pro-forma ?',
+			modalTitle: t.devis.convertToProformaTitle,
+			modalBody: t.devis.convertToProformaBody,
 			disabled: (row) => !['Envoyé', 'Accepté'].includes(row.statut),
 			redirectRoute: FACTURE_PRO_FORMA_EDIT,
 		},
 		{
 			key: 'facture_client',
-			label: 'Facture client',
+			label: t.devis.labelFactureClient,
 			icon: <ReceiptLongIcon fontSize="small" color="success" />,
-			modalTitle: 'Convertir en facture client ?',
-			modalBody: 'Êtes-vous sûr de vouloir convertir ce devis en facture client ?',
+			modalTitle: t.devis.convertToFactureTitle,
+			modalBody: t.devis.convertToFactureBody,
 			disabled: (row) => !['Envoyé', 'Accepté'].includes(row.statut),
 			redirectRoute: FACTURE_CLIENT_EDIT,
 		},
@@ -74,7 +76,7 @@ const devisListConfig: DocumentListConfig<DeviClass> = {
 	printActions: [
 		{
 			key: 'avec_remise',
-			label: 'Afficher Devis avec remise',
+			label: t.common.pdfWithDiscount,
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#1976d2',
 			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') =>
@@ -82,7 +84,7 @@ const devisListConfig: DocumentListConfig<DeviClass> = {
 		},
 		{
 			key: 'sans_remise',
-			label: 'Afficher Devis sans remise',
+			label: t.common.pdfWithoutDiscount,
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#2e7d32',
 			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') =>
@@ -90,15 +92,14 @@ const devisListConfig: DocumentListConfig<DeviClass> = {
 		},
 		{
 			key: 'avec_unite',
-			label: 'Afficher Devis avec unité',
+			label: t.common.pdfWithUnit,
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#ed6c02',
 			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') =>
 				DEVIS_PDF(id, companyId, 'avec_unite', language),
 		},
 	],
-};
-
+});
 interface FormikContentProps extends SessionProps {
 	company_id: number;
 	role: string;
@@ -107,6 +108,8 @@ interface FormikContentProps extends SessionProps {
 const FormikContent: React.FC<FormikContentProps> = (props) => {
 	const { session, company_id, role } = props;
 	const router = useRouter();
+	const { t } = useLanguage();
+	const devisListConfig = React.useMemo(() => createDevisListConfig(t), [t]);
 	const token = useInitAccessToken(session);
 
 	const [paginationModel, setPaginationModel] = useState<PaginationModel>({
@@ -122,9 +125,9 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 
 	const chipFilters: ChipFilterConfig[] = React.useMemo(
 		() => [
-			{ key: 'mode_paiement', label: 'Mode de paiement', paramName: 'mode_paiement_ids', options: modePaiement ?? [] },
+			{ key: 'mode_paiement', label: t.devis.filterModePaiement, paramName: 'mode_paiement_ids', options: modePaiement ?? [] },
 		],
-		[modePaiement],
+		[modePaiement, t],
 	);
 
 	const mergedFilterParams = React.useMemo(
@@ -197,8 +200,9 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 };
 
 const DevisListClient: React.FC<SessionProps> = ({ session }) => {
+	const { t } = useLanguage();
 	return (
-		<CompanyDocumentsWrapperList session={session} title="Liste des Devis">
+		<CompanyDocumentsWrapperList session={session} title={t.devis.listTitle}>
 			{({ company_id, role }) => <FormikContent session={session} company_id={company_id} role={role} />}
 		</CompanyDocumentsWrapperList>
 	);

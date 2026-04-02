@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import type { TranslationDictionary } from '@/types/languageTypes';
 import { useRouter } from 'next/navigation';
 import { Box, Card, CardContent, Stack, Typography, Divider } from '@mui/material';
 import CurrencyToggle from '@/components/shared/currencyToggle/currencyToggle';
@@ -26,17 +27,18 @@ import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/com
 import CompanyDocumentsListContent from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsListContent';
 import type { DocumentListConfig, PaginationModel } from '@/types/companyDocumentsTypes';
 import { formatNumberWithSpaces } from '@/utils/helpers';
+import { useLanguage } from '@/utils/hooks';
 
-const factureClientUnpaidListConfig: DocumentListConfig<FactureClass> = {
+const createFactureClientUnpaidListConfig = (t: TranslationDictionary): DocumentListConfig<FactureClass> => ({
 	documentType: 'facture-client',
 	labels: {
 		documentTypeName: 'facture client',
-		pageTitle: 'Factures Impayées',
-		addButtonText: 'Nouvelle facture client',
-		deleteSuccessMessage: 'Facture client supprimé avec succès',
-		deleteErrorMessage: 'Erreur lors de la suppression du facture client',
-		deleteConfirmTitle: 'Supprimer cette facture client ?',
-		deleteConfirmBody: 'Êtes‑vous sûr de vouloir supprimer cette facture client ?',
+		pageTitle: t.facturesClient.unpaidListTitle,
+		addButtonText: t.facturesClient.newFacture,
+		deleteSuccessMessage: t.facturesClient.deleteSuccess,
+		deleteErrorMessage: t.facturesClient.deleteError,
+		deleteConfirmTitle: t.facturesClient.deleteModalTitle,
+		deleteConfirmBody: t.facturesClient.deleteModalBody,
 	},
 	routes: {
 		addRoute: FACTURE_CLIENT_ADD,
@@ -54,16 +56,15 @@ const factureClientUnpaidListConfig: DocumentListConfig<FactureClass> = {
 	convertActions: [
 		{
 			key: 'bon_de_livraison',
-			label: 'Bon de livraison',
+			label: t.facturesClient.labelBonLivraison,
 			icon: <ReceiptLongIcon fontSize="small" color="success" />,
-			modalTitle: 'Convertir en bon de livraison ?',
-			modalBody: 'Êtes-vous sûr de vouloir convertir cette facture client en bon de livraison ?',
+			modalTitle: t.facturesClient.convertToBLTitle,
+			modalBody: t.facturesClient.convertToBLBody,
 			disabled: false,
 			redirectRoute: BON_DE_LIVRAISON_EDIT,
 		},
 	],
-};
-
+});
 interface FormikContentProps extends SessionProps {
 	company_id: number;
 	role: string;
@@ -72,6 +73,8 @@ interface FormikContentProps extends SessionProps {
 const FormikContent: React.FC<FormikContentProps> = (props) => {
 	const { session, company_id, role } = props;
 	const router = useRouter();
+	const { t } = useLanguage();
+	const factureClientUnpaidListConfig = React.useMemo(() => createFactureClientUnpaidListConfig(t), [t]);
 	const token = useInitAccessToken(session);
 
 	const { data: companyData } = useGetCompanyQuery({ id: company_id }, { skip: !token });
@@ -146,7 +149,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 								<AttachMoneyIcon color="primary" />
 								<Box>
 									<Typography variant="body2" color="text.secondary">
-										Chiffre d&#39;affaire total
+										{t.facturesClient.statsCA}
 									</Typography>
 									<Typography variant="h6" fontWeight={700}>
 										{chiffreAffaireTotal}
@@ -161,7 +164,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 								<CheckCircleIcon color="success" />
 								<Box>
 									<Typography variant="body2" color="text.secondary">
-										Total règlements
+										{t.facturesClient.statsReglements}
 									</Typography>
 									<Typography variant="h6" fontWeight={700} color="success.main">
 										{totalReglements}
@@ -176,7 +179,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 								<CancelIcon color="error" />
 								<Box>
 									<Typography variant="body2" color="text.secondary">
-										Total impayés
+										{t.facturesClient.statsImpayes}
 									</Typography>
 									<Typography variant="h6" fontWeight={700} color="error.main">
 										{totalImpayes}
@@ -211,8 +214,9 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 };
 
 const FactureClientUnpaidListClient: React.FC<SessionProps> = ({ session }) => {
+	const { t } = useLanguage();
 	return (
-		<CompanyDocumentsWrapperList session={session} title="Factures Impayées">
+		<CompanyDocumentsWrapperList session={session} title={t.facturesClient.unpaidListTitle}>
 			{({ company_id, role }) => <FormikContent session={session} company_id={company_id} role={role} />}
 		</CompanyDocumentsWrapperList>
 	);

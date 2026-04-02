@@ -17,6 +17,7 @@ const mockOnError = jest.fn();
 jest.mock('@/utils/hooks', () => ({
 	useToast: () => ({ onSuccess: mockOnSuccess, onError: mockOnError }),
 	useAppSelector: jest.fn(() => []),
+	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
 }));
 
 const mockRefetch = jest.fn();
@@ -266,7 +267,7 @@ describe('ClientsListClient', () => {
 			await act(async () => { fireEvent.click(screen.getAllByText('Archiver')[0]); });
 			const btns = screen.getAllByText('Archiver');
 			await act(async () => { fireEvent.click(btns[btns.length - 1]); });
-			await waitFor(() => { expect(mockOnError).toHaveBeenCalledWith("Erreur lors de l\u2019archivage du client"); });
+			await waitFor(() => { expect(mockOnError).toHaveBeenCalledWith("Erreur lors de l'archivage du client"); });
 		});
 
 		it('handles unarchive error', async () => {
@@ -275,7 +276,7 @@ describe('ClientsListClient', () => {
 			await act(async () => { fireEvent.click(screen.getAllByText('Désarchiver')[0]); });
 			const btns = screen.getAllByText('Désarchiver');
 			await act(async () => { fireEvent.click(btns[btns.length - 1]); });
-			await waitFor(() => { expect(mockOnError).toHaveBeenCalledWith('Erreur lors de la désarchivation du client'); });
+			await waitFor(() => { expect(mockOnError).toHaveBeenCalledWith('Erreur lors du désarchivage du client'); });
 		});
 
 		it('cancels archive modal on Annuler', async () => {

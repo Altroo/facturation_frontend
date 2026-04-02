@@ -16,6 +16,7 @@ const mockOnSuccess = jest.fn();
 const mockOnError = jest.fn();
 jest.mock('@/utils/hooks', () => ({
 	useToast: () => ({ onSuccess: mockOnSuccess, onError: mockOnError }),
+	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
 }));
 
 const mockRefetch = jest.fn();
@@ -238,7 +239,7 @@ describe('CompaniesListClient', () => {
 			await act(async () => { fireEvent.click(screen.getAllByText('Suspendre')[0]); });
 			const btns = screen.getAllByText('Suspendre');
 			await act(async () => { fireEvent.click(btns[btns.length - 1]); });
-			await waitFor(() => { expect(mockOnError).toHaveBeenCalledWith("Erreur lors de la suspension de l'entreprise"); });
+			await waitFor(() => { expect(mockOnError).toHaveBeenCalledWith('Erreur lors de la suspension'); });
 		});
 	});
 

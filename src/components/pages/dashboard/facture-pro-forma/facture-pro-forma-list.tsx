@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import type { TranslationDictionary } from '@/types/languageTypes';
 import { useRouter } from 'next/navigation';
 import { ReceiptLong as ReceiptLongIcon, Print as PrintIcon } from '@mui/icons-material';
 import { GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
@@ -26,17 +27,18 @@ import type { DocumentListConfig, PaginationModel } from '@/types/companyDocumen
 import { useGetModePaiementListQuery } from '@/store/services/parameter';
 import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
+import { useLanguage } from '@/utils/hooks';
 
-const factureProFormaListConfig: DocumentListConfig<FactureClass> = {
+const createFactureProFormaListConfig = (t: TranslationDictionary): DocumentListConfig<FactureClass> => ({
 	documentType: 'facture-pro-forma',
 	labels: {
 		documentTypeName: 'facture pro-forma',
-		pageTitle: 'Liste des Factures Proforma',
-		addButtonText: 'Nouvelle facture proforma',
-		deleteSuccessMessage: 'Facture pro-forma supprimé avec succès',
-		deleteErrorMessage: 'Erreur lors de la suppression du facture pro-forma',
-		deleteConfirmTitle: 'Supprimer cette facture pro-forma ?',
-		deleteConfirmBody: 'Êtes‑vous sûr de vouloir supprimer cette facture pro-forma ?',
+		pageTitle: t.facturesProforma.listTitle,
+		addButtonText: t.facturesProforma.newFacture,
+		deleteSuccessMessage: t.facturesProforma.deleteSuccess,
+		deleteErrorMessage: t.facturesProforma.deleteError,
+		deleteConfirmTitle: t.facturesProforma.deleteModalTitle,
+		deleteConfirmBody: t.facturesProforma.deleteModalBody,
 	},
 	routes: {
 		addRoute: FACTURE_PRO_FORMA_ADD,
@@ -56,8 +58,8 @@ const factureProFormaListConfig: DocumentListConfig<FactureClass> = {
 			key: 'facture_client',
 			label: 'Facture',
 			icon: <ReceiptLongIcon fontSize="small" color="success" />,
-			modalTitle: 'Convertir en facture client ?',
-			modalBody: 'Êtes-vous sûr de vouloir convertir cette facture pro forma en facture client ?',
+			modalTitle: t.facturesProforma.convertToFactureTitle,
+			modalBody: t.facturesProforma.convertToFactureBody,
 			disabled: (row) => !['Envoyé', 'Accepté'].includes(row.statut),
 			redirectRoute: FACTURE_CLIENT_EDIT,
 		},
@@ -85,8 +87,7 @@ const factureProFormaListConfig: DocumentListConfig<FactureClass> = {
 			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') => FACTURE_PRO_FORMA_PDF(id, companyId, 'avec_unite', language),
 		},
 	],
-};
-
+});
 interface FormikContentProps extends SessionProps {
 	company_id: number;
 	role: string;
@@ -95,6 +96,8 @@ interface FormikContentProps extends SessionProps {
 const FormikContent: React.FC<FormikContentProps> = (props) => {
 	const { session, company_id, role } = props;
 	const router = useRouter();
+	const { t } = useLanguage();
+	const factureProFormaListConfig = React.useMemo(() => createFactureProFormaListConfig(t), [t]);
 	const token = useInitAccessToken(session);
 
 	const [paginationModel, setPaginationModel] = useState<PaginationModel>({
@@ -110,9 +113,9 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 
 	const chipFilters: ChipFilterConfig[] = React.useMemo(
 		() => [
-			{ key: 'mode_paiement', label: 'Mode de paiement', paramName: 'mode_paiement_ids', options: modePaiement ?? [] },
+			{ key: 'mode_paiement', label: t.facturesProforma.filterModePaiement, paramName: 'mode_paiement_ids', options: modePaiement ?? [] },
 		],
-		[modePaiement],
+		[modePaiement, t],
 	);
 
 	const mergedFilterParams = React.useMemo(
@@ -178,8 +181,9 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 };
 
 const FactureProFormaListClient: React.FC<SessionProps> = ({ session }) => {
+	const { t } = useLanguage();
 	return (
-		<CompanyDocumentsWrapperList session={session} title="Liste des Factures Proforma">
+		<CompanyDocumentsWrapperList session={session} title={t.facturesProforma.listTitle}>
 			{({ company_id, role }) => <FormikContent session={session} company_id={company_id} role={role} />}
 		</CompanyDocumentsWrapperList>
 	);

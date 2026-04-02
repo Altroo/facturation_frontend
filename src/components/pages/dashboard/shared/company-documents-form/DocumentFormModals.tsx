@@ -16,6 +16,7 @@ import type { ArticleClass } from '@/models/classes';
 import type { TypeRemiseType } from '@/types/devisTypes';
 import type { DocumentFormConfig, DocumentListClass } from '@/types/companyDocumentsTypes';
 import type { SelectedArticlePopupValues } from '@/components/shared/addArticleModal/addArticleModal';
+import { useLanguage } from '@/utils/hooks';
 
 const inputFieldTheme = textInputTheme();
 
@@ -85,6 +86,7 @@ const DocumentFormModals = <TDocument extends DocumentListClass = DocumentListCl
 	addLivrePar,
 	onLivreParSuccess,
 }: DocumentFormModalsProps<TDocument>): React.JSX.Element => {
+	const { t } = useLanguage();
 	return (
 		<>
 			{/* Add Article Modal - only in edit mode */}
@@ -129,17 +131,17 @@ const DocumentFormModals = <TDocument extends DocumentListClass = DocumentListCl
 				<ActionModals
 					titleIcon={<DeleteIcon />}
 					titleIconColor="#D32F2F"
-					title="Supprimer la ligne"
-					body="Êtes-vous sûr de vouloir supprimer cette ligne ?"
+					title={t.documentForm.deleteLineTitle}
+					body={t.documentForm.deleteLineBody}
 					actions={[
 						{
 							active: false,
-							text: 'Non',
+							text: t.common.no,
 							onClick: () => setShowDeleteConfirm(false),
 							icon: <CloseIcon />,
 							color: '#6B6B6B',
 						},
-						{ active: true, text: 'Oui', onClick: confirmDeleteLine, icon: <DeleteIcon />, color: '#D32F2F' },
+						{ active: true, text: t.common.yes, onClick: confirmDeleteLine, icon: <DeleteIcon />, color: '#D32F2F' },
 					]}
 				/>
 			)}
@@ -147,7 +149,7 @@ const DocumentFormModals = <TDocument extends DocumentListClass = DocumentListCl
 			<AddEntityModal
 				open={openModePaiementModal}
 				setOpen={setOpenModePaiementModal}
-				label="mode de paiement"
+				label={t.documentForm.modePaiementLabel}
 				icon={<PaymentIcon fontSize="small" />}
 				inputTheme={inputFieldTheme}
 				mutationFn={addModePaiement}
@@ -157,7 +159,7 @@ const DocumentFormModals = <TDocument extends DocumentListClass = DocumentListCl
 				<AddEntityModal
 					open={openLivreParModal}
 					setOpen={setOpenLivreParModal}
-					label="livreur"
+					label={t.documentForm.livreurLabel}
 					icon={<LocalShippingIcon fontSize="small" />}
 					inputTheme={inputFieldTheme}
 					mutationFn={addLivrePar}

@@ -4,6 +4,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import type { Theme } from '@mui/material/styles';
 import type { DropDownType } from '@/types/accountTypes';
 import { Autocomplete, InputAdornment, Box, Typography } from '@mui/material';
+import { useLanguage } from '@/utils/hooks';
 
 type Props = {
 	id: string;
@@ -44,6 +45,7 @@ const CustomAutoCompleteSelect: React.FC<Props> = ({
 	helperText,
 	renderOption: renderOptionProp,
 }) => {
+	const { t } = useLanguage();
 	const defaultRenderOption = (props: React.HTMLAttributes<HTMLLIElement> & { key: Key }, option: DropDownType) => {
 		const { key, ...rest } = props;
 		return (
@@ -53,7 +55,7 @@ const CustomAutoCompleteSelect: React.FC<Props> = ({
 				</Typography>
 				{option.archived && (
 					<Typography variant="caption" sx={{ color: '#ED6C02', fontWeight: 600, ml: 1, whiteSpace: 'nowrap' }}>
-						(Archivé)
+					({t.common.archived})
 					</Typography>
 				)}
 			</Box>
@@ -68,7 +70,7 @@ const CustomAutoCompleteSelect: React.FC<Props> = ({
 				fullWidth={fullWidth}
 				noOptionsText={noOptionsText}
 				options={items}
-				getOptionLabel={(option) => option.archived ? `${option.code} (Archivé)` : option.code}
+				getOptionLabel={(option) => option.archived ? `${option.code} (${t.common.archived})` : option.code}
 				getOptionKey={(option) => option.value}
 				filterOptions={(options, state) =>
 					options.filter((opt) => opt.code.toLowerCase().includes(state.inputValue.toLowerCase()))

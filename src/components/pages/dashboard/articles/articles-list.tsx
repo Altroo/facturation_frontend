@@ -26,7 +26,7 @@ import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDa
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type { ArticleClass } from '@/models/classes';
 import { formatDate, formatNumberWithSpaces, extractApiErrorMessage } from '@/utils/helpers';
-import { useToast } from '@/utils/hooks';
+import { useToast, useLanguage } from '@/utils/hooks';
 import Image from 'next/image';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
@@ -52,6 +52,7 @@ export const typeFilterOptions = [
 const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
 	const { session, company_id, archived, role } = props;
 	const { onSuccess, onError } = useToast();
+	const { t } = useLanguage();
 	const router = useRouter();
 	const token = useInitAccessToken(session);
 	const { data: companyData } = useGetCompanyQuery({ id: company_id }, { skip: !token });
@@ -87,12 +88,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const chipFilters: ChipFilterConfig[] = React.useMemo(
 		() => [
-			{ key: 'categorie', label: 'Catégorie', paramName: 'categorie_ids', options: categories ?? [] },
-			{ key: 'emplacement', label: 'Emplacement', paramName: 'emplacement_ids', options: emplacements ?? [] },
-			{ key: 'unite', label: 'Unité', paramName: 'unite_ids', options: unites ?? [] },
-			{ key: 'marque', label: 'Marque', paramName: 'marque_ids', options: marques ?? [] },
+			{ key: 'categorie', label: t.articles.filterCategorie, paramName: 'categorie_ids', options: categories ?? [] },
+			{ key: 'emplacement', label: t.articles.filterEmplacement, paramName: 'emplacement_ids', options: emplacements ?? [] },
+			{ key: 'unite', label: t.articles.filterUnite, paramName: 'unite_ids', options: unites ?? [] },
+			{ key: 'marque', label: t.articles.filterMarque, paramName: 'marque_ids', options: marques ?? [] },
 		],
-		[categories, emplacements, unites, marques],
+		[categories, emplacements, unites, marques, t.articles],
 	);
 
 	const mergedFilterParams = React.useMemo(
@@ -136,14 +137,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		try {
 			const result = await importArticles({ file, company_id }).unwrap();
 			if (result.created > 0) {
-				onSuccess(`${result.created} article(s) importé(s) avec succès`);
+				onSuccess(t.articles.importSuccess(result.created));
 				refetch();
 			}
 			if (result.errors.length > 0) {
 				setImportErrors(result.errors);
 			}
 		} catch {
-			onError("Erreur lors de l'importation des articles");
+			onError(t.articles.importError);
 		} finally {
 			e.target.value = '';
 		}
@@ -152,19 +153,19 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const handleSendCSVEmail = async () => {
 		try {
 			await sendCSVExampleEmail({ company_id }).unwrap();
-			onSuccess('Email envoyé avec succès. Veuillez vérifier votre boîte de réception.');
+			onSuccess(t.articles.emailSuccess);
 		} catch {
-			onError("Erreur lors de l'envoi de l'email");
+			onError(t.articles.emailError);
 		}
 	};
 
 	const deleteHandler = async () => {
 		try {
 			await deleteRecord({ id: selectedId! }).unwrap();
-			onSuccess('Article supprimé avec succès');
+			onSuccess(t.articles.deleteSuccess);
 			refetch();
 		} catch (err) {
-			onError(extractApiErrorMessage(err, "Erreur lors de la suppression d'article"));
+			onError(extractApiErrorMessage(err, t.articles.deleteError));
 		} finally {
 			setShowDeleteModal(false);
 			// Remove only the deleted item from selection (preserve remaining bulk selection)
@@ -174,8 +175,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	};
 
 	const deleteModalActions = [
-		{ text: 'Annuler', active: false, onClick: () => setShowDeleteModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
-		{ text: 'Supprimer', active: true, onClick: deleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
+		{ text: t.common.cancel, active: false, onClick: () => setShowDeleteModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
+		{ text: t.common.delete, active: true, onClick: deleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
 	];
 
 	const showDeleteModalCall = (id: number) => {
@@ -191,16 +192,16 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				data: { archived: !archived },
 			}).unwrap();
 			if (archived) {
-				onSuccess('Article désarchivé avec succès');
+				onSuccess(t.articles.unarchiveSuccess);
 			} else {
-				onSuccess('Article archivé avec succès');
+				onSuccess(t.articles.archiveSuccess);
 			}
 			refetch();
 		} catch {
 			if (archived) {
-				onError("Erreur lors de la désarchivation d'article");
+				onError(t.articles.unarchiveError);
 			} else {
-				onError("Erreur lors de l’archivage d'article");
+				onError(t.articles.archiveError);
 			}
 		} finally {
 			setShowArchiveModal(false);
@@ -213,7 +214,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const archiveModalActions = [
 		{
-			text: 'Annuler',
+			text: t.common.cancel,
 			active: false,
 			onClick: () => {
 				setShowArchiveModal(false);
@@ -223,7 +224,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			color: '#6B6B6B',
 		},
 		{
-			text: archived ? 'Désarchiver' : 'Archiver',
+			text: archived ? t.common.unarchive : t.common.archive,
 			active: true,
 			onClick: archiveHandler,
 			icon: <ArchiveIcon />,
@@ -253,9 +254,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			setSelectedIds(allIds);
 			setIsAllMatchingSelected(true);
 		} catch {
-			onError('Erreur lors de la sélection de tous les éléments');
+			onError(t.shared.selectionError);
 		}
-	}, [company_id, archived, mergedFilterParams, fetchAllArticleIds, onError]);
+	}, [company_id, archived, mergedFilterParams, fetchAllArticleIds, onError, t]);
 
 	const handleClearAllMatching = useCallback(() => {
 		setIsAllMatchingSelected(false);
@@ -265,9 +266,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const bulkDeleteHandler = async () => {
 		try {
 			await bulkDeleteArticles({ ids: selectedIds }).unwrap();
-			onSuccess(`${selectedIds.length} article(s) supprimé(s) avec succès`);
+			onSuccess(t.articles.bulkDeleteSuccess(selectedIds.length));
 		} catch (err) {
-			onError(extractApiErrorMessage(err, "Erreur lors de la suppression des articles"));
+			onError(extractApiErrorMessage(err, t.articles.bulkDeleteError));
 		} finally {
 			setSelectedIds([]);
 			setIsAllMatchingSelected(false);
@@ -277,17 +278,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	};
 
 	const bulkDeleteModalActions = [
-		{ text: 'Annuler', active: false, onClick: () => setShowBulkDeleteModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
-		{ text: `Supprimer (${selectedIds.length})`, active: true, onClick: bulkDeleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
+		{ text: t.common.cancel, active: false, onClick: () => setShowBulkDeleteModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
+		{ text: t.articles.bulkDeleteBtn(selectedIds.length), active: true, onClick: bulkDeleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
 	];
 
 	const bulkArchiveHandler = async () => {
 		const archiving = bulkArchiveAction === 'archive';
 		try {
 			await bulkArchiveArticles({ ids: selectedIds, archived: archiving }).unwrap();
-			onSuccess(`${selectedIds.length} article(s) ${archiving ? 'archivé(s)' : 'désarchivé(s)'} avec succès`);
+			onSuccess(archiving ? t.articles.bulkArchiveSuccess(selectedIds.length) : t.articles.bulkUnarchiveSuccess(selectedIds.length));
 		} catch {
-			onError(`Erreur lors de l'${archiving ? 'archivage' : 'désarchivage'} des articles`);
+			onError(archiving ? t.articles.bulkArchiveError : t.articles.bulkUnarchiveError);
 		} finally {
 			setSelectedIds([]);
 			setIsAllMatchingSelected(false);
@@ -298,14 +299,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const bulkArchiveModalActions = [
 		{
-			text: 'Annuler',
+			text: t.common.cancel,
 			active: false,
 			onClick: () => setShowBulkArchiveModal(false),
 			icon: <CloseIcon />,
 			color: '#6B6B6B',
 		},
 		{
-			text: bulkArchiveAction === 'archive' ? `Archiver (${selectedIds.length})` : `Désarchiver (${selectedIds.length})`,
+			text: bulkArchiveAction === 'archive' ? t.articles.bulkArchiveBtn(selectedIds.length) : t.articles.bulkUnarchiveBtn(selectedIds.length),
 			active: true,
 			onClick: bulkArchiveHandler,
 			icon: bulkArchiveAction === 'archive' ? <ArchiveIcon /> : <UnarchiveIcon />,
@@ -316,7 +317,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const columns: GridColDef[] = [
 		{
 			field: 'photo',
-			headerName: 'Photo',
+			headerName: t.articles.colPhoto,
 			flex: 0.5,
 			minWidth: 70,
 			renderCell: (params: GridRenderCellParams<ArticleClass>) => {
@@ -374,7 +375,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		},
 		{
 			field: 'reference',
-			headerName: 'Réference',
+			headerName: t.articles.colReference,
 			flex: 1,
 			minWidth: 100,
 			renderCell: (params: GridRenderCellParams<ArticleClass>) => (
@@ -387,10 +388,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		},
 		{
 			field: 'type_article',
-			headerName: 'Type',
+			headerName: t.articles.colType,
 			flex: 0.9,
 			minWidth: 90,
-			filterOperators: createDropdownFilterOperators(typeFilterOptions, 'Tous les types', true),
+			filterOperators: createDropdownFilterOperators(typeFilterOptions, t.articles.allTypes, true),
 			renderCell: (params: GridRenderCellParams<ArticleClass>) => {
 				return (
 					<DarkTooltip title={params.value}>
@@ -401,7 +402,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		},
 		{
 			field: 'designation',
-			headerName: 'Designation',
+			headerName: t.articles.colDesignation,
 			flex: 2,
 			minWidth: 150,
 			renderCell: (params: GridRenderCellParams<ArticleClass>) => (
@@ -414,7 +415,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		},
 		{
 			field: 'prix_achat',
-			headerName: "Prix d'achat",
+			headerName: t.articles.colPrixAchat,
 			flex: 1,
 			minWidth: 100,
 			filterOperators: createNumericFilterOperators(),
@@ -432,7 +433,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		},
 		{
 			field: 'prix_vente',
-			headerName: 'Prix de vente',
+			headerName: t.articles.colPrixVente,
 			flex: 1,
 			minWidth: 100,
 			filterOperators: createNumericFilterOperators(),
@@ -450,7 +451,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		},
 		{
 			field: 'date_created',
-			headerName: 'Date de création',
+			headerName: t.common.dateCreation,
 			flex: 1.4,
 			minWidth: 140,
 			filterOperators: createDateRangeFilterOperator(),
@@ -467,7 +468,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		},
 		{
 			field: 'actions',
-			headerName: 'Actions',
+			headerName: t.common.actions,
 			flex: 1.5,
 			minWidth: 150,
 			sortable: false,
@@ -478,7 +479,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				// View action - available for all roles
 				if (role === 'Caissier' || role === 'Lecture' || role === 'Comptable' || role === 'Commercial') {
 					actions.push({
-						label: 'Voir',
+						label: t.common.view,
 						icon: <VisibilityIcon />,
 						onClick: () => router.push(ARTICLES_VIEW(params.row.id, company_id)),
 						color: 'info' as const,
@@ -489,19 +490,19 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				if (role === 'Caissier' || role === 'Commercial') {
 					actions.push(
 						{
-							label: 'Modifier',
+							label: t.common.edit,
 							icon: <EditIcon />,
 							onClick: () => router.push(ARTICLES_EDIT(params.row.id, company_id)),
 							color: 'primary' as const,
 						},
 						{
-							label: 'Supprimer',
+							label: t.common.delete,
 							icon: <DeleteIcon />,
 							onClick: () => showDeleteModalCall(params.row.id),
 							color: 'error' as const,
 						},
 						{
-							label: archived ? 'Désarchiver' : 'Archiver',
+					label: archived ? t.common.unarchive : t.common.archive,
 							icon: archived ? <UnarchiveIcon /> : <ArchiveIcon />,
 							onClick: () => showArchiveModalCall(params.row.id),
 							color: 'warning' as const,
@@ -519,7 +520,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			{importErrors.length > 0 && (
 				<Alert severity="error" icon={<WarningIcon />} sx={{ px: { xs: 1, sm: 2, md: 3 }, mt: { xs: 1, sm: 2, md: 3 } }}>
 					<Typography variant="subtitle2" fontWeight={600}>
-						Erreurs lors de l&#39;importation :
+						{t.articles.importErrorsTitle}
 					</Typography>
 					<ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
 						{importErrors.map((err) => (
@@ -557,7 +558,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 							}}
 							startIcon={<AddIcon fontSize="small" />}
 						>
-							Nouvel article
+							{t.articles.newArticle}
 						</Button>
 					)}
 					{selectedIds.length > 0 && role === 'Caissier' && (
@@ -592,7 +593,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 							}}
 							startIcon={archived ? <UnarchiveIcon fontSize="small" /> : <ArchiveIcon fontSize="small" />}
 						>
-							{archived ? 'Désarchiver' : 'Archiver'} ({selectedIds.length})
+					{archived ? t.articles.bulkUnarchiveBtn(selectedIds.length) : t.articles.bulkArchiveBtn(selectedIds.length)}
 						</Button>
 					)}
 				</Box>
@@ -622,7 +623,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				toolbarActions={
 					!archived && (role === 'Caissier' || role === 'Commercial') ? (
 						<>
-							<DarkTooltip title="Envoyer le guide d'importation par email">
+							<DarkTooltip title={t.articles.emailTooltip}>
 								<IconButton
 									disabled={isSendingEmail}
 									size="small"
@@ -632,7 +633,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									{isSendingEmail ? <CircularProgress size={20} /> : <EmailIcon />}
 								</IconButton>
 							</DarkTooltip>
-							<DarkTooltip title="Importer CSV ou Excel">
+							<DarkTooltip title={t.articles.importTooltip}>
 								<IconButton
 									disabled={isImporting}
 									size="small"
@@ -648,44 +649,37 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			/>
 			{showDeleteModal && (
 				<ActionModals
-					title="Supprimer cette article ?"
-					titleIcon={<DeleteIcon />}
-					titleIconColor="#D32F2F"
-					body="Êtes‑vous sûr de vouloir supprimer cette article?"
+				title={t.articles.deleteModalTitle}
+				titleIcon={<DeleteIcon />}
+				titleIconColor="#D32F2F"
+				body={t.articles.deleteModalBody}
 					actions={deleteModalActions}
 				/>
 			)}
 			{showArchiveModal && (
 				<ActionModals
-					title={archived ? 'Désarchiver cette article ?' : 'Archiver cette article ?'}
+					title={archived ? t.articles.unarchiveModalTitle : t.articles.archiveModalTitle}
 					titleIcon={<ArchiveIcon />}
 					titleIconColor="#ED6C02"
-					body={
-						archived
-							? 'Êtes‑vous sûr de vouloir désarchiver cette article?'
-							: 'Êtes‑vous sûr de vouloir archiver cette article?'
-					}
+					body={archived ? t.articles.unarchiveModalBody : t.articles.archiveModalBody}
 					actions={archiveModalActions}
 				/>
 			)}
 			{showBulkDeleteModal && (
 				<ActionModals
-					title={`Supprimer ${selectedIds.length} article(s) ?`}
-					titleIcon={<DeleteIcon />}
-					titleIconColor="#D32F2F"
-					body={`Êtes-vous sûr de vouloir supprimer les ${selectedIds.length} article(s) sélectionné(s) ?`}
+				title={t.articles.bulkDeleteModalTitle(selectedIds.length)}
+				titleIcon={<DeleteIcon />}
+				titleIconColor="#D32F2F"
+				body={t.articles.bulkDeleteModalBody(selectedIds.length)}
 					actions={bulkDeleteModalActions}
 				/>
 			)}
 			{showBulkArchiveModal && (
 				<ActionModals
-					title={bulkArchiveAction === 'archive' ? `Archiver ${selectedIds.length} article(s) ?` : `Désarchiver ${selectedIds.length} article(s) ?`}
-					titleIcon={bulkArchiveAction === 'archive' ? <ArchiveIcon /> : <UnarchiveIcon />}
-					titleIconColor="#ED6C02"
-					body={bulkArchiveAction === 'archive'
-						? `Êtes-vous sûr de vouloir archiver les ${selectedIds.length} article(s) sélectionné(s) ?`
-						: `Êtes-vous sûr de vouloir désarchiver les ${selectedIds.length} article(s) sélectionné(s) ?`
-					}
+				title={bulkArchiveAction === 'archive' ? t.articles.bulkArchiveModalTitle(selectedIds.length) : t.articles.bulkUnarchiveModalTitle(selectedIds.length)}
+				titleIcon={bulkArchiveAction === 'archive' ? <ArchiveIcon /> : <UnarchiveIcon />}
+				titleIconColor="#ED6C02"
+				body={bulkArchiveAction === 'archive' ? t.articles.bulkArchiveModalBody(selectedIds.length) : t.articles.bulkUnarchiveModalBody(selectedIds.length)}
 					actions={bulkArchiveModalActions}
 				/>
 			)}
@@ -698,8 +692,9 @@ interface Props extends SessionProps {
 }
 
 const ArticlesListClient: React.FC<Props> = ({ session, archived }) => {
+	const { t } = useLanguage();
 	return (
-		<CompanyDocumentsWrapperList session={session} title={archived ? 'Articles Archivés' : 'Liste des Articles'}>
+		<CompanyDocumentsWrapperList session={session} title={archived ? t.articles.archivedTitle : t.articles.listTitle}>
 			{({ company_id, role }) => (
 				<FormikContent archived={archived} session={session} company_id={company_id} role={role} />
 			)}

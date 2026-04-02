@@ -115,3 +115,30 @@ describe('useIsClient', () => {
 		expect(result.current).toBe(true);
 	});
 });
+
+describe('useLanguage', () => {
+	// eslint-disable-next-line @typescript-eslint/no-require-imports
+	const React = require('react');
+	// eslint-disable-next-line @typescript-eslint/no-require-imports
+	const { renderHook } = require('@testing-library/react');
+	// eslint-disable-next-line @typescript-eslint/no-require-imports
+	const { useLanguage } = require('./hooks');
+	// eslint-disable-next-line @typescript-eslint/no-require-imports
+	const { LanguageContext } = require('@/contexts/languageContext');
+	// eslint-disable-next-line @typescript-eslint/no-require-imports
+	const { translations } = require('@/translations');
+
+	it('returns the language context value', () => {
+		const mockCtx = {
+			language: 'en',
+			setLanguage: jest.fn(),
+			t: translations.en,
+		};
+		const wrapper = ({ children }: { children: React.ReactNode }) =>
+			React.createElement(LanguageContext.Provider, { value: mockCtx }, children);
+
+		const { result } = renderHook(() => useLanguage(), { wrapper });
+		expect(result.current.language).toBe('en');
+		expect(result.current.t).toEqual(translations.en);
+	});
+});

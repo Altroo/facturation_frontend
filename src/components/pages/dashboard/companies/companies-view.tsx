@@ -52,7 +52,7 @@ import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiP
 import { Protected } from '@/components/layouts/protected/protected';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import { formatDate } from '@/utils/helpers';
-import { useToast } from '@/utils/hooks';
+import { useToast, useLanguage } from '@/utils/hooks';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 
 interface InfoRowProps {
@@ -131,15 +131,16 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 
 	const [suspendRecord] = useSuspendCompanyMutation();
 	const { onSuccess, onError } = useToast();
+	const { t } = useLanguage();
 	const [showSuspendModal, setShowSuspendModal] = useState(false);
 
 	const handleSuspend = async () => {
 		try {
 			await suspendRecord({ id }).unwrap();
-			onSuccess('Entreprise suspendue avec succès');
+			onSuccess(t.companies.suspendSuccess);
 			router.push(COMPANIES_LIST);
 		} catch {
-			onError("Erreur lors de la suspension de l'entreprise");
+			onError(t.companies.suspendError);
 		} finally {
 			setShowSuspendModal(false);
 		}
@@ -147,14 +148,14 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 
 	const suspendModalActions = [
 		{
-			text: 'Annuler',
+			text: t.common.cancel,
 			active: false,
 			onClick: () => setShowSuspendModal(false),
 			icon: <ArrowBackIcon />,
 			color: '#6B6B6B',
 		},
 		{
-			text: 'Suspendre',
+			text: t.companies.suspendBtn,
 			active: true,
 			onClick: handleSuspend,
 			icon: <PauseIcon />,
@@ -164,7 +165,7 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 
 	return (
 		<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
-			<NavigationBar title="Détails de l'entreprise">
+			<NavigationBar title={t.companies.detailsTitle}>
 				<Protected>
 					<Stack spacing={3} sx={{ p: { xs: 2, md: 3 }, mt: 2 }}>
 <Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between" alignItems={isMobile ? 'stretch' : 'center'} spacing={2}>
@@ -174,7 +175,7 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 							onClick={() => router.push(COMPANIES_LIST)}
 							sx={{ width: isMobile ? '100%' : 'auto' }}
 						>
-							Liste des entreprises
+							{t.companies.backToList}
 						</Button>
 						{!isLoading && !error && (
 							<Stack direction="row" gap={1} flexWrap="wrap">
@@ -223,7 +224,7 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 										>
 											<Avatar
 												src={`${companyData?.logo_cropped}`}
-												alt="Logo de l'entreprise"
+												alt={t.companies.logoLabel}
 												sx={{
 													width: isMobile ? 100 : 120,
 													height: isMobile ? 100 : 120,
@@ -252,7 +253,7 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 															size="small"
 															variant="outlined"
 														/>
-														<Chip icon={<BusinessIcon />} label="Entreprise" color="primary" size="small" />
+															<Chip icon={<BusinessIcon />} label={t.companies.companyChip} color="primary" size="small" />
 													</Stack>
 												</Stack>
 											</Stack>
@@ -266,7 +267,7 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 											<StampIcon color="primary" />
 											<Typography variant="h6" fontWeight={700}>
-												Cachet de l&#39;entreprise
+												{t.companies.stampSection}
 											</Typography>
 										</Stack>
 										<Divider sx={{ mb: 3 }} />
@@ -299,28 +300,28 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 											<PublicIcon color="primary" />
 											<Typography variant="h6" fontWeight={700}>
-												Informations générales
+												{t.companies.generalSection}
 											</Typography>
 										</Stack>
 										<Divider sx={{ mb: 2 }} />
 										<Stack spacing={0}>
 											<InfoRow
 												icon={<CalendarTodayIcon />}
-												label="Date de création"
+												label={t.common.dateCreation}
 												value={formatDate(companyData?.date_created ?? null)}
 											/>
 											<Divider />
 											<InfoRow
 												icon={<CalendarTodayIcon />}
-												label="Dernière mise à jour"
+												label={t.common.dateMaj}
 												value={formatDate(companyData?.date_updated ?? null)}
 											/>
 											<Divider />
-											<InfoRow icon={<PeopleIcon />} label="Nombre d'employés" value={companyData?.nbr_employe} />
+											<InfoRow icon={<PeopleIcon />} label={t.companies.fieldNbrEmploye} value={companyData?.nbr_employe} />
 											<Divider />
-											<InfoRow icon={<LocationOnIcon />} label="Adresse" value={companyData?.adresse} />
+											<InfoRow icon={<LocationOnIcon />} label={t.companies.fieldAdresse} value={companyData?.adresse} />
 											<Divider />
-											<InfoRow icon={<LanguageIcon />} label="Site web" value={companyData?.site_web} />
+											<InfoRow icon={<LanguageIcon />} label={t.companies.fieldSiteWeb} value={companyData?.site_web} />
 										</Stack>
 									</CardContent>
 								</Card>
@@ -331,38 +332,38 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 											<AdminPanelSettingsIcon color="primary" />
 											<Typography variant="h6" fontWeight={700}>
-												Informations administratives
+												{t.companies.adminSection}
 											</Typography>
 										</Stack>
 										<Divider sx={{ mb: 2 }} />
 										<Stack spacing={0}>
 											<InfoRow
 												icon={<AccountBalanceIcon />}
-												label="Numéro du compte"
+												label={t.companies.fieldNumeroCompte}
 												value={companyData?.numero_du_compte}
 											/>
 											<Divider />
-											<InfoRow icon={<FingerprintIcon />} label="ICE" value={companyData?.ICE} />
+											<InfoRow icon={<FingerprintIcon />} label={t.companies.fieldICE} value={companyData?.ICE} />
 											<Divider />
 											<InfoRow
 												icon={<GavelIcon />}
-												label="Registre de commerce"
+												label={t.companies.fieldRegistreCommerce}
 												value={companyData?.registre_de_commerce}
 											/>
 											<Divider />
 											<InfoRow
 												icon={<ReceiptIcon />}
-												label="Identifiant fiscal"
+												label={t.companies.fieldIdentifiantFiscal}
 												value={companyData?.identifiant_fiscal}
 											/>
 											<Divider />
 											<InfoRow
 												icon={<AccountBalanceWalletIcon />}
-												label="Taxe professionnelle"
+												label={t.companies.fieldTaxeProfessionnelle}
 												value={companyData?.tax_professionnelle}
 											/>
 											<Divider />
-											<InfoRow icon={<BadgeIcon />} label="CNSS" value={companyData?.CNSS} />
+											<InfoRow icon={<BadgeIcon />} label={t.companies.fieldCNSS} value={companyData?.CNSS} />
 										</Stack>
 									</CardContent>
 								</Card>
@@ -378,11 +379,11 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 										</Stack>
 										<Divider sx={{ mb: 2 }} />
 										<Stack spacing={0}>
-											<InfoRow icon={<PersonIcon />} label="Civilité" value={companyData?.civilite_responsable} />
+											<InfoRow icon={<PersonIcon />} label={t.companies.fieldCivilite} value={companyData?.civilite_responsable} />
 											<Divider />
-											<InfoRow icon={<PersonIcon />} label="Nom" value={companyData?.nom_responsable} />
+											<InfoRow icon={<PersonIcon />} label={t.companies.fieldNomResponsable} value={companyData?.nom_responsable} />
 											<Divider />
-											<InfoRow icon={<PhoneAndroidIcon />} label="GSM" value={companyData?.gsm_responsable} />
+											<InfoRow icon={<PhoneAndroidIcon />} label={t.companies.fieldGsmResponsable} value={companyData?.gsm_responsable} />
 										</Stack>
 									</CardContent>
 								</Card>
@@ -398,11 +399,11 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 										</Stack>
 										<Divider sx={{ mb: 2 }} />
 										<Stack spacing={0}>
-											<InfoRow icon={<EmailIcon />} label="Email" value={companyData?.email} />
+											<InfoRow icon={<EmailIcon />} label={t.companies.fieldEmail} value={companyData?.email} />
 											<Divider />
-											<InfoRow icon={<PhoneIcon />} label="Téléphone" value={companyData?.telephone} />
+											<InfoRow icon={<PhoneIcon />} label={t.companies.fieldTelephone} value={companyData?.telephone} />
 											<Divider />
-											<InfoRow icon={<FaxIcon />} label="Fax" value={companyData?.fax} />
+											<InfoRow icon={<FaxIcon />} label={t.companies.fieldFax} value={companyData?.fax} />
 										</Stack>
 									</CardContent>
 								</Card>
@@ -413,7 +414,7 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 											<AdminPanelSettingsIcon color="primary" />
 											<Typography variant="h6" fontWeight={700}>
-												Gestionnaires {companyData?.admins?.length ? `(${companyData.admins.length})` : ''}
+												{t.companies.managersSection} {companyData?.admins?.length ? `(${companyData.admins.length})` : ''}
 											</Typography>
 										</Stack>
 										<Divider sx={{ mb: 2 }} />
@@ -481,7 +482,7 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 													textAlign: 'center',
 												}}
 											>
-												<Typography color="text.secondary">Aucun gestionnaire renseigné</Typography>
+												<Typography color="text.secondary">{t.companies.noManager}</Typography>
 											</Paper>
 										)}
 									</CardContent>
@@ -493,8 +494,8 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 			</NavigationBar>
 		{showSuspendModal && (
 			<ActionModals
-				title="Suspendre cette entreprise ?"
-				body="Êtes-vous sûr de vouloir suspendre cette entreprise ? L'accès sera désactivé."
+				title={t.companies.suspendModalTitle}
+				body={t.companies.suspendModalBody}
 				actions={suspendModalActions}
 				titleIcon={<PauseIcon />}
 				titleIconColor="#D32F2F"

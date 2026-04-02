@@ -8,8 +8,11 @@ import PrimaryAnchorButton from '@/components/htmlElements/buttons/primaryAnchor
 import { AUTH_LOGIN } from '@/utils/routes';
 import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
 import { Login as LoginIcon } from '@mui/icons-material';
+import { useLanguage } from '@/utils/hooks';
 
 const SetPasswordCompleteClient: React.FC = () => {
+	const { t } = useLanguage();
+
 	return (
 		<>
 			<Desktop>
@@ -17,11 +20,11 @@ const SetPasswordCompleteClient: React.FC = () => {
 					<AuthLayout>
 						<Stack direction="column" spacing={4} className={Styles.contentWrapper}>
 							<Image src={SuccessIlluSVG} alt="" width="0" height="0" sizes="100vw" className={Styles.logo} />
-						<h1 className={Styles.header}>Mot de passe modifié</h1>
-						<p className={Styles.subHeader}>Votre mot de passe a été modifié, connectez-vous</p>
+						<h1 className={Styles.header}>{t.auth.passwordChanged}</h1>
+						<p className={Styles.subHeader}>{t.auth.passwordChangedSub}</p>
 							<PrimaryAnchorButton
 								startIcon={<LoginIcon />}
-								buttonText="Me connecter"
+								buttonText={t.auth.loginButton}
 								active={true}
 								nextPage={AUTH_LOGIN}
 							/>
@@ -34,13 +37,13 @@ const SetPasswordCompleteClient: React.FC = () => {
 					<main className={Styles.main}>
 						<Stack direction="column" spacing={4} className={Styles.contentWrapper}>
 							<Image src={SuccessIlluSVG} alt="" width="0" height="0" sizes="100vw" className={Styles.logo} />
-						<h1 className={Styles.header}>Mot de passe modifié</h1>
-						<p className={Styles.subHeader}>Votre mot de passe a été modifié, connectez-vous</p>
+						<h1 className={Styles.header}>{t.auth.passwordChanged}</h1>
+						<p className={Styles.subHeader}>{t.auth.passwordChangedSub}</p>
 						</Stack>
 						<div className={Styles.primaryButtonWrapper}>
 							<PrimaryAnchorButton
 								startIcon={<LoginIcon />}
-								buttonText="Me connecter"
+								buttonText={t.auth.loginButton}
 								active={true}
 								nextPage={AUTH_LOGIN}
 							/>

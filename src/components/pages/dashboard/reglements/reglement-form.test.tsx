@@ -39,6 +39,7 @@ jest.mock('@/utils/hooks', () => ({
 		onSuccess: jest.fn(),
 		onError: jest.fn(),
 	}),
+	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
 }));
 
 jest.mock('@/store/selectors', () => ({
@@ -233,7 +234,7 @@ describe('ReglementForm', () => {
 
 		it('renders submit button with add text', () => {
 			renderWithProviders(<ReglementForm session={mockSession} company_id={1} />);
-			expect(screen.getByTestId('submit-button')).toHaveTextContent('Ajouter le règlement');
+			expect(screen.getByTestId('submit-button')).toHaveTextContent('Ajouter un règlement');
 		});
 
 		it('renders back button', () => {

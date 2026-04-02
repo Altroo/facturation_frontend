@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { IconButton, Menu, MenuItem, ListItemIcon, ListItemText, useTheme, useMediaQuery, Box } from '@mui/material';
 import { MoreVert as MoreVertIcon } from '@mui/icons-material';
+import { useLanguage } from '@/utils/hooks';
 
 export type ActionItem = {
 	label: string;
@@ -18,6 +19,7 @@ type MobileActionsMenuProps = {
 
 const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ actions }) => {
 	const theme = useTheme();
+	const { t } = useLanguage();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const open = Boolean(anchorEl);
@@ -50,7 +52,7 @@ const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ actions }) => {
 				<IconButton
 					size="small"
 					onClick={handleClick}
-					aria-label="more actions"
+					aria-label={t.common.moreActions}
 					aria-controls={open ? 'actions-menu' : undefined}
 					aria-haspopup="true"
 					aria-expanded={open ? 'true' : undefined}

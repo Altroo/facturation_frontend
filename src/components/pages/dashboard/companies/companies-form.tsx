@@ -56,7 +56,7 @@ import { textInputTheme, customDropdownTheme } from '@/utils/themes';
 import { COMPANIES_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import CustomSquareImageUploading from '@/components/formikElements/customSquareImageUploading/customSquareImageUploading';
-import { useAppSelector, useToast } from '@/utils/hooks';
+import { useAppSelector, useToast, useLanguage } from '@/utils/hooks';
 import { getGroupesState, getProfilState } from '@/store/selectors';
 import { useGetUsersListQuery } from '@/store/services/account';
 import type { DropDownType } from '@/types/accountTypes';
@@ -78,6 +78,7 @@ type FormikContentProps = {
 const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
 	const { token, first_name, last_name, id } = props;
 	const { onSuccess, onError } = useToast();
+	const { t } = useLanguage();
 	const isEditMode = id !== undefined;
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -171,19 +172,19 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			try {
 				if (isEditMode) {
 					await updateData({ data: payload, id: id }).unwrap();
-					onSuccess("L'entreprise a été mise à jour avec succès.");
+					onSuccess(t.companies.updateSuccess);
 				} else {
 					await addData({ data: payload }).unwrap();
-					onSuccess("L'entreprise a été ajoutée avec succès.");
+					onSuccess(t.companies.addSuccess);
 				}
 				if (!isEditMode) {
 					router.replace(COMPANIES_LIST);
 				}
 			} catch (e) {
 				if (isEditMode) {
-					onError("La mise à jour de l'entreprise a échoué.");
+					onError(t.companies.updateError);
 				} else {
-					onError("L'ajout de l'entreprise a échoué.");
+					onError(t.companies.addError);
 				}
 				setFormikAutoErrors({ e, setFieldError });
 			} finally {
@@ -238,31 +239,31 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	// Collect validation errors from Formik
 	const fieldLabels = useMemo<Record<string, string>>(
 		() => ({
-			raison_sociale: 'Raison sociale',
-			email: 'Email',
-			nbr_employe: "Nombre d'employés",
-			civilite_responsable: 'Civilité du responsable',
-			nom_responsable: 'Nom du responsable',
-			gsm_responsable: 'GSM du responsable',
-			adresse: 'Adresse',
-			site_web: 'Site web',
-			telephone: 'Téléphone',
-			fax: 'Fax',
-			numero_du_compte: 'Numéro du compte',
-			ICE: 'ICE',
-			registre_de_commerce: 'Registre de commerce',
-			identifiant_fiscal: 'Identifiant fiscal',
-			tax_professionnelle: 'Taxe professionnelle',
-			CNSS: 'CNSS',
-			logo: 'Logo',
-			logo_cropped: 'Logo recadré',
-			cachet: 'Cachet',
-			cachet_cropped: 'Cachet recadré',
-			managed_by: 'Utilisateurs gestionnaires',
-			uses_foreign_currency: 'Devise étrangère',
-			globalError: 'Erreur globale',
+			raison_sociale: t.companies.fieldRaisonSociale,
+			email: t.companies.fieldEmail,
+			nbr_employe: t.companies.fieldNbrEmploye,
+			civilite_responsable: t.companies.fieldCivilite,
+			nom_responsable: t.companies.fieldNomResponsable,
+			gsm_responsable: t.companies.fieldGsmResponsable,
+			adresse: t.companies.fieldAdresse,
+			site_web: t.companies.fieldSiteWeb,
+			telephone: t.companies.fieldTelephone,
+			fax: t.companies.fieldFax,
+			numero_du_compte: t.companies.fieldNumeroCompte,
+			ICE: t.companies.fieldICE,
+			registre_de_commerce: t.companies.fieldRegistreCommerce,
+			identifiant_fiscal: t.companies.fieldIdentifiantFiscal,
+			tax_professionnelle: t.companies.fieldTaxeProfessionnelle,
+			CNSS: t.companies.fieldCNSS,
+			logo: t.companies.logoLabel,
+			logo_cropped: t.companies.logoLabel,
+			cachet: t.companies.stampLabel,
+			cachet_cropped: t.companies.stampLabel,
+			managed_by: t.companies.managersSection,
+			uses_foreign_currency: t.companies.foreignCurrencyLabel,
+			globalError: t.common.genericError,
 		}),
-		[],
+		[t],
 	);
 
 	const validationErrors = useMemo(() => {
@@ -296,13 +297,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
 					}}
 				>
-					Liste des entreprises
+					{t.companies.backToList}
 				</Button>
 			</Stack>
 			{hasValidationErrors && (
 				<Alert severity="error" icon={<WarningIcon />} sx={{ mb: 2 }}>
 					<Typography variant="subtitle2" fontWeight={600}>
-						Erreurs de validation détectées:
+						{t.common.validationErrors}
 					</Typography>
 					<ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
 						{Object.entries(validationErrors).map(([key, error]) => (
@@ -329,14 +330,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 									<ImageIcon color="primary" />
 									<Typography variant="h6" fontWeight={700}>
-										Logo et Cachet
+										{t.companies.logoSection}
 									</Typography>
 								</Stack>
 								<Divider sx={{ mb: 3 }} />
 								<Stack direction={isMobile ? 'column' : 'row'} spacing={3}>
 									<Box sx={{ flex: 1 }}>
 										<Typography variant="subtitle2" fontWeight={600} gutterBottom>
-											Logo de l&#39;entreprise
+												{t.companies.logoLabel}
 										</Typography>
 										<Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
 											<CustomSquareImageUploading
@@ -370,7 +371,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 									<BusinessIcon color="primary" />
 									<Typography variant="h6" fontWeight={700}>
-										Informations générales
+										{t.companies.generalSection}
 									</Typography>
 								</Stack>
 								<Divider sx={{ mb: 3 }} />
@@ -385,14 +386,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										error={formik.touched.raison_sociale && Boolean(formik.errors.raison_sociale)}
 										fullWidth={false}
 										size="small"
-										label="Raison sociale *"
+										label={t.companies.fieldRaisonSociale + ' *'}
 										theme={inputTheme}
 										startIcon={<BusinessIcon fontSize="small" />}
 									/>
 									<CustomTextInput
 										id="email"
 										type="email"
-										label="Email"
+										label={t.companies.fieldEmail}
 										value={formik.values.email}
 										onChange={formik.handleChange('email')}
 										onBlur={formik.handleBlur('email')}
@@ -406,7 +407,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomDropDownSelect
 										id="nbr_employe"
 										size="small"
-										label="Nombre d'employés *"
+										label={t.companies.fieldNbrEmploye + ' *'}
 										items={nbrEmployeItemsList}
 										value={formik.values.nbr_employe}
 										onBlur={formik.handleBlur('nbr_employe')}
@@ -419,7 +420,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="adresse"
 										type="text"
-										label="Adresse"
+										label={t.companies.fieldAdresse}
 										value={formik.values.adresse}
 										onChange={formik.handleChange('adresse')}
 										onBlur={formik.handleBlur('adresse')}
@@ -433,7 +434,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="site_web"
 										type="url"
-										label="Site web"
+										label={t.companies.fieldSiteWeb}
 										value={formik.values.site_web}
 										onChange={formik.handleChange('site_web')}
 										onBlur={formik.handleBlur('site_web')}
@@ -462,7 +463,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomDropDownSelect
 										size="small"
 										id="civilite_responsable"
-										label="Civilité du responsable"
+										label={t.companies.fieldCivilite}
 										items={civiliteItemsList}
 										value={formik.values.civilite_responsable}
 										onChange={(e) => formik.setFieldValue('civilite_responsable', e.target.value)}
@@ -472,7 +473,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="nom_responsable"
 										type="text"
-										label="Nom du responsable"
+										label={t.companies.fieldNomResponsable}
 										value={formik.values.nom_responsable}
 										onChange={formik.handleChange('nom_responsable')}
 										onBlur={formik.handleBlur('nom_responsable')}
@@ -486,7 +487,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="gsm_responsable"
 										type="tel"
-										label="GSM du responsable"
+										label={t.companies.fieldGsmResponsable}
 										value={formik.values.gsm_responsable}
 										onChange={formik.handleChange('gsm_responsable')}
 										onBlur={formik.handleBlur('gsm_responsable')}
@@ -515,7 +516,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="telephone"
 										type="tel"
-										label="Téléphone"
+										label={t.companies.fieldTelephone}
 										value={formik.values.telephone}
 										onChange={formik.handleChange('telephone')}
 										onBlur={formik.handleBlur('telephone')}
@@ -529,7 +530,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="fax"
 										type="tel"
-										label="Fax"
+										label={t.companies.fieldFax}
 										value={formik.values.fax}
 										onChange={formik.handleChange('fax')}
 										onBlur={formik.handleBlur('fax')}
@@ -550,7 +551,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 									<DescriptionIcon color="primary" />
 									<Typography variant="h6" fontWeight={700}>
-										Informations administratives
+										{t.companies.adminSection}
 									</Typography>
 								</Stack>
 								<Divider sx={{ mb: 3 }} />
@@ -558,7 +559,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="numero_du_compte"
 										type="text"
-										label="Numéro du compte"
+										label={t.companies.fieldNumeroCompte}
 										value={formik.values.numero_du_compte}
 										onChange={formik.handleChange('numero_du_compte')}
 										onBlur={formik.handleBlur('numero_du_compte')}
@@ -572,7 +573,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="ICE"
 										type="text"
-										label="ICE *"
+										label={t.companies.fieldICE + ' *'}
 										value={formik.values.ICE}
 										onChange={formik.handleChange('ICE')}
 										onBlur={formik.handleBlur('ICE')}
@@ -586,7 +587,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="registre_de_commerce"
 										type="text"
-										label="Registre de commerce"
+										label={t.companies.fieldRegistreCommerce}
 										value={formik.values.registre_de_commerce}
 										onChange={formik.handleChange('registre_de_commerce')}
 										onBlur={formik.handleBlur('registre_de_commerce')}
@@ -600,7 +601,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="identifiant_fiscal"
 										type="text"
-										label="Identifiant fiscal"
+										label={t.companies.fieldIdentifiantFiscal}
 										value={formik.values.identifiant_fiscal}
 										onChange={formik.handleChange('identifiant_fiscal')}
 										onBlur={formik.handleBlur('identifiant_fiscal')}
@@ -614,7 +615,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="tax_professionnelle"
 										type="text"
-										label="Taxe professionnelle"
+										label={t.companies.fieldTaxeProfessionnelle}
 										value={formik.values.tax_professionnelle}
 										onChange={formik.handleChange('tax_professionnelle')}
 										onBlur={formik.handleBlur('tax_professionnelle')}
@@ -628,7 +629,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="CNSS"
 										type="text"
-										label="CNSS"
+										label={t.companies.fieldCNSS}
 										value={formik.values.CNSS}
 										onChange={formik.handleChange('CNSS')}
 										onBlur={formik.handleBlur('CNSS')}
@@ -649,7 +650,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 									<SettingsIcon color="primary" />
 									<Typography variant="h6" fontWeight={700}>
-										Paramètres
+									{t.companies.settingsSection}
 									</Typography>
 								</Stack>
 								<Divider sx={{ mb: 3 }} />
@@ -661,7 +662,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											color="primary"
 										/>
 									}
-									label="Utiliser des devises étrangères (EUR, USD)"
+									label={t.companies.foreignCurrencyLabel}
 								/>
 							</CardContent>
 						</Card>
@@ -669,10 +670,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						{/* Managers Card */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
 							<ManagedByTableSection
-								title="Utilisateurs gestionnaires"
+								title={t.companies.managersSection}
 								icon={<AdminPanelSettingsIcon color="primary" />}
 								emptyIcon={<AdminPanelSettingsIcon sx={{ fontSize: 48, color: 'grey.400' }} />}
-								emptyMessage="Aucun utilisateur gestionnaire"
+								emptyMessage={t.companies.noManager}
 								headers={['Utilisateur', 'Rôle']}
 								data={adminUsers}
 								isUserTable={true}
@@ -689,10 +690,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									formik.setFieldValue('managed_by', filtered);
 								}}
 								addSectionProps={{
-									title: 'Ajouter un gestionnaire',
+									title: t.shared.addUser,
 									isMobile,
 									selectId: 'new_company_select',
-									selectLabel: 'Sélectionner un utilisateur',
+									selectLabel: t.shared.selectUser,
 									selectItems: availableUsers,
 									selectValue: selectedUser,
 									onSelectChange: (_e, newUser) => setSelectedUser(newUser),
@@ -712,7 +713,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						{/* Submit Button */}
 						<Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 2 }}>
 							<PrimaryLoadingButton
-								buttonText={isEditMode ? 'Mettre à jour' : "Ajouter l'entreprise"}
+								buttonText={isEditMode ? t.common.update : t.companies.addTitle}
 								active={!isPending}
 								type="submit"
 								loading={isPending}
@@ -722,7 +723,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									if (!formik.isValid) {
 										e.preventDefault();
 										formik.handleSubmit();
-										onError('Veuillez corriger les erreurs de validation avant de soumettre.');
+										onError(t.common.correctErrors);
 										window.scrollTo({ top: 0, behavior: 'smooth' });
 									}
 								}}

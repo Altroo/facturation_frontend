@@ -48,6 +48,7 @@ jest.mock('next/image', () => ({
 jest.mock('@/utils/hooks', () => ({
 	useAppSelector: jest.fn(() => []),
 	useToast: jest.fn(() => ({ onSuccess: jest.fn(), onError: jest.fn() })),
+	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
 }));
 jest.mock('@/store/services/client', () => ({
 	useGetClientsListQuery: jest.fn(() => ({ data: [], isLoading: false })),

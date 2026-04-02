@@ -7,6 +7,7 @@ import { Protected } from './protected';
 jest.mock('@/utils/hooks', () => ({
 	usePermission: jest.fn(),
 	useAppSelector: jest.fn(),
+	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
 }));
 
 import { usePermission, useAppSelector } from '@/utils/hooks';

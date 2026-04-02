@@ -29,10 +29,15 @@ jest.mock('@/contexts/InitContext', () => ({
 }));
 
 // Mock selector
-jest.mock('@/utils/hooks', () => ({
-	useAppSelector: jest.fn(),
-	useToast: jest.fn(() => ({ onSuccess: jest.fn(), onError: jest.fn() })),
-}));
+jest.mock('@/utils/hooks', () => {
+	const { translations } = jest.requireActual('@/translations');
+	return {
+		useAppSelector: jest.fn(),
+		useToast: jest.fn(() => ({ onSuccess: jest.fn(), onError: jest.fn() })),
+		useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: translations.fr }),
+		useIsClient: () => true,
+	};
+});
 
 const mockSession = {
 	accessToken: 'mock-token',
@@ -152,7 +157,7 @@ describe('ProFormaViewClient UI and navigation', () => {
 
 		// Check document info and totals presence
 		expect(screen.getByText('Informations du document')).toBeInTheDocument();
-		expect(screen.getByText('Numéro de facture')).toBeInTheDocument();
+		expect(screen.getByText('Numéro de la facture')).toBeInTheDocument();
 		expect(screen.getByText('PF-001')).toBeInTheDocument();
 
 		// Totals header present
@@ -165,7 +170,7 @@ describe('ProFormaViewClient UI and navigation', () => {
 		expect(screen.getByText('Virement')).toBeInTheDocument();
 
 		// Lines / DataGrid header
-		expect(screen.getByText('Lignes de facture pro-forma')).toBeInTheDocument();
+		expect(screen.getByText('Lignes de la facture')).toBeInTheDocument();
 
 		// Remise and remarque
 		expect(screen.getByText('Remise globale')).toBeInTheDocument();

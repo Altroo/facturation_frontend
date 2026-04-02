@@ -4,13 +4,14 @@ import React from 'react';
 import Image from 'next/image';
 import { Box, Chip, Divider, Paper, Stack, Typography } from '@mui/material';
 import BuildCircleOutlinedIcon from '@mui/icons-material/BuildCircleOutlined';
-import { useAppSelector } from '@/utils/hooks';
+import { useAppSelector, useLanguage } from '@/utils/hooks';
 import { getWSMaintenanceState } from '@/store/selectors';
 import Logo from '../../../../public/assets/images/facturation-logo.png';
 import DocumentSVG from '../../../../public/assets/images/auth_illu/document.svg';
 
 const Maintenance: React.FC = () => {
 	const maintenance = useAppSelector(getWSMaintenanceState);
+	const { t } = useLanguage();
 
 	if (!maintenance) {
 		return null;
@@ -49,7 +50,7 @@ const Maintenance: React.FC = () => {
 				>
 					<Image
 						src={Logo}
-						alt="E.B.H Facturation - Logo"
+						alt={t.maintenance.logoAlt}
 						priority
 						style={{ width: '150px', height: 'auto' }}
 					/>
@@ -80,7 +81,7 @@ const Maintenance: React.FC = () => {
 					<Stack direction="row" justifyContent="center" sx={{ display: { xs: 'flex', md: 'none' }, mb: 4 }}>
 						<Image
 							src={Logo}
-							alt="E.B.H Facturation - Logo"
+							alt={t.maintenance.logoAlt}
 							priority
 							style={{ width: '88px', height: 'auto' }}
 						/>
@@ -102,7 +103,7 @@ const Maintenance: React.FC = () => {
 						<Stack spacing={3}>
 							<Chip
 								icon={<BuildCircleOutlinedIcon />}
-								label="Maintenance"
+								label={t.maintenance.chipLabel}
 								sx={{
 									alignSelf: 'flex-start',
 									backgroundColor: '#FFF3E0',
@@ -122,7 +123,7 @@ const Maintenance: React.FC = () => {
 										color: '#0D070B',
 									}}
 								>
-									Maintenance en cours
+									{t.maintenance.title}
 								</Typography>
 								<Typography
 									id="maintenance-description"
@@ -133,8 +134,7 @@ const Maintenance: React.FC = () => {
 										color: '#6B7280',
 									}}
 								>
-									Nous effectuons actuellement une maintenance sur E.B.H Facturation afin d&apos;améliorer la
-									stabilité de l&apos;application.
+									{t.maintenance.description}
 								</Typography>
 							</Stack>
 
@@ -142,10 +142,10 @@ const Maintenance: React.FC = () => {
 
 							<Stack spacing={1.5}>
 								<Typography variant="body1" sx={{ color: '#0D070B', fontWeight: 600 }}>
-									L&apos;accès à l&apos;application est momentanément suspendu.
+									{t.maintenance.suspended}
 								</Typography>
 								<Typography variant="body2" sx={{ color: '#6B7280', lineHeight: 1.7 }}>
-									Merci de revenir plus tard. Vos données restent inchangées pendant l&apos;intervention.
+									{t.maintenance.comeBack}
 								</Typography>
 							</Stack>
 						</Stack>

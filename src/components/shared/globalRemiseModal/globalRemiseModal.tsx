@@ -16,6 +16,7 @@ import { Discount as DiscountIcon, Warning as WarningIcon } from '@mui/icons-mat
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import { textInputTheme, customDropdownTheme } from '@/utils/themes';
+import { useLanguage } from '@/utils/hooks';
 
 interface GlobalRemiseModalProps {
 	open: boolean;
@@ -42,6 +43,7 @@ const GlobalRemiseModalContent: React.FC<GlobalRemiseModalProps> = ({
 	onApply,
 	devise = 'MAD',
 }) => {
+	const { t } = useLanguage();
 	const [state, setState] = useState<ModalState>({
 		type: (currentType as 'Pourcentage' | 'Fixe' | '') || '',
 		value: currentType ? currentValue : 0,
@@ -50,11 +52,11 @@ const GlobalRemiseModalContent: React.FC<GlobalRemiseModalProps> = ({
 
 	const validateValue = (remiseType: string, remiseValue: number): string => {
 		if (remiseValue < MIN_VALUE) {
-			return `La remise doit être au moins ${MIN_VALUE}`;
+			return t.globalRemiseModal.errorMin;
 		}
 
 		if (remiseType === 'Pourcentage' && remiseValue > 100) {
-			return 'La remise en pourcentage doit être entre 0.01 et 100';
+			return t.globalRemiseModal.errorPercentRange;
 		}
 
 		return '';
@@ -106,7 +108,7 @@ const GlobalRemiseModalContent: React.FC<GlobalRemiseModalProps> = ({
 			<DialogTitle>
 				<Stack direction="row" spacing={2} alignItems="center">
 					<DiscountIcon color="primary" />
-					<Typography variant="h6">Remise globale</Typography>
+					<Typography variant="h6">{t.globalRemiseModal.title}</Typography>
 				</Stack>
 			</DialogTitle>
 			<DialogContent>
@@ -119,11 +121,11 @@ const GlobalRemiseModalContent: React.FC<GlobalRemiseModalProps> = ({
 
 					<CustomDropDownSelect
 						id="global_remise_type"
-						label="Type de remise"
+						label={t.globalRemiseModal.typeLabel}
 						items={[
-							{ value: '', code: 'Aucune' },
-							{ value: 'Pourcentage', code: 'Pourcentage (%)' },
-							{ value: 'Fixe', code: `Montant fixe (${devise})` },
+							{ value: '', code: t.globalRemiseModal.typeNone },
+							{ value: 'Pourcentage', code: t.globalRemiseModal.typePercent },
+							{ value: 'Fixe', code: t.globalRemiseModal.typeFixed(devise) },
 						]}
 						value={state.type}
 						onChange={(e) => handleTypeChange(e.target.value as 'Pourcentage' | 'Fixe' | '')}
@@ -134,7 +136,7 @@ const GlobalRemiseModalContent: React.FC<GlobalRemiseModalProps> = ({
 						<CustomTextInput
 							id="remise_value"
 							type="number"
-							label={state.type === 'Pourcentage' ? 'Pourcentage' : `Montant (${devise})`}
+							label={state.type === 'Pourcentage' ? t.globalRemiseModal.valuePercentLabel : t.globalRemiseModal.valueAmountLabel(devise)}
 							value={String(state.value)}
 							onChange={(e) => handleValueChange(parseFloat(e.target.value) || 0)}
 							fullWidth={true}
@@ -144,21 +146,21 @@ const GlobalRemiseModalContent: React.FC<GlobalRemiseModalProps> = ({
 							error={!!state.error}
 							helperText={
 								state.error ||
-								(state.type === 'Pourcentage' ? `Entre ${MIN_VALUE} et 100` : `Montant positif (min ${MIN_VALUE})`)
+								(state.type === 'Pourcentage' ? t.globalRemiseModal.helperPercent : t.globalRemiseModal.helperAmount)
 							}
 						/>
 					)}
 				</Stack>
 			</DialogContent>
 			<DialogActions>
-				<Button onClick={handleClose}>Annuler</Button>
+				<Button onClick={handleClose}>{t.globalRemiseModal.cancelBtn}</Button>
 				<Button
 					variant="contained"
 					onClick={handleApply}
 					startIcon={<DiscountIcon />}
 					disabled={!!state.error && state.type !== ''}
 				>
-					Appliquer
+					{t.globalRemiseModal.applyBtn}
 				</Button>
 			</DialogActions>
 		</Dialog>

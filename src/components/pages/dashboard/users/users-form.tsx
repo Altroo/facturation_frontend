@@ -43,7 +43,7 @@ import { textInputTheme, customDropdownTheme } from '@/utils/themes';
 import { USERS_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import CustomSquareImageUploading from '@/components/formikElements/customSquareImageUploading/customSquareImageUploading';
-import { useAppSelector, useToast } from '@/utils/hooks';
+import { useAppSelector, useToast, useLanguage } from '@/utils/hooks';
 import { getGroupesState } from '@/store/selectors';
 import {
 	useAddUserMutation,
@@ -69,6 +69,7 @@ type FormikContentProps = {
 const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
 	const { token, id } = props;
 	const { onSuccess, onError } = useToast();
+	const { t } = useLanguage();
 	const isEditMode = id !== undefined;
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -130,19 +131,19 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				}
 				if (isEditMode) {
 					await updateUser({ data: payload, id: id }).unwrap();
-					onSuccess("L'utilisateur a été mis à jour avec succès.");
+					onSuccess(t.users.updateSuccess);
 				} else {
 					await addUser({ data: payload }).unwrap();
-					onSuccess("L'utilisateur a été ajouté avec succès.");
+					onSuccess(t.users.addSuccess);
 				}
 				if (!isEditMode) {
 					router.replace(USERS_LIST);
 				}
 			} catch (e) {
 				if (isEditMode) {
-					onError("Échec de la mise à jour de l'utilisateur.");
+					onError(t.users.updateError);
 				} else {
-					onError("Échec de l'ajout de l'utilisateur.");
+					onError(t.users.addError);
 				}
 				setFormikAutoErrors({ e, setFieldError });
 			} finally {
@@ -213,18 +214,18 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	// Collect validation errors from Formik
 	const fieldLabels = useMemo<Record<string, string>>(
 		() => ({
-			email: 'Email',
-			first_name: 'Nom',
-			last_name: 'Prénom',
-			gender: 'Sexe',
-			is_active: 'Compte actif',
-			is_staff: 'Compte administrateur',
-			companies: 'Sociétés gérées',
-			avatar: 'Photo de profil',
-			avatar_cropped: 'Photo recadrée',
-			globalError: 'Erreur globale',
+			email: t.users.fieldEmail,
+			first_name: t.users.fieldNom,
+			last_name: t.users.fieldPrenom,
+			gender: t.users.fieldSexe,
+			is_active: t.users.isActiveLabel,
+			is_staff: t.users.isAdminLabel,
+			companies: t.users.companiesSection,
+			avatar: t.users.photoSection,
+			avatar_cropped: t.users.fieldAvatarCropped,
+			globalError: t.common.genericError,
 		}),
-		[],
+		[t],
 	);
 
 	const validationErrors = useMemo(() => {
@@ -264,13 +265,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
 					}}
 				>
-					Liste des utilisateurs
+					{t.users.backToList}
 				</Button>
 			</Stack>
 			{hasValidationErrors && (
 				<Alert severity="error" icon={<WarningIcon />} sx={{ mb: 2 }}>
 					<Typography variant="subtitle2" fontWeight={600}>
-						Erreurs de validation détectées:
+						{t.common.validationErrors}
 					</Typography>
 					<ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
 						{Object.entries(validationErrors).map(([key, error]) => (
@@ -297,7 +298,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 									<AccountCircleIcon color="primary" />
 									<Typography variant="h6" fontWeight={700}>
-										Photo de profil
+										{t.users.photoSection}
 									</Typography>
 								</Stack>
 								<Divider sx={{ mb: 3 }} />
@@ -318,7 +319,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 									<PersonOutlineIcon color="primary" />
 									<Typography variant="h6" fontWeight={700}>
-										Informations personnelles
+										{t.users.personalSection}
 									</Typography>
 								</Stack>
 								<Divider sx={{ mb: 3 }} />
@@ -326,7 +327,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="email"
 										type="email"
-										label="Email *"
+										label={t.users.fieldEmail}
 										disabled={isEditMode}
 										value={formik.values.email}
 										onChange={formik.handleChange('email')}
@@ -341,7 +342,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="first_name"
 										type="text"
-										label="Nom *"
+										label={t.users.fieldNom}
 										value={formik.values.first_name}
 										onChange={formik.handleChange('first_name')}
 										onBlur={formik.handleBlur('first_name')}
@@ -355,7 +356,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="last_name"
 										type="text"
-										label="Prénom *"
+										label={t.users.fieldPrenom}
 										value={formik.values.last_name}
 										onChange={formik.handleChange('last_name')}
 										onBlur={formik.handleBlur('last_name')}
@@ -369,7 +370,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomDropDownSelect
 										size="small"
 										id="gender"
-										label="Sexe *"
+										label={t.users.fieldSexe}
 										items={genderItemsList}
 										value={formik.values.gender}
 										onChange={(e) => formik.setFieldValue('gender', e.target.value)}
@@ -389,7 +390,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 									<AdminPanelSettingsIcon color="primary" />
 									<Typography variant="h6" fontWeight={700}>
-										Paramètres du compte
+										{t.users.accountSection}
 									</Typography>
 								</Stack>
 								<Divider sx={{ mb: 3 }} />
@@ -406,7 +407,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										label={
 											<Stack direction="row" spacing={1} alignItems="center">
 												<CheckCircleIcon fontSize="small" color={formik.values.is_active ? 'success' : 'disabled'} />
-												<Typography>Compte Active</Typography>
+												<Typography>{t.users.isActiveLabel}</Typography>
 											</Stack>
 										}
 									/>
@@ -425,7 +426,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 													fontSize="small"
 													color={formik.values.is_staff ? 'primary' : 'disabled'}
 												/>
-												<Typography>Compte Administrateur</Typography>
+												<Typography>{t.users.isAdminLabel}</Typography>
 											</Stack>
 										}
 									/>
@@ -436,11 +437,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						{/* Managed Companies Card */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
 							<ManagedByTableSection
-								title="Sociétés gérées"
+								title="{t.users.companiesSection}"
 								icon={<BusinessIcon color="primary" />}
 								emptyIcon={<BusinessIcon sx={{ fontSize: 48, color: 'grey.400' }} />}
-								emptyMessage="Aucune société assignée"
-								headers={['Raison Sociale', 'Rôle']}
+								emptyMessage={t.users.noCompany}
+								headers={[t.shared.companyHeader, t.shared.roleHeader]}
 								data={companiesAdmin}
 								isUserTable={false}
 								roleOptions={roleOptions}
@@ -455,10 +456,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									setCompaniesAdmin(companiesAdmin.filter((c) => c.membership_id !== membershipId));
 								}}
 								addSectionProps={{
-									title: 'Ajouter une société',
+									title: t.shared.addCompany,
 									isMobile,
 									selectId: 'new_user_select',
-									selectLabel: 'Sélectionner une société',
+									selectLabel: t.shared.selectCompany,
 									selectItems: availableCompanies,
 									selectValue: selectedCompany,
 									onSelectChange: (_e, newCompany) => setSelectedCompany(newCompany),
@@ -479,7 +480,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						<Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 2 }}>
 							<PrimaryLoadingButton
 								type="submit"
-								buttonText={isEditMode ? 'Mettre à jour' : "Ajouter l'utilisateur"}
+								buttonText={isEditMode ? t.common.update : t.users.addTitle}
 								active={!isPending}
 								loading={isPending}
 								startIcon={isEditMode ? <EditIcon /> : <AddIcon />}
@@ -488,7 +489,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									if (!formik.isValid) {
 										e.preventDefault();
 										formik.handleSubmit();
-										onError('Veuillez corriger les erreurs de validation avant de soumettre.');
+										onError(t.common.correctErrors);
 										window.scrollTo({ top: 0, behavior: 'smooth' });
 									}
 								}}

@@ -40,7 +40,7 @@ import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkToolt
 import FactureDevisTotalsCard from '@/components/shared/factureDevistotalCard/factureDevisTotalsCard';
 
 import Styles from '@/styles/dashboard/dashboard.module.sass';
-import { useAppSelector } from '@/utils/hooks';
+import { useAppSelector, useLanguage } from '@/utils/hooks';
 import { getUserCompaniesState } from '@/store/selectors';
 import { useGetArticlesListQuery } from '@/store/services/article';
 import { formatDate, formatNumberWithSpaces } from '@/utils/helpers';
@@ -225,6 +225,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 	const token = useInitAccessToken(session);
 	const companies = useAppSelector(getUserCompaniesState);
 	const router = useRouter();
+	const { t } = useLanguage();
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -253,7 +254,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 		() => [
 			{
 				field: 'photo',
-				headerName: 'Photo',
+				headerName: t.documentView.colPhoto,
 				flex: 0.5, minWidth: 60,
 				renderCell: (params: GridRenderCellParams) => {
 					const articleId = toNumber((params.row as { article?: unknown }).article, NaN);
@@ -322,7 +323,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 			},
 			{
 				field: 'reference',
-				headerName: 'Référence',
+				headerName: t.documentView.colReference,
 				flex: 0.8, minWidth: 90,
 				renderCell: (params: GridRenderCellParams) => {
 					const articleId = toNumber((params.row as { article?: unknown }).article, NaN);
@@ -341,7 +342,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 			},
 			{
 				field: 'designation',
-				headerName: 'Désignation',
+				headerName: t.documentView.colDesignation,
 				flex: 1.4, minWidth: 120,
 				renderCell: (params: GridRenderCellParams) => {
 					const value = (params.row as { designation?: unknown }).designation;
@@ -359,7 +360,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 			},
 			{
 				field: 'marque',
-				headerName: 'Marque',
+				headerName: t.documentView.colMarque,
 				flex: 1, minWidth: 100,
 				renderCell: (params: GridRenderCellParams) => {
 					const articleId = toNumber((params.row as { article?: unknown }).article, NaN);
@@ -378,7 +379,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 			},
 			{
 				field: 'categorie',
-				headerName: 'Catégorie',
+				headerName: t.documentView.colCategorie,
 				flex: 1, minWidth: 100,
 				renderCell: (params: GridRenderCellParams) => {
 					const articleId = toNumber((params.row as { article?: unknown }).article, NaN);
@@ -397,7 +398,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 			},
 			{
 				field: 'prix_achat',
-				headerName: "Prix d'achat",
+				headerName: t.documentView.colPrixAchat,
 				flex: 1, minWidth: 110,
 				renderCell: (params: GridRenderCellParams) => {
 					const value = formatNumberWithSpaces(params.row.prix_achat ?? 0, 2) + ' ' +
@@ -415,7 +416,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 			},
 			{
 				field: 'prix_vente',
-				headerName: 'Prix de vente',
+				headerName: t.documentView.colPrixVente,
 				flex: 1, minWidth: 110,
 				renderCell: (params: GridRenderCellParams) => {
 					const value =
@@ -433,7 +434,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 			},
 			{
 				field: 'quantity',
-				headerName: 'Quantité',
+				headerName: t.documentView.colQuantite,
 				flex: 0.8, minWidth: 90,
 				renderCell: (params: GridRenderCellParams) => {
 					const raw = (params.row as { quantity?: unknown }).quantity;
@@ -450,7 +451,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 			},
 			{
 				field: 'remise_type',
-				headerName: 'Type remise',
+				headerName: t.documentView.colTypeRemise,
 				flex: 0.8, minWidth: 90,
 				renderCell: (params: GridRenderCellParams) => {
 					const value = (params.row as { remise_type?: unknown }).remise_type;
@@ -464,7 +465,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 			},
 			{
 				field: 'remise',
-				headerName: 'Remise',
+				headerName: t.documentView.colRemise,
 				flex: 0.8, minWidth: 90,
 				renderCell: (params: GridRenderCellParams) => {
 					const row = params.row as { remise?: unknown; remise_type?: unknown };
@@ -479,7 +480,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 				},
 			},
 		],
-		[articlesData],
+		[articlesData, t],
 	);
 
 	const dateLabel = formatDate(getDocumentDateRaw(rawData) ?? null) || '-';
@@ -544,7 +545,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 										<DescriptionIcon color="primary" />
 										<Typography variant="h6" fontWeight={700}>
-											Informations du document
+											{t.documentView.documentInfoSection}
 										</Typography>
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
@@ -588,7 +589,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 										</Typography>
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
-									<InfoRow icon={<PersonIcon />} label="Client" value={rawData?.client_name} />
+									<InfoRow icon={<PersonIcon />} label={t.documentView.clientLabel} value={rawData?.client_name} />
 								</CardContent>
 							</Card>
 
@@ -597,16 +598,16 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 										<PaymentIcon color="primary" />
 										<Typography variant="h6" fontWeight={700}>
-											Paiement & Conditions
+											{t.documentView.paymentSection}
 										</Typography>
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 									<Stack spacing={0}>
-										<InfoRow icon={<PaymentIcon />} label="Mode de paiement" value={rawData?.mode_paiement_name} />
+										<InfoRow icon={<PaymentIcon />} label={t.documentView.modePaiementLabel} value={rawData?.mode_paiement_name} />
 										<Divider />
 										{type === 'bon-de-livraison' && (
 											<>
-												<InfoRow icon={<LocalShippingIcon />} label="Livré par" value={rawData?.livre_par_name} />
+												<InfoRow icon={<LocalShippingIcon />} label={t.documentView.livreParLabel} value={rawData?.livre_par_name} />
 												<Divider />
 											</>
 										)}
@@ -647,13 +648,13 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 											<DiscountIcon color="primary" />
 											<Typography variant="h6" fontWeight={700}>
-												Remise globale
+												{t.documentView.remiseGlobaleSection}
 											</Typography>
 										</Stack>
 										<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 										<InfoRow
 											icon={<DiscountIcon />}
-											label="Remise appliquée"
+											label={t.documentView.remiseAppliedLabel}
 											value={`${toNumber(rawData?.remise, 0)}${rawData?.remise_type === 'Pourcentage' ? '%' : ' MAD'}`}
 										/>
 									</CardContent>
@@ -670,7 +671,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 											</Typography>
 										</Stack>
 										<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
-										<InfoRow icon={<NotesIcon />} label="Remarque" value={rawData?.remarque} />
+										<InfoRow icon={<NotesIcon />} label={t.documentView.remarqueLabel} value={rawData?.remarque} />
 									</CardContent>
 								</Card>
 							)}
@@ -680,24 +681,24 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 										<DescriptionIcon color="primary" />
 										<Typography variant="h6" fontWeight={700}>
-											Informations système
+											{t.documentView.systemInfoSection}
 										</Typography>
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 									<Stack spacing={0}>
 										<InfoRow
 											icon={<CalendarTodayIcon />}
-											label="Date de création"
+											label={t.common.dateCreation}
 											value={formatDate(rawData?.date_created ?? null)}
 										/>
 										<Divider />
 										<InfoRow
 											icon={<CalendarTodayIcon />}
-											label="Dernière modification"
+											label={t.common.dateMaj}
 											value={formatDate(rawData?.date_updated ?? null)}
 										/>
 										<Divider />
-										<InfoRow icon={<PersonIcon />} label="Créé par" value={rawData?.created_by_user_name} />
+										<InfoRow icon={<PersonIcon />} label={t.documentView.createdByLabel} value={rawData?.created_by_user_name} />
 									</Stack>
 								</CardContent>
 							</Card>

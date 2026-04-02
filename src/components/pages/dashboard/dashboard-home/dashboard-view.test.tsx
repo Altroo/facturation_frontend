@@ -295,6 +295,7 @@ jest.mock('@mui/x-date-pickers/AdapterDateFns', () => ({
 jest.mock('@/utils/hooks', () => ({
 	useAppSelector: jest.fn(),
 	useAppDispatch: jest.fn(),
+	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
 }));
 
 jest.mock('@/store/selectors', () => ({

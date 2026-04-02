@@ -11,7 +11,7 @@ import {
 import { FACTURE_PRO_FORMA_EDIT, FACTURE_PRO_FORMA_LIST, FACTURE_PRO_FORMA_PDF } from '@/utils/routes';
 import { useGetFactureProFormaQuery, useDeleteFactureProFormaMutation } from '@/store/services/factureProForma';
 import { useInitAccessToken } from '@/contexts/InitContext';
-import { useAppSelector, useToast } from '@/utils/hooks';
+import { useAppSelector, useToast, useLanguage } from '@/utils/hooks';
 import { extractApiErrorMessage } from '@/utils/helpers';
 import { getUserCompaniesState } from '@/store/selectors';
 import { fetchPdfBlob } from '@/utils/apiHelpers';
@@ -40,6 +40,7 @@ const FactureProFormaViewClient: React.FC<Props> = ({ session, company_id, id })
 	const company = useMemo(() => companies?.find((c) => c.id === company_id), [companies, company_id]);
 	const [deleteRecord] = useDeleteFactureProFormaMutation();
 	const { onSuccess, onError } = useToast();
+	const { t } = useLanguage();
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
 	const [showLanguageModal, setShowLanguageModal] = useState(false);
 	const [pendingPdfType, setPendingPdfType] = useState<'avec_remise' | 'sans_remise' | 'avec_unite' | null>(null);
@@ -47,18 +48,18 @@ const FactureProFormaViewClient: React.FC<Props> = ({ session, company_id, id })
 	const handleDelete = async () => {
 		try {
 			await deleteRecord({ id }).unwrap();
-			onSuccess('Facture pro-forma supprimée avec succès');
+			onSuccess(t.facturesProforma.deleteSuccess);
 			router.push(FACTURE_PRO_FORMA_LIST);
 		} catch (err) {
-			onError(extractApiErrorMessage(err, 'Erreur lors de la suppression de la facture pro-forma'));
+			onError(extractApiErrorMessage(err, t.facturesProforma.deleteError));
 		} finally {
 			setShowDeleteModal(false);
 		}
 	};
 
 	const deleteModalActions = [
-		{ text: 'Annuler', active: false, onClick: () => setShowDeleteModal(false), icon: <ArrowBackIcon />, color: '#6B6B6B' },
-		{ text: 'Supprimer', active: true, onClick: handleDelete, icon: <DeleteIcon />, color: '#D32F2F' },
+		{ text: t.common.cancel, active: false, onClick: () => setShowDeleteModal(false), icon: <ArrowBackIcon />, color: '#6B6B6B' },
+		{ text: t.common.delete, active: true, onClick: handleDelete, icon: <DeleteIcon />, color: '#D32F2F' },
 	];
 
 	const openPdf = (type: 'avec_remise' | 'sans_remise' | 'avec_unite') => {
@@ -76,7 +77,7 @@ const FactureProFormaViewClient: React.FC<Props> = ({ session, company_id, id })
 			window.open(blobUrl, '_blank');
 			setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60_000);
 		} catch {
-			onError("Erreur lors de l'ouverture du document.");
+			onError(t.errors.documentOpenError);
 		} finally {
 			setPendingPdfType(null);
 		}
@@ -93,16 +94,16 @@ const FactureProFormaViewClient: React.FC<Props> = ({ session, company_id, id })
 						PDF (remise)
 					</Button>
 					<Button variant="outlined" size="small" startIcon={<PictureAsPdfIcon />} onClick={() => openPdf('sans_remise')}>
-						PDF (sans remise)
+						{t.common.pdfWithoutDiscount}
 					</Button>
 					<Button variant="outlined" color="warning" size="small" startIcon={<PictureAsPdfIcon />} onClick={() => openPdf('avec_unite')}>
-						PDF (unité)
+						{t.common.pdfUnit}
 					</Button>
 				</>
 			)}
 			{isCaissier && (
 				<Button variant="outlined" color="error" size="small" startIcon={<DeleteIcon />} onClick={() => setShowDeleteModal(true)}>
-					Supprimer
+					{t.common.delete}
 				</Button>
 			)}
 		</>
@@ -115,17 +116,17 @@ const FactureProFormaViewClient: React.FC<Props> = ({ session, company_id, id })
 				company_id={company_id}
 				id={id}
 				type="facture-pro-forma"
-				title="Détails du facture pro-forma"
-				backLabel="Liste des factures pro-forma"
+				title={t.facturesProforma.detailsTitle}
+				backLabel={t.facturesProforma.backToList}
 				backTo={FACTURE_PRO_FORMA_LIST}
 				editTo={FACTURE_PRO_FORMA_EDIT}
-				documentNumberLabel="Numéro de facture"
+				documentNumberLabel={t.facturesProforma.documentNumberLabel}
 				getDocumentNumber={(d) => d?.numero_facture}
-				documentDateLabel="Date de facture"
+				documentDateLabel={t.facturesProforma.documentDateLabel}
 				getDocumentDateRaw={(d) => d?.date_facture}
-				statusTitle="Statut du facture pro-forma"
-				linesTitle="Lignes de facture pro-forma"
-				termsSecondLabel="Numéro de bon commande client"
+				statusTitle={t.facturesProforma.statusTitle}
+				linesTitle={t.facturesProforma.linesTitle}
+				termsSecondLabel={t.facturesProforma.termsSecondLabel}
 				getTermsSecondValue={(d) => d?.numero_bon_commande_client}
 				query={query}
 				headerActions={headerActions}
@@ -138,8 +139,8 @@ const FactureProFormaViewClient: React.FC<Props> = ({ session, company_id, id })
 			)}
 			{showDeleteModal && (
 				<ActionModals
-					title="Supprimer cette facture pro-forma ?"
-					body="Êtes-vous sûr de vouloir supprimer cette facture pro-forma ? Cette action est irréversible."
+					title={t.facturesProforma.deleteModalTitle}
+					body={t.facturesProforma.deleteModalBody}
 					actions={deleteModalActions}
 					titleIcon={<DeleteIcon />}
 					titleIconColor="#D32F2F"

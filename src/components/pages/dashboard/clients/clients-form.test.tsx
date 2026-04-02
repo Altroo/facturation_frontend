@@ -34,6 +34,7 @@ jest.mock('@/utils/hooks', () => ({
 	__esModule: true,
 	useAppSelector: jest.fn(() => [{ id: 1, role: 'Caissier' }]),
 	useToast: () => ({ onSuccess: jest.fn(), onError: jest.fn() }),
+	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
 }));
 
 jest.mock('@/store/selectors', () => ({
@@ -207,7 +208,7 @@ describe('ClientsForm', () => {
 
 		it('renders submit button with add text', () => {
 			renderWithProviders(<ClientsForm session={mockSession} company_id={1} />);
-			expect(screen.getByTestId('submit-button')).toHaveTextContent('Ajouter le client');
+			expect(screen.getByTestId('submit-button')).toHaveTextContent('Ajouter un client');
 		});
 
 		it('renders back button text', () => {
@@ -218,7 +219,7 @@ describe('ClientsForm', () => {
 		it('renders section headers', () => {
 			renderWithProviders(<ClientsForm session={mockSession} company_id={1} />);
 			expect(screen.getByText('Type de client')).toBeInTheDocument();
-			expect(screen.getByText('Informations générales')).toBeInTheDocument();
+			expect(screen.getByText('Identité du client')).toBeInTheDocument();
 			expect(screen.getByText('Contact')).toBeInTheDocument();
 		});
 	});

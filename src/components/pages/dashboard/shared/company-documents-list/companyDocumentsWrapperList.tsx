@@ -12,6 +12,7 @@ import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiP
 import { useInitAccessToken } from '@/contexts/InitContext';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 import { COMPANIES_ADD } from '@/utils/routes';
+import { useLanguage } from '@/utils/hooks';
 
 import type { SessionProps } from '@/types/_initTypes';
 
@@ -29,6 +30,7 @@ export type CompanyDocumentsListProps = SessionProps & {
 const CompanyDocumentsWrapperList: React.FC<CompanyDocumentsListProps> = ({ session, title, children }) => {
 	const token = useInitAccessToken(session);
 	const router = useRouter();
+	const { t } = useLanguage();
 	const { data: companiesData, isLoading } = useGetUserCompaniesQuery(undefined, { skip: !token });
 	
 	// Load saved company index from localStorage
@@ -111,27 +113,25 @@ const CompanyDocumentsWrapperList: React.FC<CompanyDocumentsListProps> = ({ sess
 								<BusinessIcon sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
 							</Box>
 							<Typography variant="h5" fontWeight={600} color="text.primary" gutterBottom>
-								Aucune entreprise trouvée
+								{t.shared.noCompaniesFound}
 							</Typography>
 						{selectedCompany?.role === 'Caissier' ? (
 								<>
 									<Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 3 }}>
-										Vous n&#39;avez pas encore d&#39;entreprises associées à votre compte. Veuillez créer une nouvelle
-										entreprise.
-									</Typography>
-									<Button
-										variant="contained"
-										size="large"
-										sx={{ mt: 2, borderRadius: 2, px: 4 }}
-										onClick={() => router.push(COMPANIES_ADD)}
-									>
-										Créer une entreprise
+											{t.shared.noCompaniesAdminMessage}
+										</Typography>
+										<Button
+											variant="contained"
+											size="large"
+											sx={{ mt: 2, borderRadius: 2, px: 4 }}
+											onClick={() => router.push(COMPANIES_ADD)}
+										>
+											{t.shared.createCompany}
 									</Button>
 								</>
 							) : (
 								<Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 3 }}>
-									Vous n&#39;avez pas encore d&#39;entreprises associées à votre compte. Veuillez contacter votre
-									administrateur.
+										{t.shared.noCompaniesUserMessage}
 								</Typography>
 							)}
 						</Paper>
@@ -155,7 +155,7 @@ const CompanyDocumentsWrapperList: React.FC<CompanyDocumentsListProps> = ({ sess
 								variant="scrollable"
 								allowScrollButtonsMobile
 								scrollButtons="auto"
-								aria-label="companies tabs"
+								aria-label={t.common.companiesTabs}
 								sx={{
 									'& .MuiTabs-indicator': {
 										height: 3,

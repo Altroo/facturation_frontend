@@ -15,6 +15,7 @@ import type { ArticleClass } from '@/models/classes';
 import type { DeviFactureLineFormValues } from '@/types/companyDocumentsTypes';
 import type { ValidateArticleLinesErrorType } from '@/types/devisTypes';
 import { generateRowId } from './companyDocumentFormContent';
+import { useLanguage } from '@/utils/hooks';
 
 const gridFieldTheme = gridInputTheme();
 
@@ -37,6 +38,7 @@ export const useDocumentLinesColumns = ({
 	handleDeleteLine,
 	getArticleById,
 }: UseDocumentLinesColumnsParams): { linesColumns: GridColDef[] } => {
+	const { t } = useLanguage();
 	const getRowIndexFromParams = useCallback(
 		(params: GridRenderCellParams): number => {
 			const idStr = String(params.id);
@@ -178,7 +180,7 @@ export const useDocumentLinesColumns = ({
 		() => [
 			{
 				field: 'photo',
-				headerName: 'Photo',
+				headerName: t.documentForm.colPhoto,
 				flex: 0.5, minWidth: 60,
 				sortable: false,
 				filterable: false,
@@ -240,21 +242,21 @@ export const useDocumentLinesColumns = ({
 			},
 			{
 				field: 'reference',
-				headerName: 'Référence',
+				headerName: t.documentForm.colReference,
 				flex: 0.8, minWidth: 90,
 				renderCell: (params: GridRenderCellParams) => {
 					const article = getArticleById(params.row.article);
 					const value = params.row.reference || article?.reference || '';
 					const isArchived = article?.archived === true;
 					return (
-						<DarkTooltip title={isArchived ? `${value} (Archivé)` : value}>
+						<DarkTooltip title={isArchived ? `${value} (${t.common.archived})` : value}>
 							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', gap: 0.5 }}>
 								<Typography variant="body2" noWrap sx={{ textAlign: 'left' }}>
 									{value}
 								</Typography>
 								{isArchived && (
 									<Typography variant="caption" noWrap sx={{ color: '#ED6C02', fontWeight: 600, whiteSpace: 'nowrap' }}>
-										(Archivé)
+										({t.common.archived})
 									</Typography>
 								)}
 							</Box>
@@ -264,7 +266,7 @@ export const useDocumentLinesColumns = ({
 			},
 			{
 				field: 'designation',
-				headerName: 'Désignation',
+				headerName: t.documentForm.colDesignation,
 				flex: 1, minWidth: 90,
 				renderCell: (params: GridRenderCellParams) => {
 					const value = params.row.designation ?? '';
@@ -281,7 +283,7 @@ export const useDocumentLinesColumns = ({
 			},
 			{
 				field: 'marque',
-				headerName: 'Marque',
+				headerName: t.documentForm.colMarque,
 				flex: 1, minWidth: 100,
 				renderCell: (params: GridRenderCellParams) => {
 					const article = getArticleById(params.row.article);
@@ -299,7 +301,7 @@ export const useDocumentLinesColumns = ({
 			},
 			{
 				field: 'categorie',
-				headerName: 'Catégorie',
+				headerName: t.documentForm.colCategorie,
 				flex: 1, minWidth: 100,
 				renderCell: (params: GridRenderCellParams) => {
 					const article = getArticleById(params.row.article);
@@ -317,7 +319,7 @@ export const useDocumentLinesColumns = ({
 			},
 			{
 				field: 'prix_achat',
-				headerName: "Prix d'achat",
+				headerName: t.documentForm.colPrixAchat,
 				flex: 1, minWidth: 110,
 				renderCell: (params: GridRenderCellParams) => {
 					const value = formatNumberWithSpaces(params.row.prix_achat ?? 0, 2) + ' ' + (params.row.devise_prix_achat || 'MAD');
@@ -332,11 +334,11 @@ export const useDocumentLinesColumns = ({
 					);
 				},
 			},
-			{ field: 'prix_vente', headerName: 'Prix de vente', flex: 1.8, minWidth: 170, renderCell: renderPrixVenteCell },
-			{ field: 'quantity', headerName: 'Quantité', flex: 1.5, minWidth: 160, renderCell: renderQuantityCell },
+			{ field: 'prix_vente', headerName: t.documentForm.colPrixVente, flex: 1.8, minWidth: 170, renderCell: renderPrixVenteCell },
+			{ field: 'quantity', headerName: t.documentForm.colQuantite, flex: 1.5, minWidth: 160, renderCell: renderQuantityCell },
 			{
 				field: 'remise_type',
-				headerName: 'Type remise',
+				headerName: t.documentForm.colTypeRemise,
 				flex: 1.2, minWidth: 150,
 				renderCell: (params: GridRenderCellParams) => {
 					const rowIndex = getRowIndexFromParams(params);
@@ -362,10 +364,10 @@ export const useDocumentLinesColumns = ({
 					);
 				},
 			},
-			{ field: 'remise', headerName: 'Remise', flex: 1.2, minWidth: 120, renderCell: renderRemiseCell },
+			{ field: 'remise', headerName: t.documentForm.colRemise, flex: 1.2, minWidth: 120, renderCell: renderRemiseCell },
 			{
 				field: 'actions',
-				headerName: 'Actions',
+				headerName: t.documentForm.colActions,
 				flex: 0.6, minWidth: 70,
 				sortable: false,
 				filterable: false,
@@ -373,8 +375,8 @@ export const useDocumentLinesColumns = ({
 					const rowIndex = getRowIndexFromParams(params);
 					return (
 						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-							<Tooltip title="Supprimer">
-								<IconButton size="small" color="error" aria-label="Supprimer la ligne" onClick={() => handleDeleteLine(rowIndex)}>
+							<Tooltip title={t.common.delete}>
+								<IconButton size="small" color="error" aria-label={t.documentForm.deleteLineAriaLabel} onClick={() => handleDeleteLine(rowIndex)}>
 									<DeleteIcon />
 								</IconButton>
 							</Tooltip>
@@ -393,6 +395,7 @@ export const useDocumentLinesColumns = ({
 			validationErrors,
 			handleDeleteLine,
 			handleLineChangeRef,
+			t,
 		],
 	);
 

@@ -27,10 +27,15 @@ jest.mock('@/contexts/InitContext', () => ({
 }));
 
 // Selector mock
-jest.mock('@/utils/hooks', () => ({
-	useAppSelector: jest.fn(),
-	useToast: jest.fn(() => ({ onSuccess: jest.fn(), onError: jest.fn() })),
-}));
+jest.mock('@/utils/hooks', () => {
+	const { translations } = jest.requireActual('@/translations');
+	return {
+		useAppSelector: jest.fn(),
+		useToast: jest.fn(() => ({ onSuccess: jest.fn(), onError: jest.fn() })),
+		useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: translations.fr }),
+		useIsClient: () => true,
+	};
+});
 
 const mockSession: AppSession = {
 	accessToken: 'mock-token',

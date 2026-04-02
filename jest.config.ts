@@ -27,9 +27,6 @@ const config: Config = {
 		'!src/types/*',
 		// exclude providers
 		'!src/app/providers/*',
-		// exclude demo files
-		'!src/app/dashboard/demo/page.tsx',
-		'!src/components/pages/dashboard/dashboard-home/dashboard-dummy-view.tsx',
 		// exclude barrel index files
 		'!src/**/index.{js,ts}',
 		// exclude files ending with .test.*,

@@ -5,6 +5,7 @@ import Portal from './portal';
 // Mock useIsClient to always return true in tests
 jest.mock('@/utils/hooks', () => ({
 	useIsClient: jest.fn(() => true),
+	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
 }));
 
 describe('Portal', () => {

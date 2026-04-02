@@ -17,6 +17,7 @@ import CustomPasswordInput from '@/components/formikElements/customPasswordInput
 import { useSetPasswordMutation } from '@/store/services/account';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import { Edit as EditIcon, Lock as LockIcon } from '@mui/icons-material';
+import { useLanguage } from '@/utils/hooks';
 
 const inputTheme = textInputTheme();
 
@@ -28,6 +29,7 @@ type SetPasswordPageContentProps = {
 const SetPasswordPageContent: React.FC<SetPasswordPageContentProps> = ({ email, code }) => {
 	const router = useRouter();
 	const [isPending, setIsPending] = useState(false);
+	const { t } = useLanguage();
 	const [setPassword, { isLoading: isSetPasswordLoading }] = useSetPasswordMutation();
 
 	const formik = useFormik({
@@ -61,8 +63,8 @@ const SetPasswordPageContent: React.FC<SetPasswordPageContentProps> = ({ email, 
 		<Stack direction="column" className={Styles.contentWrapper} spacing={6}>
 			<Stack direction="column" justifyContent="flex-start" alignItems="flex-start" width="100%">
 				<span className={Styles.content}>
-					Nouveau <br />
-					mot de passe
+					{t.auth.newPasswordTitle} <br />
+					{t.auth.newPasswordSubtitle}
 				</span>
 			</Stack>
 			<form style={{ width: '100%' }} onSubmit={(e) => e.preventDefault()}>
@@ -77,8 +79,8 @@ const SetPasswordPageContent: React.FC<SetPasswordPageContentProps> = ({ email, 
 							error={formik.touched.new_password && Boolean(formik.errors.new_password)}
 							fullWidth={false}
 							size="medium"
-							label="Mot de passe"
-							placeholder="Mot de passe"
+							label={t.auth.passwordLabel}
+							placeholder={t.auth.passwordPlaceholder}
 							cssClass={Styles.mobileInput}
 							theme={inputTheme}
 							startIcon={<LockIcon fontSize="small" />}
@@ -92,8 +94,8 @@ const SetPasswordPageContent: React.FC<SetPasswordPageContentProps> = ({ email, 
 							error={formik.touched.new_password2 && Boolean(formik.errors.new_password2)}
 							fullWidth={false}
 							size="medium"
-							label="Confirmez mot de passe"
-							placeholder="Confirmez mot de passe"
+							label={t.auth.confirmPasswordLabel}
+							placeholder={t.auth.confirmPasswordPlaceholder}
 							cssClass={Styles.mobileInput}
 							theme={inputTheme}
 							startIcon={<LockIcon fontSize="small" />}
@@ -101,7 +103,7 @@ const SetPasswordPageContent: React.FC<SetPasswordPageContentProps> = ({ email, 
 					</Stack>
 					{formik.errors.globalError && <span className={Styles.errorMessage}>{formik.errors.globalError}</span>}
 					<PrimaryLoadingButton
-						buttonText="Modifier mot de passe"
+						buttonText={t.auth.changePasswordButton}
 						active={!isSetPasswordLoading && !isPending}
 						onClick={formik.handleSubmit}
 						cssClass={Styles.emailRegisterButton}

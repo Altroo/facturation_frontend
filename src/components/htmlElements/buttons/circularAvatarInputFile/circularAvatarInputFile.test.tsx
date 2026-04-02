@@ -37,7 +37,7 @@ describe('CircularAvatarInputFile', () => {
 
 	it('renders preview image when provided', () => {
 		render(<CircularAvatarInputFile preview="data:image/png;base64,preview" active={true} setAvatar={mockSetAvatar} />);
-		expect(screen.getByAltText('avatar preview')).toBeInTheDocument();
+		expect(screen.getByAltText("Aperçu de l'avatar")).toBeInTheDocument();
 	});
 
 	it('triggers file input click when avatar container text is clicked', () => {

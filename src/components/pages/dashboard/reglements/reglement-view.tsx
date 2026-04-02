@@ -34,7 +34,7 @@ import { useInitAccessToken } from '@/contexts/InitContext';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
-import { useAppSelector, useToast } from '@/utils/hooks';
+import { useAppSelector, useToast, useLanguage } from '@/utils/hooks';
 import { getUserCompaniesState } from '@/store/selectors';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import { formatDate, formatNumber, extractApiErrorMessage } from '@/utils/helpers';
@@ -135,16 +135,17 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 
 	const [deleteRecord] = useDeleteReglementMutation();
 	const { onSuccess, onError } = useToast();
+	const { t } = useLanguage();
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
 	const [showLanguageModal, setShowLanguageModal] = useState(false);
 
 	const handleDelete = async () => {
 		try {
 			await deleteRecord({ id }).unwrap();
-			onSuccess('Règlement supprimé avec succès');
+			onSuccess(t.reglements.deleteSuccess);
 			router.push(REGLEMENTS_LIST);
 		} catch (err) {
-			onError(extractApiErrorMessage(err, 'Erreur lors de la suppression du règlement'));
+			onError(extractApiErrorMessage(err, t.reglements.deleteError));
 		} finally {
 			setShowDeleteModal(false);
 		}
@@ -152,14 +153,14 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 
 	const deleteModalActions = [
 		{
-			text: 'Annuler',
+			text: t.common.cancel,
 			active: false,
 			onClick: () => setShowDeleteModal(false),
 			icon: <ArrowBackIcon />,
 			color: '#6B6B6B',
 		},
 		{
-			text: 'Supprimer',
+			text: t.common.delete,
 			active: true,
 			onClick: handleDelete,
 			icon: <DeleteIcon />,
@@ -170,7 +171,7 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const handleLanguageSelect = async (language: 'fr' | 'en') => {
 		setShowLanguageModal(false);
 		if (!token) {
-			onError("Erreur d'authentification. Veuillez vous reconnecter.");
+			onError(t.errors.authRequired);
 			return;
 		}
 		try {
@@ -180,7 +181,7 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 			window.open(blobUrl, '_blank');
 			setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60_000);
 		} catch {
-			onError("Erreur lors de l'ouverture du document.");
+			onError(t.errors.documentOpenError);
 		}
 	};
 
@@ -190,7 +191,7 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 
 	return (
 		<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
-			<NavigationBar title="Détails du règlement">
+			<NavigationBar title={t.reglements.detailsTitle}>
 				<Stack spacing={3} sx={{ p: { xs: 2, md: 3 }, mt: 2 }}>
 <Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between" alignItems={isMobile ? 'stretch' : 'center'} spacing={2}>
 					<Button
@@ -199,7 +200,7 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 						onClick={() => router.push(REGLEMENTS_LIST)}
 						sx={{ width: isMobile ? '100%' : 'auto' }}
 					>
-						Liste des règlements
+						{t.reglements.backToList}
 					</Button>
 					{!isLoading && !error && (
 						<Stack direction="row" gap={1} flexWrap="wrap">
@@ -232,7 +233,7 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									startIcon={<DeleteIcon />}
 									onClick={() => setShowDeleteModal(true)}
 								>
-									Supprimer
+									{t.common.delete}
 								</Button>
 							)}
 						</Stack>
@@ -291,7 +292,7 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 													}}
 												>
 													<Typography variant="subtitle2" fontWeight={600} color="text.secondary" sx={{ mb: 0.5 }}>
-														TOTAL RÈGLEMENTS
+														{t.reglements.totalReglements.toUpperCase()}
 													</Typography>
 													<Typography variant="h6" fontWeight={800} color="success.main">
 														{reglement?.total_reglements_facture !== undefined && reglement?.total_reglements_facture !== null
@@ -312,7 +313,7 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 													}}
 												>
 													<Typography variant="subtitle2" fontWeight={600} color="text.secondary" sx={{ mb: 0.5 }}>
-														RESTE À PAYER
+														{t.reglements.resteAPayer.toUpperCase()}
 													</Typography>
 													<Typography variant="h5" fontWeight={900} color="error.main">
 														{reglement?.reste_a_payer !== undefined ? `${formatNumber(reglement.reste_a_payer)} ${reglement.devise}` : '-'}
@@ -331,7 +332,7 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 													}}
 												>
 													<Typography variant="subtitle2" fontWeight={600} color="text.secondary" sx={{ mb: 0.5 }}>
-														CE RÈGLEMENT
+														{t.reglements.ceReglement}
 													</Typography>
 													<Typography variant="h5" fontWeight={900} color="primary">
 														{reglement?.montant !== undefined && reglement?.montant !== null
@@ -373,18 +374,18 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									<Stack direction="row" spacing={3} alignItems="center">
 										<ReceiptIcon color="primary" />
 										<Typography variant="h6" fontWeight={700}>
-											Informations de la facture
+											{t.reglements.infoFacture}
 										</Typography>
 									</Stack>
 									<Divider sx={{ my: 2 }} />
 									<InfoRow
 										icon={<ReceiptIcon fontSize="small" />}
-										label="Numéro de facture"
+										label={t.reglements.fieldFactureClient}
 										value={reglement?.facture_client_numero}
 									/>
 									<InfoRow
 										icon={<InfoIcon fontSize="small" />}
-										label="Client"
+										label={t.reglements.labelClient}
 										value={reglement?.client_name}
 									/>
 								</CardContent>
@@ -396,18 +397,18 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									<Stack direction="row" spacing={3} alignItems="center">
 										<PaymentIcon color="primary" />
 										<Typography variant="h6" fontWeight={700}>
-											Détails du règlement
+											{t.reglements.detailsReglement}
 										</Typography>
 									</Stack>
 									<Divider sx={{ my: 2 }} />
 									<InfoRow
 										icon={<PaymentIcon fontSize="small" />}
-										label="Mode de règlement"
+										label={t.reglements.fieldModeReglement}
 										value={reglement?.mode_reglement_name ?? '-'}
 									/>
 									<InfoRow
 										icon={<AttachMoneyIcon fontSize="small" />}
-										label="Montant"
+										label={t.reglements.colMontant}
 										value={
 											<Typography fontWeight={600} color="primary">
 											{reglement?.montant ? `${formatNumber(reglement.montant)} ${reglement.devise}` : '-'}
@@ -416,7 +417,7 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									/>
 									<InfoRow
 										icon={<NotesIcon fontSize="small" />}
-										label="Libellé"
+										label={t.reglements.fieldLibelle}
 										value={reglement?.libelle || '-'}
 									/>
 								</CardContent>
@@ -434,22 +435,22 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									<Divider sx={{ my: 2 }} />
 									<InfoRow
 										icon={<CalendarTodayIcon fontSize="small" />}
-										label="Date de règlement"
+										label={t.reglements.fieldDateReglement}
 										value={formatDate(reglement?.date_reglement ?? null)}
 									/>
 									<InfoRow
 										icon={<CalendarTodayIcon fontSize="small" />}
-										label="Date d'échéance"
+										label={t.reglements.fieldDateEcheance}
 										value={formatDate(reglement?.date_echeance ?? null)}
 									/>
 									<InfoRow
 										icon={<CalendarTodayIcon fontSize="small" />}
-										label="Date de création"
+										label={t.common.dateCreation}
 										value={formatDate(reglement?.date_created ?? null)}
 									/>
 									<InfoRow
 										icon={<CalendarTodayIcon fontSize="small" />}
-										label="Dernière mise à jour"
+										label={t.common.dateMaj}
 										value={formatDate(reglement?.date_updated ?? null)}
 									/>
 								</CardContent>
@@ -466,8 +467,8 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 		)}
 		{showDeleteModal && (
 			<ActionModals
-				title="Supprimer ce règlement ?"
-				body="Êtes-vous sûr de vouloir supprimer ce règlement ? Cette action est irréversible."
+				title={t.reglements.deleteModalTitle}
+				body={t.reglements.deleteModalBody}
 				actions={deleteModalActions}
 				titleIcon={<DeleteIcon />}
 				titleIconColor="#D32F2F"

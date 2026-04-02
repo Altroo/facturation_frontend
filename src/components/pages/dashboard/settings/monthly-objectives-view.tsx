@@ -32,7 +32,7 @@ import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/com
 
 import { useInitAccessToken } from '@/contexts/InitContext';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
-import { useAppSelector, useToast } from '@/utils/hooks';
+import { useAppSelector, useToast, useLanguage } from '@/utils/hooks';
 import { getProfilState } from '@/store/selectors';
 import {
 	useGetAllMonthlyObjectivesSettingsQuery,
@@ -64,6 +64,7 @@ type FormikContentProps = {
 
 const FormikContent: React.FC<FormikContentProps> = ({ companyId, existingObjectives, usesForeignCurrency }) => {
 	const { onSuccess, onError } = useToast();
+	const { t } = useLanguage();
 	const isEditMode = existingObjectives !== undefined && existingObjectives !== null;
 
 	const [addData, { isLoading: isAddLoading, error: addError }] = useCreateMonthlyObjectivesSettingsMutation();
@@ -110,16 +111,16 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, existingObject
 
 				if (isEditMode && existingObjectives) {
 					await updateData({ id: existingObjectives.id, data: submitData }).unwrap();
-					onSuccess('Objectifs mis à jour avec succès');
+					onSuccess(t.monthlyObjectives.updateSuccess);
 				} else {
 					await addData(submitData).unwrap();
-					onSuccess('Objectifs créés avec succès');
+					onSuccess(t.monthlyObjectives.createSuccess);
 				}
 			} catch (e) {
 				if (isEditMode) {
-					onError('La mise à jour des objectifs a échoué.');
+					onError(t.monthlyObjectives.updateError);
 				} else {
-					onError('La création des objectifs a échoué.');
+					onError(t.monthlyObjectives.createError);
 				}
 				setFormikAutoErrors({ e, setFieldError });
 			} finally {
@@ -131,12 +132,12 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, existingObject
 	// Collect validation errors from Formik
 	const fieldLabels = useMemo<Record<string, string>>(
 		() => ({
-			objectif_ca: 'Objectif CA',
-			objectif_factures: 'Objectif Factures',
-			objectif_conversion: 'Objectif Conversion',
-			globalError: 'Erreur globale',
+			objectif_ca: t.monthlyObjectives.fieldCA,
+			objectif_factures: t.monthlyObjectives.fieldFactures,
+			objectif_conversion: t.monthlyObjectives.fieldConversion,
+			globalError: t.monthlyObjectives.fieldGlobalError,
 		}),
-		[],
+		[t],
 	);
 
 	const validationErrors = useMemo(() => {
@@ -161,7 +162,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, existingObject
 			{hasValidationErrors && (
 				<Alert severity="error" icon={<WarningIcon />} sx={{ mb: 2 }}>
 					<Typography variant="subtitle2" fontWeight={600}>
-						Erreurs de validation détectées:
+						{t.common.validationErrors}
 					</Typography>
 					<ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
 						{Object.entries(validationErrors).map(([key, error]) => (
@@ -186,7 +187,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, existingObject
 						<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 							<TrendingUpIcon color="primary" />
 							<Typography variant="h6" fontWeight={700}>
-								Objectifs Mensuels
+								{t.monthlyObjectives.title}
 							</Typography>
 						</Stack>
 						<Divider sx={{ mb: 3 }} />
@@ -194,7 +195,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, existingObject
 							<FormattedNumberInput
 								id="objectif_ca"
 								type="text"
-								label="Objectif CA (MAD) *"
+								label={t.monthlyObjectives.fieldCALabel}
 								value={formik.values.objectif_ca}
 								onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 									const raw = (e.target as HTMLInputElement).value;
@@ -217,7 +218,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, existingObject
 									<FormattedNumberInput
 										id="objectif_ca_eur"
 										type="text"
-										label="Objectif CA (EUR)"
+										label={t.monthlyObjectives.fieldCAEurLabel}
 										value={formik.values.objectif_ca_eur ?? ''}
 										onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 											const raw = (e.target as HTMLInputElement).value;
@@ -242,7 +243,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, existingObject
 									<FormattedNumberInput
 										id="objectif_ca_usd"
 										type="text"
-										label="Objectif CA (USD)"
+										label={t.monthlyObjectives.fieldCAUsdLabel}
 										value={formik.values.objectif_ca_usd ?? ''}
 										onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 											const raw = (e.target as HTMLInputElement).value;
@@ -269,7 +270,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, existingObject
 							<CustomTextInput
 								id="objectif_factures"
 								type="number"
-								label="Objectif Factures (nombre) *"
+								label={t.monthlyObjectives.fieldFacturesLabel}
 								value={String(formik.values.objectif_factures) ?? ''}
 								onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 									const raw = (e.target as HTMLInputElement).value;
@@ -289,7 +290,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, existingObject
 							<CustomTextInput
 								id="objectif_conversion"
 								type="number"
-								label="Objectif Conversion (%) *"
+								label={t.monthlyObjectives.fieldConversionLabel}
 								value={String(formik.values.objectif_conversion) ?? ''}
 								onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 									const raw = (e.target as HTMLInputElement).value;
@@ -315,7 +316,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, existingObject
 						{/* Submit Button */}
 						<Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 2 }}>
 							<PrimaryLoadingButton
-								buttonText={isEditMode ? 'Mettre à jour' : 'Créer les objectifs'}
+								buttonText={isEditMode ? t.common.update : t.monthlyObjectives.createBtn}
 								active={!isPending}
 								type="submit"
 								loading={isPending}
@@ -325,7 +326,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, existingObject
 									if (!formik.isValid) {
 										e.preventDefault();
 										formik.handleSubmit();
-										onError('Veuillez corriger les erreurs de validation avant de soumettre.');
+										onError(t.common.correctErrors);
 										window.scrollTo({ top: 0, behavior: 'smooth' });
 									}
 								}}
@@ -340,6 +341,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, existingObject
 };
 
 const MonthlyObjectivesView: React.FC<SessionProps> = ({ session }) => {
+	const { t } = useLanguage();
 	const token = useInitAccessToken(session);
 	const profil = useAppSelector(getProfilState);
 	const is_staff = profil?.is_staff || false;
@@ -358,7 +360,7 @@ const MonthlyObjectivesView: React.FC<SessionProps> = ({ session }) => {
 	}
 
 	return (
-		<CompanyDocumentsWrapperList session={session} title="Paramètres - Objectifs Mensuels">
+		<CompanyDocumentsWrapperList session={session} title={t.monthlyObjectives.pageTitle}>
 			{({ company_id }) => {
 				const objectives = objectivesData?.find((obj) => obj.company === company_id);
 				const company = companiesData?.find((c) => c.id === company_id);

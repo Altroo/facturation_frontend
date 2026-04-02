@@ -60,7 +60,7 @@ import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import type { ArticleClass, ClientClass } from '@/models/classes';
 import { useGetClientsListQuery } from '@/store/services/client';
 import { useGetCompanyQuery } from '@/store/services/company';
-import { useToast } from '@/utils/hooks';
+import { useToast, useLanguage } from '@/utils/hooks';
 import type { DropDownType } from '@/types/accountTypes';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import { useGetArticlesListQuery } from '@/store/services/article';
@@ -195,6 +195,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	} = props;
 
 	const { onSuccess, onError } = useToast();
+	const { t } = useLanguage();
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 	const router = useRouter();
@@ -362,9 +363,9 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				if (!data.lignes || data.lignes.length === 0) {
 					setValidationErrors((prev) => ({
 						...prev,
-						lignes_empty: 'Vous devez ajouter au moins un article',
+						lignes_empty: t.documentForm.noArticlesError,
 					}));
-					onError('Vous devez ajouter au moins un article');
+					onError(t.documentForm.noArticlesError);
 					topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 					return;
 				}
@@ -794,9 +795,9 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		try {
 			if (!newValue) return;
 			await patchStatut({ id: id!, data: { statut: newValue as TypeFactureLivraisonDevisStatus } }).unwrap();
-			onSuccess('Statut mis à jour avec succès.');
+			onSuccess(t.documentForm.statusUpdateSuccess);
 		} catch {
-			onError('Échec de la mise à jour du statut.');
+			onError(t.documentForm.statusUpdateError);
 		}
 	};
 
@@ -870,34 +871,34 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 
 	const fieldLabels = useMemo<Record<string, string>>(
 		() => ({
-			numero_part: 'Numéro',
-			year_part: 'Année',
-			client: 'Client',
-			date_devis: 'Date',
-			date_facture: 'Date',
-			date_bon_livraison: 'Date',
-			numero_demande_prix_client: 'N° demande prix client',
-			numero_bon_commande_client: 'N° bon commande client',
-			mode_paiement: 'Mode de paiement',
-			livre_par: 'Livreur',
-			remarque: 'Remarque',
-			remise_type: 'Type remise',
-			remise: 'Remise',
-			globalError: 'Erreur globale',
-			global_remise: 'Remise globale',
-			lignes: 'Lignes',
-			lignes_empty: 'Articles',
+			numero_part: t.documentForm.fieldNumeroLabel,
+			year_part: t.documentForm.fieldAnneeLabel,
+			client: t.documentForm.fieldClientLabel,
+			date_devis: t.documentForm.fieldDateLabel,
+			date_facture: t.documentForm.fieldDateLabel,
+			date_bon_livraison: t.documentForm.fieldDateLabel,
+			numero_demande_prix_client: t.documentForm.fieldDemandePrixLabel,
+			numero_bon_commande_client: t.documentForm.fieldBonCommandeLabel,
+			mode_paiement: t.documentForm.fieldModePaiementLabel,
+			livre_par: t.documentForm.fieldLivreurLabel,
+			remarque: t.documentForm.fieldRemarqueLabel,
+			remise_type: t.documentForm.fieldTypeRemiseLabel,
+			remise: t.documentForm.fieldRemiseLabel,
+			globalError: t.documentForm.fieldGlobalErrorLabel,
+			global_remise: t.documentForm.remiseGlobaleSection,
+			lignes: t.documentForm.fieldLignesLabel,
+			lignes_empty: t.documentForm.fieldArticlesLabel,
 			// line fields
-			prix_vente: 'Prix de vente',
-			prix_achat: "Prix d'achat",
-			quantity: 'Quantité',
-			designation: 'Désignation',
-			reference: 'Référence',
-			marque: 'Marque',
-			categorie: 'Catégorie',
-			remise_field: 'Remise', // generic fallback for remise field naming
+			prix_vente: t.documentForm.fieldPrixVenteLabel,
+			prix_achat: t.documentForm.fieldPrixAchatLabel,
+			quantity: t.documentForm.fieldQuantiteLabel,
+			designation: t.documentForm.fieldDesignationLabel,
+			reference: t.documentForm.fieldReferenceLabel,
+			marque: t.documentForm.fieldMarqueLabel,
+			categorie: t.documentForm.fieldCategorieLabel,
+			remise_field: t.documentForm.fieldRemiseLabel, // generic fallback for remise field naming
 		}),
-		[],
+		[t],
 	);
 
 	const combinedValidationEntries = useMemo(() => {
@@ -939,10 +940,10 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	// scroll to top when submit attempted and there are errors
 	useEffect(() => {
 		if (formik.submitCount > 0 && hasValidationErrors) {
-			onError('Veuillez corriger les erreurs de validation avant de soumettre.');
+			onError(t.common.correctErrors);
 			topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 		}
-	}, [formik.submitCount, hasValidationErrors, onError]);
+	}, [formik.submitCount, hasValidationErrors, onError, t]);
 
 	// Core loading: blocks the entire form.  Only wait for the document
 	// detail (edit) or numero generation (add) plus active mutations.
@@ -991,7 +992,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				{showValidationAlert && (
 					<Alert severity="error" icon={<WarningIcon />}>
 						<Typography variant="subtitle2" fontWeight={600}>
-							Erreurs de validation détectées:
+							{t.common.validationErrors}
 						</Typography>
 						<ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
 							{combinedValidationEntries.map(([key, error]) => (
@@ -1034,7 +1035,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 										<DescriptionIcon color="primary" />
 										<Typography variant="h6" fontWeight={700}>
-											Informations du document
+											{t.documentForm.documentInfoSection}
 										</Typography>
 									</Stack>
 									<Divider sx={{ mb: 3 }} />
@@ -1044,7 +1045,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 												<CustomTextInput
 													id="numero_part"
 													type="text"
-													label="Numéro *"
+													label={t.documentForm.fieldNumero}
 													value={formik.values.numero_part}
 													onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 														if (/^\d*$/.test(e.target.value)) formik.setFieldValue('numero_part', e.target.value);
@@ -1068,7 +1069,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 												<CustomTextInput
 													id="year_part"
 													type="text"
-													label="Année *"
+													label={t.documentForm.fieldAnnee}
 													value={formik.values.year_part}
 													onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 														if (/^\d{0,2}$/.test(e.target.value)) formik.setFieldValue('year_part', e.target.value);
@@ -1088,7 +1089,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 												/>
 											</Box>
 											{!isEditMode && refetchNum && (
-												<Tooltip title="Réinitialiser le numéro">
+												<Tooltip title={t.documentForm.resetNumero}>
 													<IconButton
 														size="large"
 														color="primary"
@@ -1105,7 +1106,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 															}
 														}}
 														sx={{ mt: 1 }}
-														aria-label="Réinitialiser le numéro"
+														aria-label={t.documentForm.resetNumero}
 													>
 														<RefreshIcon fontSize="small" />
 													</IconButton>
@@ -1151,7 +1152,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 										<Stack spacing={2.5}>
 											<CustomDropDownSelect
 												id="statut"
-												label="Statut"
+												label={t.documentForm.fieldStatut}
 												items={
 													config.documentType === 'bon-de-livraison'
 														? bonDeLivraisonStatusItemsList
@@ -1182,8 +1183,8 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 										<CustomAutoCompleteSelect
 											size="small"
 											id="client"
-											noOptionsText="Aucun client trouvée"
-											label="Sélectionner un client *"
+											noOptionsText={t.documentForm.noClientFound}
+											label={t.documentForm.selectClient}
 											items={clientItems}
 											theme={theme}
 											value={clientItems.find((item) => item.value === String(formik.values.client)) || null}
@@ -1217,11 +1218,11 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 											<CustomDropDownSelect
 												id="devise"
 												size="small"
-												label="Devise du document"
+												label={t.documentForm.deviseLabel}
 												items={[
-													{ value: 'MAD', code: 'MAD - Dirham Marocain' },
-													{ value: 'EUR', code: 'EUR - Euro' },
-													{ value: 'USD', code: 'USD - Dollar Américain' },
+													{ value: 'MAD', code: t.documentForm.deviseMAD },
+													{ value: 'EUR', code: t.documentForm.deviseEUR },
+													{ value: 'USD', code: t.documentForm.deviseUSD },
 												]}
 												value={formik.values.devise ?? 'MAD'}
 												onChange={(e) => formik.setFieldValue('devise', e.target.value)}
@@ -1230,8 +1231,8 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 												disabled={getLines().length > 0}
 												helperText={
 													getLines().length > 0
-														? 'La devise ne peut pas être modifiée une fois des lignes ajoutées'
-														: 'Définit la devise pour tous les articles de ce document'
+														? t.documentForm.deviseLockedHelper
+														: t.documentForm.deviseHelper
 												}
 											/>
 										</Stack>
@@ -1245,7 +1246,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 										<PaymentIcon color="primary" />
 										<Typography variant="h6" fontWeight={700}>
-											Paiement & Conditions
+											{t.documentForm.paymentSection}
 										</Typography>
 									</Stack>
 									<Divider sx={{ mb: 3 }} />
@@ -1253,8 +1254,8 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 										<CustomAutoCompleteSelect
 											id="mode_paiement"
 											size="small"
-											noOptionsText="Aucun mode de paiement trouvé"
-											label="Mode de paiement"
+											noOptionsText={t.documentForm.noModePaiement}
+											label={t.documentForm.modePaiementLabel}
 											items={modePaiementItems}
 											theme={theme}
 											value={selectedModePaiement}
@@ -1281,8 +1282,8 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 											<CustomAutoCompleteSelect
 												id="livre_par"
 												size="small"
-												noOptionsText="Aucun livreur trouvé"
-												label="Livré par"
+												noOptionsText={t.documentForm.noLivreurFound}
+												label={t.documentForm.livrePar}
 												items={livreParItems}
 												theme={theme}
 												value={selectedLivrePar}
@@ -1349,7 +1350,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 											<DiscountIcon color="primary" />
 											<Typography variant="h6" fontWeight={700}>
-												Remise globale
+												{t.documentForm.remiseGlobaleSection}
 											</Typography>
 										</Stack>
 										<Divider sx={{ mb: 3 }} />
@@ -1361,7 +1362,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 												onClick={() => setShowGlobalRemiseModal(true)}
 												fullWidth
 											>
-												Appliquer une remise globale
+												{t.documentForm.applyGlobalRemise}
 											</Button>
 											<Button
 												variant="outlined"
@@ -1377,7 +1378,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 												fullWidth
 												disabled={!(formik.values.remise && formik.values.remise > 0)}
 											>
-												Supprimer la remise globale
+												{t.documentForm.removeGlobalRemise}
 											</Button>
 											{formik.values.remise_type && formik.values.remise && formik.values.remise > 0 && (
 												<Typography variant="body2" color="text.secondary">
@@ -1404,7 +1405,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 										<CustomTextInput
 											id="remarque"
 											type="text"
-											label="Remarque"
+											label={t.documentForm.remarqueLabel}
 											value={formik.values.remarque || ''}
 											onChange={formik.handleChange('remarque')}
 											onBlur={formik.handleBlur('remarque')}
@@ -1422,7 +1423,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 							{/* Submit Button */}
 							<Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 2 }}>
 								<PrimaryLoadingButton
-									buttonText={isEditMode ? 'Mettre à jour' : 'Ajouter des articles'}
+									buttonText={isEditMode ? t.common.update : t.documentForm.addArticlesBtn}
 									active={!isPending}
 									type="submit"
 									loading={isPending}
@@ -1430,7 +1431,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 									onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
 										if (showValidationAlert) {
 											e.preventDefault();
-											onError('Veuillez corriger les erreurs de validation avant de soumettre.');
+											onError(t.common.correctErrors);
 											window.scrollTo({ top: 0, behavior: 'smooth' });
 										}
 									}}

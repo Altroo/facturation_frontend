@@ -40,6 +40,7 @@ jest.mock('@/utils/hooks', () => ({
 		onError: mockOnError,
 	}),
 	useAppDispatch: () => jest.fn(),
+	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
 }));
 
 jest.mock('@/contexts/InitContext', () => ({

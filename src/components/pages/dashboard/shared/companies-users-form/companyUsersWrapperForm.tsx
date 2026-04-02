@@ -5,6 +5,7 @@ import Styles from '@/styles/dashboard/dashboard.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { Box, Stack } from '@mui/material';
 import { Protected } from '@/components/layouts/protected/protected';
+import { useLanguage } from '@/utils/hooks';
 
 interface Props<TFormikProps> extends SessionProps {
 	id?: number;
@@ -14,18 +15,19 @@ interface Props<TFormikProps> extends SessionProps {
 }
 
 const CompanyUsersWrapperForm = <TFormikProps extends { id?: number }>(props: Props<TFormikProps>) => {
+	const { t } = useLanguage();
 	const { session, id, entityName, FormikComponent, extraFormikProps } = props;
 	const token = useInitAccessToken(session);
 	const isEditMode = id !== undefined;
 
 	const titles: Record<'entreprise' | 'utilisateur', { add: string; edit: string }> = {
 		entreprise: {
-			add: 'Ajouter une entreprise',
-			edit: "Modifier l'entreprise",
+			add: t.companies.addTitle,
+			edit: t.companies.editTitle,
 		},
 		utilisateur: {
-			add: 'Ajouter un utilisateur',
-			edit: "Modifier l'utilisateur",
+			add: t.users.addTitle,
+			edit: t.users.editTitle,
 		},
 	};
 

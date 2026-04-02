@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import type { TranslationDictionary } from '@/types/languageTypes';
 import { useRouter } from 'next/navigation';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import { useDeleteBonDeLivraisonMutation, useGetBonDeLivraisonUninvoicedListQuery } from '@/store/services/bonDeLivraison';
@@ -10,17 +11,18 @@ import type { BonDeLivraisonClass } from '@/models/classes';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import CompanyDocumentsListContent from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsListContent';
 import type { DocumentListConfig, PaginationModel } from '@/types/companyDocumentsTypes';
+import { useLanguage } from '@/utils/hooks';
 
-const bonDeLivraisonUninvoicedListConfig: DocumentListConfig<BonDeLivraisonClass> = {
+const createBonDeLivraisonUninvoicedListConfig = (t: TranslationDictionary): DocumentListConfig<BonDeLivraisonClass> => ({
 	documentType: 'bon-de-livraison',
 	labels: {
-		documentTypeName: 'bon de livraison',
-		pageTitle: 'BLs Non Facturés',
-		addButtonText: 'Nouveau bon de livraison',
-		deleteSuccessMessage: 'Bon de livraison supprimé avec succès',
-		deleteErrorMessage: 'Erreur lors de la suppression du bon de livraison',
-		deleteConfirmTitle: 'Supprimer ce bon de livraison ?',
-		deleteConfirmBody: 'Êtes‑vous sûr de vouloir supprimer ce bon de livraison ?',
+		documentTypeName: t.bonsLivraison.documentTypeName,
+		pageTitle: t.bonsLivraison.uninvoicedTitle,
+		addButtonText: t.bonsLivraison.newBL,
+		deleteSuccessMessage: t.bonsLivraison.deleteSuccess,
+		deleteErrorMessage: t.bonsLivraison.deleteError,
+		deleteConfirmTitle: t.bonsLivraison.deleteModalTitle,
+		deleteConfirmBody: t.bonsLivraison.deleteModalBody,
 	},
 	routes: {
 		addRoute: BON_DE_LIVRAISON_ADD,
@@ -35,8 +37,7 @@ const bonDeLivraisonUninvoicedListConfig: DocumentListConfig<BonDeLivraisonClass
 		extraField: 'numero_bon_commande_client',
 		extraFieldHeaderName: 'N° bon commande client',
 	},
-};
-
+});
 interface FormikContentProps extends SessionProps {
 	company_id: number;
 	role: string;
@@ -45,6 +46,8 @@ interface FormikContentProps extends SessionProps {
 const FormikContent: React.FC<FormikContentProps> = (props) => {
 	const { session, company_id, role } = props;
 	const router = useRouter();
+	const { t } = useLanguage();
+	const bonDeLivraisonUninvoicedListConfig = React.useMemo(() => createBonDeLivraisonUninvoicedListConfig(t), [t]);
 	const token = useInitAccessToken(session);
 
 	const [paginationModel, setPaginationModel] = useState<PaginationModel>({
@@ -93,8 +96,9 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 };
 
 const BonDeLivraisonUninvoicedListClient: React.FC<SessionProps> = ({ session }) => {
+	const { t } = useLanguage();
 	return (
-		<CompanyDocumentsWrapperList session={session} title="BLs Non Facturés">
+		<CompanyDocumentsWrapperList session={session} title={t.bonsLivraison.uninvoicedTitle}>
 			{({ company_id, role }) => <FormikContent session={session} company_id={company_id} role={role} />}
 		</CompanyDocumentsWrapperList>
 	);

@@ -24,7 +24,7 @@ import ActionModals from '@/components/htmlElements/modals/actionModal/actionMod
 import type { CompanyClass } from '@/models/classes';
 import { formatDate } from '@/utils/helpers';
 import { Protected } from '@/components/layouts/protected/protected';
-import { useToast } from '@/utils/hooks';
+import { useToast, useLanguage } from '@/utils/hooks';
 import Image from 'next/image';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
@@ -41,6 +41,7 @@ export const nbrEmployeFilterOptions = [
 const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 	const router = useRouter();
 	const { onSuccess, onError } = useToast();
+	const { t } = useLanguage();
 	const token = useInitAccessToken(session);
 	const [paginationModel, setPaginationModel] = useState<{ page: number; pageSize: number }>({
 		page: 0,
@@ -82,10 +83,10 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 	const suspendHandler = async () => {
 		try {
 			await suspendRecord({ id: selectedId! }).unwrap();
-			onSuccess('Entreprise suspendue avec succès');
+			onSuccess(t.companies.suspendSuccess);
 			refetch();
 		} catch {
-			onError("Erreur lors de la suspension de l'entreprise");
+			onError(t.companies.suspendError);
 		} finally {
 			setShowSuspendModal(false);
 			setSelectedIds((prev) => prev.filter((id) => id !== selectedId));
@@ -94,11 +95,11 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 
 	const bulkSuspendHandler = async () => {
 		try {
-			const result = await bulkSuspendCompanies({ ids: selectedIds }).unwrap();
-			onSuccess(`${result.suspended} entreprise(s) suspendue(s) avec succès`);
+			await bulkSuspendCompanies({ ids: selectedIds }).unwrap();
+			onSuccess(t.companies.bulkSuspendSuccess(selectedIds.length));
 			refetch();
 		} catch {
-			onError('Erreur lors de la suspension des entreprises');
+			onError(t.companies.bulkSuspendError);
 		} finally {
 			setShowBulkSuspendModal(false);
 			setSelectedIds([]);
@@ -121,9 +122,9 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 			setSelectedIds(allIds);
 			setIsAllMatchingSelected(true);
 		} catch {
-			onError('Erreur lors de la récupération des identifiants');
+			onError(t.companies.fetchIdsError);
 		}
-	}, [fetchAllCompanyIds, customFilterParams, onError]);
+	}, [fetchAllCompanyIds, customFilterParams, onError, t]);
 
 	const handleClearAllMatching = useCallback(() => {
 		setSelectedIds([]);
@@ -132,13 +133,13 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 
 	const deleteModalActions = [
 		{
-			text: 'Annuler',
+			text: t.common.cancel,
 			active: false,
 			onClick: () => setShowSuspendModal(false),
 			icon: <CloseIcon />,
 			color: '#6B6B6B',
 		},
-		{ text: 'Suspendre', active: true, onClick: suspendHandler, icon: <PauseIcon />, color: '#D32F2F' },
+		{ text: t.companies.suspendBtn, active: true, onClick: suspendHandler, icon: <PauseIcon />, color: '#D32F2F' },
 	];
 
 	const showDeleteModalCall = (id: number) => {
@@ -149,7 +150,7 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 	const columns: GridColDef[] = [
 		{
 			field: 'logo',
-			headerName: 'Logo',
+			headerName: t.companies.colLogo,
 			flex: 0.5,
 			minWidth: 70,
 			renderCell: (params: GridRenderCellParams<CompanyClass>) => {
@@ -207,7 +208,7 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		},
 		{
 			field: 'raison_sociale',
-			headerName: 'Raison Sociale',
+			headerName: t.companies.colRaisonSociale,
 			flex: 1.5,
 			minWidth: 130,
 			renderCell: (params: GridRenderCellParams<CompanyClass>) => (
@@ -220,7 +221,7 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		},
 		{
 			field: 'ICE',
-			headerName: 'ICE',
+			headerName: t.companies.colICE,
 			flex: 1,
 			minWidth: 100,
 			renderCell: (params: GridRenderCellParams<CompanyClass>) => (
@@ -233,7 +234,7 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		},
 		{
 			field: 'nom_responsable',
-			headerName: 'Responsable',
+			headerName: t.companies.colResponsable,
 			flex: 1.2,
 			minWidth: 120,
 			renderCell: (params: GridRenderCellParams<CompanyClass>) => {
@@ -248,7 +249,7 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		},
 		{
 			field: 'email',
-			headerName: 'Email',
+			headerName: t.companies.colEmail,
 			flex: 1.5,
 			minWidth: 130,
 			renderCell: (params: GridRenderCellParams<CompanyClass>) => (
@@ -261,7 +262,7 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		},
 		{
 			field: 'telephone',
-			headerName: 'Téléphone',
+			headerName: t.companies.colTelephone,
 			flex: 1.2,
 			minWidth: 120,
 			renderCell: (params: GridRenderCellParams<CompanyClass>) => (
@@ -274,10 +275,10 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		},
 		{
 			field: 'nbr_employe',
-			headerName: 'Employés',
+			headerName: t.companies.colEmployes,
 			flex: 0.8,
 			minWidth: 100,
-			filterOperators: createDropdownFilterOperators(nbrEmployeFilterOptions, 'Tous les nombres', true),
+			filterOperators: createDropdownFilterOperators(nbrEmployeFilterOptions, t.companies.allEmployeeCounts, true),
 			renderCell: (params: GridRenderCellParams<CompanyClass>) => (
 				<DarkTooltip title={params.value}>
 					<Chip label={params.value} size="small" variant="outlined" />
@@ -286,7 +287,7 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		},
 		{
 			field: 'date_created',
-			headerName: 'Date de création',
+			headerName: t.common.dateCreation,
 			flex: 1.5,
 			minWidth: 150,
 			filterOperators: createDateRangeFilterOperator(),
@@ -303,7 +304,7 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		},
 		{
 			field: 'actions',
-			headerName: 'Actions',
+			headerName: t.common.actions,
 			flex: 1.2,
 			minWidth: 130,
 			sortable: false,
@@ -311,19 +312,19 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 			renderCell: (params: GridRenderCellParams<CompanyClass>) => {
 				const actions = [
 					{
-						label: 'Voir',
+						label: t.common.view,
 						icon: <VisibilityIcon />,
 						onClick: () => router.push(COMPANIES_VIEW(params.row.id)),
 						color: 'info' as const,
 					},
 					{
-						label: 'Modifier',
+						label: t.common.edit,
 						icon: <EditIcon />,
 						onClick: () => router.push(COMPANIES_EDIT(params.row.id)),
 						color: 'primary' as const,
 					},
 					{
-						label: 'Suspendre',
+						label: t.companies.suspendBtn,
 						icon: <PauseIcon />,
 						onClick: () => showDeleteModalCall(params.row.id),
 						color: 'error' as const,
@@ -343,7 +344,7 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 			mt="48px"
 			sx={{ overflowX: 'auto', overflowY: 'hidden' }}
 		>
-			<NavigationBar title="Liste des entreprises">
+			<NavigationBar title={t.companies.listTitle}>
 				<Protected>
 					<>
 						<Box
@@ -369,7 +370,7 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 								}}
 								startIcon={<AddIcon fontSize="small" />}
 							>
-								Nouvelle entreprise
+								{t.companies.newCompany}
 							</Button>
 							{selectedIds.length > 0 && (
 								<Button
@@ -411,8 +412,8 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 						/>
 						{showSuspendModal && (
 							<ActionModals
-								title="Suspendre cette entreprise ?"
-								body="Êtes‑vous sûr de vouloir suspendre cette entreprise ? Cette action est irréversible."
+								title={t.companies.suspendModalTitle}
+								body={t.companies.suspendModalBody}
 								actions={deleteModalActions}
 								titleIcon={<PauseIcon />}
 								titleIconColor="#D32F2F"
@@ -420,18 +421,18 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 						)}
 						{showBulkSuspendModal && (
 							<ActionModals
-								title={`Suspendre ${selectedIds.length} entreprise(s) ?`}
+								title={t.companies.bulkSuspendModalTitle(selectedIds.length)}
 								body={`Êtes-vous sûr de vouloir suspendre les ${selectedIds.length} entreprise(s) sélectionnée(s) ? Cette action est irréversible.`}
 								actions={[
 									{
-										text: 'Annuler',
+										text: t.common.cancel,
 										active: false,
 										onClick: () => setShowBulkSuspendModal(false),
 										icon: <CloseIcon />,
 										color: '#6B6B6B',
 									},
 									{
-										text: 'Suspendre',
+										text: t.companies.suspendBtn,
 										active: true,
 										onClick: bulkSuspendHandler,
 										icon: <PauseIcon />,

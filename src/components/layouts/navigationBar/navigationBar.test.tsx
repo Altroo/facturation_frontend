@@ -5,6 +5,7 @@ import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
 import { store } from '@/store/store';
 import React from 'react';
+import { translations } from '@/translations';
 
 jest.mock('@/utils/clientHelpers', () => ({
 	Desktop: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
@@ -41,9 +42,15 @@ jest.mock('next-auth/react', () => ({
 
 const mockUseIsClient = jest.fn(() => true);
 const mockUseAppSelector = jest.fn();
+const mockSetLanguage = jest.fn();
 jest.mock('@/utils/hooks', () => ({
 	useAppSelector: (fn: unknown) => mockUseAppSelector(fn),
 	useIsClient: () => mockUseIsClient(),
+	useLanguage: () => ({
+		language: 'fr' as const,
+		setLanguage: mockSetLanguage,
+		t: translations.fr,
+	}),
 }));
 
 describe('NavigationBar additional behaviors', () => {
@@ -194,7 +201,7 @@ describe('NavigationBar additional behaviors', () => {
 		);
 
 		// On mobile, toggle button should exist and be clickable
-		const toggleBtnMobile = screen.getByLabelText('toggle drawer');
+		const toggleBtnMobile = screen.getByLabelText('Basculer le tiroir de navigation');
 		expect(toggleBtnMobile).toBeInTheDocument();
 		
 		// Clicking should toggle the drawer on mobile

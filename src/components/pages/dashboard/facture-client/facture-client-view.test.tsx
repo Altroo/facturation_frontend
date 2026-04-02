@@ -29,10 +29,15 @@ jest.mock('@/contexts/InitContext', () => ({
 }));
 
 // Mock selector hook
-jest.mock('@/utils/hooks', () => ({
-	useAppSelector: jest.fn(),
-	useToast: jest.fn(() => ({ onSuccess: jest.fn(), onError: jest.fn() })),
-}));
+jest.mock('@/utils/hooks', () => {
+	const { translations } = jest.requireActual('@/translations');
+	return {
+		useAppSelector: jest.fn(),
+		useToast: jest.fn(() => ({ onSuccess: jest.fn(), onError: jest.fn() })),
+		useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: translations.fr }),
+		useIsClient: () => true,
+	};
+});
 
 const mockSession = {
 	accessToken: 'mock-token',
@@ -160,7 +165,7 @@ describe('FactureClientViewClient UI and navigation', () => {
 		expect(screen.getByText('Paiement & Conditions')).toBeInTheDocument();
 		expect(screen.getByText('Virement')).toBeInTheDocument();
 
-		expect(screen.getByText('Lignes de facture client')).toBeInTheDocument();
+		expect(screen.getByText('Lignes de la facture')).toBeInTheDocument();
 
 		expect(screen.getByText('Remise globale')).toBeInTheDocument();
 		expect(screen.getByText('Remarque', { selector: 'h6' })).toBeInTheDocument();

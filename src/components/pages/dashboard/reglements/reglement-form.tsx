@@ -40,7 +40,7 @@ import { textInputTheme } from '@/utils/themes';
 import { FACTURE_CLIENT_ADD, REGLEMENTS_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import type { DropDownType } from '@/types/accountTypes';
-import { useAppSelector, useToast } from '@/utils/hooks';
+import { useAppSelector, useToast, useLanguage } from '@/utils/hooks';
 import { getUserCompaniesState } from '@/store/selectors';
 import { useAddReglementMutation, useEditReglementMutation, useGetReglementQuery } from '@/store/services/reglement';
 import { useGetFactureClientForPaymentQuery } from '@/store/services/factureClient';
@@ -66,6 +66,7 @@ type FormikContentProps = {
 const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
 	const { token, company_id, id, facture_client_id } = props;
 	const { onSuccess, onError } = useToast();
+	const { t } = useLanguage();
 	const isEditMode = id !== undefined;
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -119,19 +120,19 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			try {
 				if (isEditMode) {
 					await updateReglement({ data: payload, id: id! }).unwrap();
-					onSuccess('Le règlement a été mis à jour avec succès.');
+					onSuccess(t.reglements.updateSuccess);
 				} else {
 					await addReglement({ data: payload }).unwrap();
-					onSuccess('Le règlement a été ajouté avec succès.');
+					onSuccess(t.reglements.addSuccess);
 				}
 				if (!isEditMode) {
 					router.replace(REGLEMENTS_LIST);
 				}
 			} catch (e) {
 				if (!isEditMode) {
-					onError("Une erreur est survenue lors de l'ajout du règlement.");
+					onError(t.reglements.addError);
 				} else {
-					onError('Une erreur est survenue lors de la mise à jour du règlement.');
+					onError(t.reglements.updateError);
 				}
 				setFormikAutoErrors({ e, setFieldError });
 			} finally {
@@ -220,15 +221,15 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	// Collect validation errors from Formik
 	const fieldLabels = useMemo<Record<string, string>>(
 		() => ({
-			facture_client: 'Facture client',
-			mode_reglement: 'Mode de règlement',
-			libelle: 'Libellé',
-			montant: 'Montant',
-			date_reglement: 'Date de règlement',
-			date_echeance: "Date d'échéance",
-			globalError: 'Erreur globale',
+			facture_client: t.reglements.fieldFactureClient,
+			mode_reglement: t.reglements.fieldModeReglement,
+			libelle: t.reglements.fieldLibelle,
+			montant: t.reglements.fieldMontant,
+			date_reglement: t.reglements.fieldDateReglement,
+			date_echeance: t.reglements.fieldDateEcheance,
+			globalError: t.common.genericError,
 		}),
-		[],
+		[t],
 	);
 
 	const validationErrors = useMemo(() => {
@@ -285,13 +286,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 							fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
 						}}
 					>
-						Liste des règlements
+						{t.reglements.backToList}
 					</Button>
 				</Stack>
 				{hasValidationErrors && (
 					<Alert severity="error" icon={<WarningIcon />} sx={{ mb: 2 }}>
 						<Typography variant="subtitle2" fontWeight={600}>
-							Erreurs de validation détectées:
+							{t.common.validationErrors}
 						</Typography>
 						<ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
 							{Object.entries(validationErrors).map(([key, errorText]) => (
@@ -319,14 +320,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 											<AttachMoneyIcon color="primary" />
 											<Typography variant="h6" fontWeight={700}>
-												Informations financières
+												{t.reglements.infoFinancieres}
 											</Typography>
 										</Stack>
 										<Divider sx={{ mb: 3 }} />
 										<Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
 											<Box>
 												<Typography variant="body2" color="text.secondary">
-													Montant de la facture
+													{t.reglements.montantFacture}
 												</Typography>
 												<Typography variant="h6" fontWeight={600}>
 													{montantFacture}
@@ -334,7 +335,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											</Box>
 											<Box>
 												<Typography variant="body2" color="text.secondary">
-													Total règlements
+													{t.reglements.totalReglements}
 												</Typography>
 												<Typography variant="h6" fontWeight={600} color="success.main">
 													{totalReglementsFacture}
@@ -342,7 +343,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											</Box>
 											<Box>
 												<Typography variant="body2" color="text.secondary">
-													Reste à payer
+													{t.reglements.resteAPayer}
 												</Typography>
 												<Typography variant="h6" fontWeight={600} color="error.main">
 													{resteAPayer}
@@ -359,7 +360,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 										<ReceiptIcon color="primary" />
 										<Typography variant="h6" fontWeight={700}>
-											Facture client
+											{t.reglements.labelFactureClient}
 										</Typography>
 									</Stack>
 									<Divider sx={{ mb: 3 }} />
@@ -367,8 +368,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										<CustomAutoCompleteSelect
 											id="facture_client"
 											size="small"
-											noOptionsText="Aucune facture trouvée"
-											label="Facture client *"
+											noOptionsText={t.reglements.noFacture}
+											label={t.reglements.fieldFactureClient}
 											theme={theme}
 											items={factureItems}
 											value={selectedFacture}
@@ -404,7 +405,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 										<PaymentIcon color="primary" />
 										<Typography variant="h6" fontWeight={700}>
-											Détails du règlement
+											{t.reglements.detailsReglement}
 										</Typography>
 									</Stack>
 									<Divider sx={{ mb: 3 }} />
@@ -412,8 +413,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										<CustomAutoCompleteSelect
 											id="mode_reglement"
 											size="small"
-											noOptionsText="Aucun mode de règlement trouvé"
-											label="Mode de règlement"
+											noOptionsText={t.reglements.noModeReglement}
+											label={t.reglements.fieldModeReglement}
 											theme={theme}
 											items={modeReglementItems}
 											value={selectedModeReglement}
@@ -452,7 +453,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												formik.touched.montant
 													? formik.errors.montant
 													: isMontantDisabled
-														? 'Veuillez sélectionner une facture'
+														? t.reglements.helpSelectFacture
 														: selectedFactureRemainingAmount > 0
 															? `Maximum: ${formatNumber(selectedFactureRemainingAmount)} ${devise}`
 															: ''
@@ -471,7 +472,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										<CustomTextInput
 											id="libelle"
 											type="text"
-											label="Libellé"
+											label={t.reglements.fieldLibelle}
 											value={formik.values.libelle ?? ''}
 											onChange={formik.handleChange('libelle')}
 											onBlur={formik.handleBlur('libelle')}
@@ -498,7 +499,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<Divider sx={{ mb: 3 }} />
 									<Stack spacing={2.5}>
 										<DatePicker
-											label="Date de règlement *"
+											label={t.reglements.fieldDateReglement}
 											value={formik.values.date_reglement ? new Date(formik.values.date_reglement) : null}
 											onChange={(date) => formik.setFieldValue('date_reglement', date ? formatLocalDate(date) : '')}
 											format="dd/MM/yyyy"
@@ -518,7 +519,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											}}
 										/>
 										<DatePicker
-											label="Date d'échéance *"
+											label={t.reglements.fieldDateEcheance}
 											value={formik.values.date_echeance ? new Date(formik.values.date_echeance) : null}
 											onChange={(date) => formik.setFieldValue('date_echeance', date ? formatLocalDate(date) : '')}
 											format="dd/MM/yyyy"
@@ -544,14 +545,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 							{/* Submit Button */}
 							<Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
 								<PrimaryLoadingButton
-									buttonText={isEditMode ? 'Mettre à jour' : 'Ajouter le règlement'}
+								buttonText={isEditMode ? t.common.update : t.reglements.addTitle}
 									active={!isPending}
 									onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
 										setHasAttemptedSubmit(true);
 										if (!formik.isValid) {
 											e.preventDefault();
 											formik.handleSubmit();
-											onError('Veuillez corriger les erreurs de validation avant de soumettre.');
+											onError(t.common.correctErrors);
 											window.scrollTo({ top: 0, behavior: 'smooth' });
 										}
 									}}
@@ -579,12 +580,13 @@ const ReglementForm: React.FC<Props> = ({ session, company_id, id, facture_clien
 	const token = useInitAccessToken(session);
 	const companies = useAppSelector(getUserCompaniesState);
 	const company = companies?.find((comp) => comp.id === company_id);
+	const { t } = useLanguage();
 
 	const isEditMode = id !== undefined;
 
 	return (
 		<Stack direction="column" sx={{ position: 'relative' }}>
-			<NavigationBar title={isEditMode ? 'Modifier le règlement' : 'Ajouter un règlement'}>
+			<NavigationBar title={isEditMode ? t.reglements.editTitle : t.reglements.addTitle}>
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
 					{company?.role === 'Caissier' || company?.role === 'Commercial' ? (
 						<Box sx={{ width: '100%' }}>

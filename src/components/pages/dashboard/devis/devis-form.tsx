@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import type { TranslationDictionary } from '@/types/languageTypes';
 import type { SessionProps } from '@/types/_initTypes';
 import CompanyDocumentsWrapperForm from '@/components/pages/dashboard/shared/company-documents-form/companyDocumentsWrapperForm';
 import CompanyDocumentFormContent from '@/components/pages/dashboard/shared/company-documents-form/companyDocumentFormContent';
@@ -21,27 +22,28 @@ import type {
 } from '@/types/companyDocumentsTypes';
 import type { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
 import type { DeviClass } from '@/models/classes';
+import { useLanguage } from '@/utils/hooks';
 
 // Configuration for devis form
-const devisFormConfig: DocumentFormConfig<DeviClass> = {
+const createDevisFormConfig = (t: TranslationDictionary): DocumentFormConfig<DeviClass> => ({
 	documentType: 'devis',
 	labels: {
 		documentTypeName: 'devis',
-		listLabel: 'Liste des devis',
-		dateLabel: 'Date du devis',
-		statusLabel: 'Statut du devis',
-		linesLabel: 'Lignes du devis',
-		deleteLineMessage: 'Êtes-vous sûr de vouloir supprimer cette ligne du devis ?',
-		addSuccessMessage: 'Devis créé avec succès.',
-		updateSuccessMessage: 'Devis mis à jour avec succès.',
-		addErrorMessage: 'Échec de la création du devis.',
-		updateErrorMessage: 'Échec de la mise à jour du devis.',
+		listLabel: t.devis.backToList,
+		dateLabel: t.devis.fieldDate,
+		statusLabel: t.devis.fieldStatut,
+		linesLabel: t.devis.linesTitle,
+		deleteLineMessage: t.devis.deleteLineBody,
+		addSuccessMessage: t.devis.addSuccess,
+		updateSuccessMessage: t.devis.updateSuccess,
+		addErrorMessage: t.devis.addError,
+		updateErrorMessage: t.devis.updateError,
 	},
 	fields: {
 		numeroField: 'numero_devis',
 		dateField: 'date_devis',
 		extraField: 'numero_demande_prix_client',
-		extraFieldLabel: 'N° demande de prix client',
+		extraFieldLabel: t.devis.fieldNumeroDemandePrix,
 	},
 	routes: {
 		listRoute: DEVIS_LIST,
@@ -51,8 +53,7 @@ const devisFormConfig: DocumentFormConfig<DeviClass> = {
 		editSchema: deviSchema,
 		addSchema: deviAddSchema,
 	},
-};
-
+});
 type FormikContentProps = {
 	token?: string;
 	company_id: number;
@@ -62,6 +63,8 @@ type FormikContentProps = {
 };
 
 const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, isEditMode, role }) => {
+	const { t } = useLanguage();
+	const devisFormConfig = React.useMemo(() => createDevisFormConfig(t), [t]);
 	// Queries
 	const {
 		data: rawData,
@@ -124,14 +127,15 @@ interface Props extends SessionProps {
 }
 
 const DevisForm: React.FC<Props> = ({ session, company_id, id }) => {
+	const { t } = useLanguage();
 	return (
 		<CompanyDocumentsWrapperForm
 			session={session}
 			company_id={company_id}
 			id={id}
 			documentConfig={{
-				addTitle: 'Ajouter un devis',
-				editTitle: 'Modifier devis',
+				addTitle: t.devis.addTitle,
+				editTitle: t.devis.editTitle,
 			}}
 			FormComponent={FormikContent}
 		/>

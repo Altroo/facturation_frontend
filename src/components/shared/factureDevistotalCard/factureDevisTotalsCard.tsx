@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent, Grid, Box, Typography, Skeleton } from '@mui/material';
 import { formatNumberWithSpaces } from '@/utils/helpers';
+import { useLanguage } from '@/utils/hooks';
 
 interface TotalsCardProps {
 	totals: {
@@ -15,28 +16,29 @@ interface TotalsCardProps {
 }
 
 const FactureDevisTotalsCard: React.FC<TotalsCardProps> = ({ totals, devise = 'MAD', isMobile = false, isLoading = false }) => {
+	const { t } = useLanguage();
 	const items = [
 		{
-			label: 'TOTAL HT',
+			label: t.totalsCard.totalHT,
 			value: `${formatNumberWithSpaces(totals.totalHT, 2)} ${devise}`,
 			variant: 'h6' as const,
 			weight: 800,
 		},
 		{
-			label: 'TOTAL TVA',
+			label: t.totalsCard.totalTVA,
 			value: `${formatNumberWithSpaces(totals.totalTVA, 2)} ${devise}`,
 			variant: 'h6' as const,
 			weight: 800,
 		},
 		{
-			label: 'TOTAL TTC',
+			label: t.totalsCard.totalTTC,
 			value: `${formatNumberWithSpaces(totals.totalTTC, 2)} ${devise}`,
 			variant: 'h5' as const,
 			weight: 900,
 			color: 'primary' as const,
 		},
 		{
-			label: 'TOTAL TTC APRES REMISE',
+			label: t.totalsCard.totalTTCApresRemise,
 			value: `${formatNumberWithSpaces(totals.totalTTCApresRemise, 2)} ${devise}`,
 			variant: 'h5' as const,
 			weight: 900,

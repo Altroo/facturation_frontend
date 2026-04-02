@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { isValidElement, useMemo, useState } from 'react';
 import { Box, Button, Card, CardContent, Divider, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
@@ -29,7 +29,7 @@ import { useInitAccessToken } from '@/contexts/InitContext';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
-import { useAppSelector, useToast } from '@/utils/hooks';
+import { useAppSelector, useToast, useLanguage } from '@/utils/hooks';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import { getUserCompaniesState } from '@/store/selectors';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
@@ -123,15 +123,16 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 
 	const [deleteRecord] = useDeleteArticleMutation();
 	const { onSuccess, onError } = useToast();
+	const { t } = useLanguage();
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
 
 	const handleDelete = async () => {
 		try {
 			await deleteRecord({ id }).unwrap();
-			onSuccess('Article supprimé avec succès');
+			onSuccess(t.articles.deleteSuccess);
 			router.push(ARTICLES_LIST);
 		} catch (err) {
-			onError(extractApiErrorMessage(err, 'Erreur lors de la suppression de l’article'));
+			onError(extractApiErrorMessage(err, t.articles.deleteError));
 		} finally {
 			setShowDeleteModal(false);
 		}
@@ -139,14 +140,14 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 
 	const deleteModalActions = [
 		{
-			text: 'Annuler',
+			text: t.common.cancel,
 			active: false,
 			onClick: () => setShowDeleteModal(false),
 			icon: <ArrowBackIcon />,
 			color: '#6B6B6B',
 		},
 		{
-			text: 'Supprimer',
+			text: t.common.delete,
 			active: true,
 			onClick: handleDelete,
 			icon: <DeleteIcon />,
@@ -156,7 +157,7 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 
 	return (
 		<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
-			<NavigationBar title="Détails de l'article">
+			<NavigationBar title={t.articles.detailsTitle}>
 				<Stack spacing={3} sx={{ p: { xs: 2, md: 3 }, mt: 2 }}>
 					<Stack
 						direction={isMobile ? 'column' : 'row'}
@@ -170,7 +171,7 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 							onClick={() => router.push(ARTICLES_LIST)}
 							sx={{ width: isMobile ? '100%' : 'auto' }}
 						>
-							Liste des articles
+							{t.articles.backToList}
 						</Button>
 						{!isLoading && !error && (company?.role === 'Caissier' || company?.role === 'Commercial') && (
 							<Stack direction="row" gap={1} flexWrap="wrap">
@@ -180,7 +181,7 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									startIcon={<EditIcon />}
 									onClick={() => router.push(ARTICLES_EDIT(id, company_id))}
 								>
-									Modifier
+									{t.common.edit}
 								</Button>
 								<Button
 									variant="outlined"
@@ -189,7 +190,7 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									startIcon={<DeleteIcon />}
 									onClick={() => setShowDeleteModal(true)}
 								>
-									Supprimer
+									{t.common.delete}
 								</Button>
 							</Stack>
 						)}
@@ -214,7 +215,7 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									<Stack direction="row" spacing={3} alignItems="center">
 										<DescriptionIcon color="primary" />
 										<Typography variant="h6" fontWeight={700}>
-											Photo d&#39;article
+											{t.articles.photoSection}
 										</Typography>
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
@@ -227,7 +228,7 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 											<Box
 												component="img"
 												src={`${client.photo}`}
-												alt={client?.designation ?? 'Photo article'}
+												alt={client?.designation ?? t.articles.colPhoto}
 												sx={{
 													width: isMobile ? 200 : 300,
 													height: isMobile ? 200 : 300,
@@ -265,16 +266,16 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									<Stack direction="row" spacing={3} alignItems="center">
 										<DescriptionIcon color="primary" />
 										<Typography variant="h6" fontWeight={700}>
-											Identité de l&#39;article
+											{t.articles.identitySection}
 										</Typography>
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 									<Stack spacing={0}>
-										<InfoRow icon={<FingerprintIcon />} label="Référence" value={client?.reference} />
-										<Divider />
-										<InfoRow icon={<CategoryIcon />} label="Type" value={client?.type_article} />
-										<Divider />
-										<InfoRow icon={<DescriptionIcon />} label="Désignation" value={client?.designation} />
+											<InfoRow icon={<FingerprintIcon />} label={t.articles.colReference} value={client?.reference} />
+											<Divider />
+											<InfoRow icon={<CategoryIcon />} label={t.articles.colType} value={client?.type_article} />
+											<Divider />
+											<InfoRow icon={<DescriptionIcon />} label={t.articles.colDesignation} value={client?.designation} />
 									</Stack>
 								</CardContent>
 							</Card>
@@ -285,20 +286,20 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 										<CreditCardIcon color="primary" />
 										<Typography variant="h6" fontWeight={700}>
-											Prix et TVA
+											{t.articles.pricesSection}
 										</Typography>
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 									<Stack spacing={0}>
 										<InfoRow
 											icon={<ShoppingCartIcon />}
-											label="Prix d'achat"
+												label={t.articles.colPrixAchat}
 											value={client?.prix_achat != null ? `${client.prix_achat} ${client.devise_prix_achat}` : null}
 										/>
 										<Divider />
-										<InfoRow icon={<SellIcon />} label="Prix de vente" value={client?.prix_vente} />
-										<Divider />
-										<InfoRow icon={<ReceiptIcon />} label="TVA (%)" value={client?.tva} />
+											<InfoRow icon={<SellIcon />} label={t.articles.colPrixVente} value={client?.prix_vente} />
+											<Divider />
+											<InfoRow icon={<ReceiptIcon />} label={t.articles.fieldTva} value={client?.tva} />
 									</Stack>
 								</CardContent>
 							</Card>
@@ -309,18 +310,18 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 										<BusinessIcon color="primary" />
 										<Typography variant="h6" fontWeight={700}>
-											Classification
+											{t.articles.classificationSection}
 										</Typography>
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 									<Stack spacing={0}>
-										<InfoRow icon={<BusinessIcon />} label="Catégorie" value={client?.categorie_name} />
-										<Divider />
-										<InfoRow icon={<StarIcon />} label="Marque" value={client?.marque_name} />
-										<Divider />
-										<InfoRow icon={<StraightenIcon />} label="Unité" value={client?.unite_name} />
-										<Divider />
-										<InfoRow icon={<LocationOnIcon />} label="Emplacement" value={client?.emplacement_name} />
+											<InfoRow icon={<BusinessIcon />} label={t.articles.filterCategorie} value={client?.categorie_name} />
+											<Divider />
+											<InfoRow icon={<StarIcon />} label={t.articles.filterMarque} value={client?.marque_name} />
+											<Divider />
+											<InfoRow icon={<StraightenIcon />} label={t.articles.filterUnite} value={client?.unite_name} />
+											<Divider />
+											<InfoRow icon={<LocationOnIcon />} label={t.articles.filterEmplacement} value={client?.emplacement_name} />
 									</Stack>
 								</CardContent>
 							</Card>
@@ -331,11 +332,11 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 										<NotesIcon color="primary" />
 										<Typography variant="h6" fontWeight={700}>
-											Remarque
+											{t.articles.remarkSection}
 										</Typography>
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
-									<InfoRow icon={<NotesIcon />} label="Remarque" value={client?.remarque} />
+									<InfoRow icon={<NotesIcon />} label={t.articles.fieldRemarque} value={client?.remarque} />
 								</CardContent>
 							</Card>
 
@@ -345,20 +346,20 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 										<CalendarTodayIcon color="primary" />
 										<Typography variant="h6" fontWeight={700}>
-											Dates
+											{t.articles.datesSection}
 										</Typography>
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 									<Stack spacing={0}>
 										<InfoRow
 											icon={<CalendarTodayIcon />}
-											label="Date de création"
-											value={formatDate(client?.date_created ?? null)}
-										/>
-										<Divider />
-										<InfoRow
-											icon={<CalendarTodayIcon />}
-											label="Dernière mise à jour"
+												label={t.common.dateCreation}
+												value={formatDate(client?.date_created ?? null)}
+											/>
+											<Divider />
+											<InfoRow
+												icon={<CalendarTodayIcon />}
+												label={t.common.dateMaj}
 											value={formatDate(client?.date_updated ?? null)}
 										/>
 									</Stack>
@@ -370,8 +371,8 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 			</NavigationBar>
 			{showDeleteModal && (
 				<ActionModals
-					title="Supprimer cet article ?"
-					body="Êtes-vous sûr de vouloir supprimer cet article ? Cette action est irréversible."
+					title={t.articles.deleteModalTitle}
+					body={t.articles.deleteModalBody}
 					actions={deleteModalActions}
 					titleIcon={<DeleteIcon />}
 					titleIconColor="#D32F2F"

@@ -19,6 +19,7 @@ import { Delete as DeleteIcon } from '@mui/icons-material';
 import AddManagedBySection from '../addManagedBySection/addManagedBySection';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import { customDropdownTheme } from '@/utils/themes';
+import { useLanguage } from '@/utils/hooks';
 import type { ManagedByType } from '@/types/companyTypes';
 import type { UserCompaniesType } from '@/types/usersTypes';
 
@@ -51,6 +52,7 @@ const ManagedByTableSection: React.FC<ManagedByTableSectionProps> = ({
 	onDelete,
 	addSectionProps,
 }) => {
+	const { t } = useLanguage();
 	return (
 		<CardContent sx={{ p: 3 }}>
 			<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
@@ -73,7 +75,7 @@ const ManagedByTableSection: React.FC<ManagedByTableSectionProps> = ({
 								</TableCell>
 							))}
 							<TableCell align="right" sx={{ fontWeight: 700 }}>
-								Actions
+								{t.managedByTable.actions}
 							</TableCell>
 						</TableRow>
 					</TableHead>
@@ -106,7 +108,7 @@ const ManagedByTableSection: React.FC<ManagedByTableSectionProps> = ({
 													{(item as ManagedByType).first_name} {(item as ManagedByType).last_name}
 												</Typography>
 												{(item as ManagedByType).id === currentUserId && (
-													<Chip label="vous" size="small" color="primary" variant="outlined" />
+													<Chip label={t.managedByTable.you} size="small" color="primary" variant="outlined" />
 												)}
 											</Stack>
 										) : (
@@ -118,7 +120,7 @@ const ManagedByTableSection: React.FC<ManagedByTableSectionProps> = ({
 											<CustomDropDownSelect
 												id={`role_${index}`}
 												size="small"
-												label="Rôle"
+												label={t.managedByTable.role}
 												value={item.role}
 												onChange={(e) => onRoleChange(index, e.target.value)}
 												items={roleOptions}

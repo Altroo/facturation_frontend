@@ -22,11 +22,13 @@ import { Send as SendIcon, Email as EmailIcon, ArrowBack as ArrowBackIcon } from
 import { AUTH_LOGIN } from '@/utils/routes';
 
 import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
+import { useLanguage } from '@/utils/hooks';
 
 const inputTheme = textInputTheme();
 const ResetPasswordPageContent = () => {
 	const router = useRouter();
 	const [isPending, setIsPending] = useState(false);
+	const { t } = useLanguage();
 
 	const [reSendPasswordResetCode, { isLoading: isResendLoading }] = useSendPasswordResetCodeMutation();
 
@@ -55,11 +57,11 @@ const ResetPasswordPageContent = () => {
 		<Stack direction="column" className={Styles.contentWrapper} spacing={4}>
 			<Stack direction="column" spacing={1} alignItems="flex-start" width="100%">
 				<Stack direction="column">
-					<span className={Styles.content}>Récupération</span>
-					<span className={Styles.subContent}>du mot de passe</span>
+					<span className={Styles.content}>{t.auth.recoveryTitle}</span>
+					<span className={Styles.subContent}>{t.auth.recoverySubtitle}</span>
 				</Stack>
 				<span className={Styles.paragraphe}>
-					Entrez votre email pour recevoir un code et modifier votre mot de passe.
+					{t.auth.recoveryDescription}
 				</span>
 			</Stack>
 			<Divider orientation="horizontal" flexItem className={Styles.divider} />
@@ -76,8 +78,8 @@ const ResetPasswordPageContent = () => {
 						fullWidth={false}
 						size="medium"
 						type="email"
-						label="Adresse email"
-						placeholder="Adresse email"
+						label={t.auth.emailLabel}
+						placeholder={t.auth.emailPlaceholder}
 						theme={inputTheme}
 						startIcon={<EmailIcon fontSize="small" />}
 						required
@@ -85,7 +87,7 @@ const ResetPasswordPageContent = () => {
 						maxLength={254}
 					/>
 					<PrimaryLoadingButton
-						buttonText="Renvoyer le code"
+						buttonText={t.auth.sendCodeButton}
 						active={!isResendLoading && !isPending}
 						cssClass={Styles.emailRegisterButton}
 						type="submit"
@@ -93,7 +95,7 @@ const ResetPasswordPageContent = () => {
 						loading={isResendLoading || isPending}
 					/>
 					<TextButton
-						buttonText="Retour à la connexion"
+						buttonText={t.auth.backToLogin}
 						startIcon={<ArrowBackIcon />}
 						onClick={() => router.push(AUTH_LOGIN)}
 					/>

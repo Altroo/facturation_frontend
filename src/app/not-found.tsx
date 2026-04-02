@@ -5,13 +5,15 @@ import { Box, Typography, Button, Paper, Stack } from '@mui/material';
 import { SentimentDissatisfied as SadIcon, Home as HomeIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
 import { DASHBOARD } from '@/utils/routes';
+import { useLanguage } from '@/utils/hooks';
 
 /**
- * Custom 404 Not Found page with French messaging.
+ * Custom 404 Not Found page.
  * Displayed when a user navigates to a non-existent route.
  */
 const NotFound = () => {
 	const router = useRouter();
+	const { t } = useLanguage();
 
 	const handleGoHome = () => {
 		router.push(DASHBOARD);
@@ -48,19 +50,19 @@ const NotFound = () => {
 				</Typography>
 
 				<Typography variant="h5" gutterBottom sx={{ fontWeight: 500 }}>
-					Page introuvable
+					{t.notFound.title}
 				</Typography>
 
 				<Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-					Désolé, la page que vous recherchez n&apos;existe pas ou a été déplacée.
+					{t.notFound.message}
 				</Typography>
 
 				<Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
 					<Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={handleGoBack} size="large">
-						Retour
+						{t.notFound.backBtn}
 					</Button>
 					<Button variant="contained" startIcon={<HomeIcon />} onClick={handleGoHome} size="large">
-						Accueil
+						{t.notFound.homeBtn}
 					</Button>
 				</Stack>
 			</Paper>

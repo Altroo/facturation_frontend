@@ -11,6 +11,7 @@ import {
 import { ThemeProvider } from '@mui/material/styles';
 import type { Theme } from '@mui/material/styles';
 import { chipSelectFilterTheme } from '@/utils/themes';
+import { useLanguage } from '@/utils/hooks';
 
 export interface ChipSelectOption {
 	id: number;
@@ -35,6 +36,7 @@ const ChipSelectFilter: React.FC<ChipSelectFilterProps> = ({
 	theme,
 }) => {
 	const [inputValue, setInputValue] = useState('');
+	const { t } = useLanguage();
 
 	const appliedTheme = useMemo(() => theme ?? chipSelectFilterTheme(), [theme]);
 
@@ -100,7 +102,7 @@ const ChipSelectFilter: React.FC<ChipSelectFilterProps> = ({
 							size="small"
 						/>
 					)}
-					noOptionsText="Aucune option"
+					noOptionsText={t.common.noOptions}
 				/>
 			</Box>
 		</ThemeProvider>

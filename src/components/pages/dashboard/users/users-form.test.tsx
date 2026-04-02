@@ -34,6 +34,7 @@ jest.mock('@/utils/hooks', () => ({
 	__esModule: true,
 	useAppSelector: jest.fn(() => []),
 	useToast: () => ({ onSuccess: jest.fn(), onError: jest.fn() }),
+	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
 }));
 
 jest.mock('@/store/selectors', () => ({
@@ -215,7 +216,7 @@ describe('UsersForm', () => {
 
 		it('renders submit button with add text', () => {
 			renderWithProviders(<UsersForm session={mockSession} />);
-			expect(screen.getByTestId('submit-button')).toHaveTextContent("Ajouter l'utilisateur");
+			expect(screen.getByTestId('submit-button')).toHaveTextContent('Ajouter un utilisateur');
 		});
 
 		it('renders back button text', () => {

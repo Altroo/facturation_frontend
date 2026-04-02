@@ -4,6 +4,7 @@ import { frFR } from '@mui/x-data-grid/locales';
 import type { DeviFactureLineFormValues } from '@/types/devisTypes';
 import { Box, Button, Card, CardContent, Divider, Stack, Typography } from '@mui/material';
 import { Add as AddIcon, ShoppingCart as ShoppingCartIcon } from '@mui/icons-material';
+import { useLanguage } from '@/utils/hooks';
 
 interface LinesGridProps {
 	rows: Array<DeviFactureLineFormValues>;
@@ -15,6 +16,7 @@ interface LinesGridProps {
 
 const LinesGrid = React.memo(
 	({ rows, columns, onAddClick, isLoading, title }: LinesGridProps) => {
+		const { t } = useLanguage();
 		return (
 			<Card elevation={2} sx={{ borderRadius: 2 }}>
 				<CardContent sx={{ p: 3 }}>
@@ -26,7 +28,7 @@ const LinesGrid = React.memo(
 							</Typography>
 						</Stack>
 						<Button variant="contained" startIcon={<AddIcon />} onClick={onAddClick} size="small" disabled={isLoading}>
-							Ajouter article
+						{t.documentForm.addArticleBtn}
 						</Button>
 					</Stack>
 					<Divider sx={{ mb: 3 }} />

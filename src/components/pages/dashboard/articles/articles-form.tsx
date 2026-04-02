@@ -48,7 +48,7 @@ import { textInputTheme, customDropdownTheme } from '@/utils/themes';
 import { ARTICLES_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import type { DropDownType } from '@/types/accountTypes';
-import { useToast } from '@/utils/hooks';
+import { useToast, useLanguage } from '@/utils/hooks';
 import {
 	useAddArticleMutation,
 	useEditArticleMutation,
@@ -88,6 +88,7 @@ type FormikContentProps = {
 const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
 	const { token, company_id, id } = props;
 	const { onSuccess, onError } = useToast();
+	const { t } = useLanguage();
 	const isEditMode = id !== undefined;
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -168,19 +169,19 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			try {
 				if (isEditMode) {
 					await updateArticle({ data: payload, id: id! }).unwrap();
-					onSuccess("L'article a été mis à jour avec succès.");
+					onSuccess(t.articles.updateSuccess);
 				} else {
 					await addArticle({ data: payload }).unwrap();
-					onSuccess("L'article a été ajouté avec succès.");
+					onSuccess(t.articles.addSuccess);
 				}
 				if (!isEditMode) {
 					router.replace(ARTICLES_LIST);
 				}
 			} catch (e) {
 				if (!isEditMode) {
-					onError("Une erreur est survenue lors de l'ajout de l'article.");
+					onError(t.articles.addError);
 				} else {
-					onError("Une erreur est survenue lors de la mise à jour de l'article.");
+					onError(t.articles.updateError);
 				}
 				setFormikAutoErrors({ e, setFieldError });
 			} finally {
@@ -261,21 +262,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	// Collect validation errors from Formik
 	const fieldLabels = useMemo<Record<string, string>>(
 		() => ({
-			reference: 'Référence',
-			designation: 'Désignation',
-			prix_achat: "Prix d'achat",
-			prix_vente: 'Prix de vente',
-			tva: 'TVA',
-			categorie: 'Catégorie',
-			emplacement: 'Emplacement',
-			unite: 'Unité',
-			marque: 'Marque',
-			remarque: 'Remarque',
-			photo: 'Photo',
-			photo_cropped: 'Photo recadrée',
-			globalError: 'Erreur globale',
+			reference: t.articles.colReference,
+			designation: t.articles.colDesignation,
+			prix_achat: t.articles.colPrixAchat,
+			prix_vente: t.articles.colPrixVente,
+			tva: t.articles.fieldTva,
+			categorie: t.articles.filterCategorie,
+			emplacement: t.articles.filterEmplacement,
+			unite: t.articles.filterUnite,
+			marque: t.articles.filterMarque,
+			remarque: t.articles.fieldRemarque,
+			photo: t.articles.fieldPhoto,
+			photo_cropped: t.articles.fieldPhotoCropped,
+			globalError: t.articles.fieldPhotoCropped,
 		}),
-		[],
+		[t],
 	);
 
 	const validationErrors = useMemo(() => {
@@ -314,13 +315,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
 					}}
 				>
-					Liste des articles
+					{t.articles.backToList}
 				</Button>
 			</Stack>
 			{hasValidationErrors && (
 				<Alert severity="error" icon={<WarningIcon />} sx={{ mb: 2 }}>
 					<Typography variant="subtitle2" fontWeight={600}>
-						Erreurs de validation détectées:
+					{t.common.validationErrors}
 					</Typography>
 					<ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
 						{Object.entries(validationErrors).map(([key, error]) => (
@@ -347,7 +348,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 									<PhotoCameraIcon color="primary" />
 									<Typography variant="h6" fontWeight={700}>
-										Photo d&#39;article
+										{t.articles.photoSection}
 									</Typography>
 								</Stack>
 								<Divider sx={{ mb: 3 }} />
@@ -367,7 +368,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 									<DescriptionIcon color="primary" />
 									<Typography variant="h6" fontWeight={700}>
-										Identité de l&#39;article
+										{t.articles.identitySection}
 									</Typography>
 								</Stack>
 								<Divider sx={{ mb: 3 }} />
@@ -382,15 +383,15 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									}}
 									sx={{ mb: 2 }}
 								>
-									<ToggleButton value="Produit">Produit</ToggleButton>
-									<ToggleButton value="Service">Service</ToggleButton>
+								<ToggleButton value="Produit">{t.articles.typeProduit}</ToggleButton>
+								<ToggleButton value="Service">{t.articles.typeService}</ToggleButton>
 								</ToggleButtonGroup>
 								<Stack spacing={2.5}>
 									<Stack direction="row" spacing={1} alignItems="flex-start">
 										<CustomTextInput
 											id="reference"
 											type="text"
-											label="Référence *"
+											label={`${t.articles.colReference} *`}
 											value={formik.values.reference}
 											onChange={formik.handleChange('reference')}
 											onBlur={formik.handleBlur('reference')}
@@ -402,7 +403,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											startIcon={<FingerprintIcon fontSize="small" />}
 										/>
 										{!isEditMode && (
-											<Tooltip title="Réinitialiser la référence">
+											<Tooltip title={t.articles.resetReference}>
 												<IconButton
 													size="large"
 													color="primary"
@@ -422,7 +423,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="designation"
 										type="text"
-										label="Désignation *"
+										label={`${t.articles.colDesignation} *`}
 										value={formik.values.designation ?? ''}
 										onChange={formik.handleChange('designation')}
 										onBlur={formik.handleBlur('designation')}
@@ -436,13 +437,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								</Stack>
 							</CardContent>
 						</Card>
-						{/* Prix et TVA */}
+						{/* {t.articles.pricesSection} */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
 							<CardContent sx={{ p: 3 }}>
 								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 									<CreditCardIcon color="primary" />
 									<Typography variant="h6" fontWeight={700}>
-										Prix et TVA
+										{t.articles.pricesSection}
 									</Typography>
 								</Stack>
 								<Divider sx={{ mb: 3 }} />
@@ -451,7 +452,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										<FormattedNumberInput
 											id="prix_achat"
 											type="text"
-											label="Prix d'achat"
+											label={t.articles.colPrixAchat}
 											value={formik.values.prix_achat ?? ''}
 											onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 												const raw = (e.target as HTMLInputElement).value;
@@ -471,7 +472,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										<CustomDropDownSelect
 											id="devise_prix_achat"
 											size="small"
-											label="Devise"
+										label={t.common.devise}
 											items={['MAD', 'EUR', 'USD']}
 											value={formik.values.devise_prix_achat ?? 'MAD'}
 											onChange={(e) => formik.setFieldValue('devise_prix_achat', e.target.value)}
@@ -482,7 +483,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										<FormattedNumberInput
 											id="prix_vente"
 											type="text"
-											label="Prix de vente *"
+											label={`${t.articles.colPrixVente} *`}
 											value={formik.values.prix_vente ?? ''}
 											onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 												const raw = (e.target as HTMLInputElement).value;
@@ -503,7 +504,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											<CustomDropDownSelect
 												id="devise_prix_vente"
 												size="small"
-												label="Devise"
+											label={t.common.devise}
 												items={['MAD', 'EUR', 'USD']}
 												value={formik.values.devise_prix_vente ?? 'MAD'}
 												onChange={(e) => formik.setFieldValue('devise_prix_vente', e.target.value)}
@@ -514,7 +515,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="tva"
 										type="text"
-										label="TVA (%)"
+										label={t.articles.fieldTva}
 										value={String(formik.values.tva) ?? ''}
 										onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 											const raw = (e.target as HTMLInputElement).value;
@@ -544,7 +545,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 									<BusinessIcon color="primary" />
 									<Typography variant="h6" fontWeight={700}>
-										Classification
+										{t.articles.classificationSection}
 									</Typography>
 								</Stack>
 								<Divider sx={{ mb: 3 }} />
@@ -552,8 +553,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomAutoCompleteSelect
 										id="categorie"
 										size="small"
-										noOptionsText="Aucune catégorie trouvée"
-										label="Catégorie"
+									noOptionsText={t.articles.noCategorie}
+									label={t.articles.filterCategorie}
 										items={categorieItems}
 										theme={theme}
 										value={selectedCategorie}
@@ -572,15 +573,15 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												onClick={() => setOpenCategorieModal(true)}
 												sx={{ ml: 1 }}
 											>
-												Ajouter
+												{t.common.add}
 											</Button>
 										}
 									/>
 									<CustomAutoCompleteSelect
 										id="emplacement"
 										size="small"
-										noOptionsText="Aucun emplacement trouvé"
-										label="Emplacement"
+									noOptionsText={t.articles.noEmplacement}
+									label={t.articles.filterEmplacement}
 										items={emplacementItems}
 										theme={theme}
 										value={selectedEmplacement}
@@ -599,15 +600,15 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												onClick={() => setOpenEmplacementModal(true)}
 												sx={{ ml: 1 }}
 											>
-												Ajouter
+												{t.common.add}
 											</Button>
 										}
 									/>
 									<CustomAutoCompleteSelect
 										id="unite"
 										size="small"
-										noOptionsText="Aucune unité trouvée"
-										label="Unité"
+									noOptionsText={t.articles.noUnite}
+									label={t.articles.filterUnite}
 										items={uniteItems}
 										theme={theme}
 										value={selectedUnite}
@@ -621,15 +622,15 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										startIcon={<StraightenIcon fontSize="small" />}
 										endIcon={
 											<Button size="small" variant="outlined" onClick={() => setOpenUniteModal(true)} sx={{ ml: 1 }}>
-												Ajouter
+												{t.common.add}
 											</Button>
 										}
 									/>
 									<CustomAutoCompleteSelect
 										id="marque"
 										size="small"
-										noOptionsText="Aucune marque trouvée"
-										label="Marque"
+									noOptionsText={t.articles.noMarque}
+									label={t.articles.filterMarque}
 										items={marqueItems}
 										theme={theme}
 										value={selectedMarque}
@@ -643,7 +644,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										startIcon={<StarIcon fontSize="small" />}
 										endIcon={
 											<Button size="small" variant="outlined" onClick={() => setOpenMarqueModal(true)} sx={{ ml: 1 }}>
-												Ajouter
+												{t.common.add}
 											</Button>
 										}
 									/>
@@ -656,7 +657,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 									<NotesIcon color="primary" />
 									<Typography variant="h6" fontWeight={700}>
-										Remarque
+										{t.articles.remarkSection}
 									</Typography>
 								</Stack>
 								<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
@@ -664,7 +665,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="remarque"
 										type="text"
-										label="Remarque"
+										label={t.articles.fieldRemarque}
 										value={formik.values.remarque ?? ''}
 										onChange={formik.handleChange('remarque')}
 										onBlur={formik.handleBlur('remarque')}
@@ -681,7 +682,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						{/* Submit Button */}
 						<Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 2 }}>
 							<PrimaryLoadingButton
-								buttonText={isEditMode ? 'Mettre à jour' : "Ajouter l'article"}
+								buttonText={isEditMode ? t.common.update : t.articles.addTitle}
 								active={!isPending}
 								type="submit"
 								loading={isPending}
@@ -691,7 +692,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									if (!formik.isValid) {
 										e.preventDefault();
 										formik.handleSubmit();
-										onError('Veuillez corriger les erreurs de validation avant de soumettre.');
+										onError(t.common.correctErrors);
 										window.scrollTo({ top: 0, behavior: 'smooth' });
 									}
 								}}
@@ -705,7 +706,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			<AddEntityModal
 				open={openCategorieModal}
 				setOpen={setOpenCategorieModal}
-				label="catégorie"
+				label={t.articles.fieldCategorie.toLowerCase()}
 				icon={<BusinessIcon fontSize="small" />}
 				inputTheme={inputTheme}
 				mutationFn={(args) => addCategory({ data: { ...args.data, company: company_id } })}
@@ -716,7 +717,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			<AddEntityModal
 				open={openEmplacementModal}
 				setOpen={setOpenEmplacementModal}
-				label="emplacement"
+				label={t.articles.fieldEmplacement.toLowerCase()}
 				icon={<LocationOnIcon fontSize="small" />}
 				inputTheme={inputTheme}
 				mutationFn={(args) => addEmplacement({ data: { ...args.data, company: company_id } })}
@@ -727,7 +728,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			<AddEntityModal
 				open={openUniteModal}
 				setOpen={setOpenUniteModal}
-				label="unité"
+				label={t.articles.fieldUnite.toLowerCase()}
 				icon={<StraightenIcon fontSize="small" />}
 				inputTheme={inputTheme}
 				mutationFn={(args) => addUnite({ data: { ...args.data, company: company_id } })}
@@ -738,7 +739,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			<AddEntityModal
 				open={openMarqueModal}
 				setOpen={setOpenMarqueModal}
-				label="marque"
+				label={t.articles.fieldMarque.toLowerCase()}
 				icon={<StarIcon fontSize="small" />}
 				inputTheme={inputTheme}
 				mutationFn={(args) => addMarque({ data: { ...args.data, company: company_id } })}

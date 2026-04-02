@@ -28,11 +28,16 @@ jest.mock('@/utils/helpers', () => {
 });
 
 // 🧩 Mock hooks module
-jest.mock('@/utils/hooks', () => ({
-	useAppSelector: jest.fn(),
-	usePermission: () => ({ is_staff: true }),
-	useToast: jest.fn(() => ({ onSuccess: jest.fn(), onError: jest.fn() })),
-}));
+jest.mock('@/utils/hooks', () => {
+	const { translations } = jest.requireActual('@/translations');
+	return {
+		useAppSelector: jest.fn(),
+		usePermission: () => ({ is_staff: true }),
+		useToast: jest.fn(() => ({ onSuccess: jest.fn(), onError: jest.fn() })),
+		useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: translations.fr }),
+		useIsClient: () => true,
+	};
+});
 
 // 🧩 Mock selectors
 jest.mock('@/store/selectors', () => ({

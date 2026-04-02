@@ -29,12 +29,12 @@ import { REGLEMENTS_ADD, REGLEMENTS_EDIT, REGLEMENTS_VIEW, CLIENTS_VIEW, REGLEME
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
 import type { SessionProps } from '@/types/_initTypes';
-import type { ReglementListResponseType } from '@/types/reglementTypes';
+import type { ReglementListResponseType, ReglementStatutType } from '@/types/reglementTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type { ReglementClass } from '@/models/classes';
 import { formatDate, formatNumberWithSpaces, extractApiErrorMessage } from '@/utils/helpers';
-import { useToast } from '@/utils/hooks';
+import { useToast, useLanguage } from '@/utils/hooks';
 import { useGetModePaiementListQuery } from '@/store/services/parameter';
 import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
@@ -59,6 +59,11 @@ export const statutFilterOptions = [
 const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
 	const { session, company_id, role } = props;
 	const { onSuccess, onError } = useToast();
+	const { t } = useLanguage();
+	const statutFilterOptions = [
+		{ value: t.reglements.statusValide, label: t.reglements.statusValide, color: 'success' as const },
+		{ value: t.reglements.statusAnnule, label: t.reglements.statusAnnule, color: 'error' as const },
+	];
 	const router = useRouter();
 	const token = useInitAccessToken(session);
 
@@ -98,9 +103,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const chipFilters: ChipFilterConfig[] = React.useMemo(
 		() => [
-			{ key: 'mode_reglement', label: 'Mode de règlement', paramName: 'mode_reglement_ids', options: modePaiement ?? [] },
+			{ key: 'mode_reglement', label: t.reglements.filterModeReglement, paramName: 'mode_reglement_ids', options: modePaiement ?? [] },
 		],
-		[modePaiement],
+		[modePaiement, t],
 	);
 
 	const mergedFilterParams = React.useMemo(
@@ -146,18 +151,18 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const deleteHandler = async () => {
 		try {
 			await deleteRecord({ id: selectedId! }).unwrap();
-			onSuccess('Règlement supprimé avec succès');
+			onSuccess(t.reglements.deleteSuccess);
 			refetch();
 		} catch (err) {
-			onError(extractApiErrorMessage(err, 'Erreur lors de la suppression du règlement'));
+			onError(extractApiErrorMessage(err, t.reglements.deleteError));
 		} finally {
 			setShowDeleteModal(false);
 		}
 	};
 
 	const deleteModalActions = [
-		{ text: 'Annuler', active: false, onClick: () => setShowDeleteModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
-		{ text: 'Supprimer', active: true, onClick: deleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
+		{ text: t.common.cancel, active: false, onClick: () => setShowDeleteModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
+		{ text: t.common.delete, active: true, onClick: deleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
 	];
 
 	const showDeleteModalCall = (id: number) => {
@@ -172,9 +177,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const bulkDeleteHandler = async () => {
 		try {
 			await bulkDeleteReglements({ ids: selectedIds }).unwrap();
-			onSuccess(`${selectedIds.length} règlement(s) supprimé(s) avec succès`);
+			onSuccess(t.reglements.bulkDeleteSuccess(selectedIds.length));
 		} catch (err) {
-			onError(extractApiErrorMessage(err, `Erreur lors de la suppression`));
+			onError(extractApiErrorMessage(err, t.reglements.bulkDeleteError));
 		} finally {
 			setSelectedIds([]);
 			setShowBulkDeleteModal(false);
@@ -183,8 +188,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	};
 
 	const bulkDeleteModalActions = [
-		{ text: 'Annuler', active: false, onClick: () => setShowBulkDeleteModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
-		{ text: `Supprimer (${selectedIds.length})`, active: true, onClick: bulkDeleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
+		{ text: t.common.cancel, active: false, onClick: () => setShowBulkDeleteModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
+		{ text: t.reglements.bulkDeleteBtn(selectedIds.length), active: true, onClick: bulkDeleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
 	];
 
 	const cancelHandler = async () => {
@@ -192,12 +197,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		try {
 			await patchStatut({
 				id: cancelTarget,
-				data: { statut: 'Annulé' },
+				data: { statut: 'Annulé' as ReglementStatutType },
 			}).unwrap();
-			onSuccess('Règlement annulé avec succès');
+			onSuccess(t.reglements.cancelSuccess);
 			refetch();
 		} catch {
-			onError("Erreur lors de l'annulation du règlement");
+			onError(t.reglements.cancelError);
 		} finally {
 			setShowCancelModal(false);
 			setCancelTarget(null);
@@ -206,7 +211,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const cancelModalActions = [
 		{
-			text: 'Fermer',
+			text: t.common.close,
 			active: false,
 			onClick: () => {
 				setShowCancelModal(false);
@@ -216,7 +221,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			color: '#6B6B6B',
 		},
 		{
-			text: 'Annuler le règlement',
+			text: t.reglements.cancelBtn,
 			active: true,
 			onClick: cancelHandler,
 			icon: <CancelIcon />,
@@ -242,7 +247,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		}
 
 		if (!token) {
-			onError("Erreur d'authentification. Veuillez vous reconnecter.");
+			onError(t.errors.authRequired);
 			return;
 		}
 
@@ -256,7 +261,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				window.URL.revokeObjectURL(blobUrl);
 			}, 60_000);
 		} catch {
-			onError("Erreur lors de l'ouverture du document.");
+			onError(t.errors.documentOpenError);
 		} finally {
 			setPrintReglementId(null);
 		}
@@ -270,7 +275,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const columns: GridColDef[] = [
 		{
 			field: 'facture_client_numero',
-			headerName: 'N° Facture',
+			headerName: t.reglements.colNumeroFacture,
 			flex: 1,
 			minWidth: 120,
 			renderCell: (params: GridRenderCellParams<ReglementClass>) => (
@@ -283,10 +288,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		},
 		{
 			field: 'client_name',
-			headerName: 'Client',
+			headerName: t.reglements.colClient,
 			flex: 1.5,
 			minWidth: 150,
-			filterOperators: createDropdownFilterOperators(clientFilterOptions, 'Tous les clients'),
+			filterOperators: createDropdownFilterOperators(clientFilterOptions, t.documentList.allClients),
 			renderCell: (params: GridRenderCellParams<ReglementClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -301,7 +306,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		},
 		{
 			field: 'mode_reglement_name',
-			headerName: 'Mode règlement',
+			headerName: t.reglements.colModeReglement,
 			flex: 1.2,
 			minWidth: 120,
 			renderCell: (params: GridRenderCellParams<ReglementClass>) => (
@@ -314,7 +319,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		},
 		{
 			field: 'montant',
-			headerName: 'Montant',
+			headerName: t.reglements.colMontant,
 			flex: 1,
 			minWidth: 100,
 			filterOperators: createNumericFilterOperators(),
@@ -332,7 +337,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		},
 		{
 			field: 'date_reglement',
-			headerName: 'Date règlement',
+			headerName: t.reglements.colDateReglement,
 			flex: 1.5,
 			minWidth: 150,
 			filterOperators: createDateRangeFilterOperator(),
@@ -349,7 +354,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		},
 		{
 			field: 'date_echeance',
-			headerName: "Date d'échéance",
+			headerName: t.reglements.colDateEcheance,
 			flex: 1.5,
 			minWidth: 150,
 			filterOperators: createDateRangeFilterOperator(),
@@ -366,13 +371,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		},
 		{
 			field: 'statut',
-			headerName: 'Statut',
+			headerName: t.reglements.colStatut,
 			flex: 0.8,
 			minWidth: 100,
-			filterOperators: createDropdownFilterOperators(statutFilterOptions, 'Tous les statuts', true),
+			filterOperators: createDropdownFilterOperators(statutFilterOptions, t.reglements.allStatuts, true),
 			renderCell: (params: GridRenderCellParams<ReglementClass>) => {
 				const statut = params.value as string;
-				const isValid = statut === 'Valide';
+				const isValid = statut === t.reglements.statusValide;
 				return (
 					<DarkTooltip title={statut}>
 						<Chip label={statut} size="small" color={isValid ? 'success' : 'error'} variant="outlined" />
@@ -382,19 +387,19 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		},
 		{
 			field: 'actions',
-			headerName: 'Actions',
+			headerName: t.common.actions,
 			flex: 2,
 			minWidth: 200,
 			sortable: false,
 			filterable: false,
 			renderCell: (params: GridRenderCellParams<ReglementClass>) => {
-				const isValid = params.row.statut === 'Valide';
+				const isValid = params.row.statut === t.reglements.statusValide;
 				const actions = [];
 
 				// View action - available for all roles
 				if (role === 'Caissier' || role === 'Comptable' || role === 'Commercial' || role === 'Lecture') {
 					actions.push({
-						label: 'Voir',
+						label: t.common.view,
 						icon: <VisibilityIcon />,
 						onClick: () => router.push(REGLEMENTS_VIEW(params.row.id, company_id)),
 						color: 'info' as const,
@@ -404,7 +409,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				// Print action - available for Caissier, Comptable, Commercial
 				if (role === 'Caissier' || role === 'Comptable' || role === 'Commercial') {
 					actions.push({
-						label: 'Afficher le reçu de règlement',
+					label: t.reglements.printReceipt,
 						icon: <PrintIcon />,
 						onClick: () => handlePrint(params.row.id),
 						color: 'success' as const,
@@ -415,13 +420,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				if (role === 'Caissier' && isValid) {
 					actions.push(
 						{
-							label: 'Modifier',
+							label: t.common.edit,
 							icon: <EditIcon />,
 							onClick: () => router.push(REGLEMENTS_EDIT(params.row.id, company_id)),
 							color: 'primary' as const,
 						},
 						{
-							label: 'Annuler',
+							label: t.common.cancel,
 							icon: <CancelIcon />,
 							onClick: () => showCancelModalCall(params.row.id),
 							color: 'error' as const,
@@ -432,7 +437,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				// Delete action - only for Caissier
 				if (role === 'Caissier') {
 					actions.push({
-						label: 'Supprimer',
+						label: t.common.delete,
 						icon: <DeleteIcon />,
 						onClick: () => showDeleteModalCall(params.row.id),
 						color: 'error' as const,
@@ -466,7 +471,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								<AttachMoneyIcon color="primary" />
 								<Box>
 									<Typography variant="body2" color="text.secondary">
-									Chiffre d&#39;affaires total
+									{t.reglements.statsCA}
 									</Typography>
 									<Typography variant="h6" fontWeight={700}>
 										{chiffreAffaireTotal}
@@ -482,7 +487,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								<CheckCircleIcon color="success" />
 								<Box>
 									<Typography variant="body2" color="text.secondary">
-										Total règlements
+										{t.reglements.totalReglements}
 									</Typography>
 									<Typography variant="h6" fontWeight={700} color="success.main">
 										{totalReglements}
@@ -498,7 +503,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								<CancelIcon color="error" />
 								<Box>
 									<Typography variant="body2" color="text.secondary">
-										Total impayés
+										{t.reglements.statsImpayes}
 									</Typography>
 									<Typography variant="h6" fontWeight={700} color="error.main">
 										{totalImpayes}
@@ -535,7 +540,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						}}
 						startIcon={<AddIcon fontSize="small" />}
 					>
-						Nouveau règlement
+						{t.reglements.newReglement}
 					</Button>
 					{role === 'Caissier' && selectedIds.length > 0 && (
 						<Button
@@ -550,7 +555,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
 							}}
 						>
-							Supprimer ({selectedIds.length})
+							{t.reglements.bulkDeleteBtn(selectedIds.length)}
 						</Button>
 					)}
 				</Box>
@@ -574,26 +579,26 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			/>
 			{showDeleteModal && (
 				<ActionModals
-					title="Supprimer ce règlement ?"
+					title={t.reglements.deleteModalTitle}
 					titleIcon={<DeleteIcon />}
 					titleIconColor="#D32F2F"
-					body="Êtes‑vous sûr de vouloir supprimer ce règlement?"
+					body={t.reglements.deleteModalBody}
 					actions={deleteModalActions}
 				/>
 			)}
 			{showCancelModal && (
 				<ActionModals
-					title="Annuler ce règlement ?"
+					title={t.reglements.cancelModalTitle}
 					titleIcon={<CancelIcon />}
 					titleIconColor="#D32F2F"
-					body="Êtes‑vous sûr de vouloir annuler ce règlement? Cette action est irréversible."
+					body={t.reglements.cancelModalBody}
 					actions={cancelModalActions}
 				/>
 			)}
 			{showBulkDeleteModal && (
 				<ActionModals
-					title={`Supprimer ${selectedIds.length} règlement(s) ?`}
-					body={`Êtes-vous sûr de vouloir supprimer les ${selectedIds.length} règlement(s) sélectionné(s) ?`}
+					title={t.reglements.bulkDeleteModalTitle(selectedIds.length)}
+					body={t.reglements.bulkDeleteModalBody(selectedIds.length)}
 					actions={bulkDeleteModalActions}
 					titleIcon={<DeleteIcon />}
 					titleIconColor="#D32F2F"
@@ -607,8 +612,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 };
 
 const ReglementListClient: React.FC<SessionProps> = ({ session }) => {
+	const { t } = useLanguage();
 	return (
-		<CompanyDocumentsWrapperList session={session} title="Liste des Règlements">
+		<CompanyDocumentsWrapperList session={session} title={t.reglements.listTitle}>
 			{({ company_id, role }) => <FormikContent session={session} company_id={company_id} role={role} />}
 		</CompanyDocumentsWrapperList>
 	);

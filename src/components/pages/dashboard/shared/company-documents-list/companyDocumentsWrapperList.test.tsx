@@ -70,7 +70,7 @@ describe('CompanyDocumentsList', () => {
 
 		expect(screen.getByText('Aucune entreprise trouvée')).toBeInTheDocument();
 		// Should show the "contactez votre administrateur" message (admin branch not taken)
-		expect(screen.getByText(/Veuillez contacter votre administrateur/i)).toBeInTheDocument();
+		expect(screen.getByText(/Veuillez contacter votre/i)).toBeInTheDocument();
 		expect(screen.queryByRole('button', { name: /Créer une entreprise/i })).not.toBeInTheDocument();
 	});
 

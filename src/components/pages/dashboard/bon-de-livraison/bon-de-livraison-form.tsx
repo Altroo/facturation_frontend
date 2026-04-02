@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import type { TranslationDictionary } from '@/types/languageTypes';
 import type { SessionProps } from '@/types/_initTypes';
 import CompanyDocumentsWrapperForm from '@/components/pages/dashboard/shared/company-documents-form/companyDocumentsWrapperForm';
 import CompanyDocumentFormContent from '@/components/pages/dashboard/shared/company-documents-form/companyDocumentFormContent';
@@ -21,27 +22,28 @@ import type {
 } from '@/types/companyDocumentsTypes';
 import type { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
 import type { BonDeLivraisonClass } from '@/models/classes';
+import { useLanguage } from '@/utils/hooks';
 
 // Configuration for bon de livraison form
-const bonDeLivraisonFormConfig: DocumentFormConfig<BonDeLivraisonClass> = {
+const createBonDeLivraisonFormConfig = (t: TranslationDictionary): DocumentFormConfig<BonDeLivraisonClass> => ({
 	documentType: 'bon-de-livraison',
 	labels: {
-		documentTypeName: 'bon de livraison',
-		listLabel: 'Liste des bons de livraison',
-		dateLabel: 'Date du bon de livraison',
-		statusLabel: 'Statut du bon de livraison',
-		linesLabel: 'Lignes du bon de livraison',
-		deleteLineMessage: 'Êtes-vous sûr de vouloir supprimer cette ligne du bon de livraison ?',
-		addSuccessMessage: 'Bon de livraison créé avec succès.',
-		updateSuccessMessage: 'Bon de livraison mis à jour avec succès.',
-		addErrorMessage: 'Échec de la création du bon de livraison.',
-		updateErrorMessage: 'Échec de la mise à jour du bon de livraison.',
+		documentTypeName: t.bonsLivraison.documentTypeName,
+		listLabel: t.bonsLivraison.backToList,
+		dateLabel: t.bonsLivraison.fieldDate,
+		statusLabel: t.bonsLivraison.fieldStatut,
+		linesLabel: t.bonsLivraison.linesTitle,
+		deleteLineMessage: t.bonsLivraison.deleteLineBody,
+		addSuccessMessage: t.bonsLivraison.addSuccess,
+		updateSuccessMessage: t.bonsLivraison.updateSuccess,
+		addErrorMessage: t.bonsLivraison.addError,
+		updateErrorMessage: t.bonsLivraison.updateError,
 	},
 	fields: {
 		numeroField: 'numero_bon_livraison',
 		dateField: 'date_bon_livraison',
 		extraField: 'numero_bon_commande_client',
-		extraFieldLabel: 'N° bon commande client',
+		extraFieldLabel: t.bonsLivraison.fieldNumeroBonCommande,
 	},
 	routes: {
 		listRoute: BON_DE_LIVRAISON_LIST,
@@ -51,8 +53,7 @@ const bonDeLivraisonFormConfig: DocumentFormConfig<BonDeLivraisonClass> = {
 		editSchema: bonDeLivraisonSchema,
 		addSchema: bonDeLivraisonAddSchema,
 	},
-};
-
+});
 type FormikContentProps = {
 	token?: string;
 	company_id: number;
@@ -62,6 +63,8 @@ type FormikContentProps = {
 };
 
 const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, isEditMode, role }) => {
+	const { t } = useLanguage();
+	const bonDeLivraisonFormConfig = React.useMemo(() => createBonDeLivraisonFormConfig(t), [t]);
 	// Queries
 	const {
 		data: rawData,
@@ -124,14 +127,15 @@ interface Props extends SessionProps {
 }
 
 const BonDeLivraisonForm: React.FC<Props> = ({ session, company_id, id }) => {
+	const { t } = useLanguage();
 	return (
 		<CompanyDocumentsWrapperForm
 			session={session}
 			company_id={company_id}
 			id={id}
 			documentConfig={{
-				addTitle: 'Ajouter un bon de livraison',
-				editTitle: 'Modifier le bon de livraison',
+				addTitle: t.bonsLivraison.addTitle,
+				editTitle: t.bonsLivraison.editTitle,
 			}}
 			FormComponent={FormikContent}
 		/>

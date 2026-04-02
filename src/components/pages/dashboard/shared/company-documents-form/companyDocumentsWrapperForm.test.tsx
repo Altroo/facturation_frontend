@@ -12,6 +12,7 @@ jest.mock('@/contexts/InitContext', () => ({
 
 jest.mock('@/utils/hooks', () => ({
 	useAppSelector: jest.fn(),
+	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
 }));
 
 jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({

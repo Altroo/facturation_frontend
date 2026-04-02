@@ -5,6 +5,7 @@ import Styles from './circularAvatarInputFile.module.sass';
 import Image from 'next/image';
 import { AddAPhoto as AddAPhotoIcon } from '@mui/icons-material';
 import { Stack } from '@mui/material';
+import { useLanguage } from '@/utils/hooks';
 
 type Props = {
 	preview: string | ArrayBuffer | null;
@@ -17,6 +18,7 @@ type Props = {
 const CircularAvatarInputFile: React.FC<Props> = (props: Props) => {
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const { setAvatar } = props;
+	const { t } = useLanguage();
 
 	const avatarInputOnChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
 		if (!e.target.files) {
@@ -64,7 +66,7 @@ const CircularAvatarInputFile: React.FC<Props> = (props: Props) => {
 					{props.preview && (
 						<Image
 							src={props.preview as string}
-							alt="avatar preview"
+						alt={t.common.avatarPreview}
 							width={100}
 							height={100}
 							loading="eager"
@@ -87,7 +89,7 @@ const CircularAvatarInputFile: React.FC<Props> = (props: Props) => {
 						}
 					}}
 				>
-					Modifier ma photo
+					{t.common.editPhoto}
 				</span>
 			)}
 		</Stack>

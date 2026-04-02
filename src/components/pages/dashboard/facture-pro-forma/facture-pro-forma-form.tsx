@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import type { TranslationDictionary } from '@/types/languageTypes';
 import type { SessionProps } from '@/types/_initTypes';
 import CompanyDocumentsWrapperForm from '@/components/pages/dashboard/shared/company-documents-form/companyDocumentsWrapperForm';
 import CompanyDocumentFormContent from '@/components/pages/dashboard/shared/company-documents-form/companyDocumentFormContent';
@@ -21,27 +22,28 @@ import type {
 } from '@/types/companyDocumentsTypes';
 import type { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
 import type { FactureClass } from '@/models/classes';
+import { useLanguage } from '@/utils/hooks';
 
 // Configuration for facture pro forma form
-const factureProFormaFormConfig: DocumentFormConfig<FactureClass> = {
+const createFactureProFormaFormConfig = (t: TranslationDictionary): DocumentFormConfig<FactureClass> => ({
 	documentType: 'facture-pro-forma',
 	labels: {
 		documentTypeName: 'facture pro-forma',
-		listLabel: 'Liste des factures pro-forma',
+		listLabel: t.facturesProforma.backToList,
 		dateLabel: 'Date de la facture',
 		statusLabel: 'Statut de la facture',
 		linesLabel: 'Lignes de la facture',
-		deleteLineMessage: 'Êtes-vous sûr de vouloir supprimer cette ligne de la facture ?',
-		addSuccessMessage: 'Facture pro-forma créée avec succès.',
-		updateSuccessMessage: 'Facture pro-forma mise à jour avec succès.',
-		addErrorMessage: 'Échec de la création de la facture pro-forma.',
-		updateErrorMessage: 'Échec de la mise à jour de la facture pro-forma.',
+		deleteLineMessage: t.facturesProforma.deleteLineBody,
+		addSuccessMessage: t.facturesProforma.addSuccess,
+		updateSuccessMessage: t.facturesProforma.updateSuccess,
+		addErrorMessage: t.facturesProforma.addError,
+		updateErrorMessage: t.facturesProforma.updateError,
 	},
 	fields: {
 		numeroField: 'numero_facture',
 		dateField: 'date_facture',
 		extraField: 'numero_bon_commande_client',
-		extraFieldLabel: 'N° bon de commande client',
+		extraFieldLabel: t.facturesProforma.fieldNumeroBonCommande,
 	},
 	routes: {
 		listRoute: FACTURE_PRO_FORMA_LIST,
@@ -51,8 +53,7 @@ const factureProFormaFormConfig: DocumentFormConfig<FactureClass> = {
 		editSchema: factureClientProformaSchema,
 		addSchema: factureClientProformaAddSchema,
 	},
-};
-
+});
 type FormikContentProps = {
 	token?: string;
 	company_id: number;
@@ -62,6 +63,8 @@ type FormikContentProps = {
 };
 
 const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, isEditMode, role }) => {
+	const { t } = useLanguage();
+	const factureProFormaFormConfig = React.useMemo(() => createFactureProFormaFormConfig(t), [t]);
 	// Queries
 	const {
 		data: rawData,
@@ -124,14 +127,15 @@ interface Props extends SessionProps {
 }
 
 const FactureProFormaForm: React.FC<Props> = ({ session, company_id, id }) => {
+	const { t } = useLanguage();
 	return (
 		<CompanyDocumentsWrapperForm
 			session={session}
 			company_id={company_id}
 			id={id}
 			documentConfig={{
-				addTitle: 'Ajouter une facture pro-forma',
-				editTitle: 'Modifier facture pro-forma',
+				addTitle: t.facturesProforma.addTitle,
+				editTitle: t.facturesProforma.editTitle,
 			}}
 			FormComponent={FormikContent}
 		/>

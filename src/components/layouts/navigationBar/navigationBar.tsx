@@ -40,9 +40,11 @@ import {
 	Domain as DomainIcon,
 	Settings as SettingsIcon,
 } from '@mui/icons-material';
-import { useAppSelector } from '@/utils/hooks';
+import { useAppSelector, useLanguage } from '@/utils/hooks';
 import { getProfilState } from '@/store/selectors';
 import { cookiesDeleter } from '@/utils/apiHelpers';
+import LanguageSwitcher from '@/components/shared/languageSwitcher/languageSwitcher';
+import type { TranslationDictionary } from '@/types/languageTypes';
 import {
 	ARTICLES_ARCHIVED,
 	ARTICLES_LIST,
@@ -74,89 +76,89 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
 
-const getNavigationMenu = (isStaff: boolean) => {
+const getNavigationMenu = (isStaff: boolean, t: TranslationDictionary) => {
 	return {
 		dashboard: {
-			title: 'Tableau de bord',
+			title: t.navigation.dashboard,
 			icon: <DashboardIcon />,
-			items: [{ title: 'Tableau de bord', label: 'Consulter le tableau de bord', path: DASHBOARD }],
+			items: [{ title: t.navigation.dashboard, label: t.navigation.viewDashboard, path: DASHBOARD }],
 		},
 		articles: {
-			title: 'Articles',
+			title: t.navigation.articles,
 			icon: <LibraryBooksIcon />,
 			items: [
-				{ title: 'Liste des articles', label: 'Liste des articles', path: ARTICLES_LIST },
-				{ title: 'Articles archivés', label: 'Articles archivés', path: ARTICLES_ARCHIVED },
+				{ title: t.navigation.articlesList, label: t.navigation.articlesList, path: ARTICLES_LIST },
+				{ title: t.navigation.articlesArchived, label: t.navigation.articlesArchived, path: ARTICLES_ARCHIVED },
 			],
 		},
 		clients: {
-			title: 'Client',
+			title: t.navigation.clients,
 			icon: <PeopleIcon />,
 			items: [
-				{ title: 'Liste des clients', label: 'Liste des clients', path: CLIENTS_LIST },
-				{ title: 'Clients archivés', label: 'Clients archivés', path: CLIENTS_ARCHIVED },
+				{ title: t.navigation.clientsList, label: t.navigation.clientsList, path: CLIENTS_LIST },
+				{ title: t.navigation.clientsArchived, label: t.navigation.clientsArchived, path: CLIENTS_ARCHIVED },
 			],
 		},
 		devis: {
-			title: 'Devis',
+			title: t.navigation.devis,
 			icon: <RequestQuoteIcon />,
-			items: [{ title: 'Liste des devis', label: 'Liste des devis', path: DEVIS_LIST }],
+			items: [{ title: t.navigation.devisList, label: t.navigation.devisList, path: DEVIS_LIST }],
 		},
 		factures_proformat: {
-			title: 'Factures Pro-forma',
+			title: t.navigation.facturesProforma,
 			icon: <ReceiptLongOutlinedIcon />,
-			items: [{ title: 'Liste des factures pro-forma', label: 'Liste des factures', path: FACTURE_PRO_FORMA_LIST }],
+			items: [{ title: t.navigation.facturesProformaList, label: t.navigation.facturesProformaList, path: FACTURE_PRO_FORMA_LIST }],
 		},
 		factures: {
-			title: 'Factures clients',
+			title: t.navigation.facturesClient,
 			icon: <ReceiptLongIcon />,
 			items: [
-				{ title: 'Liste des factures', label: 'Liste des factures', path: FACTURE_CLIENT_LIST },
-				{ title: 'Factures impayées', label: 'Factures impayées', path: FACTURE_CLIENT_UNPAID },
+				{ title: t.navigation.facturesClientList, label: t.navigation.facturesClientList, path: FACTURE_CLIENT_LIST },
+				{ title: t.navigation.facturesImpayees, label: t.navigation.facturesImpayees, path: FACTURE_CLIENT_UNPAID },
 			],
 		},
 		bonsLivraison: {
-			title: 'Bons de livraison',
+			title: t.navigation.bonsLivraison,
 			icon: <LocalShippingIcon />,
 			items: [
-				{ title: 'Liste des BLs', label: 'Liste des BLs', path: BON_DE_LIVRAISON_LIST },
-				{ title: 'BLs non facturés', label: 'BLs non facturés', path: BON_DE_LIVRAISON_UNINVOICED },
+				{ title: t.navigation.bonsLivraisonList, label: t.navigation.bonsLivraisonList, path: BON_DE_LIVRAISON_LIST },
+				{ title: t.navigation.bonsLivraisonUninvoiced, label: t.navigation.bonsLivraisonUninvoiced, path: BON_DE_LIVRAISON_UNINVOICED },
 			],
 		},
 		reglement: {
-			title: 'Règlement',
+			title: t.navigation.reglement,
 			icon: <PaymentIcon />,
-			items: [{ title: 'Liste des règlements', label: 'Liste des règlements', path: REGLEMENTS_LIST }],
+			items: [{ title: t.navigation.reglementsList, label: t.navigation.reglementsList, path: REGLEMENTS_LIST }],
 		},
 		...(isStaff && {
 			societe: {
-				title: 'Entreprises',
+				title: t.navigation.companies,
 				icon: <DomainIcon />,
 				items: [
-					{ title: 'Liste des entreprises', label: 'Liste des entreprises', path: COMPANIES_LIST },
-					{ title: 'Nouvelle entreprise', label: 'Nouvelle entreprise', path: COMPANIES_ADD },
+					{ title: t.navigation.companiesList, label: t.navigation.companiesList, path: COMPANIES_LIST },
+					{ title: t.navigation.newCompany, label: t.navigation.newCompany, path: COMPANIES_ADD },
 				],
 			},
 			utilisateurs: {
-				title: 'Utilisateurs',
+				title: t.navigation.users,
 				icon: <PeopleIcon />,
 				items: [
-					{ title: 'Liste des utilisateurs', label: 'Liste des utilisateurs', path: USERS_LIST },
-					{ title: 'Nouvel utilisateur', label: 'Nouvel utilisateur', path: USERS_ADD },
+					{ title: t.navigation.usersList, label: t.navigation.usersList, path: USERS_LIST },
+					{ title: t.navigation.newUser, label: t.navigation.newUser, path: USERS_ADD },
 				],
 			},
 		}),
 		parametres: {
-			title: 'Paramètres',
+			title: t.navigation.settings,
 			icon: <SettingsIcon />,
 			items: [
-				{ title: 'Mon Profil', label: 'Mon Profil', path: DASHBOARD_EDIT_PROFILE },
-				{ title: 'Mot de passe', label: 'Changer le mot de passe', path: DASHBOARD_PASSWORD },
+				{ title: t.navigation.myProfile, label: t.navigation.myProfile, path: DASHBOARD_EDIT_PROFILE },
+				{ title: t.navigation.changePassword, label: t.navigation.changePassword, path: DASHBOARD_PASSWORD },
 				...(isStaff
 					? [
 							{
-								title: 'Objectifs Mensuels',
-								label: 'Configurer les objectifs mensuels',
+								title: t.navigation.monthlyObjectives,
+								label: t.navigation.configureMonthlyObjectives,
 								path: DASHBOARD_OBJECTIFS_MENSUELS,
 							},
 						]
@@ -227,7 +229,8 @@ const NavigationBar = (props: Props) => {
 	const [open, setOpen] = useState(!isMobile);
 	const { data: session, status } = useSession();
 	const { avatar_cropped, first_name, last_name, gender, is_staff } = useAppSelector(getProfilState);
-	const navigationMenu = useMemo(() => getNavigationMenu(is_staff), [is_staff]);
+	const { t } = useLanguage();
+	const navigationMenu = useMemo(() => getNavigationMenu(is_staff, t), [is_staff, t]);
 
 	const loading = status === 'loading';
 
@@ -320,7 +323,7 @@ const NavigationBar = (props: Props) => {
 						<Stack direction="row" justifyContent="space-between" alignItems="center" width="100%">
 							<Stack direction="row" alignItems="center" spacing={1}>
 								{isMobile && (
-									<IconButton color="inherit" aria-label="toggle drawer" onClick={handleDrawerToggle} size="small">
+									<IconButton color="inherit" aria-label={t.common.toggleDrawer} onClick={handleDrawerToggle} size="small">
 										<MenuIcon />
 									</IconButton>
 								)}
@@ -328,24 +331,25 @@ const NavigationBar = (props: Props) => {
 									{props.title}
 								</Typography>
 							</Stack>
-							<Stack direction="row" spacing={1}>
-								{!loading && session && (
-									<>
-										<Desktop>
-											{is_staff && (
-												<Button
-													variant="text"
-													color="inherit"
-													href={BACKEND_SITE_ADMIN}
-													target="_blank"
-													rel="noopener"
-													endIcon={<DomainIcon />}
-												>
-													Site d’administration
-												</Button>
-											)}
-											<Button variant="text" color="inherit" endIcon={<LogoutIcon />} onClick={logOutHandler}>
-												Se déconnecter
+						<Stack direction="row" spacing={1} alignItems="center">
+							<LanguageSwitcher />
+							{!loading && session && (
+								<>
+									<Desktop>
+										{is_staff && (
+											<Button
+												variant="text"
+												color="inherit"
+												href={BACKEND_SITE_ADMIN}
+												target="_blank"
+												rel="noopener"
+												endIcon={<DomainIcon />}
+											>
+												{t.navigation.administration}
+											</Button>
+										)}
+										<Button variant="text" color="inherit" endIcon={<LogoutIcon />} onClick={logOutHandler}>
+											{t.navigation.logout}
 											</Button>
 										</Desktop>
 										<TabletAndMobile>
@@ -414,7 +418,7 @@ const NavigationBar = (props: Props) => {
 						{/* Text block next to avatar */}
 						<Box sx={{ display: 'flex', flexDirection: 'column' }}>
 							<Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-								{gender === 'Homme' ? 'Bienvenu' : gender === 'Femme' ? 'Bienvenue' : 'Bienvenu(e)'}
+								{gender === 'Homme' ? t.navigation.welcomeMale : gender === 'Femme' ? t.navigation.welcomeFemale : t.navigation.welcomeNeutral}
 							</Typography>
 							<Typography variant="body2" sx={{ color: 'text.secondary' }}>
 								{first_name} {last_name}

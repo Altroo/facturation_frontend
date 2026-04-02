@@ -47,7 +47,7 @@ import { textInputTheme } from '@/utils/themes';
 import { CLIENTS_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import type { DropDownType } from '@/types/accountTypes';
-import { useToast } from '@/utils/hooks';
+import { useToast, useLanguage } from '@/utils/hooks';
 import {
 	useAddClientMutation,
 	useEditClientMutation,
@@ -74,6 +74,7 @@ type FormikContentProps = {
 const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
 	const { token, company_id, id } = props;
 	const { onSuccess, onError } = useToast();
+	const { t } = useLanguage();
 	const isEditMode = id !== undefined;
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -161,19 +162,19 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 				if (isEditMode) {
 					await updateClient({ data: payload, id: id! }).unwrap();
-					onSuccess('Le client a été mis à jour avec succès.');
+					onSuccess(t.clients.updateSuccess);
 				} else {
 					await addClient({ data: payload }).unwrap();
-					onSuccess('Le client a été ajouté avec succès.');
+					onSuccess(t.clients.addSuccess);
 				}
 				if (!isEditMode) {
 					router.replace(CLIENTS_LIST);
 				}
 			} catch (e) {
 				if (isEditMode) {
-					onError('La mise à jour du client a échoué. Veuillez réessayer.');
+					onError(t.clients.updateError);
 				} else {
-					onError("L'ajout du client a échoué. Veuillez réessayer.");
+					onError(t.clients.addError);
 				}
 				setFormikAutoErrors({ e, setFieldError });
 			} finally {
@@ -211,35 +212,35 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	// Collect validation errors from Formik
 	const fieldLabels = useMemo<Record<string, string>>(
 		() => ({
-			reference: 'Référence',
-			designation: 'Désignation',
-			prix_achat: "Prix d'achat",
-			prix_vente: 'Prix de vente',
-			tva: 'TVA',
-			categorie: 'Catégorie',
-			emplacement: 'Emplacement',
-			unite: 'Unité',
-			marque: 'Marque',
-			remarque: 'Remarque',
-			photo: 'Photo',
-			photo_cropped: 'Photo recadrée',
-			globalError: 'Erreur globale',
-			raison_sociale: 'Raison sociale',
-			nom: 'Nom',
-			prenom: 'Prénom',
-			adresse: 'Adresse',
-			ville: 'Ville',
-			tel: 'Téléphone',
-			email: 'Email',
-			ICE: 'ICE',
-			registre_de_commerce: 'Registre de commerce',
-			identifiant_fiscal: 'Identifiant fiscal',
-			taxe_professionnelle: 'Taxe professionnelle',
-			CNSS: 'CNSS',
-			numero_du_compte: 'Numéro du compte',
-			delai_de_paiement: 'Délai de paiement',
+			reference: t.articles.colReference,
+			designation: t.articles.colDesignation,
+			prix_achat: t.articles.colPrixAchat,
+			prix_vente: t.articles.colPrixVente,
+			tva: t.articles.fieldTva,
+			categorie: t.articles.filterCategorie,
+			emplacement: t.articles.filterEmplacement,
+			unite: t.articles.filterUnite,
+			marque: t.articles.filterMarque,
+			remarque: t.clients.fieldRemarque,
+			photo: t.articles.fieldPhoto,
+			photo_cropped: t.articles.fieldPhotoCropped,
+			globalError: t.common.genericError,
+			raison_sociale: t.clients.fieldRaisonSociale,
+			nom: t.clients.fieldNom,
+			prenom: t.clients.fieldPrenom,
+			adresse: t.clients.fieldAdresse,
+			ville: t.clients.fieldVille,
+			tel: t.clients.fieldTelephone,
+			email: t.clients.fieldEmail,
+			ICE: t.clients.fieldICE,
+			registre_de_commerce: t.clients.fieldRegistreCommerce,
+			identifiant_fiscal: t.clients.fieldIdentifiantFiscal,
+			taxe_professionnelle: t.clients.fieldTaxeProfessionnelle,
+			CNSS: t.clients.fieldCNSS,
+			numero_du_compte: t.clients.fieldNumeroCompte,
+			delai_de_paiement: t.clients.fieldDelaiPaiement,
 		}),
-		[],
+		[t],
 	);
 
 	const validationErrors = useMemo(() => {
@@ -278,13 +279,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
 					}}
 				>
-					Liste des clients
+					{t.clients.backToList}
 				</Button>
 			</Stack>
 			{hasValidationErrors && (
 				<Alert severity="error" icon={<WarningIcon />} sx={{ mb: 2 }}>
 					<Typography variant="subtitle2" fontWeight={600}>
-						Erreurs de validation détectées:
+						{t.common.validationErrors}
 					</Typography>
 					<ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
 						{Object.entries(validationErrors).map(([key, error]) => (
@@ -311,7 +312,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 									<PersonIcon color="primary" />
 									<Typography variant="h6" fontWeight={700}>
-										Type de client
+										{t.clients.typeSection}
 									</Typography>
 								</Stack>
 								<Divider sx={{ mb: 3 }} />
@@ -327,8 +328,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									}}
 									sx={{ mb: 2 }}
 								>
-									<ToggleButton value="PM">Personne morale</ToggleButton>
-									<ToggleButton value="PP">Personne physique</ToggleButton>
+									<ToggleButton value="PM">{t.clients.typePersonneMorale}</ToggleButton>
+									<ToggleButton value="PP">{t.clients.typePersonnePhysique}</ToggleButton>
 								</ToggleButtonGroup>
 
 								<Stack spacing={2.5}>
@@ -336,7 +337,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										<CustomTextInput
 											id="code_client"
 											type="text"
-											label="Code client *"
+											label={t.clients.fieldCodeClient + ' *'}
 											value={formik.values.code_client}
 											onChange={formik.handleChange('code_client')}
 											onBlur={formik.handleBlur('code_client')}
@@ -348,7 +349,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											startIcon={<BadgeIcon fontSize="small" />}
 										/>
 										{!isEditMode && (
-											<Tooltip title="Réinitialiser le code">
+											<Tooltip title={t.clients.resetCode}>
 												<IconButton
 													size="large"
 													color="primary"
@@ -375,7 +376,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 									<BusinessIcon color="primary" />
 									<Typography variant="h6" fontWeight={700}>
-										Informations générales
+										{t.clients.identitySection}
 									</Typography>
 								</Stack>
 								<Divider sx={{ mb: 3 }} />
@@ -392,7 +393,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											error={formik.touched.raison_sociale && Boolean(formik.errors.raison_sociale)}
 											fullWidth={false}
 											size="small"
-											label={`Raison sociale${isRequiredPM('raison_sociale') ? ' *' : ''}`}
+											label={t.clients.fieldRaisonSociale + (isRequiredPM('raison_sociale') ? ' *' : '')}
 											theme={inputTheme}
 											startIcon={<BusinessIcon fontSize="small" />}
 										/>
@@ -400,7 +401,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										<CustomTextInput
 											id="email"
 											type="email"
-											label="Email"
+											label={t.clients.fieldEmail}
 											value={formik.values.email ?? ''}
 											onChange={formik.handleChange('email')}
 											onBlur={formik.handleBlur('email')}
@@ -415,7 +416,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										<CustomTextInput
 											id="ICE"
 											type="text"
-											label={`ICE${isRequiredPM('ICE') ? ' *' : ''}`}
+											label={t.clients.fieldICE + (isRequiredPM('ICE') ? ' *' : '')}
 											value={formik.values.ICE ?? ''}
 											onChange={formik.handleChange('ICE')}
 											onBlur={formik.handleBlur('ICE')}
@@ -430,7 +431,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										<CustomTextInput
 											id="registre_de_commerce"
 											type="text"
-											label="Registre de commerce"
+											label={t.clients.fieldRegistreCommerce}
 											value={formik.values.registre_de_commerce ?? ''}
 											onChange={formik.handleChange('registre_de_commerce')}
 											onBlur={formik.handleBlur('registre_de_commerce')}
@@ -445,7 +446,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										<CustomTextInput
 											id="adresse"
 											type="text"
-											label="Adresse"
+											label={t.clients.fieldAdresse}
 											value={formik.values.adresse ?? ''}
 											onChange={formik.handleChange('adresse')}
 											onBlur={formik.handleBlur('adresse')}
@@ -462,7 +463,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										<CustomTextInput
 											id="nom"
 											type="text"
-											label={`Nom${isRequiredPP('nom') ? ' *' : ''}`}
+											label={t.clients.fieldNom + (isRequiredPP('nom') ? ' *' : '')}
 											value={formik.values.nom ?? ''}
 											onChange={formik.handleChange('nom')}
 											onBlur={formik.handleBlur('nom')}
@@ -477,7 +478,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										<CustomTextInput
 											id="prenom"
 											type="text"
-											label={`Prénom${isRequiredPP('prenom') ? ' *' : ''}`}
+											label={t.clients.fieldPrenom + (isRequiredPP('prenom') ? ' *' : '')}
 											value={formik.values.prenom ?? ''}
 											onChange={formik.handleChange('prenom')}
 											onBlur={formik.handleBlur('prenom')}
@@ -492,7 +493,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										<CustomTextInput
 											id="adresse"
 											type="text"
-											label={`Adresse${isRequiredPP('adresse') ? ' *' : ''}`}
+											label={t.clients.fieldAdresse + (isRequiredPP('adresse') ? ' *' : '')}
 											value={formik.values.adresse ?? ''}
 											onChange={formik.handleChange('adresse')}
 											onBlur={formik.handleBlur('adresse')}
@@ -508,13 +509,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 							</CardContent>
 						</Card>
 
-						{/* Contact */}
+						{/* {t.clients.contactSection} */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
 							<CardContent sx={{ p: 3 }}>
 								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 									<PhoneIcon color="primary" />
 									<Typography variant="h6" fontWeight={700}>
-										Contact
+										{t.clients.contactSection}
 									</Typography>
 								</Stack>
 								<Divider sx={{ mb: 3 }} />
@@ -522,7 +523,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="tel"
 										type="tel"
-										label={`${isPM ? 'Téléphone' : 'Téléphone'}${isRequiredPP('tel') ? ' *' : ''}`}
+										label={t.clients.fieldTelephone + (isRequiredPP('tel') ? ' *' : '')}
 										value={formik.values.tel ?? ''}
 										onChange={formik.handleChange('tel')}
 										onBlur={formik.handleBlur('tel')}
@@ -543,7 +544,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 									<DescriptionIcon color="primary" />
 									<Typography variant="h6" fontWeight={700}>
-										Informations administratives
+										{t.clients.adminSection}
 									</Typography>
 								</Stack>
 								<Divider sx={{ mb: 3 }} />
@@ -551,7 +552,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="numero_du_compte"
 										type="text"
-										label="Numéro du compte"
+										label={t.clients.fieldNumeroCompte}
 										value={formik.values.numero_du_compte ?? ''}
 										onChange={formik.handleChange('numero_du_compte')}
 										onBlur={formik.handleBlur('numero_du_compte')}
@@ -565,7 +566,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="identifiant_fiscal"
 										type="text"
-										label="Identifiant fiscal"
+										label={t.clients.fieldIdentifiantFiscal}
 										value={formik.values.identifiant_fiscal ?? ''}
 										onChange={formik.handleChange('identifiant_fiscal')}
 										onBlur={formik.handleBlur('identifiant_fiscal')}
@@ -579,7 +580,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="taxe_professionnelle"
 										type="text"
-										label="Taxe professionnelle"
+										label={t.clients.fieldTaxeProfessionnelle}
 										value={formik.values.taxe_professionnelle ?? ''}
 										onChange={formik.handleChange('taxe_professionnelle')}
 										onBlur={formik.handleBlur('taxe_professionnelle')}
@@ -593,7 +594,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="CNSS"
 										type="text"
-										label="CNSS"
+										label={t.clients.fieldCNSS}
 										value={formik.values.CNSS ?? ''}
 										onChange={formik.handleChange('CNSS')}
 										onBlur={formik.handleBlur('CNSS')}
@@ -614,7 +615,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 									<LocationOnIcon color="primary" />
 									<Typography variant="h6" fontWeight={700}>
-										Ville et paiement
+										{t.clients.villeSection}
 									</Typography>
 								</Stack>
 								<Divider sx={{ mb: 3 }} />
@@ -622,8 +623,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomAutoCompleteSelect
 										id="ville"
 										size="small"
-										noOptionsText="Aucun ville trouvé"
-										label={`Ville${isPM ? (isRequiredPM('ville') ? ' *' : '') : isRequiredPP('ville') ? ' *' : ''}`}
+										noOptionsText={t.clients.noVille}
+										label={t.clients.fieldVille + (isPM ? (isRequiredPM('ville') ? ' *' : '') : isRequiredPP('ville') ? ' *' : '')}
 										items={cityItems}
 										theme={theme}
 										value={selectedCity}
@@ -637,7 +638,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										startIcon={<LocationOnIcon fontSize="small" />}
 										endIcon={
 											<Button size="small" variant="outlined" onClick={() => setOpenCityModal(true)} sx={{ ml: 1 }}>
-												Ajouter
+												{t.common.add}
 											</Button>
 										}
 									/>
@@ -645,7 +646,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="delai_de_paiement"
 										type="number"
-										label={`Délai de paiement (jours)${
+										label={t.clients.fieldDelaiPaiement + (
 											isPM
 												? isRequiredPM('delai_de_paiement')
 													? ' *'
@@ -653,7 +654,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												: isRequiredPP('delai_de_paiement')
 													? ' *'
 													: ''
-										}`}
+										)}
 										value={formik.values.delai_de_paiement === null ? '' : String(formik.values.delai_de_paiement)}
 										onChange={(e) => {
 											const value = e.target.value === '' ? null : Number(e.target.value);
@@ -682,7 +683,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
 									<NotesIcon color="primary" />
 									<Typography variant="h6" fontWeight={700}>
-										Remarque
+										{t.clients.remarkSection}
 									</Typography>
 								</Stack>
 								<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
@@ -690,7 +691,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="remarque"
 										type="text"
-										label="Remarque"
+										label={t.clients.fieldRemarque}
 										value={formik.values.remarque ?? ''}
 										onChange={formik.handleChange('remarque')}
 										onBlur={formik.handleBlur('remarque')}
@@ -707,7 +708,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						{/* Submit Button */}
 						<Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 2 }}>
 							<PrimaryLoadingButton
-								buttonText={isEditMode ? 'Mettre à jour' : 'Ajouter le client'}
+								buttonText={isEditMode ? t.common.update : t.clients.addTitle}
 								active={!isPending}
 								type="submit"
 								loading={isPending}
@@ -717,7 +718,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									if (!formik.isValid) {
 										e.preventDefault();
 										formik.handleSubmit();
-										onError('Veuillez corriger les erreurs de validation avant de soumettre.');
+										onError(t.common.correctErrors);
 										window.scrollTo({ top: 0, behavior: 'smooth' });
 									}
 								}}
@@ -732,7 +733,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			<AddEntityModal
 				open={openCityModal}
 				setOpen={setOpenCityModal}
-				label="ville"
+				label={t.clients.fieldVille.toLowerCase()}
 				icon={<LocationOnIcon fontSize="small" />}
 				inputTheme={inputTheme}
 				mutationFn={(args) => addCity({ data: { ...args.data, company: company_id } })}

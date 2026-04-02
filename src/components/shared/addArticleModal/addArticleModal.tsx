@@ -13,6 +13,7 @@ import CustomDropDownSelect from '@/components/formikElements/customDropDownSele
 import { gridInputTheme, customGridDropdownTheme } from '@/utils/themes';
 import { remiseTypeItemsList } from '@/utils/rawData';
 import type { TypeRemiseType } from '@/types/devisTypes';
+import { useLanguage } from '@/utils/hooks';
 
 const gridFieldTheme = gridInputTheme();
 const gridSelectTheme = customGridDropdownTheme();
@@ -55,6 +56,7 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 	existingArticleLineValues = {},
 	documentDevise,
 }) => {
+	const { t } = useLanguage();
 	const [articlePopupValues, setArticlePopupValues] = useState<Record<number, ArticlePopupValues>>({});
 	const [prevOpen, setPrevOpen] = useState(false);
 
@@ -110,19 +112,19 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 			quantity: popupValues.quantity,
 			remise_type: popupValues.remise_type,
 			remise: popupValues.remise,
-			status: article.id && existingArticleIds.has(article.id) ? 'Déjà ajouté' : 'Nouveau',
+			status: article.id && existingArticleIds.has(article.id) ? t.addArticleModal.statusExisting : t.addArticleModal.statusNew,
 		};
 	});
 
 	const columns: GridColDef[] = [
 		{
 			field: 'status',
-			headerName: 'Statut',
+			headerName: t.addArticleModal.statusHeader,
 			flex: 0.8,
 			minWidth: 110,
 			renderCell: (params: GridRenderCellParams) => {
-				const value = String(params.value ?? 'Nouveau');
-				const color = value === 'Déjà ajouté' ? '#0274d7' : '#2e7d32';
+				const value = String(params.value ?? t.addArticleModal.statusNew);
+				const color = value === t.addArticleModal.statusExisting ? '#0274d7' : '#2e7d32';
 				return (
 					<DarkTooltip title={value}>
 						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
@@ -136,7 +138,7 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 		},
 		{
 			field: 'reference',
-			headerName: 'Référence',
+			headerName: t.addArticleModal.colReference,
 			flex: 0.8,
 			minWidth: 90,
 			renderCell: (params: GridRenderCellParams) => {
@@ -154,7 +156,7 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 		},
 		{
 			field: 'designation',
-			headerName: 'Désignation',
+			headerName: t.addArticleModal.colDesignation,
 			flex: 1.5,
 			minWidth: 130,
 			renderCell: (params: GridRenderCellParams) => {
@@ -172,7 +174,7 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 		},
 		{
 			field: 'marque_name',
-			headerName: 'Marque',
+			headerName: t.addArticleModal.colMarque,
 			flex: 1,
 			minWidth: 100,
 			renderCell: (params: GridRenderCellParams) => {
@@ -190,7 +192,7 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 		},
 		{
 			field: 'categorie_name',
-			headerName: 'Catégorie',
+			headerName: t.addArticleModal.colCategorie,
 			flex: 1,
 			minWidth: 100,
 			renderCell: (params: GridRenderCellParams) => {
@@ -208,7 +210,7 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 		},
 		{
 			field: 'unite_name',
-			headerName: 'Unité',
+			headerName: t.addArticleModal.colUnite,
 			flex: 0.7,
 			minWidth: 80,
 			renderCell: (params: GridRenderCellParams) => {
@@ -226,7 +228,7 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 		},
 		{
 			field: 'emplacement_name',
-			headerName: 'Emplacement',
+			headerName: t.addArticleModal.colEmplacement,
 			flex: 1.2,
 			minWidth: 120,
 			renderCell: (params: GridRenderCellParams) => {
@@ -244,7 +246,7 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 		},
 		{
 			field: 'prix_achat',
-			headerName: "Prix d'achat",
+			headerName: t.addArticleModal.colPrixAchat,
 			flex: 1,
 			minWidth: 110,
 			renderCell: (params: GridRenderCellParams) => {
@@ -262,7 +264,7 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 		},
 		{
 			field: 'prix_vente',
-			headerName: 'Prix de vente',
+			headerName: t.addArticleModal.colPrixVente,
 			flex: 1,
 			minWidth: 110,
 			renderCell: (params: GridRenderCellParams) => {
@@ -280,7 +282,7 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 		},
 		{
 			field: 'quantity',
-			headerName: 'Quantité',
+			headerName: t.addArticleModal.colQuantite,
 			flex: 0.9,
 			minWidth: 120,
 			sortable: false,
@@ -317,7 +319,7 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 		},
 		{
 			field: 'remise_type',
-			headerName: 'Type remise',
+			headerName: t.addArticleModal.colTypeRemise,
 			flex: 1,
 			minWidth: 140,
 			sortable: false,
@@ -332,7 +334,7 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 					>
 						<CustomDropDownSelect
 							id={`popup_remise_type_${articleId}`}
-							label="Type"
+							label={t.addArticleModal.typeLabel}
 							items={remiseTypeItemsList}
 							theme={gridSelectTheme}
 							size="small"
@@ -351,7 +353,7 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 		},
 		{
 			field: 'remise',
-			headerName: 'Remise',
+			headerName: t.addArticleModal.colRemise,
 			flex: 0.9,
 			minWidth: 130,
 			sortable: false,
@@ -403,7 +405,7 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 			<DialogTitle>
 				<Stack direction="row" spacing={2} alignItems="center">
 					<AddIcon color="primary" />
-					<Typography variant="h6">Ajouter des articles</Typography>
+					<Typography variant="h6">{t.addArticleModal.title}</Typography>
 				</Stack>
 			</DialogTitle>
 
@@ -459,7 +461,7 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 			</DialogContent>
 
 			<DialogActions>
-				<Button onClick={onClose}>Annuler</Button>
+				<Button onClick={onClose}>{t.addArticleModal.cancelBtn}</Button>
 				<Button
 					variant="contained"
 					onClick={() => {
@@ -477,7 +479,7 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 					disabled={selectedArticles.size === 0}
 					startIcon={<AddIcon />}
 				>
-					Ajouter ({selectedArticles.size})
+					{t.addArticleModal.addBtn(selectedArticles.size)}
 				</Button>
 			</DialogActions>
 		</Dialog>

@@ -3,6 +3,7 @@ import { Modal, Box, Typography, Button } from '@mui/material';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import type { ApiErrorResponseType } from '@/types/_initTypes';
 import type { Theme } from '@mui/material/styles';
+import { useLanguage } from '@/utils/hooks';
 
 type AddEntityModalProps = {
 	open: boolean;
@@ -15,6 +16,7 @@ type AddEntityModalProps = {
 };
 
 const AddEntityModal: React.FC<AddEntityModalProps> = ({ open, setOpen, label, icon, inputTheme, mutationFn, onSuccess }) => {
+	const { t } = useLanguage();
 	const [newName, setNewName] = useState('');
 	const [error, setError] = useState<string | null>(null);
 
@@ -39,13 +41,13 @@ const AddEntityModal: React.FC<AddEntityModalProps> = ({ open, setOpen, label, i
 				}}
 			>
 				<Typography variant="h6" mb={2}>
-					Ajouter un(e) {label}
+					{t.addEntityModal.title(label)}
 				</Typography>
 
 				<CustomTextInput
 					id={`new_${label}`}
 					type="text"
-					label={`Nom du ${label}`}
+					label={t.addEntityModal.fieldLabel(label)}
 					value={newName}
 					onChange={(e) => {
 						setNewName(e.target.value);
@@ -60,12 +62,12 @@ const AddEntityModal: React.FC<AddEntityModalProps> = ({ open, setOpen, label, i
 				/>
 
 				<Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2, gap: 1 }}>
-					<Button onClick={() => setOpen(false)}>Annuler</Button>
+					<Button onClick={() => setOpen(false)}>{t.addEntityModal.cancelBtn}</Button>
 					<Button
 						variant="contained"
 						onClick={async () => {
 							if (!newName.trim()) {
-								setError(`Le nom du ${label} est requis.`);
+								setError(t.addEntityModal.requiredError(label));
 								return;
 							}
 							
@@ -87,10 +89,10 @@ const AddEntityModal: React.FC<AddEntityModalProps> = ({ open, setOpen, label, i
 											const errorMsg = Array.isArray(firstError) ? firstError[0] : firstError;
 											setError(errorMsg as string);
 										} else {
-											setError(`Erreur lors de l'ajout du ${label}.`);
+											setError(t.addEntityModal.addError(label));
 										}
 									} else {
-										setError(`Erreur lors de l'ajout du ${label}.`);
+										setError(t.addEntityModal.addError(label));
 									}
 									// Don't close modal on error
 									return;
@@ -127,15 +129,15 @@ const AddEntityModal: React.FC<AddEntityModalProps> = ({ open, setOpen, label, i
 										const errorMsg = Array.isArray(firstError) ? firstError[0] : firstError;
 										setError(errorMsg as string);
 									} else {
-										setError(`Erreur lors de l'ajout du ${label}.`);
+										setError(t.addEntityModal.addError(label));
 									}
 								} else {
-									setError(`Erreur lors de l'ajout du ${label}.`);
+									setError(t.addEntityModal.addError(label));
 								}
 							}
 						}}
 					>
-						Ajouter
+						{t.addEntityModal.addBtn}
 					</Button>
 				</Box>
 			</Box>

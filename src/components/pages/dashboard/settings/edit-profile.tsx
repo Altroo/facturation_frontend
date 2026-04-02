@@ -9,7 +9,7 @@ import CustomTextInput from '@/components/formikElements/customTextInput/customT
 import { textInputTheme, customDropdownTheme } from '@/utils/themes';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import { genderItemsList } from '@/utils/rawData';
-import { useAppDispatch, useToast } from '@/utils/hooks';
+import { useAppDispatch, useToast, useLanguage } from '@/utils/hooks';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import { setFormikAutoErrors } from '@/utils/helpers';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
@@ -31,6 +31,7 @@ type formikContentType = {
 const FormikContent: React.FC<formikContentType> = (props: formikContentType) => {
 	const { token } = props;
 	const { onSuccess, onError } = useToast();
+	const { t } = useLanguage();
 	const { data: profilData, isLoading: isProfilLoading } = useGetProfilQuery(undefined, { skip: !token });
 	const [editProfil, { isLoading: isEditLoading }] = useEditProfilMutation();
 	const dispatch = useAppDispatch();
@@ -56,10 +57,10 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 				const response = await editProfil({ data: payload }).unwrap();
 				if (response) {
 					dispatch(accountEditProfilAction(response));
-					onSuccess('Profil mis à jour avec succès.');
+					onSuccess(t.settings.profileUpdateSuccess);
 				}
 			} catch (e) {
-				onError('Une erreur est survenue lors de la mise à jour du profil.');
+				onError(t.settings.profileUpdateError);
 				setFormikAutoErrors({ e, setFieldError });
 			} finally {
 				setIsPending(false);
@@ -72,7 +73,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 			{(isEditLoading || isPending || isProfilLoading) && (
 				<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
 			)}
-			<h2 className={Styles.pageTitle}>Profil</h2>
+			<h2 className={Styles.pageTitle}>{t.settings.profileTitle}</h2>
 			<form className={Styles.form} onSubmit={(e) => e.preventDefault()}>
 				<Stack direction="column" spacing={2} justifyContent="center" alignItems="center">
 					<CustomSquareImageUploading
@@ -89,8 +90,8 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 						onChange={() => {}}
 						fullWidth={true}
 						size="small"
-						label="Email"
-						placeholder="Email"
+						label={t.settings.fieldEmail}
+						placeholder={t.settings.fieldEmail}
 						theme={inputTheme}
 						startIcon={<EmailIcon fontSize="small" />}
 						cssClass={Styles.maxInputWidth}
@@ -106,8 +107,8 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 						error={formik.touched.first_name && Boolean(formik.errors.first_name)}
 						fullWidth={true}
 						size="small"
-						label="Nom"
-						placeholder="Nom"
+						label={t.settings.fieldNom}
+						placeholder={t.settings.fieldNom}
 						theme={inputTheme}
 						startIcon={<PersonIcon fontSize="small" />}
 						cssClass={Styles.maxInputWidth}
@@ -122,8 +123,8 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 						error={formik.touched.last_name && Boolean(formik.errors.last_name)}
 						fullWidth={true}
 						size="small"
-						label="Prénom"
-						placeholder="Prénom"
+						label={t.settings.fieldPrenom}
+						placeholder={t.settings.fieldPrenom}
 						theme={inputTheme}
 						startIcon={<PersonIcon fontSize="small" />}
 						cssClass={Styles.maxInputWidth}
@@ -131,7 +132,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 					<CustomDropDownSelect
 						size="small"
 						id="gender"
-						label="Genre"
+						label={t.settings.fieldGenre}
 						items={genderItemsList}
 						theme={customDropdownTheme()}
 						onChange={(e) => formik.setFieldValue('gender', e.target.value)}
@@ -140,7 +141,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 						cssClass={Styles.maxInputWidth}
 					/>
 					<PrimaryLoadingButton
-						buttonText="Mettre à jour"
+						buttonText={t.settings.updateBtn}
 						active={!isPending}
 						onClick={formik.handleSubmit}
 						cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}
@@ -155,6 +156,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 };
 
 const EditProfilClient: React.FC<SessionProps> = (props: SessionProps) => {
+	const { t } = useLanguage();
 	const { session } = props;
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -162,7 +164,7 @@ const EditProfilClient: React.FC<SessionProps> = (props: SessionProps) => {
 
 	return (
 		<Stack direction="column" sx={{ position: 'relative' }}>
-			<NavigationBar title="Éditer le profil">
+			<NavigationBar title={t.settings.navbarTitle}>
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
 					<Box
 						sx={{

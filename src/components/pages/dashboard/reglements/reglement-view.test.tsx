@@ -36,6 +36,7 @@ jest.mock('@/utils/hooks', () => ({
 	__esModule: true,
 	useAppSelector: jest.fn(() => [{ id: 1, role: 'Caissier' }]),
 	useToast: jest.fn(() => ({ onSuccess: jest.fn(), onError: jest.fn() })),
+	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
 }));
 
 jest.mock('@/store/selectors', () => ({
@@ -179,7 +180,7 @@ describe('ReglementViewClient', () => {
 		expect(screen.getByTestId('nav-title')).toHaveTextContent('Détails du règlement');
 		expect(screen.getByText('Statut')).toBeInTheDocument();
 		expect(screen.getByText('Informations de la facture')).toBeInTheDocument();
-		expect(screen.getByText('Numéro de facture')).toBeInTheDocument();
+		expect(screen.getByText('Facture client *')).toBeInTheDocument();
 		expect(screen.getByText('FC-001')).toBeInTheDocument();
 		expect(screen.getByText('Client A')).toBeInTheDocument();
 		expect(screen.getAllByText('Détails du règlement').length).toBeGreaterThanOrEqual(1);
