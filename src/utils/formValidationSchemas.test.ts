@@ -1548,7 +1548,7 @@ describe('Zod Schema Validation', () => {
 			).toThrow();
 		});
 
-		it('PP: fails when tel is null', () => {
+		it('PP: passes when tel is null', () => {
 			expect(() =>
 				clientSchema.parse({
 					code_client: 'CL203',
@@ -1562,7 +1562,7 @@ describe('Zod Schema Validation', () => {
 					delai_de_paiement: 30,
 					ville: 7,
 				}),
-			).toThrow();
+			).not.toThrow();
 		});
 
 		it('PP: fails when ville is null', () => {

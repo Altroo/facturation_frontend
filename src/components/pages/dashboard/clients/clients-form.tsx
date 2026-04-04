@@ -523,7 +523,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="tel"
 										type="tel"
-										label={t.clients.fieldTelephone + (isRequiredPP('tel') ? ' *' : '')}
+										label={t.clients.fieldTelephone}
 										value={formik.values.tel ?? ''}
 										onChange={formik.handleChange('tel')}
 										onBlur={formik.handleBlur('tel')}

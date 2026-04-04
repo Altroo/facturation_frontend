@@ -143,7 +143,7 @@ jest.mock('@/utils/helpers', () => ({
 jest.mock('@/utils/formValidationSchemas', () => ({
 	clientSchema: { parse: jest.fn() },
 	pmRequired: ['raison_sociale', 'ville', 'ICE', 'delai_de_paiement'],
-	ppRequired: ['nom', 'prenom', 'adresse', 'ville', 'tel', 'delai_de_paiement'],
+	ppRequired: ['nom', 'prenom', 'adresse', 'ville', 'delai_de_paiement'],
 }));
 
 jest.mock('zod-formik-adapter', () => ({

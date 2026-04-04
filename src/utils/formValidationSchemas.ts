@@ -229,7 +229,7 @@ export const userSchema = z.object({
 });
 
 export const pmRequired = ['raison_sociale', 'ville', 'ICE', 'delai_de_paiement'] as const;
-export const ppRequired = ['nom', 'prenom', 'adresse', 'ville', 'tel', 'delai_de_paiement'] as const;
+export const ppRequired = ['nom', 'prenom', 'adresse', 'ville', 'delai_de_paiement'] as const;
 
 export const clientSchema = z
 	.object({
