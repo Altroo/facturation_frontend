@@ -106,9 +106,9 @@ jest.mock('@/providers/themeProvider', () => ({
 
 jest.mock('next/headers', () => ({
 	__esModule: true,
-	cookies: jest.fn().mockResolvedValue({
+	cookies: jest.fn().mockImplementation(async () => ({
 		get: jest.fn().mockReturnValue(undefined),
-	}),
+	})),
 }));
 
 beforeEach(() => {
