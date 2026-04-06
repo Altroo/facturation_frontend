@@ -104,13 +104,20 @@ jest.mock('@/providers/themeProvider', () => ({
 	},
 }));
 
+jest.mock('next/headers', () => ({
+	__esModule: true,
+	cookies: jest.fn().mockResolvedValue({
+		get: jest.fn().mockReturnValue(undefined),
+	}),
+}));
+
 beforeEach(() => {
 	jest.resetModules();
 	jest.clearAllMocks();
 });
 
 describe('RootLayout', () => {
-	it('renders children wrapped with providers (session fetched client-side)', () => {
+	it('renders children wrapped with providers (session fetched client-side)', async () => {
 		let RootLayout: (props: { children: React.ReactNode }) => unknown;
 		jest.isolateModules(() => {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -118,8 +125,8 @@ describe('RootLayout', () => {
 			RootLayout = mod.default;
 		});
 
-		const result = RootLayout!({ children: <div>CHILD_CONTENT</div> });
-		const html = renderToStaticMarkup(result as unknown as React.ReactElement);
+		const result = await (RootLayout!({ children: <div>CHILD_CONTENT</div> }) as Promise<React.ReactElement>);
+		const html = renderToStaticMarkup(result);
 
 		expect(html).toContain('SESSION_PROVIDER');
 		expect(html).toContain('INIT_EFFECTS');

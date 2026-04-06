@@ -61,7 +61,7 @@ describe('initWebsocket', () => {
 		process.env.NEXT_PUBLIC_ROOT_WS_URL = 'ws://localhost';
 
 		type ExpectedAction = ReturnType<typeof WSUserAvatarAction>;
-		const channel = initWebsocket('test-token');
+		const channel = initWebsocket(async () => 'test-token');
 
 		const emitted = await new Promise<ExpectedAction>((resolve) => {
 			// start listening on the channel
@@ -104,7 +104,7 @@ describe('initWebsocket', () => {
 		process.env.NEXT_PUBLIC_ROOT_WS_URL = 'ws://localhost';
 
 		type ExpectedAction = ReturnType<typeof WSMaintenanceAction>;
-		const channel = initWebsocket('test-token');
+		const channel = initWebsocket(async () => 'test-token');
 
 		const emitted = await new Promise<ExpectedAction>((resolve) => {
 			channel.take((action) => {
@@ -142,7 +142,7 @@ describe('initWebsocket', () => {
 
 		process.env.NEXT_PUBLIC_ROOT_WS_URL = 'ws://localhost';
 
-		const channel = initWebsocket('test-token');
+		const channel = initWebsocket(async () => 'test-token');
 
 		await new Promise<void>((resolve) => {
 			const checkSocket = () => {
@@ -172,7 +172,7 @@ describe('initWebsocket', () => {
 
 		process.env.NEXT_PUBLIC_ROOT_WS_URL = 'ws://localhost';
 
-		const channel = initWebsocket('test-token');
+		const channel = initWebsocket(async () => 'test-token');
 
 		await new Promise<void>((resolve) => {
 			const checkSocket = () => {
@@ -202,7 +202,7 @@ describe('initWebsocket', () => {
 
 		process.env.NEXT_PUBLIC_ROOT_WS_URL = 'ws://localhost';
 
-		const channel = initWebsocket('test-token');
+		const channel = initWebsocket(async () => 'test-token');
 
 		await new Promise<void>((resolve) => {
 			const sendMalformed = () => {
@@ -233,7 +233,7 @@ describe('initWebsocket', () => {
 
 		process.env.NEXT_PUBLIC_ROOT_WS_URL = 'ws://localhost';
 
-		const channel = initWebsocket('test-token');
+		const channel = initWebsocket(async () => 'test-token');
 
 		await new Promise<void>((resolve) => {
 			const sendNull = () => {
@@ -263,7 +263,7 @@ describe('initWebsocket', () => {
 
 		process.env.NEXT_PUBLIC_ROOT_WS_URL = 'ws://localhost';
 
-		const channel = initWebsocket('test-token');
+		const channel = initWebsocket(async () => 'test-token');
 
 		await new Promise<void>((resolve) => {
 			const sendUnknown = () => {
@@ -296,7 +296,7 @@ describe('initWebsocket', () => {
 		process.env.NEXT_PUBLIC_ROOT_WS_URL = 'ws://localhost';
 
 		type ExpectedAction = ReturnType<typeof WSUserAvatarAction>;
-		const channel = initWebsocket('test-token');
+		const channel = initWebsocket(async () => 'test-token');
 
 		// Set up take FIRST, then trigger events — same pattern as other tests
 		const emitted = await new Promise<ExpectedAction>((resolve) => {
@@ -333,7 +333,7 @@ describe('initWebsocket', () => {
 
 		process.env.NEXT_PUBLIC_ROOT_WS_URL = 'ws://localhost';
 
-		const channel = initWebsocket('test-token');
+		const channel = initWebsocket(async () => 'test-token');
 
 		// Wait for first socket to be created
 		await jest.advanceTimersByTimeAsync(0);
@@ -376,7 +376,7 @@ describe('initWebsocket', () => {
 
 		process.env.NEXT_PUBLIC_ROOT_WS_URL = 'ws://localhost';
 
-		const channel = initWebsocket('test-token');
+		const channel = initWebsocket(async () => 'test-token');
 
 		// Wait for first socket creation
 		await jest.advanceTimersByTimeAsync(0);
