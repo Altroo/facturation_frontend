@@ -14,6 +14,7 @@ import { ErrorBoundary } from '@/components/shared/errorBoundary';
 import SessionExpiredListener from '@/components/shared/sessionExpiredListener/sessionExpiredListener';
 import Maintenance from '@/components/shared/maintenance/Maintenance';
 import { LanguageContextProvider } from '@/contexts/languageContext';
+import { cookies } from 'next/headers';
 
 export const metadata: Metadata = {
 	title: 'E.B.H - Facturation',
@@ -68,9 +69,11 @@ interface EntryPointProps extends AppProps {
 	children: React.ReactNode;
 }
 
-const RootLayout: React.FC<EntryPointProps> = (props) => {
+const RootLayout: React.FC<EntryPointProps> = async (props) => {
+	const cookieStore = await cookies();
+	const lang = cookieStore.get('app-language')?.value === 'en' ? 'en' : 'fr';
 	return (
-		<html lang="fr" data-scroll-behavior="smooth">
+		<html lang={lang} data-scroll-behavior="smooth">
 			<body>
 				<a href="#main-content" className="skip-to-content">
 					Aller au contenu principal
@@ -81,7 +84,7 @@ const RootLayout: React.FC<EntryPointProps> = (props) => {
 							<InitEffects />
 							<AppRouterCacheProvider>
 								<ThemeProvider>
-									<LanguageContextProvider>
+									<LanguageContextProvider initialLanguage={lang}>
 										<ErrorBoundary>
 											<ToastContextProvider>
 												<SessionExpiredListener />
