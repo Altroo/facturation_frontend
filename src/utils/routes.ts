@@ -14,6 +14,7 @@ export const DASHBOARD = `${SITE_ROOT}dashboard`;
 export const DASHBOARD_EDIT_PROFILE = `${SITE_ROOT}dashboard/settings/edit-profile`;
 export const DASHBOARD_PASSWORD = `${SITE_ROOT}dashboard/settings/password`;
 export const DASHBOARD_OBJECTIFS_MENSUELS = `${SITE_ROOT}dashboard/settings/objectifs-mensuels`;
+export const DASHBOARD_NOTIFICATIONS = `${SITE_ROOT}dashboard/settings/notifications`;
 // Companies
 export const COMPANIES_LIST = `${SITE_ROOT}dashboard/companies`;
 export const COMPANIES_ADD = `${SITE_ROOT}dashboard/companies/new`;

@@ -25,12 +25,15 @@ import { factureClientApi } from '@/store/services/factureClient';
 import { bonDeLivraisonApi } from '@/store/services/bonDeLivraison';
 import { reglementApi } from '@/store/services/reglement';
 import { dashboardApi } from '@/store/services/dashboard';
+import { notificationApi } from '@/store/services/notification';
+import notificationReducer from '@/store/slices/notificationSlice';
 
 const rootReducer = combineReducers({
 	_init: _initReducer,
 	account: accountReducer,
 	companies: companiesReducer,
 	ws: wsReducer,
+	notification: notificationReducer,
 	[accountApi.reducerPath]: accountApi.reducer,
 	[profilApi.reducerPath]: profilApi.reducer,
 	[groupApi.reducerPath]: groupApi.reducer,
@@ -51,6 +54,7 @@ const rootReducer = combineReducers({
 	[bonDeLivraisonApi.reducerPath]: bonDeLivraisonApi.reducer,
 	[reglementApi.reducerPath]: reglementApi.reducer,
 	[dashboardApi.reducerPath]: dashboardApi.reducer,
+	[notificationApi.reducerPath]: notificationApi.reducer,
 });
 
 export interface SagaStore extends Store {
@@ -102,6 +106,7 @@ export const makeStore = (): SagaStore => {
 					bonDeLivraisonApi.middleware,
 					reglementApi.middleware,
 					dashboardApi.middleware,
+					notificationApi.middleware,
 				),
 		devTools: process.env.NODE_ENV !== 'production',
 	}) as SagaStore;

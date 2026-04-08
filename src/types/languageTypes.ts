@@ -103,6 +103,11 @@ export type TranslationDictionary = {
 		changePassword: string;
 		monthlyObjectives: string;
 		configureMonthlyObjectives: string;
+		notifications: string;
+		notificationPreferences: string;
+		markAllRead: string;
+		noNotifications: string;
+		loadMore: string;
 		logout: string;
 		administration: string;
 		welcomeMale: string;
@@ -710,6 +715,15 @@ export type TranslationDictionary = {
 		profileUpdateError: string;
 		passwordChangeSuccess: string;
 		passwordChangeError: string;
+		notificationPreferences: string;
+		notificationUpdateSuccess: string;
+		notificationUpdateError: string;
+		notifyOverdueInvoice: string;
+		notifyExpiringQuote: string;
+		notifyUninvoicedBdl: string;
+		quoteExpiryDays: string;
+		quoteExpiryOptions: { value: number; label: string }[];
+		save: string;
 	};
 	dashboard: {
 		sectionKpi: string;

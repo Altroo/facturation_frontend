@@ -17,3 +17,6 @@ export const getUserCompaniesState = (state: RootState): Array<CompaniesUserComp
 
 // WS
 export const getWSMaintenanceState = (state: RootState): boolean => state.ws.maintenance;
+
+// Notifications
+export const getUnreadNotificationCount = (state: RootState): number => state.notification.unreadCount;
