@@ -2,30 +2,30 @@
 
 import React, { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Button, Typography, Chip, Card, CardContent, Stack, Divider } from '@mui/material';
+import { Box, Button, Card, CardContent, Chip, Divider, Stack, Typography } from '@mui/material';
 import CurrencyToggle from '@/components/shared/currencyToggle/currencyToggle';
 import {
-	Edit as EditIcon,
-	Delete as DeleteIcon,
-	Visibility as VisibilityIcon,
 	Add as AddIcon,
-	Close as CloseIcon,
+	AttachMoney as AttachMoneyIcon,
 	Cancel as CancelIcon,
 	CheckCircle as CheckCircleIcon,
-	AttachMoney as AttachMoneyIcon,
+	Close as CloseIcon,
+	Delete as DeleteIcon,
+	Edit as EditIcon,
 	Print as PrintIcon,
+	Visibility as VisibilityIcon,
 } from '@mui/icons-material';
-import { GridColDef, GridRenderCellParams, GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
+import { GridColDef, GridFilterModel, GridLogicOperator, GridRenderCellParams } from '@mui/x-data-grid';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import { fetchPdfBlob } from '@/utils/apiHelpers';
 import {
+	useBulkDeleteReglementsMutation,
 	useDeleteReglementMutation,
 	useGetReglementsListQuery,
 	usePatchReglementStatutMutation,
-	useBulkDeleteReglementsMutation,
 } from '@/store/services/reglement';
-import { REGLEMENTS_ADD, REGLEMENTS_EDIT, REGLEMENTS_VIEW, CLIENTS_VIEW, REGLEMENT_PDF } from '@/utils/routes';
+import { CLIENTS_VIEW, REGLEMENT_PDF, REGLEMENTS_ADD, REGLEMENTS_EDIT, REGLEMENTS_VIEW } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
 import type { SessionProps } from '@/types/_initTypes';
@@ -33,11 +33,11 @@ import type { ReglementListResponseType, ReglementStatutType } from '@/types/reg
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type { ReglementClass } from '@/models/classes';
-import { formatDate, formatNumberWithSpaces, extractApiErrorMessage } from '@/utils/helpers';
-import { useToast, useLanguage } from '@/utils/hooks';
+import { extractApiErrorMessage, formatDate, formatNumberWithSpaces } from '@/utils/helpers';
+import { useLanguage, useToast } from '@/utils/hooks';
 import { useGetModePaiementListQuery } from '@/store/services/parameter';
-import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
+import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
 import { createNumericFilterOperators } from '@/components/shared/numericFilter/numericFilterOperator';
@@ -103,7 +103,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const chipFilters: ChipFilterConfig[] = React.useMemo(
 		() => [
-			{ key: 'mode_reglement', label: t.reglements.filterModeReglement, paramName: 'mode_reglement_ids', options: modePaiement ?? [] },
+			{
+				key: 'mode_reglement',
+				label: t.reglements.filterModeReglement,
+				paramName: 'mode_reglement_ids',
+				options: modePaiement ?? [],
+			},
 		],
 		[modePaiement, t],
 	);
@@ -161,7 +166,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	};
 
 	const deleteModalActions = [
-		{ text: t.common.cancel, active: false, onClick: () => setShowDeleteModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
+		{
+			text: t.common.cancel,
+			active: false,
+			onClick: () => setShowDeleteModal(false),
+			icon: <CloseIcon />,
+			color: '#6B6B6B',
+		},
 		{ text: t.common.delete, active: true, onClick: deleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
 	];
 
@@ -188,8 +199,20 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	};
 
 	const bulkDeleteModalActions = [
-		{ text: t.common.cancel, active: false, onClick: () => setShowBulkDeleteModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
-		{ text: t.reglements.bulkDeleteBtn(selectedIds.length), active: true, onClick: bulkDeleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
+		{
+			text: t.common.cancel,
+			active: false,
+			onClick: () => setShowBulkDeleteModal(false),
+			icon: <CloseIcon />,
+			color: '#6B6B6B',
+		},
+		{
+			text: t.reglements.bulkDeleteBtn(selectedIds.length),
+			active: true,
+			onClick: bulkDeleteHandler,
+			icon: <DeleteIcon />,
+			color: '#D32F2F',
+		},
 	];
 
 	const cancelHandler = async () => {
@@ -291,7 +314,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			headerName: t.reglements.colClient,
 			flex: 1.5,
 			minWidth: 150,
-			filterOperators: createDropdownFilterOperators(clientFilterOptions, t.documentList.allClients, undefined, t.filterPanel.is),
+			filterOperators: createDropdownFilterOperators(
+				clientFilterOptions,
+				t.documentList.allClients,
+				undefined,
+				t.filterPanel.is,
+			),
 			renderCell: (params: GridRenderCellParams<ReglementClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -328,7 +356,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				const formattedValue = `${formatNumberWithSpaces(params.value, 2)} ${devise}`;
 				return (
 					<DarkTooltip title={formattedValue}>
-						<Typography variant="body2" noWrap fontWeight={600} color="primary">
+						<Typography
+							variant="body2"
+							noWrap
+							color="primary"
+							sx={{
+								fontWeight: 600,
+							}}
+						>
 							{formattedValue}
 						</Typography>
 					</DarkTooltip>
@@ -374,7 +409,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			headerName: t.reglements.colStatut,
 			flex: 0.8,
 			minWidth: 100,
-			filterOperators: createDropdownFilterOperators(statutFilterOptions, t.reglements.allStatuts, true, t.filterPanel.is),
+			filterOperators: createDropdownFilterOperators(
+				statutFilterOptions,
+				t.reglements.allStatuts,
+				true,
+				t.filterPanel.is,
+			),
 			renderCell: (params: GridRenderCellParams<ReglementClass>) => {
 				const statut = params.value as string;
 				const isValid = statut === 'Valide';
@@ -410,7 +450,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				// Print action - available for Caissier, Comptable, Commercial
 				if (role === 'Caissier' || role === 'Comptable' || role === 'Commercial') {
 					actions.push({
-					label: t.reglements.printReceipt,
+						label: t.reglements.printReceipt,
 						icon: <PrintIcon />,
 						onClick: () => handlePrint(params.row.id),
 						color: 'success' as const,
@@ -452,9 +492,15 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	// Get stats for selected currency
 	const currencyStats = data?.stats_by_currency?.[selectedDevise];
-	const chiffreAffaireTotal = currencyStats?.chiffre_affaire_total ? `${formatNumberWithSpaces(currencyStats.chiffre_affaire_total,2)} ${selectedDevise}` : `0,00 ${selectedDevise}`;
-	const totalReglements = currencyStats?.total_reglements ? `${formatNumberWithSpaces(currencyStats.total_reglements,2)} ${selectedDevise}` : `0,00 ${selectedDevise}`;
-	const totalImpayes = currencyStats?.total_impayes ? `${formatNumberWithSpaces(currencyStats.total_impayes, 2)} ${selectedDevise}` : `0,00 ${selectedDevise}`;
+	const chiffreAffaireTotal = currencyStats?.chiffre_affaire_total
+		? `${formatNumberWithSpaces(currencyStats.chiffre_affaire_total, 2)} ${selectedDevise}`
+		: `0,00 ${selectedDevise}`;
+	const totalReglements = currencyStats?.total_reglements
+		? `${formatNumberWithSpaces(currencyStats.total_reglements, 2)} ${selectedDevise}`
+		: `0,00 ${selectedDevise}`;
+	const totalImpayes = currencyStats?.total_impayes
+		? `${formatNumberWithSpaces(currencyStats.total_impayes, 2)} ${selectedDevise}`
+		: `0,00 ${selectedDevise}`;
 
 	return (
 		<>
@@ -468,48 +514,95 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				<Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 3 }}>
 					<Card elevation={2} sx={{ flex: 1, borderRadius: 2 }}>
 						<CardContent>
-							<Stack direction="row" spacing={2} alignItems="center">
+							<Stack
+								direction="row"
+								spacing={2}
+								sx={{
+									alignItems: 'center',
+								}}
+							>
 								<AttachMoneyIcon color="primary" />
 								<Box>
-									<Typography variant="body2" color="text.secondary">
-									{t.reglements.statsCA}
+									<Typography
+										variant="body2"
+										sx={{
+											color: 'text.secondary',
+										}}
+									>
+										{t.reglements.statsCA}
 									</Typography>
-									<Typography variant="h6" fontWeight={700}>
+									<Typography
+										variant="h6"
+										sx={{
+											fontWeight: 700,
+										}}
+									>
 										{chiffreAffaireTotal}
 									</Typography>
-
 								</Box>
 							</Stack>
 						</CardContent>
 					</Card>
 					<Card elevation={2} sx={{ flex: 1, borderRadius: 2 }}>
 						<CardContent>
-							<Stack direction="row" spacing={2} alignItems="center">
+							<Stack
+								direction="row"
+								spacing={2}
+								sx={{
+									alignItems: 'center',
+								}}
+							>
 								<CheckCircleIcon color="success" />
 								<Box>
-									<Typography variant="body2" color="text.secondary">
+									<Typography
+										variant="body2"
+										sx={{
+											color: 'text.secondary',
+										}}
+									>
 										{t.reglements.totalReglements}
 									</Typography>
-									<Typography variant="h6" fontWeight={700} color="success.main">
+									<Typography
+										variant="h6"
+										sx={{
+											fontWeight: 700,
+											color: 'success.main',
+										}}
+									>
 										{totalReglements}
 									</Typography>
-
 								</Box>
 							</Stack>
 						</CardContent>
 					</Card>
 					<Card elevation={2} sx={{ flex: 1, borderRadius: 2 }}>
 						<CardContent>
-							<Stack direction="row" spacing={2} alignItems="center">
+							<Stack
+								direction="row"
+								spacing={2}
+								sx={{
+									alignItems: 'center',
+								}}
+							>
 								<CancelIcon color="error" />
 								<Box>
-									<Typography variant="body2" color="text.secondary">
+									<Typography
+										variant="body2"
+										sx={{
+											color: 'text.secondary',
+										}}
+									>
 										{t.reglements.statsImpayes}
 									</Typography>
-									<Typography variant="h6" fontWeight={700} color="error.main">
+									<Typography
+										variant="h6"
+										sx={{
+											fontWeight: 700,
+											color: 'error.main',
+										}}
+									>
 										{totalImpayes}
 									</Typography>
-
 								</Box>
 							</Stack>
 						</CardContent>
@@ -517,7 +610,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				</Stack>
 				<Divider sx={{ mb: 2 }} />
 			</Box>
-
 			{(role === 'Caissier' || role === 'Commercial') && (
 				<Box
 					sx={{

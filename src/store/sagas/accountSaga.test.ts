@@ -2,15 +2,15 @@ import { runSaga } from 'redux-saga';
 import { takeLatest } from 'redux-saga/effects';
 import * as Types from '../actions';
 import {
-	accountSetProfilSaga,
 	accountEditProfilSaga,
 	accountSetGroupesSaga,
-	wsUserAvatarSaga,
+	accountSetProfilSaga,
 	watchAccount,
+	wsUserAvatarSaga,
 } from './accountSaga';
-import { setProfil, setGroupes, setWSUserAvatar } from '../slices/accountSlice';
-import type { setProfilPayloadType, setGroupesPayloadType } from '@/types/accountTypes';
-import { UserClass, GroupClass } from '@/models/classes';
+import { setGroupes, setProfil, setWSUserAvatar } from '../slices/accountSlice';
+import type { setGroupesPayloadType, setProfilPayloadType } from '@/types/accountTypes';
+import { GroupClass, UserClass } from '@/models/classes';
 
 describe('account sagas', () => {
 	it('accountSetProfilSaga should dispatch setProfil with correct payload', async () => {

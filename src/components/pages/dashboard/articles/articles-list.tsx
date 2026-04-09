@@ -2,41 +2,55 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Button, Typography, Chip, IconButton, Alert, CircularProgress } from '@mui/material';
+import { Alert, Box, Button, Chip, CircularProgress, IconButton, Typography } from '@mui/material';
 import {
-	Edit as EditIcon,
-	Delete as DeleteIcon,
-	Visibility as VisibilityIcon,
-	Archive as ArchiveIcon,
-	Unarchive as UnarchiveIcon,
 	Add as AddIcon,
+	Archive as ArchiveIcon,
 	Close as CloseIcon,
-	FileUpload as FileUploadIcon,
+	Delete as DeleteIcon,
+	Edit as EditIcon,
 	Email as EmailIcon,
-	Warning as WarningIcon,
+	FileUpload as FileUploadIcon,
 	Inventory2 as Inventory2Icon,
+	Unarchive as UnarchiveIcon,
+	Visibility as VisibilityIcon,
+	Warning as WarningIcon,
 } from '@mui/icons-material';
-import { GridColDef, GridRenderCellParams, GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
+import { GridColDef, GridFilterModel, GridLogicOperator, GridRenderCellParams } from '@mui/x-data-grid';
 import { useInitAccessToken } from '@/contexts/InitContext';
-import { useDeleteArticleMutation, useGetArticlesListQuery, useImportArticlesMutation, usePatchArchiveMutation, useSendCSVExampleEmailMutation, useBulkDeleteArticlesMutation, useBulkArchiveArticlesMutation, useLazyGetArticlesListQuery } from '@/store/services/article';
+import {
+	useBulkArchiveArticlesMutation,
+	useBulkDeleteArticlesMutation,
+	useDeleteArticleMutation,
+	useGetArticlesListQuery,
+	useImportArticlesMutation,
+	useLazyGetArticlesListQuery,
+	usePatchArchiveMutation,
+	useSendCSVExampleEmailMutation,
+} from '@/store/services/article';
 import { ARTICLES_ADD, ARTICLES_EDIT, ARTICLES_VIEW } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type { ArticleClass } from '@/models/classes';
-import { formatDate, formatNumberWithSpaces, extractApiErrorMessage } from '@/utils/helpers';
-import { useToast, useLanguage } from '@/utils/hooks';
+import { extractApiErrorMessage, formatDate, formatNumberWithSpaces } from '@/utils/helpers';
+import { useLanguage, useToast } from '@/utils/hooks';
 import Image from 'next/image';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
 import { createNumericFilterOperators } from '@/components/shared/numericFilter/numericFilterOperator';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import { useGetCompanyQuery } from '@/store/services/company';
-import { useGetCategorieListQuery, useGetEmplacementListQuery, useGetUniteListQuery, useGetMarqueListQuery } from '@/store/services/parameter';
+import {
+	useGetCategorieListQuery,
+	useGetEmplacementListQuery,
+	useGetMarqueListQuery,
+	useGetUniteListQuery,
+} from '@/store/services/parameter';
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
-import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
+import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 
 interface FormikContentProps extends SessionProps {
 	company_id: number;
@@ -89,7 +103,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const chipFilters: ChipFilterConfig[] = React.useMemo(
 		() => [
 			{ key: 'categorie', label: t.articles.filterCategorie, paramName: 'categorie_ids', options: categories ?? [] },
-			{ key: 'emplacement', label: t.articles.filterEmplacement, paramName: 'emplacement_ids', options: emplacements ?? [] },
+			{
+				key: 'emplacement',
+				label: t.articles.filterEmplacement,
+				paramName: 'emplacement_ids',
+				options: emplacements ?? [],
+			},
 			{ key: 'unite', label: t.articles.filterUnite, paramName: 'unite_ids', options: unites ?? [] },
 			{ key: 'marque', label: t.articles.filterMarque, paramName: 'marque_ids', options: marques ?? [] },
 		],
@@ -106,7 +125,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	}, [company_id]);
 
 	// Call query hook at component level
-	const { data: rawData, isLoading, refetch } = useGetArticlesListQuery(
+	const {
+		data: rawData,
+		isLoading,
+		refetch,
+	} = useGetArticlesListQuery(
 		{
 			company_id,
 			with_pagination: true,
@@ -175,7 +198,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	};
 
 	const deleteModalActions = [
-		{ text: t.common.cancel, active: false, onClick: () => setShowDeleteModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
+		{
+			text: t.common.cancel,
+			active: false,
+			onClick: () => setShowDeleteModal(false),
+			icon: <CloseIcon />,
+			color: '#6B6B6B',
+		},
 		{ text: t.common.delete, active: true, onClick: deleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
 	];
 
@@ -278,15 +307,31 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	};
 
 	const bulkDeleteModalActions = [
-		{ text: t.common.cancel, active: false, onClick: () => setShowBulkDeleteModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
-		{ text: t.articles.bulkDeleteBtn(selectedIds.length), active: true, onClick: bulkDeleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
+		{
+			text: t.common.cancel,
+			active: false,
+			onClick: () => setShowBulkDeleteModal(false),
+			icon: <CloseIcon />,
+			color: '#6B6B6B',
+		},
+		{
+			text: t.articles.bulkDeleteBtn(selectedIds.length),
+			active: true,
+			onClick: bulkDeleteHandler,
+			icon: <DeleteIcon />,
+			color: '#D32F2F',
+		},
 	];
 
 	const bulkArchiveHandler = async () => {
 		const archiving = bulkArchiveAction === 'archive';
 		try {
 			await bulkArchiveArticles({ ids: selectedIds, archived: archiving }).unwrap();
-			onSuccess(archiving ? t.articles.bulkArchiveSuccess(selectedIds.length) : t.articles.bulkUnarchiveSuccess(selectedIds.length));
+			onSuccess(
+				archiving
+					? t.articles.bulkArchiveSuccess(selectedIds.length)
+					: t.articles.bulkUnarchiveSuccess(selectedIds.length),
+			);
 		} catch {
 			onError(archiving ? t.articles.bulkArchiveError : t.articles.bulkUnarchiveError);
 		} finally {
@@ -306,7 +351,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			color: '#6B6B6B',
 		},
 		{
-			text: bulkArchiveAction === 'archive' ? t.articles.bulkArchiveBtn(selectedIds.length) : t.articles.bulkUnarchiveBtn(selectedIds.length),
+			text:
+				bulkArchiveAction === 'archive'
+					? t.articles.bulkArchiveBtn(selectedIds.length)
+					: t.articles.bulkUnarchiveBtn(selectedIds.length),
 			active: true,
 			onClick: bulkArchiveHandler,
 			icon: bulkArchiveAction === 'archive' ? <ArchiveIcon /> : <UnarchiveIcon />,
@@ -393,7 +441,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			minWidth: 90,
 			filterOperators: createDropdownFilterOperators(typeFilterOptions, t.articles.allTypes, true, t.filterPanel.is),
 			renderCell: (params: GridRenderCellParams<ArticleClass>) => {
-				const label = params.value === 'Produit' ? t.articles.typeProduit : params.value === 'Service' ? t.articles.typeService : params.value;
+				const label =
+					params.value === 'Produit'
+						? t.articles.typeProduit
+						: params.value === 'Service'
+							? t.articles.typeService
+							: params.value;
 				return (
 					<DarkTooltip title={label}>
 						<Chip label={label} size="small" variant="outlined" />
@@ -425,7 +478,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				const devise = usesForeignCurrency ? params.row.devise_prix_achat : 'MAD';
 				return (
 					<DarkTooltip title={`${formattedValue} ${devise}`}>
-						<Typography variant="body2" noWrap fontWeight={600} color="primary">
+						<Typography
+							variant="body2"
+							noWrap
+							color="primary"
+							sx={{
+								fontWeight: 600,
+							}}
+						>
 							{formattedValue} {devise}
 						</Typography>
 					</DarkTooltip>
@@ -443,7 +503,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				const devise = usesForeignCurrency ? params.row.devise_prix_vente : 'MAD';
 				return (
 					<DarkTooltip title={`${formattedValue} ${devise}`}>
-						<Typography variant="body2" noWrap fontWeight={600} color="primary">
+						<Typography
+							variant="body2"
+							noWrap
+							color="primary"
+							sx={{
+								fontWeight: 600,
+							}}
+						>
 							{formattedValue} {devise}
 						</Typography>
 					</DarkTooltip>
@@ -503,7 +570,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 							color: 'error' as const,
 						},
 						{
-					label: archived ? t.common.unarchive : t.common.archive,
+							label: archived ? t.common.unarchive : t.common.archive,
 							icon: archived ? <UnarchiveIcon /> : <ArchiveIcon />,
 							onClick: () => showArchiveModalCall(params.row.id),
 							color: 'warning' as const,
@@ -519,8 +586,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	return (
 		<>
 			{importErrors.length > 0 && (
-				<Alert severity="error" icon={<WarningIcon />} sx={{ px: { xs: 1, sm: 2, md: 3 }, mt: { xs: 1, sm: 2, md: 3 } }}>
-					<Typography variant="subtitle2" fontWeight={600}>
+				<Alert
+					severity="error"
+					icon={<WarningIcon />}
+					sx={{ px: { xs: 1, sm: 2, md: 3 }, mt: { xs: 1, sm: 2, md: 3 } }}
+				>
+					<Typography
+						variant="subtitle2"
+						sx={{
+							fontWeight: 600,
+						}}
+					>
 						{t.articles.importErrorsTitle}
 					</Typography>
 					<ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
@@ -594,12 +670,20 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 							}}
 							startIcon={archived ? <UnarchiveIcon fontSize="small" /> : <ArchiveIcon fontSize="small" />}
 						>
-					{archived ? t.articles.bulkUnarchiveBtn(selectedIds.length) : t.articles.bulkArchiveBtn(selectedIds.length)}
+							{archived
+								? t.articles.bulkUnarchiveBtn(selectedIds.length)
+								: t.articles.bulkArchiveBtn(selectedIds.length)}
 						</Button>
 					)}
 				</Box>
 			)}
-			<input ref={fileInputRef} type="file" accept=".csv,.xls,.xlsx" style={{ display: 'none' }} onChange={handleFileChange} />
+			<input
+				ref={fileInputRef}
+				type="file"
+				accept=".csv,.xls,.xlsx"
+				style={{ display: 'none' }}
+				onChange={handleFileChange}
+			/>
 			<ChipSelectFilterBar filters={chipFilters} onFilterChange={setChipFilterParams} columns={2} />
 			<PaginatedDataGrid
 				data={data}
@@ -625,12 +709,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					!archived && (role === 'Caissier' || role === 'Commercial') ? (
 						<>
 							<DarkTooltip title={t.articles.emailTooltip}>
-								<IconButton
-									disabled={isSendingEmail}
-									size="small"
-									color="default"
-									onClick={handleSendCSVEmail}
-								>
+								<IconButton disabled={isSendingEmail} size="small" color="default" onClick={handleSendCSVEmail}>
 									{isSendingEmail ? <CircularProgress size={20} /> : <EmailIcon />}
 								</IconButton>
 							</DarkTooltip>
@@ -650,10 +729,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			/>
 			{showDeleteModal && (
 				<ActionModals
-				title={t.articles.deleteModalTitle}
-				titleIcon={<DeleteIcon />}
-				titleIconColor="#D32F2F"
-				body={t.articles.deleteModalBody}
+					title={t.articles.deleteModalTitle}
+					titleIcon={<DeleteIcon />}
+					titleIconColor="#D32F2F"
+					body={t.articles.deleteModalBody}
 					actions={deleteModalActions}
 				/>
 			)}
@@ -668,19 +747,27 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			)}
 			{showBulkDeleteModal && (
 				<ActionModals
-				title={t.articles.bulkDeleteModalTitle(selectedIds.length)}
-				titleIcon={<DeleteIcon />}
-				titleIconColor="#D32F2F"
-				body={t.articles.bulkDeleteModalBody(selectedIds.length)}
+					title={t.articles.bulkDeleteModalTitle(selectedIds.length)}
+					titleIcon={<DeleteIcon />}
+					titleIconColor="#D32F2F"
+					body={t.articles.bulkDeleteModalBody(selectedIds.length)}
 					actions={bulkDeleteModalActions}
 				/>
 			)}
 			{showBulkArchiveModal && (
 				<ActionModals
-				title={bulkArchiveAction === 'archive' ? t.articles.bulkArchiveModalTitle(selectedIds.length) : t.articles.bulkUnarchiveModalTitle(selectedIds.length)}
-				titleIcon={bulkArchiveAction === 'archive' ? <ArchiveIcon /> : <UnarchiveIcon />}
-				titleIconColor="#ED6C02"
-				body={bulkArchiveAction === 'archive' ? t.articles.bulkArchiveModalBody(selectedIds.length) : t.articles.bulkUnarchiveModalBody(selectedIds.length)}
+					title={
+						bulkArchiveAction === 'archive'
+							? t.articles.bulkArchiveModalTitle(selectedIds.length)
+							: t.articles.bulkUnarchiveModalTitle(selectedIds.length)
+					}
+					titleIcon={bulkArchiveAction === 'archive' ? <ArchiveIcon /> : <UnarchiveIcon />}
+					titleIconColor="#ED6C02"
+					body={
+						bulkArchiveAction === 'archive'
+							? t.articles.bulkArchiveModalBody(selectedIds.length)
+							: t.articles.bulkUnarchiveModalBody(selectedIds.length)
+					}
 					actions={bulkArchiveModalActions}
 				/>
 			)}

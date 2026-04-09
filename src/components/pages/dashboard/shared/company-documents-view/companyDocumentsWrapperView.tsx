@@ -17,16 +17,16 @@ import {
 	ArrowBack as ArrowBackIcon,
 	CalendarToday as CalendarTodayIcon,
 	Description as DescriptionIcon,
-	Inventory2 as Inventory2Icon,
 	Discount as DiscountIcon,
 	Edit as EditIcon,
+	Inventory2 as Inventory2Icon,
+	LocalShipping as LocalShippingIcon,
 	Notes as NotesIcon,
 	Numbers as NumbersIcon,
 	Payment as PaymentIcon,
 	Person as PersonIcon,
 	Receipt as ReceiptIcon,
 	ShoppingCart as ShoppingCartIcon,
-	LocalShipping as LocalShippingIcon,
 } from '@mui/icons-material';
 import { DataGrid, type GridColDef, type GridRenderCellParams } from '@mui/x-data-grid';
 import { frFR } from '@mui/x-data-grid/locales';
@@ -68,13 +68,32 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 			: value;
 
 	return (
-		<Stack direction="row" alignItems="flex-start" spacing={2} sx={{ py: 1.5, flexWrap: 'wrap' }}>
+		<Stack
+			direction="row"
+			spacing={2}
+			sx={{
+				alignItems: 'flex-start',
+				py: 1.5,
+				flexWrap: 'wrap',
+			}}
+		>
 			<Box sx={{ color: 'primary.main', display: 'flex', alignItems: 'center', minWidth: 40 }}>{icon}</Box>
-			<Stack direction="row" alignItems="center" spacing={isMobile ? 0 : 2} sx={{ flex: 1, flexWrap: 'wrap' }}>
+			<Stack
+				direction="row"
+				spacing={isMobile ? 0 : 2}
+				sx={{
+					alignItems: 'center',
+					flex: 1,
+					flexWrap: 'wrap',
+				}}
+			>
 				<Typography
-					fontWeight={600}
-					color="text.secondary"
-					sx={{ minWidth: { xs: '100%', sm: 200 }, wordBreak: 'break-word' }}
+					sx={{
+						fontWeight: 600,
+						color: 'text.secondary',
+						minWidth: { xs: '100%', sm: 200 },
+						wordBreak: 'break-word',
+					}}
 				>
 					{label}
 				</Typography>
@@ -255,7 +274,8 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 			{
 				field: 'photo',
 				headerName: t.documentView.colPhoto,
-				flex: 0.5, minWidth: 60,
+				flex: 0.5,
+				minWidth: 60,
 				renderCell: (params: GridRenderCellParams) => {
 					const articleId = toNumber((params.row as { article?: unknown }).article, NaN);
 					const article = Number.isFinite(articleId) ? articlesData?.find((a) => a.id === articleId) : undefined;
@@ -324,7 +344,8 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 			{
 				field: 'reference',
 				headerName: t.documentView.colReference,
-				flex: 0.8, minWidth: 90,
+				flex: 0.8,
+				minWidth: 90,
 				renderCell: (params: GridRenderCellParams) => {
 					const articleId = toNumber((params.row as { article?: unknown }).article, NaN);
 					const article = Number.isFinite(articleId) ? articlesData?.find((a) => a.id === articleId) : undefined;
@@ -343,7 +364,8 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 			{
 				field: 'designation',
 				headerName: t.documentView.colDesignation,
-				flex: 1.4, minWidth: 120,
+				flex: 1.4,
+				minWidth: 120,
 				renderCell: (params: GridRenderCellParams) => {
 					const value = (params.row as { designation?: unknown }).designation;
 					const label = value === null || value === undefined ? '' : String(value);
@@ -361,7 +383,8 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 			{
 				field: 'marque',
 				headerName: t.documentView.colMarque,
-				flex: 1, minWidth: 100,
+				flex: 1,
+				minWidth: 100,
 				renderCell: (params: GridRenderCellParams) => {
 					const articleId = toNumber((params.row as { article?: unknown }).article, NaN);
 					const article = Number.isFinite(articleId) ? articlesData?.find((a) => a.id === articleId) : undefined;
@@ -380,7 +403,8 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 			{
 				field: 'categorie',
 				headerName: t.documentView.colCategorie,
-				flex: 1, minWidth: 100,
+				flex: 1,
+				minWidth: 100,
 				renderCell: (params: GridRenderCellParams) => {
 					const articleId = toNumber((params.row as { article?: unknown }).article, NaN);
 					const article = Number.isFinite(articleId) ? articlesData?.find((a) => a.id === articleId) : undefined;
@@ -399,10 +423,11 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 			{
 				field: 'prix_achat',
 				headerName: t.documentView.colPrixAchat,
-				flex: 1, minWidth: 110,
+				flex: 1,
+				minWidth: 110,
 				renderCell: (params: GridRenderCellParams) => {
-					const value = formatNumberWithSpaces(params.row.prix_achat ?? 0, 2) + ' ' +
-						(params.row.devise_prix_achat || 'MAD');
+					const value =
+						formatNumberWithSpaces(params.row.prix_achat ?? 0, 2) + ' ' + (params.row.devise_prix_achat || 'MAD');
 					return (
 						<DarkTooltip title={value}>
 							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
@@ -417,7 +442,8 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 			{
 				field: 'prix_vente',
 				headerName: t.documentView.colPrixVente,
-				flex: 1, minWidth: 110,
+				flex: 1,
+				minWidth: 110,
 				renderCell: (params: GridRenderCellParams) => {
 					const value =
 						formatNumberWithSpaces(params.row.prix_vente ?? 0, 2) + ' ' + (params.row.devise_prix_vente || 'MAD');
@@ -435,7 +461,8 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 			{
 				field: 'quantity',
 				headerName: t.documentView.colQuantite,
-				flex: 0.8, minWidth: 90,
+				flex: 0.8,
+				minWidth: 90,
 				renderCell: (params: GridRenderCellParams) => {
 					const raw = (params.row as { quantity?: unknown }).quantity;
 					const value = raw === null || raw === undefined ? 1 : String(raw);
@@ -444,7 +471,10 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 					const uniteName = article?.unite_name ? String(article.unite_name) : '';
 					return (
 						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-							<Typography variant="body2">{value}{uniteName ? ` ${uniteName}` : ''}</Typography>
+							<Typography variant="body2">
+								{value}
+								{uniteName ? ` ${uniteName}` : ''}
+							</Typography>
 						</Box>
 					);
 				},
@@ -452,7 +482,8 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 			{
 				field: 'remise_type',
 				headerName: t.documentView.colTypeRemise,
-				flex: 0.8, minWidth: 90,
+				flex: 0.8,
+				minWidth: 90,
 				renderCell: (params: GridRenderCellParams) => {
 					const value = (params.row as { remise_type?: unknown }).remise_type;
 					const label = value === null || value === undefined ? '' : String(value);
@@ -466,7 +497,8 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 			{
 				field: 'remise',
 				headerName: t.documentView.colRemise,
-				flex: 0.8, minWidth: 90,
+				flex: 0.8,
+				minWidth: 90,
 				renderCell: (params: GridRenderCellParams) => {
 					const row = params.row as { remise?: unknown; remise_type?: unknown };
 					const remise = toNumber(row.remise, 0);
@@ -486,36 +518,56 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 	const dateLabel = formatDate(getDocumentDateRaw(rawData) ?? null) || '-';
 
 	return (
-		<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
+		<Stack
+			direction="column"
+			spacing={2}
+			className={Styles.flexRootStack}
+			sx={{
+				mt: '32px',
+			}}
+		>
 			<NavigationBar title={title}>
 				<Stack spacing={3} sx={{ p: { xs: 2, md: 3 }, mt: 2 }}>
-<Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between" alignItems={isMobile ? 'stretch' : 'center'} spacing={2}>
-					<Button
-						variant="outlined"
-						startIcon={<ArrowBackIcon />}
-						onClick={() => router.push(backTo)}
-						sx={{ width: isMobile ? '100%' : 'auto' }}
+					<Stack
+						direction={isMobile ? 'column' : 'row'}
+						spacing={2}
+						sx={{
+							justifyContent: 'space-between',
+							alignItems: isMobile ? 'stretch' : 'center',
+						}}
 					>
-						{backLabel}
-					</Button>
-					{!isLoading && !error && (
-						<Stack direction="row" gap={1} flexWrap="wrap">
-							{(company?.role === 'Caissier' || company?.role === 'Commercial') && (
-								<Button
-									variant="outlined"
-									size="small"
-									startIcon={<EditIcon />}
-									onClick={() => router.push(editTo(id, company_id))}
-								>
-									Modifier
-								</Button>
-							)}
-							{headerActions}
-						</Stack>
+						<Button
+							variant="outlined"
+							startIcon={<ArrowBackIcon />}
+							onClick={() => router.push(backTo)}
+							sx={{ width: isMobile ? '100%' : 'auto' }}
+						>
+							{backLabel}
+						</Button>
+						{!isLoading && !error && (
+							<Stack
+								direction="row"
+								sx={{
+									gap: 1,
+									flexWrap: 'wrap',
+								}}
+							>
+								{(company?.role === 'Caissier' || company?.role === 'Commercial') && (
+									<Button
+										variant="outlined"
+										size="small"
+										startIcon={<EditIcon />}
+										onClick={() => router.push(editTo(id, company_id))}
+									>
+										Modifier
+									</Button>
+								)}
+								{headerActions}
+							</Stack>
 						)}
-				</Stack>
+					</Stack>
 
-				{isLoading || isArticlesLoading ? (
+					{isLoading || isArticlesLoading ? (
 						<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
 					) : (axiosError?.status as number) > 400 ? (
 						<ApiAlert
@@ -542,9 +594,21 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<Stack
+										direction="row"
+										spacing={2}
+										sx={{
+											alignItems: 'center',
+											mb: 2,
+										}}
+									>
 										<DescriptionIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
+										<Typography
+											variant="h6"
+											sx={{
+												fontWeight: 700,
+											}}
+										>
 											{t.documentView.documentInfoSection}
 										</Typography>
 									</Stack>
@@ -563,9 +627,21 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<Stack
+										direction="row"
+										spacing={2}
+										sx={{
+											alignItems: 'center',
+											mb: 2,
+										}}
+									>
 										<DescriptionIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
+										<Typography
+											variant="h6"
+											sx={{
+												fontWeight: 700,
+											}}
+										>
 											{statusTitle}
 										</Typography>
 									</Stack>
@@ -582,9 +658,21 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<Stack
+										direction="row"
+										spacing={2}
+										sx={{
+											alignItems: 'center',
+											mb: 2,
+										}}
+									>
 										<PersonIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
+										<Typography
+											variant="h6"
+											sx={{
+												fontWeight: 700,
+											}}
+										>
 											Client
 										</Typography>
 									</Stack>
@@ -595,19 +683,39 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<Stack
+										direction="row"
+										spacing={2}
+										sx={{
+											alignItems: 'center',
+											mb: 2,
+										}}
+									>
 										<PaymentIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
+										<Typography
+											variant="h6"
+											sx={{
+												fontWeight: 700,
+											}}
+										>
 											{t.documentView.paymentSection}
 										</Typography>
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 									<Stack spacing={0}>
-										<InfoRow icon={<PaymentIcon />} label={t.documentView.modePaiementLabel} value={rawData?.mode_paiement_name} />
+										<InfoRow
+											icon={<PaymentIcon />}
+											label={t.documentView.modePaiementLabel}
+											value={rawData?.mode_paiement_name}
+										/>
 										<Divider />
 										{type === 'bon-de-livraison' && (
 											<>
-												<InfoRow icon={<LocalShippingIcon />} label={t.documentView.livreParLabel} value={rawData?.livre_par_name} />
+												<InfoRow
+													icon={<LocalShippingIcon />}
+													label={t.documentView.livreParLabel}
+													value={rawData?.livre_par_name}
+												/>
 												<Divider />
 											</>
 										)}
@@ -618,9 +726,21 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<Stack
+										direction="row"
+										spacing={2}
+										sx={{
+											alignItems: 'center',
+											mb: 2,
+										}}
+									>
 										<ShoppingCartIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
+										<Typography
+											variant="h6"
+											sx={{
+												fontWeight: 700,
+											}}
+										>
 											{linesTitle}
 										</Typography>
 									</Stack>
@@ -645,9 +765,21 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 							{isPositiveNumber(rawData?.remise) && rawData?.remise_type && (
 								<Card elevation={2} sx={{ borderRadius: 2 }}>
 									<CardContent sx={{ p: 3 }}>
-										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<Stack
+											direction="row"
+											spacing={2}
+											sx={{
+												alignItems: 'center',
+												mb: 2,
+											}}
+										>
 											<DiscountIcon color="primary" />
-											<Typography variant="h6" fontWeight={700}>
+											<Typography
+												variant="h6"
+												sx={{
+													fontWeight: 700,
+												}}
+											>
 												{t.documentView.remiseGlobaleSection}
 											</Typography>
 										</Stack>
@@ -664,9 +796,21 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 							{rawData?.remarque && (
 								<Card elevation={2} sx={{ borderRadius: 2 }}>
 									<CardContent sx={{ p: 3 }}>
-										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<Stack
+											direction="row"
+											spacing={2}
+											sx={{
+												alignItems: 'center',
+												mb: 2,
+											}}
+										>
 											<NotesIcon color="primary" />
-											<Typography variant="h6" fontWeight={700}>
+											<Typography
+												variant="h6"
+												sx={{
+													fontWeight: 700,
+												}}
+											>
 												Remarque
 											</Typography>
 										</Stack>
@@ -678,9 +822,21 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<Stack
+										direction="row"
+										spacing={2}
+										sx={{
+											alignItems: 'center',
+											mb: 2,
+										}}
+									>
 										<DescriptionIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
+										<Typography
+											variant="h6"
+											sx={{
+												fontWeight: 700,
+											}}
+										>
 											{t.documentView.systemInfoSection}
 										</Typography>
 									</Stack>
@@ -698,7 +854,11 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 											value={formatDate(rawData?.date_updated ?? null)}
 										/>
 										<Divider />
-										<InfoRow icon={<PersonIcon />} label={t.documentView.createdByLabel} value={rawData?.created_by_user_name} />
+										<InfoRow
+											icon={<PersonIcon />}
+											label={t.documentView.createdByLabel}
+											value={rawData?.created_by_user_name}
+										/>
 									</Stack>
 								</CardContent>
 							</Card>

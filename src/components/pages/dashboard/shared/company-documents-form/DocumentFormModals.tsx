@@ -2,12 +2,13 @@
 
 import React from 'react';
 import {
-	Delete as DeleteIcon,
 	Close as CloseIcon,
-	Payment as PaymentIcon,
+	Delete as DeleteIcon,
 	LocalShipping as LocalShippingIcon,
+	Payment as PaymentIcon,
 } from '@mui/icons-material';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
+import type { SelectedArticlePopupValues } from '@/components/shared/addArticleModal/addArticleModal';
 import AddArticleModal from '@/components/shared/addArticleModal/addArticleModal';
 import GlobalRemiseModal from '@/components/shared/globalRemiseModal/globalRemiseModal';
 import AddEntityModal from '@/components/shared/addEntityModal/addEntityModal';
@@ -15,7 +16,6 @@ import { textInputTheme } from '@/utils/themes';
 import type { ArticleClass } from '@/models/classes';
 import type { TypeRemiseType } from '@/types/devisTypes';
 import type { DocumentFormConfig, DocumentListClass } from '@/types/companyDocumentsTypes';
-import type { SelectedArticlePopupValues } from '@/components/shared/addArticleModal/addArticleModal';
 import { useLanguage } from '@/utils/hooks';
 
 const inputFieldTheme = textInputTheme();
@@ -32,7 +32,10 @@ export interface DocumentFormModalsProps<TDocument extends DocumentListClass = D
 	setSelectedArticles: (v: Set<number>) => void;
 	handleAddArticles: (selectedArticlesData: SelectedArticlePopupValues[]) => void;
 	existingArticleIds: Set<number>;
-	existingArticleLineValues?: Record<number, { quantity: string | number; remise_type: TypeRemiseType; remise: string | number }>;
+	existingArticleLineValues?: Record<
+		number,
+		{ quantity: string | number; remise_type: TypeRemiseType; remise: string | number }
+	>;
 	documentDevise: string;
 	// Global Remise modal
 	showGlobalRemiseModal: boolean;

@@ -1,7 +1,6 @@
-import React from 'react';
-import { Box, Typography, Stack, Button } from '@mui/material';
+import React, { ReactNode } from 'react';
+import { Box, Button, Stack, Typography } from '@mui/material';
 import { SxProps, Theme } from '@mui/system';
-import { ReactNode } from 'react';
 import { customDropdownTheme } from '@/utils/themes';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import { Add as AddIcon } from '@mui/icons-material';
@@ -53,48 +52,54 @@ const AddManagedBySection: React.FC<AddManagedBySectionProps> = ({
 }) => {
 	const { t } = useLanguage();
 	return (
-	<Box sx={{ mt: 3, ...sx }}>
-		<Typography variant="subtitle1" fontWeight={600} gutterBottom>
-			{title}
-		</Typography>
-		<Stack direction={isMobile ? 'column' : 'row'} spacing={2} sx={{ mt: 2 }}>
-			<Box sx={{ flex: 1 }}>
-				<CustomAutoCompleteSelect
-					size="small"
-					id={selectId}
-					label={selectLabel}
-					fullWidth
-					noOptionsText={t.common.noResults}
-					items={selectItems}
-					value={selectValue}
-					onChange={onSelectChange}
-					theme={customDropdownTheme()}
-					startIcon={selectIcon}
-				/>
-			</Box>
-			<Box sx={{ flex: 1 }}>
-				<CustomDropDownSelect
-					id={roleId}
-					size="small"
-					label={roleLabel}
-					items={roleOptions}
-					value={roleValue}
-					onChange={onRoleChange}
-					theme={customDropdownTheme()}
-					startIcon={roleIcon}
-				/>
-			</Box>
-			<Button
-				variant="contained"
-				startIcon={<AddIcon />}
-				onClick={onAdd}
-				disabled={isAddDisabled}
-				sx={{ minWidth: 120, height: 'fit-content' }}
+		<Box sx={{ mt: 3, ...sx }}>
+			<Typography
+				variant="subtitle1"
+				gutterBottom
+				sx={{
+					fontWeight: 600,
+				}}
 			>
-				{t.common.add}
-			</Button>
-		</Stack>
-	</Box>
+				{title}
+			</Typography>
+			<Stack direction={isMobile ? 'column' : 'row'} spacing={2} sx={{ mt: 2 }}>
+				<Box sx={{ flex: 1 }}>
+					<CustomAutoCompleteSelect
+						size="small"
+						id={selectId}
+						label={selectLabel}
+						fullWidth
+						noOptionsText={t.common.noResults}
+						items={selectItems}
+						value={selectValue}
+						onChange={onSelectChange}
+						theme={customDropdownTheme()}
+						startIcon={selectIcon}
+					/>
+				</Box>
+				<Box sx={{ flex: 1 }}>
+					<CustomDropDownSelect
+						id={roleId}
+						size="small"
+						label={roleLabel}
+						items={roleOptions}
+						value={roleValue}
+						onChange={onRoleChange}
+						theme={customDropdownTheme()}
+						startIcon={roleIcon}
+					/>
+				</Box>
+				<Button
+					variant="contained"
+					startIcon={<AddIcon />}
+					onClick={onAdd}
+					disabled={isAddDisabled}
+					sx={{ minWidth: 120, height: 'fit-content' }}
+				>
+					{t.common.add}
+				</Button>
+			</Stack>
+		</Box>
 	);
 };
 

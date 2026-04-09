@@ -55,9 +55,21 @@ const ManagedByTableSection: React.FC<ManagedByTableSectionProps> = ({
 	const { t } = useLanguage();
 	return (
 		<CardContent sx={{ p: 3 }}>
-			<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+			<Stack
+				direction="row"
+				spacing={2}
+				sx={{
+					alignItems: 'center',
+					mb: 2,
+				}}
+			>
 				{icon}
-				<Typography variant="h6" fontWeight={700}>
+				<Typography
+					variant="h6"
+					sx={{
+						fontWeight: 700,
+					}}
+				>
 					{title} {data.length > 0 && `(${data.length})`}
 				</Typography>
 			</Stack>
@@ -68,7 +80,13 @@ const ManagedByTableSection: React.FC<ManagedByTableSectionProps> = ({
 						<TableRow>
 							{headers.map((header, i) => (
 								<TableCell key={i} sx={{ fontWeight: 700 }}>
-									<Stack direction="row" spacing={1} alignItems="center">
+									<Stack
+										direction="row"
+										spacing={1}
+										sx={{
+											alignItems: 'center',
+										}}
+									>
 										{i === 0 && icon}
 										<span>{header}</span>
 									</Stack>
@@ -83,9 +101,19 @@ const ManagedByTableSection: React.FC<ManagedByTableSectionProps> = ({
 						{data.length === 0 ? (
 							<TableRow>
 								<TableCell colSpan={headers.length + 1} align="center" sx={{ py: 4 }}>
-									<Stack spacing={1} alignItems="center">
+									<Stack
+										spacing={1}
+										sx={{
+											alignItems: 'center',
+										}}
+									>
 										{emptyIcon}
-										<Typography variant="body2" color="text.secondary">
+										<Typography
+											variant="body2"
+											sx={{
+												color: 'text.secondary',
+											}}
+										>
 											{emptyMessage}
 										</Typography>
 									</Stack>
@@ -103,8 +131,18 @@ const ManagedByTableSection: React.FC<ManagedByTableSectionProps> = ({
 								>
 									<TableCell>
 										{isUserTable ? (
-											<Stack direction="row" spacing={1} alignItems="center">
-												<Typography fontWeight={600}>
+											<Stack
+												direction="row"
+												spacing={1}
+												sx={{
+													alignItems: 'center',
+												}}
+											>
+												<Typography
+													sx={{
+														fontWeight: 600,
+													}}
+												>
 													{(item as ManagedByType).first_name} {(item as ManagedByType).last_name}
 												</Typography>
 												{(item as ManagedByType).id === currentUserId && (
@@ -112,7 +150,13 @@ const ManagedByTableSection: React.FC<ManagedByTableSectionProps> = ({
 												)}
 											</Stack>
 										) : (
-											<Typography fontWeight={600}>{(item as UserCompaniesType).raison_sociale}</Typography>
+											<Typography
+												sx={{
+													fontWeight: 600,
+												}}
+											>
+												{(item as UserCompaniesType).raison_sociale}
+											</Typography>
 										)}
 									</TableCell>
 									<TableCell>

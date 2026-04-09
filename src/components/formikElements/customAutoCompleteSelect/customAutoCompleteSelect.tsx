@@ -63,8 +63,8 @@ const CustomAutoCompleteSelect: React.FC<Props> = ({
 	};
 
 	return (
-		<ThemeProvider theme={theme}>
-			<Autocomplete
+        <ThemeProvider theme={theme}>
+            <Autocomplete
 				id={id}
 				size={size}
 				fullWidth={fullWidth}
@@ -93,29 +93,31 @@ const CustomAutoCompleteSelect: React.FC<Props> = ({
 							},
 						}}
 						slotProps={{
-							...slotProps,
-							input: {
-								...params.InputProps,
+                            ...params.slotProps,
+                            ...slotProps,
+
+                            input: {
+								...params.slotProps.input,
 								...slotProps?.input,
 								startAdornment: (
 									<>
 										{startIcon && <InputAdornment position="start">{startIcon}</InputAdornment>}
-										{params.InputProps.startAdornment}
+										{params.slotProps.input.startAdornment}
 									</>
 								),
 								endAdornment: (
 									<>
-										{params.InputProps.endAdornment}
+										{params.slotProps.input.endAdornment}
 										{endIcon && <InputAdornment position="end">{endIcon}</InputAdornment>}
 									</>
 								),
-							},
-						}}
+							}
+                        }}
 					/>
 				)}
 			/>
-		</ThemeProvider>
-	);
+        </ThemeProvider>
+    );
 };
 
 export default CustomAutoCompleteSelect;

@@ -2,19 +2,13 @@
 
 import React, { useMemo, useState } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
+import { Alert, Box, Divider, Stack, Typography } from '@mui/material';
 import {
-	Box,
-	Divider,
-	Stack,
-	Typography,
-	Alert,
-} from '@mui/material';
-import {
-	Edit as EditIcon,
 	Add as AddIcon,
-	TrendingUp as TrendingUpIcon,
-	Receipt as ReceiptIcon,
+	Edit as EditIcon,
 	Percent as PercentIcon,
+	Receipt as ReceiptIcon,
+	TrendingUp as TrendingUpIcon,
 	Warning as WarningIcon,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
@@ -32,15 +26,15 @@ import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/com
 
 import { useInitAccessToken } from '@/contexts/InitContext';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
-import { useAppSelector, useToast, useLanguage } from '@/utils/hooks';
+import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import { getProfilState } from '@/store/selectors';
+import type { MonthlyObjectivesSettings } from '@/store/services/dashboard';
 import {
-	useGetAllMonthlyObjectivesSettingsQuery,
 	useCreateMonthlyObjectivesSettingsMutation,
+	useGetAllMonthlyObjectivesSettingsQuery,
 	useUpdateMonthlyObjectivesSettingsMutation,
 } from '@/store/services/dashboard';
-import type { MonthlyObjectivesSettings } from '@/store/services/dashboard';
-import { parseNumber, setFormikAutoErrors, getLabelForKey } from '@/utils/helpers';
+import { getLabelForKey, parseNumber, setFormikAutoErrors } from '@/utils/helpers';
 import { textInputTheme } from '@/utils/themes';
 
 const inputTheme = textInputTheme();
@@ -161,7 +155,12 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, existingObject
 		<Stack spacing={3} sx={{ p: { xs: 2, md: 3 } }}>
 			{hasValidationErrors && (
 				<Alert severity="error" icon={<WarningIcon />} sx={{ mb: 2 }}>
-					<Typography variant="subtitle2" fontWeight={600}>
+					<Typography
+						variant="subtitle2"
+						sx={{
+							fontWeight: 600,
+						}}
+					>
 						{t.common.validationErrors}
 					</Typography>
 					<ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
@@ -184,9 +183,21 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, existingObject
 				<form onSubmit={formik.handleSubmit}>
 					<Stack spacing={3}>
 						{/* Objectifs Mensuels Card */}
-						<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+						<Stack
+							direction="row"
+							spacing={2}
+							sx={{
+								alignItems: 'center',
+								mb: 2,
+							}}
+						>
 							<TrendingUpIcon color="primary" />
-							<Typography variant="h6" fontWeight={700}>
+							<Typography
+								variant="h6"
+								sx={{
+									fontWeight: 700,
+								}}
+							>
 								{t.monthlyObjectives.title}
 							</Typography>
 						</Stack>
@@ -346,10 +357,9 @@ const MonthlyObjectivesView: React.FC<SessionProps> = ({ session }) => {
 	const profil = useAppSelector(getProfilState);
 	const is_staff = profil?.is_staff || false;
 	const { data: companiesData } = useGetUserCompaniesQuery(undefined, { skip: !token });
-	const { data: objectivesData, isLoading: isLoadingObjectives } = useGetAllMonthlyObjectivesSettingsQuery(
-		undefined,
-		{ skip: !token },
-	);
+	const { data: objectivesData, isLoading: isLoadingObjectives } = useGetAllMonthlyObjectivesSettingsQuery(undefined, {
+		skip: !token,
+	});
 
 	if (isLoadingObjectives) {
 		return <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />;

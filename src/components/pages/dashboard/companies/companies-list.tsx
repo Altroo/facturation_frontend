@@ -2,21 +2,26 @@
 
 import React, { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Button, Stack, Typography, Chip } from '@mui/material';
+import { Box, Button, Chip, Stack, Typography } from '@mui/material';
 import {
+	Add as AddIcon,
+	Business as BusinessIcon,
+	Close as CloseIcon,
 	Edit as EditIcon,
 	PauseCircle as PauseIcon,
 	Visibility as VisibilityIcon,
-	Add as AddIcon,
-	Close as CloseIcon,
-	Business as BusinessIcon,
 } from '@mui/icons-material';
-import { GridColDef, GridRenderCellParams, GridFilterModel } from '@mui/x-data-grid';
+import { GridColDef, GridFilterModel, GridRenderCellParams } from '@mui/x-data-grid';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import { useSuspendCompanyMutation, useGetCompaniesListQuery, useBulkSuspendCompaniesMutation, useLazyGetCompaniesListQuery } from '@/store/services/company';
-import { COMPANIES_ADD, COMPANIES_VIEW, COMPANIES_EDIT } from '@/utils/routes';
+import {
+	useBulkSuspendCompaniesMutation,
+	useGetCompaniesListQuery,
+	useLazyGetCompaniesListQuery,
+	useSuspendCompanyMutation,
+} from '@/store/services/company';
+import { COMPANIES_ADD, COMPANIES_EDIT, COMPANIES_VIEW } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
@@ -24,7 +29,7 @@ import ActionModals from '@/components/htmlElements/modals/actionModal/actionMod
 import type { CompanyClass } from '@/models/classes';
 import { formatDate } from '@/utils/helpers';
 import { Protected } from '@/components/layouts/protected/protected';
-import { useToast, useLanguage } from '@/utils/hooks';
+import { useLanguage, useToast } from '@/utils/hooks';
 import Image from 'next/image';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
@@ -118,7 +123,9 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 				with_pagination: false,
 				...customFilterParams,
 			}).unwrap();
-			const allIds = (result as Array<Partial<CompanyClass>>).map((c) => c.id).filter((id): id is number => id !== undefined);
+			const allIds = (result as Array<Partial<CompanyClass>>)
+				.map((c) => c.id)
+				.filter((id): id is number => id !== undefined);
 			setSelectedIds(allIds);
 			setIsAllMatchingSelected(true);
 		} catch {
@@ -289,7 +296,12 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 			headerName: t.companies.colEmployes,
 			flex: 0.8,
 			minWidth: 100,
-			filterOperators: createDropdownFilterOperators(localNbrEmployeFilterOptions, t.companies.allEmployeeCounts, true, t.filterPanel.is),
+			filterOperators: createDropdownFilterOperators(
+				localNbrEmployeFilterOptions,
+				t.companies.allEmployeeCounts,
+				true,
+				t.filterPanel.is,
+			),
 			renderCell: (params: GridRenderCellParams<CompanyClass>) => {
 				const option = localNbrEmployeFilterOptions.find((o) => o.value === (params.value as string));
 				const label = option?.label ?? (params.value as string);
@@ -356,8 +368,11 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 			direction="column"
 			spacing={3}
 			className={Styles.flexRootStack}
-			mt="48px"
-			sx={{ overflowX: 'auto', overflowY: 'hidden' }}
+			sx={{
+				mt: '48px',
+				overflowX: 'auto',
+				overflowY: 'hidden',
+			}}
 		>
 			<NavigationBar title={t.companies.listTitle}>
 				<Protected>

@@ -1,33 +1,33 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import {
+	Alert,
 	Box,
 	Button,
-	FormControlLabel,
-	Checkbox,
-	Stack,
-	Typography,
 	Card,
 	CardContent,
+	Checkbox,
 	Divider,
-	useTheme,
+	FormControlLabel,
+	Stack,
+	Typography,
 	useMediaQuery,
-	Alert,
+	useTheme,
 } from '@mui/material';
 import {
+	AccountCircle as AccountCircleIcon,
+	Add as AddIcon,
+	AdminPanelSettings as AdminPanelSettingsIcon,
 	ArrowBack as ArrowBackIcon,
 	Business as BusinessIcon,
+	CheckCircle as CheckCircleIcon,
+	Edit as EditIcon,
 	Email as EmailIcon,
 	Groups as GroupsIcon,
-	PersonOutline as PersonOutlineIcon,
-	AdminPanelSettings as AdminPanelSettingsIcon,
-	CheckCircle as CheckCircleIcon,
-	AccountCircle as AccountCircleIcon,
-	Edit as EditIcon,
-	Add as AddIcon,
+	PersonOutlined as PersonOutlineIcon,
 	Warning as WarningIcon,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
@@ -39,11 +39,11 @@ import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiP
 import { userSchema } from '@/utils/formValidationSchemas';
 import { genderItemsList } from '@/utils/rawData';
 import { getLabelForKey, setFormikAutoErrors } from '@/utils/helpers';
-import { textInputTheme, customDropdownTheme } from '@/utils/themes';
+import { customDropdownTheme, textInputTheme } from '@/utils/themes';
 import { USERS_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import CustomSquareImageUploading from '@/components/formikElements/customSquareImageUploading/customSquareImageUploading';
-import { useAppSelector, useToast, useLanguage } from '@/utils/hooks';
+import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import { getGroupesState } from '@/store/selectors';
 import {
 	useAddUserMutation,
@@ -253,7 +253,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	return (
 		<Stack spacing={3} sx={{ p: { xs: 2, md: 3 } }}>
-			<Stack direction={isMobile ? 'column' : 'row'} pt={2} justifyContent="space-between" spacing={2}>
+			<Stack
+				direction={isMobile ? 'column' : 'row'}
+				spacing={2}
+				sx={{
+					pt: 2,
+					justifyContent: 'space-between',
+				}}
+			>
 				<Button
 					variant="outlined"
 					startIcon={<ArrowBackIcon />}
@@ -270,7 +277,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			</Stack>
 			{hasValidationErrors && (
 				<Alert severity="error" icon={<WarningIcon />} sx={{ mb: 2 }}>
-					<Typography variant="subtitle2" fontWeight={600}>
+					<Typography
+						variant="subtitle2"
+						sx={{
+							fontWeight: 600,
+						}}
+					>
 						{t.common.validationErrors}
 					</Typography>
 					<ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
@@ -295,9 +307,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						{/* Profile Picture Card */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
 							<CardContent sx={{ p: 3 }}>
-								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+								<Stack
+									direction="row"
+									spacing={2}
+									sx={{
+										alignItems: 'center',
+										mb: 2,
+									}}
+								>
 									<AccountCircleIcon color="primary" />
-									<Typography variant="h6" fontWeight={700}>
+									<Typography
+										variant="h6"
+										sx={{
+											fontWeight: 700,
+										}}
+									>
 										{t.users.photoSection}
 									</Typography>
 								</Stack>
@@ -316,9 +340,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						{/* Personal Information Card */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
 							<CardContent sx={{ p: 3 }}>
-								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+								<Stack
+									direction="row"
+									spacing={2}
+									sx={{
+										alignItems: 'center',
+										mb: 2,
+									}}
+								>
 									<PersonOutlineIcon color="primary" />
-									<Typography variant="h6" fontWeight={700}>
+									<Typography
+										variant="h6"
+										sx={{
+											fontWeight: 700,
+										}}
+									>
 										{t.users.personalSection}
 									</Typography>
 								</Stack>
@@ -387,9 +423,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						{/* Account Settings Card */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
 							<CardContent sx={{ p: 3 }}>
-								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+								<Stack
+									direction="row"
+									spacing={2}
+									sx={{
+										alignItems: 'center',
+										mb: 2,
+									}}
+								>
 									<AdminPanelSettingsIcon color="primary" />
-									<Typography variant="h6" fontWeight={700}>
+									<Typography
+										variant="h6"
+										sx={{
+											fontWeight: 700,
+										}}
+									>
 										{t.users.accountSection}
 									</Typography>
 								</Stack>
@@ -405,7 +453,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											/>
 										}
 										label={
-											<Stack direction="row" spacing={1} alignItems="center">
+											<Stack
+												direction="row"
+												spacing={1}
+												sx={{
+													alignItems: 'center',
+												}}
+											>
 												<CheckCircleIcon fontSize="small" color={formik.values.is_active ? 'success' : 'disabled'} />
 												<Typography>{t.users.isActiveLabel}</Typography>
 											</Stack>
@@ -421,7 +475,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											/>
 										}
 										label={
-											<Stack direction="row" spacing={1} alignItems="center">
+											<Stack
+												direction="row"
+												spacing={1}
+												sx={{
+													alignItems: 'center',
+												}}
+											>
 												<AdminPanelSettingsIcon
 													fontSize="small"
 													color={formik.values.is_staff ? 'primary' : 'disabled'}
@@ -465,7 +525,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									onSelectChange: (_e, newCompany) => setSelectedCompany(newCompany),
 									selectIcon: <BusinessIcon fontSize="small" />,
 									roleId: 'new_user_role',
-										roleLabel: t.shared.role,
+									roleLabel: t.shared.role,
 									roleOptions,
 									roleValue: selectedRole,
 									onRoleChange: (e) => setSelectedRole(e.target.value as string),

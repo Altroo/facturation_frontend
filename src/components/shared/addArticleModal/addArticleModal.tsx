@@ -1,16 +1,16 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { Box, Button, Stack, Typography, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Typography } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import type { ArticleClass } from '@/models/classes';
-import { DataGrid, GridColDef, GridRowId, GridRowSelectionModel, GridRenderCellParams } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridRenderCellParams, GridRowId, GridRowSelectionModel } from '@mui/x-data-grid';
 import { frFR } from '@mui/x-data-grid/locales';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import { formatNumberWithSpaces, parseNumber } from '@/utils/helpers';
 import FormattedNumberInput from '@/components/formikElements/formattedNumberInput/formattedNumberInput';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
-import { gridInputTheme, customGridDropdownTheme } from '@/utils/themes';
+import { customGridDropdownTheme, gridInputTheme } from '@/utils/themes';
 import { remiseTypeItemsList } from '@/utils/rawData';
 import type { TypeRemiseType } from '@/types/devisTypes';
 import { useLanguage } from '@/utils/hooks';
@@ -106,13 +106,18 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 	};
 
 	const rows = availableArticles.map((article) => {
-		const popupValues = article.id ? getRowPopupValues(article.id) : { quantity: 1, remise_type: '' as TypeRemiseType, remise: 0 };
+		const popupValues = article.id
+			? getRowPopupValues(article.id)
+			: { quantity: 1, remise_type: '' as TypeRemiseType, remise: 0 };
 		return {
 			...article,
 			quantity: popupValues.quantity,
 			remise_type: popupValues.remise_type,
 			remise: popupValues.remise,
-			status: article.id && existingArticleIds.has(article.id) ? t.addArticleModal.statusExisting : t.addArticleModal.statusNew,
+			status:
+				article.id && existingArticleIds.has(article.id)
+					? t.addArticleModal.statusExisting
+					: t.addArticleModal.statusNew,
 		};
 	});
 
@@ -250,7 +255,8 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 			flex: 1,
 			minWidth: 110,
 			renderCell: (params: GridRenderCellParams) => {
-				const value = formatNumberWithSpaces(params.row.prix_achat ?? 0, 2) + ' ' + (params.row.devise_prix_achat || 'MAD');
+				const value =
+					formatNumberWithSpaces(params.row.prix_achat ?? 0, 2) + ' ' + (params.row.devise_prix_achat || 'MAD');
 				return (
 					<DarkTooltip title={value}>
 						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
@@ -268,7 +274,8 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 			flex: 1,
 			minWidth: 110,
 			renderCell: (params: GridRenderCellParams) => {
-				const value = formatNumberWithSpaces(params.row.prix_vente ?? 0, 2) + ' ' + (params.row.devise_prix_vente || 'MAD');
+				const value =
+					formatNumberWithSpaces(params.row.prix_vente ?? 0, 2) + ' ' + (params.row.devise_prix_vente || 'MAD');
 				return (
 					<DarkTooltip title={value}>
 						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
@@ -383,7 +390,9 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 							decimals={2}
 							endIcon={
 								<Typography variant="caption">
-									{rowValues.remise_type === 'Pourcentage' ? '%' : (params.row.devise_prix_vente || documentDevise || 'MAD')}
+									{rowValues.remise_type === 'Pourcentage'
+										? '%'
+										: params.row.devise_prix_vente || documentDevise || 'MAD'}
 								</Typography>
 							}
 							slotProps={{ input: { style: { textAlign: 'center' } } }}
@@ -403,12 +412,17 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 	return (
 		<Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
 			<DialogTitle>
-				<Stack direction="row" spacing={2} alignItems="center">
+				<Stack
+					direction="row"
+					spacing={2}
+					sx={{
+						alignItems: 'center',
+					}}
+				>
 					<AddIcon color="primary" />
 					<Typography variant="h6">{t.addArticleModal.title}</Typography>
 				</Stack>
 			</DialogTitle>
-
 			<DialogContent>
 				<Stack spacing={2} sx={{ mt: 1 }}>
 					<Box sx={{ height: 450, width: '100%' }}>
@@ -459,7 +473,6 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 					</Box>
 				</Stack>
 			</DialogContent>
-
 			<DialogActions>
 				<Button onClick={onClose}>{t.addArticleModal.cancelBtn}</Button>
 				<Button

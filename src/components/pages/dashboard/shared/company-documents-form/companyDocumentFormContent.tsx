@@ -1,40 +1,40 @@
 'use client';
 
-import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import {
+	Alert,
 	Box,
 	Button,
-	Stack,
-	Typography,
 	Card,
 	CardContent,
 	Divider,
-	useTheme,
-	useMediaQuery,
-	InputAdornment,
-	Tooltip,
 	IconButton,
-	Alert,
+	InputAdornment,
+	Stack,
+	Tooltip,
+	Typography,
+	useMediaQuery,
+	useTheme,
 } from '@mui/material';
 import {
-	ArrowBack as ArrowBackIcon,
-	Description as DescriptionIcon,
-	Person as PersonIcon,
-	Payment as PaymentIcon,
-	Discount as DiscountIcon,
-	CalendarToday as CalendarTodayIcon,
-	Numbers as NumbersIcon,
-	Receipt as ReceiptIcon,
-	Notes as NotesIcon,
-	Delete as DeleteIcon,
-	Warning as WarningIcon,
-	Edit as EditIcon,
 	Add as AddIcon,
-	LocalShipping as LocalShippingIcon,
-	Refresh as RefreshIcon,
+	ArrowBack as ArrowBackIcon,
 	AttachMoney as AttachMoneyIcon,
+	CalendarToday as CalendarTodayIcon,
+	Delete as DeleteIcon,
+	Description as DescriptionIcon,
+	Discount as DiscountIcon,
+	Edit as EditIcon,
+	LocalShipping as LocalShippingIcon,
+	Notes as NotesIcon,
+	Numbers as NumbersIcon,
+	Payment as PaymentIcon,
+	Person as PersonIcon,
+	Receipt as ReceiptIcon,
+	Refresh as RefreshIcon,
+	Warning as WarningIcon,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -47,44 +47,49 @@ import CustomDropDownSelect from '@/components/formikElements/customDropDownSele
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import {
+	formatLocalDate,
 	getCompanyDocumentLabelForKey,
 	parseNumber,
 	setFormikAutoErrors,
 	ValidatePricesHelper,
-	formatLocalDate,
 } from '@/utils/helpers';
-import { textInputTheme, customDropdownTheme } from '@/utils/themes';
+import { customDropdownTheme, textInputTheme } from '@/utils/themes';
 import { CLIENTS_ADD } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import type { ArticleClass, ClientClass } from '@/models/classes';
 import { useGetClientsListQuery } from '@/store/services/client';
 import { useGetCompanyQuery } from '@/store/services/company';
-import { useToast, useLanguage } from '@/utils/hooks';
+import { useLanguage, useToast } from '@/utils/hooks';
 import type { DropDownType } from '@/types/accountTypes';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import { useGetArticlesListQuery } from '@/store/services/article';
 import { bonDeLivraisonStatusItemsList, devisFactureStatusItemsList } from '@/utils/rawData';
-import { useAddModePaiementMutation, useAddLivreParMutation, useGetModePaiementListQuery, useGetLivreParListQuery } from '@/store/services/parameter';
+import {
+	useAddLivreParMutation,
+	useAddModePaiementMutation,
+	useGetLivreParListQuery,
+	useGetModePaiementListQuery,
+} from '@/store/services/parameter';
 import FactureDevisTotalsCard from '@/components/shared/factureDevistotalCard/factureDevisTotalsCard';
 import LinesGrid from '@/components/shared/linesGrid/linesGrid';
 import type {
-	DocumentFormConfig,
-	DocumentFormSchema,
-	DevisFormSchema,
-	FactureFormSchema,
-	DocumentFormData,
-	DevisDocumentData,
-	FactureDocumentData,
 	BonDeLivraisonDocumentData,
-	DocumentNumResponse,
-	DevisNumResponse,
-	FactureNumResponse,
+	BonDeLivraisonFormSchema,
 	BonDeLivraisonNumResponse,
 	DeviFactureLineFormValues,
-	TypeFactureLivraisonDevisStatus,
+	DevisDocumentData,
+	DevisFormSchema,
+	DevisNumResponse,
+	DocumentFormConfig,
+	DocumentFormData,
+	DocumentFormSchema,
 	DocumentListClass,
-	BonDeLivraisonFormSchema,
+	DocumentNumResponse,
+	FactureDocumentData,
+	FactureFormSchema,
+	FactureNumResponse,
+	TypeFactureLivraisonDevisStatus,
 } from '@/types/companyDocumentsTypes';
 import type { ValidateArticleLinesErrorType } from '@/types/devisTypes';
 import { useDocumentLinesColumns } from './useDocumentLinesColumns';
@@ -210,10 +215,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	const allArticlesData = rawAllArticlesData as Array<Partial<ArticleClass>> | undefined;
 
 	// Derive non-archived articles for the picker (avoids a second API call)
-	const articlesData = useMemo(
-		() => allArticlesData?.filter((a) => !a.archived),
-		[allArticlesData],
-	);
+	const articlesData = useMemo(() => allArticlesData?.filter((a) => !a.archived), [allArticlesData]);
 
 	// Keep isAllArticlesLoading as an alias so downstream code doesn't break
 	const isAllArticlesLoading = isArticlesLoading;
@@ -248,10 +250,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	);
 
 	// Clients query
-	const { data: rawClientsData } = useGetClientsListQuery(
-		{ company_id, with_pagination: false },
-		{ skip: !token },
-	);
+	const { data: rawClientsData } = useGetClientsListQuery({ company_id, with_pagination: false }, { skip: !token });
 
 	// Company query for uses_foreign_currency flag
 	const { data: companyData } = useGetCompanyQuery({ id: company_id }, { skip: !token });
@@ -302,9 +301,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				numero_part: numNumberPart,
 				year_part: numYearPart,
 				client: isEditMode ? (rawData?.client ?? null) : null,
-				date_devis: isEditMode
-					? (devisData?.date_devis ?? today)
-					: today,
+				date_devis: isEditMode ? (devisData?.date_devis ?? today) : today,
 				numero_demande_prix_client: isEditMode ? (devisData?.numero_demande_prix_client ?? null) : null,
 				mode_paiement: isEditMode ? (rawData?.mode_paiement ?? null) : null,
 				remarque: isEditMode ? (rawData?.remarque ?? null) : null,
@@ -319,9 +316,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				numero_part: numNumberPart,
 				year_part: numYearPart,
 				client: isEditMode ? (rawData?.client ?? null) : null,
-				date_facture: isEditMode
-					? (factureData?.date_facture ?? today)
-					: today,
+				date_facture: isEditMode ? (factureData?.date_facture ?? today) : today,
 				numero_bon_commande_client: isEditMode ? (factureData?.numero_bon_commande_client ?? null) : null,
 				mode_paiement: isEditMode ? (rawData?.mode_paiement ?? null) : null,
 				remarque: isEditMode ? (rawData?.remarque ?? null) : null,
@@ -336,9 +331,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				numero_part: numNumberPart,
 				year_part: numYearPart,
 				client: isEditMode ? (rawData?.client ?? null) : null,
-				date_bon_livraison: isEditMode
-					? (bonDeLivraisonData?.date_bon_livraison ?? today)
-					: today,
+				date_bon_livraison: isEditMode ? (bonDeLivraisonData?.date_bon_livraison ?? today) : today,
 				numero_bon_commande_client: isEditMode ? (factureData?.numero_bon_commande_client ?? null) : null,
 				mode_paiement: isEditMode ? (rawData?.mode_paiement ?? null) : null,
 				livre_par: isEditMode ? (bonDeLivraisonData?.livre_par ?? null) : null,
@@ -650,64 +643,67 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	);
 
 	// Handle adding/updating articles from popup selections
-	const handleAddArticles = useCallback((selectedArticlesData: SelectedArticlePopupValues[]) => {
-		const currentLines = getLines();
-		const updatedLines = [...currentLines];
-		const lineIndexByArticleId = new Map<number, number>();
+	const handleAddArticles = useCallback(
+		(selectedArticlesData: SelectedArticlePopupValues[]) => {
+			const currentLines = getLines();
+			const updatedLines = [...currentLines];
+			const lineIndexByArticleId = new Map<number, number>();
 
-		currentLines.forEach((line, index) => {
-			if (!lineIndexByArticleId.has(line.article)) {
-				lineIndexByArticleId.set(line.article, index);
-			}
-		});
+			currentLines.forEach((line, index) => {
+				if (!lineIndexByArticleId.has(line.article)) {
+					lineIndexByArticleId.set(line.article, index);
+				}
+			});
 
-		selectedArticlesData.forEach((selection) => {
-			const article = getArticleById(selection.articleId);
-			if (!article) return;
+			selectedArticlesData.forEach((selection) => {
+				const article = getArticleById(selection.articleId);
+				if (!article) return;
 
-			const parsedQuantity = parseNumber(selection.quantity) ?? 1;
-			const normalizedQuantity = parsedQuantity < 0.01 ? 1 : parsedQuantity;
-			const normalizedRemiseType = (selection.remise_type || '') as '' | 'Pourcentage' | 'Fixe';
-			const parsedRemise = parseNumber(selection.remise) ?? 0;
-			const normalizedRemise = parsedRemise < 0 ? 0 : parsedRemise;
+				const parsedQuantity = parseNumber(selection.quantity) ?? 1;
+				const normalizedQuantity = parsedQuantity < 0.01 ? 1 : parsedQuantity;
+				const normalizedRemiseType = (selection.remise_type || '') as '' | 'Pourcentage' | 'Fixe';
+				const parsedRemise = parseNumber(selection.remise) ?? 0;
+				const normalizedRemise = parsedRemise < 0 ? 0 : parsedRemise;
 
-			const existingIndex = lineIndexByArticleId.get(selection.articleId);
-			if (existingIndex !== undefined) {
-				updatedLines[existingIndex] = {
-					...updatedLines[existingIndex],
+				const existingIndex = lineIndexByArticleId.get(selection.articleId);
+				if (existingIndex !== undefined) {
+					updatedLines[existingIndex] = {
+						...updatedLines[existingIndex],
+						quantity: normalizedQuantity,
+						remise_type: normalizedRemiseType,
+						remise: normalizedRemiseType ? normalizedRemise : 0,
+					};
+					return;
+				}
+
+				updatedLines.push({
+					article: selection.articleId,
+					reference: (article.reference as string) || '',
+					designation: article.designation || '',
+					prix_achat: article.prix_achat || 0,
+					devise_prix_achat: article.devise_prix_achat || 'MAD',
+					prix_vente: article.prix_vente || 0,
+					devise_prix_vente: article.devise_prix_vente || article.devise_prix_achat || 'MAD',
 					quantity: normalizedQuantity,
 					remise_type: normalizedRemiseType,
 					remise: normalizedRemiseType ? normalizedRemise : 0,
-				};
-				return;
-			}
+				} as DeviFactureLineFormValues);
+			});
 
-			updatedLines.push({
-				article: selection.articleId,
-				reference: (article.reference as string) || '',
-				designation: article.designation || '',
-				prix_achat: article.prix_achat || 0,
-				devise_prix_achat: article.devise_prix_achat || 'MAD',
-				prix_vente: article.prix_vente || 0,
-				devise_prix_vente: article.devise_prix_vente || article.devise_prix_achat || 'MAD',
-				quantity: normalizedQuantity,
-				remise_type: normalizedRemiseType,
-				remise: normalizedRemiseType ? normalizedRemise : 0,
-			} as DeviFactureLineFormValues);
-		});
+			formik.setFieldValue('lignes', updatedLines);
 
-		formik.setFieldValue('lignes', updatedLines);
+			// Clear lignes_empty validation error when articles are added
+			setValidationErrors((prev) => {
+				// eslint-disable-next-line @typescript-eslint/no-unused-vars
+				const { lignes_empty, ...rest } = prev;
+				return rest;
+			});
 
-		// Clear lignes_empty validation error when articles are added
-		setValidationErrors((prev) => {
-			// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			const { lignes_empty, ...rest } = prev;
-			return rest;
-		});
-
-		setShowAddArticleModal(false);
-		setSelectedArticles(new Set());
-	}, [getArticleById, getLines, formik]);
+			setShowAddArticleModal(false);
+			setSelectedArticles(new Set());
+		},
+		[getArticleById, getLines, formik],
+	);
 
 	// Handle delete line
 	const handleDeleteLine = useCallback((index: number) => {
@@ -779,7 +775,10 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	const existingArticleIds = useMemo(() => new Set(getLines().map((l) => l.article)), [getLines]);
 
 	const existingArticleLineValues = useMemo(() => {
-		const lineValues: Record<number, { quantity: string | number; remise_type: '' | 'Pourcentage' | 'Fixe'; remise: string | number }> = {};
+		const lineValues: Record<
+			number,
+			{ quantity: string | number; remise_type: '' | 'Pourcentage' | 'Fixe'; remise: string | number }
+		> = {};
 		getLines().forEach((line) => {
 			if (lineValues[line.article]) return;
 			lineValues[line.article] = {
@@ -949,13 +948,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	// detail (edit) or numero generation (add) plus active mutations.
 	// Articles & clients load in the background – their dropdowns show
 	// individual loading states, but the form skeleton renders immediately.
-	const isLoading =
-		isPatchLoading ||
-		isUpdateLoading ||
-		isAddLoading ||
-		isPending ||
-		isDataLoading ||
-		isNumLoading;
+	const isLoading = isPatchLoading || isUpdateLoading || isAddLoading || isPending || isDataLoading || isNumLoading;
 	const shouldShowError = (axiosError?.status ?? 0) > 400 && !isLoading;
 
 	// After creation, scroll to the "Lignes" section once data is ready
@@ -973,7 +966,14 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	return (
 		<LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
 			<Stack ref={topRef} spacing={3} sx={{ p: { xs: 2, md: 3 } }}>
-				<Stack direction={isMobile ? 'column' : 'row'} pt={2} justifyContent="space-between" spacing={2}>
+				<Stack
+					direction={isMobile ? 'column' : 'row'}
+					spacing={2}
+					sx={{
+						pt: 2,
+						justifyContent: 'space-between',
+					}}
+				>
 					<Button
 						variant="outlined"
 						startIcon={<ArrowBackIcon />}
@@ -991,7 +991,12 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 
 				{showValidationAlert && (
 					<Alert severity="error" icon={<WarningIcon />}>
-						<Typography variant="subtitle2" fontWeight={600}>
+						<Typography
+							variant="subtitle2"
+							sx={{
+								fontWeight: 600,
+							}}
+						>
 							{t.common.validationErrors}
 						</Typography>
 						<ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
@@ -1032,15 +1037,33 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 							{/* Document Information Card */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<Stack
+										direction="row"
+										spacing={2}
+										sx={{
+											alignItems: 'center',
+											mb: 2,
+										}}
+									>
 										<DescriptionIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
+										<Typography
+											variant="h6"
+											sx={{
+												fontWeight: 700,
+											}}
+										>
 											{t.documentForm.documentInfoSection}
 										</Typography>
 									</Stack>
 									<Divider sx={{ mb: 3 }} />
 									<Stack spacing={2.5}>
-										<Stack direction="row" spacing={2} alignItems="flex-start">
+										<Stack
+											direction="row"
+											spacing={2}
+											sx={{
+												alignItems: 'flex-start',
+											}}
+										>
 											<Box sx={{ flex: 2 }}>
 												<CustomTextInput
 													id="numero_part"
@@ -1124,12 +1147,14 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 												textField: {
 													size: 'small',
 													fullWidth: true,
-													InputProps: {
-														startAdornment: (
-															<InputAdornment position="start">
-																<CalendarTodayIcon fontSize="small" color="action" />
-															</InputAdornment>
-														),
+													slotProps: {
+														input: {
+															startAdornment: (
+																<InputAdornment position="start">
+																	<CalendarTodayIcon fontSize="small" color="action" />
+																</InputAdornment>
+															),
+														},
 													},
 												},
 											}}
@@ -1142,9 +1167,21 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 							{isEditMode && (
 								<Card elevation={2} sx={{ borderRadius: 2 }}>
 									<CardContent sx={{ p: 3 }}>
-										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<Stack
+											direction="row"
+											spacing={2}
+											sx={{
+												alignItems: 'center',
+												mb: 2,
+											}}
+										>
 											<DescriptionIcon color="primary" />
-											<Typography variant="h6" fontWeight={700}>
+											<Typography
+												variant="h6"
+												sx={{
+													fontWeight: 700,
+												}}
+											>
 												{config.labels.statusLabel}
 											</Typography>
 										</Stack>
@@ -1172,9 +1209,21 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 							{/* Client Card */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<Stack
+										direction="row"
+										spacing={2}
+										sx={{
+											alignItems: 'center',
+											mb: 2,
+										}}
+									>
 										<PersonIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
+										<Typography
+											variant="h6"
+											sx={{
+												fontWeight: 700,
+											}}
+										>
 											Client
 										</Typography>
 									</Stack>
@@ -1207,9 +1256,21 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 							{usesForeignCurrency && (
 								<Card elevation={2} sx={{ borderRadius: 2 }}>
 									<CardContent sx={{ p: 3 }}>
-										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<Stack
+											direction="row"
+											spacing={2}
+											sx={{
+												alignItems: 'center',
+												mb: 2,
+											}}
+										>
 											<AttachMoneyIcon color="primary" />
-											<Typography variant="h6" fontWeight={700}>
+											<Typography
+												variant="h6"
+												sx={{
+													fontWeight: 700,
+												}}
+											>
 												Devise
 											</Typography>
 										</Stack>
@@ -1230,9 +1291,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 												startIcon={<AttachMoneyIcon fontSize="small" color="action" />}
 												disabled={getLines().length > 0}
 												helperText={
-													getLines().length > 0
-														? t.documentForm.deviseLockedHelper
-														: t.documentForm.deviseHelper
+													getLines().length > 0 ? t.documentForm.deviseLockedHelper : t.documentForm.deviseHelper
 												}
 											/>
 										</Stack>
@@ -1243,9 +1302,21 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 							{/* Payment Card */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<Stack
+										direction="row"
+										spacing={2}
+										sx={{
+											alignItems: 'center',
+											mb: 2,
+										}}
+									>
 										<PaymentIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
+										<Typography
+											variant="h6"
+											sx={{
+												fontWeight: 700,
+											}}
+										>
 											{t.documentForm.paymentSection}
 										</Typography>
 									</Stack>
@@ -1347,9 +1418,21 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 							{isEditMode && (
 								<Card elevation={2} sx={{ borderRadius: 2 }}>
 									<CardContent sx={{ p: 3 }}>
-										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<Stack
+											direction="row"
+											spacing={2}
+											sx={{
+												alignItems: 'center',
+												mb: 2,
+											}}
+										>
 											<DiscountIcon color="primary" />
-											<Typography variant="h6" fontWeight={700}>
+											<Typography
+												variant="h6"
+												sx={{
+													fontWeight: 700,
+												}}
+											>
 												{t.documentForm.remiseGlobaleSection}
 											</Typography>
 										</Stack>
@@ -1381,7 +1464,12 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 												{t.documentForm.removeGlobalRemise}
 											</Button>
 											{formik.values.remise_type && formik.values.remise && formik.values.remise > 0 && (
-												<Typography variant="body2" color="text.secondary">
+												<Typography
+													variant="body2"
+													sx={{
+														color: 'text.secondary',
+													}}
+												>
 													Remise appliquée: {formik.values.remise}
 													{formik.values.remise_type === 'Pourcentage' ? '%' : ` ${formik.values.devise}`}
 												</Typography>
@@ -1394,9 +1482,21 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 							{/* Remark */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<Stack
+										direction="row"
+										spacing={2}
+										sx={{
+											alignItems: 'center',
+											mb: 2,
+										}}
+									>
 										<NotesIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
+										<Typography
+											variant="h6"
+											sx={{
+												fontWeight: 700,
+											}}
+										>
 											Remarque
 										</Typography>
 									</Stack>
@@ -1442,7 +1542,6 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 					</form>
 				)}
 			</Stack>
-
 			<DocumentFormModals
 				isEditMode={isEditMode}
 				config={config}

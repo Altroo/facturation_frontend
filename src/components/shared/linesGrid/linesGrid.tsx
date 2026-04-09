@@ -20,15 +20,34 @@ const LinesGrid = React.memo(
 		return (
 			<Card elevation={2} sx={{ borderRadius: 2 }}>
 				<CardContent sx={{ p: 3 }}>
-					<Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-						<Stack direction="row" spacing={2} alignItems="center">
+					<Stack
+						direction="row"
+						spacing={2}
+						sx={{
+							alignItems: 'center',
+							justifyContent: 'space-between',
+							mb: 2,
+						}}
+					>
+						<Stack
+							direction="row"
+							spacing={2}
+							sx={{
+								alignItems: 'center',
+							}}
+						>
 							<ShoppingCartIcon color="primary" />
-							<Typography variant="h6" fontWeight={700}>
+							<Typography
+								variant="h6"
+								sx={{
+									fontWeight: 700,
+								}}
+							>
 								{title}
 							</Typography>
 						</Stack>
 						<Button variant="contained" startIcon={<AddIcon />} onClick={onAddClick} size="small" disabled={isLoading}>
-						{t.documentForm.addArticleBtn}
+							{t.documentForm.addArticleBtn}
 						</Button>
 					</Stack>
 					<Divider sx={{ mb: 3 }} />

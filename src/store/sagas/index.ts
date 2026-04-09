@@ -1,4 +1,4 @@
-import { all, spawn, call, fork } from 'redux-saga/effects';
+import { all, call, fork, spawn } from 'redux-saga/effects';
 import { watchInit } from '@/store/sagas/_initSaga';
 import { watchWS } from '@/store/sagas/wsSaga';
 import { watchAccount } from '@/store/sagas/accountSaga';

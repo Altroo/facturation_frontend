@@ -18,10 +18,12 @@ import { DropDownType } from '@/types/accountTypes';
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
 const MenuProps = {
-	PaperProps: {
-		style: {
-			maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-			width: 250,
+	slotProps: {
+		paper: {
+			style: {
+				maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+				width: 250,
+			},
 		},
 	},
 };
@@ -46,8 +48,8 @@ type Props = {
 
 const CustomDropDownSelect: React.FC<Props> = (props: Props) => {
 	return (
-		<ThemeProvider theme={props.theme}>
-			<FormControl className={`${Styles.formControl} ${props.cssClass}`} disabled={props.disabled}>
+        <ThemeProvider theme={props.theme}>
+            <FormControl className={`${Styles.formControl} ${props.cssClass}`} disabled={props.disabled}>
 				<InputLabel id={`${props.id}-label`}>{props.label}</InputLabel>
 				<Select
 					labelId={`${props.id}-label`}
@@ -73,21 +75,26 @@ const CustomDropDownSelect: React.FC<Props> = (props: Props) => {
 						const isObject = typeof item === 'object' && item !== null && 'value' in item;
 						const value = isObject ? item?.value : item;
 						return (
-							<MenuItem key={index} value={value} sx={{ minHeight: ITEM_HEIGHT }}>
-								<Stack direction="row" justifyContent="space-between" sx={{ width: '100%' }}>
+                            <MenuItem key={index} value={value} sx={{ minHeight: ITEM_HEIGHT }}>
+                                <Stack
+                                    direction="row"
+                                    sx={{
+                                        justifyContent: "space-between",
+                                        width: '100%'
+                                    }}>
 									<span>{value || 'Sélectionner une valeur'}</span>
 									{props.value === value && <CheckCircleIcon sx={{ fontSize: 20 }} color="primary" />}
 								</Stack>
-							</MenuItem>
-						);
+                            </MenuItem>
+                        );
 					})}
 				</Select>
 				{props.helperText ? (
 					<FormHelperText sx={{ color: 'rgb(229, 115, 115)' }}>{props.helperText}</FormHelperText>
 				) : null}
 			</FormControl>
-		</ThemeProvider>
-	);
+        </ThemeProvider>
+    );
 };
 
 export default CustomDropDownSelect;

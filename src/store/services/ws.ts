@@ -1,6 +1,11 @@
 import type { EventChannel } from 'redux-saga';
 import { eventChannel } from 'redux-saga';
-import { WSMaintenanceAction, WSUserAvatarAction, WSReconnectedAction, WSNotificationAction } from '@/store/actions/wsActions';
+import {
+	WSMaintenanceAction,
+	WSNotificationAction,
+	WSReconnectedAction,
+	WSUserAvatarAction,
+} from '@/store/actions/wsActions';
 import type { WSAction, WSEnvelope } from '@/types/wsTypes';
 import type { NotificationType } from '@/types/facturationTypes';
 
@@ -23,10 +28,7 @@ const isWSEnvelope = (value: unknown): value is WSEnvelope => {
 
 const isNotificationTypeValue = (value: unknown): value is NotificationType['notification_type'] => {
 	return (
-		value === 'overdue_invoice' ||
-		value === 'expiring_quote' ||
-		value === 'uninvoiced_bdl' ||
-		value === 'status_change'
+		value === 'overdue_invoice' || value === 'expiring_quote' || value === 'uninvoiced_bdl' || value === 'status_change'
 	);
 };
 
@@ -90,7 +92,8 @@ export function initWebsocket(getToken: () => Promise<string | null>): EventChan
 											: 'status_change',
 										object_id: typeof message.object_id === 'number' ? message.object_id : null,
 										is_read: typeof message.is_read === 'boolean' ? message.is_read : false,
-										date_created: typeof message.date_created === 'string' ? message.date_created : new Date().toISOString(),
+										date_created:
+											typeof message.date_created === 'string' ? message.date_created : new Date().toISOString(),
 									};
 									emitter(WSNotificationAction(notification));
 								}

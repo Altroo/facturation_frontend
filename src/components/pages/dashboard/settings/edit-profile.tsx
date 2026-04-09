@@ -6,21 +6,21 @@ import { Box, Stack, useMediaQuery, useTheme } from '@mui/material';
 import { useFormik } from 'formik';
 import { profilSchema } from '@/utils/formValidationSchemas';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
-import { textInputTheme, customDropdownTheme } from '@/utils/themes';
+import { customDropdownTheme, textInputTheme } from '@/utils/themes';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import { genderItemsList } from '@/utils/rawData';
-import { useAppDispatch, useToast, useLanguage } from '@/utils/hooks';
+import { useAppDispatch, useLanguage, useToast } from '@/utils/hooks';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import { setFormikAutoErrors } from '@/utils/helpers';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import type { SessionProps } from '@/types/_initTypes';
-import { useGetProfilQuery, useEditProfilMutation } from '@/store/services/account';
+import { useEditProfilMutation, useGetProfilQuery } from '@/store/services/account';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { accountEditProfilAction } from '@/store/actions/accountActions';
 import CustomSquareImageUploading from '@/components/formikElements/customSquareImageUploading/customSquareImageUploading';
-import {Edit as EditIcon, Email as EmailIcon, Groups as GroupsIcon, Person as PersonIcon} from '@mui/icons-material';
+import { Edit as EditIcon, Email as EmailIcon, Groups as GroupsIcon, Person as PersonIcon } from '@mui/icons-material';
 
 const inputTheme = textInputTheme();
 
@@ -69,13 +69,28 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 	});
 
 	return (
-		<Stack direction="column" alignItems="center" spacing={2} className={`${Styles.flexRootStack}`} mt="32px">
+		<Stack
+			direction="column"
+			spacing={2}
+			className={`${Styles.flexRootStack}`}
+			sx={{
+				alignItems: 'center',
+				mt: '32px',
+			}}
+		>
 			{(isEditLoading || isPending || isProfilLoading) && (
 				<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
 			)}
 			<h2 className={Styles.pageTitle}>{t.settings.profileTitle}</h2>
 			<form className={Styles.form} onSubmit={(e) => e.preventDefault()}>
-				<Stack direction="column" spacing={2} justifyContent="center" alignItems="center">
+				<Stack
+					direction="column"
+					spacing={2}
+					sx={{
+						justifyContent: 'center',
+						alignItems: 'center',
+					}}
+				>
 					<CustomSquareImageUploading
 						cssClasse={Styles.centerAvatar}
 						image={formik.values.avatar}

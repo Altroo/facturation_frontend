@@ -4,32 +4,32 @@ import React, { useCallback, useMemo, useState } from 'react';
 import {
 	Box,
 	Button,
-	Typography,
 	Chip,
 	CircularProgress,
-	MenuItem,
+	Divider,
 	ListItemIcon,
 	ListItemText,
 	Menu,
-	Divider,
+	MenuItem,
+	Typography,
 } from '@mui/material';
 import {
-	Edit as EditIcon,
-	Delete as DeleteIcon,
-	Visibility as VisibilityIcon,
 	Add as AddIcon,
 	Close as CloseIcon,
-	SwapHoriz as SwapHorizIcon,
+	Delete as DeleteIcon,
+	Edit as EditIcon,
 	Print as PrintIcon,
+	SwapHoriz as SwapHorizIcon,
+	Visibility as VisibilityIcon,
 } from '@mui/icons-material';
-import { GridColDef, GridRenderCellParams, GridFilterModel } from '@mui/x-data-grid';
+import { GridColDef, GridFilterModel, GridRenderCellParams } from '@mui/x-data-grid';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
-import { formatDate, formatNumberWithSpaces, extractApiErrorMessage } from '@/utils/helpers';
-import { useToast, useLanguage } from '@/utils/hooks';
+import { extractApiErrorMessage, formatDate, formatNumberWithSpaces } from '@/utils/helpers';
+import { useLanguage, useToast } from '@/utils/hooks';
 import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
@@ -38,12 +38,12 @@ import { CLIENTS_VIEW } from '@/utils/routes';
 import { fetchPdfBlob } from '@/utils/apiHelpers';
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
 import type {
+	DocumentBulkDeleteMutationResult,
+	DocumentConvertMutationResult,
+	DocumentDeleteMutationResult,
 	DocumentListClass,
 	DocumentListConfig,
 	DocumentListQueryResult,
-	DocumentDeleteMutationResult,
-	DocumentBulkDeleteMutationResult,
-	DocumentConvertMutationResult,
 	PaginationModel,
 	PrintAction,
 } from '@/types/companyDocumentsTypes';
@@ -74,20 +74,26 @@ export const getStatutColor = (
 	}
 };
 
-export const getStatutLabel = (
-	statut: string,
-	t: import('@/types/languageTypes').TranslationDictionary,
-): string => {
+export const getStatutLabel = (statut: string, t: import('@/types/languageTypes').TranslationDictionary): string => {
 	switch (statut) {
-		case 'Brouillon': return t.rawData.documentStatuses.draft;
-		case 'Envoyé':    return t.rawData.documentStatuses.sent;
-		case 'Accepté':   return t.rawData.documentStatuses.accepted;
-		case 'Facturé':   return t.rawData.documentStatuses.invoiced;
-		case 'Refusé':    return t.rawData.documentStatuses.refused;
-		case 'Annulé':    return t.rawData.documentStatuses.cancelled;
-		case 'Expiré':    return t.rawData.documentStatuses.expired;
-		case 'Valide':    return t.common.validShort;
-		default:          return statut;
+		case 'Brouillon':
+			return t.rawData.documentStatuses.draft;
+		case 'Envoyé':
+			return t.rawData.documentStatuses.sent;
+		case 'Accepté':
+			return t.rawData.documentStatuses.accepted;
+		case 'Facturé':
+			return t.rawData.documentStatuses.invoiced;
+		case 'Refusé':
+			return t.rawData.documentStatuses.refused;
+		case 'Annulé':
+			return t.rawData.documentStatuses.cancelled;
+		case 'Expiré':
+			return t.rawData.documentStatuses.expired;
+		case 'Valide':
+			return t.common.validShort;
+		default:
+			return statut;
 	}
 };
 
@@ -101,7 +107,19 @@ export const createStatutFilterOptions = (t: import('@/types/languageTypes').Tra
 ];
 
 /** @deprecated Use createStatutFilterOptions(t) inside a component */
-export const statutFilterOptions = createStatutFilterOptions({ rawData: { documentStatuses: { draft: 'Brouillon', sent: 'Envoyé', accepted: 'Accepté', refused: 'Refusé', cancelled: 'Annulé', expired: 'Expiré', invoiced: 'Facturé' } } } as import('@/types/languageTypes').TranslationDictionary);
+export const statutFilterOptions = createStatutFilterOptions({
+	rawData: {
+		documentStatuses: {
+			draft: 'Brouillon',
+			sent: 'Envoyé',
+			accepted: 'Accepté',
+			refused: 'Refusé',
+			cancelled: 'Annulé',
+			expired: 'Expiré',
+			invoiced: 'Facturé',
+		},
+	},
+} as import('@/types/languageTypes').TranslationDictionary);
 
 export interface DocumentListContentProps<TDocument extends DocumentListClass> {
 	/** Company ID */
@@ -213,9 +231,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 				onError(extractApiErrorMessage(err, `Erreur lors de la suppression`));
 			}
 		} else {
-			const results = await Promise.allSettled(
-				selectedIds.map((id) => deleteRecord({ id }).unwrap()),
-			);
+			const results = await Promise.allSettled(selectedIds.map((id) => deleteRecord({ id }).unwrap()));
 			const failures = results.filter((r): r is PromiseRejectedResult => r.status === 'rejected');
 			if (failures.length === 0) {
 				onSuccess(t.documentList.bulkDeleteSuccess(selectedIds.length, config.labels.documentTypeName));
@@ -270,14 +286,11 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 		setPrintMenuItemId(id);
 	}, []);
 
-	const handlePrintMenuItemClick = useCallback(
-		(action: PrintAction) => {
-			setPrintAnchorEl(null);
-			setSelectedPrintAction(action);
-			setShowLanguageModal(true);
-		},
-		[],
-	);
+	const handlePrintMenuItemClick = useCallback((action: PrintAction) => {
+		setPrintAnchorEl(null);
+		setSelectedPrintAction(action);
+		setShowLanguageModal(true);
+	}, []);
 
 	const handleLanguageSelect = useCallback(
 		async (language: 'fr' | 'en') => {
@@ -428,7 +441,12 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 				headerName: t.documentList.colClient,
 				flex: 1.5,
 				minWidth: 140,
-				filterOperators: createDropdownFilterOperators(clientFilterOptions, t.documentList.allClients, undefined, t.filterPanel.is),
+				filterOperators: createDropdownFilterOperators(
+					clientFilterOptions,
+					t.documentList.allClients,
+					undefined,
+					t.filterPanel.is,
+				),
 				renderCell: (params: GridRenderCellParams<TDocument>) => (
 					<DarkTooltip title={params.value}>
 						<Typography variant="body2" noWrap>
@@ -459,7 +477,12 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 				headerName: t.documentList.colStatut,
 				flex: 0.8,
 				minWidth: 100,
-				filterOperators: createDropdownFilterOperators(localStatutFilterOptions, t.common.allStatuses, true, t.filterPanel.is),
+				filterOperators: createDropdownFilterOperators(
+					localStatutFilterOptions,
+					t.common.allStatuses,
+					true,
+					t.filterPanel.is,
+				),
 				renderCell: (params: GridRenderCellParams<TDocument>) => {
 					const statutLabel = getStatutLabel(params.value || '', t);
 					return (
@@ -477,11 +500,18 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 				filterOperators: createNumericFilterOperators(),
 				renderCell: (params: GridRenderCellParams<TDocument>) => {
 					const devise = params.row.devise || 'MAD';
-				const formattedValue = formatNumberWithSpaces(params.value, 2);
-				const displayValue = `${formattedValue} ${devise}`;
+					const formattedValue = formatNumberWithSpaces(params.value, 2);
+					const displayValue = `${formattedValue} ${devise}`;
 					return (
 						<DarkTooltip title={displayValue}>
-							<Typography variant="body2" noWrap fontWeight={600} color="primary">
+							<Typography
+								variant="body2"
+								noWrap
+								color="primary"
+								sx={{
+									fontWeight: 600,
+								}}
+							>
 								{displayValue}
 							</Typography>
 						</DarkTooltip>
@@ -562,9 +592,12 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 							actions.push({
 								label: t.common.convert,
 								icon: isCurrentItemLoading ? <CircularProgress size={20} /> : <SwapHorizIcon />,
-							onClick: (e?: React.MouseEvent<HTMLElement>) => {
-								if (!isCurrentItemLoading && e) {
-									showConvertModalCall(e as React.MouseEvent<HTMLButtonElement>, (params.row as DocumentListClass).id);
+								onClick: (e?: React.MouseEvent<HTMLElement>) => {
+									if (!isCurrentItemLoading && e) {
+										showConvertModalCall(
+											e as React.MouseEvent<HTMLButtonElement>,
+											(params.row as DocumentListClass).id,
+										);
 									}
 								},
 								color: 'success' as const,
@@ -574,58 +607,63 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 					}
 
 					// Print action - available for Caissier, Comptable, Commercial
-					if ((role === 'Caissier' || role === 'Comptable' || role === 'Commercial') && config.printActions && config.printActions.length > 0) {
+					if (
+						(role === 'Caissier' || role === 'Comptable' || role === 'Commercial') &&
+						config.printActions &&
+						config.printActions.length > 0
+					) {
 						actions.push({
 							label: t.common.display,
 							icon: <PrintIcon />,
-						onClick: (e?: React.MouseEvent<HTMLElement>) => {
-							if (e) {
-								showPrintMenuCall(e as React.MouseEvent<HTMLButtonElement>, (params.row as DocumentListClass).id);
-							}
-						},
-						color: 'info' as const,
-					});
-				}
+							onClick: (e?: React.MouseEvent<HTMLElement>) => {
+								if (e) {
+									showPrintMenuCall(e as React.MouseEvent<HTMLButtonElement>, (params.row as DocumentListClass).id);
+								}
+							},
+							color: 'info' as const,
+						});
+					}
 
-				return <MobileActionsMenu actions={actions} />;
+					return <MobileActionsMenu actions={actions} />;
+				},
 			},
-		},
-	];
+		];
 
-return baseColumns;
-}, [
-	config.columns.numeroField,
-	config.columns.numeroHeaderName,
-	config.columns.extraField,
-	config.columns.extraFieldHeaderName,
-	config.columns.dateField,
-	config.columns.dateHeaderName,
-	config.routes,
-	config.convertActions,
-	config.printActions,
-	clientFilterOptions,
-	localStatutFilterOptions,
-	router,
-	companyId,
-	role,
-	showDeleteModalCall,
-	showConvertModalCall,
-	showPrintMenuCall,
-	isAnyConvertLoading,
-	selectedId,
-		t,]);
-const modalsConfig = useMemo(
-() => ({
-	delete: {
-		title: config.labels.deleteConfirmTitle,
-		body: config.labels.deleteConfirmBody,
-		actions: deleteModalActions,
-		titleIcon: <DeleteIcon />,
-		titleIconColor: '#D32F2F',
-	},
-}),
-[config.labels, deleteModalActions],
-);
+		return baseColumns;
+	}, [
+		config.columns.numeroField,
+		config.columns.numeroHeaderName,
+		config.columns.extraField,
+		config.columns.extraFieldHeaderName,
+		config.columns.dateField,
+		config.columns.dateHeaderName,
+		config.routes,
+		config.convertActions,
+		config.printActions,
+		clientFilterOptions,
+		localStatutFilterOptions,
+		router,
+		companyId,
+		role,
+		showDeleteModalCall,
+		showConvertModalCall,
+		showPrintMenuCall,
+		isAnyConvertLoading,
+		selectedId,
+		t,
+	]);
+	const modalsConfig = useMemo(
+		() => ({
+			delete: {
+				title: config.labels.deleteConfirmTitle,
+				body: config.labels.deleteConfirmBody,
+				actions: deleteModalActions,
+				titleIcon: <DeleteIcon />,
+				titleIconColor: '#D32F2F',
+			},
+		}),
+		[config.labels, deleteModalActions],
+	);
 
 	return (
 		<>
@@ -732,13 +770,16 @@ const modalsConfig = useMemo(
 					if (index > 0) {
 						items.push(<Divider key={`divider-${action.key}`} />);
 					}
-					
+
 					// Find the current row to evaluate disabled state
 					const currentRow = menuItemId && data?.results ? data.results.find((row) => row.id === menuItemId) : null;
-					const isDisabled = typeof action.disabled === 'function' 
-						? currentRow ? action.disabled(currentRow) : true
-						: action.disabled ?? false;
-					
+					const isDisabled =
+						typeof action.disabled === 'function'
+							? currentRow
+								? action.disabled(currentRow)
+								: true
+							: (action.disabled ?? false);
+
 					items.push(
 						<MenuItem key={action.key} disabled={isDisabled} onClick={() => handleMenuItemClick(action.key)}>
 							<ListItemIcon>{action.icon}</ListItemIcon>
@@ -761,10 +802,7 @@ const modalsConfig = useMemo(
 						items.push(<Divider key={`divider-print-${action.key}`} />);
 					}
 					items.push(
-						<MenuItem
-							key={action.key}
-							onClick={() => handlePrintMenuItemClick(action)}
-						>
+						<MenuItem key={action.key} onClick={() => handlePrintMenuItemClick(action)}>
 							<ListItemIcon sx={{ color: action.iconColor || 'inherit' }}>{action.icon}</ListItemIcon>
 							<ListItemText>{action.label}</ListItemText>
 						</MenuItem>,
@@ -773,7 +811,9 @@ const modalsConfig = useMemo(
 				})}
 			</Menu>
 
-			{showLanguageModal && <PdfLanguageModal onSelectLanguage={handleLanguageSelect} onClose={handleLanguageModalClose} />}
+			{showLanguageModal && (
+				<PdfLanguageModal onSelectLanguage={handleLanguageSelect} onClose={handleLanguageModalClose} />
+			)}
 		</>
 	);
 }

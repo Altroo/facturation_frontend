@@ -29,7 +29,7 @@ import { useInitAccessToken } from '@/contexts/InitContext';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
-import { useAppSelector, useToast, useLanguage } from '@/utils/hooks';
+import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import { getUserCompaniesState } from '@/store/selectors';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
@@ -49,9 +49,9 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 	return (
 		<Stack
 			direction="row"
-			alignItems="flex-start"
 			spacing={2}
 			sx={{
+				alignItems: 'flex-start',
 				py: 1.5,
 				flexWrap: 'wrap',
 			}}
@@ -67,20 +67,19 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 			>
 				{icon}
 			</Box>
-
 			<Stack
 				direction="row"
-				alignItems="center"
 				spacing={isMobile ? 0 : 2}
 				sx={{
+					alignItems: 'center',
 					flex: 1,
 					flexWrap: 'wrap',
 				}}
 			>
 				<Typography
-					fontWeight={600}
-					color="text.secondary"
 					sx={{
+						fontWeight: 600,
+						color: 'text.secondary',
 						minWidth: { xs: '100%', sm: 200 },
 						wordBreak: 'break-word',
 					}}
@@ -156,14 +155,23 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	];
 
 	return (
-		<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
+		<Stack
+			direction="column"
+			spacing={2}
+			className={Styles.flexRootStack}
+			sx={{
+				mt: '32px',
+			}}
+		>
 			<NavigationBar title={t.articles.detailsTitle}>
 				<Stack spacing={3} sx={{ p: { xs: 2, md: 3 }, mt: 2 }}>
 					<Stack
 						direction={isMobile ? 'column' : 'row'}
-						justifyContent="space-between"
-						alignItems={isMobile ? 'stretch' : 'center'}
 						spacing={2}
+						sx={{
+							justifyContent: 'space-between',
+							alignItems: isMobile ? 'stretch' : 'center',
+						}}
 					>
 						<Button
 							variant="outlined"
@@ -174,7 +182,13 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 							{t.articles.backToList}
 						</Button>
 						{!isLoading && !error && (company?.role === 'Caissier' || company?.role === 'Commercial') && (
-							<Stack direction="row" gap={1} flexWrap="wrap">
+							<Stack
+								direction="row"
+								sx={{
+									gap: 1,
+									flexWrap: 'wrap',
+								}}
+							>
 								<Button
 									variant="outlined"
 									size="small"
@@ -212,9 +226,20 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 						<Stack spacing={3}>
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={3} alignItems="center">
+									<Stack
+										direction="row"
+										spacing={3}
+										sx={{
+											alignItems: 'center',
+										}}
+									>
 										<DescriptionIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
+										<Typography
+											variant="h6"
+											sx={{
+												fontWeight: 700,
+											}}
+										>
 											{t.articles.photoSection}
 										</Typography>
 									</Stack>
@@ -222,7 +247,9 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									<Stack
 										direction={isMobile ? 'column' : 'row'}
 										spacing={3}
-										alignItems={isMobile ? 'center' : 'flex-start'}
+										sx={{
+											alignItems: isMobile ? 'center' : 'flex-start',
+										}}
 									>
 										{client?.photo ? (
 											<Box
@@ -263,19 +290,30 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 							{/* Identité de l'article */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={3} alignItems="center">
+									<Stack
+										direction="row"
+										spacing={3}
+										sx={{
+											alignItems: 'center',
+										}}
+									>
 										<DescriptionIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
+										<Typography
+											variant="h6"
+											sx={{
+												fontWeight: 700,
+											}}
+										>
 											{t.articles.identitySection}
 										</Typography>
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 									<Stack spacing={0}>
-											<InfoRow icon={<FingerprintIcon />} label={t.articles.colReference} value={client?.reference} />
-											<Divider />
-											<InfoRow icon={<CategoryIcon />} label={t.articles.colType} value={client?.type_article} />
-											<Divider />
-											<InfoRow icon={<DescriptionIcon />} label={t.articles.colDesignation} value={client?.designation} />
+										<InfoRow icon={<FingerprintIcon />} label={t.articles.colReference} value={client?.reference} />
+										<Divider />
+										<InfoRow icon={<CategoryIcon />} label={t.articles.colType} value={client?.type_article} />
+										<Divider />
+										<InfoRow icon={<DescriptionIcon />} label={t.articles.colDesignation} value={client?.designation} />
 									</Stack>
 								</CardContent>
 							</Card>
@@ -283,9 +321,21 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 							{/* Prix et TVA */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<Stack
+										direction="row"
+										spacing={2}
+										sx={{
+											alignItems: 'center',
+											mb: 2,
+										}}
+									>
 										<CreditCardIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
+										<Typography
+											variant="h6"
+											sx={{
+												fontWeight: 700,
+											}}
+										>
 											{t.articles.pricesSection}
 										</Typography>
 									</Stack>
@@ -293,13 +343,13 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									<Stack spacing={0}>
 										<InfoRow
 											icon={<ShoppingCartIcon />}
-												label={t.articles.colPrixAchat}
+											label={t.articles.colPrixAchat}
 											value={client?.prix_achat != null ? `${client.prix_achat} ${client.devise_prix_achat}` : null}
 										/>
 										<Divider />
-											<InfoRow icon={<SellIcon />} label={t.articles.colPrixVente} value={client?.prix_vente} />
-											<Divider />
-											<InfoRow icon={<ReceiptIcon />} label={t.articles.fieldTva} value={client?.tva} />
+										<InfoRow icon={<SellIcon />} label={t.articles.colPrixVente} value={client?.prix_vente} />
+										<Divider />
+										<InfoRow icon={<ReceiptIcon />} label={t.articles.fieldTva} value={client?.tva} />
 									</Stack>
 								</CardContent>
 							</Card>
@@ -307,21 +357,41 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 							{/* Classification */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<Stack
+										direction="row"
+										spacing={2}
+										sx={{
+											alignItems: 'center',
+											mb: 2,
+										}}
+									>
 										<BusinessIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
+										<Typography
+											variant="h6"
+											sx={{
+												fontWeight: 700,
+											}}
+										>
 											{t.articles.classificationSection}
 										</Typography>
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 									<Stack spacing={0}>
-											<InfoRow icon={<BusinessIcon />} label={t.articles.filterCategorie} value={client?.categorie_name} />
-											<Divider />
-											<InfoRow icon={<StarIcon />} label={t.articles.filterMarque} value={client?.marque_name} />
-											<Divider />
-											<InfoRow icon={<StraightenIcon />} label={t.articles.filterUnite} value={client?.unite_name} />
-											<Divider />
-											<InfoRow icon={<LocationOnIcon />} label={t.articles.filterEmplacement} value={client?.emplacement_name} />
+										<InfoRow
+											icon={<BusinessIcon />}
+											label={t.articles.filterCategorie}
+											value={client?.categorie_name}
+										/>
+										<Divider />
+										<InfoRow icon={<StarIcon />} label={t.articles.filterMarque} value={client?.marque_name} />
+										<Divider />
+										<InfoRow icon={<StraightenIcon />} label={t.articles.filterUnite} value={client?.unite_name} />
+										<Divider />
+										<InfoRow
+											icon={<LocationOnIcon />}
+											label={t.articles.filterEmplacement}
+											value={client?.emplacement_name}
+										/>
 									</Stack>
 								</CardContent>
 							</Card>
@@ -329,9 +399,21 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 							{/* Remarque */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<Stack
+										direction="row"
+										spacing={2}
+										sx={{
+											alignItems: 'center',
+											mb: 2,
+										}}
+									>
 										<NotesIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
+										<Typography
+											variant="h6"
+											sx={{
+												fontWeight: 700,
+											}}
+										>
 											{t.articles.remarkSection}
 										</Typography>
 									</Stack>
@@ -343,9 +425,21 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 							{/* Dates */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<Stack
+										direction="row"
+										spacing={2}
+										sx={{
+											alignItems: 'center',
+											mb: 2,
+										}}
+									>
 										<CalendarTodayIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
+										<Typography
+											variant="h6"
+											sx={{
+												fontWeight: 700,
+											}}
+										>
 											{t.articles.datesSection}
 										</Typography>
 									</Stack>
@@ -353,13 +447,13 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									<Stack spacing={0}>
 										<InfoRow
 											icon={<CalendarTodayIcon />}
-												label={t.common.dateCreation}
-												value={formatDate(client?.date_created ?? null)}
-											/>
-											<Divider />
-											<InfoRow
-												icon={<CalendarTodayIcon />}
-												label={t.common.dateMaj}
+											label={t.common.dateCreation}
+											value={formatDate(client?.date_created ?? null)}
+										/>
+										<Divider />
+										<InfoRow
+											icon={<CalendarTodayIcon />}
+											label={t.common.dateMaj}
 											value={formatDate(client?.date_updated ?? null)}
 										/>
 									</Stack>

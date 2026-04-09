@@ -4,39 +4,39 @@ import React, { useMemo, useState } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import {
+	Alert,
 	Box,
 	Button,
-	Stack,
-	Typography,
 	Card,
 	CardContent,
 	Divider,
-	useTheme,
-	useMediaQuery,
-	ToggleButtonGroup,
-	ToggleButton,
-	Alert,
 	IconButton,
+	Stack,
+	ToggleButton,
+	ToggleButtonGroup,
 	Tooltip,
+	Typography,
+	useMediaQuery,
+	useTheme,
 } from '@mui/material';
 import {
-	ArrowBack as ArrowBackIcon,
-	Business as BusinessIcon,
-	Notes as NotesIcon,
-	Email as EmailIcon,
-	Person as PersonIcon,
-	PersonOutline as PersonOutlineIcon,
-	LocationOn as LocationOnIcon,
-	Phone as PhoneIcon,
 	AccountBalance as AccountBalanceIcon,
-	Fingerprint as FingerprintIcon,
+	Add as AddIcon,
+	ArrowBack as ArrowBackIcon,
 	Badge as BadgeIcon,
+	Business as BusinessIcon,
 	CreditCard as CreditCardIcon,
 	Description as DescriptionIcon,
 	Edit as EditIcon,
-	Add as AddIcon,
-	Warning as WarningIcon,
+	Email as EmailIcon,
+	Fingerprint as FingerprintIcon,
+	LocationOn as LocationOnIcon,
+	Notes as NotesIcon,
+	Person as PersonIcon,
+	PersonOutlined as PersonOutlineIcon,
+	Phone as PhoneIcon,
 	Refresh as RefreshIcon,
+	Warning as WarningIcon,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -47,7 +47,7 @@ import { textInputTheme } from '@/utils/themes';
 import { CLIENTS_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import type { DropDownType } from '@/types/accountTypes';
-import { useToast, useLanguage } from '@/utils/hooks';
+import { useLanguage, useToast } from '@/utils/hooks';
 import {
 	useAddClientMutation,
 	useEditClientMutation,
@@ -56,7 +56,7 @@ import {
 } from '@/store/services/client';
 import { getLabelForKey, setFormikAutoErrors } from '@/utils/helpers';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
-import type { TypeClientType, ClientSchemaType } from '@/types/clientTypes';
+import type { ClientSchemaType, TypeClientType } from '@/types/clientTypes';
 import { useAddCityMutation, useGetCitiesListQuery } from '@/store/services/parameter';
 import { clientSchema, pmRequired, ppRequired } from '@/utils/formValidationSchemas';
 import AddEntityModal from '@/components/shared/addEntityModal/addEntityModal';
@@ -90,9 +90,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		data: generatedCodeData,
 		isLoading: isCodeLoading,
 		refetch: refetchCodeClient,
-	} = useGetCodeClientQuery({ company_id }, {
-		skip: !token || isEditMode,
-	});
+	} = useGetCodeClientQuery(
+		{ company_id },
+		{
+			skip: !token || isEditMode,
+		},
+	);
 
 	// Mutations
 	const [addClient, { isLoading: isAddLoading, error: addError }] = useAddClientMutation();
@@ -258,16 +261,19 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const hasValidationErrors = Object.keys(validationErrors).length > 0;
 
 	const isLoading =
-		isAddLoading ||
-		isUpdateLoading ||
-		isPending ||
-		(isEditMode && isDataLoading) ||
-		(!isEditMode && isCodeLoading);
+		isAddLoading || isUpdateLoading || isPending || (isEditMode && isDataLoading) || (!isEditMode && isCodeLoading);
 	const shouldShowError = (axiosError?.status ?? 0) > 400 && !isLoading;
 
 	return (
 		<Stack spacing={3} sx={{ p: { xs: 2, md: 3 } }}>
-			<Stack direction={isMobile ? 'column' : 'row'} pt={2} justifyContent="space-between" spacing={2}>
+			<Stack
+				direction={isMobile ? 'column' : 'row'}
+				spacing={2}
+				sx={{
+					pt: 2,
+					justifyContent: 'space-between',
+				}}
+			>
 				<Button
 					variant="outlined"
 					startIcon={<ArrowBackIcon />}
@@ -284,7 +290,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			</Stack>
 			{hasValidationErrors && (
 				<Alert severity="error" icon={<WarningIcon />} sx={{ mb: 2 }}>
-					<Typography variant="subtitle2" fontWeight={600}>
+					<Typography
+						variant="subtitle2"
+						sx={{
+							fontWeight: 600,
+						}}
+					>
 						{t.common.validationErrors}
 					</Typography>
 					<ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
@@ -309,9 +320,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						{/* Client type selection */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
 							<CardContent sx={{ p: 3 }}>
-								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+								<Stack
+									direction="row"
+									spacing={2}
+									sx={{
+										alignItems: 'center',
+										mb: 2,
+									}}
+								>
 									<PersonIcon color="primary" />
-									<Typography variant="h6" fontWeight={700}>
+									<Typography
+										variant="h6"
+										sx={{
+											fontWeight: 700,
+										}}
+									>
 										{t.clients.typeSection}
 									</Typography>
 								</Stack>
@@ -333,7 +356,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								</ToggleButtonGroup>
 
 								<Stack spacing={2.5}>
-									<Stack direction="row" spacing={1} alignItems="flex-start">
+									<Stack
+										direction="row"
+										spacing={1}
+										sx={{
+											alignItems: 'flex-start',
+										}}
+									>
 										<CustomTextInput
 											id="code_client"
 											type="text"
@@ -373,9 +402,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						{/* Conditional core info */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
 							<CardContent sx={{ p: 3 }}>
-								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+								<Stack
+									direction="row"
+									spacing={2}
+									sx={{
+										alignItems: 'center',
+										mb: 2,
+									}}
+								>
 									<BusinessIcon color="primary" />
-									<Typography variant="h6" fontWeight={700}>
+									<Typography
+										variant="h6"
+										sx={{
+											fontWeight: 700,
+										}}
+									>
 										{t.clients.identitySection}
 									</Typography>
 								</Stack>
@@ -512,9 +553,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						{/* {t.clients.contactSection} */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
 							<CardContent sx={{ p: 3 }}>
-								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+								<Stack
+									direction="row"
+									spacing={2}
+									sx={{
+										alignItems: 'center',
+										mb: 2,
+									}}
+								>
 									<PhoneIcon color="primary" />
-									<Typography variant="h6" fontWeight={700}>
+									<Typography
+										variant="h6"
+										sx={{
+											fontWeight: 700,
+										}}
+									>
 										{t.clients.contactSection}
 									</Typography>
 								</Stack>
@@ -541,9 +594,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						{/* Administrative info */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
 							<CardContent sx={{ p: 3 }}>
-								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+								<Stack
+									direction="row"
+									spacing={2}
+									sx={{
+										alignItems: 'center',
+										mb: 2,
+									}}
+								>
 									<DescriptionIcon color="primary" />
-									<Typography variant="h6" fontWeight={700}>
+									<Typography
+										variant="h6"
+										sx={{
+											fontWeight: 700,
+										}}
+									>
 										{t.clients.adminSection}
 									</Typography>
 								</Stack>
@@ -612,9 +677,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						{/* City + Payment */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
 							<CardContent sx={{ p: 3 }}>
-								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+								<Stack
+									direction="row"
+									spacing={2}
+									sx={{
+										alignItems: 'center',
+										mb: 2,
+									}}
+								>
 									<LocationOnIcon color="primary" />
-									<Typography variant="h6" fontWeight={700}>
+									<Typography
+										variant="h6"
+										sx={{
+											fontWeight: 700,
+										}}
+									>
 										{t.clients.villeSection}
 									</Typography>
 								</Stack>
@@ -624,7 +701,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										id="ville"
 										size="small"
 										noOptionsText={t.clients.noVille}
-										label={t.clients.fieldVille + (isPM ? (isRequiredPM('ville') ? ' *' : '') : isRequiredPP('ville') ? ' *' : '')}
+										label={
+											t.clients.fieldVille +
+											(isPM ? (isRequiredPM('ville') ? ' *' : '') : isRequiredPP('ville') ? ' *' : '')
+										}
 										items={cityItems}
 										theme={theme}
 										value={selectedCity}
@@ -632,7 +712,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										onChange={(_, newVal) => {
 											formik.setFieldValue('ville', newVal ? Number(newVal.value) : null);
 										}}
-									onBlur={formik.handleBlur('ville')}
+										onBlur={formik.handleBlur('ville')}
 										error={formik.touched.ville && Boolean(formik.errors.ville)}
 										helperText={formik.touched.ville ? formik.errors.ville : ''}
 										startIcon={<LocationOnIcon fontSize="small" />}
@@ -646,15 +726,16 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="delai_de_paiement"
 										type="number"
-										label={t.clients.fieldDelaiPaiement + (
-											isPM
+										label={
+											t.clients.fieldDelaiPaiement +
+											(isPM
 												? isRequiredPM('delai_de_paiement')
 													? ' *'
 													: ''
 												: isRequiredPP('delai_de_paiement')
 													? ' *'
-													: ''
-										)}
+													: '')
+										}
 										value={formik.values.delai_de_paiement === null ? '' : String(formik.values.delai_de_paiement)}
 										onChange={(e) => {
 											const value = e.target.value === '' ? null : Number(e.target.value);
@@ -680,9 +761,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						{/* Remark */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
 							<CardContent sx={{ p: 3 }}>
-								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+								<Stack
+									direction="row"
+									spacing={2}
+									sx={{
+										alignItems: 'center',
+										mb: 2,
+									}}
+								>
 									<NotesIcon color="primary" />
-									<Typography variant="h6" fontWeight={700}>
+									<Typography
+										variant="h6"
+										sx={{
+											fontWeight: 700,
+										}}
+									>
 										{t.clients.remarkSection}
 									</Typography>
 								</Stack>
@@ -728,7 +821,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					</Stack>
 				</form>
 			)}
-
 			{/* Add City Modal */}
 			<AddEntityModal
 				open={openCityModal}

@@ -1,6 +1,9 @@
 import React from 'react';
-import { render, screen, cleanup, fireEvent } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import { useDocumentLinesColumns, type UseDocumentLinesColumnsParams } from './useDocumentLinesColumns';
+import type { DeviFactureLineFormValues } from '@/types/companyDocumentsTypes';
+import type { ArticleClass } from '@/models/classes';
 
 // ── Mock dependencies ──────────────────────────────────────────────
 jest.mock('next/image', () => ({
@@ -28,7 +31,13 @@ jest.mock('@/utils/rawData', () => ({
 }));
 jest.mock('@/components/formikElements/formattedNumberInput/formattedNumberInput', () => ({
 	__esModule: true,
-	default: (props: { id?: string; value?: unknown; error?: boolean; disabled?: boolean; onChange?: (e: unknown) => void }) => (
+	default: (props: {
+		id?: string;
+		value?: unknown;
+		error?: boolean;
+		disabled?: boolean;
+		onChange?: (e: unknown) => void;
+	}) => (
 		<input
 			data-testid={`formatted-input-${props.id}`}
 			value={String(props.value ?? '')}
@@ -59,10 +68,6 @@ jest.mock('@/components/htmlElements/tooltip/darkTooltip/darkTooltip', () => ({
 jest.mock('./companyDocumentFormContent', () => ({
 	generateRowId: (article: number | string, idx: number) => `${article}_${idx}`,
 }));
-
-import { useDocumentLinesColumns, type UseDocumentLinesColumnsParams } from './useDocumentLinesColumns';
-import type { DeviFactureLineFormValues } from '@/types/companyDocumentsTypes';
-import type { ArticleClass } from '@/models/classes';
 
 // ── Helpers ────────────────────────────────────────────────────────
 const makeLine = (overrides: Partial<DeviFactureLineFormValues> = {}): DeviFactureLineFormValues =>

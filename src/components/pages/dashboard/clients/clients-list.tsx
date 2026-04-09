@@ -1,35 +1,42 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Button, Typography, Chip } from '@mui/material';
+import { Box, Button, Chip, Typography } from '@mui/material';
 import {
-	Edit as EditIcon,
-	Delete as DeleteIcon,
-	Visibility as VisibilityIcon,
-	Archive as ArchiveIcon,
-	Unarchive as UnarchiveIcon,
 	Add as AddIcon,
+	Archive as ArchiveIcon,
 	Close as CloseIcon,
+	Delete as DeleteIcon,
+	Edit as EditIcon,
+	Unarchive as UnarchiveIcon,
+	Visibility as VisibilityIcon,
 } from '@mui/icons-material';
-import { GridColDef, GridRenderCellParams, GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
+import { GridColDef, GridFilterModel, GridLogicOperator, GridRenderCellParams } from '@mui/x-data-grid';
 import { useInitAccessToken } from '@/contexts/InitContext';
-import { useDeleteClientMutation, useGetClientsListQuery, usePatchArchiveMutation, useBulkDeleteClientsMutation, useBulkArchiveClientsMutation, useLazyGetClientsListQuery } from '@/store/services/client';
+import {
+	useBulkArchiveClientsMutation,
+	useBulkDeleteClientsMutation,
+	useDeleteClientMutation,
+	useGetClientsListQuery,
+	useLazyGetClientsListQuery,
+	usePatchArchiveMutation,
+} from '@/store/services/client';
 import { CLIENTS_ADD, CLIENTS_EDIT, CLIENTS_VIEW } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type { ClientClass } from '@/models/classes';
-import { formatDate, extractApiErrorMessage } from '@/utils/helpers';
-import { useToast, useLanguage } from '@/utils/hooks';
+import { extractApiErrorMessage, formatDate } from '@/utils/helpers';
+import { useLanguage, useToast } from '@/utils/hooks';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
 import { useGetCitiesListQuery } from '@/store/services/parameter';
-import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
+import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 
 interface FormikContentProps extends SessionProps {
 	company_id: number;
@@ -74,9 +81,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const { data: cities } = useGetCitiesListQuery({ company_id }, { skip: !token });
 
 	const chipFilters: ChipFilterConfig[] = React.useMemo(
-		() => [
-			{ key: 'ville', label: t.clients.filterVille, paramName: 'ville_ids', options: cities ?? [] },
-		],
+		() => [{ key: 'ville', label: t.clients.filterVille, paramName: 'ville_ids', options: cities ?? [] }],
 		[cities, t],
 	);
 
@@ -126,7 +131,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	};
 
 	const deleteModalActions = [
-		{ text: t.common.cancel, active: false, onClick: () => setShowDeleteModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
+		{
+			text: t.common.cancel,
+			active: false,
+			onClick: () => setShowDeleteModal(false),
+			icon: <CloseIcon />,
+			color: '#6B6B6B',
+		},
 		{ text: t.common.delete, active: true, onClick: deleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
 	];
 
@@ -229,15 +240,31 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	};
 
 	const bulkDeleteModalActions = [
-		{ text: t.common.cancel, active: false, onClick: () => setShowBulkDeleteModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
-		{ text: t.clients.bulkDeleteBtn(selectedIds.length), active: true, onClick: bulkDeleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
+		{
+			text: t.common.cancel,
+			active: false,
+			onClick: () => setShowBulkDeleteModal(false),
+			icon: <CloseIcon />,
+			color: '#6B6B6B',
+		},
+		{
+			text: t.clients.bulkDeleteBtn(selectedIds.length),
+			active: true,
+			onClick: bulkDeleteHandler,
+			icon: <DeleteIcon />,
+			color: '#D32F2F',
+		},
 	];
 
 	const bulkArchiveHandler = async () => {
 		const archiving = bulkArchiveAction === 'archive';
 		try {
 			await bulkArchiveClients({ ids: selectedIds, archived: archiving }).unwrap();
-			onSuccess(bulkArchiveAction === 'archive' ? t.clients.bulkArchiveSuccess(selectedIds.length) : t.clients.bulkUnarchiveSuccess(selectedIds.length));
+			onSuccess(
+				bulkArchiveAction === 'archive'
+					? t.clients.bulkArchiveSuccess(selectedIds.length)
+					: t.clients.bulkUnarchiveSuccess(selectedIds.length),
+			);
 		} catch {
 			onError(bulkArchiveAction === 'archive' ? t.clients.bulkArchiveError : t.clients.bulkUnarchiveError);
 		} finally {
@@ -257,7 +284,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			color: '#6B6B6B',
 		},
 		{
-			text: bulkArchiveAction === 'archive' ? t.clients.bulkArchiveBtn(selectedIds.length) : t.clients.bulkUnarchiveBtn(selectedIds.length),
+			text:
+				bulkArchiveAction === 'archive'
+					? t.clients.bulkArchiveBtn(selectedIds.length)
+					: t.clients.bulkUnarchiveBtn(selectedIds.length),
 			active: true,
 			onClick: bulkArchiveHandler,
 			icon: bulkArchiveAction === 'archive' ? <ArchiveIcon /> : <UnarchiveIcon />,
@@ -359,7 +389,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			headerName: t.clients.colVille,
 			flex: 1,
 			minWidth: 100,
-			filterOperators: createDropdownFilterOperators(villeFilterOptions, t.clients.allVilles, undefined, t.filterPanel.is),
+			filterOperators: createDropdownFilterOperators(
+				villeFilterOptions,
+				t.clients.allVilles,
+				undefined,
+				t.filterPanel.is,
+			),
 			renderCell: (params: GridRenderCellParams<ClientClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -496,7 +531,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 							}}
 							startIcon={archived ? <UnarchiveIcon fontSize="small" /> : <ArchiveIcon fontSize="small" />}
 						>
-					{archived ? t.clients.bulkUnarchiveBtn(selectedIds.length) : t.clients.bulkArchiveBtn(selectedIds.length)}
+							{archived ? t.clients.bulkUnarchiveBtn(selectedIds.length) : t.clients.bulkArchiveBtn(selectedIds.length)}
 						</Button>
 					)}
 				</Box>
@@ -517,7 +552,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				checkboxSelection={role === 'Caissier' || role === 'Commercial'}
 				onSelectionChange={handleSelectionChange}
 				selectedIds={selectedIds}
-
 				totalMatchingCount={data?.count}
 				onSelectAllMatchingClick={handleSelectAllMatching}
 				selectAllMatchingLoading={isLoadingAllIds}
@@ -538,11 +572,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					title={archived ? t.clients.unarchiveModalTitle : t.clients.archiveModalTitle}
 					titleIcon={<ArchiveIcon />}
 					titleIconColor="#ED6C02"
-					body={
-						archived
-							? t.clients.unarchiveModalBody
-							: t.clients.archiveModalBody
-					}
+					body={archived ? t.clients.unarchiveModalBody : t.clients.archiveModalBody}
 					actions={archiveModalActions}
 				/>
 			)}
@@ -557,12 +587,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			)}
 			{showBulkArchiveModal && (
 				<ActionModals
-					title={bulkArchiveAction === 'archive' ? t.clients.bulkArchiveModalTitle(selectedIds.length) : t.clients.bulkUnarchiveModalTitle(selectedIds.length)}
+					title={
+						bulkArchiveAction === 'archive'
+							? t.clients.bulkArchiveModalTitle(selectedIds.length)
+							: t.clients.bulkUnarchiveModalTitle(selectedIds.length)
+					}
 					titleIcon={bulkArchiveAction === 'archive' ? <ArchiveIcon /> : <UnarchiveIcon />}
 					titleIconColor="#ED6C02"
-					body={bulkArchiveAction === 'archive'
-						? t.clients.bulkArchiveModalBody(selectedIds.length)
-						: t.clients.bulkUnarchiveModalBody(selectedIds.length)
+					body={
+						bulkArchiveAction === 'archive'
+							? t.clients.bulkArchiveModalBody(selectedIds.length)
+							: t.clients.bulkUnarchiveModalBody(selectedIds.length)
 					}
 					actions={bulkArchiveModalActions}
 				/>

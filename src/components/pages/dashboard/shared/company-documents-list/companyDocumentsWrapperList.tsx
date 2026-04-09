@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, Container, Paper, Stack, Tab, Tabs, Typography } from '@mui/material';
 import { Business as BusinessIcon } from '@mui/icons-material';
@@ -32,7 +32,7 @@ const CompanyDocumentsWrapperList: React.FC<CompanyDocumentsListProps> = ({ sess
 	const router = useRouter();
 	const { t } = useLanguage();
 	const { data: companiesData, isLoading } = useGetUserCompaniesQuery(undefined, { skip: !token });
-	
+
 	// Load saved company index from localStorage
 	const [selectedIndex, setSelectedIndex] = useState(() => {
 		if (typeof window !== 'undefined') {
@@ -41,7 +41,7 @@ const CompanyDocumentsWrapperList: React.FC<CompanyDocumentsListProps> = ({ sess
 		}
 		return 0;
 	});
-	
+
 	const companies = useMemo(() => (companiesData ?? []) as CompanyLike[], [companiesData]);
 
 	// Compute valid index - automatically clamps to valid range
@@ -83,8 +83,11 @@ const CompanyDocumentsWrapperList: React.FC<CompanyDocumentsListProps> = ({ sess
 			direction="column"
 			spacing={2}
 			className={Styles.flexRootStack}
-			mt="40px"
-			sx={{ overflowX: 'auto', overflowY: 'hidden' }}
+			sx={{
+				mt: '40px',
+				overflowX: 'auto',
+				overflowY: 'hidden',
+			}}
 		>
 			<NavigationBar title={title}>
 				{!companies || companies.length === 0 ? (
@@ -112,26 +115,47 @@ const CompanyDocumentsWrapperList: React.FC<CompanyDocumentsListProps> = ({ sess
 							>
 								<BusinessIcon sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
 							</Box>
-							<Typography variant="h5" fontWeight={600} color="text.primary" gutterBottom>
+							<Typography
+								variant="h5"
+								gutterBottom
+								sx={{
+									fontWeight: 600,
+									color: 'text.primary',
+								}}
+							>
 								{t.shared.noCompaniesFound}
 							</Typography>
-						{selectedCompany?.role === 'Caissier' ? (
+							{selectedCompany?.role === 'Caissier' ? (
 								<>
-									<Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 3 }}>
-											{t.shared.noCompaniesAdminMessage}
-										</Typography>
-										<Button
-											variant="contained"
-											size="large"
-											sx={{ mt: 2, borderRadius: 2, px: 4 }}
-											onClick={() => router.push(COMPANIES_ADD)}
-										>
-											{t.shared.createCompany}
+									<Typography
+										variant="body1"
+										sx={{
+											color: 'text.secondary',
+											mt: 2,
+											mb: 3,
+										}}
+									>
+										{t.shared.noCompaniesAdminMessage}
+									</Typography>
+									<Button
+										variant="contained"
+										size="large"
+										sx={{ mt: 2, borderRadius: 2, px: 4 }}
+										onClick={() => router.push(COMPANIES_ADD)}
+									>
+										{t.shared.createCompany}
 									</Button>
 								</>
 							) : (
-								<Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 3 }}>
-										{t.shared.noCompaniesUserMessage}
+								<Typography
+									variant="body1"
+									sx={{
+										color: 'text.secondary',
+										mt: 2,
+										mb: 3,
+									}}
+								>
+									{t.shared.noCompaniesUserMessage}
 								</Typography>
 							)}
 						</Paper>

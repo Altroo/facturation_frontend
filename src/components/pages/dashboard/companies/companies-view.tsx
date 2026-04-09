@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, isValidElement, useState } from 'react';
+import React, { isValidElement, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import { useInitAccessToken } from '@/contexts/InitContext';
@@ -8,51 +8,51 @@ import { useGetCompanyQuery, useSuspendCompanyMutation } from '@/store/services/
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import {
-	Stack,
-	Typography,
 	Avatar,
-	Chip,
-	useTheme,
-	useMediaQuery,
+	Box,
 	Button,
 	Card,
 	CardContent,
+	Chip,
 	Divider,
-	Box,
 	Paper,
+	Stack,
+	Typography,
+	useMediaQuery,
+	useTheme,
 } from '@mui/material';
 import {
+	AccountBalance as AccountBalanceIcon,
+	AccountBalanceWallet as AccountBalanceWalletIcon,
+	AdminPanelSettings as AdminPanelSettingsIcon,
 	ArrowBack as ArrowBackIcon,
-	PauseCircle as PauseIcon,
-	Person as PersonIcon,
-	Edit as EditIcon,
+	Badge as BadgeIcon,
 	Business as BusinessIcon,
 	CalendarToday as CalendarTodayIcon,
-	People as PeopleIcon,
-	LocationOn as LocationOnIcon,
-	Language as LanguageIcon,
-	AccountBalance as AccountBalanceIcon,
-	Receipt as ReceiptIcon,
-	Badge as BadgeIcon,
+	ContactPhone as ContactPhoneIcon,
+	Edit as EditIcon,
+	Email as EmailIcon,
+	Fax as FaxIcon,
 	Fingerprint as FingerprintIcon,
 	Gavel as GavelIcon,
-	AccountBalanceWallet as AccountBalanceWalletIcon,
-	Email as EmailIcon,
-	Phone as PhoneIcon,
-	Fax as FaxIcon,
-	PhoneAndroid as PhoneAndroidIcon,
+	Language as LanguageIcon,
+	LocationOn as LocationOnIcon,
+	PauseCircle as PauseIcon,
+	People as PeopleIcon,
+	Person as PersonIcon,
 	PersonPin as PersonPinIcon,
-	AdminPanelSettings as AdminPanelSettingsIcon,
-	Verified as StampIcon,
+	Phone as PhoneIcon,
+	PhoneAndroid as PhoneAndroidIcon,
 	Public as PublicIcon,
-	ContactPhone as ContactPhoneIcon,
+	Receipt as ReceiptIcon,
+	Verified as StampIcon,
 } from '@mui/icons-material';
-import { COMPANIES_LIST, COMPANIES_EDIT } from '@/utils/routes';
+import { COMPANIES_EDIT, COMPANIES_LIST } from '@/utils/routes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { Protected } from '@/components/layouts/protected/protected';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import { formatDate } from '@/utils/helpers';
-import { useToast, useLanguage } from '@/utils/hooks';
+import { useLanguage, useToast } from '@/utils/hooks';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 
 interface InfoRowProps {
@@ -68,7 +68,13 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 	const displayValue = isValidElement(value) ? value : value && value.toString().length > 1 ? value : '-';
 
 	return (
-		<Stack direction="row" alignItems="center" sx={{ py: 1.5 }}>
+		<Stack
+			direction="row"
+			sx={{
+				alignItems: 'center',
+				py: 1.5,
+			}}
+		>
 			{/* Icon */}
 			<Box
 				sx={{
@@ -80,21 +86,20 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 			>
 				{icon}
 			</Box>
-
 			{/* Label + Value */}
 			<Stack
 				direction="row"
-				alignItems="center"
 				spacing={isMobile ? 0 : 2}
 				sx={{
+					alignItems: 'center',
 					flex: 1,
 					flexWrap: 'wrap',
 				}}
 			>
 				<Typography
-					fontWeight={600}
-					color="text.secondary"
 					sx={{
+						fontWeight: 600,
+						color: 'text.secondary',
 						minWidth: { xs: '100%', sm: 200 },
 						wordBreak: 'break-word',
 					}}
@@ -164,39 +169,59 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 	];
 
 	return (
-		<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
+		<Stack
+			direction="column"
+			spacing={2}
+			className={Styles.flexRootStack}
+			sx={{
+				mt: '32px',
+			}}
+		>
 			<NavigationBar title={t.companies.detailsTitle}>
 				<Protected>
 					<Stack spacing={3} sx={{ p: { xs: 2, md: 3 }, mt: 2 }}>
-<Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between" alignItems={isMobile ? 'stretch' : 'center'} spacing={2}>
-						<Button
-							variant="outlined"
-							startIcon={<ArrowBackIcon />}
-							onClick={() => router.push(COMPANIES_LIST)}
-							sx={{ width: isMobile ? '100%' : 'auto' }}
+						<Stack
+							direction={isMobile ? 'column' : 'row'}
+							spacing={2}
+							sx={{
+								justifyContent: 'space-between',
+								alignItems: isMobile ? 'stretch' : 'center',
+							}}
 						>
-							{t.companies.backToList}
-						</Button>
-						{!isLoading && !error && (
-							<Stack direction="row" gap={1} flexWrap="wrap">
-								<Button
-									variant="outlined"
-									size="small"
-									startIcon={<EditIcon />}
-									onClick={() => router.push(COMPANIES_EDIT(id))}
+							<Button
+								variant="outlined"
+								startIcon={<ArrowBackIcon />}
+								onClick={() => router.push(COMPANIES_LIST)}
+								sx={{ width: isMobile ? '100%' : 'auto' }}
+							>
+								{t.companies.backToList}
+							</Button>
+							{!isLoading && !error && (
+								<Stack
+									direction="row"
+									sx={{
+										gap: 1,
+										flexWrap: 'wrap',
+									}}
 								>
-									Modifier
-								</Button>
-								<Button
-									variant="outlined"
-									color="error"
-									size="small"
-									startIcon={<PauseIcon />}
-									onClick={() => setShowSuspendModal(true)}
-								>
-									Suspendre
-								</Button>
-							</Stack>
+									<Button
+										variant="outlined"
+										size="small"
+										startIcon={<EditIcon />}
+										onClick={() => router.push(COMPANIES_EDIT(id))}
+									>
+										Modifier
+									</Button>
+									<Button
+										variant="outlined"
+										color="error"
+										size="small"
+										startIcon={<PauseIcon />}
+										onClick={() => setShowSuspendModal(true)}
+									>
+										Suspendre
+									</Button>
+								</Stack>
 							)}
 						</Stack>
 
@@ -220,7 +245,9 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 										<Stack
 											direction={isMobile ? 'column' : 'row'}
 											spacing={3}
-											alignItems={isMobile ? 'center' : 'flex-start'}
+											sx={{
+												alignItems: isMobile ? 'center' : 'flex-start',
+											}}
 										>
 											<Avatar
 												src={`${companyData?.logo_cropped}`}
@@ -237,23 +264,42 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 												}}
 											/>
 											<Stack spacing={2} sx={{ flex: 1, width: '100%' }}>
-												<Stack spacing={1} alignItems={isMobile ? 'center' : 'flex-start'}>
+												<Stack
+													spacing={1}
+													sx={{
+														alignItems: isMobile ? 'center' : 'flex-start',
+													}}
+												>
 													<Typography
 														variant="h4"
-														textAlign={isMobile ? 'center' : 'inherit'}
-														fontSize={isMobile ? '20px' : '25px'}
-														fontWeight={700}
+														sx={{
+															textAlign: isMobile ? 'center' : 'inherit',
+															fontSize: isMobile ? '20px' : '25px',
+															fontWeight: 700,
+														}}
 													>
 														{companyData?.raison_sociale ?? "Nom de l'entreprise"}
 													</Typography>
-													<Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+													<Stack
+														direction="row"
+														spacing={1}
+														sx={{
+															alignItems: 'center',
+															flexWrap: 'wrap',
+														}}
+													>
 														<Chip
 															icon={<BadgeIcon />}
 															label={`ICE: ${companyData?.id ?? '-'}`}
 															size="small"
 															variant="outlined"
 														/>
-															<Chip icon={<BusinessIcon />} label={t.companies.companyChip} color="primary" size="small" />
+														<Chip
+															icon={<BusinessIcon />}
+															label={t.companies.companyChip}
+															color="primary"
+															size="small"
+														/>
 													</Stack>
 												</Stack>
 											</Stack>
@@ -264,9 +310,21 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 								{/* Stamp Card */}
 								<Card elevation={2} sx={{ borderRadius: 2 }}>
 									<CardContent sx={{ p: 3 }}>
-										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<Stack
+											direction="row"
+											spacing={2}
+											sx={{
+												alignItems: 'center',
+												mb: 2,
+											}}
+										>
 											<StampIcon color="primary" />
-											<Typography variant="h6" fontWeight={700}>
+											<Typography
+												variant="h6"
+												sx={{
+													fontWeight: 700,
+												}}
+											>
 												{t.companies.stampSection}
 											</Typography>
 										</Stack>
@@ -274,7 +332,9 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 										<Stack
 											direction={isMobile ? 'column' : 'row'}
 											spacing={3}
-											alignItems={isMobile ? 'center' : 'flex-start'}
+											sx={{
+												alignItems: isMobile ? 'center' : 'flex-start',
+											}}
 										>
 											<Avatar
 												variant="square"
@@ -297,9 +357,21 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 								{/* General Information Card */}
 								<Card elevation={2} sx={{ borderRadius: 2 }}>
 									<CardContent sx={{ p: 3 }}>
-										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<Stack
+											direction="row"
+											spacing={2}
+											sx={{
+												alignItems: 'center',
+												mb: 2,
+											}}
+										>
 											<PublicIcon color="primary" />
-											<Typography variant="h6" fontWeight={700}>
+											<Typography
+												variant="h6"
+												sx={{
+													fontWeight: 700,
+												}}
+											>
 												{t.companies.generalSection}
 											</Typography>
 										</Stack>
@@ -317,9 +389,17 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 												value={formatDate(companyData?.date_updated ?? null)}
 											/>
 											<Divider />
-											<InfoRow icon={<PeopleIcon />} label={t.companies.fieldNbrEmploye} value={companyData?.nbr_employe} />
+											<InfoRow
+												icon={<PeopleIcon />}
+												label={t.companies.fieldNbrEmploye}
+												value={companyData?.nbr_employe}
+											/>
 											<Divider />
-											<InfoRow icon={<LocationOnIcon />} label={t.companies.fieldAdresse} value={companyData?.adresse} />
+											<InfoRow
+												icon={<LocationOnIcon />}
+												label={t.companies.fieldAdresse}
+												value={companyData?.adresse}
+											/>
 											<Divider />
 											<InfoRow icon={<LanguageIcon />} label={t.companies.fieldSiteWeb} value={companyData?.site_web} />
 										</Stack>
@@ -329,9 +409,21 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 								{/* Administrative Information Card */}
 								<Card elevation={2} sx={{ borderRadius: 2 }}>
 									<CardContent sx={{ p: 3 }}>
-										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<Stack
+											direction="row"
+											spacing={2}
+											sx={{
+												alignItems: 'center',
+												mb: 2,
+											}}
+										>
 											<AdminPanelSettingsIcon color="primary" />
-											<Typography variant="h6" fontWeight={700}>
+											<Typography
+												variant="h6"
+												sx={{
+													fontWeight: 700,
+												}}
+											>
 												{t.companies.adminSection}
 											</Typography>
 										</Stack>
@@ -371,19 +463,43 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 								{/* Responsible Person Card */}
 								<Card elevation={2} sx={{ borderRadius: 2 }}>
 									<CardContent sx={{ p: 3 }}>
-										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<Stack
+											direction="row"
+											spacing={2}
+											sx={{
+												alignItems: 'center',
+												mb: 2,
+											}}
+										>
 											<PersonPinIcon color="primary" />
-											<Typography variant="h6" fontWeight={700}>
+											<Typography
+												variant="h6"
+												sx={{
+													fontWeight: 700,
+												}}
+											>
 												Responsable
 											</Typography>
 										</Stack>
 										<Divider sx={{ mb: 2 }} />
 										<Stack spacing={0}>
-											<InfoRow icon={<PersonIcon />} label={t.companies.fieldCivilite} value={companyData?.civilite_responsable} />
+											<InfoRow
+												icon={<PersonIcon />}
+												label={t.companies.fieldCivilite}
+												value={companyData?.civilite_responsable}
+											/>
 											<Divider />
-											<InfoRow icon={<PersonIcon />} label={t.companies.fieldNomResponsable} value={companyData?.nom_responsable} />
+											<InfoRow
+												icon={<PersonIcon />}
+												label={t.companies.fieldNomResponsable}
+												value={companyData?.nom_responsable}
+											/>
 											<Divider />
-											<InfoRow icon={<PhoneAndroidIcon />} label={t.companies.fieldGsmResponsable} value={companyData?.gsm_responsable} />
+											<InfoRow
+												icon={<PhoneAndroidIcon />}
+												label={t.companies.fieldGsmResponsable}
+												value={companyData?.gsm_responsable}
+											/>
 										</Stack>
 									</CardContent>
 								</Card>
@@ -391,9 +507,21 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 								{/* Contact Information Card */}
 								<Card elevation={2} sx={{ borderRadius: 2 }}>
 									<CardContent sx={{ p: 3 }}>
-										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<Stack
+											direction="row"
+											spacing={2}
+											sx={{
+												alignItems: 'center',
+												mb: 2,
+											}}
+										>
 											<ContactPhoneIcon color="primary" />
-											<Typography variant="h6" fontWeight={700}>
+											<Typography
+												variant="h6"
+												sx={{
+													fontWeight: 700,
+												}}
+											>
 												Contact
 											</Typography>
 										</Stack>
@@ -411,10 +539,23 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 								{/* Managers Card */}
 								<Card elevation={2} sx={{ borderRadius: 2 }}>
 									<CardContent sx={{ p: 3 }}>
-										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<Stack
+											direction="row"
+											spacing={2}
+											sx={{
+												alignItems: 'center',
+												mb: 2,
+											}}
+										>
 											<AdminPanelSettingsIcon color="primary" />
-											<Typography variant="h6" fontWeight={700}>
-												{t.companies.managersSection} {companyData?.admins?.length ? `(${companyData.admins.length})` : ''}
+											<Typography
+												variant="h6"
+												sx={{
+													fontWeight: 700,
+												}}
+											>
+												{t.companies.managersSection}{' '}
+												{companyData?.admins?.length ? `(${companyData.admins.length})` : ''}
 											</Typography>
 										</Stack>
 										<Divider sx={{ mb: 2 }} />
@@ -439,11 +580,19 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 													>
 														<Stack
 															direction={isMobile ? 'column' : 'row'}
-															justifyContent="space-between"
-															alignItems={isMobile ? 'flex-start' : 'center'}
 															spacing={2}
+															sx={{
+																justifyContent: 'space-between',
+																alignItems: isMobile ? 'flex-start' : 'center',
+															}}
 														>
-															<Stack direction="row" spacing={2} alignItems="center">
+															<Stack
+																direction="row"
+																spacing={2}
+																sx={{
+																	alignItems: 'center',
+																}}
+															>
 																<Avatar
 																	sx={{
 																		bgcolor: 'primary.main',
@@ -454,12 +603,22 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 																	<PersonIcon />
 																</Avatar>
 																<Stack>
-																	<Typography fontWeight={600} variant="body1">
+																	<Typography
+																		variant="body1"
+																		sx={{
+																			fontWeight: 600,
+																		}}
+																	>
 																		{`${manager.first_name ?? ''} ${manager.last_name ?? ''}`.trim() ||
 																			`Utilisateur ${manager.id}`}
 																	</Typography>
 																	{manager.id && (
-																		<Typography variant="caption" color="text.secondary">
+																		<Typography
+																			variant="caption"
+																			sx={{
+																				color: 'text.secondary',
+																			}}
+																		>
 																			ID: {manager.id}
 																		</Typography>
 																	)}
@@ -482,7 +641,13 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 													textAlign: 'center',
 												}}
 											>
-												<Typography color="text.secondary">{t.companies.noManager}</Typography>
+												<Typography
+													sx={{
+														color: 'text.secondary',
+													}}
+												>
+													{t.companies.noManager}
+												</Typography>
 											</Paper>
 										)}
 									</CardContent>
@@ -492,15 +657,15 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 					</Stack>
 				</Protected>
 			</NavigationBar>
-		{showSuspendModal && (
-			<ActionModals
-				title={t.companies.suspendModalTitle}
-				body={t.companies.suspendModalBody}
-				actions={suspendModalActions}
-				titleIcon={<PauseIcon />}
-				titleIconColor="#D32F2F"
-			/>
-		)}
+			{showSuspendModal && (
+				<ActionModals
+					title={t.companies.suspendModalTitle}
+					body={t.companies.suspendModalBody}
+					actions={suspendModalActions}
+					titleIcon={<PauseIcon />}
+					titleIconColor="#D32F2F"
+				/>
+			)}
 		</Stack>
 	);
 };

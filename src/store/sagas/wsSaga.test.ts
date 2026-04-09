@@ -1,11 +1,11 @@
-import { runSaga } from 'redux-saga';
+import { eventChannel, runSaga } from 'redux-saga';
 import { watchWS } from './wsSaga';
 import { initWebsocket } from '@/store/services/ws';
 import { getAccessToken } from '@/store/selectors';
 import type { Action } from 'redux';
-import { eventChannel } from 'redux-saga';
 import * as Types from '@/store/actions';
 import { setWSMaintenance } from '@/store/slices/wsSlice';
+import { initMaintenanceSaga } from '@/store/sagas/_initSaga';
 
 jest.mock('@/store/services/ws', () => ({
 	initWebsocket: jest.fn(),
@@ -18,8 +18,6 @@ jest.mock('@/store/selectors', () => ({
 jest.mock('@/store/sagas/_initSaga', () => ({
 	initMaintenanceSaga: jest.fn(function* () {}),
 }));
-
-import { initMaintenanceSaga } from '@/store/sagas/_initSaga';
 
 describe('watchWS saga', () => {
 	it('should initialize websocket and dispatch actions from the channel', async () => {

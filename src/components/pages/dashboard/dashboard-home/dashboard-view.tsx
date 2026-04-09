@@ -1,17 +1,17 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
 	Box,
+	Button,
 	Card,
 	CardContent,
 	CardHeader,
-	Typography,
 	CircularProgress,
-	Stack,
-	Button,
-	Tooltip as MuiTooltip,
 	IconButton,
+	Stack,
+	Tooltip as MuiTooltip,
+	Typography,
 } from '@mui/material';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -20,42 +20,42 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { fr } from 'date-fns/locale';
 import { format, subMonths } from 'date-fns';
 import {
-	Chart as ChartJS,
-	CategoryScale,
-	LinearScale,
-	PointElement,
-	LineElement,
-	BarElement,
 	ArcElement,
+	BarElement,
+	CategoryScale,
+	Chart as ChartJS,
+	Filler,
+	Legend,
+	LinearScale,
+	LineElement,
+	PointElement,
 	Title,
 	Tooltip,
-	Legend,
-	Filler,
 } from 'chart.js';
-import { Line, Bar, Pie, Doughnut } from 'react-chartjs-2';
+import { Bar, Doughnut, Line, Pie } from 'react-chartjs-2';
 import {
-	useGetMonthlyRevenueEvolutionQuery,
-	useGetRevenueByDocumentTypeQuery,
-	useGetPaymentStatusOverviewQuery,
-	useGetCollectionRateQuery,
-	useGetTopClientsByRevenueQuery,
-	useGetTopProductsByQuantityQuery,
-	useGetQuoteConversionRateQuery,
-	useGetProductPriceVolumeAnalysisQuery,
-	useGetInvoiceStatusDistributionQuery,
-	useGetMonthlyDocumentVolumeQuery,
-	useGetPaymentTimelineQuery,
-	useGetOverdueReceivablesQuery,
-	useGetPaymentDelayByClientQuery,
-	useGetClientMultidimensionalProfileQuery,
-	useGetKPICardsWithTrendsQuery,
-	useGetMonthlyObjectivesQuery,
-	useGetDiscountImpactAnalysisQuery,
-	useGetProductMarginVolumeQuery,
-	useGetMonthlyGlobalPerformanceQuery,
-	useGetSectionMicroTrendsQuery,
 	type DateFilterParams,
 	type ObjectiveData,
+	useGetClientMultidimensionalProfileQuery,
+	useGetCollectionRateQuery,
+	useGetDiscountImpactAnalysisQuery,
+	useGetInvoiceStatusDistributionQuery,
+	useGetKPICardsWithTrendsQuery,
+	useGetMonthlyDocumentVolumeQuery,
+	useGetMonthlyGlobalPerformanceQuery,
+	useGetMonthlyObjectivesQuery,
+	useGetMonthlyRevenueEvolutionQuery,
+	useGetOverdueReceivablesQuery,
+	useGetPaymentDelayByClientQuery,
+	useGetPaymentStatusOverviewQuery,
+	useGetPaymentTimelineQuery,
+	useGetProductMarginVolumeQuery,
+	useGetProductPriceVolumeAnalysisQuery,
+	useGetQuoteConversionRateQuery,
+	useGetRevenueByDocumentTypeQuery,
+	useGetSectionMicroTrendsQuery,
+	useGetTopClientsByRevenueQuery,
+	useGetTopProductsByQuantityQuery,
 } from '@/store/services/dashboard';
 import { useGetCompanyQuery } from '@/store/services/company';
 import CurrencyToggle from '@/components/shared/currencyToggle/currencyToggle';
@@ -146,7 +146,12 @@ const ChartCard: React.FC<ChartCardProps> = ({ title, description, children, hei
 				}
 				subheader={
 					description && (
-						<Typography variant="caption" color="text.secondary">
+						<Typography
+							variant="caption"
+							sx={{
+								color: 'text.secondary',
+							}}
+						>
 							{description}
 						</Typography>
 					)
@@ -171,7 +176,14 @@ const ChartCard: React.FC<ChartCardProps> = ({ title, description, children, hei
 
 // Loading component
 const LoadingChart: React.FC = () => (
-	<Box display="flex" justifyContent="center" alignItems="center" height="100%">
+	<Box
+		sx={{
+			display: 'flex',
+			justifyContent: 'center',
+			alignItems: 'center',
+			height: '100%',
+		}}
+	>
 		<CircularProgress />
 	</Box>
 );
@@ -185,22 +197,34 @@ const EmptyChart: React.FC<EmptyChartProps> = ({ message }) => {
 	const { t } = useLanguage();
 	return (
 		<Box
-			display="flex"
-			flexDirection="column"
-			justifyContent="center"
-			alignItems="center"
-			height="100%"
 			sx={{
+				display: 'flex',
+				flexDirection: 'column',
+				justifyContent: 'center',
+				alignItems: 'center',
+				height: '100%',
 				backgroundColor: 'grey.50',
 				borderRadius: 2,
 				border: '1px dashed',
 				borderColor: 'grey.300',
 			}}
 		>
-			<Typography variant="h6" color="text.secondary" gutterBottom>
+			<Typography
+				variant="h6"
+				gutterBottom
+				sx={{
+					color: 'text.secondary',
+				}}
+			>
 				📊
 			</Typography>
-			<Typography variant="body2" color="text.secondary" textAlign="center">
+			<Typography
+				variant="body2"
+				sx={{
+					color: 'text.secondary',
+					textAlign: 'center',
+				}}
+			>
 				{message || t.dashboard.defaultEmpty}
 			</Typography>
 		</Box>
@@ -237,33 +261,38 @@ interface DateFilterProps {
 const DateFilter: React.FC<DateFilterProps> = ({ dateFrom, dateTo, onDateFromChange, onDateToChange, onReset }) => {
 	const { t } = useLanguage();
 	return (
-	<LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
-		<Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" sx={{ mb: 3 }}>
-			<DatePicker
-				label={t.dashboard.dateFrom}
-				value={dateFrom}
-				onChange={onDateFromChange}
-				maxDate={dateTo || undefined}
-				enableAccessibleFieldDOMStructure={false}
-				slotProps={{
-					textField: { size: 'small', sx: { minWidth: 180 } },
+		<LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
+			<Stack
+				direction={{ xs: 'column', sm: 'row' }}
+				spacing={2}
+				sx={{
+					alignItems: 'center',
+					mb: 3,
 				}}
-			/>
-			<DatePicker
-				label={t.dashboard.dateTo}
-				value={dateTo}
-				onChange={onDateToChange}
-				minDate={dateFrom || undefined}
-				enableAccessibleFieldDOMStructure={false}
-				slotProps={{
-					textField: { size: 'small', sx: { minWidth: 180 } },
-				}}
-			/>
-			<Button variant="outlined" onClick={onReset} size="small">
-				{t.dashboard.resetDates}
-			</Button>
-		</Stack>
-	</LocalizationProvider>
+			>
+				<DatePicker
+					label={t.dashboard.dateFrom}
+					value={dateFrom}
+					onChange={onDateFromChange}
+					maxDate={dateTo || undefined}
+					slotProps={{
+						textField: { size: 'small', sx: { minWidth: 180 } },
+					}}
+				/>
+				<DatePicker
+					label={t.dashboard.dateTo}
+					value={dateTo}
+					onChange={onDateToChange}
+					minDate={dateFrom || undefined}
+					slotProps={{
+						textField: { size: 'small', sx: { minWidth: 180 } },
+					}}
+				/>
+				<Button variant="outlined" onClick={onReset} size="small">
+					{t.dashboard.resetDates}
+				</Button>
+			</Stack>
+		</LocalizationProvider>
 	);
 };
 
@@ -369,7 +398,15 @@ const CollectionRateGauge: React.FC<ChartProps> = ({ dateParams, company_id, dev
 	};
 
 	return (
-		<Box display="flex" flexDirection="column" alignItems="center" gap={2} height="100%">
+		<Box
+			sx={{
+				display: 'flex',
+				flexDirection: 'column',
+				alignItems: 'center',
+				gap: 2,
+				height: '100%',
+			}}
+		>
 			<Box sx={{ height: 200, width: 200 }}>
 				<Doughnut
 					data={chartData}
@@ -381,12 +418,26 @@ const CollectionRateGauge: React.FC<ChartProps> = ({ dateParams, company_id, dev
 					}}
 				/>
 			</Box>
-			<Box textAlign="center">
+			<Box
+				sx={{
+					textAlign: 'center',
+				}}
+			>
 				<Typography variant="h5">{data.rate.toFixed(1)}%</Typography>
-				<Typography variant="body2" color="text.secondary">
+				<Typography
+					variant="body2"
+					sx={{
+						color: 'text.secondary',
+					}}
+				>
 					{t.dashboard.facture2}: {data.total_invoiced.toLocaleString()} {devise}
 				</Typography>
-				<Typography variant="body2" color="text.secondary">
+				<Typography
+					variant="body2"
+					sx={{
+						color: 'text.secondary',
+					}}
+				>
 					{t.dashboard.encaisse}: {data.total_collected.toLocaleString()} {devise}
 				</Typography>
 			</Box>
@@ -533,7 +584,7 @@ const ProductPriceVolumeChart: React.FC<ChartProps> = ({ dateParams, company_id,
 						callbacks: {
 							title: (items) => {
 								const idx = items[0]?.dataIndex;
-								return idx !== undefined ? (topProducts[idx]?.designation || t.dashboard.noName) : '';
+								return idx !== undefined ? topProducts[idx]?.designation || t.dashboard.noName : '';
 							},
 						},
 					},
@@ -745,7 +796,13 @@ const ClientProfileMetricsChart: React.FC<ChartProps> = ({ dateParams, company_i
 	if (error || !data || data.length === 0) return <EmptyChart message={t.dashboard.noClientFound} />;
 
 	const topClient = data[0];
-	const metrics = [t.dashboard.metricVolume, t.dashboard.metricFrequence, t.dashboard.metricMontantMoy, t.dashboard.metricRapidite, t.dashboard.metricAcceptRate];
+	const metrics = [
+		t.dashboard.metricVolume,
+		t.dashboard.metricFrequence,
+		t.dashboard.metricMontantMoy,
+		t.dashboard.metricRapidite,
+		t.dashboard.metricAcceptRate,
+	];
 
 	const chartData = {
 		labels: metrics,
@@ -785,11 +842,12 @@ const KPICardsSection: React.FC<ChartProps> = ({ dateParams, company_id, devise 
 	if (error || !data) return <EmptyChart message={t.dashboard.noKpiData} />;
 
 	// Get the appropriate currency data
-	const currencyData = (devise === 'EUR' 
-		? data.currency_data?.EUR 
-		: devise === 'USD' 
-		? data.currency_data?.USD 
-		: data.currency_data?.MAD) || data;
+	const currencyData =
+		(devise === 'EUR'
+			? data.currency_data?.EUR
+			: devise === 'USD'
+				? data.currency_data?.USD
+				: data.currency_data?.MAD) || data;
 
 	const cards = [
 		{
@@ -831,7 +889,13 @@ const KPICardsSection: React.FC<ChartProps> = ({ dateParams, company_id, devise 
 				<Card elevation={2} key={index} sx={{ overflow: 'hidden' }}>
 					<CardHeader
 						title={
-							<Typography variant="h6" color="text.secondary" sx={{ fontSize: { xs: '0.85rem', sm: '1rem' } }}>
+							<Typography
+								variant="h6"
+								sx={{
+									color: 'text.secondary',
+									fontSize: { xs: '0.85rem', sm: '1rem' },
+								}}
+							>
 								{card.title}
 							</Typography>
 						}
@@ -853,7 +917,11 @@ const KPICardsSection: React.FC<ChartProps> = ({ dateParams, company_id, devise 
 							{card.value}
 						</Typography>
 						{card.trend.length > 0 && (
-							<Box height={60}>
+							<Box
+								sx={{
+									height: 60,
+								}}
+							>
 								<Line
 									data={{
 										labels: card.trend.map((_: number, i: number) => i.toString()),
@@ -896,7 +964,13 @@ const MonthlyObjectivesSection: React.FC<ChartProps> = ({ dateParams, company_id
 	if (!data.objectives_set) {
 		return (
 			<Card elevation={2} sx={{ p: 3, textAlign: 'center' }}>
-				<Typography variant="body1" color="text.secondary" gutterBottom>
+				<Typography
+					variant="body1"
+					gutterBottom
+					sx={{
+						color: 'text.secondary',
+					}}
+				>
 					{t.dashboard.objectifsNotSet}
 				</Typography>
 				{is_staff && (
@@ -911,11 +985,8 @@ const MonthlyObjectivesSection: React.FC<ChartProps> = ({ dateParams, company_id
 	}
 
 	// Get the appropriate revenue data based on devise
-	const revenueData: ObjectiveData = (devise === 'EUR' 
-		? data.revenue_eur 
-		: devise === 'USD' 
-		? data.revenue_usd 
-		: data.revenue) ?? data.revenue;
+	const revenueData: ObjectiveData =
+		(devise === 'EUR' ? data.revenue_eur : devise === 'USD' ? data.revenue_usd : data.revenue) ?? data.revenue;
 
 	const objectives = [
 		{
@@ -965,7 +1036,14 @@ const MonthlyObjectivesSection: React.FC<ChartProps> = ({ dateParams, company_id
 						sx={{ pb: 1, px: { xs: 1.5, sm: 2 } }}
 					/>
 					<CardContent sx={{ px: { xs: 1.5, sm: 2 }, pt: 0 }}>
-						<Box display="flex" flexDirection="column" alignItems="center" gap={2}>
+						<Box
+							sx={{
+								display: 'flex',
+								flexDirection: 'column',
+								alignItems: 'center',
+								gap: 2,
+							}}
+						>
 							<Box sx={{ height: { xs: 120, sm: 150 }, width: { xs: 120, sm: 150 } }}>
 								<Doughnut
 									data={{
@@ -986,11 +1064,20 @@ const MonthlyObjectivesSection: React.FC<ChartProps> = ({ dateParams, company_id
 									}}
 								/>
 							</Box>
-							<Box textAlign="center">
+							<Box
+								sx={{
+									textAlign: 'center',
+								}}
+							>
 								<Typography variant="body1" sx={{ fontSize: { xs: '0.85rem', sm: '1rem' }, wordBreak: 'break-word' }}>
 									{obj.data.current.toLocaleString()} {obj.unit} / {obj.data.objective.toLocaleString()} {obj.unit}
 								</Typography>
-								<Typography variant="body2" color="text.secondary">
+								<Typography
+									variant="body2"
+									sx={{
+										color: 'text.secondary',
+									}}
+								>
 									{t.dashboard.percentAtteint(obj.data.percentage.toFixed(1))}
 								</Typography>
 							</Box>
@@ -1109,7 +1196,7 @@ const ProductMarginChart: React.FC<ChartProps> = ({ dateParams, company_id, devi
 						callbacks: {
 							title: (items) => {
 								const idx = items[0]?.dataIndex;
-								return idx !== undefined ? (topMargins[idx]?.designation || t.dashboard.noName) : '';
+								return idx !== undefined ? topMargins[idx]?.designation || t.dashboard.noName : '';
 							},
 						},
 					},
@@ -1132,7 +1219,13 @@ const GlobalPerformanceComparisonChart: React.FC<ChartProps> = ({ dateParams, co
 		data.current.revenue > 0 || data.current.quotes > 0 || data.previous.revenue > 0 || data.previous.quotes > 0;
 	if (!hasData) return <EmptyChart message={t.dashboard.noPerformance} />;
 
-	const metrics = [t.dashboard.metricCA10k, t.dashboard.metricDevis2, t.dashboard.metricConversion, t.dashboard.metricEncaisse10k, t.dashboard.metricNouvClients];
+	const metrics = [
+		t.dashboard.metricCA10k,
+		t.dashboard.metricDevis2,
+		t.dashboard.metricConversion,
+		t.dashboard.metricEncaisse10k,
+		t.dashboard.metricNouvClients,
+	];
 
 	const chartData = {
 		labels: metrics,
@@ -1188,7 +1281,11 @@ const SectionMicroTrendsChart: React.FC<ChartProps> = ({ dateParams, company_id 
 							{section.title}
 						</Typography>
 						{section.data.length > 0 ? (
-							<Box height={100}>
+							<Box
+								sx={{
+									height: 100,
+								}}
+							>
 								<Line
 									data={{
 										labels: section.data.map((_, i) => i.toString()),
@@ -1222,10 +1319,20 @@ const SectionMicroTrendsChart: React.FC<ChartProps> = ({ dateParams, company_id 
 									gap: 0.5,
 								}}
 							>
-								<Typography variant="h6" color="text.secondary">
+								<Typography
+									variant="h6"
+									sx={{
+										color: 'text.secondary',
+									}}
+								>
 									📊
 								</Typography>
-								<Typography variant="body2" color="text.secondary">
+								<Typography
+									variant="body2"
+									sx={{
+										color: 'text.secondary',
+									}}
+								>
 									{t.dashboard.noData}
 								</Typography>
 							</Box>
@@ -1524,7 +1631,11 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ company_id }) => {
 							description={t.dashboard.chartComparaisonDesc}
 							infoTooltip={t.dashboard.tooltipComparaison}
 						>
-							<GlobalPerformanceComparisonChart dateParams={dateParams} company_id={company_id} devise={selectedDevise} />
+							<GlobalPerformanceComparisonChart
+								dateParams={dateParams}
+								company_id={company_id}
+								devise={selectedDevise}
+							/>
 						</ChartCard>
 					</Box>
 					<Box>

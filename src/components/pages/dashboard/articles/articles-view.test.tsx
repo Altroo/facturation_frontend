@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import ArticlesViewClient from './articles-view';
 import { Provider } from 'react-redux';
 import { store } from '@/store/store';
@@ -26,10 +26,16 @@ jest.mock('@/contexts/InitContext', () => ({
 	useInitAccessToken: () => 'test-token',
 }));
 
+jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
+	__esModule: true,
+	default: ({ children }: { children?: React.ReactNode }) => <div data-testid="navigation-bar">{children}</div>,
+}));
+
 // Mock selector
 jest.mock('@/utils/hooks', () => {
 	const { translations } = jest.requireActual('@/translations');
 	return {
+		useAppDispatch: () => jest.fn(),
 		useAppSelector: jest.fn(),
 		useToast: jest.fn(() => ({ onSuccess: jest.fn(), onError: jest.fn() })),
 		useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: translations.fr }),

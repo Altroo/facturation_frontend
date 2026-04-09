@@ -15,10 +15,16 @@ export const Protected = (props: ProtectedProps) => {
 	// Wait for profile to load before evaluating permissions
 	if (!profil.id) {
 		return (
-			<Box display="flex" justifyContent="center" alignItems="center" py={8}>
-				<CircularProgress />
-			</Box>
-		);
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    py: 8
+                }}>
+                <CircularProgress />
+            </Box>
+        );
 	}
 
 	if (!is_staff) {

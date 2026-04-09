@@ -1,39 +1,39 @@
 'use client';
 
-import React, { useMemo, isValidElement, useState } from 'react';
-import { Box, Stack, Typography, Card, CardContent, Divider, Button, useTheme, useMediaQuery } from '@mui/material';
+import React, { isValidElement, useMemo, useState } from 'react';
+import { Box, Button, Card, CardContent, Divider, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import {
-	ArrowBack as ArrowBackIcon,
-	Delete as DeleteIcon,
-	Edit as EditIcon,
-	Person as PersonIcon,
-	Badge as BadgeIcon,
-	Notes as NotesIcon,
-	Business as BusinessIcon,
-	LocationOn as LocationOnIcon,
-	Phone as PhoneIcon,
-	Email as EmailIcon,
-	CreditCard as CreditCardIcon,
-	Description as DescriptionIcon,
-	Gavel as GavelIcon,
-	Fingerprint as FingerprintIcon,
 	AccountBalance as AccountBalanceIcon,
-	Receipt as ReceiptIcon,
+	ArrowBack as ArrowBackIcon,
+	Badge as BadgeIcon,
+	Business as BusinessIcon,
 	CalendarToday as CalendarTodayIcon,
+	CreditCard as CreditCardIcon,
+	Delete as DeleteIcon,
+	Description as DescriptionIcon,
+	Edit as EditIcon,
+	Email as EmailIcon,
+	Fingerprint as FingerprintIcon,
+	Gavel as GavelIcon,
+	LocationOn as LocationOnIcon,
+	Notes as NotesIcon,
+	Person as PersonIcon,
+	Phone as PhoneIcon,
+	Receipt as ReceiptIcon,
 } from '@mui/icons-material';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import { CLIENTS_LIST, CLIENTS_EDIT } from '@/utils/routes';
+import { CLIENTS_EDIT, CLIENTS_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
-import { useGetClientQuery, useDeleteClientMutation } from '@/store/services/client';
+import { useDeleteClientMutation, useGetClientQuery } from '@/store/services/client';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
-import { useAppSelector, useToast, useLanguage } from '@/utils/hooks';
+import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import { getUserCompaniesState } from '@/store/selectors';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
-import { formatDate, extractApiErrorMessage } from '@/utils/helpers';
+import { extractApiErrorMessage, formatDate } from '@/utils/helpers';
 
 interface InfoRowProps {
 	icon: React.ReactNode;
@@ -49,9 +49,9 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 	return (
 		<Stack
 			direction="row"
-			alignItems="flex-start"
 			spacing={2}
 			sx={{
+				alignItems: 'flex-start',
 				py: 1.5,
 				flexWrap: 'wrap',
 			}}
@@ -67,20 +67,19 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 			>
 				{icon}
 			</Box>
-
 			<Stack
 				direction="row"
-				alignItems="center"
 				spacing={isMobile ? 0 : 2}
 				sx={{
+					alignItems: 'center',
 					flex: 1,
 					flexWrap: 'wrap',
 				}}
 			>
 				<Typography
-					fontWeight={600}
-					color="text.secondary"
 					sx={{
+						fontWeight: 600,
+						color: 'text.secondary',
 						minWidth: { xs: '100%', sm: 200 },
 						wordBreak: 'break-word',
 					}}
@@ -158,39 +157,59 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const isPM = client?.client_type === 'PM';
 
 	return (
-		<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
+		<Stack
+			direction="column"
+			spacing={2}
+			className={Styles.flexRootStack}
+			sx={{
+				mt: '32px',
+			}}
+		>
 			<NavigationBar title={t.clients.detailsTitle}>
 				<Stack spacing={3} sx={{ p: { xs: 2, md: 3 }, mt: 2 }}>
-<Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between" alignItems={isMobile ? 'stretch' : 'center'} spacing={2}>
-					<Button
-						variant="outlined"
-						startIcon={<ArrowBackIcon />}
-						onClick={() => router.push(CLIENTS_LIST)}
-						sx={{ width: isMobile ? '100%' : 'auto' }}
+					<Stack
+						direction={isMobile ? 'column' : 'row'}
+						spacing={2}
+						sx={{
+							justifyContent: 'space-between',
+							alignItems: isMobile ? 'stretch' : 'center',
+						}}
 					>
-						{t.clients.backToList}
-					</Button>
-					{!isLoading && !error && (company?.role === 'Caissier' || company?.role === 'Commercial') && (
-						<Stack direction="row" gap={1} flexWrap="wrap">
-							<Button
-								variant="outlined"
-								size="small"
-								startIcon={<EditIcon />}
-								onClick={() => router.push(CLIENTS_EDIT(id, company_id))}
+						<Button
+							variant="outlined"
+							startIcon={<ArrowBackIcon />}
+							onClick={() => router.push(CLIENTS_LIST)}
+							sx={{ width: isMobile ? '100%' : 'auto' }}
+						>
+							{t.clients.backToList}
+						</Button>
+						{!isLoading && !error && (company?.role === 'Caissier' || company?.role === 'Commercial') && (
+							<Stack
+								direction="row"
+								sx={{
+									gap: 1,
+									flexWrap: 'wrap',
+								}}
 							>
-								Modifier
-							</Button>
-							<Button
-								variant="outlined"
-								color="error"
-								size="small"
-								startIcon={<DeleteIcon />}
-								onClick={() => setShowDeleteModal(true)}
-							>
-								Supprimer
-							</Button>
-						</Stack>
-					)}
+								<Button
+									variant="outlined"
+									size="small"
+									startIcon={<EditIcon />}
+									onClick={() => router.push(CLIENTS_EDIT(id, company_id))}
+								>
+									Modifier
+								</Button>
+								<Button
+									variant="outlined"
+									color="error"
+									size="small"
+									startIcon={<DeleteIcon />}
+									onClick={() => setShowDeleteModal(true)}
+								>
+									Supprimer
+								</Button>
+							</Stack>
+						)}
 					</Stack>
 
 					{isLoading ? (
@@ -210,9 +229,20 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 							{/* {t.clients.identitySection} */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={3} alignItems="center">
+									<Stack
+										direction="row"
+										spacing={3}
+										sx={{
+											alignItems: 'center',
+										}}
+									>
 										<PersonIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
+										<Typography
+											variant="h6"
+											sx={{
+												fontWeight: 700,
+											}}
+										>
 											{t.clients.identitySection}
 										</Typography>
 									</Stack>
@@ -223,12 +253,18 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 										<InfoRow
 											icon={<PersonIcon />}
 											label={t.clients.colType}
-											value={client?.client_type === 'PM' ? t.clients.typePersonneMorale : t.clients.typePersonnePhysique}
+											value={
+												client?.client_type === 'PM' ? t.clients.typePersonneMorale : t.clients.typePersonnePhysique
+											}
 										/>
 										<Divider />
 										{isPM ? (
 											<>
-												<InfoRow icon={<BusinessIcon />} label={t.clients.fieldRaisonSociale} value={client?.raison_sociale} />
+												<InfoRow
+													icon={<BusinessIcon />}
+													label={t.clients.fieldRaisonSociale}
+													value={client?.raison_sociale}
+												/>
 												<Divider />
 											</>
 										) : (
@@ -248,9 +284,21 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 							{/* {t.clients.contactSection} */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<Stack
+										direction="row"
+										spacing={2}
+										sx={{
+											alignItems: 'center',
+											mb: 2,
+										}}
+									>
 										<PhoneIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
+										<Typography
+											variant="h6"
+											sx={{
+												fontWeight: 700,
+											}}
+										>
 											{t.clients.contactSection}
 										</Typography>
 									</Stack>
@@ -266,21 +314,45 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 							{/* {t.clients.adminSection} */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<Stack
+										direction="row"
+										spacing={2}
+										sx={{
+											alignItems: 'center',
+											mb: 2,
+										}}
+									>
 										<DescriptionIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
+										<Typography
+											variant="h6"
+											sx={{
+												fontWeight: 700,
+											}}
+										>
 											{t.clients.adminSection}
 										</Typography>
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 									<Stack spacing={0}>
-										<InfoRow icon={<AccountBalanceIcon />} label={t.clients.fieldNumeroCompte} value={client?.numero_du_compte} />
+										<InfoRow
+											icon={<AccountBalanceIcon />}
+											label={t.clients.fieldNumeroCompte}
+											value={client?.numero_du_compte}
+										/>
 										<Divider />
 										<InfoRow icon={<FingerprintIcon />} label={t.clients.fieldICE} value={client?.ICE} />
 										<Divider />
-										<InfoRow icon={<GavelIcon />} label={t.clients.fieldRegistreCommerce} value={client?.registre_de_commerce} />
+										<InfoRow
+											icon={<GavelIcon />}
+											label={t.clients.fieldRegistreCommerce}
+											value={client?.registre_de_commerce}
+										/>
 										<Divider />
-										<InfoRow icon={<ReceiptIcon />} label={t.clients.fieldIdentifiantFiscal} value={client?.identifiant_fiscal} />
+										<InfoRow
+											icon={<ReceiptIcon />}
+											label={t.clients.fieldIdentifiantFiscal}
+											value={client?.identifiant_fiscal}
+										/>
 										<Divider />
 										<InfoRow
 											icon={<CreditCardIcon />}
@@ -296,9 +368,21 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 							{/* {t.clients.villeSection} */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<Stack
+										direction="row"
+										spacing={2}
+										sx={{
+											alignItems: 'center',
+											mb: 2,
+										}}
+									>
 										<LocationOnIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
+										<Typography
+											variant="h6"
+											sx={{
+												fontWeight: 700,
+											}}
+										>
 											{t.clients.villeSection}
 										</Typography>
 									</Stack>
@@ -321,10 +405,22 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 							{/* Remarque */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<Stack
+										direction="row"
+										spacing={2}
+										sx={{
+											alignItems: 'center',
+											mb: 2,
+										}}
+									>
 										<NotesIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
-										{t.clients.remarkSection}
+										<Typography
+											variant="h6"
+											sx={{
+												fontWeight: 700,
+											}}
+										>
+											{t.clients.remarkSection}
 										</Typography>
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
@@ -335,9 +431,21 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 							{/* Dates */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<Stack
+										direction="row"
+										spacing={2}
+										sx={{
+											alignItems: 'center',
+											mb: 2,
+										}}
+									>
 										<CalendarTodayIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
+										<Typography
+											variant="h6"
+											sx={{
+												fontWeight: 700,
+											}}
+										>
 											{t.clients.datesSection}
 										</Typography>
 									</Stack>
@@ -361,15 +469,15 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 					)}
 				</Stack>
 			</NavigationBar>
-		{showDeleteModal && (
-			<ActionModals
-				title={t.clients.deleteModalTitle}
-				body={t.clients.deleteModalBody}
-				actions={deleteModalActions}
-				titleIcon={<DeleteIcon />}
-				titleIconColor="#D32F2F"
-			/>
-		)}
+			{showDeleteModal && (
+				<ActionModals
+					title={t.clients.deleteModalTitle}
+					body={t.clients.deleteModalBody}
+					actions={deleteModalActions}
+					titleIcon={<DeleteIcon />}
+					titleIconColor="#D32F2F"
+				/>
+			)}
 		</Stack>
 	);
 };

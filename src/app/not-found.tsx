@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Box, Typography, Button, Paper, Stack } from '@mui/material';
-import { SentimentDissatisfied as SadIcon, Home as HomeIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-material';
+import { Box, Button, Paper, Stack, Typography } from '@mui/material';
+import { ArrowBack as ArrowBackIcon, Home as HomeIcon, SentimentDissatisfied as SadIcon } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
 import { DASHBOARD } from '@/utils/routes';
 import { useLanguage } from '@/utils/hooks';
@@ -44,20 +44,31 @@ const NotFound = () => {
 				}}
 			>
 				<SadIcon sx={{ fontSize: 80, color: 'primary.main', mb: 2 }} />
-
-				<Typography variant="h1" sx={{ fontSize: { xs: '4rem', sm: '6rem' }, fontWeight: 700, color: 'primary.main', mb: 1 }}>
+				<Typography
+					variant="h1"
+					sx={{ fontSize: { xs: '4rem', sm: '6rem' }, fontWeight: 700, color: 'primary.main', mb: 1 }}
+				>
 					404
 				</Typography>
-
 				<Typography variant="h5" gutterBottom sx={{ fontWeight: 500 }}>
 					{t.notFound.title}
 				</Typography>
-
-				<Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+				<Typography
+					variant="body1"
+					sx={{
+						color: 'text.secondary',
+						mb: 4,
+					}}
+				>
 					{t.notFound.message}
 				</Typography>
-
-				<Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
+				<Stack
+					direction={{ xs: 'column', sm: 'row' }}
+					spacing={2}
+					sx={{
+						justifyContent: 'center',
+					}}
+				>
 					<Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={handleGoBack} size="large">
 						{t.notFound.backBtn}
 					</Button>

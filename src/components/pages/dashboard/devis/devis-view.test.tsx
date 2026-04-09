@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import DevisViewClient from './devis-view';
 import { Provider } from 'react-redux';
 import { store } from '@/store/store';
@@ -26,6 +26,11 @@ jest.mock('@/store/services/article', () => {
 // Mock InitContext
 jest.mock('@/contexts/InitContext', () => ({
 	useInitAccessToken: () => 'test-token',
+}));
+
+jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
+	__esModule: true,
+	default: ({ children }: { children?: React.ReactNode }) => <div data-testid="navigation-bar">{children}</div>,
 }));
 
 // Mock selector

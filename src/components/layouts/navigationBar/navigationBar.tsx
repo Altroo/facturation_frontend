@@ -399,12 +399,20 @@ const NavigationBar = (props: Props) => {
 	const loading = status === 'loading';
 
 	return (
-		<ThemeProvider theme={navigationBarTheme()}>
-			<Box sx={{ display: 'flex' }}>
+        <ThemeProvider theme={navigationBarTheme()}>
+            <Box sx={{ display: 'flex' }}>
 				<AppBar position="fixed" open={open}>
 					<Toolbar>
-						<Stack direction="row" justifyContent="space-between" alignItems="center" width="100%">
-							<Stack direction="row" alignItems="center" spacing={1}>
+						<Stack
+                            direction="row"
+                            sx={{
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                width: "100%"
+                            }}>
+							<Stack direction="row" spacing={1} sx={{
+                                alignItems: "center"
+                            }}>
 								{isMobile && (
 									<IconButton color="inherit" aria-label={t.common.toggleDrawer} onClick={handleDrawerToggle} size="small">
 										<MenuIcon />
@@ -414,7 +422,9 @@ const NavigationBar = (props: Props) => {
 									{props.title}
 								</Typography>
 							</Stack>
-						<Stack direction="row" spacing={1} alignItems="center">
+						<Stack direction="row" spacing={1} sx={{
+                            alignItems: "center"
+                        }}>
 							{!loading && session && (
 								<>
 									<Desktop>
@@ -628,7 +638,7 @@ const NavigationBar = (props: Props) => {
 				</Drawer>
 				<Main open={open}>{props.children}</Main>
 			</Box>
-			<Popover
+            <Popover
 				open={Boolean(notifAnchor)}
 				anchorEl={notifAnchor}
 				onClose={handleNotifClose}
@@ -636,8 +646,17 @@ const NavigationBar = (props: Props) => {
 				transformOrigin={{ vertical: 'top', horizontal: 'right' }}
 				slotProps={{ paper: { sx: { width: 360, maxHeight: 420 } } }}
 			>
-				<Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ px: 2, py: 1.5 }}>
-					<Typography variant="subtitle1" fontWeight={700}>
+				<Stack
+                    direction="row"
+                    sx={{
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        px: 2,
+                        py: 1.5
+                    }}>
+					<Typography variant="subtitle1" sx={{
+                        fontWeight: 700
+                    }}>
 						{t.navigation.notifications}
 					</Typography>
 					{unreadCount > 0 && (
@@ -667,13 +686,27 @@ const NavigationBar = (props: Props) => {
 									}}
 								>
 									<Box sx={{ minWidth: 0, flex: 1 }}>
-										<Typography variant="body2" fontWeight={n.is_read ? 400 : 600} noWrap>
+										<Typography variant="body2" noWrap sx={{
+                                            fontWeight: n.is_read ? 400 : 600
+                                        }}>
 											{n.title}
 										</Typography>
-										<Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.4 }}>
+										<Typography
+                                            variant="caption"
+                                            sx={{
+                                                color: "text.secondary",
+                                                display: 'block',
+                                                lineHeight: 1.4
+                                            }}>
 											{n.message}
 										</Typography>
-										<Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 0.5 }}>
+										<Typography
+                                            variant="caption"
+                                            sx={{
+                                                color: "text.disabled",
+                                                display: 'block',
+                                                mt: 0.5
+                                            }}>
 											{new Date(n.date_created).toLocaleDateString()}
 										</Typography>
 									</Box>
@@ -689,15 +722,17 @@ const NavigationBar = (props: Props) => {
 						</>
 					) : (
 						<Box sx={{ p: 3, textAlign: 'center' }}>
-							<Typography variant="body2" color="text.secondary">
+							<Typography variant="body2" sx={{
+                                color: "text.secondary"
+                            }}>
 								{t.navigation.noNotifications}
 							</Typography>
 						</Box>
 					)}
 				</Box>
 			</Popover>
-		</ThemeProvider>
-	);
+        </ThemeProvider>
+    );
 };
 
 export default NavigationBar;

@@ -2,20 +2,20 @@
 
 import React, { useState } from 'react';
 import {
+	Alert,
 	Button,
+	Dialog,
+	DialogActions,
+	DialogContent,
+	DialogTitle,
+	InputAdornment,
 	Stack,
 	Typography,
-	InputAdornment,
-	Dialog,
-	DialogTitle,
-	DialogContent,
-	DialogActions,
-	Alert,
 } from '@mui/material';
 import { Discount as DiscountIcon, Warning as WarningIcon } from '@mui/icons-material';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
-import { textInputTheme, customDropdownTheme } from '@/utils/themes';
+import { customDropdownTheme, textInputTheme } from '@/utils/themes';
 import { useLanguage } from '@/utils/hooks';
 
 interface GlobalRemiseModalProps {
@@ -106,7 +106,13 @@ const GlobalRemiseModalContent: React.FC<GlobalRemiseModalProps> = ({
 	return (
 		<Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
 			<DialogTitle>
-				<Stack direction="row" spacing={2} alignItems="center">
+				<Stack
+					direction="row"
+					spacing={2}
+					sx={{
+						alignItems: 'center',
+					}}
+				>
 					<DiscountIcon color="primary" />
 					<Typography variant="h6">{t.globalRemiseModal.title}</Typography>
 				</Stack>
@@ -136,7 +142,11 @@ const GlobalRemiseModalContent: React.FC<GlobalRemiseModalProps> = ({
 						<CustomTextInput
 							id="remise_value"
 							type="number"
-							label={state.type === 'Pourcentage' ? t.globalRemiseModal.valuePercentLabel : t.globalRemiseModal.valueAmountLabel(devise)}
+							label={
+								state.type === 'Pourcentage'
+									? t.globalRemiseModal.valuePercentLabel
+									: t.globalRemiseModal.valueAmountLabel(devise)
+							}
 							value={String(state.value)}
 							onChange={(e) => handleValueChange(parseFloat(e.target.value) || 0)}
 							fullWidth={true}

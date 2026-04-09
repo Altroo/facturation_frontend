@@ -1,8 +1,8 @@
 import {
-	getInitStateToken,
 	getAccessToken,
-	getProfilState,
 	getGroupesState,
+	getInitStateToken,
+	getProfilState,
 	getUserCompaniesState,
 	getWSMaintenanceState,
 } from './index';

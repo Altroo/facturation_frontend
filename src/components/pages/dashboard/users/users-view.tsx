@@ -1,45 +1,45 @@
 'use client';
 
-import React, { useMemo, isValidElement, useState } from 'react';
+import React, { isValidElement, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import { useInitAccessToken } from '@/contexts/InitContext';
-import { useGetUserQuery, useDeleteUserMutation } from '@/store/services/account';
+import { useDeleteUserMutation, useGetUserQuery } from '@/store/services/account';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import {
-	Stack,
-	Typography,
 	Avatar,
-	useTheme,
-	useMediaQuery,
+	Box,
 	Button,
 	Card,
 	CardContent,
 	Chip,
 	Divider,
-	Box,
 	Paper,
+	Stack,
+	Typography,
+	useMediaQuery,
+	useTheme,
 } from '@mui/material';
 import {
+	AdminPanelSettings as AdminPanelSettingsIcon,
 	ArrowBack as ArrowBackIcon,
+	Badge as BadgeIcon,
+	Business as BusinessIcon,
+	CalendarToday as CalendarTodayIcon,
+	Cancel as CancelIcon,
+	CheckCircle as CheckCircleIcon,
 	Delete as DeleteIcon,
 	Edit as EditIcon,
 	Email as EmailIcon,
-	Person as PersonIcon,
-	AdminPanelSettings as AdminPanelSettingsIcon,
-	CheckCircle as CheckCircleIcon,
-	Cancel as CancelIcon,
-	CalendarToday as CalendarTodayIcon,
 	Login as LoginIcon,
-	Business as BusinessIcon,
-	Badge as BadgeIcon,
+	Person as PersonIcon,
 	Public as PublicIcon,
 } from '@mui/icons-material';
-import { USERS_LIST, USERS_EDIT } from '@/utils/routes';
+import { USERS_EDIT, USERS_LIST } from '@/utils/routes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
-import { formatDate, extractApiErrorMessage } from '@/utils/helpers';
-import { useToast, useLanguage } from '@/utils/hooks';
+import { extractApiErrorMessage, formatDate } from '@/utils/helpers';
+import { useLanguage, useToast } from '@/utils/hooks';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import { Protected } from '@/components/layouts/protected/protected';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
@@ -59,9 +59,9 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 	return (
 		<Stack
 			direction="row"
-			alignItems="flex-start"
 			spacing={2}
 			sx={{
+				alignItems: 'flex-start',
 				py: 1.5,
 				flexWrap: 'wrap',
 			}}
@@ -77,20 +77,19 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 			>
 				{icon}
 			</Box>
-
 			<Stack
 				direction="row"
-				alignItems="center"
 				spacing={isMobile ? 0 : 2}
 				sx={{
+					alignItems: 'center',
 					flex: 1,
 					flexWrap: 'wrap',
 				}}
 			>
 				<Typography
-					fontWeight={600}
-					color="text.secondary"
 					sx={{
+						fontWeight: 600,
+						color: 'text.secondary',
 						minWidth: { xs: '100%', sm: 200 },
 						wordBreak: 'break-word',
 					}}
@@ -160,11 +159,25 @@ const UsersViewClient: React.FC<Props> = ({ session, id }) => {
 	];
 
 	return (
-		<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
+		<Stack
+			direction="column"
+			spacing={2}
+			className={Styles.flexRootStack}
+			sx={{
+				mt: '32px',
+			}}
+		>
 			<NavigationBar title={t.users.detailsTitle}>
 				<Protected>
 					<Stack spacing={3} sx={{ p: { xs: 2, md: 3 }, mt: 2 }}>
-						<Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between" alignItems={isMobile ? 'stretch' : 'center'} spacing={2}>
+						<Stack
+							direction={isMobile ? 'column' : 'row'}
+							spacing={2}
+							sx={{
+								justifyContent: 'space-between',
+								alignItems: isMobile ? 'stretch' : 'center',
+							}}
+						>
 							<Button
 								variant="outlined"
 								startIcon={<ArrowBackIcon />}
@@ -174,7 +187,13 @@ const UsersViewClient: React.FC<Props> = ({ session, id }) => {
 								{t.users.backToList}
 							</Button>
 							{!isLoading && !error && (
-								<Stack direction="row" gap={1} flexWrap="wrap">
+								<Stack
+									direction="row"
+									sx={{
+										gap: 1,
+										flexWrap: 'wrap',
+									}}
+								>
 									<Button
 										variant="outlined"
 										size="small"
@@ -214,7 +233,9 @@ const UsersViewClient: React.FC<Props> = ({ session, id }) => {
 										<Stack
 											direction={isMobile ? 'column' : 'row'}
 											spacing={3}
-											alignItems={isMobile ? 'center' : 'flex-start'}
+											sx={{
+												alignItems: isMobile ? 'center' : 'flex-start',
+											}}
 										>
 											<Avatar
 												src={`${userData?.avatar}`}
@@ -231,16 +252,30 @@ const UsersViewClient: React.FC<Props> = ({ session, id }) => {
 												}}
 											/>
 											<Stack spacing={2} sx={{ flex: 1, width: '100%' }}>
-												<Stack spacing={1} alignItems={isMobile ? 'center' : 'flex-start'}>
+												<Stack
+													spacing={1}
+													sx={{
+														alignItems: isMobile ? 'center' : 'flex-start',
+													}}
+												>
 													<Typography
 														variant="h4"
-														textAlign={isMobile ? 'center' : 'inherit'}
-														fontSize={isMobile ? '20px' : '25px'}
-														fontWeight={700}
+														sx={{
+															textAlign: isMobile ? 'center' : 'inherit',
+															fontSize: isMobile ? '20px' : '25px',
+															fontWeight: 700,
+														}}
 													>
 														{userData?.email ?? t.users.emailFallback}
 													</Typography>
-													<Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+													<Stack
+														direction="row"
+														spacing={1}
+														sx={{
+															alignItems: 'center',
+															flexWrap: 'wrap',
+														}}
+													>
 														<Chip icon={<BadgeIcon />} label={`ID: ${userData?.id}`} size="small" variant="outlined" />
 														{userData?.is_staff && (
 															<Chip
@@ -251,7 +286,12 @@ const UsersViewClient: React.FC<Props> = ({ session, id }) => {
 															/>
 														)}
 														{userData?.is_active ? (
-															<Chip icon={<CheckCircleIcon />} label={t.users.activeChip} color="success" size="small" />
+															<Chip
+																icon={<CheckCircleIcon />}
+																label={t.users.activeChip}
+																color="success"
+																size="small"
+															/>
 														) : (
 															<Chip icon={<CancelIcon />} label={t.users.inactiveChip} color="error" size="small" />
 														)}
@@ -269,9 +309,21 @@ const UsersViewClient: React.FC<Props> = ({ session, id }) => {
 											py: { xs: 2, md: 3 },
 										}}
 									>
-										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<Stack
+											direction="row"
+											spacing={2}
+											sx={{
+												alignItems: 'center',
+												mb: 2,
+											}}
+										>
 											<PublicIcon color="primary" />
-											<Typography variant="h6" fontWeight={700}>
+											<Typography
+												variant="h6"
+												sx={{
+													fontWeight: 700,
+												}}
+											>
 												{t.users.generalInfoSection}
 											</Typography>
 										</Stack>
@@ -331,9 +383,21 @@ const UsersViewClient: React.FC<Props> = ({ session, id }) => {
 								{userData?.companies && userData.companies.length > 0 ? (
 									<Card elevation={2} sx={{ borderRadius: 2 }}>
 										<CardContent sx={{ p: 3 }}>
-											<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+											<Stack
+												direction="row"
+												spacing={2}
+												sx={{
+													alignItems: 'center',
+													mb: 2,
+												}}
+											>
 												<BusinessIcon color="primary" />
-												<Typography variant="h6" fontWeight={700}>
+												<Typography
+													variant="h6"
+													sx={{
+														fontWeight: 700,
+													}}
+												>
 													{t.users.companiesSection} ({userData.companies.length})
 												</Typography>
 											</Stack>
@@ -358,11 +422,19 @@ const UsersViewClient: React.FC<Props> = ({ session, id }) => {
 													>
 														<Stack
 															direction={isMobile ? 'column' : 'row'}
-															justifyContent="space-between"
-															alignItems={isMobile ? 'flex-start' : 'center'}
 															spacing={2}
+															sx={{
+																justifyContent: 'space-between',
+																alignItems: isMobile ? 'flex-start' : 'center',
+															}}
 														>
-															<Stack direction="row" spacing={2} alignItems="center">
+															<Stack
+																direction="row"
+																spacing={2}
+																sx={{
+																	alignItems: 'center',
+																}}
+															>
 																<Avatar
 																	sx={{
 																		bgcolor: 'primary.main',
@@ -373,10 +445,20 @@ const UsersViewClient: React.FC<Props> = ({ session, id }) => {
 																	<BusinessIcon />
 																</Avatar>
 																<Stack>
-																	<Typography fontWeight={600} variant="body1">
+																	<Typography
+																		variant="body1"
+																		sx={{
+																			fontWeight: 600,
+																		}}
+																	>
 																		{companie.raison_sociale}
 																	</Typography>
-																	<Typography variant="caption" color="text.secondary">
+																	<Typography
+																		variant="caption"
+																		sx={{
+																			color: 'text.secondary',
+																		}}
+																	>
 																		ID: {companie.membership_id}
 																	</Typography>
 																</Stack>
@@ -391,17 +473,41 @@ const UsersViewClient: React.FC<Props> = ({ session, id }) => {
 								) : (
 									<Card elevation={2} sx={{ borderRadius: 2 }}>
 										<CardContent sx={{ p: 3 }}>
-											<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+											<Stack
+												direction="row"
+												spacing={2}
+												sx={{
+													alignItems: 'center',
+													mb: 2,
+												}}
+											>
 												<BusinessIcon color="primary" />
-												<Typography variant="h6" fontWeight={700}>
+												<Typography
+													variant="h6"
+													sx={{
+														fontWeight: 700,
+													}}
+												>
 													{t.users.companiesSection} (0)
 												</Typography>
 											</Stack>
 											<Divider sx={{ mb: 2 }} />
 											<Box sx={{ py: 3, textAlign: 'center' }}>
-												<Stack alignItems="center" justifyContent="center" spacing={1} sx={{ py: 3 }}>
+												<Stack
+													spacing={1}
+													sx={{
+														alignItems: 'center',
+														justifyContent: 'center',
+														py: 3,
+													}}
+												>
 													<BusinessIcon sx={{ fontSize: 48, color: 'grey.400' }} />
-													<Typography variant="body1" color="text.secondary">
+													<Typography
+														variant="body1"
+														sx={{
+															color: 'text.secondary',
+														}}
+													>
 														{t.users.noCompany}
 													</Typography>
 												</Stack>
@@ -414,15 +520,15 @@ const UsersViewClient: React.FC<Props> = ({ session, id }) => {
 					</Stack>
 				</Protected>
 			</NavigationBar>
-		{showDeleteModal && (
-			<ActionModals
-				title={t.users.deleteModalTitle}
-				body={t.users.deleteModalBody}
-				actions={deleteModalActions}
-				titleIcon={<DeleteIcon />}
-				titleIconColor="#D32F2F"
-			/>
-		)}
+			{showDeleteModal && (
+				<ActionModals
+					title={t.users.deleteModalTitle}
+					body={t.users.deleteModalBody}
+					actions={deleteModalActions}
+					titleIcon={<DeleteIcon />}
+					titleIconColor="#D32F2F"
+				/>
+			)}
 		</Stack>
 	);
 };

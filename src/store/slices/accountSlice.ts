@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { AccountStateInterface } from '@/types/accountTypes';
-import type { UserClass, GroupClass } from '@/models/classes';
+import type { GroupClass, UserClass } from '@/models/classes';
 
 const initialState: AccountStateInterface = {
 	profil: {},

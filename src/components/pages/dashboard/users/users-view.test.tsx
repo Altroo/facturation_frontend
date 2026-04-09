@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import UsersViewClient from './users-view';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
@@ -27,10 +27,16 @@ jest.mock('@/utils/helpers', () => {
 	return { ...actual, formatDate: () => '01/01/2023' };
 });
 
+jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
+	__esModule: true,
+	default: ({ children }: { children?: React.ReactNode }) => <div data-testid="navigation-bar">{children}</div>,
+}));
+
 // 🧩 Mock hooks module
 jest.mock('@/utils/hooks', () => {
 	const { translations } = jest.requireActual('@/translations');
 	return {
+		useAppDispatch: () => jest.fn(),
 		useAppSelector: jest.fn(),
 		usePermission: () => ({ is_staff: true }),
 		useToast: jest.fn(() => ({ onSuccess: jest.fn(), onError: jest.fn() })),

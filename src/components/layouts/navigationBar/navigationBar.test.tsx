@@ -33,6 +33,24 @@ jest.mock('@/utils/apiHelpers', () => ({
 	cookiesDeleter: (...args: unknown[]) => mockCookiesDeleter(...(args as unknown[])),
 }));
 
+const mockFetchNotifications = jest.fn();
+const mockMarkRead = jest.fn();
+const mockUseGetNotificationsQuery = jest.fn();
+const mockUseLazyGetNotificationsQuery = jest.fn();
+const mockUseGetUnreadNotificationCountQuery = jest.fn();
+const mockUseMarkNotificationsReadMutation = jest.fn();
+jest.mock('@/store/services/notification', () => {
+	const actual = jest.requireActual('@/store/services/notification');
+	return {
+		...actual,
+		notificationApi: actual.notificationApi,
+		useGetNotificationsQuery: (...args: unknown[]) => mockUseGetNotificationsQuery(...args),
+		useLazyGetNotificationsQuery: (...args: unknown[]) => mockUseLazyGetNotificationsQuery(...args),
+		useGetUnreadNotificationCountQuery: (...args: unknown[]) => mockUseGetUnreadNotificationCountQuery(...args),
+		useMarkNotificationsReadMutation: (...args: unknown[]) => mockUseMarkNotificationsReadMutation(...args),
+	};
+});
+
 const mockSignOut = jest.fn().mockResolvedValue(undefined);
 const mockUseSession = jest.fn();
 jest.mock('next-auth/react', () => ({
@@ -41,10 +59,25 @@ jest.mock('next-auth/react', () => ({
 }));
 
 const mockUseIsClient = jest.fn(() => true);
-const mockUseAppSelector = jest.fn();
+const mockDispatch = jest.fn();
 const mockSetLanguage = jest.fn();
+let mockProfile = {
+	avatar_cropped: undefined as string | undefined,
+	first_name: 'John',
+	last_name: 'Doe',
+	gender: 'Homme' as 'Homme' | 'Femme' | undefined,
+	is_staff: false,
+};
+const buildSelectorState = () => ({
+	account: { profil: mockProfile },
+	notification: { unreadCount: 0 },
+});
+const mockUseAppSelector = jest.fn((selector: (state: ReturnType<typeof buildSelectorState>) => unknown) =>
+	selector(buildSelectorState()),
+);
 jest.mock('@/utils/hooks', () => ({
-	useAppSelector: (fn: unknown) => mockUseAppSelector(fn),
+	useAppDispatch: () => mockDispatch,
+	useAppSelector: (selector: (state: ReturnType<typeof buildSelectorState>) => unknown) => mockUseAppSelector(selector),
 	useIsClient: () => mockUseIsClient(),
 	useLanguage: () => ({
 		language: 'fr' as const,
@@ -59,13 +92,26 @@ describe('NavigationBar additional behaviors', () => {
 		// reset pathname to default
 		mockPathname = '/dashboard';
 		// default profile
-		mockUseAppSelector.mockImplementation(() => ({
+		mockProfile = {
 			avatar_cropped: undefined,
 			first_name: 'John',
 			last_name: 'Doe',
 			gender: 'Homme',
 			is_staff: false,
-		}));
+		};
+		mockUseAppSelector.mockImplementation((selector: (state: ReturnType<typeof buildSelectorState>) => unknown) =>
+			selector(buildSelectorState()),
+		);
+		mockUseGetNotificationsQuery.mockReturnValue({
+			data: { results: [], next: null },
+			isLoading: false,
+		});
+		mockUseLazyGetNotificationsQuery.mockReturnValue([mockFetchNotifications]);
+		mockUseGetUnreadNotificationCountQuery.mockReturnValue({
+			data: { count: 0 },
+			isLoading: false,
+		});
+		mockUseMarkNotificationsReadMutation.mockReturnValue([mockMarkRead]);
 		mockUseSession.mockImplementation(() => ({ data: {}, status: 'authenticated' }));
 		mockIsMobile = false;
 	});
@@ -91,13 +137,13 @@ describe('NavigationBar additional behaviors', () => {
 
 	it('shows correct greeting for genders', () => {
 		// Homme -> Bienvenu
-		mockUseAppSelector.mockImplementation(() => ({
+		mockProfile = {
 			avatar_cropped: undefined,
 			first_name: 'A',
 			last_name: 'B',
 			gender: 'Homme',
 			is_staff: false,
-		}));
+		};
 		render(
 			<Provider store={store}>
 				<NavigationBar title="t1">
@@ -108,13 +154,13 @@ describe('NavigationBar additional behaviors', () => {
 		expect(screen.getByText(/Bienvenu/i)).toBeInTheDocument();
 
 		// rerender Femme -> Bienvenue
-		mockUseAppSelector.mockImplementation(() => ({
+		mockProfile = {
 			avatar_cropped: undefined,
 			first_name: 'A',
 			last_name: 'B',
 			gender: 'Femme',
 			is_staff: false,
-		}));
+		};
 		render(
 			<Provider store={store}>
 				<NavigationBar title="t2">
@@ -127,13 +173,13 @@ describe('NavigationBar additional behaviors', () => {
 		).toBeTruthy();
 
 		// rerender undefined -> Bienvenu(e)
-		mockUseAppSelector.mockImplementation(() => ({
+		mockProfile = {
 			avatar_cropped: undefined,
 			first_name: 'A',
 			last_name: 'B',
 			gender: undefined,
 			is_staff: false,
-		}));
+		};
 		render(
 			<Provider store={store}>
 				<NavigationBar title="t3">
@@ -227,13 +273,13 @@ describe('NavigationBar additional behaviors', () => {
 		// Set pathname to a subpath that partially matches
 		mockPathname = '/dashboard/companies/123';
 
-		mockUseAppSelector.mockImplementation(() => ({
+		mockProfile = {
 			avatar_cropped: undefined,
 			first_name: 'A',
 			last_name: 'B',
 			gender: 'Homme',
-			is_staff: true, // Enable staff to see companies menu
-		}));
+			is_staff: true,
+		};
 
 		render(
 			<Provider store={store}>
@@ -277,4 +323,5 @@ describe('NavigationBar additional behaviors', () => {
 
 		// Articles panel should still be expanded due to partial match on /dashboard/articles
 		expect(screen.getByText('Liste des articles')).toBeInTheDocument();
-	});});
+	});
+});

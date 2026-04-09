@@ -9,9 +9,9 @@ import {
 	PictureAsPdf as PictureAsPdfIcon,
 } from '@mui/icons-material';
 import { BON_DE_LIVRAISON_EDIT, BON_DE_LIVRAISON_LIST, BON_DE_LIVRAISON_PDF } from '@/utils/routes';
-import { useGetBonDeLivraisonQuery, useDeleteBonDeLivraisonMutation } from '@/store/services/bonDeLivraison';
+import { useDeleteBonDeLivraisonMutation, useGetBonDeLivraisonQuery } from '@/store/services/bonDeLivraison';
 import { useInitAccessToken } from '@/contexts/InitContext';
-import { useAppSelector, useToast, useLanguage } from '@/utils/hooks';
+import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import { extractApiErrorMessage } from '@/utils/helpers';
 import { getUserCompaniesState } from '@/store/selectors';
 import { fetchPdfBlob } from '@/utils/apiHelpers';
@@ -58,7 +58,13 @@ const BonDeLivraisonViewClient: React.FC<Props> = ({ session, company_id, id }) 
 	};
 
 	const deleteModalActions = [
-		{ text: t.common.cancel, active: false, onClick: () => setShowDeleteModal(false), icon: <ArrowBackIcon />, color: '#6B6B6B' },
+		{
+			text: t.common.cancel,
+			active: false,
+			onClick: () => setShowDeleteModal(false),
+			icon: <ArrowBackIcon />,
+			color: '#6B6B6B',
+		},
 		{ text: t.common.delete, active: true, onClick: handleDelete, icon: <DeleteIcon />, color: '#D32F2F' },
 	];
 
@@ -90,19 +96,42 @@ const BonDeLivraisonViewClient: React.FC<Props> = ({ session, company_id, id }) 
 		<>
 			{canPrint && (
 				<>
-					<Button variant="outlined" color="error" size="small" startIcon={<PictureAsPdfIcon />} onClick={() => openPdf('normal')}>
+					<Button
+						variant="outlined"
+						color="error"
+						size="small"
+						startIcon={<PictureAsPdfIcon />}
+						onClick={() => openPdf('normal')}
+					>
 						PDF (normal)
 					</Button>
-					<Button variant="outlined" size="small" startIcon={<PictureAsPdfIcon />} onClick={() => openPdf('quantity_only')}>
+					<Button
+						variant="outlined"
+						size="small"
+						startIcon={<PictureAsPdfIcon />}
+						onClick={() => openPdf('quantity_only')}
+					>
 						PDF (qua. only)
 					</Button>
-					<Button variant="outlined" color="warning" size="small" startIcon={<PictureAsPdfIcon />} onClick={() => openPdf('avec_unite')}>
+					<Button
+						variant="outlined"
+						color="warning"
+						size="small"
+						startIcon={<PictureAsPdfIcon />}
+						onClick={() => openPdf('avec_unite')}
+					>
 						{t.common.pdfUnit}
 					</Button>
 				</>
 			)}
 			{isCaissier && (
-				<Button variant="outlined" color="error" size="small" startIcon={<DeleteIcon />} onClick={() => setShowDeleteModal(true)}>
+				<Button
+					variant="outlined"
+					color="error"
+					size="small"
+					startIcon={<DeleteIcon />}
+					onClick={() => setShowDeleteModal(true)}
+				>
 					{t.common.delete}
 				</Button>
 			)}
@@ -134,7 +163,10 @@ const BonDeLivraisonViewClient: React.FC<Props> = ({ session, company_id, id }) 
 			{showLanguageModal && (
 				<PdfLanguageModal
 					onSelectLanguage={handleLanguageSelect}
-					onClose={() => { setShowLanguageModal(false); setPendingPdfType(null); }}
+					onClose={() => {
+						setShowLanguageModal(false);
+						setPendingPdfType(null);
+					}}
 				/>
 			)}
 			{showDeleteModal && (

@@ -2,30 +2,30 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Button, Stack, Typography, Avatar } from '@mui/material';
+import { Avatar, Box, Button, Stack, Typography } from '@mui/material';
 import {
-	Edit as EditIcon,
-	Delete as DeleteIcon,
-	Visibility as VisibilityIcon,
-	CheckCircle as CheckCircleIcon,
-	Cancel as CancelIcon,
 	Add as AddIcon,
+	Cancel as CancelIcon,
+	CheckCircle as CheckCircleIcon,
 	Close as CloseIcon,
+	Delete as DeleteIcon,
+	Edit as EditIcon,
+	Visibility as VisibilityIcon,
 } from '@mui/icons-material';
-import { GridColDef, GridRenderCellParams, GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
+import { GridColDef, GridFilterModel, GridLogicOperator, GridRenderCellParams } from '@mui/x-data-grid';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import { useDeleteUserMutation, useGetUsersListQuery, useBulkDeleteUsersMutation } from '@/store/services/account';
-import { USERS_VIEW, USERS_EDIT, USERS_ADD } from '@/utils/routes';
+import { useBulkDeleteUsersMutation, useDeleteUserMutation, useGetUsersListQuery } from '@/store/services/account';
+import { USERS_ADD, USERS_EDIT, USERS_VIEW } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type { UserClass } from '@/models/classes';
-import { formatDate, extractApiErrorMessage } from '@/utils/helpers';
+import { extractApiErrorMessage, formatDate } from '@/utils/helpers';
 import { Protected } from '@/components/layouts/protected/protected';
-import { useToast, useLanguage } from '@/utils/hooks';
+import { useLanguage, useToast } from '@/utils/hooks';
 import Image from 'next/image';
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
 import {
@@ -91,7 +91,13 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 	};
 
 	const deleteModalActions = [
-		{ text: t.common.cancel, active: false, onClick: () => setShowDeleteModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
+		{
+			text: t.common.cancel,
+			active: false,
+			onClick: () => setShowDeleteModal(false),
+			icon: <CloseIcon />,
+			color: '#6B6B6B',
+		},
 		{ text: t.common.delete, active: true, onClick: deleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
 	];
 
@@ -118,8 +124,20 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 	};
 
 	const bulkDeleteModalActions = [
-		{ text: t.common.cancel, active: false, onClick: () => setShowBulkDeleteModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
-		{ text: t.users.bulkDeleteBtn(selectedUserIds.length), active: true, onClick: bulkDeleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
+		{
+			text: t.common.cancel,
+			active: false,
+			onClick: () => setShowBulkDeleteModal(false),
+			icon: <CloseIcon />,
+			color: '#6B6B6B',
+		},
+		{
+			text: t.users.bulkDeleteBtn(selectedUserIds.length),
+			active: true,
+			onClick: bulkDeleteHandler,
+			icon: <DeleteIcon />,
+			color: '#D32F2F',
+		},
 	];
 
 	const genderFilterOptions = React.useMemo(
@@ -225,7 +243,12 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 			headerName: t.users.colSexe,
 			flex: 0.7,
 			minWidth: 80,
-			filterOperators: createDropdownFilterOperators(genderFilterOptions, t.users.filterBothSexes, undefined, t.filterPanel.is),
+			filterOperators: createDropdownFilterOperators(
+				genderFilterOptions,
+				t.users.filterBothSexes,
+				undefined,
+				t.filterPanel.is,
+			),
 			renderCell: (params: GridRenderCellParams<UserClass>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap>
@@ -345,8 +368,11 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 			direction="column"
 			spacing={2}
 			className={Styles.flexRootStack}
-			mt="48px"
-			sx={{ overflowX: 'auto', overflowY: 'hidden' }}
+			sx={{
+				mt: '48px',
+				overflowX: 'auto',
+				overflowY: 'hidden',
+			}}
 		>
 			<NavigationBar title={t.users.listTitle}>
 				<Protected>
@@ -356,59 +382,59 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 								width: '100%',
 								display: 'flex',
 								justifyContent: 'flex-start',
-							gap: 2,
-							px: { xs: 1, sm: 2, md: 3 },
-							mt: { xs: 1, sm: 2, md: 3 },
-							mb: { xs: 1, sm: 2, md: 3 },
-						}}
-					>
-						<Button
-							variant="contained"
-							onClick={() => router.push(USERS_ADD)}
-							sx={{
-								whiteSpace: 'nowrap',
-								px: { xs: 1.5, sm: 2, md: 3 },
-								py: { xs: 0.8, sm: 1, md: 1 },
-								fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
+								gap: 2,
+								px: { xs: 1, sm: 2, md: 3 },
+								mt: { xs: 1, sm: 2, md: 3 },
+								mb: { xs: 1, sm: 2, md: 3 },
 							}}
-							startIcon={<AddIcon fontSize="small" />}
 						>
-							{t.users.newUser}
-						</Button>
-						{selectedUserIds.length > 0 && (
 							<Button
-								variant="outlined"
-								color="error"
-								onClick={() => setShowBulkDeleteModal(true)}
-								startIcon={<DeleteIcon fontSize="small" />}
+								variant="contained"
+								onClick={() => router.push(USERS_ADD)}
 								sx={{
 									whiteSpace: 'nowrap',
 									px: { xs: 1.5, sm: 2, md: 3 },
 									py: { xs: 0.8, sm: 1, md: 1 },
 									fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
 								}}
+								startIcon={<AddIcon fontSize="small" />}
 							>
-								{t.users.bulkDeleteBtn(selectedUserIds.length)}
+								{t.users.newUser}
 							</Button>
-						)}
-					</Box>
+							{selectedUserIds.length > 0 && (
+								<Button
+									variant="outlined"
+									color="error"
+									onClick={() => setShowBulkDeleteModal(true)}
+									startIcon={<DeleteIcon fontSize="small" />}
+									sx={{
+										whiteSpace: 'nowrap',
+										px: { xs: 1.5, sm: 2, md: 3 },
+										py: { xs: 0.8, sm: 1, md: 1 },
+										fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
+									}}
+								>
+									{t.users.bulkDeleteBtn(selectedUserIds.length)}
+								</Button>
+							)}
+						</Box>
 
-					<PaginatedDataGrid
-						data={data}
-						isLoading={isLoading}
-						columns={columns}
-						paginationModel={paginationModel}
-						setPaginationModel={setPaginationModel}
-						searchTerm={searchTerm}
-						setSearchTerm={setSearchTerm}
-						filterModel={filterModel}
-						onFilterModelChange={setFilterModel}
-						onCustomFilterParamsChange={setCustomFilterParams}
-						toolbar={{ quickFilter: true, debounceMs: 500 }}
-						checkboxSelection
-						onSelectionChange={handleSelectionChange}
-						selectedIds={selectedUserIds}
-					/>
+						<PaginatedDataGrid
+							data={data}
+							isLoading={isLoading}
+							columns={columns}
+							paginationModel={paginationModel}
+							setPaginationModel={setPaginationModel}
+							searchTerm={searchTerm}
+							setSearchTerm={setSearchTerm}
+							filterModel={filterModel}
+							onFilterModelChange={setFilterModel}
+							onCustomFilterParamsChange={setCustomFilterParams}
+							toolbar={{ quickFilter: true, debounceMs: 500 }}
+							checkboxSelection
+							onSelectionChange={handleSelectionChange}
+							selectedIds={selectedUserIds}
+						/>
 						{showDeleteModal && (
 							<ActionModals
 								title={t.users.deleteModalTitle}

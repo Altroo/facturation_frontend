@@ -24,14 +24,17 @@ import {
 } from '@/store/services/notification';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import { useToast, useLanguage } from '@/utils/hooks';
+import { useLanguage, useToast } from '@/utils/hooks';
 import { Edit as EditIcon } from '@mui/icons-material';
 import type { NotificationPreferenceFormValues, QuoteExpiryDaysValue } from '@/types/facturationTypes';
 
 const FormikContent: React.FC = () => {
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
-	const quoteExpiryOptions: { value: QuoteExpiryDaysValue; label: string }[] = t.settings.quoteExpiryOptions as { value: QuoteExpiryDaysValue; label: string }[];
+	const quoteExpiryOptions: { value: QuoteExpiryDaysValue; label: string }[] = t.settings.quoteExpiryOptions as {
+		value: QuoteExpiryDaysValue;
+		label: string;
+	}[];
 	const { data: preferences, isLoading: isPreferencesLoading } = useGetNotificationPreferencesQuery();
 	const [updatePreferences, { isLoading: isUpdateLoading }] = useUpdateNotificationPreferencesMutation();
 	const [isPending, setIsPending] = useState(false);
@@ -71,14 +74,28 @@ const FormikContent: React.FC = () => {
 	}, []);
 
 	return (
-		<Stack direction="column" alignItems="center" spacing={2} className={`${Styles.flexRootStack}`} mt="32px">
+		<Stack
+			direction="column"
+			spacing={2}
+			className={`${Styles.flexRootStack}`}
+			sx={{
+				alignItems: 'center',
+				mt: '32px',
+			}}
+		>
 			{(isPreferencesLoading || isUpdateLoading || isPending) && (
 				<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
 			)}
 			<h2 className={Styles.pageTitle}>{t.settings.notificationPreferences}</h2>
-
 			<form className={Styles.form} onSubmit={(e) => e.preventDefault()}>
-				<Stack direction="column" justifyContent="center" alignItems="center" spacing={3}>
+				<Stack
+					direction="column"
+					spacing={3}
+					sx={{
+						justifyContent: 'center',
+						alignItems: 'center',
+					}}
+				>
 					<Box sx={{ maxWidth: 365, width: '100%' }}>
 						<Stack spacing={2}>
 							<FormControlLabel

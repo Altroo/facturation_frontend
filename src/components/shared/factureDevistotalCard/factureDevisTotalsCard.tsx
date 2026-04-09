@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent, Grid, Box, Typography, Skeleton } from '@mui/material';
+import { Box, Card, CardContent, Grid, Skeleton, Typography } from '@mui/material';
 import { formatNumberWithSpaces } from '@/utils/helpers';
 import { useLanguage } from '@/utils/hooks';
 
@@ -15,7 +15,12 @@ interface TotalsCardProps {
 	isLoading?: boolean;
 }
 
-const FactureDevisTotalsCard: React.FC<TotalsCardProps> = ({ totals, devise = 'MAD', isMobile = false, isLoading = false }) => {
+const FactureDevisTotalsCard: React.FC<TotalsCardProps> = ({
+	totals,
+	devise = 'MAD',
+	isMobile = false,
+	isLoading = false,
+}) => {
 	const { t } = useLanguage();
 	const items = [
 		{
@@ -49,7 +54,14 @@ const FactureDevisTotalsCard: React.FC<TotalsCardProps> = ({ totals, devise = 'M
 	return (
 		<Card elevation={3} sx={{ borderRadius: 2, bgcolor: 'primary.50' }}>
 			<CardContent sx={{ p: 3 }}>
-				<Grid container spacing={2} alignItems="center" justifyContent={isMobile ? 'center' : 'space-between'}>
+				<Grid
+					container
+					spacing={2}
+					sx={{
+						alignItems: 'center',
+						justifyContent: isMobile ? 'center' : 'space-between',
+					}}
+				>
 					{items.map((item) => (
 						<Grid key={item.label} size={{ xs: 12, sm: 6, md: 6, lg: 3 }}>
 							<Box
@@ -62,13 +74,30 @@ const FactureDevisTotalsCard: React.FC<TotalsCardProps> = ({ totals, devise = 'M
 									px: 1,
 								}}
 							>
-								<Typography variant="subtitle2" fontWeight={600} color="text.secondary" sx={{ mb: 0.5 }}>
+								<Typography
+									variant="subtitle2"
+									sx={{
+										fontWeight: 600,
+										color: 'text.secondary',
+										mb: 0.5,
+									}}
+								>
 									{item.label}
 								</Typography>
 								{isLoading ? (
-									<Skeleton variant="text" width={100} sx={{ fontSize: item.variant === 'h5' ? '1.5rem' : '1.25rem' }} />
+									<Skeleton
+										variant="text"
+										width={100}
+										sx={{ fontSize: item.variant === 'h5' ? '1.5rem' : '1.25rem' }}
+									/>
 								) : (
-									<Typography variant={item.variant} fontWeight={item.weight} color={item.color ?? 'text.secondary'}>
+									<Typography
+										variant={item.variant}
+										color={item.color ?? 'text.secondary'}
+										sx={{
+											fontWeight: item.weight,
+										}}
+									>
 										{item.value}
 									</Typography>
 								)}

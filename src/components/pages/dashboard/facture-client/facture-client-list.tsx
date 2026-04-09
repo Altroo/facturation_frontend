@@ -3,40 +3,40 @@
 import React, { useState } from 'react';
 import type { TranslationDictionary } from '@/types/languageTypes';
 import { useRouter } from 'next/navigation';
-import { Box, Card, CardContent, Stack, Typography, Divider } from '@mui/material';
+import { Box, Card, CardContent, Divider, Stack, Typography } from '@mui/material';
 import CurrencyToggle from '@/components/shared/currencyToggle/currencyToggle';
 import {
-	ReceiptLong as ReceiptLongIcon,
 	AttachMoney as AttachMoneyIcon,
-	CheckCircle as CheckCircleIcon,
 	Cancel as CancelIcon,
+	CheckCircle as CheckCircleIcon,
 	Print as PrintIcon,
+	ReceiptLong as ReceiptLongIcon,
 } from '@mui/icons-material';
 import { GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import {
+	useBulkDeleteFactureClientMutation,
 	useConvertFactureClientToBonDeLivraisonMutation,
 	useDeleteFactureClientMutation,
 	useGetFactureClientListQuery,
-	useBulkDeleteFactureClientMutation,
 } from '@/store/services/factureClient';
 import { useGetCompanyQuery } from '@/store/services/company';
 import {
 	BON_DE_LIVRAISON_EDIT,
 	FACTURE_CLIENT_ADD,
 	FACTURE_CLIENT_EDIT,
-	FACTURE_CLIENT_VIEW,
 	FACTURE_CLIENT_PDF,
+	FACTURE_CLIENT_VIEW,
 } from '@/utils/routes';
 import type { SessionProps } from '@/types/_initTypes';
 import type { FactureClass } from '@/models/classes';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import CompanyDocumentsListContent from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsListContent';
-import type { DocumentListConfig, PaginationModel, FactureClientListResponseType } from '@/types/companyDocumentsTypes';
+import type { DocumentListConfig, FactureClientListResponseType, PaginationModel } from '@/types/companyDocumentsTypes';
 import { formatNumberWithSpaces } from '@/utils/helpers';
 import { useGetModePaiementListQuery } from '@/store/services/parameter';
-import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
+import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 import { useLanguage } from '@/utils/hooks';
 
 const createFactureClientListConfig = (t: TranslationDictionary): DocumentListConfig<FactureClass> => ({
@@ -80,21 +80,24 @@ const createFactureClientListConfig = (t: TranslationDictionary): DocumentListCo
 			label: t.common.pdfWithDiscount,
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#1976d2',
-			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') => FACTURE_CLIENT_PDF(id, companyId, 'avec_remise', language),
+			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') =>
+				FACTURE_CLIENT_PDF(id, companyId, 'avec_remise', language),
 		},
 		{
 			key: 'sans_remise',
 			label: t.common.pdfWithoutDiscount,
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#2e7d32',
-			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') => FACTURE_CLIENT_PDF(id, companyId, 'sans_remise', language),
+			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') =>
+				FACTURE_CLIENT_PDF(id, companyId, 'sans_remise', language),
 		},
 		{
 			key: 'avec_unite',
 			label: t.common.pdfWithUnit,
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#ed6c02',
-			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') => FACTURE_CLIENT_PDF(id, companyId, 'avec_unite', language),
+			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') =>
+				FACTURE_CLIENT_PDF(id, companyId, 'avec_unite', language),
 		},
 	],
 });
@@ -127,7 +130,12 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 
 	const chipFilters: ChipFilterConfig[] = React.useMemo(
 		() => [
-			{ key: 'mode_paiement', label: t.facturesClient.filterModePaiement, paramName: 'mode_paiement_ids', options: modePaiement ?? [] },
+			{
+				key: 'mode_paiement',
+				label: t.facturesClient.filterModePaiement,
+				paramName: 'mode_paiement_ids',
+				options: modePaiement ?? [],
+			},
 		],
 		[modePaiement, t],
 	);
@@ -179,9 +187,15 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 
 	// Get stats for selected currency
 	const currencyStats = data?.stats_by_currency?.[selectedDevise];
-	const chiffreAffaireTotal = currencyStats?.chiffre_affaire_total ? `${formatNumberWithSpaces(currencyStats.chiffre_affaire_total, 2)} ${selectedDevise}` : `0,00 ${selectedDevise}`;
-	const totalReglements = currencyStats?.total_reglements ? `${formatNumberWithSpaces(currencyStats.total_reglements, 2)} ${selectedDevise}` : `0,00 ${selectedDevise}`;
-	const totalImpayes = currencyStats?.total_impayes ? `${formatNumberWithSpaces(currencyStats.total_impayes, 2)} ${selectedDevise}` : `0,00 ${selectedDevise}`;
+	const chiffreAffaireTotal = currencyStats?.chiffre_affaire_total
+		? `${formatNumberWithSpaces(currencyStats.chiffre_affaire_total, 2)} ${selectedDevise}`
+		: `0,00 ${selectedDevise}`;
+	const totalReglements = currencyStats?.total_reglements
+		? `${formatNumberWithSpaces(currencyStats.total_reglements, 2)} ${selectedDevise}`
+		: `0,00 ${selectedDevise}`;
+	const totalImpayes = currencyStats?.total_impayes
+		? `${formatNumberWithSpaces(currencyStats.total_impayes, 2)} ${selectedDevise}`
+		: `0,00 ${selectedDevise}`;
 
 	return (
 		<>
@@ -195,13 +209,29 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 				<Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 3 }}>
 					<Card elevation={2} sx={{ flex: 1, borderRadius: 2 }}>
 						<CardContent>
-							<Stack direction="row" spacing={2} alignItems="center">
+							<Stack
+								direction="row"
+								spacing={2}
+								sx={{
+									alignItems: 'center',
+								}}
+							>
 								<AttachMoneyIcon color="primary" />
 								<Box>
-									<Typography variant="body2" color="text.secondary">
+									<Typography
+										variant="body2"
+										sx={{
+											color: 'text.secondary',
+										}}
+									>
 										{t.facturesClient.statsCA}
 									</Typography>
-									<Typography variant="h6" fontWeight={700}>
+									<Typography
+										variant="h6"
+										sx={{
+											fontWeight: 700,
+										}}
+									>
 										{chiffreAffaireTotal}
 									</Typography>
 								</Box>
@@ -210,13 +240,30 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 					</Card>
 					<Card elevation={2} sx={{ flex: 1, borderRadius: 2 }}>
 						<CardContent>
-							<Stack direction="row" spacing={2} alignItems="center">
+							<Stack
+								direction="row"
+								spacing={2}
+								sx={{
+									alignItems: 'center',
+								}}
+							>
 								<CheckCircleIcon color="success" />
 								<Box>
-									<Typography variant="body2" color="text.secondary">
+									<Typography
+										variant="body2"
+										sx={{
+											color: 'text.secondary',
+										}}
+									>
 										{t.facturesClient.statsReglements}
 									</Typography>
-									<Typography variant="h6" fontWeight={700} color="success.main">
+									<Typography
+										variant="h6"
+										sx={{
+											fontWeight: 700,
+											color: 'success.main',
+										}}
+									>
 										{totalReglements}
 									</Typography>
 								</Box>
@@ -225,13 +272,30 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 					</Card>
 					<Card elevation={2} sx={{ flex: 1, borderRadius: 2 }}>
 						<CardContent>
-							<Stack direction="row" spacing={2} alignItems="center">
+							<Stack
+								direction="row"
+								spacing={2}
+								sx={{
+									alignItems: 'center',
+								}}
+							>
 								<CancelIcon color="error" />
 								<Box>
-									<Typography variant="body2" color="text.secondary">
+									<Typography
+										variant="body2"
+										sx={{
+											color: 'text.secondary',
+										}}
+									>
 										{t.facturesClient.statsImpayes}
 									</Typography>
-									<Typography variant="h6" fontWeight={700} color="error.main">
+									<Typography
+										variant="h6"
+										sx={{
+											fontWeight: 700,
+											color: 'error.main',
+										}}
+									>
 										{totalImpayes}
 									</Typography>
 								</Box>
@@ -241,7 +305,6 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 				</Stack>
 				<Divider sx={{ mb: 2 }} />
 			</Box>
-
 			<CompanyDocumentsListContent<FactureClass>
 				companyId={company_id}
 				role={role}

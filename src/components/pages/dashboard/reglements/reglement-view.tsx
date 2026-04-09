@@ -1,43 +1,43 @@
 'use client';
 
-import React, { useMemo, isValidElement, useState } from 'react';
+import React, { isValidElement, useMemo, useState } from 'react';
 import {
 	Box,
-	Stack,
-	Typography,
+	Button,
 	Card,
 	CardContent,
-	Divider,
-	Button,
-	useTheme,
-	useMediaQuery,
 	Chip,
+	Divider,
+	Stack,
+	Typography,
+	useMediaQuery,
+	useTheme,
 } from '@mui/material';
 import {
 	ArrowBack as ArrowBackIcon,
+	AttachMoney as AttachMoneyIcon,
+	CalendarToday as CalendarTodayIcon,
 	Delete as DeleteIcon,
 	Edit as EditIcon,
+	Info as InfoIcon,
+	Notes as NotesIcon,
+	Payment as PaymentIcon,
 	PictureAsPdf as PictureAsPdfIcon,
 	Receipt as ReceiptIcon,
-	Payment as PaymentIcon,
-	CalendarToday as CalendarTodayIcon,
-	AttachMoney as AttachMoneyIcon,
-	Notes as NotesIcon,
-	Info as InfoIcon,
 } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import { REGLEMENTS_LIST, REGLEMENTS_EDIT, REGLEMENT_PDF } from '@/utils/routes';
+import { REGLEMENT_PDF, REGLEMENTS_EDIT, REGLEMENTS_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
-import { useGetReglementQuery, useDeleteReglementMutation } from '@/store/services/reglement';
+import { useDeleteReglementMutation, useGetReglementQuery } from '@/store/services/reglement';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
-import { useAppSelector, useToast, useLanguage } from '@/utils/hooks';
+import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import { getUserCompaniesState } from '@/store/selectors';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
-import { formatDate, formatNumber, extractApiErrorMessage } from '@/utils/helpers';
+import { extractApiErrorMessage, formatDate, formatNumber } from '@/utils/helpers';
 import { getStatutColor } from '@/components/pages/dashboard/devis/devis-list';
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
@@ -53,17 +53,14 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 	const displayValue =
-		React.isValidElement(value) ||
-		(value !== null && value !== undefined && value.toString().length > 0)
-			? value
-			: '-';
+		React.isValidElement(value) || (value !== null && value !== undefined && value.toString().length > 0) ? value : '-';
 
 	return (
 		<Stack
 			direction="row"
-			alignItems="flex-start"
 			spacing={2}
 			sx={{
+				alignItems: 'flex-start',
 				py: 1.5,
 				flexWrap: 'wrap',
 			}}
@@ -79,20 +76,19 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 			>
 				{icon}
 			</Box>
-
 			<Stack
 				direction="row"
-				alignItems="center"
 				spacing={isMobile ? 0 : 2}
 				sx={{
+					alignItems: 'center',
 					flex: 1,
 					flexWrap: 'wrap',
 				}}
 			>
 				<Typography
-					fontWeight={600}
-					color="text.secondary"
 					sx={{
+						fontWeight: 600,
+						color: 'text.secondary',
 						minWidth: { xs: '100%', sm: 200 },
 						wordBreak: 'break-word',
 					}}
@@ -190,54 +186,74 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	};
 
 	return (
-		<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
+		<Stack
+			direction="column"
+			spacing={2}
+			className={Styles.flexRootStack}
+			sx={{
+				mt: '32px',
+			}}
+		>
 			<NavigationBar title={t.reglements.detailsTitle}>
 				<Stack spacing={3} sx={{ p: { xs: 2, md: 3 }, mt: 2 }}>
-<Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between" alignItems={isMobile ? 'stretch' : 'center'} spacing={2}>
-					<Button
-						variant="outlined"
-						startIcon={<ArrowBackIcon />}
-						onClick={() => router.push(REGLEMENTS_LIST)}
-						sx={{ width: isMobile ? '100%' : 'auto' }}
+					<Stack
+						direction={isMobile ? 'column' : 'row'}
+						spacing={2}
+						sx={{
+							justifyContent: 'space-between',
+							alignItems: isMobile ? 'stretch' : 'center',
+						}}
 					>
-						{t.reglements.backToList}
-					</Button>
-					{!isLoading && !error && (
-						<Stack direction="row" gap={1} flexWrap="wrap">
-							{(company?.role === 'Caissier' || company?.role === 'Comptable' || company?.role === 'Commercial') && (
-								<Button
-									variant="outlined"
-									color="error"
-									size="small"
-									startIcon={<PictureAsPdfIcon />}
-									onClick={() => setShowLanguageModal(true)}
-								>
-									PDF
-								</Button>
-							)}
-							{company?.role === 'Caissier' && reglement?.statut === 'Valide' && (
-								<Button
-									variant="outlined"
-									size="small"
-									startIcon={<EditIcon />}
-									onClick={() => router.push(REGLEMENTS_EDIT(id, company_id))}
-								>
-									Modifier
-								</Button>
-							)}
-							{company?.role === 'Caissier' && (
-								<Button
-									variant="outlined"
-									color="error"
-									size="small"
-									startIcon={<DeleteIcon />}
-									onClick={() => setShowDeleteModal(true)}
-								>
-									{t.common.delete}
-								</Button>
-							)}
-						</Stack>
-					)}
+						<Button
+							variant="outlined"
+							startIcon={<ArrowBackIcon />}
+							onClick={() => router.push(REGLEMENTS_LIST)}
+							sx={{ width: isMobile ? '100%' : 'auto' }}
+						>
+							{t.reglements.backToList}
+						</Button>
+						{!isLoading && !error && (
+							<Stack
+								direction="row"
+								sx={{
+									gap: 1,
+									flexWrap: 'wrap',
+								}}
+							>
+								{(company?.role === 'Caissier' || company?.role === 'Comptable' || company?.role === 'Commercial') && (
+									<Button
+										variant="outlined"
+										color="error"
+										size="small"
+										startIcon={<PictureAsPdfIcon />}
+										onClick={() => setShowLanguageModal(true)}
+									>
+										PDF
+									</Button>
+								)}
+								{company?.role === 'Caissier' && reglement?.statut === 'Valide' && (
+									<Button
+										variant="outlined"
+										size="small"
+										startIcon={<EditIcon />}
+										onClick={() => router.push(REGLEMENTS_EDIT(id, company_id))}
+									>
+										Modifier
+									</Button>
+								)}
+								{company?.role === 'Caissier' && (
+									<Button
+										variant="outlined"
+										color="error"
+										size="small"
+										startIcon={<DeleteIcon />}
+										onClick={() => setShowDeleteModal(true)}
+									>
+										{t.common.delete}
+									</Button>
+								)}
+							</Stack>
+						)}
 					</Stack>
 
 					{isLoading ? (
@@ -258,7 +274,14 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 							{reglement?.montant_facture !== undefined && (
 								<Card elevation={3} sx={{ borderRadius: 2, bgcolor: 'primary.50' }}>
 									<CardContent sx={{ p: 3 }}>
-										<Grid container spacing={2} alignItems="center" justifyContent={isMobile ? 'center' : 'space-between'}>
+										<Grid
+											container
+											spacing={2}
+											sx={{
+												alignItems: 'center',
+												justifyContent: isMobile ? 'center' : 'space-between',
+											}}
+										>
 											<Grid size={{ xs: 12, sm: 6, md: 6, lg: 3 }}>
 												<Box
 													sx={{
@@ -270,10 +293,23 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 														px: 1,
 													}}
 												>
-													<Typography variant="subtitle2" fontWeight={600} color="text.secondary" sx={{ mb: 0.5 }}>
+													<Typography
+														variant="subtitle2"
+														sx={{
+															fontWeight: 600,
+															color: 'text.secondary',
+															mb: 0.5,
+														}}
+													>
 														MONTANT FACTURE
 													</Typography>
-													<Typography variant="h6" fontWeight={800} color="text.secondary">
+													<Typography
+														variant="h6"
+														sx={{
+															fontWeight: 800,
+															color: 'text.secondary',
+														}}
+													>
 														{reglement?.montant_facture !== null
 															? `${formatNumber(reglement.montant_facture)} ${reglement.devise}`
 															: '-'}
@@ -291,11 +327,25 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 														px: 1,
 													}}
 												>
-													<Typography variant="subtitle2" fontWeight={600} color="text.secondary" sx={{ mb: 0.5 }}>
+													<Typography
+														variant="subtitle2"
+														sx={{
+															fontWeight: 600,
+															color: 'text.secondary',
+															mb: 0.5,
+														}}
+													>
 														{t.reglements.totalReglements.toUpperCase()}
 													</Typography>
-													<Typography variant="h6" fontWeight={800} color="success.main">
-														{reglement?.total_reglements_facture !== undefined && reglement?.total_reglements_facture !== null
+													<Typography
+														variant="h6"
+														sx={{
+															fontWeight: 800,
+															color: 'success.main',
+														}}
+													>
+														{reglement?.total_reglements_facture !== undefined &&
+														reglement?.total_reglements_facture !== null
 															? `${formatNumber(reglement.total_reglements_facture)} ${reglement.devise}`
 															: '-'}
 													</Typography>
@@ -312,11 +362,26 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 														px: 1,
 													}}
 												>
-													<Typography variant="subtitle2" fontWeight={600} color="text.secondary" sx={{ mb: 0.5 }}>
+													<Typography
+														variant="subtitle2"
+														sx={{
+															fontWeight: 600,
+															color: 'text.secondary',
+															mb: 0.5,
+														}}
+													>
 														{t.reglements.resteAPayer.toUpperCase()}
 													</Typography>
-													<Typography variant="h5" fontWeight={900} color="error.main">
-														{reglement?.reste_a_payer !== undefined ? `${formatNumber(reglement.reste_a_payer)} ${reglement.devise}` : '-'}
+													<Typography
+														variant="h5"
+														sx={{
+															fontWeight: 900,
+															color: 'error.main',
+														}}
+													>
+														{reglement?.reste_a_payer !== undefined
+															? `${formatNumber(reglement.reste_a_payer)} ${reglement.devise}`
+															: '-'}
 													</Typography>
 												</Box>
 											</Grid>
@@ -331,10 +396,23 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 														px: 1,
 													}}
 												>
-													<Typography variant="subtitle2" fontWeight={600} color="text.secondary" sx={{ mb: 0.5 }}>
+													<Typography
+														variant="subtitle2"
+														sx={{
+															fontWeight: 600,
+															color: 'text.secondary',
+															mb: 0.5,
+														}}
+													>
 														{t.reglements.ceReglement}
 													</Typography>
-													<Typography variant="h5" fontWeight={900} color="primary">
+													<Typography
+														variant="h5"
+														color="primary"
+														sx={{
+															fontWeight: 900,
+														}}
+													>
 														{reglement?.montant !== undefined && reglement?.montant !== null
 															? `${formatNumber(reglement.montant)} ${reglement.devise}`
 															: '-'}
@@ -349,9 +427,20 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 							{/* Status Card */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={3} alignItems="center">
+									<Stack
+										direction="row"
+										spacing={3}
+										sx={{
+											alignItems: 'center',
+										}}
+									>
 										<InfoIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
+										<Typography
+											variant="h6"
+											sx={{
+												fontWeight: 700,
+											}}
+										>
 											Statut
 										</Typography>
 									</Stack>
@@ -371,9 +460,20 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 							{/* Facture Information */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={3} alignItems="center">
+									<Stack
+										direction="row"
+										spacing={3}
+										sx={{
+											alignItems: 'center',
+										}}
+									>
 										<ReceiptIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
+										<Typography
+											variant="h6"
+											sx={{
+												fontWeight: 700,
+											}}
+										>
 											{t.reglements.infoFacture}
 										</Typography>
 									</Stack>
@@ -394,9 +494,20 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 							{/* Payment Details */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={3} alignItems="center">
+									<Stack
+										direction="row"
+										spacing={3}
+										sx={{
+											alignItems: 'center',
+										}}
+									>
 										<PaymentIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
+										<Typography
+											variant="h6"
+											sx={{
+												fontWeight: 700,
+											}}
+										>
 											{t.reglements.detailsReglement}
 										</Typography>
 									</Stack>
@@ -410,8 +521,13 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 										icon={<AttachMoneyIcon fontSize="small" />}
 										label={t.reglements.colMontant}
 										value={
-											<Typography fontWeight={600} color="primary">
-											{reglement?.montant ? `${formatNumber(reglement.montant)} ${reglement.devise}` : '-'}
+											<Typography
+												color="primary"
+												sx={{
+													fontWeight: 600,
+												}}
+											>
+												{reglement?.montant ? `${formatNumber(reglement.montant)} ${reglement.devise}` : '-'}
 											</Typography>
 										}
 									/>
@@ -426,9 +542,20 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 							{/* Dates */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={3} alignItems="center">
+									<Stack
+										direction="row"
+										spacing={3}
+										sx={{
+											alignItems: 'center',
+										}}
+									>
 										<CalendarTodayIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
+										<Typography
+											variant="h6"
+											sx={{
+												fontWeight: 700,
+											}}
+										>
 											Dates
 										</Typography>
 									</Stack>
@@ -459,21 +586,18 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 					)}
 				</Stack>
 			</NavigationBar>
-		{showLanguageModal && (
-			<PdfLanguageModal
-				onSelectLanguage={handleLanguageSelect}
-				onClose={handleLanguageModalClose}
-			/>
-		)}
-		{showDeleteModal && (
-			<ActionModals
-				title={t.reglements.deleteModalTitle}
-				body={t.reglements.deleteModalBody}
-				actions={deleteModalActions}
-				titleIcon={<DeleteIcon />}
-				titleIconColor="#D32F2F"
-			/>
-		)}
+			{showLanguageModal && (
+				<PdfLanguageModal onSelectLanguage={handleLanguageSelect} onClose={handleLanguageModalClose} />
+			)}
+			{showDeleteModal && (
+				<ActionModals
+					title={t.reglements.deleteModalTitle}
+					body={t.reglements.deleteModalBody}
+					actions={deleteModalActions}
+					titleIcon={<DeleteIcon />}
+					titleIconColor="#D32F2F"
+				/>
+			)}
 		</Stack>
 	);
 };

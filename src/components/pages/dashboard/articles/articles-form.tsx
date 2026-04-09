@@ -4,39 +4,39 @@ import React, { useMemo, useState } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import {
+	Alert,
 	Box,
 	Button,
-	Stack,
-	Typography,
 	Card,
 	CardContent,
 	Divider,
-	useTheme,
-	useMediaQuery,
-	ToggleButtonGroup,
-	ToggleButton,
-	Alert,
 	IconButton,
+	Stack,
+	ToggleButton,
+	ToggleButtonGroup,
 	Tooltip,
+	Typography,
+	useMediaQuery,
+	useTheme,
 } from '@mui/material';
 import {
+	Add as AddIcon,
 	ArrowBack as ArrowBackIcon,
-	PhotoCamera as PhotoCameraIcon,
 	Business as BusinessIcon,
-	Description as DescriptionIcon,
 	CreditCard as CreditCardIcon,
+	Description as DescriptionIcon,
+	Edit as EditIcon,
 	Fingerprint as FingerprintIcon,
-	ShoppingCart as ShoppingCartIcon,
-	Sell as SellIcon,
-	Receipt as ReceiptIcon,
-	Notes as NotesIcon,
 	LocationOn as LocationOnIcon,
+	Notes as NotesIcon,
+	PhotoCamera as PhotoCameraIcon,
+	Receipt as ReceiptIcon,
+	Refresh as RefreshIcon,
+	Sell as SellIcon,
+	ShoppingCart as ShoppingCartIcon,
 	Star as StarIcon,
 	Straighten as StraightenIcon,
-	Add as AddIcon,
-	Edit as EditIcon,
 	Warning as WarningIcon,
-	Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -44,11 +44,11 @@ import CustomTextInput from '@/components/formikElements/customTextInput/customT
 import FormattedNumberInput from '@/components/formikElements/formattedNumberInput/formattedNumberInput';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
-import { textInputTheme, customDropdownTheme } from '@/utils/themes';
+import { customDropdownTheme, textInputTheme } from '@/utils/themes';
 import { ARTICLES_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import type { DropDownType } from '@/types/accountTypes';
-import { useToast, useLanguage } from '@/utils/hooks';
+import { useLanguage, useToast } from '@/utils/hooks';
 import {
 	useAddArticleMutation,
 	useEditArticleMutation,
@@ -56,10 +56,10 @@ import {
 	useGetCodeReferenceQuery,
 } from '@/store/services/article';
 
-import { getLabelForKey, setFormikAutoErrors, parseNumber } from '@/utils/helpers';
+import { getLabelForKey, parseNumber, setFormikAutoErrors } from '@/utils/helpers';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
-import type { TypeArticleType, ArticleSchemaType } from '@/types/articleTypes';
+import type { ArticleSchemaType, TypeArticleType } from '@/types/articleTypes';
 import {
 	useAddCategorieMutation,
 	useAddEmplacementMutation,
@@ -67,8 +67,8 @@ import {
 	useAddUniteMutation,
 	useGetCategorieListQuery,
 	useGetEmplacementListQuery,
-	useGetUniteListQuery,
 	useGetMarqueListQuery,
+	useGetUniteListQuery,
 } from '@/store/services/parameter';
 import { articleSchema } from '@/utils/formValidationSchemas';
 import AddEntityModal from '@/components/shared/addEntityModal/addEntityModal';
@@ -102,9 +102,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		data: generatedCodeData,
 		isLoading: isCodeLoading,
 		refetch: refetchCodeReference,
-	} = useGetCodeReferenceQuery({ company_id }, {
-		skip: !token || isEditMode,
-	});
+	} = useGetCodeReferenceQuery(
+		{ company_id },
+		{
+			skip: !token || isEditMode,
+		},
+	);
 	const { data: companyData, isFetching: isCompanyFetching } = useGetCompanyQuery({ id: company_id }, { skip: !token });
 	const usesForeignCurrency = !isCompanyFetching && companyData?.uses_foreign_currency === true;
 	// Mutations
@@ -294,16 +297,19 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const hasValidationErrors = Object.keys(validationErrors).length > 0;
 
 	const isLoading =
-		isAddLoading ||
-		isUpdateLoading ||
-		isPending ||
-		(isEditMode && isDataLoading) ||
-		(!isEditMode && isCodeLoading);
+		isAddLoading || isUpdateLoading || isPending || (isEditMode && isDataLoading) || (!isEditMode && isCodeLoading);
 	const shouldShowError = (axiosError?.status ?? 0) > 400 && !isLoading;
 
 	return (
 		<Stack spacing={3} sx={{ p: { xs: 2, md: 3 } }}>
-			<Stack direction={isMobile ? 'column' : 'row'} pt={2} justifyContent="space-between" spacing={2}>
+			<Stack
+				direction={isMobile ? 'column' : 'row'}
+				spacing={2}
+				sx={{
+					pt: 2,
+					justifyContent: 'space-between',
+				}}
+			>
 				<Button
 					variant="outlined"
 					startIcon={<ArrowBackIcon />}
@@ -320,8 +326,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			</Stack>
 			{hasValidationErrors && (
 				<Alert severity="error" icon={<WarningIcon />} sx={{ mb: 2 }}>
-					<Typography variant="subtitle2" fontWeight={600}>
-					{t.common.validationErrors}
+					<Typography
+						variant="subtitle2"
+						sx={{
+							fontWeight: 600,
+						}}
+					>
+						{t.common.validationErrors}
 					</Typography>
 					<ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
 						{Object.entries(validationErrors).map(([key, error]) => (
@@ -345,9 +356,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						{/* Profile Picture Card */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
 							<CardContent sx={{ p: 3 }}>
-								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+								<Stack
+									direction="row"
+									spacing={2}
+									sx={{
+										alignItems: 'center',
+										mb: 2,
+									}}
+								>
 									<PhotoCameraIcon color="primary" />
-									<Typography variant="h6" fontWeight={700}>
+									<Typography
+										variant="h6"
+										sx={{
+											fontWeight: 700,
+										}}
+									>
 										{t.articles.photoSection}
 									</Typography>
 								</Stack>
@@ -365,9 +388,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						{/* Identité de l'article */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
 							<CardContent sx={{ p: 3 }}>
-								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+								<Stack
+									direction="row"
+									spacing={2}
+									sx={{
+										alignItems: 'center',
+										mb: 2,
+									}}
+								>
 									<DescriptionIcon color="primary" />
-									<Typography variant="h6" fontWeight={700}>
+									<Typography
+										variant="h6"
+										sx={{
+											fontWeight: 700,
+										}}
+									>
 										{t.articles.identitySection}
 									</Typography>
 								</Stack>
@@ -383,11 +418,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									}}
 									sx={{ mb: 2 }}
 								>
-								<ToggleButton value="Produit">{t.articles.typeProduit}</ToggleButton>
-								<ToggleButton value="Service">{t.articles.typeService}</ToggleButton>
+									<ToggleButton value="Produit">{t.articles.typeProduit}</ToggleButton>
+									<ToggleButton value="Service">{t.articles.typeService}</ToggleButton>
 								</ToggleButtonGroup>
 								<Stack spacing={2.5}>
-									<Stack direction="row" spacing={1} alignItems="flex-start">
+									<Stack
+										direction="row"
+										spacing={1}
+										sx={{
+											alignItems: 'flex-start',
+										}}
+									>
 										<CustomTextInput
 											id="reference"
 											type="text"
@@ -440,15 +481,33 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						{/* {t.articles.pricesSection} */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
 							<CardContent sx={{ p: 3 }}>
-								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+								<Stack
+									direction="row"
+									spacing={2}
+									sx={{
+										alignItems: 'center',
+										mb: 2,
+									}}
+								>
 									<CreditCardIcon color="primary" />
-									<Typography variant="h6" fontWeight={700}>
+									<Typography
+										variant="h6"
+										sx={{
+											fontWeight: 700,
+										}}
+									>
 										{t.articles.pricesSection}
 									</Typography>
 								</Stack>
 								<Divider sx={{ mb: 3 }} />
 								<Stack spacing={2.5}>
-									<Stack direction="row" spacing={1} alignItems="flex-start">
+									<Stack
+										direction="row"
+										spacing={1}
+										sx={{
+											alignItems: 'flex-start',
+										}}
+									>
 										<FormattedNumberInput
 											id="prix_achat"
 											type="text"
@@ -472,14 +531,20 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										<CustomDropDownSelect
 											id="devise_prix_achat"
 											size="small"
-										label={t.common.devise}
+											label={t.common.devise}
 											items={['MAD', 'EUR', 'USD']}
 											value={formik.values.devise_prix_achat ?? 'MAD'}
 											onChange={(e) => formik.setFieldValue('devise_prix_achat', e.target.value)}
 											theme={customDropdownTheme()}
 										/>
 									</Stack>
-									<Stack direction="row" spacing={1} alignItems="flex-start">
+									<Stack
+										direction="row"
+										spacing={1}
+										sx={{
+											alignItems: 'flex-start',
+										}}
+									>
 										<FormattedNumberInput
 											id="prix_vente"
 											type="text"
@@ -504,7 +569,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											<CustomDropDownSelect
 												id="devise_prix_vente"
 												size="small"
-											label={t.common.devise}
+												label={t.common.devise}
 												items={['MAD', 'EUR', 'USD']}
 												value={formik.values.devise_prix_vente ?? 'MAD'}
 												onChange={(e) => formik.setFieldValue('devise_prix_vente', e.target.value)}
@@ -542,9 +607,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						{/* Classification */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
 							<CardContent sx={{ p: 3 }}>
-								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+								<Stack
+									direction="row"
+									spacing={2}
+									sx={{
+										alignItems: 'center',
+										mb: 2,
+									}}
+								>
 									<BusinessIcon color="primary" />
-									<Typography variant="h6" fontWeight={700}>
+									<Typography
+										variant="h6"
+										sx={{
+											fontWeight: 700,
+										}}
+									>
 										{t.articles.classificationSection}
 									</Typography>
 								</Stack>
@@ -553,8 +630,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomAutoCompleteSelect
 										id="categorie"
 										size="small"
-									noOptionsText={t.articles.noCategorie}
-									label={t.articles.filterCategorie}
+										noOptionsText={t.articles.noCategorie}
+										label={t.articles.filterCategorie}
 										items={categorieItems}
 										theme={theme}
 										value={selectedCategorie}
@@ -580,8 +657,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomAutoCompleteSelect
 										id="emplacement"
 										size="small"
-									noOptionsText={t.articles.noEmplacement}
-									label={t.articles.filterEmplacement}
+										noOptionsText={t.articles.noEmplacement}
+										label={t.articles.filterEmplacement}
 										items={emplacementItems}
 										theme={theme}
 										value={selectedEmplacement}
@@ -607,8 +684,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomAutoCompleteSelect
 										id="unite"
 										size="small"
-									noOptionsText={t.articles.noUnite}
-									label={t.articles.filterUnite}
+										noOptionsText={t.articles.noUnite}
+										label={t.articles.filterUnite}
 										items={uniteItems}
 										theme={theme}
 										value={selectedUnite}
@@ -629,8 +706,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomAutoCompleteSelect
 										id="marque"
 										size="small"
-									noOptionsText={t.articles.noMarque}
-									label={t.articles.filterMarque}
+										noOptionsText={t.articles.noMarque}
+										label={t.articles.filterMarque}
 										items={marqueItems}
 										theme={theme}
 										value={selectedMarque}
@@ -654,9 +731,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						{/* Remarque */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
 							<CardContent sx={{ p: 3 }}>
-								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+								<Stack
+									direction="row"
+									spacing={2}
+									sx={{
+										alignItems: 'center',
+										mb: 2,
+									}}
+								>
 									<NotesIcon color="primary" />
-									<Typography variant="h6" fontWeight={700}>
+									<Typography
+										variant="h6"
+										sx={{
+											fontWeight: 700,
+										}}
+									>
 										{t.articles.remarkSection}
 									</Typography>
 								</Stack>

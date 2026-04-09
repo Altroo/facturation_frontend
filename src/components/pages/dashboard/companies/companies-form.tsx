@@ -5,43 +5,43 @@ import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '
 import { useAddCompanyMutation, useEditCompanyMutation, useGetCompanyQuery } from '@/store/services/company';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import {
+	Alert,
 	Box,
 	Button,
-	Stack,
-	Typography,
 	Card,
 	CardContent,
 	Divider,
-	useTheme,
-	useMediaQuery,
-	Alert,
-	Switch,
 	FormControlLabel,
+	Stack,
+	Switch,
+	Typography,
+	useMediaQuery,
+	useTheme,
 } from '@mui/material';
 import {
+	AccountBalance as AccountBalanceIcon,
+	Add as AddIcon,
+	AdminPanelSettings as AdminPanelSettingsIcon,
 	ArrowBack as ArrowBackIcon,
+	Badge as BadgeIcon,
 	Business as BusinessIcon,
+	Contacts as ContactsIcon,
+	CreditCard as CreditCardIcon,
+	Description as DescriptionIcon,
+	Edit as EditIcon,
 	Email as EmailIcon,
+	Fingerprint as FingerprintIcon,
 	Groups as GroupsIcon,
-	Person as PersonIcon,
-	PersonOutline as PersonOutlineIcon,
-	Smartphone as SmartphoneIcon,
+	Image as ImageIcon,
+	Language as LanguageIcon,
 	LocationOn as LocationOnIcon,
+	Person as PersonIcon,
+	PersonOutlined as PersonOutlineIcon,
 	Phone as PhoneIcon,
 	Print as PrintIcon,
-	Language as LanguageIcon,
-	AccountBalance as AccountBalanceIcon,
-	Fingerprint as FingerprintIcon,
-	Badge as BadgeIcon,
-	CreditCard as CreditCardIcon,
-	Image as ImageIcon,
-	Contacts as ContactsIcon,
-	Description as DescriptionIcon,
-	AdminPanelSettings as AdminPanelSettingsIcon,
-	Edit as EditIcon,
-	Add as AddIcon,
-	Warning as WarningIcon,
 	Settings as SettingsIcon,
+	Smartphone as SmartphoneIcon,
+	Warning as WarningIcon,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -52,11 +52,11 @@ import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiP
 import { companySchema } from '@/utils/formValidationSchemas';
 import { civiliteItemsList, nbrEmployeItemsList } from '@/utils/rawData';
 import { getLabelForKey, setFormikAutoErrors } from '@/utils/helpers';
-import { textInputTheme, customDropdownTheme } from '@/utils/themes';
+import { customDropdownTheme, textInputTheme } from '@/utils/themes';
 import { COMPANIES_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import CustomSquareImageUploading from '@/components/formikElements/customSquareImageUploading/customSquareImageUploading';
-import { useAppSelector, useToast, useLanguage } from '@/utils/hooks';
+import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import { getGroupesState, getProfilState } from '@/store/selectors';
 import { useGetUsersListQuery } from '@/store/services/account';
 import type { DropDownType } from '@/types/accountTypes';
@@ -285,7 +285,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	return (
 		<Stack spacing={3} sx={{ p: { xs: 2, md: 3 } }}>
-			<Stack direction={isMobile ? 'column' : 'row'} pt={2} justifyContent="space-between" spacing={2}>
+			<Stack
+				direction={isMobile ? 'column' : 'row'}
+				spacing={2}
+				sx={{
+					pt: 2,
+					justifyContent: 'space-between',
+				}}
+			>
 				<Button
 					variant="outlined"
 					startIcon={<ArrowBackIcon />}
@@ -302,7 +309,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			</Stack>
 			{hasValidationErrors && (
 				<Alert severity="error" icon={<WarningIcon />} sx={{ mb: 2 }}>
-					<Typography variant="subtitle2" fontWeight={600}>
+					<Typography
+						variant="subtitle2"
+						sx={{
+							fontWeight: 600,
+						}}
+					>
 						{t.common.validationErrors}
 					</Typography>
 					<ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
@@ -327,17 +339,35 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						{/* Logo and Stamp Card */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
 							<CardContent sx={{ p: 3 }}>
-								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+								<Stack
+									direction="row"
+									spacing={2}
+									sx={{
+										alignItems: 'center',
+										mb: 2,
+									}}
+								>
 									<ImageIcon color="primary" />
-									<Typography variant="h6" fontWeight={700}>
+									<Typography
+										variant="h6"
+										sx={{
+											fontWeight: 700,
+										}}
+									>
 										{t.companies.logoSection}
 									</Typography>
 								</Stack>
 								<Divider sx={{ mb: 3 }} />
 								<Stack direction={isMobile ? 'column' : 'row'} spacing={3}>
 									<Box sx={{ flex: 1 }}>
-										<Typography variant="subtitle2" fontWeight={600} gutterBottom>
-												{t.companies.logoLabel}
+										<Typography
+											variant="subtitle2"
+											gutterBottom
+											sx={{
+												fontWeight: 600,
+											}}
+										>
+											{t.companies.logoLabel}
 										</Typography>
 										<Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
 											<CustomSquareImageUploading
@@ -349,7 +379,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										</Box>
 									</Box>
 									<Box sx={{ flex: 1 }}>
-										<Typography variant="subtitle2" fontWeight={600} gutterBottom>
+										<Typography
+											variant="subtitle2"
+											gutterBottom
+											sx={{
+												fontWeight: 600,
+											}}
+										>
 											Cachet
 										</Typography>
 										<Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
@@ -368,9 +404,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						{/* General Information Card */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
 							<CardContent sx={{ p: 3 }}>
-								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+								<Stack
+									direction="row"
+									spacing={2}
+									sx={{
+										alignItems: 'center',
+										mb: 2,
+									}}
+								>
 									<BusinessIcon color="primary" />
-									<Typography variant="h6" fontWeight={700}>
+									<Typography
+										variant="h6"
+										sx={{
+											fontWeight: 700,
+										}}
+									>
 										{t.companies.generalSection}
 									</Typography>
 								</Stack>
@@ -452,9 +500,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						{/* Responsible Person Card */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
 							<CardContent sx={{ p: 3 }}>
-								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+								<Stack
+									direction="row"
+									spacing={2}
+									sx={{
+										alignItems: 'center',
+										mb: 2,
+									}}
+								>
 									<ContactsIcon color="primary" />
-									<Typography variant="h6" fontWeight={700}>
+									<Typography
+										variant="h6"
+										sx={{
+											fontWeight: 700,
+										}}
+									>
 										Responsable
 									</Typography>
 								</Stack>
@@ -505,9 +565,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						{/* Contact Information Card */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
 							<CardContent sx={{ p: 3 }}>
-								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+								<Stack
+									direction="row"
+									spacing={2}
+									sx={{
+										alignItems: 'center',
+										mb: 2,
+									}}
+								>
 									<PhoneIcon color="primary" />
-									<Typography variant="h6" fontWeight={700}>
+									<Typography
+										variant="h6"
+										sx={{
+											fontWeight: 700,
+										}}
+									>
 										Contact
 									</Typography>
 								</Stack>
@@ -548,9 +620,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						{/* Administrative Information Card */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
 							<CardContent sx={{ p: 3 }}>
-								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+								<Stack
+									direction="row"
+									spacing={2}
+									sx={{
+										alignItems: 'center',
+										mb: 2,
+									}}
+								>
 									<DescriptionIcon color="primary" />
-									<Typography variant="h6" fontWeight={700}>
+									<Typography
+										variant="h6"
+										sx={{
+											fontWeight: 700,
+										}}
+									>
 										{t.companies.adminSection}
 									</Typography>
 								</Stack>
@@ -647,10 +731,22 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						{/* Paramètres Card */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
 							<CardContent sx={{ p: 3 }}>
-								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+								<Stack
+									direction="row"
+									spacing={2}
+									sx={{
+										alignItems: 'center',
+										mb: 2,
+									}}
+								>
 									<SettingsIcon color="primary" />
-									<Typography variant="h6" fontWeight={700}>
-									{t.companies.settingsSection}
+									<Typography
+										variant="h6"
+										sx={{
+											fontWeight: 700,
+										}}
+									>
+										{t.companies.settingsSection}
 									</Typography>
 								</Stack>
 								<Divider sx={{ mb: 3 }} />
@@ -699,7 +795,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									onSelectChange: (_e, newUser) => setSelectedUser(newUser),
 									selectIcon: <PersonIcon fontSize="small" />,
 									roleId: 'new_company_role',
-										roleLabel: t.shared.role,
+									roleLabel: t.shared.role,
 									roleOptions,
 									roleValue: selectedRole,
 									onRoleChange: (e) => setSelectedRole(e.target.value as string),

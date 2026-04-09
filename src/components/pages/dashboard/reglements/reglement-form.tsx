@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import {
@@ -10,6 +10,7 @@ import {
 	Card,
 	CardContent,
 	Divider,
+	InputAdornment,
 	Stack,
 	Typography,
 	useMediaQuery,
@@ -32,7 +33,6 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { fr } from 'date-fns/locale';
-import { InputAdornment } from '@mui/material';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
@@ -40,7 +40,7 @@ import { textInputTheme } from '@/utils/themes';
 import { FACTURE_CLIENT_ADD, REGLEMENTS_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import type { DropDownType } from '@/types/accountTypes';
-import { useAppSelector, useToast, useLanguage } from '@/utils/hooks';
+import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import { getUserCompaniesState } from '@/store/selectors';
 import { useAddReglementMutation, useEditReglementMutation, useGetReglementQuery } from '@/store/services/reglement';
 import { useGetFactureClientForPaymentQuery } from '@/store/services/factureClient';
@@ -274,7 +274,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	return (
 		<LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
 			<Stack spacing={3} sx={{ p: { xs: 2, md: 3 } }}>
-				<Stack direction={isMobile ? 'column' : 'row'} pt={2} justifyContent="space-between" spacing={2}>
+				<Stack
+					direction={isMobile ? 'column' : 'row'}
+					spacing={2}
+					sx={{
+						pt: 2,
+						justifyContent: 'space-between',
+					}}
+				>
 					<Button
 						variant="outlined"
 						startIcon={<ArrowBackIcon />}
@@ -291,7 +298,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				</Stack>
 				{hasValidationErrors && (
 					<Alert severity="error" icon={<WarningIcon />} sx={{ mb: 2 }}>
-						<Typography variant="subtitle2" fontWeight={600}>
+						<Typography
+							variant="subtitle2"
+							sx={{
+								fontWeight: 600,
+							}}
+						>
 							{t.common.validationErrors}
 						</Typography>
 						<ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
@@ -317,35 +329,79 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 							{isEditMode && montantFacture !== null && (
 								<Card elevation={2} sx={{ borderRadius: 2, bgcolor: 'grey.50' }}>
 									<CardContent sx={{ p: 3 }}>
-										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<Stack
+											direction="row"
+											spacing={2}
+											sx={{
+												alignItems: 'center',
+												mb: 2,
+											}}
+										>
 											<AttachMoneyIcon color="primary" />
-											<Typography variant="h6" fontWeight={700}>
+											<Typography
+												variant="h6"
+												sx={{
+													fontWeight: 700,
+												}}
+											>
 												{t.reglements.infoFinancieres}
 											</Typography>
 										</Stack>
 										<Divider sx={{ mb: 3 }} />
 										<Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
 											<Box>
-												<Typography variant="body2" color="text.secondary">
+												<Typography
+													variant="body2"
+													sx={{
+														color: 'text.secondary',
+													}}
+												>
 													{t.reglements.montantFacture}
 												</Typography>
-												<Typography variant="h6" fontWeight={600}>
+												<Typography
+													variant="h6"
+													sx={{
+														fontWeight: 600,
+													}}
+												>
 													{montantFacture}
 												</Typography>
 											</Box>
 											<Box>
-												<Typography variant="body2" color="text.secondary">
+												<Typography
+													variant="body2"
+													sx={{
+														color: 'text.secondary',
+													}}
+												>
 													{t.reglements.totalReglements}
 												</Typography>
-												<Typography variant="h6" fontWeight={600} color="success.main">
+												<Typography
+													variant="h6"
+													sx={{
+														fontWeight: 600,
+														color: 'success.main',
+													}}
+												>
 													{totalReglementsFacture}
 												</Typography>
 											</Box>
 											<Box>
-												<Typography variant="body2" color="text.secondary">
+												<Typography
+													variant="body2"
+													sx={{
+														color: 'text.secondary',
+													}}
+												>
 													{t.reglements.resteAPayer}
 												</Typography>
-												<Typography variant="h6" fontWeight={600} color="error.main">
+												<Typography
+													variant="h6"
+													sx={{
+														fontWeight: 600,
+														color: 'error.main',
+													}}
+												>
 													{resteAPayer}
 												</Typography>
 											</Box>
@@ -357,9 +413,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 							{/* Facture Selection Card */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<Stack
+										direction="row"
+										spacing={2}
+										sx={{
+											alignItems: 'center',
+											mb: 2,
+										}}
+									>
 										<ReceiptIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
+										<Typography
+											variant="h6"
+											sx={{
+												fontWeight: 700,
+											}}
+										>
 											{t.reglements.labelFactureClient}
 										</Typography>
 									</Stack>
@@ -402,9 +470,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 							{/* Payment Details Card */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<Stack
+										direction="row"
+										spacing={2}
+										sx={{
+											alignItems: 'center',
+											mb: 2,
+										}}
+									>
 										<PaymentIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
+										<Typography
+											variant="h6"
+											sx={{
+												fontWeight: 700,
+											}}
+										>
 											{t.reglements.detailsReglement}
 										</Typography>
 									</Stack>
@@ -490,9 +570,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 							{/* Dates Card */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
-									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<Stack
+										direction="row"
+										spacing={2}
+										sx={{
+											alignItems: 'center',
+											mb: 2,
+										}}
+									>
 										<CalendarTodayIcon color="primary" />
-										<Typography variant="h6" fontWeight={700}>
+										<Typography
+											variant="h6"
+											sx={{
+												fontWeight: 700,
+											}}
+										>
 											Dates
 										</Typography>
 									</Stack>
@@ -507,13 +599,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												textField: {
 													size: 'small',
 													fullWidth: true,
-													inputProps: { 'data-testid': 'input-date_reglement' },
-													InputProps: {
-														startAdornment: (
-															<InputAdornment position="start">
-																<CalendarTodayIcon fontSize="small" color="action" />
-															</InputAdornment>
-														),
+													slotProps: {
+														htmlInput: {
+															'data-testid': 'input-date_reglement',
+														} as React.InputHTMLAttributes<HTMLInputElement>,
+														input: {
+															startAdornment: (
+																<InputAdornment position="start">
+																	<CalendarTodayIcon fontSize="small" color="action" />
+																</InputAdornment>
+															),
+														},
 													},
 												},
 											}}
@@ -527,13 +623,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												textField: {
 													size: 'small',
 													fullWidth: true,
-													inputProps: { 'data-testid': 'input-date_echeance' },
-													InputProps: {
-														startAdornment: (
-															<InputAdornment position="start">
-																<CalendarTodayIcon fontSize="small" color="action" />
-															</InputAdornment>
-														),
+													slotProps: {
+														htmlInput: {
+															'data-testid': 'input-date_echeance',
+														} as React.InputHTMLAttributes<HTMLInputElement>,
+														input: {
+															startAdornment: (
+																<InputAdornment position="start">
+																	<CalendarTodayIcon fontSize="small" color="action" />
+																</InputAdornment>
+															),
+														},
 													},
 												},
 											}}
@@ -545,7 +645,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 							{/* Submit Button */}
 							<Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
 								<PrimaryLoadingButton
-								buttonText={isEditMode ? t.common.update : t.reglements.addTitle}
+									buttonText={isEditMode ? t.common.update : t.reglements.addTitle}
 									active={!isPending}
 									onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
 										setHasAttemptedSubmit(true);

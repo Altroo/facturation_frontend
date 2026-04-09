@@ -45,8 +45,14 @@ const CircularAvatarInputFile: React.FC<Props> = (props: Props) => {
 	};
 
 	return (
-		<Stack direction="column" spacing={1} justifyContent="center" alignItems="center">
-			<div>
+        <Stack
+            direction="column"
+            spacing={1}
+            sx={{
+                justifyContent: "center",
+                alignItems: "center"
+            }}>
+            <div>
 				<input
 					type="file"
 					className={Styles.hiddenFile}
@@ -80,7 +86,7 @@ const CircularAvatarInputFile: React.FC<Props> = (props: Props) => {
 					/>
 				</div>
 			</div>
-			{props.showText && (
+            {props.showText && (
 				<span
 					className={Styles.addPictureSpan}
 					onClick={(e) => {
@@ -92,8 +98,8 @@ const CircularAvatarInputFile: React.FC<Props> = (props: Props) => {
 					{t.common.editPhoto}
 				</span>
 			)}
-		</Stack>
-	);
+        </Stack>
+    );
 };
 
 export default CircularAvatarInputFile;

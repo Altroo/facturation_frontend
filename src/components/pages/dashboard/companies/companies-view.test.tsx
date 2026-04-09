@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import CompaniesViewClient from './companies-view';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
@@ -24,10 +24,16 @@ jest.mock('@/store/services/company', () => {
 	};
 });
 
+jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
+	__esModule: true,
+	default: ({ children }: { children?: React.ReactNode }) => <div data-testid="navigation-bar">{children}</div>,
+}));
+
 // Mock hooks module
 jest.mock('@/utils/hooks', () => {
 	const { translations } = jest.requireActual('@/translations');
 	return {
+		useAppDispatch: () => jest.fn(),
 		useAppSelector: jest.fn(),
 		usePermission: () => ({ is_staff: true }),
 		useToast: jest.fn(() => ({ onSuccess: jest.fn(), onError: jest.fn() })),
@@ -85,7 +91,9 @@ describe('CompaniesViewClient', () => {
 		});
 
 		// Default: user is staff/admin so "Modifier" can render when not loading/error
-		(useAppSelector as jest.Mock).mockImplementation((selector) => selector({ account: { profil: { id: 1, is_staff: true } } }));
+		(useAppSelector as jest.Mock).mockImplementation((selector) =>
+			selector({ account: { profil: { id: 1, is_staff: true } } }),
+		);
 	});
 
 	afterEach(() => {

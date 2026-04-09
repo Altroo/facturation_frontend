@@ -1,6 +1,6 @@
 import { put, takeLatest } from 'redux-saga/effects';
 import * as Types from '../actions';
-import { setProfil, setGroupes, setWSUserAvatar } from '../slices/accountSlice';
+import { setGroupes, setProfil, setWSUserAvatar } from '../slices/accountSlice';
 import type { setGroupesPayloadType, setProfilPayloadType } from '@/types/accountTypes';
 
 export function* accountSetProfilSaga(payload: setProfilPayloadType) {

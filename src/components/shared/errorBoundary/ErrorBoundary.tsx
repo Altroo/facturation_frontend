@@ -1,9 +1,9 @@
 'use client';
 
-import React, { Component } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
-import { Box, Typography, Button, Paper } from '@mui/material';
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import React, { Component } from 'react';
+import { Box, Button, Paper, Typography } from '@mui/material';
+import ErrorOutlinedIcon from '@mui/icons-material/ErrorOutlined';
 import { LanguageContext } from '@/contexts/languageContext';
 
 interface ErrorBoundaryProps {
@@ -72,11 +72,17 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 							textAlign: 'center',
 						}}
 					>
-						<ErrorOutlineIcon sx={{ fontSize: 64, color: 'error.main', mb: 2 }} />
+						<ErrorOutlinedIcon sx={{ fontSize: 64, color: 'error.main', mb: 2 }} />
 						<Typography variant="h5" gutterBottom>
 							{this.context.t.errors.errorOccurred}
 						</Typography>
-						<Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+						<Typography
+							variant="body1"
+							sx={{
+								color: 'text.secondary',
+								mb: 3,
+							}}
+						>
 							{this.context.t.errors.errorOccurredMessage}
 						</Typography>
 						{process.env.NODE_ENV !== 'production' && this.state.error && (
