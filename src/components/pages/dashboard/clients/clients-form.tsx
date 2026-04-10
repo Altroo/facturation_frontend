@@ -57,9 +57,9 @@ import {
 import { getLabelForKey, setFormikAutoErrors } from '@/utils/helpers';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import type { ClientSchemaType, TypeClientType } from '@/types/clientTypes';
-import { useAddCityMutation, useGetCitiesListQuery } from '@/store/services/parameter';
+import EntityCrudControls from '@/components/shared/entityCrudControls/entityCrudControls';
+import { useAddCityMutation, useDeleteCityMutation, useEditCityMutation, useGetCitiesListQuery } from '@/store/services/parameter';
 import { clientSchema, pmRequired, ppRequired } from '@/utils/formValidationSchemas';
-import AddEntityModal from '@/components/shared/addEntityModal/addEntityModal';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import ClientArticleWrapperForm from '@/components/pages/dashboard/shared/client-article-form/clientArticleWrapperForm';
 
@@ -104,9 +104,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	// Cities
 	const { data: citiesData } = useGetCitiesListQuery({ company_id }, { skip: !token });
 	const [addCity] = useAddCityMutation();
-
-	// Local state
-	const [openCityModal, setOpenCityModal] = useState(false);
+	const [editCity] = useEditCityMutation();
+	const [deleteCity] = useDeleteCityMutation();
 
 	const [isPending, setIsPending] = useState(false);
 	const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
@@ -717,9 +716,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										helperText={formik.touched.ville ? formik.errors.ville : ''}
 										startIcon={<LocationOnIcon fontSize="small" />}
 										endIcon={
-											<Button size="small" variant="outlined" onClick={() => setOpenCityModal(true)} sx={{ ml: 1 }}>
-												{t.common.add}
-											</Button>
+											<EntityCrudControls
+												label={t.clients.fieldVille.toLowerCase()}
+												icon={<LocationOnIcon fontSize="small" />}
+												inputTheme={inputTheme}
+												selectedItem={selectedCity}
+												addEntity={(args) => addCity({ data: { ...args.data, company: company_id } })}
+												editEntity={({ id: entityId, data }) => editCity({ id: entityId, data: { ...data, company: company_id } })}
+												deleteEntity={({ id: entityId }) => deleteCity({ id: entityId })}
+												onAddSuccess={(newId) => {
+													formik.setFieldValue('ville', newId);
+												}}
+												onDeleteSuccess={() => {
+													formik.setFieldValue('ville', null);
+												}}
+											/>
 										}
 									/>
 
@@ -821,18 +832,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					</Stack>
 				</form>
 			)}
-			{/* Add City Modal */}
-			<AddEntityModal
-				open={openCityModal}
-				setOpen={setOpenCityModal}
-				label={t.clients.fieldVille.toLowerCase()}
-				icon={<LocationOnIcon fontSize="small" />}
-				inputTheme={inputTheme}
-				mutationFn={(args) => addCity({ data: { ...args.data, company: company_id } })}
-				onSuccess={(newId) => {
-					formik.setFieldValue('ville', newId);
-				}}
-			/>
 		</Stack>
 	);
 };

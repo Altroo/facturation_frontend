@@ -51,7 +51,13 @@ import { reglementSchema } from '@/utils/formValidationSchemas';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { useInitAccessToken } from '@/contexts/InitContext';
-import { useGetModePaiementListQuery } from '@/store/services/parameter';
+import EntityCrudControls from '@/components/shared/entityCrudControls/entityCrudControls';
+import {
+	useAddModePaiementMutation,
+	useDeleteModePaiementMutation,
+	useEditModePaiementMutation,
+	useGetModePaiementListQuery,
+} from '@/store/services/parameter';
 import NoPermission from '@/components/shared/noPermission/noPermission';
 
 const inputTheme = textInputTheme();
@@ -91,6 +97,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	// Modes Règlement
 	const { data: modesReglementsData } = useGetModePaiementListQuery({ company_id }, { skip: !token });
+	const [addModeReglement] = useAddModePaiementMutation();
+	const [editModeReglement] = useEditModePaiementMutation();
+	const [deleteModeReglement] = useDeleteModePaiementMutation();
 
 	const [isPending, setIsPending] = useState(false);
 	const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
@@ -506,6 +515,25 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											error={formik.touched.mode_reglement && Boolean(formik.errors.mode_reglement)}
 											helperText={formik.touched.mode_reglement ? formik.errors.mode_reglement : ''}
 											startIcon={<PaymentIcon fontSize="small" />}
+											endIcon={
+												<EntityCrudControls
+													label={t.reglements.fieldModeReglement.toLowerCase()}
+													icon={<PaymentIcon fontSize="small" />}
+													inputTheme={inputTheme}
+													selectedItem={selectedModeReglement}
+													addEntity={(args) => addModeReglement({ data: { ...args.data, company: company_id } })}
+													editEntity={({ id: entityId, data }) =>
+														editModeReglement({ id: entityId, data: { ...data, company: company_id } })
+													}
+													deleteEntity={({ id: entityId }) => deleteModeReglement({ id: entityId })}
+													onAddSuccess={(newId) => {
+														formik.setFieldValue('mode_reglement', newId);
+													}}
+													onDeleteSuccess={() => {
+														formik.setFieldValue('mode_reglement', null);
+													}}
+												/>
+											}
 										/>
 										<CustomTextInput
 											id="montant"

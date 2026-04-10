@@ -63,7 +63,11 @@ jest.mock('@/store/services/parameter', () => ({
 	useGetModePaiementListQuery: jest.fn(() => ({ data: [], isLoading: false })),
 	useGetLivreParListQuery: jest.fn(() => ({ data: [], isLoading: false })),
 	useAddModePaiementMutation: jest.fn(() => [jest.fn()]),
+	useEditModePaiementMutation: jest.fn(() => [jest.fn()]),
+	useDeleteModePaiementMutation: jest.fn(() => [jest.fn()]),
 	useAddLivreParMutation: jest.fn(() => [jest.fn()]),
+	useEditLivreParMutation: jest.fn(() => [jest.fn()]),
+	useDeleteLivreParMutation: jest.fn(() => [jest.fn()]),
 }));
 jest.mock('@/utils/rawData', () => ({
 	bonDeLivraisonStatusItemsList: [],
@@ -137,6 +141,10 @@ jest.mock('@/components/htmlElements/tooltip/darkTooltip/darkTooltip', () => ({
 jest.mock('@/components/shared/addEntityModal/addEntityModal', () => ({
 	__esModule: true,
 	default: () => <div data-testid="add-entity-modal" />,
+}));
+jest.mock('@/components/shared/entityCrudControls/entityCrudControls', () => ({
+	__esModule: true,
+	default: () => <div data-testid="entity-crud-controls" />,
 }));
 jest.mock('@/components/shared/factureDevistotalCard/factureDevisTotalsCard', () => ({
 	__esModule: true,

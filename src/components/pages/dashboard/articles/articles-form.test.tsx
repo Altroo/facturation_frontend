@@ -93,9 +93,17 @@ jest.mock('@/store/services/parameter', () => ({
 	useGetUniteListQuery: jest.fn(() => ({ data: [], isLoading: false })),
 	useGetMarqueListQuery: jest.fn(() => ({ data: [], isLoading: false })),
 	useAddCategorieMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
+	useEditCategorieMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
+	useDeleteCategorieMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
 	useAddEmplacementMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
+	useEditEmplacementMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
+	useDeleteEmplacementMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
 	useAddMarqueMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
+	useEditMarqueMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
+	useDeleteMarqueMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
 	useAddUniteMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
+	useEditUniteMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
+	useDeleteUniteMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
 }));
 
 // Mock company service
@@ -122,6 +130,10 @@ jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 jest.mock('@/components/shared/noPermission/noPermission', () => ({
 	__esModule: true,
 	default: () => <div data-testid="no-permission">Accès refusé</div>,
+}));
+jest.mock('@/components/shared/entityCrudControls/entityCrudControls', () => ({
+	__esModule: true,
+	default: () => <div data-testid="entity-crud-controls" />,
 }));
 
 // Mock form subcomponents (interactive)

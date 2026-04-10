@@ -39,12 +39,6 @@ jest.mock('@/components/shared/globalRemiseModal/globalRemiseModal', () => ({
 		</div>
 	),
 }));
-jest.mock('@/components/shared/addEntityModal/addEntityModal', () => ({
-	__esModule: true,
-	default: (props: { label?: string; open?: boolean }) => (
-		<div data-testid={`add-entity-modal-${props.label}`} data-open={String(!!props.open)} />
-	),
-}));
 jest.mock('@/utils/themes', () => ({
 	textInputTheme: jest.fn(() => ({})),
 }));
@@ -78,14 +72,6 @@ const defaultProps: DocumentFormModalsProps = {
 	showDeleteConfirm: false,
 	setShowDeleteConfirm: jest.fn(),
 	confirmDeleteLine: jest.fn(),
-	openModePaiementModal: false,
-	setOpenModePaiementModal: jest.fn(),
-	addModePaiement: jest.fn(),
-	onModePaiementSuccess: jest.fn(),
-	openLivreParModal: false,
-	setOpenLivreParModal: jest.fn(),
-	addLivrePar: jest.fn(),
-	onLivreParSuccess: jest.fn(),
 };
 
 afterEach(() => {
@@ -180,25 +166,4 @@ describe('DocumentFormModals', () => {
 		});
 	});
 
-	describe('Mode Paiement Modal', () => {
-		it('renders AddEntityModal for mode de paiement', () => {
-			render(<DocumentFormModals {...defaultProps} openModePaiementModal={true} />);
-			const modal = screen.getByTestId('add-entity-modal-mode de paiement');
-			expect(modal).toBeInTheDocument();
-			expect(modal).toHaveAttribute('data-open', 'true');
-		});
-	});
-
-	describe('Livre Par Modal (bon-de-livraison)', () => {
-		it('renders livreur modal when documentType is bon-de-livraison', () => {
-			const bdlConfig = { ...baseConfig, documentType: 'bon-de-livraison' } as DocumentFormConfig<DocumentListClass>;
-			render(<DocumentFormModals {...defaultProps} config={bdlConfig} openLivreParModal={true} />);
-			expect(screen.getByTestId('add-entity-modal-livreur')).toHaveAttribute('data-open', 'true');
-		});
-
-		it('does not render livreur modal when documentType is not bon-de-livraison', () => {
-			render(<DocumentFormModals {...defaultProps} openLivreParModal={true} />);
-			expect(screen.queryByTestId('add-entity-modal-livreur')).not.toBeInTheDocument();
-		});
-	});
 });

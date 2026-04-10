@@ -4,21 +4,15 @@ import React from 'react';
 import {
 	Close as CloseIcon,
 	Delete as DeleteIcon,
-	LocalShipping as LocalShippingIcon,
-	Payment as PaymentIcon,
 } from '@mui/icons-material';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type { SelectedArticlePopupValues } from '@/components/shared/addArticleModal/addArticleModal';
 import AddArticleModal from '@/components/shared/addArticleModal/addArticleModal';
 import GlobalRemiseModal from '@/components/shared/globalRemiseModal/globalRemiseModal';
-import AddEntityModal from '@/components/shared/addEntityModal/addEntityModal';
-import { textInputTheme } from '@/utils/themes';
 import type { ArticleClass } from '@/models/classes';
 import type { TypeRemiseType } from '@/types/devisTypes';
 import type { DocumentFormConfig, DocumentListClass } from '@/types/companyDocumentsTypes';
 import { useLanguage } from '@/utils/hooks';
-
-const inputFieldTheme = textInputTheme();
 
 export interface DocumentFormModalsProps<TDocument extends DocumentListClass = DocumentListClass> {
 	isEditMode: boolean;
@@ -47,21 +41,10 @@ export interface DocumentFormModalsProps<TDocument extends DocumentListClass = D
 	showDeleteConfirm: boolean;
 	setShowDeleteConfirm: (v: boolean) => void;
 	confirmDeleteLine: () => void;
-	// Mode Paiement modal
-	openModePaiementModal: boolean;
-	setOpenModePaiementModal: (v: boolean) => void;
-	addModePaiement: (args: { data: { nom: string } }) => Promise<unknown>;
-	onModePaiementSuccess: (newId: number) => void;
-	// Livre Par modal (bon de livraison only)
-	openLivreParModal: boolean;
-	setOpenLivreParModal: (v: boolean) => void;
-	addLivrePar: (args: { data: { nom: string } }) => Promise<unknown>;
-	onLivreParSuccess: (newId: number) => void;
 }
 
 const DocumentFormModals = <TDocument extends DocumentListClass = DocumentListClass>({
 	isEditMode,
-	config,
 	showAddArticleModal,
 	setShowAddArticleModal,
 	isArticlesLoading,
@@ -80,14 +63,6 @@ const DocumentFormModals = <TDocument extends DocumentListClass = DocumentListCl
 	showDeleteConfirm,
 	setShowDeleteConfirm,
 	confirmDeleteLine,
-	openModePaiementModal,
-	setOpenModePaiementModal,
-	addModePaiement,
-	onModePaiementSuccess,
-	openLivreParModal,
-	setOpenLivreParModal,
-	addLivrePar,
-	onLivreParSuccess,
 }: DocumentFormModalsProps<TDocument>): React.JSX.Element => {
 	const { t } = useLanguage();
 	return (
@@ -146,27 +121,6 @@ const DocumentFormModals = <TDocument extends DocumentListClass = DocumentListCl
 						},
 						{ active: true, text: t.common.yes, onClick: confirmDeleteLine, icon: <DeleteIcon />, color: '#D32F2F' },
 					]}
-				/>
-			)}
-
-			<AddEntityModal
-				open={openModePaiementModal}
-				setOpen={setOpenModePaiementModal}
-				label={t.documentForm.modePaiementLabel}
-				icon={<PaymentIcon fontSize="small" />}
-				inputTheme={inputFieldTheme}
-				mutationFn={addModePaiement}
-				onSuccess={onModePaiementSuccess}
-			/>
-			{config.documentType === 'bon-de-livraison' && (
-				<AddEntityModal
-					open={openLivreParModal}
-					setOpen={setOpenLivreParModal}
-					label={t.documentForm.livreurLabel}
-					icon={<LocalShippingIcon fontSize="small" />}
-					inputTheme={inputFieldTheme}
-					mutationFn={addLivrePar}
-					onSuccess={onLivreParSuccess}
 				/>
 			)}
 		</>

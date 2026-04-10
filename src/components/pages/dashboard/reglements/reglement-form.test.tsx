@@ -51,6 +51,9 @@ jest.mock('@/store/selectors', () => ({
 jest.mock('@/store/services/parameter', () => ({
 	__esModule: true,
 	useGetModePaiementListQuery: jest.fn(() => ({ data: [], isLoading: false })),
+	useAddModePaiementMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
+	useEditModePaiementMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
+	useDeleteModePaiementMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
 }));
 
 jest.mock('@/contexts/InitContext', () => ({
@@ -103,6 +106,10 @@ jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 jest.mock('@/components/shared/noPermission/noPermission', () => ({
 	__esModule: true,
 	default: () => <div data-testid="no-permission">Accès refusé</div>,
+}));
+jest.mock('@/components/shared/entityCrudControls/entityCrudControls', () => ({
+	__esModule: true,
+	default: () => <div data-testid="entity-crud-controls" />,
 }));
 
 // Mock form subcomponents

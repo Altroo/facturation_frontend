@@ -69,6 +69,8 @@ jest.mock('@/store/services/parameter', () => ({
 	__esModule: true,
 	useGetCitiesListQuery: jest.fn(() => ({ data: [], isLoading: false })),
 	useAddCityMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
+	useEditCityMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
+	useDeleteCityMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
 }));
 
 // Mock NavigationBar
@@ -86,6 +88,10 @@ jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 jest.mock('@/components/shared/noPermission/noPermission', () => ({
 	__esModule: true,
 	default: () => <div data-testid="no-permission">Accès refusé</div>,
+}));
+jest.mock('@/components/shared/entityCrudControls/entityCrudControls', () => ({
+	__esModule: true,
+	default: () => <div data-testid="entity-crud-controls" />,
 }));
 
 // Mock form subcomponents

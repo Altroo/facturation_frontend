@@ -68,6 +68,10 @@ import { bonDeLivraisonStatusItemsList, devisFactureStatusItemsList } from '@/ut
 import {
 	useAddLivreParMutation,
 	useAddModePaiementMutation,
+	useDeleteLivreParMutation,
+	useDeleteModePaiementMutation,
+	useEditLivreParMutation,
+	useEditModePaiementMutation,
 	useGetLivreParListQuery,
 	useGetModePaiementListQuery,
 } from '@/store/services/parameter';
@@ -95,6 +99,7 @@ import type { ValidateArticleLinesErrorType } from '@/types/devisTypes';
 import { useDocumentLinesColumns } from './useDocumentLinesColumns';
 import DocumentFormModals from './DocumentFormModals';
 import type { SelectedArticlePopupValues } from '@/components/shared/addArticleModal/addArticleModal';
+import EntityCrudControls from '@/components/shared/entityCrudControls/entityCrudControls';
 
 const inputFieldTheme = textInputTheme();
 
@@ -259,12 +264,14 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 
 	// Mode paiement
 	const [addModePaiement] = useAddModePaiementMutation();
-	const [openModePaiementModal, setOpenModePaiementModal] = useState(false);
+	const [editModePaiement] = useEditModePaiementMutation();
+	const [deleteModePaiement] = useDeleteModePaiementMutation();
 	const { data: modePaiementData } = useGetModePaiementListQuery({ company_id }, { skip: !token });
 
 	// Livre par
 	const [addLivrePar] = useAddLivreParMutation();
-	const [openLivreParModal, setOpenLivreParModal] = useState(false);
+	const [editLivrePar] = useEditLivreParMutation();
+	const [deleteLivrePar] = useDeleteLivreParMutation();
 	const { data: livreParData } = useGetLivreParListQuery({ company_id }, { skip: !token });
 
 	// Error handling
@@ -1339,14 +1346,19 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 											helperText={formik.touched.mode_paiement ? formik.errors.mode_paiement : ''}
 											startIcon={<PaymentIcon fontSize="small" color="action" />}
 											endIcon={
-												<Button
-													size="small"
-													variant="outlined"
-													onClick={() => setOpenModePaiementModal(true)}
-													sx={{ ml: 1 }}
-												>
-													Ajouter
-												</Button>
+												<EntityCrudControls
+													label={t.documentForm.modePaiementLabel.toLowerCase()}
+													icon={<PaymentIcon fontSize="small" color="action" />}
+													inputTheme={inputFieldTheme}
+													selectedItem={selectedModePaiement}
+													addEntity={(args) => addModePaiement({ data: { ...args.data, company: company_id } })}
+													editEntity={({ id: entityId, data }) =>
+														editModePaiement({ id: entityId, data: { ...data, company: company_id } })
+													}
+													deleteEntity={({ id: entityId }) => deleteModePaiement({ id: entityId })}
+													onAddSuccess={(newId) => formik.setFieldValue('mode_paiement', newId)}
+													onDeleteSuccess={() => formik.setFieldValue('mode_paiement', null)}
+												/>
 											}
 										/>
 										{config.documentType === 'bon-de-livraison' && (
@@ -1374,14 +1386,19 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 												}
 												startIcon={<LocalShippingIcon fontSize="small" color="action" />}
 												endIcon={
-													<Button
-														size="small"
-														variant="outlined"
-														onClick={() => setOpenLivreParModal(true)}
-														sx={{ ml: 1 }}
-													>
-														Ajouter
-													</Button>
+													<EntityCrudControls
+														label={t.documentForm.livreurLabel.toLowerCase()}
+														icon={<LocalShippingIcon fontSize="small" color="action" />}
+														inputTheme={inputFieldTheme}
+														selectedItem={selectedLivrePar}
+														addEntity={(args) => addLivrePar({ data: { ...args.data, company: company_id } })}
+														editEntity={({ id: entityId, data }) =>
+															editLivrePar({ id: entityId, data: { ...data, company: company_id } })
+														}
+														deleteEntity={({ id: entityId }) => deleteLivrePar({ id: entityId })}
+														onAddSuccess={(newId) => formik.setFieldValue('livre_par', newId)}
+														onDeleteSuccess={() => formik.setFieldValue('livre_par', null)}
+													/>
 												}
 											/>
 										)}
@@ -1563,14 +1580,6 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				showDeleteConfirm={showDeleteConfirm}
 				setShowDeleteConfirm={setShowDeleteConfirm}
 				confirmDeleteLine={confirmDeleteLine}
-				openModePaiementModal={openModePaiementModal}
-				setOpenModePaiementModal={setOpenModePaiementModal}
-				addModePaiement={(args) => addModePaiement({ data: { ...args.data, company: company_id } })}
-				onModePaiementSuccess={(newId) => formik.setFieldValue('mode_paiement', newId)}
-				openLivreParModal={openLivreParModal}
-				setOpenLivreParModal={setOpenLivreParModal}
-				addLivrePar={(args) => addLivrePar({ data: { ...args.data, company: company_id } })}
-				onLivreParSuccess={(newId) => formik.setFieldValue('livre_par', newId)}
 			/>
 		</LocalizationProvider>
 	);

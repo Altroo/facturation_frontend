@@ -65,17 +65,25 @@ import {
 	useAddEmplacementMutation,
 	useAddMarqueMutation,
 	useAddUniteMutation,
+	useDeleteCategorieMutation,
+	useDeleteEmplacementMutation,
+	useDeleteMarqueMutation,
+	useDeleteUniteMutation,
+	useEditCategorieMutation,
+	useEditEmplacementMutation,
+	useEditMarqueMutation,
+	useEditUniteMutation,
 	useGetCategorieListQuery,
 	useGetEmplacementListQuery,
 	useGetMarqueListQuery,
 	useGetUniteListQuery,
 } from '@/store/services/parameter';
 import { articleSchema } from '@/utils/formValidationSchemas';
-import AddEntityModal from '@/components/shared/addEntityModal/addEntityModal';
 import CustomSquareImageUploading from '@/components/formikElements/customSquareImageUploading/customSquareImageUploading';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import ClientArticleWrapperForm from '@/components/pages/dashboard/shared/client-article-form/clientArticleWrapperForm';
 import { useGetCompanyQuery } from '@/store/services/company';
+import EntityCrudControls from '@/components/shared/entityCrudControls/entityCrudControls';
 
 const inputTheme = textInputTheme();
 
@@ -116,23 +124,23 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	// Categories
 	const { data: categoriesData } = useGetCategorieListQuery({ company_id }, { skip: !token });
 	const [addCategory] = useAddCategorieMutation();
+	const [editCategory] = useEditCategorieMutation();
+	const [deleteCategory] = useDeleteCategorieMutation();
 	// Emplacements
 	const { data: emplacementsData } = useGetEmplacementListQuery({ company_id }, { skip: !token });
 	const [addEmplacement] = useAddEmplacementMutation();
+	const [editEmplacement] = useEditEmplacementMutation();
+	const [deleteEmplacement] = useDeleteEmplacementMutation();
 	// Unites
 	const { data: unitesData } = useGetUniteListQuery({ company_id }, { skip: !token });
 	const [addUnite] = useAddUniteMutation();
+	const [editUnite] = useEditUniteMutation();
+	const [deleteUnite] = useDeleteUniteMutation();
 	// Marques
 	const { data: marquesData } = useGetMarqueListQuery({ company_id }, { skip: !token });
 	const [addMarque] = useAddMarqueMutation();
-	// Catégorie
-	const [openCategorieModal, setOpenCategorieModal] = useState(false);
-	// Emplacement
-	const [openEmplacementModal, setOpenEmplacementModal] = useState(false);
-	// Unité
-	const [openUniteModal, setOpenUniteModal] = useState(false);
-	// Marque
-	const [openMarqueModal, setOpenMarqueModal] = useState(false);
+	const [editMarque] = useEditMarqueMutation();
+	const [deleteMarque] = useDeleteMarqueMutation();
 	const [isPending, setIsPending] = useState(false);
 	const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 
@@ -644,14 +652,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										helperText={formik.touched.categorie ? formik.errors.categorie : ''}
 										startIcon={<BusinessIcon fontSize="small" />}
 										endIcon={
-											<Button
-												size="small"
-												variant="outlined"
-												onClick={() => setOpenCategorieModal(true)}
-												sx={{ ml: 1 }}
-											>
-												{t.common.add}
-											</Button>
+											<EntityCrudControls
+												label={t.articles.fieldCategorie.toLowerCase()}
+												icon={<BusinessIcon fontSize="small" />}
+												inputTheme={inputTheme}
+												selectedItem={selectedCategorie}
+												addEntity={(args) => addCategory({ data: { ...args.data, company: company_id } })}
+												editEntity={({ id: entityId, data }) => editCategory({ id: entityId, data: { ...data, company: company_id } })}
+												deleteEntity={({ id: entityId }) => deleteCategory({ id: entityId })}
+												onAddSuccess={(newId) => {
+													formik.setFieldValue('categorie', newId);
+												}}
+												onDeleteSuccess={() => {
+													formik.setFieldValue('categorie', null);
+												}}
+											/>
 										}
 									/>
 									<CustomAutoCompleteSelect
@@ -671,14 +686,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										helperText={formik.touched.emplacement ? formik.errors.emplacement : ''}
 										startIcon={<LocationOnIcon fontSize="small" />}
 										endIcon={
-											<Button
-												size="small"
-												variant="outlined"
-												onClick={() => setOpenEmplacementModal(true)}
-												sx={{ ml: 1 }}
-											>
-												{t.common.add}
-											</Button>
+											<EntityCrudControls
+												label={t.articles.fieldEmplacement.toLowerCase()}
+												icon={<LocationOnIcon fontSize="small" />}
+												inputTheme={inputTheme}
+												selectedItem={selectedEmplacement}
+												addEntity={(args) => addEmplacement({ data: { ...args.data, company: company_id } })}
+												editEntity={({ id: entityId, data }) => editEmplacement({ id: entityId, data: { ...data, company: company_id } })}
+												deleteEntity={({ id: entityId }) => deleteEmplacement({ id: entityId })}
+												onAddSuccess={(newId) => {
+													formik.setFieldValue('emplacement', newId);
+												}}
+												onDeleteSuccess={() => {
+													formik.setFieldValue('emplacement', null);
+												}}
+											/>
 										}
 									/>
 									<CustomAutoCompleteSelect
@@ -698,9 +720,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										helperText={formik.touched.unite ? formik.errors.unite : ''}
 										startIcon={<StraightenIcon fontSize="small" />}
 										endIcon={
-											<Button size="small" variant="outlined" onClick={() => setOpenUniteModal(true)} sx={{ ml: 1 }}>
-												{t.common.add}
-											</Button>
+											<EntityCrudControls
+												label={t.articles.fieldUnite.toLowerCase()}
+												icon={<StraightenIcon fontSize="small" />}
+												inputTheme={inputTheme}
+												selectedItem={selectedUnite}
+												addEntity={(args) => addUnite({ data: { ...args.data, company: company_id } })}
+												editEntity={({ id: entityId, data }) => editUnite({ id: entityId, data: { ...data, company: company_id } })}
+												deleteEntity={({ id: entityId }) => deleteUnite({ id: entityId })}
+												onAddSuccess={(newId) => {
+													formik.setFieldValue('unite', newId);
+												}}
+												onDeleteSuccess={() => {
+													formik.setFieldValue('unite', null);
+												}}
+											/>
 										}
 									/>
 									<CustomAutoCompleteSelect
@@ -720,9 +754,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										helperText={formik.touched.marque ? formik.errors.marque : ''}
 										startIcon={<StarIcon fontSize="small" />}
 										endIcon={
-											<Button size="small" variant="outlined" onClick={() => setOpenMarqueModal(true)} sx={{ ml: 1 }}>
-												{t.common.add}
-											</Button>
+											<EntityCrudControls
+												label={t.articles.fieldMarque.toLowerCase()}
+												icon={<StarIcon fontSize="small" />}
+												inputTheme={inputTheme}
+												selectedItem={selectedMarque}
+												addEntity={(args) => addMarque({ data: { ...args.data, company: company_id } })}
+												editEntity={({ id: entityId, data }) => editMarque({ id: entityId, data: { ...data, company: company_id } })}
+												deleteEntity={({ id: entityId }) => deleteMarque({ id: entityId })}
+												onAddSuccess={(newId) => {
+													formik.setFieldValue('marque', newId);
+												}}
+												onDeleteSuccess={() => {
+													formik.setFieldValue('marque', null);
+												}}
+											/>
 										}
 									/>
 								</Stack>
@@ -791,51 +837,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					</Stack>
 				</form>
 			)}
-			{/* Add City Modal */}
-			<AddEntityModal
-				open={openCategorieModal}
-				setOpen={setOpenCategorieModal}
-				label={t.articles.fieldCategorie.toLowerCase()}
-				icon={<BusinessIcon fontSize="small" />}
-				inputTheme={inputTheme}
-				mutationFn={(args) => addCategory({ data: { ...args.data, company: company_id } })}
-				onSuccess={(newId) => {
-					formik.setFieldValue('categorie', newId);
-				}}
-			/>
-			<AddEntityModal
-				open={openEmplacementModal}
-				setOpen={setOpenEmplacementModal}
-				label={t.articles.fieldEmplacement.toLowerCase()}
-				icon={<LocationOnIcon fontSize="small" />}
-				inputTheme={inputTheme}
-				mutationFn={(args) => addEmplacement({ data: { ...args.data, company: company_id } })}
-				onSuccess={(newId) => {
-					formik.setFieldValue('emplacement', newId);
-				}}
-			/>
-			<AddEntityModal
-				open={openUniteModal}
-				setOpen={setOpenUniteModal}
-				label={t.articles.fieldUnite.toLowerCase()}
-				icon={<StraightenIcon fontSize="small" />}
-				inputTheme={inputTheme}
-				mutationFn={(args) => addUnite({ data: { ...args.data, company: company_id } })}
-				onSuccess={(newId) => {
-					formik.setFieldValue('unite', newId);
-				}}
-			/>
-			<AddEntityModal
-				open={openMarqueModal}
-				setOpen={setOpenMarqueModal}
-				label={t.articles.fieldMarque.toLowerCase()}
-				icon={<StarIcon fontSize="small" />}
-				inputTheme={inputTheme}
-				mutationFn={(args) => addMarque({ data: { ...args.data, company: company_id } })}
-				onSuccess={(newId) => {
-					formik.setFieldValue('marque', newId);
-				}}
-			/>
 		</Stack>
 	);
 };
