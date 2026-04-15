@@ -335,8 +335,14 @@ export const devisLivraisonFactureLineSchema = z
 		quantity: z.preprocess(
 			(val) => {
 				if (val === undefined || val === null) return NaN;
-				if (typeof val === 'string') return parseFloat(val.replace(',', '.')) || NaN;
-				return Number(val);
+				if (typeof val === 'string') {
+					const normalized = val.trim().replace(',', '.');
+					if (!normalized) return NaN;
+					const parsed = parseFloat(normalized);
+					return Number.isNaN(parsed) ? NaN : parsed;
+				}
+				const parsed = Number(val);
+				return Number.isNaN(parsed) ? NaN : parsed;
 			},
 			z
 				.number({ error: INPUT_REQUIRED })

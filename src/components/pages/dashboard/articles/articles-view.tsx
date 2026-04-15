@@ -347,7 +347,11 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 											value={client?.prix_achat != null ? `${client.prix_achat} ${client.devise_prix_achat}` : null}
 										/>
 										<Divider />
-										<InfoRow icon={<SellIcon />} label={t.articles.colPrixVente} value={client?.prix_vente} />
+										<InfoRow
+											icon={<SellIcon />}
+											label={t.articles.colPrixVente}
+											value={client?.prix_vente != null ? `${client.prix_vente} ${client.devise_prix_vente}` : null}
+										/>
 										<Divider />
 										<InfoRow icon={<ReceiptIcon />} label={t.articles.fieldTva} value={client?.tva} />
 									</Stack>

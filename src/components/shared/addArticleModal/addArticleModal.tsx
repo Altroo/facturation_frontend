@@ -4,7 +4,15 @@ import React, { useMemo, useState } from 'react';
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Typography } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import type { ArticleClass } from '@/models/classes';
-import { DataGrid, GridColDef, GridRenderCellParams, GridRowId, GridRowSelectionModel } from '@mui/x-data-grid';
+import {
+	DataGrid,
+	GridColDef,
+	GridFilterModel,
+	GridPaginationModel,
+	GridRenderCellParams,
+	GridRowId,
+	GridRowSelectionModel,
+} from '@mui/x-data-grid';
 import { frFR } from '@mui/x-data-grid/locales';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import { formatNumberWithSpaces, parseNumber } from '@/utils/helpers';
@@ -14,12 +22,15 @@ import { customGridDropdownTheme, gridInputTheme } from '@/utils/themes';
 import { remiseTypeItemsList } from '@/utils/rawData';
 import type { TypeRemiseType } from '@/types/devisTypes';
 import { useLanguage } from '@/utils/hooks';
+import { useGetArticlesListQuery } from '@/store/services/article';
+import type { PaginationResponseType } from '@/types/_initTypes';
 
 const gridFieldTheme = gridInputTheme();
 const gridSelectTheme = customGridDropdownTheme();
 
 export interface SelectedArticlePopupValues {
 	articleId: number;
+	articleData: Partial<ArticleClass>;
 	quantity: string | number;
 	remise_type: TypeRemiseType;
 	remise: string | number;
@@ -33,9 +44,8 @@ type ArticlePopupValues = {
 
 interface AddArticleModalProps {
 	open: boolean;
-	loading: boolean;
 	onClose: () => void;
-	articles: Array<Partial<ArticleClass>>;
+	companyId: number;
 	selectedArticles: Set<number>;
 	setSelectedArticles: (selection: Set<number>) => void;
 	onAdd: (selectedArticlesData: SelectedArticlePopupValues[]) => void;
@@ -46,9 +56,8 @@ interface AddArticleModalProps {
 
 const AddArticleModal: React.FC<AddArticleModalProps> = ({
 	open,
-	loading,
 	onClose,
-	articles,
+	companyId,
 	selectedArticles,
 	setSelectedArticles,
 	onAdd,
@@ -58,15 +67,35 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 }) => {
 	const { t } = useLanguage();
 	const [articlePopupValues, setArticlePopupValues] = useState<Record<number, ArticlePopupValues>>({});
-	const [prevOpen, setPrevOpen] = useState(false);
+	const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10 });
+	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [], quickFilterValues: [] });
 
-	// Derived state: reset popup values when modal closes
-	if (prevOpen !== open) {
-		setPrevOpen(open);
-		if (!open) {
-			setArticlePopupValues({});
-		}
-	}
+	const resetModalState = () => {
+		setArticlePopupValues({});
+		setPaginationModel({ page: 0, pageSize: 10 });
+		setFilterModel({ items: [], quickFilterValues: [] });
+	};
+
+	const searchTerm = useMemo(
+		() => (filterModel.quickFilterValues ?? []).join(' ').trim(),
+		[filterModel.quickFilterValues],
+	);
+
+	const { data: rawArticlesData, isLoading } = useGetArticlesListQuery(
+		{
+			company_id: companyId,
+			with_pagination: true,
+			page: paginationModel.page + 1,
+			pageSize: paginationModel.pageSize,
+			search: searchTerm || undefined,
+			archived: false,
+			...(documentDevise && documentDevise !== 'MAD' ? { devise_prix_vente: documentDevise } : {}),
+		},
+		{ skip: !open },
+	);
+	const paginatedArticles = rawArticlesData as PaginationResponseType<Partial<ArticleClass>> | undefined;
+	const articles = useMemo(() => paginatedArticles?.results ?? [], [paginatedArticles]);
+	const totalArticlesCount = paginatedArticles?.count ?? 0;
 
 	const availableArticles = useMemo(
 		() =>
@@ -410,7 +439,15 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 	};
 
 	return (
-		<Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
+		<Dialog
+			open={open}
+			onClose={() => {
+				resetModalState();
+				onClose();
+			}}
+			maxWidth="lg"
+			fullWidth
+		>
 			<DialogTitle>
 				<Stack
 					direction="row"
@@ -434,9 +471,19 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 									quickFilterProps: { debounceMs: 500 },
 								},
 							}}
-							loading={loading}
+							loading={isLoading}
 							rows={rows}
 							columns={columns}
+							rowCount={totalArticlesCount}
+							paginationMode="server"
+							paginationModel={paginationModel}
+							onPaginationModelChange={setPaginationModel}
+							filterMode="server"
+							filterModel={filterModel}
+							onFilterModelChange={(model) => {
+								setFilterModel(model);
+								setPaginationModel((prev) => ({ ...prev, page: 0 }));
+							}}
 							checkboxSelection
 							disableRowSelectionOnClick
 							rowSelectionModel={rowSelectionModelLocal}
@@ -474,19 +521,29 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 				</Stack>
 			</DialogContent>
 			<DialogActions>
-				<Button onClick={onClose}>{t.addArticleModal.cancelBtn}</Button>
+				<Button
+					onClick={() => {
+						resetModalState();
+						onClose();
+					}}
+				>
+					{t.addArticleModal.cancelBtn}
+				</Button>
 				<Button
 					variant="contained"
 					onClick={() => {
 						const payload: SelectedArticlePopupValues[] = Array.from(selectedArticles).map((articleId) => {
 							const values = getRowPopupValues(articleId);
+									const articleData = availableArticles.find((article) => article.id === articleId) ?? { id: articleId };
 							return {
 								articleId,
+										articleData,
 								quantity: values.quantity,
 								remise_type: values.remise_type || '',
 								remise: values.remise,
 							};
 						});
+						resetModalState();
 						onAdd(payload);
 					}}
 					disabled={selectedArticles.size === 0}

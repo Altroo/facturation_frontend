@@ -4,6 +4,12 @@ import '@testing-library/jest-dom';
 import type { CurrencyType } from '@/types/articleTypes';
 import AddArticleModal from './addArticleModal';
 
+const mockUseGetArticlesListQuery = jest.fn();
+
+jest.mock('@/store/services/article', () => ({
+	useGetArticlesListQuery: (...args: unknown[]) => mockUseGetArticlesListQuery(...args),
+}));
+
 type Article = { id?: number; reference?: string; designation?: string };
 type ArticleWithDevise = Article & { devise_prix_vente?: CurrencyType };
 
@@ -20,6 +26,13 @@ interface MockGridProps {
 	pageSizeOptions?: number[];
 	initialState?: unknown;
 	sx?: unknown;
+	rowCount?: number;
+	paginationMode?: string;
+	paginationModel?: unknown;
+	filterMode?: string;
+	filterModel?: unknown;
+	onPaginationModelChange?: (model: unknown) => void;
+	onFilterModelChange?: (model: unknown) => void;
 }
 
 // Capture the onRowSelectionModelChange for manual triggering in tests
@@ -72,6 +85,10 @@ describe('AddArticleModal', () => {
 
 	beforeEach(() => {
 		capturedOnRowSelectionModelChange = null;
+		mockUseGetArticlesListQuery.mockReturnValue({
+			data: { count: articles.length, next: null, previous: null, results: articles },
+			isLoading: false,
+		});
 	});
 
 	it('renders modal and shows all rows including existing ones', () => {
@@ -82,9 +99,8 @@ describe('AddArticleModal', () => {
 		render(
 			<AddArticleModal
 				open={true}
-				loading={false}
 				onClose={onClose}
-				articles={articles}
+				companyId={1}
 				selectedArticles={new Set<number>()}
 				setSelectedArticles={setSelectedArticles}
 				onAdd={onAdd}
@@ -111,9 +127,8 @@ describe('AddArticleModal', () => {
 		const { rerender } = render(
 			<AddArticleModal
 				open={true}
-				loading={false}
 				onClose={onClose}
-				articles={articles}
+				companyId={1}
 				selectedArticles={new Set<number>()}
 				setSelectedArticles={(s: Set<number>) => {
 					// this mock setter isn't used to update the prop automatically in this test;
@@ -143,9 +158,8 @@ describe('AddArticleModal', () => {
 		rerender(
 			<AddArticleModal
 				open={true}
-				loading={false}
 				onClose={onClose}
-				articles={articles}
+				companyId={1}
 				selectedArticles={new Set<number>([1])}
 				setSelectedArticles={() => {}}
 				onAdd={onAdd}
@@ -175,9 +189,8 @@ describe('AddArticleModal', () => {
 		render(
 			<AddArticleModal
 				open={true}
-				loading={false}
 				onClose={onClose}
-				articles={articles}
+				companyId={1}
 				selectedArticles={new Set<number>()}
 				setSelectedArticles={setSelectedArticles}
 				onAdd={onAdd}
@@ -197,9 +210,8 @@ describe('AddArticleModal', () => {
 		render(
 			<AddArticleModal
 				open={true}
-				loading={false}
 				onClose={onClose}
-				articles={articles}
+				companyId={1}
 				selectedArticles={new Set<number>()}
 				setSelectedArticles={setSelectedArticles}
 				onAdd={onAdd}
@@ -223,9 +235,8 @@ describe('AddArticleModal', () => {
 		render(
 			<AddArticleModal
 				open={true}
-				loading={false}
 				onClose={onClose}
-				articles={articles}
+				companyId={1}
 				selectedArticles={new Set<number>()}
 				setSelectedArticles={setSelectedArticles}
 				onAdd={onAdd}
@@ -250,9 +261,8 @@ describe('AddArticleModal', () => {
 		render(
 			<AddArticleModal
 				open={true}
-				loading={false}
 				onClose={onClose}
-				articles={articles}
+				companyId={1}
 				selectedArticles={new Set<number>()}
 				setSelectedArticles={setSelectedArticles}
 				onAdd={onAdd}
@@ -268,6 +278,25 @@ describe('AddArticleModal', () => {
 		expect(setSelectedArticles).toHaveBeenCalledWith(new Set([2]));
 	});
 
+	it('queries paginated non-archived articles for the selected company', () => {
+		render(
+			<AddArticleModal
+				open={true}
+				onClose={jest.fn()}
+				companyId={42}
+				selectedArticles={new Set<number>()}
+				setSelectedArticles={jest.fn()}
+				onAdd={jest.fn()}
+				existingArticleIds={new Set<number>()}
+			/>,
+		);
+
+		expect(mockUseGetArticlesListQuery).toHaveBeenCalledWith(
+			expect.objectContaining({ company_id: 42, with_pagination: true, page: 1, pageSize: 10, archived: false }),
+			expect.objectContaining({ skip: false }),
+		);
+	});
+
 	it('filters out articles without id', () => {
 		const setSelectedArticles = jest.fn();
 		const onAdd = jest.fn();
@@ -278,13 +307,16 @@ describe('AddArticleModal', () => {
 			{ reference: 'REF-NO-ID' }, // no id
 			{ id: 3, reference: 'REF-3' },
 		];
+		mockUseGetArticlesListQuery.mockReturnValue({
+			data: { count: articlesWithNoId.length, next: null, previous: null, results: articlesWithNoId },
+			isLoading: false,
+		});
 
 		render(
 			<AddArticleModal
 				open={true}
-				loading={false}
 				onClose={onClose}
-				articles={articlesWithNoId}
+				companyId={1}
 				selectedArticles={new Set<number>()}
 				setSelectedArticles={setSelectedArticles}
 				onAdd={onAdd}
@@ -308,13 +340,16 @@ describe('AddArticleModal', () => {
 			{ id: 2, reference: 'REF-2', designation: 'Article MAD', devise_prix_vente: 'MAD' },
 			{ id: 3, reference: 'REF-3', designation: 'Article EUR 2', devise_prix_vente: 'EUR' },
 		];
+		mockUseGetArticlesListQuery.mockReturnValue({
+			data: { count: articlesWithDevise.length, next: null, previous: null, results: articlesWithDevise },
+			isLoading: false,
+		});
 
 		render(
 			<AddArticleModal
 				open={true}
-				loading={false}
 				onClose={onClose}
-				articles={articlesWithDevise}
+				companyId={1}
 				selectedArticles={new Set<number>()}
 				setSelectedArticles={setSelectedArticles}
 				onAdd={onAdd}
@@ -336,13 +371,16 @@ describe('AddArticleModal', () => {
 			{ id: 1, reference: 'REF-1', devise_prix_vente: 'EUR' },
 			{ id: 2, reference: 'REF-2', devise_prix_vente: 'MAD' },
 		];
+		mockUseGetArticlesListQuery.mockReturnValue({
+			data: { count: articlesWithDevise.length, next: null, previous: null, results: articlesWithDevise },
+			isLoading: false,
+		});
 
 		render(
 			<AddArticleModal
 				open={true}
-				loading={false}
 				onClose={jest.fn()}
-				articles={articlesWithDevise}
+				companyId={1}
 				selectedArticles={new Set<number>()}
 				setSelectedArticles={setSelectedArticles}
 				onAdd={jest.fn()}
@@ -360,9 +398,8 @@ describe('AddArticleModal', () => {
 		render(
 			<AddArticleModal
 				open={true}
-				loading={false}
 				onClose={jest.fn()}
-				articles={articles}
+				companyId={1}
 				selectedArticles={new Set<number>([1, 3])}
 				setSelectedArticles={jest.fn()}
 				onAdd={jest.fn()}
@@ -377,9 +414,8 @@ describe('AddArticleModal', () => {
 		render(
 			<AddArticleModal
 				open={false}
-				loading={false}
 				onClose={jest.fn()}
-				articles={articles}
+				companyId={1}
 				selectedArticles={new Set<number>()}
 				setSelectedArticles={jest.fn()}
 				onAdd={jest.fn()}

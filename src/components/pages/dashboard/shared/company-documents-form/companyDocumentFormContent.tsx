@@ -210,50 +210,6 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 	const router = useRouter();
 
-	// Single articles query — fetch ALL articles (including archived) for both
-	// the picker and the map lookups.  The non-archived subset for the picker
-	// is derived client-side via useMemo, eliminating a second network request.
-	const { data: rawAllArticlesData, isLoading: isArticlesLoading } = useGetArticlesListQuery(
-		{ company_id, with_pagination: false },
-		{ skip: !token },
-	);
-	const allArticlesData = rawAllArticlesData as Array<Partial<ArticleClass>> | undefined;
-
-	// Derive non-archived articles for the picker (avoids a second API call)
-	const articlesData = useMemo(() => allArticlesData?.filter((a) => !a.archived), [allArticlesData]);
-
-	// Keep isAllArticlesLoading as an alias so downstream code doesn't break
-	const isAllArticlesLoading = isArticlesLoading;
-
-	// Derived articles map — recomputes when data arrives, driving
-	// getArticleById identity change which propagates to columns, rows & totals.
-	const articlesMap = useMemo(() => {
-		const m = new Map<number, Partial<ArticleClass>>();
-		(allArticlesData || []).forEach((a) => {
-			if (a?.id != null) m.set(a.id, a);
-		});
-		return m;
-	}, [allArticlesData]);
-
-	const getArticleById = useCallback(
-		(articleRef: number | string | Partial<ArticleClass> | undefined): Partial<ArticleClass> | undefined => {
-			if (articleRef == null) return undefined;
-			let idNum: number | undefined;
-			if (typeof articleRef === 'number') {
-				idNum = articleRef;
-			} else if (typeof articleRef === 'string') {
-				const parsed = Number(articleRef);
-				idNum = Number.isFinite(parsed) ? parsed : undefined;
-			} else {
-				const maybeId = (articleRef as Partial<ArticleClass>).id;
-				idNum = maybeId != null ? Number(maybeId) : undefined;
-			}
-			if (idNum == null || !Number.isFinite(idNum)) return undefined;
-			return articlesMap.get(Number(idNum));
-		},
-		[articlesMap],
-	);
-
 	// Clients query
 	const { data: rawClientsData } = useGetClientsListQuery({ company_id, with_pagination: false }, { skip: !token });
 
@@ -433,6 +389,49 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			}
 		},
 	});
+
+	const lineArticleIds = useMemo(() => {
+		const ids = new Set<number>();
+		formik.values.lignes?.forEach((line) => {
+			const articleId = Number(line.article);
+			if (Number.isFinite(articleId)) ids.add(articleId);
+		});
+		return Array.from(ids);
+	}, [formik.values.lignes]);
+
+	const { data: rawLineArticlesData, isLoading: isArticlesLoading } = useGetArticlesListQuery(
+		{ company_id, with_pagination: false, ids: lineArticleIds.join(',') },
+		{ skip: !token || !isEditMode || lineArticleIds.length === 0 },
+	);
+	const lineArticlesData = rawLineArticlesData as Array<Partial<ArticleClass>> | undefined;
+	const isAllArticlesLoading = isArticlesLoading;
+
+	const articlesMap = useMemo(() => {
+		const m = new Map<number, Partial<ArticleClass>>();
+		(lineArticlesData || []).forEach((a) => {
+			if (a?.id != null) m.set(a.id, a);
+		});
+		return m;
+	}, [lineArticlesData]);
+
+	const getArticleById = useCallback(
+		(articleRef: number | string | Partial<ArticleClass> | undefined): Partial<ArticleClass> | undefined => {
+			if (articleRef == null) return undefined;
+			let idNum: number | undefined;
+			if (typeof articleRef === 'number') {
+				idNum = articleRef;
+			} else if (typeof articleRef === 'string') {
+				const parsed = Number(articleRef);
+				idNum = Number.isFinite(parsed) ? parsed : undefined;
+			} else {
+				const maybeId = (articleRef as Partial<ArticleClass>).id;
+				idNum = maybeId != null ? Number(maybeId) : undefined;
+			}
+			if (idNum == null || !Number.isFinite(idNum)) return undefined;
+			return articlesMap.get(Number(idNum));
+		},
+		[articlesMap],
+	);
 
 	// Update numero_part and year_part when rawNumData changes (after refetch)
 	useEffect(() => {
@@ -663,7 +662,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			});
 
 			selectedArticlesData.forEach((selection) => {
-				const article = getArticleById(selection.articleId);
+				const article = getArticleById(selection.articleId) ?? selection.articleData;
 				if (!article) return;
 
 				const parsedQuantity = parseNumber(selection.quantity) ?? 1;
@@ -1562,10 +1561,9 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			<DocumentFormModals
 				isEditMode={isEditMode}
 				config={config}
+				companyId={company_id}
 				showAddArticleModal={showAddArticleModal}
 				setShowAddArticleModal={setShowAddArticleModal}
-				isArticlesLoading={isArticlesLoading}
-				articlesData={articlesData}
 				selectedArticles={selectedArticles}
 				setSelectedArticles={setSelectedArticles}
 				handleAddArticles={handleAddArticles}

@@ -55,10 +55,9 @@ const baseConfig: DocumentFormConfig<DocumentListClass> = {
 const defaultProps: DocumentFormModalsProps = {
 	isEditMode: true,
 	config: baseConfig,
+	companyId: 1,
 	showAddArticleModal: false,
 	setShowAddArticleModal: jest.fn(),
-	isArticlesLoading: false,
-	articlesData: [],
 	selectedArticles: new Set(),
 	setSelectedArticles: jest.fn(),
 	handleAddArticles: jest.fn(),

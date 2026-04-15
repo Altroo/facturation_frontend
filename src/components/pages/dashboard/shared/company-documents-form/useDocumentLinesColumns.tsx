@@ -41,6 +41,14 @@ export const useDocumentLinesColumns = ({
 	const { t } = useLanguage();
 	const getRowIndexFromParams = useCallback(
 		(params: GridRenderCellParams): number => {
+			const rowIndex =
+				typeof params.row === 'object' && params.row !== null && 'rowIndex' in params.row
+					? Number((params.row as { rowIndex?: number }).rowIndex)
+					: NaN;
+			if (Number.isInteger(rowIndex) && rowIndex >= 0) {
+				return rowIndex;
+			}
+
 			const idStr = String(params.id);
 			const lines = getLines();
 			const idx = lines.findIndex((l, i) => generateRowId(l.article, i) === idStr);

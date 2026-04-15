@@ -70,7 +70,9 @@ const mockArticle = {
 	type_article: 'Electronics',
 	designation: 'Smartphone',
 	prix_achat: 100,
+	devise_prix_achat: 'MAD',
 	prix_vente: 150,
+	devise_prix_vente: 'MAD',
 	tva: 20,
 	categorie_name: 'Phones',
 	marque_name: 'BrandX',
@@ -135,7 +137,7 @@ describe('ArticlesViewClient navigation and permissions', () => {
 		expect(screen.getByText('Référence')).toBeInTheDocument();
 		expect(screen.getByText('REF001')).toBeInTheDocument();
 		expect(screen.getByText('Prix de vente')).toBeInTheDocument();
-		expect(screen.getByText('150')).toBeInTheDocument();
+		expect(screen.getByText('150 MAD')).toBeInTheDocument();
 		expect(screen.getByText('Marque')).toBeInTheDocument();
 		expect(screen.getByText('BrandX')).toBeInTheDocument();
 		expect(screen.getByText('Remarque', { selector: 'p' })).toBeInTheDocument();

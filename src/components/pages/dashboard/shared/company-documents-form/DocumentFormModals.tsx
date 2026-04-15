@@ -9,7 +9,6 @@ import ActionModals from '@/components/htmlElements/modals/actionModal/actionMod
 import type { SelectedArticlePopupValues } from '@/components/shared/addArticleModal/addArticleModal';
 import AddArticleModal from '@/components/shared/addArticleModal/addArticleModal';
 import GlobalRemiseModal from '@/components/shared/globalRemiseModal/globalRemiseModal';
-import type { ArticleClass } from '@/models/classes';
 import type { TypeRemiseType } from '@/types/devisTypes';
 import type { DocumentFormConfig, DocumentListClass } from '@/types/companyDocumentsTypes';
 import { useLanguage } from '@/utils/hooks';
@@ -17,11 +16,10 @@ import { useLanguage } from '@/utils/hooks';
 export interface DocumentFormModalsProps<TDocument extends DocumentListClass = DocumentListClass> {
 	isEditMode: boolean;
 	config: DocumentFormConfig<TDocument>;
+	companyId: number;
 	// Add Article modal
 	showAddArticleModal: boolean;
 	setShowAddArticleModal: (v: boolean) => void;
-	isArticlesLoading: boolean;
-	articlesData: Array<Partial<ArticleClass>> | undefined;
 	selectedArticles: Set<number>;
 	setSelectedArticles: (v: Set<number>) => void;
 	handleAddArticles: (selectedArticlesData: SelectedArticlePopupValues[]) => void;
@@ -45,10 +43,9 @@ export interface DocumentFormModalsProps<TDocument extends DocumentListClass = D
 
 const DocumentFormModals = <TDocument extends DocumentListClass = DocumentListClass>({
 	isEditMode,
+	companyId,
 	showAddArticleModal,
 	setShowAddArticleModal,
-	isArticlesLoading,
-	articlesData,
 	selectedArticles,
 	setSelectedArticles,
 	handleAddArticles,
@@ -71,18 +68,11 @@ const DocumentFormModals = <TDocument extends DocumentListClass = DocumentListCl
 			{isEditMode && (
 				<AddArticleModal
 					open={showAddArticleModal}
-					loading={isArticlesLoading}
 					onClose={() => {
 						setShowAddArticleModal(false);
 						setSelectedArticles(new Set());
 					}}
-					articles={(articlesData || []).map((a) => ({
-						...a,
-						designation: a.designation ?? undefined,
-						reference: a.reference ?? undefined,
-						marque_name: a.marque_name ?? undefined,
-						categorie_name: a.categorie_name ?? undefined,
-					}))}
+					companyId={companyId}
 					selectedArticles={selectedArticles}
 					setSelectedArticles={setSelectedArticles}
 					onAdd={handleAddArticles}
