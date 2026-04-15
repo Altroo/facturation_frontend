@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import type { TranslationDictionary } from '@/types/languageTypes';
 import { useRouter } from 'next/navigation';
-import { Box, Card, CardContent, Divider, Stack, Typography } from '@mui/material';
+import { Box, Divider } from '@mui/material';
 import CurrencyToggle from '@/components/shared/currencyToggle/currencyToggle';
 import {
 	AttachMoney as AttachMoneyIcon,
@@ -25,6 +25,7 @@ import type { DocumentListConfig, FactureClientListResponseType, PaginationModel
 import type { FactureClass } from '@/models/classes';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import CompanyDocumentsListContent from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsListContent';
+import DashboardStatCard from '@/components/shared/dashboardStatCard/dashboardStatCard';
 import { formatNumberWithSpaces } from '@/utils/helpers';
 import { useLanguage } from '@/utils/hooks';
 
@@ -147,103 +148,38 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 					onDeviseChange={setSelectedDevise}
 					usesForeignCurrency={usesForeignCurrency}
 				/>
-				<Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 3 }}>
-					<Card elevation={2} sx={{ flex: 1, borderRadius: 2 }}>
-						<CardContent>
-							<Stack
-								direction="row"
-								spacing={2}
-								sx={{
-									alignItems: 'center',
-								}}
-							>
-								<AttachMoneyIcon color="primary" />
-								<Box>
-									<Typography
-										variant="body2"
-										sx={{
-											color: 'text.secondary',
-										}}
-									>
-										{t.facturesClient.statsCA}
-									</Typography>
-									<Typography
-										variant="h6"
-										sx={{
-											fontWeight: 700,
-										}}
-									>
-										{chiffreAffaireTotal}
-									</Typography>
-								</Box>
-							</Stack>
-						</CardContent>
-					</Card>
-					<Card elevation={2} sx={{ flex: 1, borderRadius: 2 }}>
-						<CardContent>
-							<Stack
-								direction="row"
-								spacing={2}
-								sx={{
-									alignItems: 'center',
-								}}
-							>
-								<CheckCircleIcon color="success" />
-								<Box>
-									<Typography
-										variant="body2"
-										sx={{
-											color: 'text.secondary',
-										}}
-									>
-										{t.facturesClient.statsReglements}
-									</Typography>
-									<Typography
-										variant="h6"
-										sx={{
-											fontWeight: 700,
-											color: 'success.main',
-										}}
-									>
-										{totalReglements}
-									</Typography>
-								</Box>
-							</Stack>
-						</CardContent>
-					</Card>
-					<Card elevation={2} sx={{ flex: 1, borderRadius: 2 }}>
-						<CardContent>
-							<Stack
-								direction="row"
-								spacing={2}
-								sx={{
-									alignItems: 'center',
-								}}
-							>
-								<CancelIcon color="error" />
-								<Box>
-									<Typography
-										variant="body2"
-										sx={{
-											color: 'text.secondary',
-										}}
-									>
-										{t.facturesClient.statsImpayes}
-									</Typography>
-									<Typography
-										variant="h6"
-										sx={{
-											fontWeight: 700,
-											color: 'error.main',
-										}}
-									>
-										{totalImpayes}
-									</Typography>
-								</Box>
-							</Stack>
-						</CardContent>
-					</Card>
-				</Stack>
+				<Box
+					sx={{
+						display: 'grid',
+						gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', xl: '1fr 1fr 1fr' },
+						gap: 2,
+						mb: 3,
+					}}
+				>
+					<DashboardStatCard
+						icon={<AttachMoneyIcon />}
+						label={t.facturesClient.statsCA}
+						value={chiffreAffaireTotal}
+						color="#1565C0"
+						testId="factures-unpaid-stats-ca"
+					/>
+					<DashboardStatCard
+						icon={<CheckCircleIcon />}
+						label={t.facturesClient.statsReglements}
+						value={totalReglements}
+						color="#2E7D32"
+						valueColor="success.main"
+						testId="factures-unpaid-stats-paid"
+					/>
+					<DashboardStatCard
+						icon={<CancelIcon />}
+						label={t.facturesClient.statsImpayes}
+						value={totalImpayes}
+						color="#D32F2F"
+						valueColor="error.main"
+						testId="factures-unpaid-stats-unpaid"
+					/>
+				</Box>
 				<Divider sx={{ mb: 2 }} />
 			</Box>
 			<CompanyDocumentsListContent<FactureClass>

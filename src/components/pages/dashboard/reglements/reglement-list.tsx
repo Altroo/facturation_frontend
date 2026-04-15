@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Button, Card, CardContent, Chip, Divider, Stack, Typography } from '@mui/material';
+import { Box, Button, Chip, Divider, Stack, Typography } from '@mui/material';
 import CurrencyToggle from '@/components/shared/currencyToggle/currencyToggle';
 import {
 	Add as AddIcon,
@@ -42,6 +42,7 @@ import { createDropdownFilterOperators } from '@/components/shared/dropdownFilte
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
 import { createNumericFilterOperators } from '@/components/shared/numericFilter/numericFilterOperator';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
+import DashboardStatCard from '@/components/shared/dashboardStatCard/dashboardStatCard';
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
 import { useGetCompanyQuery } from '@/store/services/company';
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
@@ -511,103 +512,38 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					onDeviseChange={setSelectedDevise}
 					usesForeignCurrency={usesForeignCurrency}
 				/>
-				<Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 3 }}>
-					<Card elevation={2} sx={{ flex: 1, borderRadius: 2 }}>
-						<CardContent>
-							<Stack
-								direction="row"
-								spacing={2}
-								sx={{
-									alignItems: 'center',
-								}}
-							>
-								<AttachMoneyIcon color="primary" />
-								<Box>
-									<Typography
-										variant="body2"
-										sx={{
-											color: 'text.secondary',
-										}}
-									>
-										{t.reglements.statsCA}
-									</Typography>
-									<Typography
-										variant="h6"
-										sx={{
-											fontWeight: 700,
-										}}
-									>
-										{chiffreAffaireTotal}
-									</Typography>
-								</Box>
-							</Stack>
-						</CardContent>
-					</Card>
-					<Card elevation={2} sx={{ flex: 1, borderRadius: 2 }}>
-						<CardContent>
-							<Stack
-								direction="row"
-								spacing={2}
-								sx={{
-									alignItems: 'center',
-								}}
-							>
-								<CheckCircleIcon color="success" />
-								<Box>
-									<Typography
-										variant="body2"
-										sx={{
-											color: 'text.secondary',
-										}}
-									>
-										{t.reglements.totalReglements}
-									</Typography>
-									<Typography
-										variant="h6"
-										sx={{
-											fontWeight: 700,
-											color: 'success.main',
-										}}
-									>
-										{totalReglements}
-									</Typography>
-								</Box>
-							</Stack>
-						</CardContent>
-					</Card>
-					<Card elevation={2} sx={{ flex: 1, borderRadius: 2 }}>
-						<CardContent>
-							<Stack
-								direction="row"
-								spacing={2}
-								sx={{
-									alignItems: 'center',
-								}}
-							>
-								<CancelIcon color="error" />
-								<Box>
-									<Typography
-										variant="body2"
-										sx={{
-											color: 'text.secondary',
-										}}
-									>
-										{t.reglements.statsImpayes}
-									</Typography>
-									<Typography
-										variant="h6"
-										sx={{
-											fontWeight: 700,
-											color: 'error.main',
-										}}
-									>
-										{totalImpayes}
-									</Typography>
-								</Box>
-							</Stack>
-						</CardContent>
-					</Card>
-				</Stack>
+				<Box
+					sx={{
+						display: 'grid',
+						gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', xl: '1fr 1fr 1fr' },
+						gap: 2,
+						mb: 3,
+					}}
+				>
+					<DashboardStatCard
+						icon={<AttachMoneyIcon />}
+						label={t.reglements.statsCA}
+						value={chiffreAffaireTotal}
+						color="#1565C0"
+						testId="reglements-stats-ca"
+					/>
+					<DashboardStatCard
+						icon={<CheckCircleIcon />}
+						label={t.reglements.totalReglements}
+						value={totalReglements}
+						color="#2E7D32"
+						valueColor="success.main"
+						testId="reglements-stats-paid"
+					/>
+					<DashboardStatCard
+						icon={<CancelIcon />}
+						label={t.reglements.statsImpayes}
+						value={totalImpayes}
+						color="#D32F2F"
+						valueColor="error.main"
+						testId="reglements-stats-unpaid"
+					/>
+				</Box>
 				<Divider sx={{ mb: 2 }} />
 			</Box>
 			{(role === 'Caissier' || role === 'Commercial') && (
