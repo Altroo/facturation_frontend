@@ -37,12 +37,18 @@ export const isAuthenticatedInstance = (
 
 	// Request interceptor - add auth token
 	instance.interceptors.request.use(
-		(config: InternalAxiosRequestConfig) => {
+		async (config: InternalAxiosRequestConfig) => {
 			const headers = new AxiosHeaders(config.headers as Record<string, string>);
 			const token = getToken?.();
+			let accessToken = token?.access;
 
-			if (token?.access) {
-				headers.set('Authorization', `Bearer ${token.access}`);
+			if (!accessToken && typeof window !== 'undefined') {
+				const session = await getSession();
+				accessToken = session?.accessToken;
+			}
+
+			if (accessToken) {
+				headers.set('Authorization', `Bearer ${accessToken}`);
 			}
 
 			// Let axios auto-set Content-Type (with boundary) for multipart uploads

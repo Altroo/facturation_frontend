@@ -11,9 +11,18 @@ import {
 	getCompanyDocumentLabelForKey,
 	getLabelForKey,
 } from './helpers';
-import { signOut } from 'next-auth/react';
+import { AxiosHeaders } from 'axios';
+import type { InternalAxiosRequestConfig } from 'axios';
+import { getSession, signOut } from 'next-auth/react';
+
+type RequestInterceptorWithHandlers = {
+	handlers?: Array<{
+		fulfilled?: (config: InternalAxiosRequestConfig) => InternalAxiosRequestConfig | Promise<InternalAxiosRequestConfig>;
+	}>;
+};
 
 jest.mock('next-auth/react', () => ({
+	getSession: jest.fn(() => Promise.resolve(null)),
 	signOut: jest.fn(() => Promise.resolve()),
 }));
 
@@ -22,6 +31,7 @@ jest.mock('@/utils/routes', () => ({
 }));
 
 const mockedSignOut = signOut as jest.Mock;
+const mockedGetSession = getSession as jest.Mock;
 
 beforeEach(() => {
 	jest.clearAllMocks();
@@ -334,6 +344,29 @@ describe('API Utilities', () => {
 				last_name: 'User',
 			},
 		};
+
+		it('falls back to the NextAuth session token when Redux auth state is empty', async () => {
+			mockedGetSession.mockResolvedValueOnce({ accessToken: 'session-access-token' });
+			const instance = isAuthenticatedInstance(() => undefined);
+			const requestInterceptor = instance.interceptors.request as typeof instance.interceptors.request & RequestInterceptorWithHandlers;
+			const handler = requestInterceptor.handlers?.[0]?.fulfilled;
+
+			const config = await handler?.({ headers: new AxiosHeaders() } as InternalAxiosRequestConfig);
+
+			expect(mockedGetSession).toHaveBeenCalledTimes(1);
+			expect(new AxiosHeaders(config?.headers).get('Authorization')).toBe('Bearer session-access-token');
+		});
+
+		it('prefers the Redux token and skips NextAuth fallback when access is already present', async () => {
+			const instance = isAuthenticatedInstance(() => mockToken);
+			const requestInterceptor = instance.interceptors.request as typeof instance.interceptors.request & RequestInterceptorWithHandlers;
+			const handler = requestInterceptor.handlers?.[0]?.fulfilled;
+
+			const config = await handler?.({ headers: new AxiosHeaders() } as InternalAxiosRequestConfig);
+
+			expect(mockedGetSession).not.toHaveBeenCalled();
+			expect(new AxiosHeaders(config?.headers).get('Authorization')).toBe('Bearer abc123');
+		});
 
 		it('adds Authorization header if token exists', async () => {
 			const getToken = () => mockToken;
