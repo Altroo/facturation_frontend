@@ -1,3 +1,5 @@
+'use client';
+
 import { Box, Paper, Typography } from '@mui/material';
 import { Lock as LockIcon } from '@mui/icons-material';
 import { useLanguage } from '@/utils/hooks';

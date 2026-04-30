@@ -1,3 +1,5 @@
+'use client';
+
 import React, { ForwardedRef, forwardRef, useState } from 'react';
 import { ThemeProvider, TextField, InputAdornment, IconButton } from '@mui/material';
 import type { Theme } from '@mui/material/styles';

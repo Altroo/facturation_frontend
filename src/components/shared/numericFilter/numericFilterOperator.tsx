@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { TextField } from '@mui/material';
 import { GridFilterInputValueProps, GridFilterItem, GridFilterOperator } from '@mui/x-data-grid';

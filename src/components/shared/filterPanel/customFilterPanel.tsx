@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { Box, Button, FormControl, IconButton, MenuItem, Select, Stack, TextField, Typography } from '@mui/material';
 import { Add as AddIcon, Close as CloseIcon } from '@mui/icons-material';

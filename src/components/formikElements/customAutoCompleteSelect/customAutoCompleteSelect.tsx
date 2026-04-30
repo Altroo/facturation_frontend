@@ -1,3 +1,5 @@
+'use client';
+
 import React, { type Key } from 'react';
 import TextField, { type TextFieldProps } from '@mui/material/TextField';
 import { ThemeProvider } from '@mui/material/styles';

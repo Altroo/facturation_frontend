@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import type { SessionProps } from '@/types/_initTypes';
 import { useInitAccessToken } from '@/contexts/InitContext';

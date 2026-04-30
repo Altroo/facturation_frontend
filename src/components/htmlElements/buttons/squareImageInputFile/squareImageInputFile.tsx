@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import Styles from './squareImageInputFile.module.sass';
 import { Button, Stack, ThemeProvider } from '@mui/material';

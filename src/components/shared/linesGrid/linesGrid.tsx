@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { frFR } from '@mui/x-data-grid/locales';
