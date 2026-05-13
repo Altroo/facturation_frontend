@@ -60,6 +60,16 @@ export const FACTURE_CLIENT_VIEW = (id: number, company_id: number) =>
 	`${SITE_ROOT}dashboard/facture-client/${id}/?company_id=${company_id}`;
 export const FACTURE_CLIENT_EDIT = (id: number, company_id: number) =>
 	`${SITE_ROOT}dashboard/facture-client/${id}/edit/?company_id=${company_id}`;
+// Facture d'Avoir
+export const FACTURE_AVOIR_LIST = `${SITE_ROOT}dashboard/facture-avoir`;
+export const FACTURE_AVOIR_ADD = (company_id: number, facture_origine_id?: number) =>
+	facture_origine_id
+		? `${SITE_ROOT}dashboard/facture-avoir/new/?company_id=${company_id}&facture_origine_id=${facture_origine_id}`
+		: `${SITE_ROOT}dashboard/facture-avoir/new/?company_id=${company_id}`;
+export const FACTURE_AVOIR_VIEW = (id: number, company_id: number) =>
+	`${SITE_ROOT}dashboard/facture-avoir/${id}/?company_id=${company_id}`;
+export const FACTURE_AVOIR_EDIT = (id: number, company_id: number) =>
+	`${SITE_ROOT}dashboard/facture-avoir/${id}/edit/?company_id=${company_id}`;
 // Bon de Livraison
 export const BON_DE_LIVRAISON_LIST = `${SITE_ROOT}dashboard/bon-de-livraison`;
 export const BON_DE_LIVRAISON_UNINVOICED = `${SITE_ROOT}dashboard/bon-de-livraison/uninvoiced`;
@@ -91,6 +101,8 @@ export const DEVIS_PDF = (id: number, company_id: number, type: 'avec_remise' | 
 
 export const FACTURE_CLIENT_PDF = (id: number, company_id: number, type: 'avec_remise' | 'sans_remise' | 'avec_unite', language: 'fr' | 'en' = 'fr') =>
 	`${process.env.NEXT_PUBLIC_ROOT_API_URL}/facture_client/pdf/${language}/${id}/?company_id=${company_id}&type=${type}`;
+export const FACTURE_AVOIR_PDF = (id: number, company_id: number, type: 'avec_remise' | 'sans_remise' | 'avec_unite', language: 'fr' | 'en' = 'fr') =>
+	`${process.env.NEXT_PUBLIC_ROOT_API_URL}/facture_avoir/pdf/${language}/${id}/?company_id=${company_id}&type=${type}`;
 
 export const FACTURE_PRO_FORMA_PDF = (id: number, company_id: number, type: 'avec_remise' | 'sans_remise' | 'avec_unite', language: 'fr' | 'en' = 'fr') =>
 	`${process.env.NEXT_PUBLIC_ROOT_API_URL}/facture_proforma/pdf/${language}/${id}/?company_id=${company_id}&type=${type}`;

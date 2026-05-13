@@ -48,11 +48,12 @@ import {
 	Settings as SettingsIcon,
 	Notifications as NotificationsIcon,
 	DoneAll as DoneAllIcon,
+	CreditScoreOutlined as CreditScoreOutlinedIcon,
 } from '@mui/icons-material';
 import { useAppSelector, useAppDispatch, useLanguage } from '@/utils/hooks';
 import { getProfilState, getUnreadNotificationCount } from '@/store/selectors';
 import { cookiesDeleter } from '@/utils/apiHelpers';
-import LanguageSwitcher from '@/components/shared/languageSwitcher/languageSwitcher';
+import LanguageSwitcher, { LanguageFlag } from '@/components/shared/languageSwitcher/languageSwitcher';
 import type { TranslationDictionary } from '@/types/languageTypes';
 import {
 	ARTICLES_ARCHIVED,
@@ -73,6 +74,7 @@ import {
 	DEVIS_LIST,
 	FACTURE_CLIENT_LIST,
 	FACTURE_CLIENT_UNPAID,
+	FACTURE_AVOIR_LIST,
 	FACTURE_PRO_FORMA_LIST,
 	REGLEMENTS_LIST,
 	SITE_ROOT,
@@ -134,6 +136,11 @@ const getNavigationMenu = (isStaff: boolean, t: TranslationDictionary) => {
 				{ title: t.navigation.facturesClientList, label: t.navigation.facturesClientList, path: FACTURE_CLIENT_LIST },
 				{ title: t.navigation.facturesImpayees, label: t.navigation.facturesImpayees, path: FACTURE_CLIENT_UNPAID },
 			],
+		},
+		facturesAvoir: {
+			title: t.navigation.facturesAvoir,
+			icon: <CreditScoreOutlinedIcon />,
+			items: [{ title: t.navigation.facturesAvoirList, label: t.navigation.facturesAvoirList, path: FACTURE_AVOIR_LIST }],
 		},
 		bonsLivraison: {
 			title: t.navigation.bonsLivraison,
@@ -475,7 +482,7 @@ const NavigationBar = (props: Props) => {
 											<MenuListItemText>{t.navigation.notifications}</MenuListItemText>
 										</MenuItem>
 										<MenuItem onClick={() => { setLanguage(language === 'fr' ? 'en' : 'fr'); setMobileMenuAnchor(null); }}>
-											<MenuListItemIcon><span style={{ fontSize: '1.2rem', lineHeight: 1 }}>{language === 'fr' ? '🇬🇧' : '🇫🇷'}</span></MenuListItemIcon>
+											<MenuListItemIcon><LanguageFlag language={language === 'fr' ? 'en' : 'fr'} /></MenuListItemIcon>
 												<MenuListItemText>{language === 'fr' ? 'English' : 'Français'}</MenuListItemText>
 											</MenuItem>
 											{is_staff && (

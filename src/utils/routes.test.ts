@@ -209,6 +209,28 @@ describe('routes constants', () => {
 		expect(FACTURE_CLIENT_UNPAID).toBe(`${SITE_ROOT}dashboard/facture-client/unpaid`);
 	});
 
+	it('exports facture avoir routes and functions', () => {
+		const {
+			SITE_ROOT,
+			FACTURE_AVOIR_LIST,
+			FACTURE_AVOIR_ADD,
+			FACTURE_AVOIR_VIEW,
+			FACTURE_AVOIR_EDIT,
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
+		} = require('./routes');
+
+		expect(FACTURE_AVOIR_LIST).toBe(`${SITE_ROOT}dashboard/facture-avoir`);
+		expect(typeof FACTURE_AVOIR_ADD).toBe('function');
+		expect(FACTURE_AVOIR_ADD(42)).toBe(`${SITE_ROOT}dashboard/facture-avoir/new/?company_id=42`);
+		expect(FACTURE_AVOIR_ADD(42, 7)).toBe(
+			`${SITE_ROOT}dashboard/facture-avoir/new/?company_id=42&facture_origine_id=7`
+		);
+
+		expect(typeof FACTURE_AVOIR_VIEW).toBe('function');
+		expect(typeof FACTURE_AVOIR_EDIT).toBe('function');
+		expect(FACTURE_AVOIR_VIEW(5, 99)).toBe(`${SITE_ROOT}dashboard/facture-avoir/5/?company_id=99`);
+		expect(FACTURE_AVOIR_EDIT(7, 123)).toBe(`${SITE_ROOT}dashboard/facture-avoir/7/edit/?company_id=123`);
+	});
 	it('exports reglement routes and functions', () => {
 		const {
 			SITE_ROOT,
@@ -272,6 +294,18 @@ describe('routes constants', () => {
 			);
 		});
 
+		it('exports facture avoir PDF route function', () => {
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
+			const { FACTURE_AVOIR_PDF } = require('./routes');
+
+			expect(typeof FACTURE_AVOIR_PDF).toBe('function');
+			expect(FACTURE_AVOIR_PDF(5, 99, 'avec_remise')).toBe(
+				'https://api.example.com/facture_avoir/pdf/fr/5/?company_id=99&type=avec_remise'
+			);
+			expect(FACTURE_AVOIR_PDF(10, 50, 'sans_remise', 'en')).toBe(
+				'https://api.example.com/facture_avoir/pdf/en/10/?company_id=50&type=sans_remise'
+			);
+		});
 		it('exports facture pro forma PDF route function', () => {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
 			const { FACTURE_PRO_FORMA_PDF } = require('./routes');

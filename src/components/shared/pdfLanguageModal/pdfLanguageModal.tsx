@@ -4,6 +4,7 @@ import React from 'react';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { useLanguage } from '@/utils/hooks';
+import { LanguageFlag } from '@/components/shared/languageSwitcher/languageSwitcher';
 
 interface PdfLanguageModalProps {
 	onSelectLanguage: (language: 'fr' | 'en') => void;
@@ -30,14 +31,14 @@ const PdfLanguageModal: React.FC<PdfLanguageModalProps> = ({ onSelectLanguage, o
 					active: false,
 					text: t.pdf.french,
 					onClick: () => onSelectLanguage('fr'),
-					icon: <>🇫🇷</>,
+					icon: <LanguageFlag language="fr" />,
 					color: '#0D070B',
 				},
 				{
 					active: true,
 					text: t.pdf.english,
 					onClick: () => onSelectLanguage('en'),
-					icon: <>🇬🇧</>,
+					icon: <LanguageFlag language="en" />,
 					color: '#0D070B',
 				},
 			]}

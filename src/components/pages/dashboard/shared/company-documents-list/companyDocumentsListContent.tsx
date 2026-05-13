@@ -47,7 +47,7 @@ import type {
 	PaginationModel,
 	PrintAction,
 } from '@/types/companyDocumentsTypes';
-import type { DeviClass, FactureClass } from '@/models/classes';
+import type { DeviClass, FactureAvoirClass, FactureClass } from '@/models/classes';
 
 export const getStatutColor = (
 	statut: string,
@@ -185,6 +185,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 
 	const { data, isLoading, refetch } = queryResult;
 	const { deleteRecord } = deleteMutation;
+	const allowDelete = config.allowDelete ?? true;
 
 	// Modal states
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -407,7 +408,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 
 		const objectMap = new Map<number, string>();
 		data.results.forEach((doc) => {
-			const document = doc as DeviClass | FactureClass;
+			const document = doc as DeviClass | FactureClass | FactureAvoirClass;
 			if (document.client && document.client_name) {
 				objectMap.set(document.client, document.client_name);
 			}
@@ -571,20 +572,23 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 
 					// Edit, Delete, Convert actions - only for Caissier and Commercial
 					if (role === 'Caissier' || role === 'Commercial') {
-						actions.push(
-							{
+						const row = params.row as DocumentListClass;
+						if (!config.canEditRow || config.canEditRow(params.row)) {
+							actions.push({
 								label: t.common.edit,
 								icon: <EditIcon />,
-								onClick: () => router.push(config.routes.editRoute((params.row as DocumentListClass).id, companyId)),
+								onClick: () => router.push(config.routes.editRoute(row.id, companyId)),
 								color: 'primary' as const,
-							},
-							{
+							});
+						}
+						if (allowDelete) {
+							actions.push({
 								label: t.common.delete,
 								icon: <DeleteIcon />,
-								onClick: () => showDeleteModalCall((params.row as DocumentListClass).id),
+								onClick: () => showDeleteModalCall(row.id),
 								color: 'error' as const,
-							},
-						);
+							});
+						}
 
 						// Convert action if available
 						if (config.convertActions && config.convertActions.length > 0) {
@@ -629,17 +633,11 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 			},
 		];
 
-		return baseColumns;
+		const extraColumns = config.getExtraColumns?.({ router, companyId }) ?? [];
+		return [...baseColumns.slice(0, -1), ...extraColumns, baseColumns[baseColumns.length - 1]];
 	}, [
-		config.columns.numeroField,
-		config.columns.numeroHeaderName,
-		config.columns.extraField,
-		config.columns.extraFieldHeaderName,
-		config.columns.dateField,
-		config.columns.dateHeaderName,
-		config.routes,
-		config.convertActions,
-		config.printActions,
+		config,
+		allowDelete,
 		clientFilterOptions,
 		localStatutFilterOptions,
 		router,
@@ -692,7 +690,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 					>
 						{config.labels.addButtonText}
 					</Button>
-					{selectedIds.length > 0 && (
+					{allowDelete && selectedIds.length > 0 && (
 						<Button
 							variant="outlined"
 							color="error"
@@ -725,14 +723,14 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 				onFilterModelChange={onFilterModelChange}
 				onCustomFilterParamsChange={onCustomFilterParamsChange}
 				toolbar={{ quickFilter: true, debounceMs: 500 }}
-				checkboxSelection={role === 'Caissier' || role === 'Commercial'}
+				checkboxSelection={allowDelete && (role === 'Caissier' || role === 'Commercial')}
 				onSelectionChange={handleSelectionChange}
 				selectedIds={selectedIds}
 			/>
 
-			{showDeleteModal && <ActionModals {...modalsConfig.delete} />}
+			{allowDelete && showDeleteModal && <ActionModals {...modalsConfig.delete} />}
 
-			{showBulkDeleteModal && (
+			{allowDelete && showBulkDeleteModal && (
 				<ActionModals
 					title={t.documentList.bulkDeleteTitle(selectedIds.length)}
 					body={t.documentList.bulkDeleteBody(selectedIds.length, config.labels.documentTypeName)}

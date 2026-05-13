@@ -240,6 +240,8 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 	getTermsSecondValue,
 	query,
 	headerActions,
+	canEdit = true,
+	extraDocumentRows = [],
 }: CompanyDocumentsViewProps<TData>) => {
 	const token = useInitAccessToken(session);
 	const companies = useAppSelector(getUserCompaniesState);
@@ -552,7 +554,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 									flexWrap: 'wrap',
 								}}
 							>
-								{(company?.role === 'Caissier' || company?.role === 'Commercial') && (
+								{canEdit && (company?.role === 'Caissier' || company?.role === 'Commercial') && (
 									<Button
 										variant="outlined"
 										size="small"
@@ -621,6 +623,12 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 											label={documentDateLabel}
 											value={dateLabel.split(',')[0] || '-'}
 										/>
+										{extraDocumentRows.map((row, index) => (
+											<React.Fragment key={`${row.label}-${index}`}>
+												<Divider />
+												<InfoRow icon={row.icon} label={row.label} value={row.getValue(rawData)} />
+											</React.Fragment>
+										))}
 									</Stack>
 								</CardContent>
 							</Card>

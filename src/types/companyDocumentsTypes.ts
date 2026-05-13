@@ -6,15 +6,17 @@ import type {
 	TypeFactureLivraisonDevisStatus,
 } from '@/types/devisTypes';
 import type { SessionProps } from '@/types/_initTypes';
-import type { BonDeLivraisonClass, DeviClass, FactureClass } from '@/models/classes';
+import type { BonDeLivraisonClass, DeviClass, FactureAvoirClass, FactureClass } from '@/models/classes';
 import type { PaginationResponseType } from '@/types/_initTypes';
 import type { GridColDef } from '@mui/x-data-grid';
 import React from 'react';
 
-export type DocumentType = 'devis' | 'facture-client' | 'facture-pro-forma' | 'bon-de-livraison';
+export type DocumentType = 'devis' | 'facture-client' | 'facture-pro-forma' | 'bon-de-livraison' | 'facture-avoir';
 
 type Ligne = {
+	id?: number | string;
 	article: number;
+	reference?: string | null;
 	designation?: string | null;
 	prix_achat?: number | string | null;
 	devise_prix_achat?: string | null;
@@ -95,6 +97,12 @@ export interface CompanyDocumentsViewProps<TData extends CompanyDocumentData> ex
 
 	// optional extra action buttons rendered beside the back/edit buttons
 	headerActions?: React.ReactNode;
+	canEdit?: boolean;
+	extraDocumentRows?: Array<{
+		icon: React.ReactNode;
+		label: string;
+		getValue: (data: TData | undefined) => string | number | null | undefined | React.ReactNode;
+	}>;
 }
 
 /** Base interface for document data (common fields between devis and facture) */
@@ -124,6 +132,17 @@ export interface FactureDocumentData extends BaseDocumentData {
 	numero_bon_commande_client: string | null;
 }
 
+/** Facture d'avoir-specific document data */
+export interface FactureAvoirDocumentData extends BaseDocumentData {
+	numero_avoir?: string;
+	date_avoir: string;
+	facture_origine?: number | null;
+	facture_origine_numero?: string | null;
+	facture_origine_date?: string | null;
+	motif_avoir: string;
+	motif_avoir_label?: string | null;
+	numero_bon_commande_client: string | null;
+}
 /** Bon de livraison-specific document data */
 export interface BonDeLivraisonDocumentData extends BaseDocumentData {
 	numero_bon_livraison?: string;
@@ -133,7 +152,7 @@ export interface BonDeLivraisonDocumentData extends BaseDocumentData {
 }
 
 /** Union type for all document form data types */
-export type DocumentFormData = DevisDocumentData | FactureDocumentData | BonDeLivraisonDocumentData;
+export type DocumentFormData = DevisDocumentData | FactureDocumentData | BonDeLivraisonDocumentData | FactureAvoirDocumentData;
 
 /** Base form schema fields (common to all document types) */
 export interface BaseDocumentFormSchema {
@@ -182,11 +201,14 @@ export interface FactureNumResponse {
 	numero_facture: string;
 }
 
+export interface FactureAvoirNumResponse {
+	numero_avoir: string;
+}
 export interface BonDeLivraisonNumResponse {
 	numero_bon_livraison: string;
 }
 
-export type DocumentNumResponse = DevisNumResponse | FactureNumResponse | BonDeLivraisonNumResponse;
+export type DocumentNumResponse = DevisNumResponse | FactureNumResponse | FactureAvoirNumResponse | BonDeLivraisonNumResponse;
 
 /** Labels configuration for document forms */
 export interface DocumentFormLabels {
@@ -255,7 +277,7 @@ export interface DocumentFormConfig<TDocument> {
 }
 
 /** Union type for document class in list views */
-export type DocumentListClass = DeviClass | FactureClass | BonDeLivraisonClass;
+export type DocumentListClass = DeviClass | FactureClass | FactureAvoirClass | BonDeLivraisonClass;
 
 /** Pagination model type */
 export interface PaginationModel {
@@ -381,6 +403,10 @@ export interface DocumentListConfig<TDocument extends DocumentListClass> {
 		router: ReturnType<typeof import('next/navigation').useRouter>;
 		companyId: number;
 	}) => GridColDef[];
+	/** Whether delete and bulk-delete actions are allowed. Defaults to true. */
+	allowDelete?: boolean;
+	/** Per-row edit visibility guard. Defaults to editable. */
+	canEditRow?: (row: TDocument) => boolean;
 }
 
 export type { DeviFactureLineFormValues, DeviLineSchemaType, TypeRemiseType, TypeFactureLivraisonDevisStatus };
@@ -392,6 +418,7 @@ export interface FactureForPayment {
 	date_facture: string;
 	total_ttc_apres_remise: string;
 	total_paid: string;
+	total_avoirs?: string;
 	remaining_amount: string;
 	statut: string;
 	devise: string;
@@ -401,9 +428,19 @@ export interface CurrencyStats {
 	chiffre_affaire_total: string;
 	total_reglements: string;
 	total_impayes: string;
+	total_avoirs?: string;
+	total_tva?: string;
 }
 
 export interface FactureClientListResponseType extends PaginationResponseType<FactureClass> {
+	stats_by_currency: {
+		MAD: CurrencyStats;
+		EUR: CurrencyStats;
+		USD: CurrencyStats;
+	};
+}
+
+export interface FactureAvoirListResponseType extends PaginationResponseType<FactureAvoirClass> {
 	stats_by_currency: {
 		MAD: CurrencyStats;
 		EUR: CurrencyStats;
