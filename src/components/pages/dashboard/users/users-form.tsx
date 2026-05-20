@@ -497,7 +497,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						{/* Managed Companies Card */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
 							<ManagedByTableSection
-								title="{t.users.companiesSection}"
+								title={t.users.companiesSection}
 								icon={<BusinessIcon color="primary" />}
 								emptyIcon={<BusinessIcon sx={{ fontSize: 48, color: 'grey.400' }} />}
 								emptyMessage={t.users.noCompany}

@@ -132,7 +132,7 @@ jest.mock('@/components/formikElements/apiLoading/apiAlert/apiAlert', () => ({
 
 jest.mock('@/components/shared/addManagedByTable/addManagedByTable', () => ({
 	__esModule: true,
-	default: () => <div data-testid="managed-by-table">Managed By Section</div>,
+	default: ({ title }: { title: string }) => <div data-testid="managed-by-table">{title}</div>,
 }));
 
 jest.mock('@/utils/themes', () => ({
@@ -228,6 +228,8 @@ describe('UsersForm', () => {
 			renderWithProviders(<UsersForm session={mockSession} />);
 			expect(screen.getByText('Informations personnelles')).toBeInTheDocument();
 			expect(screen.getByText('Paramètres du compte')).toBeInTheDocument();
+			expect(screen.getByText('Sociétés gérées')).toBeInTheDocument();
+			expect(screen.queryByText('{t.users.companiesSection}')).not.toBeInTheDocument();
 		});
 	});
 
