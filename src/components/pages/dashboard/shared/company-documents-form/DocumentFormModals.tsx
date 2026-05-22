@@ -35,6 +35,7 @@ export interface DocumentFormModalsProps<TDocument extends DocumentListClass = D
 	currentRemiseType: string;
 	currentRemiseValue: number;
 	handleApplyGlobalRemise: (type: 'Pourcentage' | 'Fixe' | '', value: number) => void;
+	disableRemise?: boolean;
 	// Delete Confirm modal
 	showDeleteConfirm: boolean;
 	setShowDeleteConfirm: (v: boolean) => void;
@@ -57,6 +58,7 @@ const DocumentFormModals = <TDocument extends DocumentListClass = DocumentListCl
 	currentRemiseType,
 	currentRemiseValue,
 	handleApplyGlobalRemise,
+	disableRemise = false,
 	showDeleteConfirm,
 	setShowDeleteConfirm,
 	confirmDeleteLine,
@@ -79,11 +81,12 @@ const DocumentFormModals = <TDocument extends DocumentListClass = DocumentListCl
 					existingArticleIds={existingArticleIds}
 					existingArticleLineValues={existingArticleLineValues}
 					documentDevise={documentDevise}
+					disableRemise={disableRemise}
 				/>
 			)}
 
 			{/* Global Remise Modal - only in edit mode */}
-			{isEditMode && (
+			{isEditMode && !disableRemise && (
 				<GlobalRemiseModal
 					open={showGlobalRemiseModal}
 					onClose={() => setShowGlobalRemiseModal(false)}

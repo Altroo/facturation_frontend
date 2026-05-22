@@ -54,6 +54,7 @@ export type CompanyDocumentData = TotalsFields &
 		livre_par_name?: string | null;
 		remarque?: string | null;
 		devise?: string | null;
+		date_echeance?: string | null;
 	};
 
 export type Totals = {
@@ -116,6 +117,7 @@ export interface BaseDocumentData {
 	lignes: Array<DeviLineSchemaType>;
 	statut?: TypeFactureLivraisonDevisStatus;
 	devise?: string;
+	date_echeance?: string | null;
 }
 
 /** Devis-specific document data */
@@ -165,6 +167,7 @@ export interface BaseDocumentFormSchema {
 	remise?: number;
 	lignes: Array<DeviLineSchemaType>;
 	devise?: string;
+	date_echeance?: string | null;
 	globalError?: string;
 }
 

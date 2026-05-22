@@ -44,6 +44,7 @@ import { useAppSelector, useLanguage } from '@/utils/hooks';
 import { getUserCompaniesState } from '@/store/selectors';
 import { useGetArticlesListQuery } from '@/store/services/article';
 import { formatDate, formatNumberWithSpaces } from '@/utils/helpers';
+import { isNectarRaisonSociale } from '@/utils/nectar';
 import { useInitAccessToken } from '@/contexts/InitContext';
 
 import type { ArticleClass } from '@/models/classes';
@@ -268,6 +269,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 	);
 
 	const company = useMemo(() => companies?.find((comp) => comp.id === company_id), [companies, company_id]);
+	const isNectarCompany = isNectarRaisonSociale(company?.raison_sociale);
 
 	const totals = useMemo(() => computeTotals(rawData, articlesData), [rawData, articlesData]);
 
@@ -443,7 +445,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 			},
 			{
 				field: 'prix_vente',
-				headerName: t.documentView.colPrixVente,
+				headerName: isNectarCompany ? t.documentForm.colPrixUnitaire : t.documentView.colPrixVente,
 				flex: 1,
 				minWidth: 110,
 				renderCell: (params: GridRenderCellParams) => {
@@ -482,6 +484,61 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 				},
 			},
 			{
+				field: 'taxes',
+				headerName: t.documentForm.colTaxes,
+				flex: 0.8,
+				minWidth: 90,
+				sortable: false,
+				filterable: false,
+				renderCell: (params: GridRenderCellParams) => {
+					const articleId = toNumber((params.row as { article?: unknown }).article, NaN);
+					const article = Number.isFinite(articleId) ? articlesData?.find((a) => a.id === articleId) : undefined;
+					const tvaRate = toNumber(article?.tva, 0);
+					const value = `${formatNumberWithSpaces(tvaRate, 1)}%`;
+					return (
+						<DarkTooltip title={value}>
+							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+								<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+									{value}
+								</Typography>
+							</Box>
+						</DarkTooltip>
+					);
+				},
+			},
+			{
+				field: 'montant',
+				headerName: t.documentForm.colMontant,
+				flex: 1,
+				minWidth: 120,
+				sortable: false,
+				filterable: false,
+				renderCell: (params: GridRenderCellParams) => {
+					const row = params.row as {
+						prix_vente?: unknown;
+						quantity?: unknown;
+						devise_prix_vente?: unknown;
+					};
+					const prixVente = toNumber(row.prix_vente, 0);
+					const quantity = toNumber(row.quantity, 1);
+					const amount = prixVente * (Number.isFinite(quantity) ? quantity : 1);
+					const devise =
+						row.devise_prix_vente === null || row.devise_prix_vente === undefined
+							? 'MAD'
+							: String(row.devise_prix_vente);
+					const value = `${formatNumberWithSpaces(amount, 2)} ${devise}`;
+					return (
+						<DarkTooltip title={value}>
+							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+								<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+									{value}
+								</Typography>
+							</Box>
+						</DarkTooltip>
+					);
+				},
+			},
+			{
 				field: 'remise_type',
 				headerName: t.documentView.colTypeRemise,
 				flex: 0.8,
@@ -513,8 +570,11 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 					);
 				},
 			},
-		],
-		[articlesData, t],
+		].filter((column) => {
+			if (!isNectarCompany) return !['taxes', 'montant'].includes(column.field);
+			return !['prix_achat', 'remise_type', 'remise'].includes(column.field);
+		}),
+		[articlesData, t, isNectarCompany],
 	);
 
 	const dateLabel = formatDate(getDocumentDateRaw(rawData) ?? null) || '-';
@@ -592,6 +652,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 								}}
 								devise={rawData?.devise ?? undefined}
 								isMobile={isMobile}
+								showDiscountTotal={!isNectarCompany}
 							/>
 
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
@@ -623,6 +684,16 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 											label={documentDateLabel}
 											value={dateLabel.split(',')[0] || '-'}
 										/>
+										{isNectarCompany && (
+											<>
+												<Divider />
+												<InfoRow
+													icon={<CalendarTodayIcon />}
+													label={t.documentForm.fieldDateEcheanceLabel}
+													value={formatDate(rawData?.date_echeance ?? null)?.split(',')[0] || '-'}
+												/>
+											</>
+										)}
 										{extraDocumentRows.map((row, index) => (
 											<React.Fragment key={`${row.label}-${index}`}>
 												<Divider />
@@ -801,7 +872,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 								</Card>
 							)}
 
-							{rawData?.remarque && (
+							{rawData?.remarque && !isNectarCompany && (
 								<Card elevation={2} sx={{ borderRadius: 2 }}>
 									<CardContent sx={{ p: 3 }}>
 										<Stack

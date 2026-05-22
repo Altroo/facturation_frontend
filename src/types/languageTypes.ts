@@ -991,6 +991,9 @@ export type TranslationDictionary = {
 		colCategorie: string;
 		colPrixAchat: string;
 		colPrixVente: string;
+		colPrixUnitaire: string;
+		colTaxes: string;
+		colMontant: string;
 		colQuantite: string;
 		colTypeRemise: string;
 		colRemise: string;
@@ -1000,6 +1003,7 @@ export type TranslationDictionary = {
 		fieldAnneeLabel: string;
 		fieldClientLabel: string;
 		fieldDateLabel: string;
+		fieldDateEcheanceLabel: string;
 		fieldDemandePrixLabel: string;
 		fieldBonCommandeLabel: string;
 		fieldModePaiementLabel: string;

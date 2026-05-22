@@ -27,6 +27,7 @@ export interface UseDocumentLinesColumnsParams {
 	handleLineChangeRef: React.RefObject<(index: number, field: keyof DeviFactureLineFormValues, value: string | number) => void>;
 	handleDeleteLine: (index: number) => void;
 	getArticleById: (articleRef: number | string | Partial<ArticleClass> | undefined) => Partial<ArticleClass> | undefined;
+	isNectarCompany?: boolean;
 }
 
 export const useDocumentLinesColumns = ({
@@ -37,6 +38,7 @@ export const useDocumentLinesColumns = ({
 	handleLineChangeRef,
 	handleDeleteLine,
 	getArticleById,
+	isNectarCompany = false,
 }: UseDocumentLinesColumnsParams): { linesColumns: GridColDef[] } => {
 	const { t } = useLanguage();
 	const getRowIndexFromParams = useCallback(
@@ -342,8 +344,63 @@ export const useDocumentLinesColumns = ({
 					);
 				},
 			},
-			{ field: 'prix_vente', headerName: t.documentForm.colPrixVente, flex: 1.8, minWidth: 170, renderCell: renderPrixVenteCell },
+			{
+				field: 'prix_vente',
+				headerName: isNectarCompany ? t.documentForm.colPrixUnitaire : t.documentForm.colPrixVente,
+				flex: 1.8,
+				minWidth: 170,
+				renderCell: renderPrixVenteCell,
+			},
 			{ field: 'quantity', headerName: t.documentForm.colQuantite, flex: 1.5, minWidth: 160, renderCell: renderQuantityCell },
+			{
+				field: 'taxes',
+				headerName: t.documentForm.colTaxes,
+				flex: 0.8,
+				minWidth: 90,
+				sortable: false,
+				filterable: false,
+				renderCell: (params: GridRenderCellParams) => {
+					const rowIndex = getRowIndexFromParams(params);
+					const ligne = getLines()[rowIndex];
+					const article = getArticleById(ligne?.article);
+					const tvaRate = parseNumber(article?.tva ?? '') ?? 0;
+					const value = `${formatNumberWithSpaces(tvaRate, 1)}%`;
+					return (
+						<DarkTooltip title={value}>
+							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+								<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+									{value}
+								</Typography>
+							</Box>
+						</DarkTooltip>
+					);
+				},
+			},
+			{
+				field: 'montant',
+				headerName: t.documentForm.colMontant,
+				flex: 1,
+				minWidth: 120,
+				sortable: false,
+				filterable: false,
+				renderCell: (params: GridRenderCellParams) => {
+					const rowIndex = getRowIndexFromParams(params);
+					const ligne = getLines()[rowIndex];
+					const prixVente = parseNumber(ligne?.prix_vente ?? '') ?? 0;
+					const quantity = parseNumber(ligne?.quantity ?? '') ?? 1;
+					const amount = prixVente * (Number.isFinite(quantity) ? quantity : 1);
+					const value = `${formatNumberWithSpaces(amount, 2)} ${ligne?.devise_prix_vente || devise}`;
+					return (
+						<DarkTooltip title={value}>
+							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+								<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+									{value}
+								</Typography>
+							</Box>
+						</DarkTooltip>
+					);
+				},
+			},
 			{
 				field: 'remise_type',
 				headerName: t.documentForm.colTypeRemise,
@@ -392,7 +449,10 @@ export const useDocumentLinesColumns = ({
 					);
 				},
 			},
-		],
+		].filter((column) => {
+			if (!isNectarCompany) return !['taxes', 'montant'].includes(column.field);
+			return !['prix_achat', 'remise_type', 'remise'].includes(column.field);
+		}),
 		[
 			renderPrixVenteCell,
 			renderQuantityCell,
@@ -403,6 +463,7 @@ export const useDocumentLinesColumns = ({
 			validationErrors,
 			handleDeleteLine,
 			handleLineChangeRef,
+			isNectarCompany,
 			t,
 		],
 	);

@@ -22,6 +22,7 @@ interface TotalsCardProps {
 	devise?: string;
 	isMobile?: boolean;
 	isLoading?: boolean;
+	showDiscountTotal?: boolean;
 }
 
 const FactureDevisTotalsCard: React.FC<TotalsCardProps> = ({
@@ -29,6 +30,7 @@ const FactureDevisTotalsCard: React.FC<TotalsCardProps> = ({
 	devise = 'MAD',
 	isMobile = false,
 	isLoading = false,
+	showDiscountTotal = true,
 }) => {
 	const { t } = useLanguage();
 	const items = [
@@ -58,7 +60,7 @@ const FactureDevisTotalsCard: React.FC<TotalsCardProps> = ({
 			color: '#5D4037',
 			valueColor: 'primary.main',
 		},
-	];
+	].filter((item) => showDiscountTotal || item.label !== t.totalsCard.totalTTCApresRemise);
 
 	return (
 		<Box

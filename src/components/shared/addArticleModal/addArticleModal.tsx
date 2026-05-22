@@ -52,6 +52,7 @@ interface AddArticleModalProps {
 	existingArticleIds: Set<number>;
 	existingArticleLineValues?: Record<number, ArticlePopupValues>;
 	documentDevise?: string;
+	disableRemise?: boolean;
 }
 
 const AddArticleModal: React.FC<AddArticleModalProps> = ({
@@ -64,6 +65,7 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 	existingArticleIds,
 	existingArticleLineValues = {},
 	documentDevise,
+	disableRemise = false,
 }) => {
 	const { t } = useLanguage();
 	const [articlePopupValues, setArticlePopupValues] = useState<Record<number, ArticlePopupValues>>({});
@@ -299,7 +301,7 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 		},
 		{
 			field: 'prix_vente',
-			headerName: t.addArticleModal.colPrixVente,
+			headerName: disableRemise ? t.documentForm.colPrixUnitaire : t.addArticleModal.colPrixVente,
 			flex: 1,
 			minWidth: 110,
 			renderCell: (params: GridRenderCellParams) => {
@@ -430,7 +432,10 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 				);
 			},
 		},
-	];
+	].filter((column) => {
+		if (!disableRemise) return true;
+		return !['prix_achat', 'remise_type', 'remise'].includes(column.field);
+	});
 
 	// Build the selection object expected by MUI v6: { type: 'include'|'exclude', ids: Set<GridRowId> }
 	const rowSelectionModelLocal: GridRowSelectionModel = {
@@ -530,17 +535,17 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 					{t.addArticleModal.cancelBtn}
 				</Button>
 				<Button
-					variant="contained"
-					onClick={() => {
-						const payload: SelectedArticlePopupValues[] = Array.from(selectedArticles).map((articleId) => {
-							const values = getRowPopupValues(articleId);
-									const articleData = availableArticles.find((article) => article.id === articleId) ?? { id: articleId };
-							return {
-								articleId,
-										articleData,
-								quantity: values.quantity,
-								remise_type: values.remise_type || '',
-								remise: values.remise,
+				variant="contained"
+				onClick={() => {
+					const payload: SelectedArticlePopupValues[] = Array.from(selectedArticles).map((articleId) => {
+						const values = getRowPopupValues(articleId);
+						const articleData = availableArticles.find((article) => article.id === articleId) ?? { id: articleId };
+						return {
+							articleId,
+							articleData,
+							quantity: values.quantity,
+							remise_type: disableRemise ? '' : values.remise_type || '',
+							remise: disableRemise ? 0 : values.remise,
 							};
 						});
 						resetModalState();

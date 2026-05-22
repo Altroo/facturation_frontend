@@ -287,6 +287,7 @@ describe('DeviClass', () => {
 			5,
 			'ClientName',
 			'2023-01-01',
+			'2023-01-15',
 			null,
 			1,
 			'Cash',
@@ -312,6 +313,7 @@ describe('DeviClass', () => {
 		expect(devi.client).toBe(5);
 		expect(devi.client_name).toBe('ClientName');
 		expect(devi.date_devis).toBe('2023-01-01');
+		expect(devi.date_echeance).toBe('2023-01-15');
 		expect(devi.mode_paiement).toBe(1);
 		expect(devi.mode_paiement_name).toBe('Cash');
 		expect(devi.remarque).toBe('Some remark');
@@ -369,6 +371,7 @@ describe('FactureProFormaClass', () => {
 			5,
 			'ClientName',
 			'2023-02-01',
+			'2023-02-15',
 			null,
 			1,
 			'Cash',
@@ -394,6 +397,7 @@ describe('FactureProFormaClass', () => {
 		expect(facture.client).toBe(5);
 		expect(facture.client_name).toBe('ClientName');
 		expect(facture.date_facture).toBe('2023-02-01');
+		expect(facture.date_echeance).toBe('2023-02-15');
 		expect(facture.mode_paiement).toBe(1);
 		expect(facture.mode_paiement_name).toBe('Cash');
 		expect(facture.remarque).toBe('Some remark');
@@ -451,6 +455,7 @@ describe('BonDeLivraisonClass', () => {
 			5,
 			'ClientName',
 			'2023-03-01',
+			'2023-03-15',
 			'BC-123',
 			2,
 			'Driver A',
@@ -478,6 +483,7 @@ describe('BonDeLivraisonClass', () => {
 		expect(bon.client).toBe(5);
 		expect(bon.client_name).toBe('ClientName');
 		expect(bon.date_bon_livraison).toBe('2023-03-01');
+		expect(bon.date_echeance).toBe('2023-03-15');
 		expect(bon.numero_bon_commande_client).toBe('BC-123');
 		expect(bon.livre_par).toBe(2);
 		expect(bon.livre_par_name).toBe('Driver A');

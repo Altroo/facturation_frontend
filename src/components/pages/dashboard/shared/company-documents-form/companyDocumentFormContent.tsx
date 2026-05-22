@@ -100,6 +100,7 @@ import { useDocumentLinesColumns } from './useDocumentLinesColumns';
 import DocumentFormModals from './DocumentFormModals';
 import type { SelectedArticlePopupValues } from '@/components/shared/addArticleModal/addArticleModal';
 import EntityCrudControls from '@/components/shared/entityCrudControls/entityCrudControls';
+import { isNectarRaisonSociale } from '@/utils/nectar';
 
 const inputFieldTheme = textInputTheme();
 
@@ -214,8 +215,9 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	const { data: rawClientsData } = useGetClientsListQuery({ company_id, with_pagination: false }, { skip: !token });
 
 	// Company query for uses_foreign_currency flag
-	const { data: companyData } = useGetCompanyQuery({ id: company_id }, { skip: !token });
+	const { data: companyData, isLoading: isCompanyLoading } = useGetCompanyQuery({ id: company_id }, { skip: !token });
 	const usesForeignCurrency = companyData?.uses_foreign_currency === true;
+	const isNectarCompany = isNectarRaisonSociale(companyData?.raison_sociale);
 	const clientsData = rawClientsData as Array<Partial<ClientClass>> | undefined;
 
 	// Mode paiement
@@ -265,6 +267,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				year_part: numYearPart,
 				client: isEditMode ? (rawData?.client ?? null) : null,
 				date_devis: isEditMode ? (devisData?.date_devis ?? today) : today,
+				date_echeance: isEditMode ? (rawData?.date_echeance ?? null) : null,
 				numero_demande_prix_client: isEditMode ? (devisData?.numero_demande_prix_client ?? null) : null,
 				mode_paiement: isEditMode ? (rawData?.mode_paiement ?? null) : null,
 				remarque: isEditMode ? (rawData?.remarque ?? null) : null,
@@ -280,6 +283,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				year_part: numYearPart,
 				client: isEditMode ? (rawData?.client ?? null) : null,
 				date_facture: isEditMode ? (factureData?.date_facture ?? today) : today,
+				date_echeance: isEditMode ? (rawData?.date_echeance ?? null) : null,
 				numero_bon_commande_client: isEditMode ? (factureData?.numero_bon_commande_client ?? null) : null,
 				mode_paiement: isEditMode ? (rawData?.mode_paiement ?? null) : null,
 				remarque: isEditMode ? (rawData?.remarque ?? null) : null,
@@ -295,6 +299,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				year_part: numYearPart,
 				client: isEditMode ? (rawData?.client ?? null) : null,
 				date_bon_livraison: isEditMode ? (bonDeLivraisonData?.date_bon_livraison ?? today) : today,
+				date_echeance: isEditMode ? (rawData?.date_echeance ?? null) : null,
 				numero_bon_commande_client: isEditMode ? (factureData?.numero_bon_commande_client ?? null) : null,
 				mode_paiement: isEditMode ? (rawData?.mode_paiement ?? null) : null,
 				livre_par: isEditMode ? (bonDeLivraisonData?.livre_par ?? null) : null,
@@ -344,7 +349,8 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 						prix_achat: parseNumber(ligne.prix_achat ?? ''),
 						prix_vente: parseNumber(ligne.prix_vente ?? ''),
 						quantity: parseNumber(ligne.quantity ?? '') ?? 1,
-						remise: parseNumber(ligne.remise ?? '') ?? 0,
+						remise_type: isNectarCompany ? '' : ligne.remise_type,
+						remise: isNectarCompany ? 0 : (parseNumber(ligne.remise ?? '') ?? 0),
 					}));
 
 					// Normalize global remise
@@ -353,7 +359,9 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 					const submissionData = {
 						...payload,
 						lignes: normalizedLignes,
-						remise: normalizedRemise,
+						remarque: isNectarCompany ? null : payload.remarque,
+						remise_type: isNectarCompany ? '' : payload.remise_type,
+						remise: isNectarCompany ? 0 : normalizedRemise,
 						...(config.documentType === 'devis'
 							? { numero_devis: `${data.numero_part}/${data.year_part}` }
 							: config.documentType === 'facture-client' || config.documentType === 'facture-pro-forma'
@@ -368,6 +376,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 					const { lignes, remise, remise_type, ...payloadWithoutLines } = payload;
 					const submissionData = {
 						...payloadWithoutLines,
+						remarque: isNectarCompany ? null : payloadWithoutLines.remarque,
 						...(config.documentType === 'devis'
 							? { numero_devis: `${data.numero_part}/${data.year_part}` }
 							: config.documentType === 'facture-client' || config.documentType === 'facture-pro-forma'
@@ -670,14 +679,16 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				const normalizedRemiseType = (selection.remise_type || '') as '' | 'Pourcentage' | 'Fixe';
 				const parsedRemise = parseNumber(selection.remise) ?? 0;
 				const normalizedRemise = parsedRemise < 0 ? 0 : parsedRemise;
+				const lineRemiseType = isNectarCompany ? '' : normalizedRemiseType;
+				const lineRemise = isNectarCompany ? 0 : normalizedRemise;
 
 				const existingIndex = lineIndexByArticleId.get(selection.articleId);
 				if (existingIndex !== undefined) {
 					updatedLines[existingIndex] = {
 						...updatedLines[existingIndex],
 						quantity: normalizedQuantity,
-						remise_type: normalizedRemiseType,
-						remise: normalizedRemiseType ? normalizedRemise : 0,
+						remise_type: lineRemiseType,
+						remise: lineRemiseType ? lineRemise : 0,
 					};
 					return;
 				}
@@ -691,8 +702,8 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 					prix_vente: article.prix_vente || 0,
 					devise_prix_vente: article.devise_prix_vente || article.devise_prix_achat || 'MAD',
 					quantity: normalizedQuantity,
-					remise_type: normalizedRemiseType,
-					remise: normalizedRemiseType ? normalizedRemise : 0,
+					remise_type: lineRemiseType,
+					remise: lineRemiseType ? lineRemise : 0,
 				} as DeviFactureLineFormValues);
 			});
 
@@ -708,7 +719,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			setShowAddArticleModal(false);
 			setSelectedArticles(new Set());
 		},
-		[getArticleById, getLines, formik],
+		[getArticleById, getLines, formik, isNectarCompany],
 	);
 
 	// Handle delete line
@@ -776,6 +787,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		handleLineChangeRef,
 		handleDeleteLine,
 		getArticleById,
+		isNectarCompany,
 	});
 
 	const existingArticleIds = useMemo(() => new Set(getLines().map((l) => l.article)), [getLines]);
@@ -866,6 +878,10 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		return (formik.values as BonDeLivraisonFormSchema).date_bon_livraison;
 	};
 
+	const getDueDateValue = (): string | null => {
+		return formik.values.date_echeance ?? null;
+	};
+
 	// Get extra field value based on document type
 	const getExtraFieldValue = (): string => {
 		if (config.fields.extraField === 'numero_demande_prix_client') {
@@ -882,6 +898,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			date_devis: t.documentForm.fieldDateLabel,
 			date_facture: t.documentForm.fieldDateLabel,
 			date_bon_livraison: t.documentForm.fieldDateLabel,
+			date_echeance: t.documentForm.fieldDateEcheanceLabel,
 			numero_demande_prix_client: t.documentForm.fieldDemandePrixLabel,
 			numero_bon_commande_client: t.documentForm.fieldBonCommandeLabel,
 			mode_paiement: t.documentForm.fieldModePaiementLabel,
@@ -894,7 +911,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			lignes: t.documentForm.fieldLignesLabel,
 			lignes_empty: t.documentForm.fieldArticlesLabel,
 			// line fields
-			prix_vente: t.documentForm.fieldPrixVenteLabel,
+			prix_vente: isNectarCompany ? t.documentForm.colPrixUnitaire : t.documentForm.fieldPrixVenteLabel,
 			prix_achat: t.documentForm.fieldPrixAchatLabel,
 			quantity: t.documentForm.fieldQuantiteLabel,
 			designation: t.documentForm.fieldDesignationLabel,
@@ -903,7 +920,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			categorie: t.documentForm.fieldCategorieLabel,
 			remise_field: t.documentForm.fieldRemiseLabel, // generic fallback for remise field naming
 		}),
-		[t],
+		[t, isNectarCompany],
 	);
 
 	const combinedValidationEntries = useMemo(() => {
@@ -954,7 +971,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	// detail (edit) or numero generation (add) plus active mutations.
 	// Articles & clients load in the background – their dropdowns show
 	// individual loading states, but the form skeleton renders immediately.
-	const isLoading = isPatchLoading || isUpdateLoading || isAddLoading || isPending || isDataLoading || isNumLoading;
+	const isLoading = isPatchLoading || isUpdateLoading || isAddLoading || isPending || isDataLoading || isNumLoading || isCompanyLoading;
 	const shouldShowError = (axiosError?.status ?? 0) > 400 && !isLoading;
 
 	// After creation, scroll to the "Lignes" section once data is ready
@@ -1028,6 +1045,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 						devise={formik.values.devise}
 						isMobile={isMobile}
 						isLoading={isAllArticlesLoading}
+						showDiscountTotal={!isNectarCompany}
 					/>
 				)}
 
@@ -1165,6 +1183,29 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 												},
 											}}
 										/>
+										{isNectarCompany && (
+											<DatePicker
+												label={t.documentForm.fieldDateEcheanceLabel}
+												value={getDueDateValue() ? new Date(getDueDateValue() as string) : null}
+												onChange={(date) => formik.setFieldValue('date_echeance', date ? formatLocalDate(date) : null)}
+												format="dd/MM/yyyy"
+												slotProps={{
+													textField: {
+														size: 'small',
+														fullWidth: true,
+														slotProps: {
+															input: {
+																startAdornment: (
+																	<InputAdornment position="start">
+																		<CalendarTodayIcon fontSize="small" color="action" />
+																	</InputAdornment>
+																),
+															},
+														},
+													},
+												}}
+											/>
+										)}
 									</Stack>
 								</CardContent>
 							</Card>
@@ -1431,7 +1472,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 							)}
 
 							{/* Global Remise - only in edit mode */}
-							{isEditMode && (
+							{isEditMode && !isNectarCompany && (
 								<Card elevation={2} sx={{ borderRadius: 2 }}>
 									<CardContent sx={{ p: 3 }}>
 										<Stack
@@ -1496,45 +1537,47 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 							)}
 
 							{/* Remark */}
-							<Card elevation={2} sx={{ borderRadius: 2 }}>
-								<CardContent sx={{ p: 3 }}>
-									<Stack
-										direction="row"
-										spacing={2}
-										sx={{
-											alignItems: 'center',
-											mb: 2,
-										}}
-									>
-										<NotesIcon color="primary" />
-										<Typography
-											variant="h6"
+							{!isNectarCompany && (
+								<Card elevation={2} sx={{ borderRadius: 2 }}>
+									<CardContent sx={{ p: 3 }}>
+										<Stack
+											direction="row"
+											spacing={2}
 											sx={{
-												fontWeight: 700,
+												alignItems: 'center',
+												mb: 2,
 											}}
 										>
-											Remarque
-										</Typography>
-									</Stack>
-									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
-									<Stack spacing={2.5}>
-										<CustomTextInput
-											id="remarque"
-											type="text"
-											label={t.documentForm.remarqueLabel}
-											value={formik.values.remarque || ''}
-											onChange={formik.handleChange('remarque')}
-											onBlur={formik.handleBlur('remarque')}
-											error={formik.touched.remarque && Boolean(formik.errors.remarque)}
-											helperText={formik.touched.remarque ? formik.errors.remarque : ''}
-											fullWidth
-											size="small"
-											theme={inputFieldTheme}
-											startIcon={<NotesIcon fontSize="small" color="action" />}
-										/>
-									</Stack>
-								</CardContent>
-							</Card>
+											<NotesIcon color="primary" />
+											<Typography
+												variant="h6"
+												sx={{
+													fontWeight: 700,
+												}}
+											>
+												Remarque
+											</Typography>
+										</Stack>
+										<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
+										<Stack spacing={2.5}>
+											<CustomTextInput
+												id="remarque"
+												type="text"
+												label={t.documentForm.remarqueLabel}
+												value={formik.values.remarque || ''}
+												onChange={formik.handleChange('remarque')}
+												onBlur={formik.handleBlur('remarque')}
+												error={formik.touched.remarque && Boolean(formik.errors.remarque)}
+												helperText={formik.touched.remarque ? formik.errors.remarque : ''}
+												fullWidth
+												size="small"
+												theme={inputFieldTheme}
+												startIcon={<NotesIcon fontSize="small" color="action" />}
+											/>
+										</Stack>
+									</CardContent>
+								</Card>
+							)}
 
 							{/* Submit Button */}
 							<Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 2 }}>
@@ -1575,6 +1618,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				currentRemiseType={formik.values.remise_type || ''}
 				currentRemiseValue={formik.values.remise || 0}
 				handleApplyGlobalRemise={handleApplyGlobalRemise}
+				disableRemise={isNectarCompany}
 				showDeleteConfirm={showDeleteConfirm}
 				setShowDeleteConfirm={setShowDeleteConfirm}
 				confirmDeleteLine={confirmDeleteLine}
