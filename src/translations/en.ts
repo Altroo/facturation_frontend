@@ -235,6 +235,8 @@ export const en: TranslationDictionary = {
 		colDesignation: 'Designation',
 		colPrixAchat: 'Purchase price',
 		colPrixVente: 'Selling price',
+		colPrixHT: 'Price excl. tax',
+		colPrixTTC: 'Price incl. tax',
 		colDateCreation: 'Creation date',
 		filterCategorie: 'Category',
 		filterEmplacement: 'Location',

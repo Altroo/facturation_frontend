@@ -239,6 +239,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		[error],
 	);
 	const [isPending, setIsPending] = useState(false);
+	const hideYearPart = !isEditMode && isNectarCompany;
 
 	// Modal states
 	const [showAddArticleModal, setShowAddArticleModal] = useState(false);
@@ -1088,7 +1089,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 												alignItems: 'flex-start',
 											}}
 										>
-											<Box sx={{ flex: 2 }}>
+											<Box sx={{ flex: hideYearPart ? 1 : 2 }}>
 												<CustomTextInput
 													id="numero_part"
 													type="text"
@@ -1109,32 +1110,36 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 													slotProps={{ input: { inputProps: { inputMode: 'numeric', pattern: '[0-9]*' } } }}
 												/>
 											</Box>
-											<Typography variant="h6" sx={{ px: 0.5, mt: 1 }}>
-												/
-											</Typography>
-											<Box sx={{ flex: 1 }}>
-												<CustomTextInput
-													id="year_part"
-													type="text"
-													label={t.documentForm.fieldAnnee}
-													value={formik.values.year_part}
-													onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-														if (/^\d{0,2}$/.test(e.target.value)) formik.setFieldValue('year_part', e.target.value);
-													}}
-													onBlur={formik.handleBlur('year_part')}
-													error={formik.touched.year_part && Boolean(formik.errors.year_part)}
-													helperText={
-														formik.touched.year_part && formik.errors.year_part ? formik.errors.year_part : ''
-													}
-													fullWidth
-													size="small"
-													theme={inputFieldTheme}
-													startIcon={<CalendarTodayIcon fontSize="small" color="action" />}
-													slotProps={{
-														input: { inputProps: { inputMode: 'numeric', pattern: '[0-9]{2}', maxLength: 2 } },
-													}}
-												/>
-											</Box>
+											{!hideYearPart && (
+												<>
+													<Typography variant="h6" sx={{ px: 0.5, mt: 1 }}>
+														/
+													</Typography>
+													<Box sx={{ flex: 1 }}>
+														<CustomTextInput
+															id="year_part"
+															type="text"
+															label={t.documentForm.fieldAnnee}
+															value={formik.values.year_part}
+															onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+																if (/^\d{0,2}$/.test(e.target.value)) formik.setFieldValue('year_part', e.target.value);
+															}}
+															onBlur={formik.handleBlur('year_part')}
+															error={formik.touched.year_part && Boolean(formik.errors.year_part)}
+															helperText={
+																formik.touched.year_part && formik.errors.year_part ? formik.errors.year_part : ''
+															}
+															fullWidth
+															size="small"
+															theme={inputFieldTheme}
+															startIcon={<CalendarTodayIcon fontSize="small" color="action" />}
+															slotProps={{
+																input: { inputProps: { inputMode: 'numeric', pattern: '[0-9]{2}', maxLength: 2 } },
+															}}
+														/>
+													</Box>
+												</>
+											)}
 											{!isEditMode && refetchNum && (
 												<Tooltip title={t.documentForm.resetNumero}>
 													<IconButton

@@ -56,7 +56,7 @@ import {
 	useGetCodeReferenceQuery,
 } from '@/store/services/article';
 
-import { getLabelForKey, parseNumber, setFormikAutoErrors } from '@/utils/helpers';
+import { formatNumberWithSpaces, getLabelForKey, parseNumber, setFormikAutoErrors } from '@/utils/helpers';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import type { ArticleSchemaType, TypeArticleType } from '@/types/articleTypes';
@@ -84,6 +84,7 @@ import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import ClientArticleWrapperForm from '@/components/pages/dashboard/shared/client-article-form/clientArticleWrapperForm';
 import { useGetCompanyQuery } from '@/store/services/company';
 import EntityCrudControls from '@/components/shared/entityCrudControls/entityCrudControls';
+import { calculateNectarPrixTTC, isNectarRaisonSociale } from '@/utils/nectar';
 
 const inputTheme = textInputTheme();
 
@@ -118,6 +119,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	);
 	const { data: companyData, isFetching: isCompanyFetching } = useGetCompanyQuery({ id: company_id }, { skip: !token });
 	const usesForeignCurrency = !isCompanyFetching && companyData?.uses_foreign_currency === true;
+	const isNectarCompany = isNectarRaisonSociale(companyData?.raison_sociale);
 	// Mutations
 	const [addArticle, { isLoading: isAddLoading, error: addError }] = useAddArticleMutation();
 	const [updateArticle, { isLoading: isUpdateLoading, error: updateError }] = useEditArticleMutation();
@@ -158,8 +160,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			categorie: rawData?.categorie ?? null,
 			unite: rawData?.unite ?? null,
 			designation: rawData?.designation ?? '',
-			prix_achat: rawData?.prix_achat ?? 0,
-			devise_prix_achat: rawData?.devise_prix_achat ?? 'MAD',
+			prix_achat: isNectarCompany ? 0 : (rawData?.prix_achat ?? 0),
+			devise_prix_achat: isNectarCompany
+				? (rawData?.devise_prix_vente ?? 'MAD')
+				: (rawData?.devise_prix_achat ?? 'MAD'),
 			prix_vente: rawData?.prix_vente ?? 0,
 			devise_prix_vente: rawData?.devise_prix_vente ?? 'MAD',
 			photo: rawData?.photo ?? '',
@@ -177,12 +181,19 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			setIsPending(true);
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const { globalError, ...payload } = data;
+			const submissionPayload = isNectarCompany
+				? {
+						...payload,
+						prix_achat: 0,
+						devise_prix_achat: payload.devise_prix_vente ?? 'MAD',
+					}
+				: payload;
 			try {
 				if (isEditMode) {
-					await updateArticle({ data: payload, id: id! }).unwrap();
+					await updateArticle({ data: submissionPayload, id: id! }).unwrap();
 					onSuccess(t.articles.updateSuccess);
 				} else {
-					await addArticle({ data: payload }).unwrap();
+					await addArticle({ data: submissionPayload }).unwrap();
 					onSuccess(t.articles.addSuccess);
 				}
 				if (!isEditMode) {
@@ -204,6 +215,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	// Error handling
 	const error = isEditMode ? dataError || updateError : addError;
 	const axiosError = error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined;
+	const prixHTLabel = isNectarCompany ? t.articles.colPrixHT : t.articles.colPrixVente;
+	const prixTTC = calculateNectarPrixTTC(formik.values.prix_vente, formik.values.tva);
+	const prixTTCDevise = formik.values.devise_prix_vente ?? 'MAD';
 
 	// Stable categoryItems
 	const categorieItems: DropDownType[] = useMemo(
@@ -275,8 +289,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		() => ({
 			reference: t.articles.colReference,
 			designation: t.articles.colDesignation,
-			prix_achat: t.articles.colPrixAchat,
-			prix_vente: t.articles.colPrixVente,
+			prix_achat: isNectarCompany ? t.articles.colPrixTTC : t.articles.colPrixAchat,
+			prix_vente: prixHTLabel,
 			tva: t.articles.fieldTva,
 			categorie: t.articles.filterCategorie,
 			emplacement: t.articles.filterEmplacement,
@@ -287,7 +301,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			photo_cropped: t.articles.fieldPhotoCropped,
 			globalError: t.articles.fieldPhotoCropped,
 		}),
-		[t],
+		[t, isNectarCompany, prixHTLabel],
 	);
 
 	const validationErrors = useMemo(() => {
@@ -509,43 +523,45 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								</Stack>
 								<Divider sx={{ mb: 3 }} />
 								<Stack spacing={2.5}>
-									<Stack
-										direction="row"
-										spacing={1}
-										sx={{
-											alignItems: 'flex-start',
-										}}
-									>
-										<FormattedNumberInput
-											id="prix_achat"
-											type="text"
-											label={t.articles.colPrixAchat}
-											value={formik.values.prix_achat ?? ''}
-											onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-												const raw = (e.target as HTMLInputElement).value;
-												const parsed = parseNumber(raw);
-												if (parsed !== null && parsed < 0) return;
-												formik.setFieldValue('prix_achat', parsed === null ? raw : parsed);
+									{!isNectarCompany && (
+										<Stack
+											direction="row"
+											spacing={1}
+											sx={{
+												alignItems: 'flex-start',
 											}}
-											onBlur={formik.handleBlur('prix_achat')}
-											error={formik.touched.prix_achat && Boolean(formik.errors.prix_achat)}
-											helperText={formik.touched.prix_achat ? formik.errors.prix_achat : ''}
-											fullWidth={true}
-											size="small"
-											theme={inputTheme}
-											startIcon={<ShoppingCartIcon fontSize="small" />}
-											decimals={2}
-										/>
-										<CustomDropDownSelect
-											id="devise_prix_achat"
-											size="small"
-											label={t.common.devise}
-											items={['MAD', 'EUR', 'USD']}
-											value={formik.values.devise_prix_achat ?? 'MAD'}
-											onChange={(e) => formik.setFieldValue('devise_prix_achat', e.target.value)}
-											theme={customDropdownTheme()}
-										/>
-									</Stack>
+										>
+											<FormattedNumberInput
+												id="prix_achat"
+												type="text"
+												label={t.articles.colPrixAchat}
+												value={formik.values.prix_achat ?? ''}
+												onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+													const raw = (e.target as HTMLInputElement).value;
+													const parsed = parseNumber(raw);
+													if (parsed !== null && parsed < 0) return;
+													formik.setFieldValue('prix_achat', parsed === null ? raw : parsed);
+												}}
+												onBlur={formik.handleBlur('prix_achat')}
+												error={formik.touched.prix_achat && Boolean(formik.errors.prix_achat)}
+												helperText={formik.touched.prix_achat ? formik.errors.prix_achat : ''}
+												fullWidth={true}
+												size="small"
+												theme={inputTheme}
+												startIcon={<ShoppingCartIcon fontSize="small" />}
+												decimals={2}
+											/>
+											<CustomDropDownSelect
+												id="devise_prix_achat"
+												size="small"
+												label={t.common.devise}
+												items={['MAD', 'EUR', 'USD']}
+												value={formik.values.devise_prix_achat ?? 'MAD'}
+												onChange={(e) => formik.setFieldValue('devise_prix_achat', e.target.value)}
+												theme={customDropdownTheme()}
+											/>
+										</Stack>
+									)}
 									<Stack
 										direction="row"
 										spacing={1}
@@ -556,7 +572,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										<FormattedNumberInput
 											id="prix_vente"
 											type="text"
-											label={`${t.articles.colPrixVente} *`}
+											label={`${prixHTLabel} *`}
 											value={formik.values.prix_vente ?? ''}
 											onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 												const raw = (e.target as HTMLInputElement).value;
@@ -585,6 +601,20 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											/>
 										)}
 									</Stack>
+									{isNectarCompany && (
+										<CustomTextInput
+											id="prix_ttc"
+											type="text"
+											label={t.articles.colPrixTTC}
+											value={`${formatNumberWithSpaces(prixTTC, 2)} ${prixTTCDevise}`}
+											onChange={() => undefined}
+											fullWidth={true}
+											size="small"
+											theme={inputTheme}
+											startIcon={<ShoppingCartIcon fontSize="small" />}
+											disabled
+										/>
+									)}
 									<CustomTextInput
 										id="tva"
 										type="text"

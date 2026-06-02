@@ -33,7 +33,8 @@ import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import { getUserCompaniesState } from '@/store/selectors';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
-import { extractApiErrorMessage, formatDate } from '@/utils/helpers';
+import { extractApiErrorMessage, formatDate, formatNumberWithSpaces } from '@/utils/helpers';
+import { calculateNectarPrixTTC, isNectarRaisonSociale } from '@/utils/nectar';
 
 interface InfoRowProps {
 	icon: React.ReactNode;
@@ -119,11 +120,22 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const company = useMemo(() => {
 		return companies?.find((comp) => comp.id === company_id);
 	}, [companies, company_id]);
+	const isNectarCompany = isNectarRaisonSociale(company?.raison_sociale);
 
 	const [deleteRecord] = useDeleteArticleMutation();
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
+	const prixHT = client?.prix_vente;
+	const prixTTC = calculateNectarPrixTTC(client?.prix_vente, client?.tva);
+	const prixDevise = client?.devise_prix_vente || 'MAD';
+	const prixVenteDisplay = isNectarCompany
+		? prixHT != null
+			? `${formatNumberWithSpaces(prixHT, 2)} ${prixDevise}`
+			: null
+		: client?.prix_vente != null
+			? `${client.prix_vente} ${client.devise_prix_vente}`
+			: null;
 
 	const handleDelete = async () => {
 		try {
@@ -341,18 +353,32 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 									<Stack spacing={0}>
-										<InfoRow
-											icon={<ShoppingCartIcon />}
-											label={t.articles.colPrixAchat}
-											value={client?.prix_achat != null ? `${client.prix_achat} ${client.devise_prix_achat}` : null}
-										/>
-										<Divider />
+										{!isNectarCompany && (
+											<>
+												<InfoRow
+													icon={<ShoppingCartIcon />}
+													label={t.articles.colPrixAchat}
+													value={client?.prix_achat != null ? `${client.prix_achat} ${client.devise_prix_achat}` : null}
+												/>
+												<Divider />
+											</>
+										)}
 										<InfoRow
 											icon={<SellIcon />}
-											label={t.articles.colPrixVente}
-											value={client?.prix_vente != null ? `${client.prix_vente} ${client.devise_prix_vente}` : null}
+											label={isNectarCompany ? t.articles.colPrixHT : t.articles.colPrixVente}
+											value={prixVenteDisplay}
 										/>
 										<Divider />
+										{isNectarCompany && (
+											<>
+												<InfoRow
+													icon={<ShoppingCartIcon />}
+													label={t.articles.colPrixTTC}
+													value={`${formatNumberWithSpaces(prixTTC, 2)} ${prixDevise}`}
+												/>
+												<Divider />
+											</>
+										)}
 										<InfoRow icon={<ReceiptIcon />} label={t.articles.fieldTva} value={client?.tva} />
 									</Stack>
 								</CardContent>

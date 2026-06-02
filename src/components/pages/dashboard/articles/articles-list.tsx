@@ -51,6 +51,7 @@ import {
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
 import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
+import { calculateNectarPrixTTC, isNectarRaisonSociale } from '@/utils/nectar';
 
 interface FormikContentProps extends SessionProps {
 	company_id: number;
@@ -71,6 +72,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const token = useInitAccessToken(session);
 	const { data: companyData } = useGetCompanyQuery({ id: company_id }, { skip: !token });
 	const usesForeignCurrency = companyData?.uses_foreign_currency === true;
+	const isNectarCompany = isNectarRaisonSociale(companyData?.raison_sociale);
 
 	const [paginationModel, setPaginationModel] = useState<{ page: number; pageSize: number }>({
 		page: 0,
@@ -494,12 +496,39 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		},
 		{
 			field: 'prix_vente',
-			headerName: t.articles.colPrixVente,
+			headerName: isNectarCompany ? t.articles.colPrixHT : t.articles.colPrixVente,
 			flex: 1,
 			minWidth: 100,
 			filterOperators: createNumericFilterOperators(),
 			renderCell: (params: GridRenderCellParams<ArticleClass>) => {
 				const formattedValue = formatNumberWithSpaces(params.value, 2);
+				const devise = usesForeignCurrency ? params.row.devise_prix_vente : 'MAD';
+				return (
+					<DarkTooltip title={`${formattedValue} ${devise}`}>
+						<Typography
+							variant="body2"
+							noWrap
+							color="primary"
+							sx={{
+								fontWeight: 600,
+							}}
+						>
+							{formattedValue} {devise}
+						</Typography>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'prix_ttc',
+			headerName: t.articles.colPrixTTC,
+			flex: 1,
+			minWidth: 110,
+			sortable: false,
+			filterable: false,
+			renderCell: (params: GridRenderCellParams<ArticleClass>) => {
+				const value = calculateNectarPrixTTC(params.row.prix_vente, params.row.tva);
+				const formattedValue = formatNumberWithSpaces(value, 2);
 				const devise = usesForeignCurrency ? params.row.devise_prix_vente : 'MAD';
 				return (
 					<DarkTooltip title={`${formattedValue} ${devise}`}>
@@ -581,7 +610,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				return <MobileActionsMenu actions={actions} />;
 			},
 		},
-	];
+	].filter((column) => {
+		if (!isNectarCompany) return column.field !== 'prix_ttc';
+		return column.field !== 'prix_achat';
+	});
 
 	return (
 		<>

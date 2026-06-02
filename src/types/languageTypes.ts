@@ -234,6 +234,8 @@ export type TranslationDictionary = {
 		colDesignation: string;
 		colPrixAchat: string;
 		colPrixVente: string;
+		colPrixHT: string;
+		colPrixTTC: string;
 		colDateCreation: string;
 		filterCategorie: string;
 		filterEmplacement: string;
