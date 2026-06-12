@@ -77,10 +77,7 @@ jest.mock('@/store/services/bonDeLivraison', () => ({
 jest.mock('@/store/sagas', () => ({
 	__esModule: true,
 	rootSaga: function* rootSaga() {
-		// Infinite loop to keep the task running
-		while (true) {
-			yield 'MOCK_ROOT_TICK';
-		}
+		// no-op for store wiring tests
 	},
 }));
 
