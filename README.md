@@ -1,40 +1,58 @@
 # Facturation Frontend
 
-## Purpose
+Next.js interface for a billing operations platform for quotes, pro-forma invoices, customer invoices, credit notes, delivery notes, payments, clients, articles, company settings, dashboards, notifications, and printable business documents.
 
-Facturation Frontend is the Next.js dashboard used to operate the billing system. It provides authenticated screens for companies, clients, articles, documents, payments, notifications, and reporting.
+This frontend is built around real staff workflows: authenticated navigation, dense dashboards, tables, filters, create/edit/detail pages, forms, actions, settings, notifications, and production data constraints.
+
+## What It Shows
+
+- Product UI work for an internal business system.
+- Data-heavy React/Next.js screens with real workflow depth.
+- State management with Redux Toolkit and redux-saga.
+- Authenticated app structure with NextAuth and API-backed routes.
+- Form, table, dashboard, notification, and settings flows built for daily operations.
+
+## Key Capabilities
+
+- Authenticated Next.js dashboard for clients, companies, articles, quotes, pro-forma invoices, customer invoices, credit notes, delivery notes, payments, users, objectives, and profile settings.
+- MUI data-heavy screens with filters, tables, create/edit/detail flows, action buttons, document printing, and localized French/English UI.
+- Redux Toolkit services and redux-saga flows for API calls, auth/session state, notifications, and document workflows.
+- Formik/Zod forms for billing records, line items, payments, profile settings, and user management.
+- Jest and Testing Library coverage for routes, helpers, auth, store, API services, and dashboard forms.
 
 ## Stack
 
-- Next.js and React
-- TypeScript
-- NextAuth
-- Redux Toolkit and redux-saga
-- MUI, Sass, and chart components
-- Formik and Zod
-- Jest and Testing Library
+- Next.js 16, React 19, TypeScript
+- NextAuth, Axios, React Redux
+- Redux Toolkit, redux-saga
+- MUI, MUI X Data Grid, Sass, chart components
+- Formik, Zod, date-fns
+- Jest, Testing Library, ts-jest, Bun
 
-## Features
+## Related Repository
 
-- Authenticated dashboard navigation
-- Client, company, and article management
-- Quote, invoice, credit note, and delivery note screens
-- Payment and objective tracking
-- Notifications and profile settings
-- Print-ready document workflows
+- Backend API: [Altroo/facturation_backend](https://github.com/Altroo/facturation_backend)
 
-## Setup
+## Screenshots
 
-Provide local-only variables for the API, auth, and websocket endpoints. Use localhost values for local development and do not commit local configuration files.
+Redacted production screenshots. Sensitive names, amounts, dates, and records are blurred.
+
+![Dashboard overview](docs/screenshots/facturation-dashboard.png)
+
+![Customer invoice list](docs/screenshots/facturation-invoices.png)
+
+## Local Setup
+
+Create local-only environment variables for the API base URL, auth settings, websocket endpoints, and public runtime config. Do not commit `.env` files or production credentials.
 
 ```bash
 bun install
 bun run dev
 ```
 
-The default frontend port is `localhost:3000`.
+Default local port: `3000`.
 
-## Tests
+## Quality Checks
 
 ```bash
 bun x jest --runInBand --coverage=false
@@ -42,12 +60,6 @@ bun run lint
 bun run build
 ```
 
-## Screenshots
+## Portfolio Note
 
-Sanitized product workspace:
-
-![Facturation product workspace](docs/screenshots/facturation-showcase.png)
-
-Authentication screen:
-
-![Facturation login](docs/screenshots/facturation-login.png)
+The repository is public for portfolio review. Screenshots are redacted, and sensitive production values are intentionally hidden.
