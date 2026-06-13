@@ -42,6 +42,12 @@ bun run lint
 bun run build
 ```
 
-## Screenshot
+## Screenshots
+
+Sanitized product workspace:
+
+![Facturation product workspace](docs/screenshots/facturation-showcase.png)
+
+Authentication screen:
 
 ![Facturation login](docs/screenshots/facturation-login.png)
