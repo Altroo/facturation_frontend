@@ -37,6 +37,7 @@ const CustomTextInput = forwardRef<HTMLInputElement, Props>((props: Props, ref: 
 			<TextField
 				{...restOfProps}
 				ref={ref}
+				multiline={props.type === 'textarea'}
 				variant={props.variant}
 				type={props.type}
 				id={props.id}

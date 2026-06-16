@@ -1567,7 +1567,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 										<Stack spacing={2.5}>
 											<CustomTextInput
 												id="remarque"
-												type="text"
+												type="textarea"
 												label={t.documentForm.remarqueLabel}
 												value={formik.values.remarque || ''}
 												onChange={formik.handleChange('remarque')}

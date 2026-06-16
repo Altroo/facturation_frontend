@@ -722,7 +722,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												inputTheme={inputTheme}
 												selectedItem={selectedCity}
 												addEntity={(args) => addCity({ data: { ...args.data, company: company_id } })}
-												editEntity={({ id: entityId, data }) => editCity({ id: entityId, data: { ...data, company: company_id } })}
+												editEntity={({ id: entityId, data }) =>
+													editCity({ id: entityId, data: { ...data, company: company_id } })
+												}
 												deleteEntity={({ id: entityId }) => deleteCity({ id: entityId })}
 												onAddSuccess={(newId) => {
 													formik.setFieldValue('ville', newId);
@@ -794,7 +796,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								<Stack spacing={2.5}>
 									<CustomTextInput
 										id="remarque"
-										type="text"
+										type="textarea"
 										label={t.clients.fieldRemarque}
 										value={formik.values.remarque ?? ''}
 										onChange={formik.handleChange('remarque')}

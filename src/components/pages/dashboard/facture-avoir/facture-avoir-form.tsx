@@ -834,7 +834,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 								<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 								<CustomTextInput
 									id="remarque"
-									type="text"
+									type="textarea"
 									label={t.documentForm.remarqueLabel}
 									value={formik.values.remarque || ''}
 									onChange={formik.handleChange('remarque')}

@@ -1166,7 +1166,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<Stack spacing={2.5}>
 										<CustomTextInput
 											id="remarque"
-											type="text"
+											type="textarea"
 											label="Remarque"
 											value={formik.values.remarque || ''}
 											onChange={formik.handleChange('remarque')}

@@ -688,7 +688,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												inputTheme={inputTheme}
 												selectedItem={selectedCategorie}
 												addEntity={(args) => addCategory({ data: { ...args.data, company: company_id } })}
-												editEntity={({ id: entityId, data }) => editCategory({ id: entityId, data: { ...data, company: company_id } })}
+												editEntity={({ id: entityId, data }) =>
+													editCategory({ id: entityId, data: { ...data, company: company_id } })
+												}
 												deleteEntity={({ id: entityId }) => deleteCategory({ id: entityId })}
 												onAddSuccess={(newId) => {
 													formik.setFieldValue('categorie', newId);
@@ -722,7 +724,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												inputTheme={inputTheme}
 												selectedItem={selectedEmplacement}
 												addEntity={(args) => addEmplacement({ data: { ...args.data, company: company_id } })}
-												editEntity={({ id: entityId, data }) => editEmplacement({ id: entityId, data: { ...data, company: company_id } })}
+												editEntity={({ id: entityId, data }) =>
+													editEmplacement({ id: entityId, data: { ...data, company: company_id } })
+												}
 												deleteEntity={({ id: entityId }) => deleteEmplacement({ id: entityId })}
 												onAddSuccess={(newId) => {
 													formik.setFieldValue('emplacement', newId);
@@ -756,7 +760,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												inputTheme={inputTheme}
 												selectedItem={selectedUnite}
 												addEntity={(args) => addUnite({ data: { ...args.data, company: company_id } })}
-												editEntity={({ id: entityId, data }) => editUnite({ id: entityId, data: { ...data, company: company_id } })}
+												editEntity={({ id: entityId, data }) =>
+													editUnite({ id: entityId, data: { ...data, company: company_id } })
+												}
 												deleteEntity={({ id: entityId }) => deleteUnite({ id: entityId })}
 												onAddSuccess={(newId) => {
 													formik.setFieldValue('unite', newId);
@@ -790,7 +796,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												inputTheme={inputTheme}
 												selectedItem={selectedMarque}
 												addEntity={(args) => addMarque({ data: { ...args.data, company: company_id } })}
-												editEntity={({ id: entityId, data }) => editMarque({ id: entityId, data: { ...data, company: company_id } })}
+												editEntity={({ id: entityId, data }) =>
+													editMarque({ id: entityId, data: { ...data, company: company_id } })
+												}
 												deleteEntity={({ id: entityId }) => deleteMarque({ id: entityId })}
 												onAddSuccess={(newId) => {
 													formik.setFieldValue('marque', newId);
@@ -829,7 +837,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								<Stack spacing={2.5}>
 									<CustomTextInput
 										id="remarque"
-										type="text"
+										type="textarea"
 										label={t.articles.fieldRemarque}
 										value={formik.values.remarque ?? ''}
 										onChange={formik.handleChange('remarque')}

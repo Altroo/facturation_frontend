@@ -245,7 +245,7 @@ export const clientSchema = z
 		tel: optionalPhoneField.nullable(),
 		email: optionalEmailField,
 		delai_de_paiement: optionalNumberField(0).nullable(),
-		remarque: optionalTextField(2, 500).nullable(),
+		remarque: optionalTextField(2, 2000).nullable(),
 		numero_du_compte: optionalTextField(2, 100).nullable(),
 		ICE: optionalTextField(2, 100).nullable(),
 		registre_de_commerce: optionalTextField(2, 100).nullable(),
@@ -308,7 +308,7 @@ export const articleSchema = z
 		prix_vente: optionalNumberField(0).nullable(),
 		devise_prix_vente: z.enum(['MAD', 'EUR', 'USD']).default('MAD'),
 		tva: optionalTVANumberField(0),
-		remarque: optionalTextField(2, 500).nullable(),
+		remarque: optionalTextField(2, 2000).nullable(),
 		globalError: optionalTextField(1, 500),
 	})
 	.refine(
@@ -421,7 +421,7 @@ export const deviSchema = z
 		date_echeance: optionalTextField(1, 100).nullable(),
 		numero_demande_prix_client: optionalTextField(1, 100).nullable(),
 		mode_paiement: optionalNumberField(0).nullable(),
-		remarque: optionalTextField(2, 500).nullable(),
+		remarque: optionalTextField(2, 2000).nullable(),
 		remise_type: z.enum(['Pourcentage', 'Fixe']).optional().nullable(),
 		remise: z.preprocess(
 			(val) => (typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val),
@@ -486,7 +486,7 @@ export const deviAddSchema = z.object({
 	date_echeance: optionalTextField(1, 100).nullable(),
 	numero_demande_prix_client: optionalTextField(1, 100).nullable(),
 	mode_paiement: optionalNumberField(0).nullable(),
-	remarque: optionalTextField(2, 500).nullable(),
+	remarque: optionalTextField(2, 2000).nullable(),
 	globalError: optionalTextField(1, 500),
 });
 
@@ -512,7 +512,7 @@ export const factureClientProformaSchema = z
 		date_echeance: optionalTextField(1, 100).nullable(),
 		numero_bon_commande_client: optionalTextField(1, 100).nullable(),
 		mode_paiement: optionalNumberField(0).nullable(),
-		remarque: optionalTextField(2, 500).nullable(),
+		remarque: optionalTextField(2, 2000).nullable(),
 		remise_type: z.enum(['Pourcentage', 'Fixe']).optional().nullable(),
 		remise: z.preprocess(
 			(val) => (typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val),
@@ -577,7 +577,7 @@ export const factureClientProformaAddSchema = z.object({
 	date_echeance: optionalTextField(1, 100).nullable(),
 	numero_bon_commande_client: optionalTextField(1, 100).nullable(),
 	mode_paiement: optionalNumberField(0).nullable(),
-	remarque: optionalTextField(2, 500).nullable(),
+	remarque: optionalTextField(2, 2000).nullable(),
 	globalError: optionalTextField(1, 500),
 });
 
@@ -604,7 +604,7 @@ export const bonDeLivraisonSchema = z
 		numero_demande_prix_client: optionalTextField(1, 100).nullable(),
 		mode_paiement: optionalNumberField(0).nullable(),
 		livre_par: optionalNumberField(0).nullable(),
-		remarque: optionalTextField(2, 500).nullable(),
+		remarque: optionalTextField(2, 2000).nullable(),
 		remise_type: z.enum(['Pourcentage', 'Fixe']).optional().nullable(),
 		remise: z.preprocess(
 			(val) => (typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val),
@@ -670,7 +670,7 @@ export const bonDeLivraisonAddSchema = z.object({
 	numero_demande_prix_client: optionalTextField(1, 100).nullable(),
 	mode_paiement: optionalNumberField(0).nullable(),
 	livre_par: optionalNumberField(0).nullable(),
-	remarque: optionalTextField(2, 500).nullable(),
+	remarque: optionalTextField(2, 2000).nullable(),
 	globalError: optionalTextField(1, 500),
 });
 
