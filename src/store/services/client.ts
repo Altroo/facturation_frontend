@@ -4,6 +4,7 @@ import { axiosBaseQuery } from '@/utils/axiosBaseQuery';
 import { getInitStateToken } from '@/store/selectors';
 import type { ClientClass } from '@/models/classes';
 import type { ApiErrorResponseType, PaginationResponseType, SuccessResponseType } from '@/types/_initTypes';
+import type { ClientHistoryResponseType } from '@/types/companyDocumentsTypes';
 import type { RootState } from '@/store/store';
 import { initToken } from '@/store/slices/_initSlice';
 
@@ -52,6 +53,13 @@ export const clientApi = createApi({
 		getClient: builder.query<ClientClass, { id: number }>({
 			query: ({ id }) => ({
 				url: `${process.env.NEXT_PUBLIC_CLIENT_ROOT}/${id}/`,
+				method: 'GET',
+			}),
+			providesTags: ['Client'],
+		}),
+		getClientHistory: builder.query<ClientHistoryResponseType, { id: number }>({
+			query: ({ id }) => ({
+				url: `${process.env.NEXT_PUBLIC_CLIENT_ROOT}/${id}/history/`,
 				method: 'GET',
 			}),
 			providesTags: ['Client'],
@@ -121,6 +129,7 @@ export const {
 	useEditClientMutation,
 	useGetCodeClientQuery,
 	useGetClientQuery,
+	useGetClientHistoryQuery,
 	useAddClientMutation,
 	usePatchArchiveMutation,
 	useBulkDeleteClientsMutation,

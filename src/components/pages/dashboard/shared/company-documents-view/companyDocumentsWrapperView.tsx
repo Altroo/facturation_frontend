@@ -243,6 +243,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 	headerActions,
 	canEdit = true,
 	extraDocumentRows = [],
+	extraSections,
 }: CompanyDocumentsViewProps<TData>) => {
 	const token = useInitAccessToken(session);
 	const companies = useAppSelector(getUserCompaniesState);
@@ -703,6 +704,8 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 									</Stack>
 								</CardContent>
 							</Card>
+
+							{extraSections}
 
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>

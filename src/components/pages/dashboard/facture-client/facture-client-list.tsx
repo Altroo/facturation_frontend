@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import type { TranslationDictionary } from '@/types/languageTypes';
 import { useRouter } from 'next/navigation';
-import { Box, Card, CardContent, Divider, Stack, Typography } from '@mui/material';
+import { Box, Card, CardContent, Chip, Divider, Stack, Typography } from '@mui/material';
 import CurrencyToggle from '@/components/shared/currencyToggle/currencyToggle';
 import {
 	AttachMoney as AttachMoneyIcon,
@@ -98,6 +98,60 @@ const createFactureClientListConfig = (t: TranslationDictionary): DocumentListCo
 			iconColor: '#ed6c02',
 			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') =>
 				FACTURE_CLIENT_PDF(id, companyId, 'avec_unite', language),
+		},
+	],
+	canPrintRow: (row) => row.statut === 'Accepté',
+	getExtraColumns: () => [
+		{
+			field: 'nombre_paiements',
+			headerName: t.facturesClient.colNombrePaiements,
+			flex: 0.8,
+			minWidth: 120,
+			renderCell: (params) => <Typography variant="body2">{params.value ?? 0}</Typography>,
+		},
+		{
+			field: 'total_paye',
+			headerName: t.facturesClient.colTotalPaye,
+			flex: 1,
+			minWidth: 130,
+			renderCell: (params) => {
+				const devise = params.row.devise || 'MAD';
+				return (
+					<Typography variant="body2" color="success.main" sx={{ fontWeight: 600 }}>
+						{formatNumberWithSpaces(params.value ?? 0, 2)} {devise}
+					</Typography>
+				);
+			},
+		},
+		{
+			field: 'reste_a_payer',
+			headerName: t.facturesClient.colResteAPayer,
+			flex: 1,
+			minWidth: 130,
+			renderCell: (params) => {
+				const devise = params.row.devise || 'MAD';
+				return (
+					<Typography variant="body2" color="error.main" sx={{ fontWeight: 600 }}>
+						{formatNumberWithSpaces(params.value ?? 0, 2)} {devise}
+					</Typography>
+				);
+			},
+		},
+		{
+			field: 'statut_paiement',
+			headerName: t.facturesClient.colStatutPaiement,
+			flex: 1,
+			minWidth: 150,
+			renderCell: (params) => {
+				const value = String(params.value ?? t.facturesClient.paymentStatusUnpaid);
+				const color =
+					value === 'Payée'
+						? 'success'
+						: value === 'Partiellement payée'
+							? 'warning'
+							: ('default' as const);
+				return <Chip label={value} color={color} variant="outlined" size="small" />;
+			},
 		},
 	],
 });

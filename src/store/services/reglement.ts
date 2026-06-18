@@ -7,6 +7,7 @@ import type { ApiErrorResponseType, SuccessResponseType } from '@/types/_initTyp
 import type { RootState } from '@/store/store';
 import { initToken } from '@/store/slices/_initSlice';
 import type { ReglementListResponseType, ReglementStatutType } from '@/types/reglementTypes';
+import { factureClientApi } from '@/store/services/factureClient';
 
 export const reglementApi = createApi({
 	reducerPath: 'reglementApi',
@@ -19,7 +20,7 @@ export const reglementApi = createApi({
 	),
 	endpoints: (builder) => ({
 		getReglementsList: builder.query<
-			ReglementListResponseType,
+			ReglementListResponseType | ReglementClass[],
 			{
 				company_id: number;
 				with_pagination?: boolean;
@@ -83,6 +84,14 @@ export const reglementApi = createApi({
 				method: 'DELETE',
 			}),
 			invalidatesTags: ['Reglement', 'Dashboard'],
+			async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+				try {
+					await queryFulfilled;
+					dispatch(factureClientApi.util.invalidateTags(['FactureClient']));
+				} catch {
+					// ignore
+				}
+			},
 		}),
 
 		editReglement: builder.mutation<SuccessResponseType<ReglementClass>, { id: number; data: Partial<ReglementClass> }>(
@@ -93,6 +102,14 @@ export const reglementApi = createApi({
 					data,
 				}),
 				invalidatesTags: ['Reglement', 'Dashboard'],
+				async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+					try {
+						await queryFulfilled;
+						dispatch(factureClientApi.util.invalidateTags(['FactureClient']));
+					} catch {
+						// ignore
+					}
+				},
 			},
 		),
 
@@ -103,6 +120,14 @@ export const reglementApi = createApi({
 				data,
 			}),
 			invalidatesTags: ['Reglement', 'Dashboard'],
+			async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+				try {
+					await queryFulfilled;
+					dispatch(factureClientApi.util.invalidateTags(['FactureClient']));
+				} catch {
+					// ignore
+				}
+			},
 		}),
 
 		patchReglementStatut: builder.mutation<
@@ -115,6 +140,14 @@ export const reglementApi = createApi({
 				data,
 			}),
 			invalidatesTags: ['Reglement', 'Dashboard'],
+			async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+				try {
+					await queryFulfilled;
+					dispatch(factureClientApi.util.invalidateTags(['FactureClient']));
+				} catch {
+					// ignore
+				}
+			},
 		}),
 		bulkDeleteReglements: builder.mutation<void | ApiErrorResponseType, { ids: number[] }>({
 			query: ({ ids }) => ({
@@ -123,6 +156,14 @@ export const reglementApi = createApi({
 				data: { ids },
 			}),
 			invalidatesTags: ['Reglement', 'Dashboard'],
+			async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+				try {
+					await queryFulfilled;
+					dispatch(factureClientApi.util.invalidateTags(['FactureClient']));
+				} catch {
+					// ignore
+				}
+			},
 		}),
 	}),
 });

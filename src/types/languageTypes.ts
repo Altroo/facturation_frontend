@@ -55,6 +55,9 @@ export type TranslationDictionary = {
 		validShort: string;
 		cancelledShort: string;
 		value: string;
+		reference: string;
+		date: string;
+		status: string;
 		noOptions: string;
 		addFilter: string;
 		clearAllFilters: string;
@@ -315,6 +318,12 @@ export type TranslationDictionary = {
 		villeSection: string;
 		remarkSection: string;
 		datesSection: string;
+		historySection: string;
+		historyDevis: string;
+		historyFactures: string;
+		historyAvoirs: string;
+		historyReglements: string;
+		noHistory: string;
 		colCodeClient: string;
 		colType: string;
 		colRaisonSociale: string;
@@ -466,6 +475,20 @@ export type TranslationDictionary = {
 		statsCA: string;
 		statsReglements: string;
 		statsImpayes: string;
+		colNombrePaiements: string;
+		colTotalPaye: string;
+		colResteAPayer: string;
+		colStatutPaiement: string;
+		validateInvoice: string;
+		validateSuccess: string;
+		validateError: string;
+		printRequiresValidation: string;
+		paymentsSection: string;
+		addPayment: string;
+		noPayments: string;
+		paymentStatusPaid: string;
+		paymentStatusPartial: string;
+		paymentStatusUnpaid: string;
 		addSuccess: string;
 		addError: string;
 		updateSuccess: string;
@@ -580,6 +603,7 @@ export type TranslationDictionary = {
 		fieldModeReglement: string;
 		fieldMontant: string;
 		fieldLibelle: string;
+		fieldObservations: string;
 		fieldDateReglement: string;
 		fieldDateEcheance: string;
 		noFacture: string;
@@ -1171,6 +1195,7 @@ export type TranslationDictionary = {
 		actions: string;
 		you: string;
 		role: string;
+		invoiceValidation: string;
 	};
 	auth: {
 		login: string;

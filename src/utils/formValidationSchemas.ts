@@ -193,6 +193,7 @@ export const companySchema = z.object({
 			z.object({
 				pk: requiredNumberField(1),
 				role: requiredTextField(1, 50),
+				can_validate_factures: z.boolean().optional(),
 			}),
 		)
 		.optional(),
@@ -220,6 +221,7 @@ export const userSchema = z.object({
 				company_id: z.number(),
 				raison_sociale: z.string(),
 				role: z.string(),
+				can_validate_factures: z.boolean().optional(),
 			}),
 		)
 		.optional(),
@@ -678,6 +680,7 @@ export const reglementSchema = z.object({
 	facture_client: requiredChoiceNumberField(),
 	mode_reglement: optionalNumberField(1).nullable(),
 	libelle: optionalTextField(1, 255).nullable(),
+	observations: optionalTextField(1, 2000).nullable(),
 	montant: z.preprocess(
 		(val) => {
 			if (val === undefined || val === null || val === '') return NaN;

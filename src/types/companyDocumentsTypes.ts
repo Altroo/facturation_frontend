@@ -6,7 +6,7 @@ import type {
 	TypeFactureLivraisonDevisStatus,
 } from '@/types/devisTypes';
 import type { SessionProps } from '@/types/_initTypes';
-import type { BonDeLivraisonClass, DeviClass, FactureAvoirClass, FactureClass } from '@/models/classes';
+import type { BonDeLivraisonClass, DeviClass, FactureAvoirClass, FactureClass, ReglementClass } from '@/models/classes';
 import type { PaginationResponseType } from '@/types/_initTypes';
 import type { GridColDef } from '@mui/x-data-grid';
 import React from 'react';
@@ -104,6 +104,7 @@ export interface CompanyDocumentsViewProps<TData extends CompanyDocumentData> ex
 		label: string;
 		getValue: (data: TData | undefined) => string | number | null | undefined | React.ReactNode;
 	}>;
+	extraSections?: React.ReactNode;
 }
 
 /** Base interface for document data (common fields between devis and facture) */
@@ -410,6 +411,8 @@ export interface DocumentListConfig<TDocument extends DocumentListClass> {
 	allowDelete?: boolean;
 	/** Per-row edit visibility guard. Defaults to editable. */
 	canEditRow?: (row: TDocument) => boolean;
+	/** Per-row print visibility guard. Defaults to printable when print actions exist. */
+	canPrintRow?: (row: TDocument) => boolean;
 }
 
 export type { DeviFactureLineFormValues, DeviLineSchemaType, TypeRemiseType, TypeFactureLivraisonDevisStatus };
@@ -449,4 +452,11 @@ export interface FactureAvoirListResponseType extends PaginationResponseType<Fac
 		EUR: CurrencyStats;
 		USD: CurrencyStats;
 	};
+}
+
+export interface ClientHistoryResponseType {
+	devis: DeviClass[];
+	factures: FactureClass[];
+	avoirs: FactureAvoirClass[];
+	reglements: ReglementClass[];
 }

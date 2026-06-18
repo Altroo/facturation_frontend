@@ -113,6 +113,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			facture_client: rawData?.facture_client ?? facture_client_id ?? 0,
 			mode_reglement: rawData?.mode_reglement ?? null,
 			libelle: rawData?.libelle ?? '',
+			observations: rawData?.observations ?? '',
 			montant: rawData?.montant ?? 0,
 			date_reglement: rawData?.date_reglement ?? today,
 			date_echeance: rawData?.date_echeance ?? today,
@@ -233,6 +234,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			facture_client: t.reglements.fieldFactureClient,
 			mode_reglement: t.reglements.fieldModeReglement,
 			libelle: t.reglements.fieldLibelle,
+			observations: t.reglements.fieldObservations,
 			montant: t.reglements.fieldMontant,
 			date_reglement: t.reglements.fieldDateReglement,
 			date_echeance: t.reglements.fieldDateEcheance,
@@ -586,6 +588,20 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											onBlur={formik.handleBlur('libelle')}
 											error={formik.touched.libelle && Boolean(formik.errors.libelle)}
 											helperText={formik.touched.libelle ? formik.errors.libelle : ''}
+											fullWidth={false}
+											size="small"
+											theme={inputTheme}
+											startIcon={<NotesIcon fontSize="small" />}
+										/>
+										<CustomTextInput
+											id="observations"
+											type="text"
+											label={t.reglements.fieldObservations}
+											value={formik.values.observations ?? ''}
+											onChange={formik.handleChange('observations')}
+											onBlur={formik.handleBlur('observations')}
+											error={formik.touched.observations && Boolean(formik.errors.observations)}
+											helperText={formik.touched.observations ? formik.errors.observations : ''}
 											fullWidth={false}
 											size="small"
 											theme={inputTheme}

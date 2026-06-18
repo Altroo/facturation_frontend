@@ -8,6 +8,7 @@ export type ReglementSchemaType = {
 	facture_client: number;
 	mode_reglement: number | null;
 	libelle?: string;
+	observations?: string;
 	montant: number;
 	date_reglement: string;
 	date_echeance: string;

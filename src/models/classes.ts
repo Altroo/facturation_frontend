@@ -243,6 +243,10 @@ export class FactureClass {
 		public readonly total_ttc_apres_remise: number,
 		public readonly devise: string,
 		public lignes: Array<DeviFactureLivraisonLineClass>,
+		public readonly nombre_paiements?: number,
+		public readonly total_paye?: number | string,
+		public readonly reste_a_payer?: number | string,
+		public readonly statut_paiement?: string,
 	) {}
 }
 
@@ -332,5 +336,6 @@ export class ReglementClass {
 		public readonly montant_facture?: number,
 		public readonly total_reglements_facture?: number,
 		public readonly reste_a_payer?: number,
+		public readonly observations?: string,
 	) {}
 }

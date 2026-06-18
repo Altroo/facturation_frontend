@@ -614,7 +614,8 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 					if (
 						(role === 'Caissier' || role === 'Comptable' || role === 'Commercial') &&
 						config.printActions &&
-						config.printActions.length > 0
+						config.printActions.length > 0 &&
+						(!config.canPrintRow || config.canPrintRow(params.row))
 					) {
 						actions.push({
 							label: t.common.display,

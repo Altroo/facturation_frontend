@@ -1,7 +1,26 @@
 'use client';
 
 import React, { isValidElement, useMemo, useState } from 'react';
-import { Box, Button, Card, CardContent, Divider, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import {
+	Box,
+	Button,
+	Card,
+	CardContent,
+	Chip,
+	Divider,
+	Stack,
+	Tab,
+	Table,
+	TableBody,
+	TableCell,
+	TableContainer,
+	TableHead,
+	TableRow,
+	Tabs,
+	Typography,
+	useMediaQuery,
+	useTheme,
+} from '@mui/material';
 import {
 	AccountBalance as AccountBalanceIcon,
 	ArrowBack as ArrowBackIcon,
@@ -17,6 +36,7 @@ import {
 	Gavel as GavelIcon,
 	LocationOn as LocationOnIcon,
 	Notes as NotesIcon,
+	Payment as PaymentIcon,
 	Person as PersonIcon,
 	Phone as PhoneIcon,
 	Receipt as ReceiptIcon,
@@ -24,7 +44,7 @@ import {
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { CLIENTS_EDIT, CLIENTS_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
-import { useDeleteClientMutation, useGetClientQuery } from '@/store/services/client';
+import { useDeleteClientMutation, useGetClientHistoryQuery, useGetClientQuery } from '@/store/services/client';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
@@ -33,7 +53,7 @@ import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import { getUserCompaniesState } from '@/store/selectors';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
-import { extractApiErrorMessage, formatDate } from '@/utils/helpers';
+import { extractApiErrorMessage, formatDate, formatNumberWithSpaces } from '@/utils/helpers';
 
 interface InfoRowProps {
 	icon: React.ReactNode;
@@ -112,6 +132,7 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
 	const { data: client, isLoading, error } = useGetClientQuery({ id }, { skip: !token });
+	const { data: history, isLoading: isHistoryLoading } = useGetClientHistoryQuery({ id }, { skip: !token });
 	const axiosError = useMemo(
 		() => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),
 		[error],
@@ -124,6 +145,7 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
+	const [historyTab, setHistoryTab] = useState(0);
 
 	const handleDelete = async () => {
 		try {
@@ -155,6 +177,14 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	];
 
 	const isPM = client?.client_type === 'PM';
+	const formatMoney = (value: string | number | null | undefined, devise = 'MAD') =>
+		`${formatNumberWithSpaces(value ?? 0, 2)} ${devise}`;
+	const historyRows = [
+		history?.devis ?? [],
+		history?.factures ?? [],
+		history?.avoirs ?? [],
+		history?.reglements ?? [],
+	][historyTab];
 
 	return (
 		<Stack
@@ -425,6 +455,118 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 									<InfoRow icon={<NotesIcon />} label={t.clients.fieldRemarque} value={client?.remarque} />
+								</CardContent>
+							</Card>
+
+							<Card elevation={2} sx={{ borderRadius: 2 }}>
+								<CardContent sx={{ p: 3 }}>
+									<Stack direction="row" spacing={2} sx={{ alignItems: 'center', mb: 2 }}>
+										<ReceiptIcon color="primary" />
+										<Typography variant="h6" sx={{ fontWeight: 700 }}>
+											{t.clients.historySection}
+										</Typography>
+									</Stack>
+									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
+									<Tabs
+										value={historyTab}
+										onChange={(_, value) => setHistoryTab(value)}
+										variant={isMobile ? 'scrollable' : 'standard'}
+										allowScrollButtonsMobile
+										sx={{ mb: 2 }}
+									>
+										<Tab label={t.clients.historyDevis} />
+										<Tab label={t.clients.historyFactures} />
+										<Tab label={t.clients.historyAvoirs} />
+										<Tab label={t.clients.historyReglements} />
+									</Tabs>
+									{isHistoryLoading ? (
+										<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
+									) : historyRows.length === 0 ? (
+										<Typography variant="body2" color="text.secondary">
+											{t.clients.noHistory}
+										</Typography>
+									) : (
+										<TableContainer>
+											<Table size="small">
+												<TableHead>
+													<TableRow>
+														<TableCell>{t.common.reference}</TableCell>
+														<TableCell>{t.common.date}</TableCell>
+														<TableCell>{t.common.status}</TableCell>
+														<TableCell align="right">{t.reglements.colMontant}</TableCell>
+													</TableRow>
+												</TableHead>
+												<TableBody>
+													{historyTab === 0 &&
+														(history?.devis ?? []).map((row) => (
+															<TableRow key={`devis-${row.id}`}>
+																<TableCell>{row.numero_devis}</TableCell>
+																<TableCell>{formatDate(row.date_devis).split(',')[0]}</TableCell>
+																<TableCell>
+																	<Chip label={row.statut} size="small" variant="outlined" />
+																</TableCell>
+																<TableCell align="right">
+																	{formatMoney(row.total_ttc_apres_remise, row.devise)}
+																</TableCell>
+															</TableRow>
+														))}
+													{historyTab === 1 &&
+														(history?.factures ?? []).map((row) => (
+															<TableRow key={`facture-${row.id}`}>
+																<TableCell>{row.numero_facture}</TableCell>
+																<TableCell>{formatDate(row.date_facture).split(',')[0]}</TableCell>
+																<TableCell>
+																	<Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
+																		<Chip label={row.statut} size="small" variant="outlined" />
+																		{row.statut_paiement && (
+																			<Chip label={row.statut_paiement} size="small" color="info" variant="outlined" />
+																		)}
+																	</Stack>
+																</TableCell>
+																<TableCell align="right">
+																	{formatMoney(row.total_ttc_apres_remise, row.devise)}
+																</TableCell>
+															</TableRow>
+														))}
+													{historyTab === 2 &&
+														(history?.avoirs ?? []).map((row) => (
+															<TableRow key={`avoir-${row.id}`}>
+																<TableCell>{row.numero_avoir}</TableCell>
+																<TableCell>{formatDate(row.date_avoir).split(',')[0]}</TableCell>
+																<TableCell>
+																	<Chip label={row.statut} size="small" variant="outlined" />
+																</TableCell>
+																<TableCell align="right">
+																	{formatMoney(row.total_ttc_apres_remise, row.devise)}
+																</TableCell>
+															</TableRow>
+														))}
+													{historyTab === 3 &&
+														(history?.reglements ?? []).map((row) => (
+															<TableRow key={`reglement-${row.id}`}>
+																<TableCell>{row.libelle || row.facture_client_numero || '-'}</TableCell>
+																<TableCell>{formatDate(row.date_reglement).split(',')[0]}</TableCell>
+																<TableCell>
+																	<Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
+																		<Chip label={row.statut} size="small" variant="outlined" />
+																		{row.mode_reglement_name && (
+																			<Chip
+																				label={row.mode_reglement_name}
+																				size="small"
+																				color="primary"
+																				variant="outlined"
+																				icon={<PaymentIcon />}
+																			/>
+																		)}
+																	</Stack>
+																</TableCell>
+																<TableCell align="right">{formatMoney(row.montant, row.devise)}</TableCell>
+															</TableRow>
+														))}
+												</TableBody>
+											</Table>
+										</TableContainer>
+									)}
 								</CardContent>
 							</Card>
 

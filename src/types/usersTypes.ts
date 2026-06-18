@@ -5,6 +5,7 @@ export type UserCompaniesType = {
 	company_id: number;
 	raison_sociale: string;
 	role: string;
+	can_validate_factures?: boolean;
 };
 
 export interface UserWithCompaniesResponseType extends UserClass {

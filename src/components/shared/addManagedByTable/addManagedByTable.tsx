@@ -4,6 +4,7 @@ import React from 'react';
 import {
 	Box,
 	CardContent,
+	Checkbox,
 	Chip,
 	Divider,
 	IconButton,
@@ -36,8 +37,10 @@ type ManagedByTableSectionProps = {
 	currentUserId?: number;
 	roleOptions: { value: string; code: string }[];
 	onRoleChange: (index: number, newRole: string) => void;
+	onInvoiceValidationChange?: (index: number, checked: boolean) => void;
 	onDelete: (index: number) => void;
 	addSectionProps: React.ComponentProps<typeof AddManagedBySection>;
+	showInvoiceValidationPermission?: boolean;
 };
 
 const ManagedByTableSection: React.FC<ManagedByTableSectionProps> = ({
@@ -51,8 +54,10 @@ const ManagedByTableSection: React.FC<ManagedByTableSectionProps> = ({
 	currentUserId,
 	roleOptions,
 	onRoleChange,
+	onInvoiceValidationChange,
 	onDelete,
 	addSectionProps,
+	showInvoiceValidationPermission = false,
 }) => {
 	const { t } = useLanguage();
 	return (
@@ -94,6 +99,9 @@ const ManagedByTableSection: React.FC<ManagedByTableSectionProps> = ({
 									</Stack>
 								</TableCell>
 							))}
+							{showInvoiceValidationPermission && (
+								<TableCell sx={{ fontWeight: 700 }}>{t.managedByTable.invoiceValidation}</TableCell>
+							)}
 							<TableCell align="right" sx={{ fontWeight: 700 }}>
 								{t.managedByTable.actions}
 							</TableCell>
@@ -102,7 +110,7 @@ const ManagedByTableSection: React.FC<ManagedByTableSectionProps> = ({
 					<TableBody>
 						{data.length === 0 ? (
 							<TableRow>
-								<TableCell colSpan={headers.length + 1} align="center" sx={{ py: 4 }}>
+								<TableCell colSpan={headers.length + 1 + (showInvoiceValidationPermission ? 1 : 0)} align="center" sx={{ py: 4 }}>
 									<Stack
 										spacing={1}
 										sx={{
@@ -175,6 +183,15 @@ const ManagedByTableSection: React.FC<ManagedByTableSectionProps> = ({
 											/>
 										</Box>
 									</TableCell>
+									{showInvoiceValidationPermission && (
+										<TableCell>
+											<Checkbox
+												checked={Boolean(item.can_validate_factures)}
+												onChange={(e) => onInvoiceValidationChange?.(index, e.target.checked)}
+												disabled={isUserTable && (item as ManagedByType).id === currentUserId}
+											/>
+										</TableCell>
+									)}
 									<TableCell align="right">
 										<IconButton
 											aria-label="delete"
