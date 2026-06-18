@@ -251,19 +251,20 @@ mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Commercial' }]);
 		expect(screen.getByRole('button', { name: /Modifier/i })).toBeInTheDocument();
 	});
 
-	test('shows ApiProgress when articles are loading', () => {
+	test('renders document content while articles are loading', () => {
 mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: true } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
 
 		const props = buildProps({
-			query: { data: { statut: 'Brouillon', lignes: [] }, isLoading: false, error: undefined },
+			query: { data: { statut: 'Brouillon', lignes: [], client_name: 'Client A' }, isLoading: false, error: undefined },
 		});
 
 		render(<CompanyDocumentsWrapperView<TestDoc> {...props} />);
 
-		expect(screen.getByText('ApiProgressMock')).toBeInTheDocument();
+		expect(screen.queryByText('ApiProgressMock')).not.toBeInTheDocument();
+		expect(screen.getByText('Client A')).toBeInTheDocument();
 	});
 
 	test('renders Livré par field for bon-de-livraison type', () => {
@@ -469,4 +470,3 @@ mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		expect(screen.getByText('Admin User')).toBeInTheDocument();
 	});
 });
-

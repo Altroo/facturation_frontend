@@ -254,7 +254,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 
 	const { data: rawData, isLoading, error } = query;
 
-	const { data: rawArticlesData, isLoading: isArticlesLoading } = useGetArticlesListQuery(
+	const { data: rawArticlesData } = useGetArticlesListQuery(
 		{ company_id, with_pagination: false, archived: false },
 		{ skip: !token },
 	);
@@ -630,7 +630,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 						)}
 					</Stack>
 
-					{isLoading || isArticlesLoading ? (
+					{isLoading ? (
 						<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
 					) : (axiosError?.status as number) > 400 ? (
 						<ApiAlert
