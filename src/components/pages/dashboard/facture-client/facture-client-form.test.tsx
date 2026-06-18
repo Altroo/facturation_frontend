@@ -23,6 +23,7 @@ type FormContentProps = {
 	company_id: number;
 	id?: number;
 	isEditMode: boolean;
+	extraSections?: React.ReactNode;
 };
 
 // Mock next/navigation
@@ -63,6 +64,11 @@ jest.mock('@/contexts/InitContext', () => ({
 	useInitAccessToken: () => 'test-token',
 }));
 
+jest.mock('./invoice-payments-section', () => ({
+	__esModule: true,
+	default: () => <div data-testid="invoice-payments-section">Paiements</div>,
+}));
+
 // Mock the facture client service hooks
 const mockUseGetFactureClientQuery = jest.fn();
 const mockUseGetNumFactureClientQuery = jest.fn();
@@ -94,6 +100,7 @@ jest.mock('@/components/pages/dashboard/shared/company-documents-form/companyDoc
 			<span data-testid="form-is-edit-mode">{String(props.isEditMode)}</span>
 			<span data-testid="form-id">{props.id ?? 'undefined'}</span>
 			<span data-testid="form-token">{props.token ?? 'undefined'}</span>
+			{props.extraSections}
 			<button data-testid="call-add" onClick={() => props.addData?.({ data: { test: true } })?.unwrap()}>Add</button>
 			<button data-testid="call-update" onClick={() => props.updateData?.({ data: { test: true }, id: 1 })?.unwrap()}>Update</button>
 			<button data-testid="call-patch" onClick={() => props.patchStatut?.({ id: 1, data: { statut: 'Validé' } })?.unwrap()}>Patch</button>
@@ -199,6 +206,18 @@ describe('FactureClientForm', () => {
 			renderWithProviders(<FactureClientForm session={mockSession} company_id={555} id={111} />);
 
 			expect(screen.getByTestId('form-company-id')).toHaveTextContent('555');
+		});
+
+		it('renders payments section in edit mode', () => {
+			mockUseGetFactureClientQuery.mockReturnValue({
+				data: { statut: 'Accepté' },
+				isLoading: false,
+				error: undefined,
+			});
+
+			renderWithProviders(<FactureClientForm session={mockSession} company_id={123} id={999} />);
+
+			expect(screen.getByTestId('invoice-payments-section')).toBeInTheDocument();
 		});
 	});
 

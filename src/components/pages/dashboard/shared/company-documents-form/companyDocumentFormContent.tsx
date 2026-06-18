@@ -176,6 +176,7 @@ export interface SharedDocumentFormContentProps<TDocument extends DocumentListCl
 	};
 	isPatchLoading: boolean;
 	patchError?: unknown;
+	extraSections?: React.ReactNode;
 }
 
 const CompanyDocumentFormContent = <TDocument extends DocumentListClass = DocumentListClass>(
@@ -203,6 +204,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		patchStatut,
 		isPatchLoading,
 		patchError,
+		extraSections,
 	} = props;
 
 	const { onSuccess, onError } = useToast();
@@ -1583,6 +1585,8 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 									</CardContent>
 								</Card>
 							)}
+
+							{extraSections}
 
 							{/* Submit Button */}
 							<Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 2 }}>

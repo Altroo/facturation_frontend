@@ -33,6 +33,11 @@ jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 	default: ({ children }: { children?: React.ReactNode }) => <div data-testid="navigation-bar">{children}</div>,
 }));
 
+jest.mock('./invoice-payments-section', () => ({
+	__esModule: true,
+	default: () => <div data-testid="invoice-payments-section">Paiements</div>,
+}));
+
 // Mock selector hook
 jest.mock('@/utils/hooks', () => {
 	const { translations } = jest.requireActual('@/translations');

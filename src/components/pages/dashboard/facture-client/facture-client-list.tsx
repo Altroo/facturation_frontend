@@ -100,7 +100,6 @@ const createFactureClientListConfig = (t: TranslationDictionary): DocumentListCo
 				FACTURE_CLIENT_PDF(id, companyId, 'avec_unite', language),
 		},
 	],
-	canPrintRow: (row) => row.statut === 'Accepté',
 	getExtraColumns: () => [
 		{
 			field: 'nombre_paiements',

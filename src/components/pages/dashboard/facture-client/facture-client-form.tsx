@@ -23,6 +23,7 @@ import type {
 import type { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
 import type { FactureClass } from '@/models/classes';
 import { useLanguage } from '@/utils/hooks';
+import InvoicePaymentsSection from './invoice-payments-section';
 
 // Configuration for facture client form
 const createFactureClientFormConfig = (t: TranslationDictionary): DocumentFormConfig<FactureClass> => ({
@@ -117,6 +118,16 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 			isPatchLoading={isPatchLoading}
 			patchError={patchError}
 			role={role}
+			extraSections={
+				isEditMode && id ? (
+					<InvoicePaymentsSection
+						companyId={company_id}
+						factureClientId={id}
+						token={token}
+						canManagePayments={Boolean((role === 'Caissier' || role === 'Commercial') && rawData?.statut === 'Accepté')}
+					/>
+				) : undefined
+			}
 		/>
 	);
 };
