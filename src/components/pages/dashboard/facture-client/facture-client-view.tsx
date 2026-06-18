@@ -126,7 +126,12 @@ const FactureClientViewClient: React.FC<Props> = ({ session, company_id, id }) =
 					{t.facturesClient.validateInvoice}
 				</Button>
 			)}
-			{canPrint && (
+			{canPrint && !isAccepted && (
+				<Button variant="outlined" size="small" startIcon={<PictureAsPdfIcon />} disabled>
+					{t.facturesClient.printRequiresValidation}
+				</Button>
+			)}
+			{canPrint && isAccepted && (
 				<>
 					<Button
 						variant="outlined"
