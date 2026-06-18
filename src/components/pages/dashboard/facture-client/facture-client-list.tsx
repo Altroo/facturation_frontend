@@ -105,15 +105,15 @@ const createFactureClientListConfig = (t: TranslationDictionary): DocumentListCo
 		{
 			field: 'nombre_paiements',
 			headerName: t.facturesClient.colNombrePaiements,
-			flex: 0.8,
-			minWidth: 120,
+			flex: 0.65,
+			minWidth: 100,
 			renderCell: (params) => <Typography variant="body2">{params.value ?? 0}</Typography>,
 		},
 		{
 			field: 'total_paye',
 			headerName: t.facturesClient.colTotalPaye,
-			flex: 1,
-			minWidth: 130,
+			flex: 0.85,
+			minWidth: 115,
 			renderCell: (params) => {
 				const devise = params.row.devise || 'MAD';
 				return (
@@ -124,24 +124,10 @@ const createFactureClientListConfig = (t: TranslationDictionary): DocumentListCo
 			},
 		},
 		{
-			field: 'reste_a_payer',
-			headerName: t.facturesClient.colResteAPayer,
-			flex: 1,
-			minWidth: 130,
-			renderCell: (params) => {
-				const devise = params.row.devise || 'MAD';
-				return (
-					<Typography variant="body2" color="error.main" sx={{ fontWeight: 600 }}>
-						{formatNumberWithSpaces(params.value ?? 0, 2)} {devise}
-					</Typography>
-				);
-			},
-		},
-		{
 			field: 'statut_paiement',
 			headerName: t.facturesClient.colStatutPaiement,
-			flex: 1,
-			minWidth: 150,
+			flex: 0.9,
+			minWidth: 145,
 			renderCell: (params) => {
 				const value = String(params.value ?? t.facturesClient.paymentStatusUnpaid);
 				const color =
@@ -151,6 +137,20 @@ const createFactureClientListConfig = (t: TranslationDictionary): DocumentListCo
 							? 'warning'
 							: ('default' as const);
 				return <Chip label={value} color={color} variant="outlined" size="small" />;
+			},
+		},
+		{
+			field: 'reste_a_payer',
+			headerName: t.facturesClient.colResteAPayer,
+			flex: 0.85,
+			minWidth: 115,
+			renderCell: (params) => {
+				const devise = params.row.devise || 'MAD';
+				return (
+					<Typography variant="body2" color="error.main" sx={{ fontWeight: 600 }}>
+						{formatNumberWithSpaces(params.value ?? 0, 2)} {devise}
+					</Typography>
+				);
 			},
 		},
 	],
