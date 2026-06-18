@@ -46,6 +46,8 @@ export type TranslationDictionary = {
 		pdfWithDiscount: string;
 		pdfWithoutDiscount: string;
 		pdfWithUnit: string;
+		pdfWithUnitWithoutDiscount: string;
+		pdfWithUnitWithDiscount: string;
 		pdfNormal: string;
 		pdfQuantityOnly: string;
 		convert: string;

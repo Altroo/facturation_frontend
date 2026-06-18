@@ -46,6 +46,8 @@ export const fr: TranslationDictionary = {
 		pdfWithDiscount: 'PDF (avec remise)',
 		pdfWithoutDiscount: 'PDF (sans remise)',
 		pdfWithUnit: 'PDF (avec unité)',
+		pdfWithUnitWithoutDiscount: 'PDF (avec unité sans remise)',
+		pdfWithUnitWithDiscount: 'PDF (avec unité avec remise)',
 		pdfNormal: 'PDF (normal)',
 		pdfQuantityOnly: 'PDF (qté seulement)',
 		convert: 'Convertir',

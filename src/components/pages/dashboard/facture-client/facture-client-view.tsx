@@ -9,7 +9,7 @@ import {
 	Delete as DeleteIcon,
 	PictureAsPdf as PictureAsPdfIcon,
 } from '@mui/icons-material';
-import { FACTURE_CLIENT_EDIT, FACTURE_CLIENT_LIST, FACTURE_CLIENT_PDF } from '@/utils/routes';
+import { FACTURE_CLIENT_EDIT, FACTURE_CLIENT_LIST, FACTURE_CLIENT_PDF, type DocumentPdfType } from '@/utils/routes';
 import {
 	useDeleteFactureClientMutation,
 	useGetFactureClientQuery,
@@ -50,7 +50,7 @@ const FactureClientViewClient: React.FC<Props> = ({ session, company_id, id }) =
 	const { t } = useLanguage();
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
 	const [showLanguageModal, setShowLanguageModal] = useState(false);
-	const [pendingPdfType, setPendingPdfType] = useState<'avec_remise' | 'sans_remise' | 'avec_unite' | null>(null);
+	const [pendingPdfType, setPendingPdfType] = useState<DocumentPdfType | null>(null);
 
 	const handleDelete = async () => {
 		try {
@@ -75,7 +75,7 @@ const FactureClientViewClient: React.FC<Props> = ({ session, company_id, id }) =
 		{ text: t.common.delete, active: true, onClick: handleDelete, icon: <DeleteIcon />, color: '#D32F2F' },
 	];
 
-	const openPdf = (type: 'avec_remise' | 'sans_remise' | 'avec_unite') => {
+	const openPdf = (type: DocumentPdfType) => {
 		setPendingPdfType(type);
 		setShowLanguageModal(true);
 	};
@@ -155,9 +155,18 @@ const FactureClientViewClient: React.FC<Props> = ({ session, company_id, id }) =
 						color="warning"
 						size="small"
 						startIcon={<PictureAsPdfIcon />}
-						onClick={() => openPdf('avec_unite')}
+						onClick={() => openPdf('avec_unite_sans_remise')}
 					>
-						{t.common.pdfUnit}
+						{t.common.pdfWithUnitWithoutDiscount}
+					</Button>
+					<Button
+						variant="outlined"
+						color="warning"
+						size="small"
+						startIcon={<PictureAsPdfIcon />}
+						onClick={() => openPdf('avec_unite_avec_remise')}
+					>
+						{t.common.pdfWithUnitWithDiscount}
 					</Button>
 				</>
 			)}

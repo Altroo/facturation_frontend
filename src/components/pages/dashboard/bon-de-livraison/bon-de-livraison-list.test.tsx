@@ -441,31 +441,35 @@ describe('BonDeLivraisonListClient', () => {
 		it('passes printActions to CompanyDocumentsListContent', () => {
 			expect(capturedConfig).not.toBeNull();
 			expect(capturedConfig?.printActions).toBeDefined();
-			expect(capturedConfig?.printActions?.length).toBe(3);
+			expect(capturedConfig?.printActions?.length).toBe(4);
 		});
 
-		it('generates correct normal PDF URL', () => {
-			const normalAction = capturedConfig?.printActions?.find((a) => a.key === 'normal');
-			expect(normalAction).toBeDefined();
-			const url = normalAction?.urlGenerator(1, 2);
-			expect(url).toContain('1');
-			expect(url).toContain('2');
+		it('generates correct avec_remise PDF URL', () => {
+			const action = capturedConfig?.printActions?.find((a) => a.key === 'avec_remise');
+			expect(action).toBeDefined();
+			const url = action?.urlGenerator(1, 2);
+			expect(url).toContain('type=avec_remise');
 		});
 
-		it('generates correct quantity_only PDF URL', () => {
-			const quantityOnlyAction = capturedConfig?.printActions?.find((a) => a.key === 'quantity_only');
-			expect(quantityOnlyAction).toBeDefined();
-			const url = quantityOnlyAction?.urlGenerator(1, 2);
-			expect(url).toContain('1');
-			expect(url).toContain('2');
+		it('generates correct sans_remise PDF URL', () => {
+			const action = capturedConfig?.printActions?.find((a) => a.key === 'sans_remise');
+			expect(action).toBeDefined();
+			const url = action?.urlGenerator(1, 2);
+			expect(url).toContain('type=sans_remise');
 		});
 
-		it('generates correct avec_unite PDF URL', () => {
-			const avecUniteAction = capturedConfig?.printActions?.find((a) => a.key === 'avec_unite');
-			expect(avecUniteAction).toBeDefined();
-			const url = avecUniteAction?.urlGenerator(1, 2);
-			expect(url).toContain('1');
-			expect(url).toContain('2');
+		it('generates correct avec_unite_sans_remise PDF URL', () => {
+			const action = capturedConfig?.printActions?.find((a) => a.key === 'avec_unite_sans_remise');
+			expect(action).toBeDefined();
+			const url = action?.urlGenerator(1, 2);
+			expect(url).toContain('type=avec_unite_sans_remise');
+		});
+
+		it('generates correct avec_unite_avec_remise PDF URL', () => {
+			const action = capturedConfig?.printActions?.find((a) => a.key === 'avec_unite_avec_remise');
+			expect(action).toBeDefined();
+			const url = action?.urlGenerator(1, 2);
+			expect(url).toContain('type=avec_unite_avec_remise');
 		});
 	});
 

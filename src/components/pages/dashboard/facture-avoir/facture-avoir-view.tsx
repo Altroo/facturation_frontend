@@ -8,7 +8,7 @@ import {
 	PictureAsPdf as PictureAsPdfIcon,
 	ReceiptLong as ReceiptLongIcon,
 } from '@mui/icons-material';
-import { FACTURE_AVOIR_EDIT, FACTURE_AVOIR_LIST, FACTURE_AVOIR_PDF, FACTURE_CLIENT_VIEW } from '@/utils/routes';
+import { FACTURE_AVOIR_EDIT, FACTURE_AVOIR_LIST, FACTURE_AVOIR_PDF, FACTURE_CLIENT_VIEW, type DocumentPdfType } from '@/utils/routes';
 import { useGetFactureAvoirQuery } from '@/store/services/factureAvoir';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
@@ -43,11 +43,11 @@ const FactureAvoirViewClient: React.FC<Props> = ({ session, company_id, id }) =>
 	const { onError } = useToast();
 	const { t } = useLanguage();
 	const [showLanguageModal, setShowLanguageModal] = useState(false);
-	const [pendingPdfType, setPendingPdfType] = useState<'avec_remise' | 'sans_remise' | 'avec_unite' | null>(null);
+	const [pendingPdfType, setPendingPdfType] = useState<DocumentPdfType | null>(null);
 
 	const canPrint = company?.role === 'Caissier' || company?.role === 'Comptable' || company?.role === 'Commercial';
 
-	const openPdf = (type: 'avec_remise' | 'sans_remise' | 'avec_unite') => {
+	const openPdf = (type: DocumentPdfType) => {
 		setPendingPdfType(type);
 		setShowLanguageModal(true);
 	};
@@ -78,8 +78,11 @@ const FactureAvoirViewClient: React.FC<Props> = ({ session, company_id, id }) =>
 					<Button variant="outlined" size="small" startIcon={<PictureAsPdfIcon />} onClick={() => openPdf('sans_remise')}>
 						{t.common.pdfWithoutDiscount}
 					</Button>
-					<Button variant="outlined" color="warning" size="small" startIcon={<PictureAsPdfIcon />} onClick={() => openPdf('avec_unite')}>
-						{t.common.pdfUnit}
+					<Button variant="outlined" color="warning" size="small" startIcon={<PictureAsPdfIcon />} onClick={() => openPdf('avec_unite_sans_remise')}>
+						{t.common.pdfWithUnitWithoutDiscount}
+					</Button>
+					<Button variant="outlined" color="warning" size="small" startIcon={<PictureAsPdfIcon />} onClick={() => openPdf('avec_unite_avec_remise')}>
+						{t.common.pdfWithUnitWithDiscount}
 					</Button>
 				</>
 			)}

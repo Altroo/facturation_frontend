@@ -282,6 +282,12 @@ describe('routes constants', () => {
 			expect(DEVIS_PDF(15, 75, 'avec_unite', 'fr')).toBe(
 				'https://api.example.com/devi/pdf/fr/15/?company_id=75&type=avec_unite'
 			);
+			expect(DEVIS_PDF(16, 75, 'avec_unite_sans_remise', 'fr')).toBe(
+				'https://api.example.com/devi/pdf/fr/16/?company_id=75&type=avec_unite_sans_remise'
+			);
+			expect(DEVIS_PDF(17, 75, 'avec_unite_avec_remise', 'fr')).toBe(
+				'https://api.example.com/devi/pdf/fr/17/?company_id=75&type=avec_unite_avec_remise'
+			);
 		});
 
 		it('exports facture client PDF route function', () => {
@@ -291,6 +297,12 @@ describe('routes constants', () => {
 			expect(typeof FACTURE_CLIENT_PDF).toBe('function');
 			expect(FACTURE_CLIENT_PDF(5, 99, 'avec_remise')).toBe(
 				'https://api.example.com/facture_client/pdf/fr/5/?company_id=99&type=avec_remise'
+			);
+			expect(FACTURE_CLIENT_PDF(15, 75, 'avec_unite_sans_remise', 'fr')).toBe(
+				'https://api.example.com/facture_client/pdf/fr/15/?company_id=75&type=avec_unite_sans_remise'
+			);
+			expect(FACTURE_CLIENT_PDF(16, 75, 'avec_unite_avec_remise', 'fr')).toBe(
+				'https://api.example.com/facture_client/pdf/fr/16/?company_id=75&type=avec_unite_avec_remise'
 			);
 		});
 
@@ -305,6 +317,12 @@ describe('routes constants', () => {
 			expect(FACTURE_AVOIR_PDF(10, 50, 'sans_remise', 'en')).toBe(
 				'https://api.example.com/facture_avoir/pdf/en/10/?company_id=50&type=sans_remise'
 			);
+			expect(FACTURE_AVOIR_PDF(15, 75, 'avec_unite_sans_remise', 'fr')).toBe(
+				'https://api.example.com/facture_avoir/pdf/fr/15/?company_id=75&type=avec_unite_sans_remise'
+			);
+			expect(FACTURE_AVOIR_PDF(16, 75, 'avec_unite_avec_remise', 'fr')).toBe(
+				'https://api.example.com/facture_avoir/pdf/fr/16/?company_id=75&type=avec_unite_avec_remise'
+			);
 		});
 		it('exports facture pro forma PDF route function', () => {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -313,6 +331,12 @@ describe('routes constants', () => {
 			expect(typeof FACTURE_PRO_FORMA_PDF).toBe('function');
 			expect(FACTURE_PRO_FORMA_PDF(5, 99, 'avec_remise')).toBe(
 				'https://api.example.com/facture_proforma/pdf/fr/5/?company_id=99&type=avec_remise'
+			);
+			expect(FACTURE_PRO_FORMA_PDF(15, 75, 'avec_unite_sans_remise', 'fr')).toBe(
+				'https://api.example.com/facture_proforma/pdf/fr/15/?company_id=75&type=avec_unite_sans_remise'
+			);
+			expect(FACTURE_PRO_FORMA_PDF(16, 75, 'avec_unite_avec_remise', 'fr')).toBe(
+				'https://api.example.com/facture_proforma/pdf/fr/16/?company_id=75&type=avec_unite_avec_remise'
 			);
 		});
 
@@ -329,6 +353,12 @@ describe('routes constants', () => {
 			);
 			expect(BON_DE_LIVRAISON_PDF(15, 75, 'avec_unite', 'fr')).toBe(
 				'https://api.example.com/bon_de_livraison/pdf/fr/15/?company_id=75&type=avec_unite'
+			);
+			expect(BON_DE_LIVRAISON_PDF(16, 75, 'avec_unite_sans_remise', 'fr')).toBe(
+				'https://api.example.com/bon_de_livraison/pdf/fr/16/?company_id=75&type=avec_unite_sans_remise'
+			);
+			expect(BON_DE_LIVRAISON_PDF(17, 75, 'avec_unite_avec_remise', 'fr')).toBe(
+				'https://api.example.com/bon_de_livraison/pdf/fr/17/?company_id=75&type=avec_unite_avec_remise'
 			);
 		});
 

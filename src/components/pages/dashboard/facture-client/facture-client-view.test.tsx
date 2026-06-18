@@ -191,7 +191,8 @@ describe('FactureClientViewClient UI and navigation', () => {
 		expect(screen.getByRole('button', { name: /La facture doit être validée avant impression/i })).toBeDisabled();
 		expect(screen.queryByRole('button', { name: /PDF \(remise\)/i })).not.toBeInTheDocument();
 		expect(screen.queryByRole('button', { name: /PDF \(sans remise\)/i })).not.toBeInTheDocument();
-		expect(screen.queryByRole('button', { name: /PDF \(unité\)/i })).not.toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: /PDF \(avec unité sans remise\)/i })).not.toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: /PDF \(avec unité avec remise\)/i })).not.toBeInTheDocument();
 	});
 
 	it('navigates back to list when back button clicked', () => {

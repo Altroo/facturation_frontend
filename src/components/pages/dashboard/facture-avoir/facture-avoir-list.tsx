@@ -99,12 +99,20 @@ const createFactureAvoirListConfig = (t: TranslationDictionary): DocumentListCon
 				FACTURE_AVOIR_PDF(id, companyId, 'sans_remise', language),
 		},
 		{
-			key: 'avec_unite',
-			label: t.common.pdfWithUnit,
+			key: 'avec_unite_sans_remise',
+			label: t.common.pdfWithUnitWithoutDiscount,
+			icon: <ReceiptLongIcon fontSize="small" />,
+			iconColor: '#7b1fa2',
+			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') =>
+				FACTURE_AVOIR_PDF(id, companyId, 'avec_unite_sans_remise', language),
+		},
+		{
+			key: 'avec_unite_avec_remise',
+			label: t.common.pdfWithUnitWithDiscount,
 			icon: <ReceiptLongIcon fontSize="small" />,
 			iconColor: '#ed6c02',
 			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') =>
-				FACTURE_AVOIR_PDF(id, companyId, 'avec_unite', language),
+				FACTURE_AVOIR_PDF(id, companyId, 'avec_unite_avec_remise', language),
 		},
 	],
 });

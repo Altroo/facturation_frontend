@@ -8,7 +8,7 @@ import {
 	Delete as DeleteIcon,
 	PictureAsPdf as PictureAsPdfIcon,
 } from '@mui/icons-material';
-import { BON_DE_LIVRAISON_EDIT, BON_DE_LIVRAISON_LIST, BON_DE_LIVRAISON_PDF } from '@/utils/routes';
+import { BON_DE_LIVRAISON_EDIT, BON_DE_LIVRAISON_LIST, BON_DE_LIVRAISON_PDF, type DocumentPdfType } from '@/utils/routes';
 import { useDeleteBonDeLivraisonMutation, useGetBonDeLivraisonQuery } from '@/store/services/bonDeLivraison';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
@@ -43,7 +43,7 @@ const BonDeLivraisonViewClient: React.FC<Props> = ({ session, company_id, id }) 
 	const { t } = useLanguage();
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
 	const [showLanguageModal, setShowLanguageModal] = useState(false);
-	const [pendingPdfType, setPendingPdfType] = useState<'normal' | 'quantity_only' | 'avec_unite' | null>(null);
+	const [pendingPdfType, setPendingPdfType] = useState<DocumentPdfType | null>(null);
 
 	const handleDelete = async () => {
 		try {
@@ -68,7 +68,7 @@ const BonDeLivraisonViewClient: React.FC<Props> = ({ session, company_id, id }) 
 		{ text: t.common.delete, active: true, onClick: handleDelete, icon: <DeleteIcon />, color: '#D32F2F' },
 	];
 
-	const openPdf = (type: 'normal' | 'quantity_only' | 'avec_unite') => {
+	const openPdf = (type: DocumentPdfType) => {
 		setPendingPdfType(type);
 		setShowLanguageModal(true);
 	};
@@ -101,26 +101,35 @@ const BonDeLivraisonViewClient: React.FC<Props> = ({ session, company_id, id }) 
 						color="error"
 						size="small"
 						startIcon={<PictureAsPdfIcon />}
-						onClick={() => openPdf('normal')}
+						onClick={() => openPdf('avec_remise')}
 					>
-						PDF (normal)
+						{t.common.pdfWithDiscount}
 					</Button>
 					<Button
 						variant="outlined"
 						size="small"
 						startIcon={<PictureAsPdfIcon />}
-						onClick={() => openPdf('quantity_only')}
+						onClick={() => openPdf('sans_remise')}
 					>
-						PDF (qua. only)
+						{t.common.pdfWithoutDiscount}
 					</Button>
 					<Button
 						variant="outlined"
 						color="warning"
 						size="small"
 						startIcon={<PictureAsPdfIcon />}
-						onClick={() => openPdf('avec_unite')}
+						onClick={() => openPdf('avec_unite_sans_remise')}
 					>
-						{t.common.pdfUnit}
+						{t.common.pdfWithUnitWithoutDiscount}
+					</Button>
+					<Button
+						variant="outlined"
+						color="warning"
+						size="small"
+						startIcon={<PictureAsPdfIcon />}
+						onClick={() => openPdf('avec_unite_avec_remise')}
+					>
+						{t.common.pdfWithUnitWithDiscount}
 					</Button>
 				</>
 			)}

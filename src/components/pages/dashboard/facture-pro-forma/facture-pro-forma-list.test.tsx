@@ -491,7 +491,7 @@ describe('FactureProformaListClient', () => {
 		it('passes printActions to CompanyDocumentsListContent', () => {
 			expect(capturedConfig).not.toBeNull();
 			expect(capturedConfig?.printActions).toBeDefined();
-			expect(capturedConfig?.printActions?.length).toBe(3);
+			expect(capturedConfig?.printActions?.length).toBe(4);
 		});
 
 		it('generates correct avec_remise PDF URL', () => {
@@ -510,12 +510,18 @@ describe('FactureProformaListClient', () => {
 			expect(url).toContain('2');
 		});
 
-		it('generates correct avec_unite PDF URL', () => {
-			const avecUniteAction = capturedConfig?.printActions?.find((a) => a.key === 'avec_unite');
-			expect(avecUniteAction).toBeDefined();
-			const url = avecUniteAction?.urlGenerator(1, 2);
-			expect(url).toContain('1');
-			expect(url).toContain('2');
+		it('generates correct avec_unite_sans_remise PDF URL', () => {
+			const action = capturedConfig?.printActions?.find((a) => a.key === 'avec_unite_sans_remise');
+			expect(action).toBeDefined();
+			const url = action?.urlGenerator(1, 2);
+			expect(url).toContain('type=avec_unite_sans_remise');
+		});
+
+		it('generates correct avec_unite_avec_remise PDF URL', () => {
+			const action = capturedConfig?.printActions?.find((a) => a.key === 'avec_unite_avec_remise');
+			expect(action).toBeDefined();
+			const url = action?.urlGenerator(1, 2);
+			expect(url).toContain('type=avec_unite_avec_remise');
 		});
 	});
 
