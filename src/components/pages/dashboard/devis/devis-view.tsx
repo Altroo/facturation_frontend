@@ -90,7 +90,10 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	};
 
 	const isCaissier = company?.role === 'Caissier';
-	const canPrint = isCaissier || company?.role === 'Comptable' || company?.role === 'Commercial';
+	const canPrint =
+		Boolean(query.data) &&
+		query.data?.statut !== 'Brouillon' &&
+		(isCaissier || company?.role === 'Comptable' || company?.role === 'Commercial');
 
 	const headerActions = (
 		<>

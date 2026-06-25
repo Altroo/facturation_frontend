@@ -83,10 +83,14 @@ describe('dashboardApi', () => {
 				date_from: '2024-01-01',
 				date_to: '2024-12-31',
 				company_id: 1,
+				client_id: 7,
+				project: 'PO-42',
 			};
 			expect(params.date_from).toBe('2024-01-01');
 			expect(params.date_to).toBe('2024-12-31');
 			expect(params.company_id).toBe(1);
+			expect(params.client_id).toBe(7);
+			expect(params.project).toBe('PO-42');
 		});
 
 		it('should have correct MonthlyRevenueData structure', () => {
@@ -266,11 +270,15 @@ describe('dashboardApi', () => {
 				date_to: '2024-12-31',
 				company_id: 1,
 				devise: 'USD',
+				client_id: 7,
+				project: 'PO-42',
 			});
 			expect(result).toContain('date_from=2024-01-01');
 			expect(result).toContain('date_to=2024-12-31');
 			expect(result).toContain('company_id=1');
 			expect(result).toContain('devise=USD');
+			expect(result).toContain('client_id=7');
+			expect(result).toContain('project=PO-42');
 			expect(result).toMatch(/^\?/);
 		});
 

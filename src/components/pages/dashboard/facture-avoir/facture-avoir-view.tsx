@@ -45,7 +45,10 @@ const FactureAvoirViewClient: React.FC<Props> = ({ session, company_id, id }) =>
 	const [showLanguageModal, setShowLanguageModal] = useState(false);
 	const [pendingPdfType, setPendingPdfType] = useState<DocumentPdfType | null>(null);
 
-	const canPrint = company?.role === 'Caissier' || company?.role === 'Comptable' || company?.role === 'Commercial';
+	const canPrint =
+		Boolean(query.data) &&
+		query.data?.statut !== 'Brouillon' &&
+		(company?.role === 'Caissier' || company?.role === 'Comptable' || company?.role === 'Commercial');
 
 	const openPdf = (type: DocumentPdfType) => {
 		setPendingPdfType(type);

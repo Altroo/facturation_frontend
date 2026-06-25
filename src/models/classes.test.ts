@@ -373,6 +373,7 @@ describe('FactureProFormaClass', () => {
 			'2023-02-01',
 			'2023-02-15',
 			null,
+			'Net 30',
 			1,
 			'Cash',
 			'Some remark',
@@ -398,6 +399,7 @@ describe('FactureProFormaClass', () => {
 		expect(facture.client_name).toBe('ClientName');
 		expect(facture.date_facture).toBe('2023-02-01');
 		expect(facture.date_echeance).toBe('2023-02-15');
+		expect(facture.termes_paiement).toBe('Net 30');
 		expect(facture.mode_paiement).toBe(1);
 		expect(facture.mode_paiement_name).toBe('Cash');
 		expect(facture.remarque).toBe('Some remark');

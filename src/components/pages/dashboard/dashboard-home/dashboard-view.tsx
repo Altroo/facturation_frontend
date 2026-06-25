@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import {
+	Autocomplete,
 	Box,
 	Button,
 	Card,
@@ -10,6 +11,7 @@ import {
 	CircularProgress,
 	IconButton,
 	Stack,
+	TextField,
 	Tooltip as MuiTooltip,
 	Typography,
 } from '@mui/material';
@@ -58,6 +60,7 @@ import {
 	useGetTopProductsByQuantityQuery,
 } from '@/store/services/dashboard';
 import { useGetCompanyQuery } from '@/store/services/company';
+import { useGetClientsListQuery } from '@/store/services/client';
 import CurrencyToggle from '@/components/shared/currencyToggle/currencyToggle';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import type { SessionProps } from '@/types/_initTypes';
@@ -106,6 +109,11 @@ const PIE_COLORS = [
 	'rgba(255, 193, 7, 0.8)',
 	'rgba(121, 85, 72, 0.8)',
 ];
+
+type DashboardClientOption = {
+	id: number;
+	label: string;
+};
 
 // Chart wrapper component for consistent styling
 type ChartCardProps = {
@@ -255,10 +263,26 @@ interface DateFilterProps {
 	dateTo: Date | null;
 	onDateFromChange: (date: Date | null) => void;
 	onDateToChange: (date: Date | null) => void;
+	clientOptions: DashboardClientOption[];
+	selectedClient: DashboardClientOption | null;
+	onClientChange: (client: DashboardClientOption | null) => void;
+	projectRef: string;
+	onProjectRefChange: (value: string) => void;
 	onReset: () => void;
 }
 
-const DateFilter: React.FC<DateFilterProps> = ({ dateFrom, dateTo, onDateFromChange, onDateToChange, onReset }) => {
+const DateFilter: React.FC<DateFilterProps> = ({
+	dateFrom,
+	dateTo,
+	onDateFromChange,
+	onDateToChange,
+	clientOptions,
+	selectedClient,
+	onClientChange,
+	projectRef,
+	onProjectRefChange,
+	onReset,
+}) => {
 	const { t } = useLanguage();
 	return (
 		<LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
@@ -287,6 +311,23 @@ const DateFilter: React.FC<DateFilterProps> = ({ dateFrom, dateTo, onDateFromCha
 					slotProps={{
 						textField: { size: 'small', sx: { minWidth: 180 } },
 					}}
+				/>
+				<Autocomplete
+					size="small"
+					options={clientOptions}
+					value={selectedClient}
+					getOptionLabel={(option) => option.label}
+					isOptionEqualToValue={(option, value) => option.id === value.id}
+					onChange={(_, value) => onClientChange(value)}
+					renderInput={(params) => <TextField {...params} label={t.dashboard.filterClient} />}
+					sx={{ minWidth: { xs: '100%', sm: 220 } }}
+				/>
+				<TextField
+					size="small"
+					label={t.dashboard.filterProject}
+					value={projectRef}
+					onChange={(event) => onProjectRefChange(event.target.value)}
+					sx={{ minWidth: { xs: '100%', sm: 220 } }}
 				/>
 				<Button variant="outlined" onClick={onReset} size="small">
 					{t.dashboard.resetDates}
@@ -1354,9 +1395,24 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ company_id }) => {
 	const [dateFrom, setDateFrom] = useState<Date | null>(subMonths(new Date(), 12));
 	const [dateTo, setDateTo] = useState<Date | null>(new Date());
 	const [selectedDevise, setSelectedDevise] = useState<'MAD' | 'EUR' | 'USD'>('MAD');
+	const [selectedClient, setSelectedClient] = useState<DashboardClientOption | null>(null);
+	const [projectRef, setProjectRef] = useState('');
 
 	const { data: companyData } = useGetCompanyQuery({ id: company_id });
+	const { data: rawClientsData } = useGetClientsListQuery({ company_id, with_pagination: false });
 	const usesForeignCurrency = companyData?.uses_foreign_currency || false;
+
+	const clientOptions = useMemo<DashboardClientOption[]>(() => {
+		const clients = Array.isArray(rawClientsData) ? rawClientsData : (rawClientsData?.results ?? []);
+		return clients.map((client) => ({
+			id: Number(client.id),
+			label:
+				client.raison_sociale ||
+				[client.nom, client.prenom].filter(Boolean).join(' ') ||
+				client.code_client ||
+				`Client #${client.id}`,
+		}));
+	}, [rawClientsData]);
 
 	const dateParams = useMemo<DateFilterParams>(
 		() => ({
@@ -1364,13 +1420,17 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ company_id }) => {
 			date_to: dateTo ? format(dateTo, 'yyyy-MM-dd') : undefined,
 			company_id,
 			devise: selectedDevise,
+			client_id: selectedClient?.id,
+			project: projectRef.trim() || undefined,
 		}),
-		[dateFrom, dateTo, company_id, selectedDevise],
+		[dateFrom, dateTo, company_id, selectedDevise, selectedClient, projectRef],
 	);
 
 	const handleReset = () => {
 		setDateFrom(subMonths(new Date(), 12));
 		setDateTo(new Date());
+		setSelectedClient(null);
+		setProjectRef('');
 	};
 
 	return (
@@ -1387,6 +1447,11 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ company_id }) => {
 				dateTo={dateTo}
 				onDateFromChange={setDateFrom}
 				onDateToChange={setDateTo}
+				clientOptions={clientOptions}
+				selectedClient={selectedClient}
+				onClientChange={setSelectedClient}
+				projectRef={projectRef}
+				onProjectRefChange={setProjectRef}
 				onReset={handleReset}
 			/>
 			{/* KPI Cards */}

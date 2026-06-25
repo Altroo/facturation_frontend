@@ -24,6 +24,7 @@ import {
 	Edit as EditIcon,
 	Notes as NotesIcon,
 	Payment as PaymentIcon,
+	Person as PersonIcon,
 	Receipt as ReceiptIcon,
 	Warning as WarningIcon,
 } from '@mui/icons-material';
@@ -59,6 +60,7 @@ import {
 	useGetModePaiementListQuery,
 } from '@/store/services/parameter';
 import NoPermission from '@/components/shared/noPermission/noPermission';
+import { useGetClientsListQuery } from '@/store/services/client';
 
 const inputTheme = textInputTheme();
 
@@ -77,6 +79,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 	const router = useRouter();
+	const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
 
 	// Fetch reglement data if editing
 	const {
@@ -87,7 +90,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	// Fetch factures available for payment
 	const { data: facturesForPayment, isLoading: isFacturesLoading } = useGetFactureClientForPaymentQuery(
-		{ company_id },
+		{ company_id, client_id: selectedClientId ?? undefined },
+		{ skip: !token },
+	);
+	const { data: rawClientsData, isLoading: isClientsLoading } = useGetClientsListQuery(
+		{ company_id, with_pagination: false },
 		{ skip: !token },
 	);
 
@@ -190,6 +197,23 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		return factureItems.find((f) => f.value === String(v)) ?? null;
 	}, [formik.values.facture_client, factureItems]);
 
+	const clientItems: DropDownType[] = useMemo(() => {
+		const clients = Array.isArray(rawClientsData) ? rawClientsData : (rawClientsData?.results ?? []);
+		return clients.map((client) => ({
+			value: String(client.id),
+			code:
+				client.raison_sociale ||
+				[client.nom, client.prenom].filter(Boolean).join(' ') ||
+				client.code_client ||
+				`Client #${client.id}`,
+		}));
+	}, [rawClientsData]);
+
+	const selectedClient = useMemo<DropDownType | null>(() => {
+		if (!selectedClientId || clientItems.length === 0) return null;
+		return clientItems.find((client) => client.value === String(selectedClientId)) ?? null;
+	}, [selectedClientId, clientItems]);
+
 	// Get remaining amount for selected facture
 	const selectedFactureRemainingAmount = useMemo<number>(() => {
 		const v = formik.values.facture_client;
@@ -211,6 +235,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [formik.values.facture_client, formik.values.montant]);
+
+	useEffect(() => {
+		if (isEditMode && rawData?.client) {
+			setSelectedClientId(rawData.client);
+		}
+	}, [isEditMode, rawData?.client]);
 
 	// Modes Règlement dropdown items
 	const modeReglementItems: DropDownType[] = useMemo(
@@ -257,7 +287,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const hasValidationErrors = Object.keys(validationErrors).length > 0;
 
-	const isLoading = isAddLoading || isUpdateLoading || isPending || (isEditMode && isDataLoading) || isFacturesLoading;
+	const isLoading =
+		isAddLoading || isUpdateLoading || isPending || (isEditMode && isDataLoading) || isFacturesLoading || isClientsLoading;
 	const shouldShowError = (axiosError?.status ?? 0) > 400 && !isLoading;
 
 	// Financial info for edit mode
@@ -444,6 +475,26 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									</Stack>
 									<Divider sx={{ mb: 3 }} />
 									<Stack spacing={2.5}>
+										<CustomAutoCompleteSelect
+											id="client_filter"
+											size="small"
+											noOptionsText={t.documentForm.noClientFound}
+											label={t.reglements.labelClient}
+											theme={theme}
+											items={clientItems}
+											value={selectedClient}
+											fullWidth
+											onChange={(_, newValue) => {
+												const nextClientId = newValue?.value ? Number(newValue.value) : null;
+												setSelectedClientId(nextClientId);
+												if (!isEditMode) {
+													formik.setFieldValue('facture_client', 0);
+													formik.setFieldValue('montant', 0);
+												}
+											}}
+											disabled={isEditMode}
+											startIcon={<PersonIcon fontSize="small" />}
+										/>
 										<CustomAutoCompleteSelect
 											id="facture_client"
 											size="small"

@@ -78,12 +78,13 @@ export const factureClientApi = createApi({
 			}),
 			providesTags: ['FactureClient'],
 		}),
-		getFactureClientForPayment: builder.query<FactureForPayment[], { company_id: number }>({
-			query: ({ company_id }) => ({
+		getFactureClientForPayment: builder.query<FactureForPayment[], { company_id: number; client_id?: number }>({
+			query: ({ company_id, client_id }) => ({
 				url: process.env.NEXT_PUBLIC_FACTURE_CLIENT_FOR_PAYMENT,
 				method: 'GET',
 				params: {
 					company_id,
+					client_id,
 				},
 			}),
 			providesTags: ['FactureClient'],

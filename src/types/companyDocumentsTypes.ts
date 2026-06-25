@@ -53,6 +53,7 @@ export type CompanyDocumentData = TotalsFields &
 		mode_paiement_name?: string | null;
 		livre_par_name?: string | null;
 		remarque?: string | null;
+		termes_paiement?: string | null;
 		devise?: string | null;
 		date_echeance?: string | null;
 	};
@@ -133,6 +134,7 @@ export interface FactureDocumentData extends BaseDocumentData {
 	numero_facture?: string;
 	date_facture: string;
 	numero_bon_commande_client: string | null;
+	termes_paiement?: string | null;
 }
 
 /** Facture d'avoir-specific document data */
@@ -184,6 +186,7 @@ export interface FactureFormSchema extends BaseDocumentFormSchema {
 	numero_facture?: string;
 	date_facture: string;
 	numero_bon_commande_client: string | null;
+	termes_paiement?: string | null;
 }
 
 /** Bon de livraison form schema type */

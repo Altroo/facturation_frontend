@@ -8,6 +8,7 @@ import {
 	CardContent,
 	Chip,
 	Divider,
+	MenuItem,
 	Stack,
 	Tab,
 	Table,
@@ -17,6 +18,7 @@ import {
 	TableHead,
 	TableRow,
 	Tabs,
+	TextField,
 	Typography,
 	useMediaQuery,
 	useTheme,
@@ -38,6 +40,7 @@ import {
 	Notes as NotesIcon,
 	Payment as PaymentIcon,
 	Person as PersonIcon,
+	Print as PrintIcon,
 	Phone as PhoneIcon,
 	Receipt as ReceiptIcon,
 } from '@mui/icons-material';
@@ -119,6 +122,21 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 	);
 };
 
+type StatementType = 'all' | 'invoice' | 'credit_note' | 'payment';
+
+type AccountStatementRow = {
+	id: string;
+	type: Exclude<StatementType, 'all'>;
+	typeLabel: string;
+	reference: string;
+	date: string;
+	status: string | null;
+	devise: string;
+	debit: number;
+	credit: number;
+	balance: number;
+};
+
 interface Props extends SessionProps {
 	company_id: number;
 	id: number;
@@ -146,6 +164,9 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const { t } = useLanguage();
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
 	const [historyTab, setHistoryTab] = useState(0);
+	const [statementDateFrom, setStatementDateFrom] = useState('');
+	const [statementDateTo, setStatementDateTo] = useState('');
+	const [statementType, setStatementType] = useState<StatementType>('all');
 
 	const handleDelete = async () => {
 		try {
@@ -179,12 +200,159 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const isPM = client?.client_type === 'PM';
 	const formatMoney = (value: string | number | null | undefined, devise = 'MAD') =>
 		`${formatNumberWithSpaces(value ?? 0, 2)} ${devise}`;
+	const parseMoney = (value: string | number | null | undefined) => {
+		if (typeof value === 'number') return value;
+		const normalized = String(value ?? '0')
+			.replace(/\s/g, '')
+			.replace(',', '.');
+		const parsed = Number(normalized);
+		return Number.isFinite(parsed) ? parsed : 0;
+	};
+	const clientDisplayName =
+		client?.raison_sociale || [client?.nom, client?.prenom].filter(Boolean).join(' ') || client?.code_client || '-';
 	const historyRows = [
 		history?.devis ?? [],
 		history?.factures ?? [],
 		history?.avoirs ?? [],
 		history?.reglements ?? [],
 	][historyTab];
+
+	const accountStatementRows = useMemo<AccountStatementRow[]>(() => {
+		const rows: Omit<AccountStatementRow, 'balance'>[] = [
+			...(history?.factures ?? []).map((row) => ({
+				id: `invoice-${row.id}`,
+				type: 'invoice' as const,
+				typeLabel: t.clients.historyFactures,
+				reference: String(row.numero_facture ?? '-'),
+				date: row.date_facture,
+				status: row.statut_paiement || row.statut,
+				devise: row.devise || 'MAD',
+				debit: parseMoney(row.total_ttc_apres_remise),
+				credit: 0,
+			})),
+			...(history?.avoirs ?? []).map((row) => ({
+				id: `credit-note-${row.id}`,
+				type: 'credit_note' as const,
+				typeLabel: t.clients.historyAvoirs,
+				reference: String(row.numero_avoir ?? '-'),
+				date: row.date_avoir,
+				status: row.statut,
+				devise: row.devise || 'MAD',
+				debit: 0,
+				credit: parseMoney(row.total_ttc_apres_remise),
+			})),
+			...(history?.reglements ?? []).map((row) => ({
+				id: `payment-${row.id}`,
+				type: 'payment' as const,
+				typeLabel: t.clients.historyReglements,
+				reference: row.libelle || row.facture_client_numero || '-',
+				date: row.date_reglement,
+				status: row.statut,
+				devise: row.devise || 'MAD',
+				debit: 0,
+				credit: parseMoney(row.montant),
+			})),
+		]
+			.filter((row) => {
+				const date = row.date?.slice(0, 10) || '';
+				if (statementType !== 'all' && row.type !== statementType) return false;
+				if (statementDateFrom && date < statementDateFrom) return false;
+				if (statementDateTo && date > statementDateTo) return false;
+				return true;
+			})
+			.sort((a, b) => {
+				const dateCompare = (a.date || '').localeCompare(b.date || '');
+				return dateCompare === 0 ? a.reference.localeCompare(b.reference) : dateCompare;
+			});
+
+		const balances: Record<string, number> = {};
+		return rows.map((row) => {
+			balances[row.devise] = (balances[row.devise] ?? 0) + row.debit - row.credit;
+			return { ...row, balance: balances[row.devise] };
+		});
+	}, [history, statementDateFrom, statementDateTo, statementType, t.clients.historyAvoirs, t.clients.historyFactures, t.clients.historyReglements]);
+
+	const statementFinalBalances = useMemo(() => {
+		const balances: Record<string, number> = {};
+		accountStatementRows.forEach((row) => {
+			balances[row.devise] = row.balance;
+		});
+		return Object.entries(balances);
+	}, [accountStatementRows]);
+
+	const handlePrintStatement = () => {
+		const printWindow = window.open('', '_blank', 'width=1100,height=800');
+		if (!printWindow) return;
+		const escapeHtml = (value: unknown) =>
+			String(value ?? '').replace(/[&<>"']/g, (char) => {
+				const entities: Record<string, string> = {
+					'&': '&amp;',
+					'<': '&lt;',
+					'>': '&gt;',
+					'"': '&quot;',
+					"'": '&#39;',
+				};
+				return entities[char] ?? char;
+			});
+		const rowsHtml = accountStatementRows
+			.map(
+				(row) => `
+					<tr>
+						<td>${escapeHtml(formatDate(row.date).split(',')[0])}</td>
+						<td>${escapeHtml(row.typeLabel)}</td>
+						<td>${escapeHtml(row.reference)}</td>
+						<td>${escapeHtml(row.status || '-')}</td>
+						<td class="money">${escapeHtml(formatMoney(row.debit, row.devise))}</td>
+						<td class="money">${escapeHtml(formatMoney(row.credit, row.devise))}</td>
+						<td class="money">${escapeHtml(formatMoney(row.balance, row.devise))}</td>
+					</tr>
+				`,
+			)
+			.join('');
+		const balancesHtml = statementFinalBalances
+			.map(([devise, balance]) => `<strong>${escapeHtml(formatMoney(balance, devise))}</strong>`)
+			.join(' / ');
+		printWindow.document.write(`
+			<!doctype html>
+			<html>
+				<head>
+					<title>${escapeHtml(t.clients.accountStatement)}</title>
+					<style>
+						body { font-family: Arial, sans-serif; padding: 24px; color: #111827; }
+						h1 { font-size: 22px; margin: 0 0 4px; }
+						h2 { font-size: 16px; margin: 0 0 20px; font-weight: 500; }
+						table { border-collapse: collapse; width: 100%; }
+						th, td { border: 1px solid #d1d5db; padding: 8px; font-size: 12px; text-align: left; }
+						th { background: #f3f4f6; }
+						.money { text-align: right; white-space: nowrap; }
+						.footer { margin-top: 16px; text-align: right; font-size: 14px; }
+					</style>
+				</head>
+				<body>
+					<h1>${escapeHtml(t.clients.accountStatement)}</h1>
+					<h2>${escapeHtml(clientDisplayName)}</h2>
+					<table>
+						<thead>
+							<tr>
+								<th>${escapeHtml(t.common.date)}</th>
+								<th>${escapeHtml(t.clients.statementType)}</th>
+								<th>${escapeHtml(t.clients.statementReference)}</th>
+								<th>${escapeHtml(t.common.status)}</th>
+								<th>${escapeHtml(t.clients.statementDebit)}</th>
+								<th>${escapeHtml(t.clients.statementCredit)}</th>
+								<th>${escapeHtml(t.clients.statementBalance)}</th>
+							</tr>
+						</thead>
+						<tbody>${rowsHtml}</tbody>
+					</table>
+					<div class="footer">${escapeHtml(t.clients.statementFinalBalance)}: ${balancesHtml || escapeHtml(formatMoney(0))}</div>
+				</body>
+			</html>
+		`);
+		printWindow.document.close();
+		printWindow.focus();
+		printWindow.print();
+	};
 
 	return (
 		<Stack
@@ -455,6 +623,123 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 									<InfoRow icon={<NotesIcon />} label={t.clients.fieldRemarque} value={client?.remarque} />
+								</CardContent>
+							</Card>
+
+							<Card elevation={2} sx={{ borderRadius: 2 }}>
+								<CardContent sx={{ p: 3 }}>
+									<Stack
+										direction={{ xs: 'column', md: 'row' }}
+										spacing={2}
+										sx={{ alignItems: { xs: 'stretch', md: 'center' }, justifyContent: 'space-between', mb: 2 }}
+									>
+										<Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
+											<AccountBalanceIcon color="primary" />
+											<Typography variant="h6" sx={{ fontWeight: 700 }}>
+												{t.clients.accountStatement}
+											</Typography>
+										</Stack>
+										<Button
+											variant="outlined"
+											size="small"
+											startIcon={<PrintIcon />}
+											onClick={handlePrintStatement}
+											disabled={accountStatementRows.length === 0}
+										>
+											{t.clients.statementPrint}
+										</Button>
+									</Stack>
+									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
+									<Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 2 }}>
+										<TextField
+											type="date"
+											size="small"
+											label={t.clients.statementDateFrom}
+											value={statementDateFrom}
+											onChange={(event) => setStatementDateFrom(event.target.value)}
+											slotProps={{ inputLabel: { shrink: true } }}
+											fullWidth
+										/>
+										<TextField
+											type="date"
+											size="small"
+											label={t.clients.statementDateTo}
+											value={statementDateTo}
+											onChange={(event) => setStatementDateTo(event.target.value)}
+											slotProps={{ inputLabel: { shrink: true } }}
+											fullWidth
+										/>
+										<TextField
+											select
+											size="small"
+											label={t.clients.statementType}
+											value={statementType}
+											onChange={(event) => setStatementType(event.target.value as StatementType)}
+											fullWidth
+										>
+											<MenuItem value="all">{t.clients.statementAllTypes}</MenuItem>
+											<MenuItem value="invoice">{t.clients.historyFactures}</MenuItem>
+											<MenuItem value="credit_note">{t.clients.historyAvoirs}</MenuItem>
+											<MenuItem value="payment">{t.clients.historyReglements}</MenuItem>
+										</TextField>
+									</Stack>
+									{isHistoryLoading ? (
+										<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
+									) : accountStatementRows.length === 0 ? (
+										<Typography variant="body2" color="text.secondary">
+											{t.clients.noHistory}
+										</Typography>
+									) : (
+										<>
+											<TableContainer>
+												<Table size="small">
+													<TableHead>
+														<TableRow>
+															<TableCell>{t.common.date}</TableCell>
+															<TableCell>{t.clients.statementType}</TableCell>
+															<TableCell>{t.clients.statementReference}</TableCell>
+															<TableCell>{t.common.status}</TableCell>
+															<TableCell align="right">{t.clients.statementDebit}</TableCell>
+															<TableCell align="right">{t.clients.statementCredit}</TableCell>
+															<TableCell align="right">{t.clients.statementBalance}</TableCell>
+														</TableRow>
+													</TableHead>
+													<TableBody>
+														{accountStatementRows.map((row) => (
+															<TableRow key={row.id}>
+																<TableCell>{formatDate(row.date).split(',')[0]}</TableCell>
+																<TableCell>{row.typeLabel}</TableCell>
+																<TableCell>{row.reference}</TableCell>
+																<TableCell>
+																	<Chip label={row.status || '-'} size="small" variant="outlined" />
+																</TableCell>
+																<TableCell align="right">{formatMoney(row.debit, row.devise)}</TableCell>
+																<TableCell align="right">{formatMoney(row.credit, row.devise)}</TableCell>
+																<TableCell align="right">{formatMoney(row.balance, row.devise)}</TableCell>
+															</TableRow>
+														))}
+													</TableBody>
+												</Table>
+											</TableContainer>
+											<Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end', flexWrap: 'wrap', mt: 2 }}>
+												<Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+													{t.clients.statementFinalBalance}:
+												</Typography>
+												{statementFinalBalances.length === 0 ? (
+													<Typography variant="subtitle1">{formatMoney(0)}</Typography>
+												) : (
+													statementFinalBalances.map(([devise, balance]) => (
+														<Chip
+															key={devise}
+															label={formatMoney(balance, devise)}
+															color={balance > 0 ? 'warning' : 'success'}
+															variant="outlined"
+														/>
+													))
+												)}
+											</Stack>
+										</>
+									)}
 								</CardContent>
 							</Card>
 

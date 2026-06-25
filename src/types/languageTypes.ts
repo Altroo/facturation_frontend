@@ -326,6 +326,17 @@ export type TranslationDictionary = {
 		historyAvoirs: string;
 		historyReglements: string;
 		noHistory: string;
+		accountStatement: string;
+		statementDateFrom: string;
+		statementDateTo: string;
+		statementType: string;
+		statementAllTypes: string;
+		statementReference: string;
+		statementDebit: string;
+		statementCredit: string;
+		statementBalance: string;
+		statementFinalBalance: string;
+		statementPrint: string;
 		colCodeClient: string;
 		colType: string;
 		colRaisonSociale: string;
@@ -833,6 +844,9 @@ export type TranslationDictionary = {
 		dateFrom: string;
 		dateTo: string;
 		resetDates: string;
+		filterClient: string;
+		filterProject: string;
+		allClients: string;
 		chartCA: string;
 		chartCADesc: string;
 		chartRepartitionCA: string;
@@ -1035,6 +1049,7 @@ export type TranslationDictionary = {
 		fieldDemandePrixLabel: string;
 		fieldBonCommandeLabel: string;
 		fieldModePaiementLabel: string;
+		fieldTermesPaiementLabel: string;
 		fieldLivreurLabel: string;
 		fieldRemarqueLabel: string;
 		fieldTypeRemiseLabel: string;

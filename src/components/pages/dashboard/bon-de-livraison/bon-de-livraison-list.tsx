@@ -72,6 +72,7 @@ const createBonDeLivraisonListConfig = (t: TranslationDictionary): DocumentListC
 			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') => BON_DE_LIVRAISON_PDF(id, companyId, 'avec_unite_avec_remise', language),
 		},
 	],
+	canPrintRow: (row) => row.statut !== 'Brouillon',
 });
 interface FormikContentProps extends SessionProps {
 	company_id: number;

@@ -9,11 +9,9 @@ import {
 	Card,
 	CardContent,
 	Divider,
-	FormControlLabel,
 	IconButton,
 	InputAdornment,
 	Stack,
-	Switch,
 	Tooltip,
 	Typography,
 	useTheme,
@@ -148,7 +146,6 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 	const [showAddArticleModal, setShowAddArticleModal] = useState(false);
 	const [showGlobalRemiseModal, setShowGlobalRemiseModal] = useState(false);
 	const [selectedArticles, setSelectedArticles] = useState<Set<number>>(new Set());
-	const [isFreeMode, setIsFreeMode] = useState(!initialOriginId);
 	const topRef = useRef<HTMLDivElement | null>(null);
 
 	const { data: rawData, isLoading: isDataLoading, error: dataError } = useGetFactureAvoirQuery(
@@ -180,6 +177,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 	const [addFactureAvoir, { isLoading: isAddLoading, error: addError }] = useAddFactureAvoirMutation();
 	const [editFactureAvoir, { isLoading: isUpdateLoading, error: updateError }] = useEditFactureAvoirMutation();
 	const [patchStatut, { isLoading: isPatchLoading }] = usePatchFactureAvoirStatutMutation();
+	const isLegacyFreeAvoir = Boolean(isEditMode && rawData && !rawData.facture_origine);
 
 	const articles = useMemo(() => normalizeList<ArticleClass>(rawArticlesData), [rawArticlesData]);
 	const clients = useMemo(() => normalizeList<ClientClass>(rawClientsData), [rawClientsData]);
@@ -243,8 +241,8 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 		validate: (values) => {
 			const errors: FormikErrors<FactureAvoirFormValues> = {};
 			if (!values.motif_avoir) errors.motif_avoir = t.facturesAvoir.motifRequired;
-			if (!isEditMode && !isFreeMode && !values.facture_origine) errors.facture_origine = t.facturesAvoir.originRequired;
-			if ((isEditMode || isFreeMode || values.facture_origine) && !values.client) errors.client = t.facturesAvoir.clientRequired;
+			if (!isLegacyFreeAvoir && !values.facture_origine) errors.facture_origine = t.facturesAvoir.originRequired;
+			if ((isLegacyFreeAvoir || values.facture_origine) && !values.client) errors.client = t.facturesAvoir.clientRequired;
 			if (!values.date_avoir) errors.date_avoir = t.validation.required;
 			if (!values.lignes.length) errors.lignes = t.facturesAvoir.linesRequired;
 			return errors;
@@ -323,7 +321,6 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 			if (!originId) return;
 			try {
 				const data = await loadFromFacture({ id: originId }).unwrap();
-				setIsFreeMode(false);
 				await formik.setValues((prev) => ({
 					...prev,
 					facture_origine: data.facture_origine ?? originId,
@@ -495,9 +492,9 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 	const apiError = addError || updateError || dataError;
 	const dataGridColumns = linesColumns as GridColDef[];
 	const isLoading = isDataLoading || isNumLoading || isInitialOriginLoading;
-	const effectiveFreeMode = isEditMode ? !formik.values.facture_origine : isFreeMode;
-	const isOriginRequired = !effectiveFreeMode;
-	const isClientRequired = effectiveFreeMode || isEditMode || Boolean(formik.values.facture_origine);
+	const effectiveFreeMode = isLegacyFreeAvoir;
+	const isOriginRequired = !isLegacyFreeAvoir;
+	const isClientRequired = isLegacyFreeAvoir || Boolean(formik.values.facture_origine);
 
 	if (isLoading) return <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />;
 
@@ -661,23 +658,6 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 								</Stack>
 								<Divider sx={{ mb: 3 }} />
 								<Stack spacing={2.5}>
-									<FormControlLabel
-										control={
-											<Switch
-												checked={effectiveFreeMode}
-												onChange={(_, checked) => {
-													setIsFreeMode(checked);
-													if (checked) {
-														void formik.setFieldValue('facture_origine', null);
-														void formik.setFieldValue('client', null);
-														void formik.setFieldValue('lignes', []);
-													}
-												}}
-												disabled={isEditMode || isLocked}
-											/>
-										}
-										label={t.facturesAvoir.fieldAvoirLibre}
-									/>
 									<CustomAutoCompleteSelect
 										id="facture_origine"
 										size="small"

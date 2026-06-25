@@ -288,6 +288,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				date_facture: isEditMode ? (factureData?.date_facture ?? today) : today,
 				date_echeance: isEditMode ? (rawData?.date_echeance ?? null) : null,
 				numero_bon_commande_client: isEditMode ? (factureData?.numero_bon_commande_client ?? null) : null,
+				termes_paiement: isEditMode ? (factureData?.termes_paiement ?? null) : null,
 				mode_paiement: isEditMode ? (rawData?.mode_paiement ?? null) : null,
 				remarque: isEditMode ? (rawData?.remarque ?? null) : null,
 				remise_type: isEditMode ? rawData?.remise_type : undefined,
@@ -904,6 +905,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			date_echeance: t.documentForm.fieldDateEcheanceLabel,
 			numero_demande_prix_client: t.documentForm.fieldDemandePrixLabel,
 			numero_bon_commande_client: t.documentForm.fieldBonCommandeLabel,
+			termes_paiement: t.documentForm.fieldTermesPaiementLabel,
 			mode_paiement: t.documentForm.fieldModePaiementLabel,
 			livre_par: t.documentForm.fieldLivreurLabel,
 			remarque: t.documentForm.fieldRemarqueLabel,
@@ -1098,7 +1100,9 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 													label={t.documentForm.fieldNumero}
 													value={formik.values.numero_part}
 													onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-														if (/^\d*$/.test(e.target.value)) formik.setFieldValue('numero_part', e.target.value);
+														if (/^[A-Za-z0-9]*$/.test(e.target.value)) {
+															formik.setFieldValue('numero_part', e.target.value.toUpperCase());
+														}
 													}}
 													onBlur={formik.handleBlur('numero_part')}
 													error={formik.touched.numero_part && Boolean(formik.errors.numero_part)}
@@ -1109,7 +1113,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 													size="small"
 													theme={inputFieldTheme}
 													startIcon={<NumbersIcon fontSize="small" color="action" />}
-													slotProps={{ input: { inputProps: { inputMode: 'numeric', pattern: '[0-9]*' } } }}
+													slotProps={{ input: { inputProps: { pattern: '[A-Za-z0-9]*' } } }}
 												/>
 											</Box>
 											{!hideYearPart && (
@@ -1408,6 +1412,29 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 												/>
 											}
 										/>
+										{(config.documentType === 'facture-client' || config.documentType === 'facture-pro-forma') && (
+											<CustomTextInput
+												id="termes_paiement"
+												type="textarea"
+												label={t.documentForm.fieldTermesPaiementLabel}
+												value={(formik.values as { termes_paiement?: string | null }).termes_paiement || ''}
+												onChange={formik.handleChange('termes_paiement')}
+												onBlur={formik.handleBlur('termes_paiement')}
+												error={
+													(formik.touched as { termes_paiement?: boolean }).termes_paiement &&
+													Boolean((formik.errors as { termes_paiement?: string }).termes_paiement)
+												}
+												helperText={
+													(formik.touched as { termes_paiement?: boolean }).termes_paiement
+														? (formik.errors as { termes_paiement?: string }).termes_paiement
+														: ''
+												}
+												fullWidth
+												size="small"
+												theme={inputFieldTheme}
+												startIcon={<NotesIcon fontSize="small" color="action" />}
+											/>
+										)}
 										{config.documentType === 'bon-de-livraison' && (
 											<CustomAutoCompleteSelect
 												id="livre_par"

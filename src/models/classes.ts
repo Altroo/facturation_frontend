@@ -226,6 +226,7 @@ export class FactureClass {
 		public date_facture: string,
 		public date_echeance: string | null,
 		public numero_bon_commande_client: string | null,
+		public termes_paiement: string | null,
 		public mode_paiement: number | null,
 		public readonly mode_paiement_name: string | null,
 		public remarque: string | null,

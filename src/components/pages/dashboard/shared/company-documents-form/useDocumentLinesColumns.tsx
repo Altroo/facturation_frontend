@@ -464,6 +464,7 @@ export const useDocumentLinesColumns = ({
 			handleDeleteLine,
 			handleLineChangeRef,
 			isNectarCompany,
+			devise,
 			t,
 		],
 	);

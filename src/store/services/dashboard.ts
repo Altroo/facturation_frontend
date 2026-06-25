@@ -11,6 +11,8 @@ export interface DateFilterParams {
 	date_to?: string;
 	company_id?: number;
 	devise?: 'MAD' | 'EUR' | 'USD';
+	client_id?: number;
+	project?: string;
 }
 
 // Dashboard data types
@@ -200,6 +202,8 @@ export const buildDateQueryString = (params?: DateFilterParams): string => {
 	if (params.date_to) searchParams.append('date_to', params.date_to);
 	if (params.company_id) searchParams.append('company_id', params.company_id.toString());
 	if (params.devise) searchParams.append('devise', params.devise);
+	if (params.client_id) searchParams.append('client_id', params.client_id.toString());
+	if (params.project) searchParams.append('project', params.project);
 	const queryString = searchParams.toString();
 	return queryString ? `?${queryString}` : '';
 }
