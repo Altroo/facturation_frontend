@@ -224,6 +224,12 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	][historyTab];
 
 	const accountStatementRows = useMemo<AccountStatementRow[]>(() => {
+		const typeOrder: Record<StatementEntryType, number> = {
+			opening: 0,
+			invoice: 1,
+			credit_note: 2,
+			payment: 3,
+		};
 		const rows: AccountStatementRow[] = [
 			...(history?.factures ?? []).map((row) => ({
 				id: `invoice-${row.id}`,
@@ -270,7 +276,9 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 			})
 			.sort((a, b) => {
 				const dateCompare = (a.date || '').localeCompare(b.date || '');
-				return dateCompare === 0 ? a.label.localeCompare(b.label) : dateCompare;
+				if (dateCompare !== 0) return dateCompare;
+				const typeCompare = typeOrder[a.type] - typeOrder[b.type];
+				return typeCompare === 0 ? a.label.localeCompare(b.label) : typeCompare;
 			});
 
 		if (statementDateFrom && statementType === 'all') {
