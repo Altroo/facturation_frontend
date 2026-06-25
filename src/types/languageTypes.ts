@@ -331,6 +331,12 @@ export type TranslationDictionary = {
 		statementDateTo: string;
 		statementType: string;
 		statementAllTypes: string;
+		statementDueDate: string;
+		statementPiece: string;
+		statementLabel: string;
+		statementInvoicePiece: string;
+		statementPaymentPiece: string;
+		statementCreditNotePiece: string;
 		statementReference: string;
 		statementDebit: string;
 		statementCredit: string;

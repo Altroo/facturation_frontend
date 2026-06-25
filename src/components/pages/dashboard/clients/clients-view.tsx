@@ -15,6 +15,7 @@ import {
 	TableBody,
 	TableCell,
 	TableContainer,
+	TableFooter,
 	TableHead,
 	TableRow,
 	Tabs,
@@ -122,19 +123,19 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 	);
 };
 
-type StatementType = 'all' | 'invoice' | 'credit_note' | 'payment';
+type StatementEntryType = 'invoice' | 'credit_note' | 'payment' | 'opening';
+type StatementType = 'all' | Exclude<StatementEntryType, 'opening'>;
 
 type AccountStatementRow = {
 	id: string;
-	type: Exclude<StatementType, 'all'>;
-	typeLabel: string;
-	reference: string;
+	type: StatementEntryType;
 	date: string;
-	status: string | null;
+	dueDate: string;
+	piece: string;
+	label: string;
 	devise: string;
 	debit: number;
 	credit: number;
-	balance: number;
 };
 
 interface Props extends SessionProps {
@@ -200,6 +201,11 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const isPM = client?.client_type === 'PM';
 	const formatMoney = (value: string | number | null | undefined, devise = 'MAD') =>
 		`${formatNumberWithSpaces(value ?? 0, 2)} ${devise}`;
+	const formatStatementDate = (value: string | null | undefined) => {
+		const datePart = String(value ?? '').slice(0, 10);
+		const [year, month, day] = datePart.split('-');
+		return year && month && day ? `${day}/${month}/${year}` : '-';
+	};
 	const parseMoney = (value: string | number | null | undefined) => {
 		if (typeof value === 'number') return value;
 		const normalized = String(value ?? '0')
@@ -218,14 +224,14 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	][historyTab];
 
 	const accountStatementRows = useMemo<AccountStatementRow[]>(() => {
-		const rows: Omit<AccountStatementRow, 'balance'>[] = [
+		const rows: AccountStatementRow[] = [
 			...(history?.factures ?? []).map((row) => ({
 				id: `invoice-${row.id}`,
 				type: 'invoice' as const,
-				typeLabel: t.clients.historyFactures,
-				reference: String(row.numero_facture ?? '-'),
 				date: row.date_facture,
-				status: row.statut_paiement || row.statut,
+				dueDate: row.date_echeance || row.date_facture,
+				piece: t.clients.statementInvoicePiece,
+				label: `N° : ${row.numero_facture ?? '-'}`,
 				devise: row.devise || 'MAD',
 				debit: parseMoney(row.total_ttc_apres_remise),
 				credit: 0,
@@ -233,10 +239,12 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 			...(history?.avoirs ?? []).map((row) => ({
 				id: `credit-note-${row.id}`,
 				type: 'credit_note' as const,
-				typeLabel: t.clients.historyAvoirs,
-				reference: String(row.numero_avoir ?? '-'),
 				date: row.date_avoir,
-				status: row.statut,
+				dueDate: row.date_avoir,
+				piece: t.clients.statementCreditNotePiece,
+				label: row.facture_origine_numero
+					? `Avoir fact N°(${row.facture_origine_numero})`
+					: `N° : ${row.numero_avoir ?? '-'}`,
 				devise: row.devise || 'MAD',
 				debit: 0,
 				credit: parseMoney(row.total_ttc_apres_remise),
@@ -244,10 +252,10 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 			...(history?.reglements ?? []).map((row) => ({
 				id: `payment-${row.id}`,
 				type: 'payment' as const,
-				typeLabel: t.clients.historyReglements,
-				reference: row.libelle || row.facture_client_numero || '-',
 				date: row.date_reglement,
-				status: row.statut,
+				dueDate: row.date_echeance || row.date_reglement,
+				piece: t.clients.statementPaymentPiece,
+				label: `Reg fact N°(${row.facture_client_numero || row.libelle || '-'}) ${clientDisplayName}`,
 				devise: row.devise || 'MAD',
 				debit: 0,
 				credit: parseMoney(row.montant),
@@ -262,23 +270,61 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 			})
 			.sort((a, b) => {
 				const dateCompare = (a.date || '').localeCompare(b.date || '');
-				return dateCompare === 0 ? a.reference.localeCompare(b.reference) : dateCompare;
+				return dateCompare === 0 ? a.label.localeCompare(b.label) : dateCompare;
 			});
 
-		const balances: Record<string, number> = {};
-		return rows.map((row) => {
-			balances[row.devise] = (balances[row.devise] ?? 0) + row.debit - row.credit;
-			return { ...row, balance: balances[row.devise] };
-		});
-	}, [history, statementDateFrom, statementDateTo, statementType, t.clients.historyAvoirs, t.clients.historyFactures, t.clients.historyReglements]);
+		if (statementDateFrom && statementType === 'all') {
+			return [
+				{
+					id: 'opening-balance',
+					type: 'opening',
+					date: statementDateFrom,
+					dueDate: '',
+					piece: '',
+					label: '',
+					devise: rows[0]?.devise || 'MAD',
+					debit: 0,
+					credit: 0,
+				},
+				...rows,
+			];
+		}
 
-	const statementFinalBalances = useMemo(() => {
-		const balances: Record<string, number> = {};
+		return rows;
+	}, [
+		clientDisplayName,
+		history,
+		statementDateFrom,
+		statementDateTo,
+		statementType,
+		t.clients.statementCreditNotePiece,
+		t.clients.statementInvoicePiece,
+		t.clients.statementPaymentPiece,
+	]);
+
+	const statementTotals = useMemo(() => {
+		const totals: Record<string, { debit: number; credit: number }> = {};
 		accountStatementRows.forEach((row) => {
-			balances[row.devise] = row.balance;
+			if (!totals[row.devise]) totals[row.devise] = { debit: 0, credit: 0 };
+			totals[row.devise].debit += row.debit;
+			totals[row.devise].credit += row.credit;
 		});
-		return Object.entries(balances);
+		return Object.entries(totals).map(([devise, total]) => ({
+			devise,
+			debit: total.debit,
+			credit: total.credit,
+			balance: total.debit - total.credit,
+		}));
 	}, [accountStatementRows]);
+	const hasMultipleStatementCurrencies = statementTotals.length > 1;
+	const formatStatementAmount = (value: string | number | null | undefined, devise = 'MAD') =>
+		`${formatNumberWithSpaces(value ?? 0, 2)}${hasMultipleStatementCurrencies ? ` ${devise}` : ''}`;
+	const statementPeriodFrom =
+		statementDateFrom || accountStatementRows.find((row) => row.type !== 'opening')?.date || statementDateFrom;
+	const statementPeriodTo =
+		statementDateTo ||
+		[...accountStatementRows].reverse().find((row) => row.type !== 'opening')?.date ||
+		new Date().toISOString();
 
 	const handlePrintStatement = () => {
 		const printWindow = window.open('', '_blank', 'width=1100,height=800');
@@ -298,54 +344,82 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 			.map(
 				(row) => `
 					<tr>
-						<td>${escapeHtml(formatDate(row.date).split(',')[0])}</td>
-						<td>${escapeHtml(row.typeLabel)}</td>
-						<td>${escapeHtml(row.reference)}</td>
-						<td>${escapeHtml(row.status || '-')}</td>
-						<td class="money">${escapeHtml(formatMoney(row.debit, row.devise))}</td>
-						<td class="money">${escapeHtml(formatMoney(row.credit, row.devise))}</td>
-						<td class="money">${escapeHtml(formatMoney(row.balance, row.devise))}</td>
+						<td>${escapeHtml(formatStatementDate(row.date))}</td>
+						<td>${escapeHtml(row.dueDate ? formatStatementDate(row.dueDate) : '')}</td>
+						<td>${escapeHtml(row.piece)}</td>
+						<td>${escapeHtml(row.label)}</td>
+						<td class="money">${escapeHtml(formatStatementAmount(row.debit, row.devise))}</td>
+						<td class="money">${escapeHtml(formatStatementAmount(row.credit, row.devise))}</td>
 					</tr>
 				`,
 			)
 			.join('');
-		const balancesHtml = statementFinalBalances
-			.map(([devise, balance]) => `<strong>${escapeHtml(formatMoney(balance, devise))}</strong>`)
-			.join(' / ');
+		const totalsHtml = statementTotals
+			.map(
+				(total) => `
+					<tr class="totals">
+						<td colspan="4"></td>
+						<td class="money">${escapeHtml(formatStatementAmount(total.debit, total.devise))}</td>
+						<td class="money">${escapeHtml(formatStatementAmount(total.credit, total.devise))}</td>
+					</tr>
+					<tr class="balance">
+						<td colspan="4"></td>
+						<td class="money label">${escapeHtml(t.clients.statementBalance)}</td>
+						<td class="money">${escapeHtml(formatStatementAmount(total.balance, total.devise))}</td>
+					</tr>
+				`,
+			)
+			.join('');
 		printWindow.document.write(`
 			<!doctype html>
 			<html>
 				<head>
 					<title>${escapeHtml(t.clients.accountStatement)}</title>
 					<style>
-						body { font-family: Arial, sans-serif; padding: 24px; color: #111827; }
-						h1 { font-size: 22px; margin: 0 0 4px; }
-						h2 { font-size: 16px; margin: 0 0 20px; font-weight: 500; }
+						body { font-family: Arial, sans-serif; padding: 24px 36px; color: #111; }
+						.header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #777; padding-bottom: 8px; margin-bottom: 10px; }
+						.title { display: flex; gap: 28px; align-items: baseline; font-size: 15px; font-weight: 700; text-decoration: underline; }
+						.client { text-decoration: none; font-size: 14px; }
+						.meta { min-width: 160px; display: grid; grid-template-columns: 1fr auto; gap: 8px 24px; font-size: 12px; font-weight: 700; }
+						.period { display: flex; justify-content: flex-end; gap: 36px; margin: 6px 0 26px; font-size: 12px; font-weight: 700; }
 						table { border-collapse: collapse; width: 100%; }
-						th, td { border: 1px solid #d1d5db; padding: 8px; font-size: 12px; text-align: left; }
-						th { background: #f3f4f6; }
+						th, td { border: 1px solid #9ca3af; padding: 6px 8px; font-size: 11px; text-align: left; }
+						th { background: #f7f7f7; text-align: center; font-weight: 700; font-style: italic; }
 						.money { text-align: right; white-space: nowrap; }
-						.footer { margin-top: 16px; text-align: right; font-size: 14px; }
+						.totals td, .balance td { font-weight: 700; }
+						.balance .label { text-align: center; background: #f7f7f7; }
 					</style>
 				</head>
 				<body>
-					<h1>${escapeHtml(t.clients.accountStatement)}</h1>
-					<h2>${escapeHtml(clientDisplayName)}</h2>
+					<div class="header">
+						<div class="title">
+							<span>${escapeHtml(t.clients.accountStatement)}</span>
+							<span class="client">${escapeHtml(clientDisplayName)}</span>
+						</div>
+						<div class="meta">
+							<span>${escapeHtml(t.common.date)} :</span>
+							<span>${escapeHtml(formatStatementDate(new Date().toISOString()))}</span>
+							<span></span>
+							<span>1 / 1</span>
+						</div>
+					</div>
+					<div class="period">
+						<span>${escapeHtml(t.clients.statementDateFrom)} : ${escapeHtml(formatStatementDate(statementPeriodFrom))}</span>
+						<span>${escapeHtml(t.clients.statementDateTo)} : ${escapeHtml(formatStatementDate(statementPeriodTo))}</span>
+					</div>
 					<table>
 						<thead>
 							<tr>
 								<th>${escapeHtml(t.common.date)}</th>
-								<th>${escapeHtml(t.clients.statementType)}</th>
-								<th>${escapeHtml(t.clients.statementReference)}</th>
-								<th>${escapeHtml(t.common.status)}</th>
+								<th>${escapeHtml(t.clients.statementDueDate)}</th>
+								<th>${escapeHtml(t.clients.statementPiece)}</th>
+								<th>${escapeHtml(t.clients.statementLabel)}</th>
 								<th>${escapeHtml(t.clients.statementDebit)}</th>
 								<th>${escapeHtml(t.clients.statementCredit)}</th>
-								<th>${escapeHtml(t.clients.statementBalance)}</th>
 							</tr>
 						</thead>
-						<tbody>${rowsHtml}</tbody>
+						<tbody>${rowsHtml}${totalsHtml}</tbody>
 					</table>
-					<div class="footer">${escapeHtml(t.clients.statementFinalBalance)}: ${balancesHtml || escapeHtml(formatMoney(0))}</div>
 				</body>
 			</html>
 		`);
@@ -696,48 +770,51 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 													<TableHead>
 														<TableRow>
 															<TableCell>{t.common.date}</TableCell>
-															<TableCell>{t.clients.statementType}</TableCell>
-															<TableCell>{t.clients.statementReference}</TableCell>
-															<TableCell>{t.common.status}</TableCell>
+															<TableCell>{t.clients.statementDueDate}</TableCell>
+															<TableCell>{t.clients.statementPiece}</TableCell>
+															<TableCell>{t.clients.statementLabel}</TableCell>
 															<TableCell align="right">{t.clients.statementDebit}</TableCell>
 															<TableCell align="right">{t.clients.statementCredit}</TableCell>
-															<TableCell align="right">{t.clients.statementBalance}</TableCell>
 														</TableRow>
 													</TableHead>
 													<TableBody>
 														{accountStatementRows.map((row) => (
 															<TableRow key={row.id}>
-																<TableCell>{formatDate(row.date).split(',')[0]}</TableCell>
-																<TableCell>{row.typeLabel}</TableCell>
-																<TableCell>{row.reference}</TableCell>
-																<TableCell>
-																	<Chip label={row.status || '-'} size="small" variant="outlined" />
-																</TableCell>
-																<TableCell align="right">{formatMoney(row.debit, row.devise)}</TableCell>
-																<TableCell align="right">{formatMoney(row.credit, row.devise)}</TableCell>
-																<TableCell align="right">{formatMoney(row.balance, row.devise)}</TableCell>
+																<TableCell>{formatStatementDate(row.date)}</TableCell>
+																<TableCell>{row.dueDate ? formatStatementDate(row.dueDate) : ''}</TableCell>
+																<TableCell>{row.piece}</TableCell>
+																<TableCell>{row.label}</TableCell>
+																<TableCell align="right">{formatStatementAmount(row.debit, row.devise)}</TableCell>
+																<TableCell align="right">{formatStatementAmount(row.credit, row.devise)}</TableCell>
 															</TableRow>
 														))}
 													</TableBody>
+													<TableFooter>
+														{statementTotals.map((total) => (
+															<React.Fragment key={total.devise}>
+																<TableRow>
+																	<TableCell colSpan={4} />
+																	<TableCell align="right" sx={{ fontWeight: 700 }}>
+																		{formatStatementAmount(total.debit, total.devise)}
+																	</TableCell>
+																	<TableCell align="right" sx={{ fontWeight: 700 }}>
+																		{formatStatementAmount(total.credit, total.devise)}
+																	</TableCell>
+																</TableRow>
+																<TableRow>
+																	<TableCell colSpan={4} />
+																	<TableCell align="right" sx={{ fontWeight: 700 }}>
+																		{t.clients.statementBalance}
+																	</TableCell>
+																	<TableCell align="right" sx={{ fontWeight: 700 }}>
+																		{formatStatementAmount(total.balance, total.devise)}
+																	</TableCell>
+																</TableRow>
+															</React.Fragment>
+														))}
+													</TableFooter>
 												</Table>
 											</TableContainer>
-											<Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end', flexWrap: 'wrap', mt: 2 }}>
-												<Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-													{t.clients.statementFinalBalance}:
-												</Typography>
-												{statementFinalBalances.length === 0 ? (
-													<Typography variant="subtitle1">{formatMoney(0)}</Typography>
-												) : (
-													statementFinalBalances.map(([devise, balance]) => (
-														<Chip
-															key={devise}
-															label={formatMoney(balance, devise)}
-															color={balance > 0 ? 'warning' : 'success'}
-															variant="outlined"
-														/>
-													))
-												)}
-											</Stack>
 										</>
 									)}
 								</CardContent>
