@@ -37,6 +37,7 @@ import { createNumericFilterOperators } from '@/components/shared/numericFilter/
 import { CLIENTS_VIEW } from '@/utils/routes';
 import { fetchPdfBlob } from '@/utils/apiHelpers';
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
+import { useGetClientsListQuery } from '@/store/services/client';
 import type {
 	DocumentBulkDeleteMutationResult,
 	DocumentConvertMutationResult,
@@ -48,7 +49,7 @@ import type {
 	ConvertAction,
 	PrintAction,
 } from '@/types/companyDocumentsTypes';
-import type { DeviClass, FactureAvoirClass, FactureClass } from '@/models/classes';
+import type { ClientClass, DeviClass, FactureAvoirClass, FactureClass } from '@/models/classes';
 
 export const getStatutColor = (
 	statut: string,
@@ -122,6 +123,14 @@ export const statutFilterOptions = createStatutFilterOptions({
 	},
 } as import('@/types/languageTypes').TranslationDictionary);
 
+const getClientDisplayName = (client: Partial<ClientClass>) => {
+	const isPhysicalPerson = client.client_type === 'PP' || client.client_type === 'Personne physique';
+	if (isPhysicalPerson) {
+		return `${client.nom ?? ''} ${client.prenom ?? ''}`.trim();
+	}
+	return client.raison_sociale || `${client.nom ?? ''} ${client.prenom ?? ''}`.trim() || client.code_client || '';
+};
+
 export interface DocumentListContentProps<TDocument extends DocumentListClass> {
 	/** Company ID */
 	companyId: number;
@@ -185,6 +194,14 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 	const { t } = useLanguage();
 
 	const { data, isLoading, refetch } = queryResult;
+	const { data: rawClientsData } = useGetClientsListQuery(
+		{ company_id: companyId, with_pagination: false, archived: false },
+		{ skip: !accessToken },
+	);
+	const clientsData = useMemo(() => {
+		if (!rawClientsData) return [];
+		return Array.isArray(rawClientsData) ? rawClientsData : rawClientsData.results;
+	}, [rawClientsData]);
 	const { deleteRecord } = deleteMutation;
 	const allowDelete = config.allowDelete ?? true;
 	const getCompletedConvertLabel = useCallback(
@@ -414,21 +431,26 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 	}, [convertMutations]);
 
 	const clientFilterOptions = useMemo(() => {
-		if (!data?.results) return [];
-
-		const objectMap = new Map<number, string>();
-		data.results.forEach((doc) => {
-			const document = doc as DeviClass | FactureClass | FactureAvoirClass;
-			if (document.client && document.client_name) {
-				objectMap.set(document.client, document.client_name);
+		const objectMap = new Map<string, string>();
+		clientsData.forEach((client) => {
+			const label = getClientDisplayName(client);
+			if (label) {
+				objectMap.set(label, label);
 			}
 		});
 
-		return Array.from(objectMap.entries()).map(([, name]) => ({
+		data?.results?.forEach((doc) => {
+			const document = doc as DeviClass | FactureClass | FactureAvoirClass;
+			if (document.client && document.client_name) {
+				objectMap.set(document.client_name, document.client_name);
+			}
+		});
+
+		return Array.from(objectMap.values()).map((name) => ({
 			value: name,
 			label: name,
 		}));
-	}, [data?.results]);
+	}, [clientsData, data?.results]);
 
 	const localStatutFilterOptions = useMemo(() => createStatutFilterOptions(t), [t]);
 

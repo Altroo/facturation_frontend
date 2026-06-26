@@ -56,6 +56,11 @@ jest.mock('@/components/shared/dropdownFilter/dropdownFilter', () => ({
 	createDropdownFilterOperators: jest.fn(() => []),
 }));
 
+const mockUseGetClientsListQuery = jest.fn();
+jest.mock('@/store/services/client', () => ({
+	useGetClientsListQuery: (...args: unknown[]) => mockUseGetClientsListQuery(...args),
+}));
+
 jest.mock('@/utils/helpers', () => ({
 	formatDate: (date: string | null) => (date ? new Date(date).toLocaleDateString('fr-FR') : '—'),
 	formatNumberWithSpaces: (value: string | number | null | undefined, decimals: number = 2): string => {
@@ -284,6 +289,12 @@ describe('CompanyDocumentsListContent', () => {
 		mockDeleteRecord.mockResolvedValue({ unwrap: jest.fn().mockResolvedValue({}) });
 		mockConvertToProForma.mockResolvedValue({ unwrap: jest.fn().mockResolvedValue({ id: 100 }) });
 		mockConvertToClient.mockResolvedValue({ unwrap: jest.fn().mockResolvedValue({ id: 101 }) });
+		mockUseGetClientsListQuery.mockReturnValue({
+			data: [
+				{ id: 10, client_type: 'PM', raison_sociale: 'Client Test' },
+				{ id: 20, client_type: 'PM', raison_sociale: 'Client Two' },
+			],
+		});
 	});
 
 	afterEach(() => {
@@ -451,6 +462,45 @@ describe('CompanyDocumentsListContent', () => {
 			expect(screen.getByText("Nombre d'articles")).toBeInTheDocument();
 			expect(screen.getByText('Date devis')).toBeInTheDocument();
 			expect(screen.getByText('Actions')).toBeInTheDocument();
+		});
+
+		it('uses the full client list for client filter options including personne physique', () => {
+			const { createDropdownFilterOperators } = jest.requireMock('@/components/shared/dropdownFilter/dropdownFilter') as {
+				createDropdownFilterOperators: jest.Mock;
+			};
+			mockUseGetClientsListQuery.mockReturnValue({
+				data: [
+					{ id: 10, client_type: 'PM', raison_sociale: 'Client Test' },
+					{ id: 30, client_type: 'PP', nom: 'Fatima', prenom: 'Bennani' },
+				],
+			});
+
+			render(
+				<CompanyDocumentsListContent
+					companyId={1}
+					role="Caissier"
+					router={mockRouter}
+					config={mockConfig}
+					queryResult={mockQueryResult}
+					deleteMutation={mockDeleteMutation}
+					convertMutations={mockConvertMutations}
+					paginationModel={mockPaginationModel}
+					setPaginationModel={mockSetPaginationModel}
+					searchTerm=""
+					setSearchTerm={mockSetSearchTerm}
+					accessToken={mockToken}
+				/>,
+			);
+
+			expect(createDropdownFilterOperators).toHaveBeenCalledWith(
+				expect.arrayContaining([
+					{ value: 'Client Test', label: 'Client Test' },
+					{ value: 'Fatima Bennani', label: 'Fatima Bennani' },
+				]),
+				expect.any(String),
+				undefined,
+				expect.any(String),
+			);
 		});
 	});
 
