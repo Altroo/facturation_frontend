@@ -11,6 +11,7 @@ export type ActionItem = {
 	onClick: (event?: React.MouseEvent<HTMLElement>) => void;
 	color?: 'inherit' | 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning';
 	show?: boolean;
+	disabled?: boolean;
 };
 
 type MobileActionsMenuProps = {
@@ -38,6 +39,7 @@ const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ actions }) => {
 
 	const handleMenuItemClick = (event: React.MouseEvent, action: ActionItem) => {
 		event.stopPropagation();
+		if (action.disabled) return;
 		handleClose();
 		action.onClick(event as React.MouseEvent<HTMLElement>);
 	};
@@ -79,7 +81,7 @@ const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ actions }) => {
 					}}
 				>
 					{visibleActions.map((action, index) => (
-						<MenuItem key={index} onClick={(e) => handleMenuItemClick(e, action)}>
+						<MenuItem key={index} disabled={action.disabled} onClick={(e) => handleMenuItemClick(e, action)}>
 							<ListItemIcon sx={{ color: action.color ? `${action.color}.main` : 'inherit' }}>
 								{action.icon}
 							</ListItemIcon>
@@ -101,9 +103,11 @@ const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ actions }) => {
 					color={action.color}
 					onClick={(e) => {
 						e.stopPropagation();
+						if (action.disabled) return;
 						action.onClick(e);
 					}}
 					aria-label={action.label}
+					disabled={action.disabled}
 				>
 					{action.icon}
 				</IconButton>

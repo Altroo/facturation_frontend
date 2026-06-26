@@ -4,7 +4,8 @@ export type NotificationTypeValue =
 	| 'overdue_invoice'
 	| 'expiring_quote'
 	| 'uninvoiced_bdl'
-	| 'status_change';
+	| 'status_change'
+	| 'document_created';
 
 export type QuoteExpiryDaysValue = 0 | 1 | 3 | 7 | 14 | 30;
 
@@ -23,6 +24,7 @@ export interface NotificationPreferenceType {
 	notify_overdue_invoice: boolean;
 	notify_expiring_quote: boolean;
 	notify_uninvoiced_bdl: boolean;
+	notify_document_created: boolean;
 	quote_expiry_days: QuoteExpiryDaysValue;
 	date_created: string;
 	date_updated: string;
@@ -32,6 +34,7 @@ export interface NotificationPreferenceFormValues {
 	notify_overdue_invoice: boolean;
 	notify_expiring_quote: boolean;
 	notify_uninvoiced_bdl: boolean;
+	notify_document_created: boolean;
 	quote_expiry_days: QuoteExpiryDaysValue;
 	globalError: string;
 }

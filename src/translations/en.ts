@@ -471,6 +471,7 @@ export const en: TranslationDictionary = {
 		convertToFactureTitle: 'Convert to client invoice?',
 		convertToFactureBody: 'Are you sure you want to convert this pro-forma invoice to a client invoice?',
 		labelFactureClient: 'Client invoice',
+		alreadyConverted: 'Already converted',
 	},
 	facturesClient: {
 		listTitle: 'Client Invoices List',
@@ -553,7 +554,11 @@ export const en: TranslationDictionary = {
 		addError: 'An error occurred while adding the credit note.',
 		updateSuccess: 'Credit note updated successfully.',
 		updateError: 'An error occurred while updating the credit note.',
+		deleteSuccess: 'Credit note deleted successfully',
+		deleteError: 'Error deleting the credit note',
 		deleteLineBody: 'Are you sure you want to delete this line?',
+		deleteModalTitle: 'Delete this credit note?',
+		deleteModalBody: 'Are you sure you want to delete this credit note? This action is irreversible.',
 		noDeleteMessage: 'Numbered credit notes cannot be deleted.',
 		onlyDraftEditable: 'Only draft credit notes can be edited.',
 		selectOrigin: 'Select an original invoice',
@@ -815,6 +820,7 @@ export const en: TranslationDictionary = {
 		notifyOverdueInvoice: 'Overdue invoices',
 		notifyExpiringQuote: 'Expiring quotes',
 		notifyUninvoicedBdl: 'Uninvoiced delivery notes',
+		notifyDocumentCreated: 'Document creation',
 		quoteExpiryDays: 'Alert X days after quote is sent',
 		quoteExpiryOptions: [
 			{ value: 0, label: 'At the time of sending' },
@@ -1227,6 +1233,7 @@ export const en: TranslationDictionary = {
 		you: 'you',
 		role: 'Role',
 		invoiceValidation: 'Invoice validation',
+		documentStatusChange: 'Document status change',
 	},
 	auth: {
 		login: 'Login',

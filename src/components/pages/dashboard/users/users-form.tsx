@@ -204,6 +204,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					raison_sociale: companyData.raison_sociale,
 					role: selectedRole,
 					can_validate_factures: false,
+					can_change_document_status: false,
 				};
 				setCompaniesAdmin([...companiesAdmin, newCompany]);
 				setSelectedCompany(null);
@@ -518,7 +519,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									);
 									setCompaniesAdmin(updatedCompanies);
 								}}
+								onDocumentStatusChangePermissionChange={(index, checked) => {
+									const updatedCompanies = companiesAdmin.map((company, i) =>
+										i === index ? { ...company, can_change_document_status: checked } : company,
+									);
+									setCompaniesAdmin(updatedCompanies);
+								}}
 								showInvoiceValidationPermission
+								showDocumentStatusChangePermission
 								onDelete={(index) => {
 									const membershipId = companiesAdmin[index].membership_id;
 									setCompaniesAdmin(companiesAdmin.filter((c) => c.membership_id !== membershipId));

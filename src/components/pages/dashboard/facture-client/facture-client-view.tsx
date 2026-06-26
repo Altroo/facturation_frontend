@@ -109,7 +109,7 @@ const FactureClientViewClient: React.FC<Props> = ({ session, company_id, id }) =
 	const isCaissier = company?.role === 'Caissier';
 	const canPrint = isCaissier || company?.role === 'Comptable' || company?.role === 'Commercial';
 	const isAccepted = query.data?.statut === 'Accepté';
-	const canValidate = company?.can_validate_factures === true;
+	const canValidate = company?.can_validate_factures === true && company?.can_change_document_status === true;
 	const canManagePayments = Boolean((isCaissier || company?.role === 'Commercial') && isAccepted);
 
 	const headerActions = (

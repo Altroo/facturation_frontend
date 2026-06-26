@@ -28,7 +28,11 @@ const isWSEnvelope = (value: unknown): value is WSEnvelope => {
 
 const isNotificationTypeValue = (value: unknown): value is NotificationType['notification_type'] => {
 	return (
-		value === 'overdue_invoice' || value === 'expiring_quote' || value === 'uninvoiced_bdl' || value === 'status_change'
+		value === 'overdue_invoice' ||
+		value === 'expiring_quote' ||
+		value === 'uninvoiced_bdl' ||
+		value === 'status_change' ||
+		value === 'document_created'
 	);
 };
 

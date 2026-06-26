@@ -44,6 +44,7 @@ const FormikContent: React.FC = () => {
 			notify_overdue_invoice: preferences?.notify_overdue_invoice ?? true,
 			notify_expiring_quote: preferences?.notify_expiring_quote ?? true,
 			notify_uninvoiced_bdl: preferences?.notify_uninvoiced_bdl ?? true,
+			notify_document_created: preferences?.notify_document_created ?? true,
 			quote_expiry_days: preferences?.quote_expiry_days ?? 7,
 			globalError: '',
 		},
@@ -55,6 +56,7 @@ const FormikContent: React.FC = () => {
 					notify_overdue_invoice: values.notify_overdue_invoice,
 					notify_expiring_quote: values.notify_expiring_quote,
 					notify_uninvoiced_bdl: values.notify_uninvoiced_bdl,
+					notify_document_created: values.notify_document_created,
 					quote_expiry_days: values.quote_expiry_days,
 				}).unwrap();
 				onSuccess(t.settings.notificationUpdateSuccess);
@@ -124,6 +126,15 @@ const FormikContent: React.FC = () => {
 									/>
 								}
 								label={t.settings.notifyUninvoicedBdl}
+							/>
+							<FormControlLabel
+								control={
+									<Switch
+										checked={formik.values.notify_document_created}
+										onChange={(e) => formik.setFieldValue('notify_document_created', e.target.checked)}
+									/>
+								}
+								label={t.settings.notifyDocumentCreated}
 							/>
 							<FormControl size="small" fullWidth>
 								<InputLabel id="quote-expiry-days-label">{t.settings.quoteExpiryDays}</InputLabel>

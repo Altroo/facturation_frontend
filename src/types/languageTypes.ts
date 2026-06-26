@@ -470,6 +470,7 @@ export type TranslationDictionary = {
 		convertToFactureTitle: string;
 		convertToFactureBody: string;
 		labelFactureClient: string;
+		alreadyConverted: string;
 	};
 	facturesClient: {
 		listTitle: string;
@@ -552,7 +553,11 @@ export type TranslationDictionary = {
 		addError: string;
 		updateSuccess: string;
 		updateError: string;
+		deleteSuccess: string;
+		deleteError: string;
 		deleteLineBody: string;
+		deleteModalTitle: string;
+		deleteModalBody: string;
 		noDeleteMessage: string;
 		onlyDraftEditable: string;
 		selectOrigin: string;
@@ -814,6 +819,7 @@ export type TranslationDictionary = {
 		notifyOverdueInvoice: string;
 		notifyExpiringQuote: string;
 		notifyUninvoicedBdl: string;
+		notifyDocumentCreated: string;
 		quoteExpiryDays: string;
 		quoteExpiryOptions: { value: number; label: string }[];
 		save: string;
@@ -1219,6 +1225,7 @@ export type TranslationDictionary = {
 		you: string;
 		role: string;
 		invoiceValidation: string;
+		documentStatusChange: string;
 	};
 	auth: {
 		login: string;

@@ -6,6 +6,7 @@ export type UserCompaniesType = {
 	raison_sociale: string;
 	role: string;
 	can_validate_factures?: boolean;
+	can_change_document_status?: boolean;
 };
 
 export interface UserWithCompaniesResponseType extends UserClass {

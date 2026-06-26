@@ -8,8 +8,9 @@ import { Cancel as CancelIcon, Percent as PercentIcon, ReceiptLong as ReceiptLon
 import { GridFilterModel, GridLogicOperator, GridRenderCellParams } from '@mui/x-data-grid';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import {
+	useBulkDeleteFactureAvoirMutation,
+	useDeleteFactureAvoirMutation,
 	useGetFactureAvoirListQuery,
-	useNoDeleteFactureAvoirMutation,
 } from '@/store/services/factureAvoir';
 import { useGetCompanyQuery } from '@/store/services/company';
 import {
@@ -37,10 +38,10 @@ const createFactureAvoirListConfig = (t: TranslationDictionary): DocumentListCon
 		documentTypeName: "facture d'avoir",
 		pageTitle: t.facturesAvoir.listTitle,
 		addButtonText: t.facturesAvoir.newFactureAvoir,
-		deleteSuccessMessage: t.facturesAvoir.noDeleteMessage,
-		deleteErrorMessage: t.facturesAvoir.noDeleteMessage,
-		deleteConfirmTitle: t.facturesAvoir.noDeleteMessage,
-		deleteConfirmBody: t.facturesAvoir.noDeleteMessage,
+		deleteSuccessMessage: t.facturesAvoir.deleteSuccess,
+		deleteErrorMessage: t.facturesAvoir.deleteError,
+		deleteConfirmTitle: t.facturesAvoir.deleteModalTitle,
+		deleteConfirmBody: t.facturesAvoir.deleteModalBody,
 	},
 	routes: {
 		addRoute: FACTURE_AVOIR_ADD,
@@ -55,7 +56,7 @@ const createFactureAvoirListConfig = (t: TranslationDictionary): DocumentListCon
 		extraField: 'motif_avoir_label',
 		extraFieldHeaderName: t.facturesAvoir.colMotif,
 	},
-	allowDelete: false,
+	allowDelete: true,
 	canEditRow: (row) => row.statut === 'Brouillon',
 	getExtraColumns: ({ router, companyId }) => [
 		{
@@ -152,7 +153,8 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 		{ skip: !token },
 	);
 	const data = rawData as FactureAvoirListResponseType | undefined;
-	const [noDelete] = useNoDeleteFactureAvoirMutation();
+	const [deleteRecord] = useDeleteFactureAvoirMutation();
+	const [bulkDeleteRecords] = useBulkDeleteFactureAvoirMutation();
 
 	const currencyStats = data?.stats_by_currency?.[selectedDevise];
 	const totalAvoirs = currencyStats?.total_avoirs
@@ -209,7 +211,8 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 				router={router}
 				config={factureAvoirListConfig}
 				queryResult={{ data: data as FactureAvoirListResponseType | undefined, isLoading, refetch }}
-				deleteMutation={{ deleteRecord: noDelete }}
+				deleteMutation={{ deleteRecord }}
+				bulkDeleteMutation={{ bulkDeleteRecords }}
 				paginationModel={paginationModel}
 				setPaginationModel={setPaginationModel}
 				searchTerm={searchTerm}

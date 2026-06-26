@@ -43,6 +43,7 @@ jest.mock('@/store/services/notification', () => ({
 			notify_overdue_invoice: true,
 			notify_expiring_quote: false,
 			notify_uninvoiced_bdl: true,
+			notify_document_created: true,
 			quote_expiry_days: 7,
 		},
 		isLoading: false,
@@ -102,6 +103,7 @@ describe('NotificationsClient', () => {
 		expect(screen.getByText('Factures en retard de paiement')).toBeInTheDocument();
 		expect(screen.getByText('Devis expirant bientôt')).toBeInTheDocument();
 		expect(screen.getByText('Bons de livraison non facturés')).toBeInTheDocument();
+		expect(screen.getByText('Création de documents')).toBeInTheDocument();
 		expect(screen.getByLabelText('Alerter X jours après envoi du devis')).toBeInTheDocument();
 	});
 
@@ -110,6 +112,7 @@ describe('NotificationsClient', () => {
 		expect(screen.getByLabelText('Factures en retard de paiement')).toBeChecked();
 		expect(screen.getByLabelText('Devis expirant bientôt')).not.toBeChecked();
 		expect(screen.getByLabelText('Bons de livraison non facturés')).toBeChecked();
+		expect(screen.getByLabelText('Création de documents')).toBeChecked();
 	});
 
 	it('calls updatePreferences on submit', async () => {
@@ -120,6 +123,7 @@ describe('NotificationsClient', () => {
 				notify_overdue_invoice: true,
 				notify_expiring_quote: false,
 				notify_uninvoiced_bdl: true,
+				notify_document_created: true,
 				quote_expiry_days: 7,
 			});
 		});

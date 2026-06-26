@@ -306,6 +306,10 @@ export interface ConvertAction {
 	modalBody: string;
 	/** Whether the action is disabled - can be boolean or function */
 	disabled?: boolean | ((row: DocumentListClass) => boolean);
+	/** Whether this conversion has already been completed for a row */
+	completed?: (row: DocumentListClass) => boolean;
+	/** Label shown when the conversion is already completed */
+	completedLabel?: string | ((row: DocumentListClass) => string);
 	/** Route to redirect after successful conversion */
 	redirectRoute: (id: number, companyId: number) => string;
 }

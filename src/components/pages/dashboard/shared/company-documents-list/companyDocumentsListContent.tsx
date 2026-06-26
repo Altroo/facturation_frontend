@@ -45,6 +45,7 @@ import type {
 	DocumentListConfig,
 	DocumentListQueryResult,
 	PaginationModel,
+	ConvertAction,
 	PrintAction,
 } from '@/types/companyDocumentsTypes';
 import type { DeviClass, FactureAvoirClass, FactureClass } from '@/models/classes';
@@ -186,6 +187,15 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 	const { data, isLoading, refetch } = queryResult;
 	const { deleteRecord } = deleteMutation;
 	const allowDelete = config.allowDelete ?? true;
+	const getCompletedConvertLabel = useCallback(
+		(action: ConvertAction, row: DocumentListClass) => {
+			if (typeof action.completedLabel === 'function') {
+				return action.completedLabel(row);
+			}
+			return action.completedLabel ?? t.common.convert;
+		},
+		[t],
+	);
 
 	// Modal states
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -593,19 +603,22 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 						// Convert action if available
 						if (config.convertActions && config.convertActions.length > 0) {
 							const isCurrentItemLoading = isAnyConvertLoading && selectedId === (params.row as DocumentListClass).id;
+							const completedAction = config.convertActions.find((action) => action.completed?.(row));
+							const isConvertCompleted = Boolean(completedAction);
 							actions.push({
-								label: t.common.convert,
+								label: completedAction ? getCompletedConvertLabel(completedAction, row) : t.common.convert,
 								icon: isCurrentItemLoading ? <CircularProgress size={20} /> : <SwapHorizIcon />,
 								onClick: (e?: React.MouseEvent<HTMLElement>) => {
-									if (!isCurrentItemLoading && e) {
+									if (!isCurrentItemLoading && !isConvertCompleted && e) {
 										showConvertModalCall(
 											e as React.MouseEvent<HTMLButtonElement>,
 											(params.row as DocumentListClass).id,
 										);
 									}
 								},
-								color: 'success' as const,
+								color: isConvertCompleted ? ('default' as const) : ('success' as const),
 								show: !isCurrentItemLoading,
+								disabled: isConvertCompleted,
 							});
 						}
 					}
@@ -649,6 +662,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 		showPrintMenuCall,
 		isAnyConvertLoading,
 		selectedId,
+		getCompletedConvertLabel,
 		t,
 	]);
 	const modalsConfig = useMemo(
@@ -778,11 +792,13 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 								? action.disabled(currentRow)
 								: true
 							: (action.disabled ?? false);
+					const isCompleted = currentRow ? Boolean(action.completed?.(currentRow)) : false;
+					const label = isCompleted && currentRow ? getCompletedConvertLabel(action, currentRow) : action.label;
 
 					items.push(
-						<MenuItem key={action.key} disabled={isDisabled} onClick={() => handleMenuItemClick(action.key)}>
+						<MenuItem key={action.key} disabled={isDisabled || isCompleted} onClick={() => handleMenuItemClick(action.key)}>
 							<ListItemIcon>{action.icon}</ListItemIcon>
-							<ListItemText>{action.label}</ListItemText>
+							<ListItemText>{label}</ListItemText>
 						</MenuItem>,
 					);
 					return items;

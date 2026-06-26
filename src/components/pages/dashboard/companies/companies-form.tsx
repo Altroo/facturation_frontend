@@ -120,6 +120,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 					last_name: last_name ?? '',
 					role: 'Caissier',
 					can_validate_factures: true,
+					can_change_document_status: true,
 				},
 			];
 		}
@@ -131,6 +132,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			first_name: u.first_name,
 			last_name: u.last_name,
 			can_validate_factures: u.can_validate_factures ?? false,
+			can_change_document_status: u.can_change_document_status ?? false,
 		}));
 	}, [isEditMode, rawData, groupes.length, userID, first_name, last_name]);
 
@@ -232,6 +234,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						first_name: userData.first_name,
 						last_name: userData.last_name,
 						can_validate_factures: false,
+						can_change_document_status: false,
 					},
 				]);
 				setSelectedUser(null);
@@ -791,7 +794,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									);
 									formik.setFieldValue('managed_by', updated);
 								}}
+								onDocumentStatusChangePermissionChange={(index, checked) => {
+									const updated = formik.values.managed_by.map((entry, i) =>
+										i === index ? { ...entry, can_change_document_status: checked } : entry,
+									);
+									formik.setFieldValue('managed_by', updated);
+								}}
 								showInvoiceValidationPermission
+								showDocumentStatusChangePermission
 								onDelete={(index) => {
 									const filtered = formik.values.managed_by.filter((_, i) => i !== index);
 									formik.setFieldValue('managed_by', filtered);

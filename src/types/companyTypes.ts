@@ -14,12 +14,14 @@ export type ManagedByType = {
 	last_name: string | null;
 	role: string | null;
 	can_validate_factures?: boolean;
+	can_change_document_status?: boolean;
 };
 
 export type ManagedByWriteOnlyType = {
 	pk: number;
 	role: string | null;
 	can_validate_factures?: boolean;
+	can_change_document_status?: boolean;
 };
 
 type ManagedByEntry = {
@@ -28,6 +30,7 @@ type ManagedByEntry = {
 	last_name: string | null;
 	role: string | null;
 	can_validate_factures?: boolean;
+	can_change_document_status?: boolean;
 };
 
 export type CompanyFormValuesType = {
@@ -62,6 +65,7 @@ export type CompaniesUserCompaniesType = {
 	role: string;
 	uses_foreign_currency: boolean;
 	can_validate_factures?: boolean;
+	can_change_document_status?: boolean;
 };
 
 export type setCompaniesUserSagatype = SagaPayloadType<Array<CompaniesUserCompaniesType>>;

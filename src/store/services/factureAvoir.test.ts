@@ -80,4 +80,18 @@ describe('factureAvoirApi endpoints', () => {
 		expect(result.error).toBeUndefined();
 		expect(result.data).toEqual({ ok: true });
 	});
+
+	it('deleteFactureAvoir mutation should return mocked data', async () => {
+		const result = await storeRef.store.dispatch(factureAvoirApi.endpoints.deleteFactureAvoir.initiate({ id: 1 }));
+		expect(result.error).toBeUndefined();
+		expect(result.data).toEqual({ ok: true });
+	});
+
+	it('bulkDeleteFactureAvoir mutation should return mocked data', async () => {
+		const result = await storeRef.store.dispatch(
+			factureAvoirApi.endpoints.bulkDeleteFactureAvoir.initiate({ ids: [1, 2] }),
+		);
+		expect(result.error).toBeUndefined();
+		expect(result.data).toEqual({ ok: true });
+	});
 });

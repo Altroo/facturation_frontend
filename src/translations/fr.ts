@@ -472,6 +472,7 @@ export const fr: TranslationDictionary = {
 		convertToFactureTitle: 'Convertir en facture client ?',
 		convertToFactureBody: 'Êtes-vous sûr de vouloir convertir cette facture pro-forma en facture client ?',
 		labelFactureClient: 'Facture client',
+		alreadyConverted: 'Déjà convertie',
 	},
 	facturesClient: {
 		listTitle: 'Liste des Factures Clients',
@@ -554,7 +555,11 @@ export const fr: TranslationDictionary = {
 		addError: "Une erreur est survenue lors de l'ajout de la facture d'avoir.",
 		updateSuccess: "La facture d'avoir a été mise à jour avec succès.",
 		updateError: "Une erreur est survenue lors de la mise à jour de la facture d'avoir.",
+		deleteSuccess: "Facture d'avoir supprimée avec succès",
+		deleteError: "Erreur lors de la suppression de la facture d'avoir",
 		deleteLineBody: 'Êtes-vous sûr de vouloir supprimer cette ligne ?',
+		deleteModalTitle: "Supprimer cette facture d'avoir ?",
+		deleteModalBody: "Êtes-vous sûr de vouloir supprimer cette facture d'avoir ? Cette action est irréversible.",
 		noDeleteMessage: "Les factures d'avoir numérotées ne peuvent pas être supprimées.",
 		onlyDraftEditable: "Seuls les avoirs en brouillon peuvent être modifiés.",
 		selectOrigin: "Sélectionner une facture d'origine",
@@ -816,6 +821,7 @@ export const fr: TranslationDictionary = {
 		notifyOverdueInvoice: 'Factures en retard de paiement',
 		notifyExpiringQuote: 'Devis expirant bientôt',
 		notifyUninvoicedBdl: 'Bons de livraison non facturés',
+		notifyDocumentCreated: 'Création de documents',
 		quoteExpiryDays: 'Alerter X jours après envoi du devis',
 		quoteExpiryOptions: [
 			{ value: 0, label: "Au moment de l'envoi" },
@@ -1228,6 +1234,7 @@ export const fr: TranslationDictionary = {
 		you: 'vous',
 		role: 'Rôle',
 		invoiceValidation: 'Validation factures',
+		documentStatusChange: 'Changement statut document',
 	},
 	auth: {
 		login: 'Connexion',

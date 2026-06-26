@@ -60,7 +60,8 @@ import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import type { ArticleClass, ClientClass } from '@/models/classes';
 import { useGetClientsListQuery } from '@/store/services/client';
 import { useGetCompanyQuery } from '@/store/services/company';
-import { useLanguage, useToast } from '@/utils/hooks';
+import { getUserCompaniesState } from '@/store/selectors';
+import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import type { DropDownType } from '@/types/accountTypes';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import { useGetArticlesListQuery } from '@/store/services/article';
@@ -209,6 +210,9 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
+	const companies = useAppSelector(getUserCompaniesState);
+	const selectedCompany = useMemo(() => companies?.find((company) => company.id === company_id), [companies, company_id]);
+	const canChangeDocumentStatus = Boolean(selectedCompany?.can_change_document_status);
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 	const router = useRouter();
@@ -813,6 +817,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	}, [getLines]);
 
 	const handleStatutChange = async (newValue: string) => {
+		if (!canChangeDocumentStatus) return;
 		try {
 			if (!newValue) return;
 			await patchStatut({ id: id!, data: { statut: newValue as TypeFactureLivraisonDevisStatus } }).unwrap();
@@ -1255,6 +1260,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 												}
 												value={rawData?.statut || ''}
 												onChange={(e) => handleStatutChange(e.target.value)}
+												disabled={!canChangeDocumentStatus || isPatchLoading}
 												size="small"
 												theme={customDropdownTheme()}
 												startIcon={<DescriptionIcon fontSize="small" color="action" />}

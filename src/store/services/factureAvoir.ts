@@ -104,12 +104,20 @@ export const factureAvoirApi = createApi({
 			}),
 			invalidatesTags: ['FactureAvoir', 'FactureClient', 'Dashboard'],
 		}),
-		noDeleteFactureAvoir: builder.mutation<void | ApiErrorResponseType, { id: number }>({
+		deleteFactureAvoir: builder.mutation<void | ApiErrorResponseType, { id: number }>({
 			query: ({ id }) => ({
 				url: `${process.env.NEXT_PUBLIC_FACTURE_AVOIR_ROOT}/${id}/`,
 				method: 'DELETE',
 			}),
-			invalidatesTags: ['FactureAvoir'],
+			invalidatesTags: ['FactureAvoir', 'FactureClient', 'Dashboard'],
+		}),
+		bulkDeleteFactureAvoir: builder.mutation<void | ApiErrorResponseType, { ids: number[] }>({
+			query: ({ ids }) => ({
+				url: `${process.env.NEXT_PUBLIC_FACTURE_AVOIR_ROOT}/bulk_delete/`,
+				method: 'DELETE',
+				data: { ids },
+			}),
+			invalidatesTags: ['FactureAvoir', 'FactureClient', 'Dashboard'],
 		}),
 	}),
 });
@@ -123,5 +131,6 @@ export const {
 	useEditFactureAvoirMutation,
 	useAddFactureAvoirMutation,
 	usePatchFactureAvoirStatutMutation,
-	useNoDeleteFactureAvoirMutation,
+	useDeleteFactureAvoirMutation,
+	useBulkDeleteFactureAvoirMutation,
 } = factureAvoirApi;

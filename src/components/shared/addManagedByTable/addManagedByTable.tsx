@@ -38,9 +38,11 @@ type ManagedByTableSectionProps = {
 	roleOptions: { value: string; code: string }[];
 	onRoleChange: (index: number, newRole: string) => void;
 	onInvoiceValidationChange?: (index: number, checked: boolean) => void;
+	onDocumentStatusChangePermissionChange?: (index: number, checked: boolean) => void;
 	onDelete: (index: number) => void;
 	addSectionProps: React.ComponentProps<typeof AddManagedBySection>;
 	showInvoiceValidationPermission?: boolean;
+	showDocumentStatusChangePermission?: boolean;
 };
 
 const ManagedByTableSection: React.FC<ManagedByTableSectionProps> = ({
@@ -55,9 +57,11 @@ const ManagedByTableSection: React.FC<ManagedByTableSectionProps> = ({
 	roleOptions,
 	onRoleChange,
 	onInvoiceValidationChange,
+	onDocumentStatusChangePermissionChange,
 	onDelete,
 	addSectionProps,
 	showInvoiceValidationPermission = false,
+	showDocumentStatusChangePermission = false,
 }) => {
 	const { t } = useLanguage();
 	return (
@@ -102,6 +106,9 @@ const ManagedByTableSection: React.FC<ManagedByTableSectionProps> = ({
 							{showInvoiceValidationPermission && (
 								<TableCell sx={{ fontWeight: 700 }}>{t.managedByTable.invoiceValidation}</TableCell>
 							)}
+							{showDocumentStatusChangePermission && (
+								<TableCell sx={{ fontWeight: 700 }}>{t.managedByTable.documentStatusChange}</TableCell>
+							)}
 							<TableCell align="right" sx={{ fontWeight: 700 }}>
 								{t.managedByTable.actions}
 							</TableCell>
@@ -110,7 +117,16 @@ const ManagedByTableSection: React.FC<ManagedByTableSectionProps> = ({
 					<TableBody>
 						{data.length === 0 ? (
 							<TableRow>
-								<TableCell colSpan={headers.length + 1 + (showInvoiceValidationPermission ? 1 : 0)} align="center" sx={{ py: 4 }}>
+								<TableCell
+									colSpan={
+										headers.length +
+										1 +
+										(showInvoiceValidationPermission ? 1 : 0) +
+										(showDocumentStatusChangePermission ? 1 : 0)
+									}
+									align="center"
+									sx={{ py: 4 }}
+								>
 									<Stack
 										spacing={1}
 										sx={{
@@ -188,6 +204,15 @@ const ManagedByTableSection: React.FC<ManagedByTableSectionProps> = ({
 											<Checkbox
 												checked={Boolean(item.can_validate_factures)}
 												onChange={(e) => onInvoiceValidationChange?.(index, e.target.checked)}
+												disabled={isUserTable && (item as ManagedByType).id === currentUserId}
+											/>
+										</TableCell>
+									)}
+									{showDocumentStatusChangePermission && (
+										<TableCell>
+											<Checkbox
+												checked={Boolean(item.can_change_document_status)}
+												onChange={(e) => onDocumentStatusChangePermissionChange?.(index, e.target.checked)}
 												disabled={isUserTable && (item as ManagedByType).id === currentUserId}
 											/>
 										</TableCell>

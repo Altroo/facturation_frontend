@@ -34,7 +34,8 @@ import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDa
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type { ReglementClass } from '@/models/classes';
 import { extractApiErrorMessage, formatDate, formatNumberWithSpaces } from '@/utils/helpers';
-import { useLanguage, useToast } from '@/utils/hooks';
+import { getUserCompaniesState } from '@/store/selectors';
+import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import { useGetModePaiementListQuery } from '@/store/services/parameter';
 import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
@@ -67,6 +68,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	];
 	const router = useRouter();
 	const token = useInitAccessToken(session);
+	const companies = useAppSelector(getUserCompaniesState);
+	const selectedCompany = useMemo(() => companies?.find((company) => company.id === company_id), [companies, company_id]);
+	const canChangeDocumentStatus = selectedCompany?.can_change_document_status === true;
 
 	const { data: companyData } = useGetCompanyQuery({ id: company_id }, { skip: !token });
 	const usesForeignCurrency = companyData?.uses_foreign_currency === true;
@@ -218,6 +222,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const cancelHandler = async () => {
 		if (!cancelTarget) return;
+		if (!canChangeDocumentStatus) return;
 		try {
 			await patchStatut({
 				id: cancelTarget,
@@ -459,7 +464,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				}
 
 				// Edit and Cancel actions - only for Caissier and if status is Valid
-				if (role === 'Caissier' && isValid) {
+				if (role === 'Caissier' && isValid && canChangeDocumentStatus) {
 					actions.push(
 						{
 							label: t.common.edit,
