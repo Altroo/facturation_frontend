@@ -116,7 +116,6 @@ const createFactureAvoirListConfig = (t: TranslationDictionary): DocumentListCon
 				FACTURE_AVOIR_PDF(id, companyId, 'avec_unite_avec_remise', language),
 		},
 	],
-	canPrintRow: (row) => row.statut !== 'Brouillon',
 });
 
 interface FormikContentProps extends SessionProps {

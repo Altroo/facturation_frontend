@@ -53,7 +53,6 @@ const FactureAvoirViewClient: React.FC<Props> = ({ session, company_id, id }) =>
 
 	const canPrint =
 		Boolean(query.data) &&
-		query.data?.statut !== 'Brouillon' &&
 		(company?.role === 'Caissier' || company?.role === 'Comptable' || company?.role === 'Commercial');
 	const canDelete = company?.role === 'Caissier' && Boolean(query.data);
 

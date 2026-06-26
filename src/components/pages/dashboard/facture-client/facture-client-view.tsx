@@ -109,6 +109,8 @@ const FactureClientViewClient: React.FC<Props> = ({ session, company_id, id }) =
 	const isCaissier = company?.role === 'Caissier';
 	const canPrint = isCaissier || company?.role === 'Comptable' || company?.role === 'Commercial';
 	const isAccepted = query.data?.statut === 'Accepté';
+	const isDraft = query.data?.statut === 'Brouillon';
+	const canOpenPdf = canPrint && (isDraft || isAccepted);
 	const canValidate = company?.can_validate_factures === true && company?.can_change_document_status === true;
 	const canManagePayments = Boolean((isCaissier || company?.role === 'Commercial') && isAccepted);
 
@@ -126,12 +128,12 @@ const FactureClientViewClient: React.FC<Props> = ({ session, company_id, id }) =
 					{t.facturesClient.validateInvoice}
 				</Button>
 			)}
-			{canPrint && !isAccepted && (
+			{canPrint && !canOpenPdf && (
 				<Button variant="outlined" size="small" startIcon={<PictureAsPdfIcon />} disabled>
 					{t.facturesClient.printRequiresValidation}
 				</Button>
 			)}
-			{canPrint && isAccepted && (
+			{canOpenPdf && (
 				<>
 					<Button
 						variant="outlined"

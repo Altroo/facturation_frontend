@@ -96,7 +96,6 @@ const createFactureProFormaListConfig = (t: TranslationDictionary): DocumentList
 			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') => FACTURE_PRO_FORMA_PDF(id, companyId, 'avec_unite_avec_remise', language),
 		},
 	],
-	canPrintRow: (row) => row.statut !== 'Brouillon',
 });
 interface FormikContentProps extends SessionProps {
 	company_id: number;
