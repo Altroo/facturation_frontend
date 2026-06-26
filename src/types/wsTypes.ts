@@ -16,6 +16,7 @@ type WSMessage = {
 	message?: string;
 	notification_type?: string;
 	object_id?: number | null;
+	target_url?: string;
 	reservation_id?: number | null;
 	is_read?: boolean;
 	date_created?: string;

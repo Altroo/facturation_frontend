@@ -15,6 +15,7 @@ export interface NotificationType {
 	message: string;
 	notification_type: NotificationTypeValue;
 	object_id: number | null;
+	target_url?: string;
 	is_read: boolean;
 	date_created: string;
 }

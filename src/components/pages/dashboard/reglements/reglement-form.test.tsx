@@ -91,6 +91,14 @@ jest.mock('@/store/services/factureClient', () => ({
 	})),
 }));
 
+jest.mock('@/store/services/client', () => ({
+	__esModule: true,
+	useGetClientsListQuery: jest.fn(() => ({
+		data: [{ id: 10, raison_sociale: 'Client Test' }],
+		isLoading: false,
+	})),
+}));
+
 // Mock NavigationBar
 jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 	__esModule: true,
@@ -236,7 +244,7 @@ describe('ReglementForm', () => {
 			expect(screen.getByTestId('input-montant')).toBeInTheDocument();
 			expect(screen.getByTestId('input-libelle')).toBeInTheDocument();
 			expect(screen.getByTestId('input-date_reglement')).toBeInTheDocument();
-			expect(screen.getByTestId('input-date_echeance')).toBeInTheDocument();
+			expect(screen.queryByTestId('input-date_echeance')).not.toBeInTheDocument();
 		});
 
 		it('renders submit button with add text', () => {

@@ -694,7 +694,6 @@ export const reglementSchema = z.object({
 			.min(0.01, { error: INPUT_MIN(0.01) }),
 	),
 	date_reglement: requiredTextField(1, 100),
-	date_echeance: requiredTextField(1, 100),
 	globalError: optionalTextField(1, 500),
 });
 

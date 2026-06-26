@@ -394,23 +394,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			},
 		},
 		{
-			field: 'date_echeance',
-			headerName: t.reglements.colDateEcheance,
-			flex: 1.5,
-			minWidth: 150,
-			filterOperators: createDateRangeFilterOperator(t.filterPanel.between),
-			renderCell: (params: GridRenderCellParams<ReglementClass>) => {
-				const formatted = formatDate(params.value as string | null);
-				return (
-					<DarkTooltip title={formatted}>
-						<Typography variant="body2" noWrap>
-							{formatted}
-						</Typography>
-					</DarkTooltip>
-				);
-			},
-		},
-		{
 			field: 'statut',
 			headerName: t.reglements.colStatut,
 			flex: 0.8,

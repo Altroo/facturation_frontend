@@ -95,6 +95,7 @@ export function initWebsocket(getToken: () => Promise<string | null>): EventChan
 											? message.notification_type
 											: 'status_change',
 										object_id: typeof message.object_id === 'number' ? message.object_id : null,
+										target_url: typeof message.target_url === 'string' ? message.target_url : '',
 										is_read: typeof message.is_read === 'boolean' ? message.is_read : false,
 										date_created:
 											typeof message.date_created === 'string' ? message.date_created : new Date().toISOString(),

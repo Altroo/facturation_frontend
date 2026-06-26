@@ -56,6 +56,7 @@ const CustomDropDownSelect: React.FC<Props> = (props: Props) => {
 					id={props.id}
 					value={props.value ? props.value : ''}
 					size={props.size ? props.size : undefined}
+					disabled={props.disabled}
 					onChange={props.onChange}
 					input={
 						<OutlinedInput

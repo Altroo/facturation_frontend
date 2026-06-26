@@ -11,7 +11,6 @@ export type ReglementSchemaType = {
 	observations?: string;
 	montant: number;
 	date_reglement: string;
-	date_echeance: string;
 	globalError?: string;
 };
 

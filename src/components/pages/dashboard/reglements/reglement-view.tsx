@@ -567,11 +567,6 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									/>
 									<InfoRow
 										icon={<CalendarTodayIcon fontSize="small" />}
-										label={t.reglements.fieldDateEcheance}
-										value={formatDate(reglement?.date_echeance ?? null)}
-									/>
-									<InfoRow
-										icon={<CalendarTodayIcon fontSize="small" />}
 										label={t.common.dateCreation}
 										value={formatDate(reglement?.date_created ?? null)}
 									/>

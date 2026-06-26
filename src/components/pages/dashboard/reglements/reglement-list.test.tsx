@@ -17,7 +17,7 @@ const mockOnSuccess = jest.fn();
 const mockOnError = jest.fn();
 jest.mock('@/utils/hooks', () => ({
 	useToast: () => ({ onSuccess: mockOnSuccess, onError: mockOnError }),
-	useAppSelector: jest.fn(() => [{ id: 1, name: 'Chèque' }, { id: 2, name: 'Virement' }]),
+	useAppSelector: jest.fn(() => [{ id: 1, name: 'Chèque', can_change_document_status: true }, { id: 2, name: 'Virement' }]),
 	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
 }));
 
@@ -386,9 +386,10 @@ describe('ReglementListClient', () => {
 	describe('Column headers', () => {
 		it('renders all expected column headers', () => {
 			render(<ReglementListClient session={mockSession} />);
-			for (const h of ['N° Facture', 'Client', 'Mode règlement', 'Montant', 'Date règlement', "Date d'échéance", 'Statut', 'Actions']) {
+			for (const h of ['N° Facture', 'Client', 'Mode règlement', 'Montant', 'Date règlement', 'Statut', 'Actions']) {
 				expect(screen.getByText(h)).toBeInTheDocument();
 			}
+			expect(screen.queryByText("Date d'échéance")).not.toBeInTheDocument();
 		});
 	});
 

@@ -82,7 +82,7 @@ import {
 	USERS_LIST,
 } from '@/utils/routes';
 import { signOut, useSession } from 'next-auth/react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { navigationBarTheme } from '@/utils/themes';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -256,6 +256,7 @@ const NavigationBar = (props: Props) => {
 	const { data: session, status } = useSession();
 	const { avatar_cropped, first_name, last_name, gender, is_staff } = useAppSelector(getProfilState);
 	const { t, language, setLanguage } = useLanguage();
+	const router = useRouter();
 	const navigationMenu = useMemo(() => getNavigationMenu(is_staff, t), [is_staff, t]);
 	const dispatch = useAppDispatch();
 	const moreVertRef = useRef<HTMLButtonElement>(null);
@@ -296,6 +297,19 @@ const NavigationBar = (props: Props) => {
 	const handleMarkAllRead = async () => {
 		await markRead({});
 		dispatch(setUnreadCount(0));
+	};
+	const handleNotificationClick = async (notification: NotificationType) => {
+		if (!notification.is_read) {
+			await markRead({ ids: [notification.id] });
+			dispatch(setUnreadCount(Math.max(unreadCount - 1, 0)));
+			setAllNotifications((prev) =>
+				prev.map((item) => (item.id === notification.id ? { ...item, is_read: true } : item)),
+			);
+		}
+		if (notification.target_url) {
+			handleNotifClose();
+			router.push(notification.target_url);
+		}
 	};
 
 	const handleLoadMore = useCallback(async () => {
@@ -679,8 +693,10 @@ const NavigationBar = (props: Props) => {
 					{allNotifications.length > 0 ? (
 						<>
 							{allNotifications.map((n) => (
-								<Box
+								<ListItemButton
 									key={n.id}
+									onClick={() => void handleNotificationClick(n)}
+									disabled={!n.target_url && n.is_read}
 									sx={{
 										px: 2,
 										py: 1.5,
@@ -690,6 +706,7 @@ const NavigationBar = (props: Props) => {
 										backgroundColor: n.is_read ? 'transparent' : 'action.hover',
 										borderBottom: '1px solid',
 										borderColor: 'divider',
+										cursor: n.target_url ? 'pointer' : 'default',
 									}}
 								>
 									<Box sx={{ minWidth: 0, flex: 1 }}>
@@ -717,7 +734,7 @@ const NavigationBar = (props: Props) => {
 											{new Date(n.date_created).toLocaleDateString()}
 										</Typography>
 									</Box>
-								</Box>
+								</ListItemButton>
 							))}
 							{hasMore && (
 								<Box sx={{ p: 1.5, textAlign: 'center' }}>

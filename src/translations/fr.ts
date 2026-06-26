@@ -1233,7 +1233,7 @@ export const fr: TranslationDictionary = {
 		actions: 'Actions',
 		you: 'vous',
 		role: 'Rôle',
-		invoiceValidation: 'Validation factures',
+		invoiceValidation: 'Validation factures client',
 		documentStatusChange: 'Changement statut document',
 	},
 	auth: {

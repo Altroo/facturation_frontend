@@ -1102,14 +1102,14 @@ describe('Zod Schema Validation', () => {
 			).toThrow();
 		});
 
-		it('fails with missing date_echeance', () => {
+		it('passes without date_echeance', () => {
 			expect(() =>
 				reglementSchema.parse({
 					facture_client: 1,
 					montant: 100,
 					date_reglement: '2025-01-01',
 				}),
-			).toThrow();
+			).not.toThrow();
 		});
 	});
 

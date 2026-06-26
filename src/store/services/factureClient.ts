@@ -9,6 +9,7 @@ import type { RootState } from '@/store/store';
 import { initToken } from '@/store/slices/_initSlice';
 import type { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
 import { bonDeLivraisonApi } from '@/store/services/bonDeLivraison';
+import { factureProFormaApi } from '@/store/services/factureProForma';
 
 export const factureClientApi = createApi({
 	reducerPath: 'factureClientApi',
@@ -111,6 +112,14 @@ export const factureClientApi = createApi({
 				method: 'DELETE',
 			}),
 			invalidatesTags: ['FactureClient', 'Dashboard'],
+			async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+				try {
+					await queryFulfilled;
+					dispatch(factureProFormaApi.util.invalidateTags(['FactureProForma']));
+				} catch {
+					// ignore
+				}
+			},
 		}),
 		editFactureClient: builder.mutation<SuccessResponseType<FactureClass>, { id: number; data: Partial<FactureClass> }>(
 			{
@@ -164,6 +173,14 @@ export const factureClientApi = createApi({
 				data: { ids },
 			}),
 			invalidatesTags: ['FactureClient', 'Dashboard'],
+			async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+				try {
+					await queryFulfilled;
+					dispatch(factureProFormaApi.util.invalidateTags(['FactureProForma']));
+				} catch {
+					// ignore
+				}
+			},
 		}),
 	}),
 });

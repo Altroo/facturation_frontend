@@ -123,7 +123,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			observations: rawData?.observations ?? '',
 			montant: rawData?.montant ?? 0,
 			date_reglement: rawData?.date_reglement ?? today,
-			date_echeance: rawData?.date_echeance ?? today,
 			globalError: '',
 		},
 		enableReinitialize: true,
@@ -267,7 +266,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			observations: t.reglements.fieldObservations,
 			montant: t.reglements.fieldMontant,
 			date_reglement: t.reglements.fieldDateReglement,
-			date_echeance: t.reglements.fieldDateEcheance,
 			globalError: t.common.genericError,
 		}),
 		[t],
@@ -697,30 +695,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 													slotProps: {
 														htmlInput: {
 															'data-testid': 'input-date_reglement',
-														} as React.InputHTMLAttributes<HTMLInputElement>,
-														input: {
-															startAdornment: (
-																<InputAdornment position="start">
-																	<CalendarTodayIcon fontSize="small" color="action" />
-																</InputAdornment>
-															),
-														},
-													},
-												},
-											}}
-										/>
-										<DatePicker
-											label={t.reglements.fieldDateEcheance}
-											value={formik.values.date_echeance ? new Date(formik.values.date_echeance) : null}
-											onChange={(date) => formik.setFieldValue('date_echeance', date ? formatLocalDate(date) : '')}
-											format="dd/MM/yyyy"
-											slotProps={{
-												textField: {
-													size: 'small',
-													fullWidth: true,
-													slotProps: {
-														htmlInput: {
-															'data-testid': 'input-date_echeance',
 														} as React.InputHTMLAttributes<HTMLInputElement>,
 														input: {
 															startAdornment: (
