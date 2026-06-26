@@ -499,7 +499,15 @@ const NavigationBar = (props: Props) => {
 											anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
 											transformOrigin={{ vertical: 'top', horizontal: 'right' }}
 										>
-											<MenuItem onClick={() => { setMobileMenuAnchor(null); setNotifAnchor(moreVertRef.current); }}>
+											<MenuItem
+												onClick={() => {
+													setMobileMenuAnchor(null);
+													if (moreVertRef.current) {
+														setNotifAnchor(moreVertRef.current);
+														void refreshFirstNotificationsPage();
+													}
+												}}
+											>
 											<MenuListItemIcon>
 												<Badge badgeContent={unreadCount} color="primary" max={99}>
 													<NotificationsIcon fontSize="small" />

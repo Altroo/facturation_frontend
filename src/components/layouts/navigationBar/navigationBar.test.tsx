@@ -386,4 +386,21 @@ describe('NavigationBar additional behaviors', () => {
 
 		expect(mockRouterPush).toHaveBeenCalledWith('/dashboard/facture-pro-forma/41?company_id=3');
 	});
+
+	it('refreshes notifications when opened from the compact actions menu', async () => {
+		const user = userEvent.setup();
+
+		render(
+			<Provider store={store}>
+				<NavigationBar title="Dashboard">
+					<div />
+				</NavigationBar>
+			</Provider>,
+		);
+
+		await user.click(screen.getByRole('button', { name: /plus d'actions/i }));
+		await user.click(screen.getByRole('menuitem', { name: /notifications/i }));
+
+		expect(mockFetchNotifications).toHaveBeenCalledWith({ page: 1 }, false);
+	});
 });
