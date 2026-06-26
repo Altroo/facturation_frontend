@@ -443,7 +443,7 @@ export const fr: TranslationDictionary = {
 	},
 	facturesProforma: {
 		listTitle: 'Liste des Factures Proforma',
-		detailsTitle: 'Détails du facture pro-forma',
+		detailsTitle: 'Détails de la facture pro-forma',
 		backToList: 'Liste des factures pro-forma',
 		newFacture: 'Nouvelle facture proforma',
 		addTitle: 'Ajouter une facture pro-forma',
@@ -477,7 +477,7 @@ export const fr: TranslationDictionary = {
 	facturesClient: {
 		listTitle: 'Liste des Factures Clients',
 		unpaidListTitle: 'Factures Impayées',
-		detailsTitle: 'Détails du facture client',
+		detailsTitle: 'Détails de la facture client',
 		backToList: 'Liste des factures clients',
 		newFacture: 'Nouvelle facture client',
 		addTitle: 'Ajouter une facture client',
