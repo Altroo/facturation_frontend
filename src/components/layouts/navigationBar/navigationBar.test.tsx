@@ -361,7 +361,7 @@ describe('NavigationBar additional behaviors', () => {
 						message: 'support@elbouazzatiholding.ma a créé facture pro-forma P001/26 pour Sitiane Mohamed.',
 						notification_type: 'document_created',
 						object_id: 41,
-						target_url: '/dashboard/facture-pro-forma/41',
+						target_url: '/dashboard/facture-pro-forma/41?company_id=3',
 						is_read: true,
 						date_created: '2026-06-26T00:00:00Z',
 					},
@@ -384,6 +384,6 @@ describe('NavigationBar additional behaviors', () => {
 
 		await user.click(screen.getByRole('button', { name: /facture pro-forma P001\/26/i }));
 
-		expect(mockRouterPush).toHaveBeenCalledWith('/dashboard/facture-pro-forma/41');
+		expect(mockRouterPush).toHaveBeenCalledWith('/dashboard/facture-pro-forma/41?company_id=3');
 	});
 });
