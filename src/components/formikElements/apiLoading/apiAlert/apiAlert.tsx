@@ -7,7 +7,7 @@ import type { Theme } from '@mui/material/styles';
 import { useLanguage } from '@/utils/hooks';
 
 type Props = {
-	errorDetails?: Record<string, string[] | string> | null;
+	errorDetails?: Record<string, string[] | string> | string | null;
 	cssStyle?: SxProps<Theme>;
 	children?: React.ReactNode;
 };
@@ -21,7 +21,11 @@ const formatErrorKey = (key: string) =>
 		.trim()
 		.replace(/^./, (letter) => letter.toUpperCase());
 
-const getErrorMessages = (errorDetails?: Record<string, string[] | string> | null): string[] => {
+const getErrorMessages = (errorDetails?: Record<string, string[] | string> | string | null): string[] => {
+	if (typeof errorDetails === 'string') {
+		const message = errorDetails.trim();
+		return message ? [message] : [];
+	}
 	if (!errorDetails || typeof errorDetails !== 'object') return [];
 
 	const messages: string[] = [];

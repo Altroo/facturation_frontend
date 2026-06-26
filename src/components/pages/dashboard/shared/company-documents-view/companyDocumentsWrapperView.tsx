@@ -2,6 +2,8 @@
 
 import React, { useMemo } from 'react';
 import {
+	Alert,
+	AlertTitle,
 	Box,
 	Button,
 	Card,
@@ -19,6 +21,7 @@ import {
 	Description as DescriptionIcon,
 	Discount as DiscountIcon,
 	Edit as EditIcon,
+	Error as ErrorIcon,
 	Inventory2 as Inventory2Icon,
 	LocalShipping as LocalShippingIcon,
 	Notes as NotesIcon,
@@ -26,6 +29,7 @@ import {
 	Payment as PaymentIcon,
 	Person as PersonIcon,
 	Receipt as ReceiptIcon,
+	Refresh as RefreshIcon,
 	ShoppingCart as ShoppingCartIcon,
 } from '@mui/icons-material';
 import { DataGrid, type GridColDef, type GridRenderCellParams } from '@mui/x-data-grid';
@@ -34,7 +38,6 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import FactureDevisTotalsCard from '@/components/shared/factureDevistotalCard/factureDevisTotalsCard';
@@ -43,7 +46,7 @@ import Styles from '@/styles/dashboard/dashboard.module.sass';
 import { useAppSelector, useLanguage } from '@/utils/hooks';
 import { getUserCompaniesState } from '@/store/selectors';
 import { useGetArticlesListQuery } from '@/store/services/article';
-import { formatDate, formatNumberWithSpaces } from '@/utils/helpers';
+import { extractApiErrorMessage, formatDate, formatNumberWithSpaces } from '@/utils/helpers';
 import { isNectarRaisonSociale } from '@/utils/nectar';
 import { useInitAccessToken } from '@/contexts/InitContext';
 
@@ -109,6 +112,74 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 		</Stack>
 	);
 };
+
+type DocumentErrorStateProps = {
+	title: string;
+	message: string;
+	helpText: string;
+	backLabel: string;
+	retryLabel: string;
+	onBack: () => void;
+	onRetry: () => void;
+};
+
+const DocumentErrorState: React.FC<DocumentErrorStateProps> = ({
+	title,
+	message,
+	helpText,
+	backLabel,
+	retryLabel,
+	onBack,
+	onRetry,
+}) => (
+	<Box
+		sx={{
+			display: 'flex',
+			justifyContent: 'center',
+			px: { xs: 0, sm: 2 },
+			pt: { xs: 6, md: 10 },
+		}}
+	>
+		<Alert
+			severity="error"
+			variant="outlined"
+			icon={<ErrorIcon sx={{ fontSize: 40 }} />}
+			sx={{
+				width: '100%',
+				maxWidth: 720,
+				borderRadius: 1,
+				borderColor: 'error.light',
+				bgcolor: 'rgba(211, 47, 47, 0.04)',
+				px: { xs: 2, sm: 3 },
+				py: { xs: 2, sm: 2.5 },
+				alignItems: 'flex-start',
+				'& .MuiAlert-icon': {
+					mt: 0.25,
+					mr: 2,
+				},
+				'& .MuiAlert-message': {
+					width: '100%',
+				},
+			}}
+		>
+			<AlertTitle sx={{ fontSize: 20, fontWeight: 700, mb: 0.75 }}>{title}</AlertTitle>
+			<Typography variant="body1" sx={{ color: 'text.primary', mb: 0.75 }}>
+				{message}
+			</Typography>
+			<Typography variant="body2" sx={{ color: 'text.secondary', mb: 2.25 }}>
+				{helpText}
+			</Typography>
+			<Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.25}>
+				<Button variant="contained" color="error" startIcon={<ArrowBackIcon />} onClick={onBack}>
+					{backLabel}
+				</Button>
+				<Button variant="outlined" color="error" startIcon={<RefreshIcon />} onClick={onRetry}>
+					{retryLabel}
+				</Button>
+			</Stack>
+		</Alert>
+	</Box>
+);
 
 const toNumber = (value: unknown, fallback = 0): number => {
 	if (typeof value === 'number') return Number.isFinite(value) ? value : fallback;
@@ -268,6 +339,10 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 		() => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),
 		[error],
 	);
+	const errorStatus = Number(axiosError?.status ?? 0);
+	const documentErrorTitle =
+		errorStatus === 404 ? t.common.documentNotFoundTitle : t.common.documentLoadErrorTitle;
+	const documentErrorMessage = extractApiErrorMessage(axiosError, t.common.genericError);
 
 	const company = useMemo(() => companies?.find((comp) => comp.id === company_id), [companies, company_id]);
 	const isNectarCompany = isNectarRaisonSociale(company?.raison_sociale);
@@ -632,15 +707,15 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 
 					{isLoading ? (
 						<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
-					) : (axiosError?.status as number) > 400 ? (
-						<ApiAlert
-							errorDetails={axiosError?.data.details}
-							cssStyle={{
-								position: 'absolute',
-								top: '50%',
-								left: '50%',
-								transform: 'translate(-50%, -50%)',
-							}}
+					) : errorStatus > 400 ? (
+						<DocumentErrorState
+							title={documentErrorTitle}
+							message={documentErrorMessage}
+							helpText={t.common.documentErrorHelp}
+							backLabel={backLabel}
+							retryLabel={t.common.retry}
+							onBack={() => router.push(backTo)}
+							onRetry={() => router.refresh()}
 						/>
 					) : (
 						<Stack spacing={3}>

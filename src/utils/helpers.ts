@@ -386,9 +386,12 @@ export const extractApiErrorMessage = (error: unknown, fallback: string): string
 		typeof (error as { data: unknown }).data === 'object' &&
 		(error as { data: { details?: Record<string, string[] | string> } }).data !== null
 	) {
-		const data = (error as { data: { message?: string; details?: Record<string, string[] | string> } }).data;
+		const data = (error as { data: { message?: string; details?: Record<string, string[] | string> | string } }).data;
 		const details = data.details;
-		if (details) {
+		if (typeof details === 'string' && details.trim().length > 0) {
+			return details;
+		}
+		if (details && typeof details === 'object') {
 			for (const values of Object.values(details)) {
 				if (Array.isArray(values) && values.length > 0) {
 					return values[0];

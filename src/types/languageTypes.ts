@@ -64,6 +64,9 @@ export type TranslationDictionary = {
 		addFilter: string;
 		clearAllFilters: string;
 		genericError: string;
+		documentNotFoundTitle: string;
+		documentLoadErrorTitle: string;
+		documentErrorHelp: string;
 		addImage: string;
 		clickToEditCrop: string;
 		croppedPreview: string;

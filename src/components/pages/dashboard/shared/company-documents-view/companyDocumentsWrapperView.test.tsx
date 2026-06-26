@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, cleanup, fireEvent } from '@testing-library/react';
+import { render, screen, cleanup, fireEvent, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 import CompanyDocumentsWrapperView from './companyDocumentsWrapperView';
@@ -13,13 +13,6 @@ jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 jest.mock('@/components/formikElements/apiLoading/apiProgress/apiProgress', () => ({
 	__esModule: true,
 	default: () => <div>ApiProgressMock</div>,
-}));
-
-jest.mock('@/components/formikElements/apiLoading/apiAlert/apiAlert', () => ({
-	__esModule: true,
-	default: ({ errorDetails }: { errorDetails?: unknown }) => (
-		<div data-testid="api-alert">{errorDetails ? 'ApiAlertWithDetails' : 'ApiAlert'}</div>
-	),
 }));
 
 jest.mock('@/components/shared/factureDevistotalCard/factureDevisTotalsCard', () => ({
@@ -62,6 +55,17 @@ jest.mock('@/utils/helpers', () => ({
 			useGrouping: true
 		});
 	},
+	extractApiErrorMessage: (error: unknown, fallback: string): string => {
+		const details = (error as { data?: { details?: Record<string, string[] | string> | string } })?.data?.details;
+		if (typeof details === 'string') return details;
+		if (details && typeof details === 'object') {
+			for (const values of Object.values(details)) {
+				if (Array.isArray(values) && values.length > 0) return values[0];
+				if (typeof values === 'string') return values;
+			}
+		}
+		return fallback;
+	},
 }));
 
 jest.mock('@/contexts/InitContext', () => ({
@@ -91,9 +95,10 @@ jest.mock('@/store/services/company', () => ({
 }));
 
 const pushMock = jest.fn();
+const refreshMock = jest.fn();
 jest.mock('next/navigation', () => ({
 	__esModule: true,
-	useRouter: () => ({ push: pushMock }),
+	useRouter: () => ({ push: pushMock, refresh: refreshMock }),
 }));
 
 import { useAppSelector } from '@/utils/hooks';
@@ -152,14 +157,16 @@ describe('CompanyDocumentsView', () => {
 		expect(screen.getByText('ApiProgressMock')).toBeInTheDocument();
 	});
 
-	test('shows ApiAlert when error status \\> 400', () => {
-
+	test('shows a strong document error state when error status \\> 400', () => {
 		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
 
-		const errorObj = { status: 500, data: { details: 'boom' } };
+		const errorObj = {
+			status: 404,
+			data: { details: "Cette facture client est introuvable ou n'est plus disponible." },
+		};
 
 		const props = buildProps({
 			query: { data: undefined, isLoading: false, error: errorObj },
@@ -167,7 +174,18 @@ describe('CompanyDocumentsView', () => {
 
 		render(<CompanyDocumentsWrapperView<TestDoc> {...props} />);
 
-		expect(screen.getByTestId('api-alert')).toBeInTheDocument();
+		const alert = screen.getByRole('alert');
+		const alertQueries = within(alert);
+
+		expect(alert).toHaveTextContent('Document introuvable');
+		expect(alert).toHaveTextContent("Cette facture client est introuvable ou n'est plus disponible.");
+		expect(screen.getByText("Le document a peut-être été supprimé ou vous n’avez plus accès à cet élément.")).toBeInTheDocument();
+
+		fireEvent.click(alertQueries.getByRole('button', { name: /Back/i }));
+		fireEvent.click(alertQueries.getByRole('button', { name: /Réessayer/i }));
+
+		expect(pushMock).toHaveBeenCalledWith('/back');
+		expect(refreshMock).toHaveBeenCalled();
 	});
 
 	test('renders content and shows \\`Modifier\\` button for Caissier, clicking navigates to edit route', () => {

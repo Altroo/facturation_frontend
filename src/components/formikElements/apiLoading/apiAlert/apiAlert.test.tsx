@@ -25,6 +25,14 @@ describe('ApiAlert', () => {
 		expect(alert).not.toHaveTextContent(/detail :/i);
 	});
 
+	it('renders plain string details directly', () => {
+		render(<ApiAlert errorDetails="Cette facture client est introuvable ou n'est plus disponible." />);
+
+		const alert = screen.getByRole('alert');
+		expect(alert).toHaveTextContent("Cette facture client est introuvable ou n'est plus disponible.");
+		expect(alert).not.toHaveTextContent(/detail :/i);
+	});
+
 	it('applies custom sx style to the Alert component', () => {
 		const customStyle: SxProps<Theme> = { backgroundColor: 'rgb(255, 0, 0)' };
 		const errorDetails = { error: ['Something went wrong'] };
