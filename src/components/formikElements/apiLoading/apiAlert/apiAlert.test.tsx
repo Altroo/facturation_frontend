@@ -11,12 +11,18 @@ describe('ApiAlert', () => {
 
 		render(<ApiAlert errorDetails={errorDetails} />);
 
-		// whole string is concatenated
-		expect(screen.getByText('error : Invalid request,Missing fields')).toBeInTheDocument();
-
 		const alert = screen.getByRole('alert');
+		expect(alert).not.toHaveTextContent(/error :/i);
 		expect(alert).toHaveTextContent(/Invalid request/);
 		expect(alert).toHaveTextContent(/Missing fields/);
+	});
+
+	it('renders detail messages without exposing the API field name', () => {
+		render(<ApiAlert errorDetails={{ detail: "Cette facture client est introuvable ou n'est plus disponible." }} />);
+
+		const alert = screen.getByRole('alert');
+		expect(alert).toHaveTextContent("Cette facture client est introuvable ou n'est plus disponible.");
+		expect(alert).not.toHaveTextContent(/detail :/i);
 	});
 
 	it('applies custom sx style to the Alert component', () => {
@@ -51,7 +57,7 @@ describe('ApiAlert', () => {
 		render(<ApiAlert errorDetails={errorDetails} />);
 
 		const alert = screen.getByRole('alert');
-		expect(alert).toHaveTextContent(/field1/);
+		expect(alert).toHaveTextContent(/Field1/);
 		expect(alert).toHaveTextContent(/Error message 1/);
 	});
 
@@ -63,7 +69,7 @@ describe('ApiAlert', () => {
 		render(<ApiAlert errorDetails={errorDetails} />);
 
 		const alert = screen.getByRole('alert');
-		expect(alert).toHaveTextContent(/username/);
+		expect(alert).toHaveTextContent(/Username/);
 		expect(alert).toHaveTextContent(/Username is required/);
 		expect(alert).toHaveTextContent(/Username must be unique/);
 	});
