@@ -14,8 +14,12 @@ jest.mock('@/utils/clientHelpers', () => ({
 
 // Dynamic mock for pathname
 let mockPathname = '/dashboard';
+const mockRouterPush = jest.fn();
 jest.mock('next/navigation', () => ({
 	usePathname: () => mockPathname,
+	useRouter: () => ({
+		push: mockRouterPush,
+	}),
 }));
 
 // controllable mock for MUI useMediaQuery
@@ -105,6 +109,9 @@ describe('NavigationBar additional behaviors', () => {
 		mockUseGetNotificationsQuery.mockReturnValue({
 			data: { results: [], next: null },
 			isLoading: false,
+		});
+		mockFetchNotifications.mockReturnValue({
+			unwrap: jest.fn().mockResolvedValue({ results: [], next: null }),
 		});
 		mockUseLazyGetNotificationsQuery.mockReturnValue([mockFetchNotifications]);
 		mockUseGetUnreadNotificationCountQuery.mockReturnValue({
@@ -323,5 +330,60 @@ describe('NavigationBar additional behaviors', () => {
 
 		// Articles panel should still be expanded due to partial match on /dashboard/articles
 		expect(screen.getByText('Liste des articles')).toBeInTheDocument();
+	});
+
+	it('refreshes notifications on open and navigates linked notifications', async () => {
+		const user = userEvent.setup();
+		mockUseGetNotificationsQuery.mockReturnValue({
+			data: {
+				results: [
+					{
+						id: 27,
+						title: 'Nouveau document — P001/26',
+						message: 'support@elbouazzatiholding.ma a créé facture pro-forma P001/26 pour Sitiane Mohamed.',
+						notification_type: 'document_created',
+						object_id: 41,
+						target_url: '',
+						is_read: true,
+						date_created: '2026-06-26T00:00:00Z',
+					},
+				],
+				next: null,
+			},
+			isLoading: false,
+		});
+		mockFetchNotifications.mockReturnValue({
+			unwrap: jest.fn().mockResolvedValue({
+				results: [
+					{
+						id: 27,
+						title: 'Nouveau document — P001/26',
+						message: 'support@elbouazzatiholding.ma a créé facture pro-forma P001/26 pour Sitiane Mohamed.',
+						notification_type: 'document_created',
+						object_id: 41,
+						target_url: '/dashboard/facture-pro-forma/41',
+						is_read: true,
+						date_created: '2026-06-26T00:00:00Z',
+					},
+				],
+				next: null,
+			}),
+		});
+
+		render(
+			<Provider store={store}>
+				<NavigationBar title="Dashboard">
+					<div />
+				</NavigationBar>
+			</Provider>,
+		);
+
+		await user.click(screen.getAllByRole('button')[0]);
+		expect(mockFetchNotifications).toHaveBeenCalledWith({ page: 1 }, false);
+		await screen.findByRole('button', { name: /facture pro-forma P001\/26/i });
+
+		await user.click(screen.getByRole('button', { name: /facture pro-forma P001\/26/i }));
+
+		expect(mockRouterPush).toHaveBeenCalledWith('/dashboard/facture-pro-forma/41');
 	});
 });

@@ -288,8 +288,20 @@ const NavigationBar = (props: Props) => {
 		}
 	}, [unreadCountData, dispatch]);
 
+	const refreshFirstNotificationsPage = useCallback(async () => {
+		try {
+			const result = await fetchNotifications({ page: 1 }, false).unwrap();
+			setAllNotifications(result.results);
+			setHasMore(result.next !== null);
+			setNotifPage(1);
+		} catch {
+			// Keep the current list if the refresh fails.
+		}
+	}, [fetchNotifications]);
+
 	const handleNotifOpen = (e: React.MouseEvent<HTMLElement>) => {
 		setNotifAnchor(e.currentTarget);
+		void refreshFirstNotificationsPage();
 	};
 	const handleNotifClose = () => {
 		setNotifAnchor(null);
