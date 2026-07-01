@@ -192,11 +192,31 @@ const toNumber = (value: unknown, fallback = 0): number => {
 
 const isPositiveNumber = (value: unknown): boolean => toNumber(value, 0) > 0;
 
+const computeTotalPrixAchat = <TData extends CompanyDocumentData>(
+	rawData: TData | undefined,
+	articlesData: Array<Partial<ArticleClass>> | undefined,
+): number => {
+	if (!rawData?.lignes) return 0;
+
+	return rawData.lignes.reduce((sum, ligne) => {
+		const articleId = toNumber(ligne.article, NaN);
+		const article = Number.isFinite(articleId) ? articlesData?.find((a) => a.id === articleId) : undefined;
+		const prixAchat = toNumber(ligne.prix_achat ?? article?.prix_achat, 0);
+		const quantity = toNumber(ligne.quantity, 1);
+		const safeQuantity = Number.isFinite(quantity) ? quantity : 1;
+		const lineTotal = prixAchat * safeQuantity;
+
+		return sum + (Number.isFinite(lineTotal) ? lineTotal : 0);
+	}, 0);
+};
+
 const computeTotals = <TData extends CompanyDocumentData>(
 	rawData: TData | undefined,
 	articlesData: Array<Partial<ArticleClass>> | undefined,
 ): Totals => {
-	if (!rawData) return { totalHT: 0, totalTVA: 0, totalTTC: 0, totalTTCApresRemise: 0 };
+	if (!rawData) return { totalHT: 0, totalPrixAchat: 0, totalTVA: 0, totalTTC: 0, totalTTCApresRemise: 0 };
+
+	const totalPrixAchat = computeTotalPrixAchat(rawData, articlesData);
 
 	const hasAnyServerTotal =
 		rawData.total_ht !== undefined ||
@@ -230,6 +250,7 @@ const computeTotals = <TData extends CompanyDocumentData>(
 
 		return {
 			totalHT: Math.max(0, serverTotalHT),
+			totalPrixAchat: Math.max(0, totalPrixAchat),
 			totalTVA: Math.max(0, serverTotalTVA),
 			totalTTC: Math.max(0, serverTotalTTC),
 			totalTTCApresRemise: Math.max(0, serverTotalTTCAfter),
@@ -287,6 +308,7 @@ const computeTotals = <TData extends CompanyDocumentData>(
 
 	return {
 		totalHT: Math.max(0, rawTotalHT),
+		totalPrixAchat: Math.max(0, totalPrixAchat),
 		totalTVA: Math.max(0, rawTotalTVA),
 		totalTTC: Math.max(0, rawTotalTTC),
 		totalTTCApresRemise: Math.max(0, finalTotalTTC),
@@ -722,6 +744,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 							<FactureDevisTotalsCard
 								totals={{
 									totalHT: totals.totalHT,
+									totalPrixAchat: totals.totalPrixAchat,
 									totalTVA: totals.totalTVA,
 									totalTTC: totals.totalTTC,
 									totalTTCApresRemise: totals.totalTTCApresRemise,

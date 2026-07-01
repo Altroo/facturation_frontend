@@ -1177,6 +1177,7 @@ export type TranslationDictionary = {
 	};
 	totalsCard: {
 		totalHT: string;
+		totalPrixAchat: string;
 		totalTVA: string;
 		totalTTC: string;
 		totalTTCApresRemise: string;

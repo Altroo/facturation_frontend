@@ -1186,6 +1186,7 @@ export const fr: TranslationDictionary = {
 	},
 	totalsCard: {
 		totalHT: 'TOTAL HT',
+		totalPrixAchat: "TOTAL PRIX D'ACHAT",
 		totalTVA: 'TOTAL TVA',
 		totalTTC: 'TOTAL TTC',
 		totalTTCApresRemise: 'TOTAL TTC APRES REMISE',

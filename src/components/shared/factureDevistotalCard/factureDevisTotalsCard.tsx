@@ -7,6 +7,7 @@ import {
 	LocalOffer as LocalOfferIcon,
 	Percent as PercentIcon,
 	ReceiptLong as ReceiptLongIcon,
+	ShoppingCart as ShoppingCartIcon,
 } from '@mui/icons-material';
 import DashboardStatCard from '@/components/shared/dashboardStatCard/dashboardStatCard';
 import { formatNumberWithSpaces } from '@/utils/helpers';
@@ -15,6 +16,7 @@ import { useLanguage } from '@/utils/hooks';
 interface TotalsCardProps {
 	totals: {
 		totalHT: number;
+		totalPrixAchat: number;
 		totalTVA: number;
 		totalTTC: number;
 		totalTTCApresRemise: number;
@@ -39,6 +41,12 @@ const FactureDevisTotalsCard: React.FC<TotalsCardProps> = ({
 			value: `${formatNumberWithSpaces(totals.totalHT, 2)} ${devise}`,
 			icon: <ReceiptLongIcon />,
 			color: '#1565C0',
+		},
+		{
+			label: t.totalsCard.totalPrixAchat,
+			value: `${formatNumberWithSpaces(totals.totalPrixAchat, 2)} ${devise}`,
+			icon: <ShoppingCartIcon />,
+			color: '#6A1B9A',
 		},
 		{
 			label: t.totalsCard.totalTVA,
@@ -66,7 +74,9 @@ const FactureDevisTotalsCard: React.FC<TotalsCardProps> = ({
 		<Box
 			sx={{
 				display: 'grid',
-				gridTemplateColumns: isMobile ? '1fr' : { xs: '1fr', sm: '1fr 1fr', xl: '1fr 1fr 1fr 1fr' },
+				gridTemplateColumns: isMobile
+					? '1fr'
+					: { xs: '1fr', sm: '1fr 1fr', lg: '1fr 1fr 1fr', xl: '1fr 1fr 1fr 1fr 1fr' },
 				gap: 2,
 			}}
 		>

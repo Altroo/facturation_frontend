@@ -168,6 +168,8 @@ describe('BonDeLivraisonViewClient UI and navigation', () => {
 
 		// Totals header present
 		expect(screen.getByText('TOTAL TTC')).toBeInTheDocument();
+		expect(screen.getByText("TOTAL PRIX D'ACHAT")).toBeInTheDocument();
+		expect(screen.getByRole('heading', { name: '100,00 MAD' })).toBeInTheDocument();
 
 		// client info and payment
 		expect(screen.getByText('Client', { selector: 'h6' })).toBeInTheDocument();

@@ -13,10 +13,19 @@ jest.mock('next/navigation', () => ({
 	usePathname: () => '/mock-path',
 }));
 
-// Mock RTK Query hooks - preserve actual module and only mock the hook
+// Mock RTK Query hooks
 jest.mock('@/store/services/factureProForma', () => {
-	const actual = jest.requireActual('@/store/services/factureProForma');
-	return { ...actual, useGetFactureProFormaQuery: jest.fn() };
+	const mutation = jest.fn(() => ({ unwrap: jest.fn() }));
+	const passthroughMiddleware = () => (next: (action: unknown) => unknown) => (action: unknown) => next(action);
+	return {
+		factureProFormaApi: {
+			reducerPath: 'factureProFormaApi',
+			reducer: (state = {}) => state,
+			middleware: passthroughMiddleware,
+		},
+		useGetFactureProFormaQuery: jest.fn(),
+		useDeleteFactureProFormaMutation: jest.fn(() => [mutation]),
+	};
 });
 jest.mock('@/store/services/article', () => {
 	const actual = jest.requireActual('@/store/services/article');
@@ -168,6 +177,8 @@ describe('ProFormaViewClient UI and navigation', () => {
 
 		// Totals header present
 		expect(screen.getByText('TOTAL TTC')).toBeInTheDocument();
+		expect(screen.getByText("TOTAL PRIX D'ACHAT")).toBeInTheDocument();
+		expect(screen.getByRole('heading', { name: '100,00 MAD' })).toBeInTheDocument();
 
 		// client info and payment
 		expect(screen.getByText('Client', { selector: 'h6' })).toBeInTheDocument();

@@ -453,11 +453,15 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 
 	const totals = useMemo(() => {
 		let rawTotalHT = 0;
+		let totalPrixAchat = 0;
 		const linesData: Array<{ lineHT: number; tvaRate: number }> = [];
 		formik.values.lignes.forEach((line) => {
 			const article = getArticleById(line.article);
 			const quantity = Number(line.quantity || 1);
+			const prixAchat = Number(line.prix_achat ?? article?.prix_achat ?? 0);
 			const prixVente = Number(line.prix_vente || 0);
+			const purchaseTotal = prixAchat * quantity;
+			if (Number.isFinite(purchaseTotal)) totalPrixAchat += purchaseTotal;
 			let lineHT = prixVente * quantity;
 			const remise = Number(line.remise || 0);
 			if (line.remise_type === 'Pourcentage') lineHT *= 1 - remise / 100;
@@ -475,6 +479,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 		const totalTVA = linesData.reduce((sum, line) => sum + line.lineHT * ratio * (line.tvaRate / 100), 0);
 		return {
 			totalHT: rawTotalHT,
+			totalPrixAchat: Math.max(0, totalPrixAchat),
 			totalTVA,
 			totalTTC: rawTotalHT + totalTVA,
 			totalTTCApresRemise: finalTotalHT + totalTVA,

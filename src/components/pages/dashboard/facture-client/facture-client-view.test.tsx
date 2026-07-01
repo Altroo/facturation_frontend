@@ -13,10 +13,20 @@ jest.mock('next/navigation', () => ({
 	usePathname: () => '/mock-path',
 }));
 
-// Mock RTK Query hooks - preserve actual module and only mock the hook
+// Mock RTK Query hooks
 jest.mock('@/store/services/factureClient', () => {
-	const actual = jest.requireActual('@/store/services/factureClient');
-	return { ...actual, useGetFactureClientQuery: jest.fn() };
+	const mutation = jest.fn(() => ({ unwrap: jest.fn() }));
+	const passthroughMiddleware = () => (next: (action: unknown) => unknown) => (action: unknown) => next(action);
+	return {
+		factureClientApi: {
+			reducerPath: 'factureClientApi',
+			reducer: (state = {}) => state,
+			middleware: passthroughMiddleware,
+		},
+		useGetFactureClientQuery: jest.fn(),
+		useDeleteFactureClientMutation: jest.fn(() => [mutation]),
+		usePatchStatutMutation: jest.fn(() => [mutation, { isLoading: false }]),
+	};
 });
 jest.mock('@/store/services/article', () => {
 	const actual = jest.requireActual('@/store/services/article');
@@ -169,6 +179,8 @@ describe('FactureClientViewClient UI and navigation', () => {
 		expect(screen.getByText('FC-001')).toBeInTheDocument();
 
 		expect(screen.getByText('TOTAL TTC')).toBeInTheDocument();
+		expect(screen.getByText("TOTAL PRIX D'ACHAT")).toBeInTheDocument();
+		expect(screen.getByRole('heading', { name: '100,00 MAD' })).toBeInTheDocument();
 
 		expect(screen.getByText('Client', { selector: 'h6' })).toBeInTheDocument();
 		expect(screen.getByText('Client X')).toBeInTheDocument();

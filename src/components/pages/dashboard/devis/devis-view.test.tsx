@@ -167,6 +167,8 @@ describe('DevisViewClient UI and navigation', () => {
 
 		// Totals header present
 		expect(screen.getByText('TOTAL TTC')).toBeInTheDocument();
+		expect(screen.getByText("TOTAL PRIX D'ACHAT")).toBeInTheDocument();
+		expect(screen.getByRole('heading', { name: '100,00 MAD' })).toBeInTheDocument();
 
 		// client info and payment
 		// Target the header Typography (h6) to avoid ambiguous matches

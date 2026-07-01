@@ -12,6 +12,7 @@ const Wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 describe('FactureDevisTotalsCard', () => {
 	const totals = {
 		totalHT: 100,
+		totalPrixAchat: 75,
 		totalTVA: 20,
 		totalTTC: 120,
 		totalTTCApresRemise: 110.5,
@@ -22,6 +23,9 @@ describe('FactureDevisTotalsCard', () => {
 
 		expect(screen.getByText('TOTAL HT')).toBeInTheDocument();
 		expect(screen.getByText('100,00 MAD')).toBeInTheDocument();
+
+		expect(screen.getByText("TOTAL PRIX D'ACHAT")).toBeInTheDocument();
+		expect(screen.getByText('75,00 MAD')).toBeInTheDocument();
 
 		expect(screen.getByText('TOTAL TVA')).toBeInTheDocument();
 		expect(screen.getByText('20,00 MAD')).toBeInTheDocument();
@@ -41,12 +45,12 @@ describe('FactureDevisTotalsCard', () => {
 		expect(screen.getByText('TOTAL TTC APRES REMISE')).toBeInTheDocument();
 	});
 
-	test('renders four monetary values and at least two h5 headings', () => {
+	test('renders five monetary values and at least two h5 headings', () => {
 		const { container } = render(<FactureDevisTotalsCard totals={totals} />, { wrapper: Wrapper });
 
-		// Ensure there are exactly four formatted monetary values (e.g. "100,00 MAD" with French formatting)
+		// Ensure there are exactly five formatted monetary values (e.g. "100,00 MAD" with French formatting)
 		const moneyValues = screen.getAllByText(/\d+,\d{2}\s+MAD$/);
-		expect(moneyValues).toHaveLength(4);
+		expect(moneyValues).toHaveLength(5);
 
 		// MUI's Typography with variant="h5" typically renders an <h5> element;
 		// assert there are at least two such headings (TOTAL TTC and TOTAL TTC APRES REMISE)

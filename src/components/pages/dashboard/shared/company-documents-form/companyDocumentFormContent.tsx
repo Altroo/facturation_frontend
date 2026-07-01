@@ -529,6 +529,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		if (isAllArticlesLoading) {
 			return {
 				totalHT: 0,
+				totalPrixAchat: 0,
 				totalTVA: 0,
 				totalTTC: 0,
 				totalHTAfterRemise: 0,
@@ -537,13 +538,18 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			};
 		}
 		let rawTotalHT = 0;
+		let totalPrixAchat = 0;
 		const linesData: Array<{ lineHT: number; tvaRate: number }> = [];
 		const lignes = getLines();
 		lignes.forEach((ligne) => {
 			const article = getArticleById(ligne.article);
+			const prixAchat = parseNumber(ligne.prix_achat ?? article?.prix_achat ?? '') ?? 0;
 			const prixVente = parseNumber(ligne.prix_vente ?? '') ?? 0;
 			const quantity = parseNumber(ligne.quantity ?? '') ?? 1;
-			const baseHT = prixVente * (isFinite(quantity) ? quantity : 1);
+			const safeQuantity = isFinite(quantity) ? quantity : 1;
+			const purchaseTotal = prixAchat * safeQuantity;
+			if (Number.isFinite(purchaseTotal)) totalPrixAchat += purchaseTotal;
+			const baseHT = prixVente * safeQuantity;
 			let discountedHT = baseHT;
 			const remiseVal = parseNumber(ligne.remise ?? '') ?? 0;
 			if (remiseVal > 0 && ligne.remise_type) {
@@ -577,6 +583,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 
 		return {
 			totalHT: Math.max(0, Number.isFinite(rawTotalHT) ? rawTotalHT : 0),
+			totalPrixAchat: Math.max(0, Number.isFinite(totalPrixAchat) ? totalPrixAchat : 0),
 			totalTVA: Math.max(0, Number.isFinite(finalTotalTVA) ? finalTotalTVA : 0),
 			totalTTC: Math.max(0, Number.isFinite(finalTotalTTC) ? finalTotalTTC : 0),
 			totalHTAfterRemise: Math.max(0, Number.isFinite(finalTotalHT) ? finalTotalHT : 0),
@@ -1048,6 +1055,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 					<FactureDevisTotalsCard
 						totals={{
 							totalHT: totals.totalHT,
+							totalPrixAchat: totals.totalPrixAchat,
 							totalTVA: totals.totalTVA,
 							totalTTC: totals.totalTTC,
 							totalTTCApresRemise: totals.totalTTCApresRemise,
