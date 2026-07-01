@@ -37,7 +37,23 @@ services:
       - "host.docker.internal:host-gateway"
     networks:
       - webnet
+      - contracts_backend
+      - contracts_frontend
+      - nectar_backend
+      - nectar_frontend
 
 networks:
   webnet:
     driver: bridge
+  contracts_backend:
+    external: true
+    name: contracts_backend_backend
+  contracts_frontend:
+    external: true
+    name: contracts_frontend_webnet
+  nectar_backend:
+    external: true
+    name: nectar_backend_backend
+  nectar_frontend:
+    external: true
+    name: nectar_frontend_webnet
