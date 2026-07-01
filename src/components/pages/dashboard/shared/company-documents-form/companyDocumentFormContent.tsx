@@ -107,6 +107,12 @@ const inputFieldTheme = textInputTheme();
 
 const SCROLL_TO_LINES_KEY = 'scrollToLinesOnNextMount';
 
+const normalizeDevise = (value: unknown): string | null => {
+	if (typeof value !== 'string') return null;
+	const trimmed = value.trim();
+	return trimmed === '' ? null : trimmed;
+};
+
 // Generate stable row ID
 export const generateRowId = (
 	articleRef: number | string | Partial<ArticleClass> | undefined,
@@ -530,6 +536,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			return {
 				totalHT: 0,
 				totalPrixAchat: 0,
+				totalPrixAchatDevise: null,
 				totalTVA: 0,
 				totalTTC: 0,
 				totalHTAfterRemise: 0,
@@ -539,6 +546,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		}
 		let rawTotalHT = 0;
 		let totalPrixAchat = 0;
+		let totalPrixAchatDevise: string | null = null;
 		const linesData: Array<{ lineHT: number; tvaRate: number }> = [];
 		const lignes = getLines();
 		lignes.forEach((ligne) => {
@@ -549,6 +557,9 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			const safeQuantity = isFinite(quantity) ? quantity : 1;
 			const purchaseTotal = prixAchat * safeQuantity;
 			if (Number.isFinite(purchaseTotal)) totalPrixAchat += purchaseTotal;
+			if (!totalPrixAchatDevise) {
+				totalPrixAchatDevise = normalizeDevise(ligne.devise_prix_achat) ?? normalizeDevise(article?.devise_prix_achat);
+			}
 			const baseHT = prixVente * safeQuantity;
 			let discountedHT = baseHT;
 			const remiseVal = parseNumber(ligne.remise ?? '') ?? 0;
@@ -584,6 +595,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		return {
 			totalHT: Math.max(0, Number.isFinite(rawTotalHT) ? rawTotalHT : 0),
 			totalPrixAchat: Math.max(0, Number.isFinite(totalPrixAchat) ? totalPrixAchat : 0),
+			totalPrixAchatDevise: lignes.length > 0 ? (totalPrixAchatDevise ?? 'MAD') : null,
 			totalTVA: Math.max(0, Number.isFinite(finalTotalTVA) ? finalTotalTVA : 0),
 			totalTTC: Math.max(0, Number.isFinite(finalTotalTTC) ? finalTotalTTC : 0),
 			totalHTAfterRemise: Math.max(0, Number.isFinite(finalTotalHT) ? finalTotalHT : 0),
@@ -1056,6 +1068,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 						totals={{
 							totalHT: totals.totalHT,
 							totalPrixAchat: totals.totalPrixAchat,
+							totalPrixAchatDevise: totals.totalPrixAchatDevise,
 							totalTVA: totals.totalTVA,
 							totalTTC: totals.totalTTC,
 							totalTTCApresRemise: totals.totalTTCApresRemise,

@@ -192,13 +192,22 @@ const toNumber = (value: unknown, fallback = 0): number => {
 
 const isPositiveNumber = (value: unknown): boolean => toNumber(value, 0) > 0;
 
+const normalizeDevise = (value: unknown): string | null => {
+	if (typeof value !== 'string') return null;
+	const trimmed = value.trim();
+	return trimmed === '' ? null : trimmed;
+};
+
 const computeTotalPrixAchat = <TData extends CompanyDocumentData>(
 	rawData: TData | undefined,
 	articlesData: Array<Partial<ArticleClass>> | undefined,
-): number => {
-	if (!rawData?.lignes) return 0;
+): { amount: number; devise: string | null } => {
+	if (!rawData?.lignes?.length) return { amount: 0, devise: null };
 
-	return rawData.lignes.reduce((sum, ligne) => {
+	let total = 0;
+	let devise: string | null = null;
+
+	rawData.lignes.forEach((ligne) => {
 		const articleId = toNumber(ligne.article, NaN);
 		const article = Number.isFinite(articleId) ? articlesData?.find((a) => a.id === articleId) : undefined;
 		const prixAchat = toNumber(ligne.prix_achat ?? article?.prix_achat, 0);
@@ -206,15 +215,27 @@ const computeTotalPrixAchat = <TData extends CompanyDocumentData>(
 		const safeQuantity = Number.isFinite(quantity) ? quantity : 1;
 		const lineTotal = prixAchat * safeQuantity;
 
-		return sum + (Number.isFinite(lineTotal) ? lineTotal : 0);
-	}, 0);
+		if (!devise) devise = normalizeDevise(ligne.devise_prix_achat) ?? normalizeDevise(article?.devise_prix_achat);
+		if (Number.isFinite(lineTotal)) total += lineTotal;
+	});
+
+	return { amount: total, devise: devise ?? 'MAD' };
 };
 
 const computeTotals = <TData extends CompanyDocumentData>(
 	rawData: TData | undefined,
 	articlesData: Array<Partial<ArticleClass>> | undefined,
 ): Totals => {
-	if (!rawData) return { totalHT: 0, totalPrixAchat: 0, totalTVA: 0, totalTTC: 0, totalTTCApresRemise: 0 };
+	if (!rawData) {
+		return {
+			totalHT: 0,
+			totalPrixAchat: 0,
+			totalPrixAchatDevise: null,
+			totalTVA: 0,
+			totalTTC: 0,
+			totalTTCApresRemise: 0,
+		};
+	}
 
 	const totalPrixAchat = computeTotalPrixAchat(rawData, articlesData);
 
@@ -250,7 +271,8 @@ const computeTotals = <TData extends CompanyDocumentData>(
 
 		return {
 			totalHT: Math.max(0, serverTotalHT),
-			totalPrixAchat: Math.max(0, totalPrixAchat),
+			totalPrixAchat: Math.max(0, totalPrixAchat.amount),
+			totalPrixAchatDevise: totalPrixAchat.devise,
 			totalTVA: Math.max(0, serverTotalTVA),
 			totalTTC: Math.max(0, serverTotalTTC),
 			totalTTCApresRemise: Math.max(0, serverTotalTTCAfter),
@@ -308,7 +330,8 @@ const computeTotals = <TData extends CompanyDocumentData>(
 
 	return {
 		totalHT: Math.max(0, rawTotalHT),
-		totalPrixAchat: Math.max(0, totalPrixAchat),
+		totalPrixAchat: Math.max(0, totalPrixAchat.amount),
+		totalPrixAchatDevise: totalPrixAchat.devise,
 		totalTVA: Math.max(0, rawTotalTVA),
 		totalTTC: Math.max(0, rawTotalTTC),
 		totalTTCApresRemise: Math.max(0, finalTotalTTC),
@@ -745,6 +768,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 								totals={{
 									totalHT: totals.totalHT,
 									totalPrixAchat: totals.totalPrixAchat,
+									totalPrixAchatDevise: totals.totalPrixAchatDevise,
 									totalTVA: totals.totalTVA,
 									totalTTC: totals.totalTTC,
 									totalTTCApresRemise: totals.totalTTCApresRemise,

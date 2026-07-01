@@ -108,6 +108,12 @@ const today = () => formatLocalDate(new Date());
 
 const requiredLabel = (label: string) => (label.includes('*') ? label : `${label} *`);
 
+const normalizeDevise = (value: unknown): string | null => {
+	if (typeof value !== 'string') return null;
+	const trimmed = value.trim();
+	return trimmed === '' ? null : trimmed;
+};
+
 const normalizeList = <T,>(raw: Array<Partial<T>> | PaginationResponseType<T> | undefined): Array<Partial<T>> => {
 	if (!raw) return [];
 	return Array.isArray(raw) ? raw : raw.results ?? [];
@@ -454,6 +460,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 	const totals = useMemo(() => {
 		let rawTotalHT = 0;
 		let totalPrixAchat = 0;
+		let totalPrixAchatDevise: string | null = null;
 		const linesData: Array<{ lineHT: number; tvaRate: number }> = [];
 		formik.values.lignes.forEach((line) => {
 			const article = getArticleById(line.article);
@@ -462,6 +469,9 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 			const prixVente = Number(line.prix_vente || 0);
 			const purchaseTotal = prixAchat * quantity;
 			if (Number.isFinite(purchaseTotal)) totalPrixAchat += purchaseTotal;
+			if (!totalPrixAchatDevise) {
+				totalPrixAchatDevise = normalizeDevise(line.devise_prix_achat) ?? normalizeDevise(article?.devise_prix_achat);
+			}
 			let lineHT = prixVente * quantity;
 			const remise = Number(line.remise || 0);
 			if (line.remise_type === 'Pourcentage') lineHT *= 1 - remise / 100;
@@ -480,6 +490,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 		return {
 			totalHT: rawTotalHT,
 			totalPrixAchat: Math.max(0, totalPrixAchat),
+			totalPrixAchatDevise: formik.values.lignes.length > 0 ? (totalPrixAchatDevise ?? 'MAD') : null,
 			totalTVA,
 			totalTTC: rawTotalHT + totalTVA,
 			totalTTCApresRemise: finalTotalHT + totalTVA,

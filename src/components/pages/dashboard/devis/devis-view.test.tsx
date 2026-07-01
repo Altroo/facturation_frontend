@@ -72,6 +72,7 @@ const mockArticle = {
 	reference: 'REF-A1',
 	designation: 'Produit A',
 	prix_achat: 50,
+	devise_prix_achat: 'EUR',
 	prix_vente: 100,
 	tva: 20,
 	categorie_name: 'Cat A',
@@ -98,7 +99,7 @@ const mockDevis = {
 			designation: 'Produit A',
 			prix_vente: 100,
 			prix_achat: 50,
-			devise_prix_achat: 'MAD',
+			devise_prix_achat: 'EUR',
 			quantity: 2,
 			remise: 0,
 			remise_type: '',
@@ -168,7 +169,7 @@ describe('DevisViewClient UI and navigation', () => {
 		// Totals header present
 		expect(screen.getByText('TOTAL TTC')).toBeInTheDocument();
 		expect(screen.getByText("TOTAL PRIX D'ACHAT")).toBeInTheDocument();
-		expect(screen.getByRole('heading', { name: '100,00 MAD' })).toBeInTheDocument();
+		expect(screen.getByRole('heading', { name: '100,00 EUR' })).toBeInTheDocument();
 
 		// client info and payment
 		// Target the header Typography (h6) to avoid ambiguous matches

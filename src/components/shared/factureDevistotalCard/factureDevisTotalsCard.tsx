@@ -17,6 +17,7 @@ interface TotalsCardProps {
 	totals: {
 		totalHT: number;
 		totalPrixAchat: number;
+		totalPrixAchatDevise?: string | null;
 		totalTVA: number;
 		totalTTC: number;
 		totalTTCApresRemise: number;
@@ -35,6 +36,7 @@ const FactureDevisTotalsCard: React.FC<TotalsCardProps> = ({
 	showDiscountTotal = true,
 }) => {
 	const { t } = useLanguage();
+	const totalPrixAchatDevise = totals.totalPrixAchatDevise?.trim() || null;
 	const items = [
 		{
 			label: t.totalsCard.totalHT,
@@ -44,7 +46,7 @@ const FactureDevisTotalsCard: React.FC<TotalsCardProps> = ({
 		},
 		{
 			label: t.totalsCard.totalPrixAchat,
-			value: `${formatNumberWithSpaces(totals.totalPrixAchat, 2)} ${devise}`,
+			value: totalPrixAchatDevise ? `${formatNumberWithSpaces(totals.totalPrixAchat, 2)} ${totalPrixAchatDevise}` : '',
 			icon: <ShoppingCartIcon />,
 			color: '#6A1B9A',
 		},

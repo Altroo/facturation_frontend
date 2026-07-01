@@ -61,6 +61,7 @@ export type CompanyDocumentData = TotalsFields &
 export type Totals = {
 	totalHT: number;
 	totalPrixAchat: number;
+	totalPrixAchatDevise: string | null;
 	totalTVA: number;
 	totalTTC: number;
 	totalTTCApresRemise: number;
