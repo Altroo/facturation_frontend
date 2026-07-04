@@ -25,6 +25,7 @@ import { factureClientApi } from '@/store/services/factureClient';
 import { factureAvoirApi } from '@/store/services/factureAvoir';
 import { bonDeLivraisonApi } from '@/store/services/bonDeLivraison';
 import { reglementApi } from '@/store/services/reglement';
+import { logistiqueApi } from '@/store/services/logistique';
 import { dashboardApi } from '@/store/services/dashboard';
 import { notificationApi } from '@/store/services/notification';
 import notificationReducer from '@/store/slices/notificationSlice';
@@ -55,6 +56,7 @@ const rootReducer = combineReducers({
 	[factureAvoirApi.reducerPath]: factureAvoirApi.reducer,
 	[bonDeLivraisonApi.reducerPath]: bonDeLivraisonApi.reducer,
 	[reglementApi.reducerPath]: reglementApi.reducer,
+	[logistiqueApi.reducerPath]: logistiqueApi.reducer,
 	[dashboardApi.reducerPath]: dashboardApi.reducer,
 	[notificationApi.reducerPath]: notificationApi.reducer,
 });
@@ -108,6 +110,7 @@ export const makeStore = (): SagaStore => {
 					factureAvoirApi.middleware,
 					bonDeLivraisonApi.middleware,
 					reglementApi.middleware,
+					logistiqueApi.middleware,
 					dashboardApi.middleware,
 					notificationApi.middleware,
 				),

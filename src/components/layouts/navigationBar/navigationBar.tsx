@@ -43,6 +43,7 @@ import {
 	ReceiptLongOutlined as ReceiptLongOutlinedIcon,
 	RequestQuote as RequestQuoteIcon,
 	LocalShipping as LocalShippingIcon,
+	Warehouse as WarehouseIcon,
 	Payment as PaymentIcon,
 	Domain as DomainIcon,
 	Settings as SettingsIcon,
@@ -76,6 +77,7 @@ import {
 	FACTURE_CLIENT_UNPAID,
 	FACTURE_AVOIR_LIST,
 	FACTURE_PRO_FORMA_LIST,
+	LOGISTIQUE_LIST,
 	REGLEMENTS_LIST,
 	SITE_ROOT,
 	USERS_ADD,
@@ -149,6 +151,11 @@ const getNavigationMenu = (isStaff: boolean, t: TranslationDictionary) => {
 				{ title: t.navigation.bonsLivraisonList, label: t.navigation.bonsLivraisonList, path: BON_DE_LIVRAISON_LIST },
 				{ title: t.navigation.bonsLivraisonUninvoiced, label: t.navigation.bonsLivraisonUninvoiced, path: BON_DE_LIVRAISON_UNINVOICED },
 			],
+		},
+		logistique: {
+			title: t.navigation.logistique,
+			icon: <WarehouseIcon />,
+			items: [{ title: t.navigation.logistiqueList, label: t.navigation.logistiqueList, path: LOGISTIQUE_LIST }],
 		},
 		reglement: {
 			title: t.navigation.reglement,
