@@ -23,6 +23,12 @@ export type LogistiqueStatut =
 export type LogistiquePaymentStatus = 'Non demandé' | 'En attente' | 'Validé' | 'Rejeté';
 export type LogistiqueImportTitleStatus = 'À ouvrir' | 'Déposé' | 'En attente' | 'Validé' | 'Refusé' | 'Expiré' | 'Clôturé';
 export type LogistiquePaymentMethod = '' | 'LC' | 'Virement' | 'Remise documentaire';
+export type LogistiqueDocumentField =
+	| 'titre_importation_file'
+	| 'proforma_fournisseur_file'
+	| 'justificatifs_file'
+	| 'swift_file'
+	| 'documents_originaux_file';
 
 export type LogistiqueLine = {
 	id: number;
@@ -34,6 +40,7 @@ export type LogistiqueLine = {
 	article_reference: string;
 	designation: string;
 	marque_name: string;
+	project_reference: string;
 	quantity: number | string;
 	prix_achat: number | string;
 	devise_prix_achat: string;
@@ -57,6 +64,7 @@ export type LogistiqueProformaDetail = {
 	id: number;
 	numero_facture: string;
 	client_name: string | null;
+	project_reference: string;
 	date_facture: string;
 	total_ttc_apres_remise: number | string;
 	devise: string;
@@ -93,7 +101,11 @@ export type LogistiqueOrder = {
 	methode_paiement: LogistiquePaymentMethod;
 	statut_paiement: LogistiquePaymentStatus;
 	demande_paiement_envoyee_le: string | null;
+	demande_paiement_envoyee_par: number | null;
+	demande_paiement_envoyee_par_name: string | null;
 	paiement_valide_le: string | null;
+	paiement_valide_par: number | null;
+	paiement_valide_par_name: string | null;
 	date_paiement: string | null;
 	montant_paiement: number | string;
 	reference_paiement: string;
@@ -118,6 +130,7 @@ export type LogistiqueOrder = {
 	proformas_count: number;
 	lignes_count: number;
 	clients_display: string;
+	projects_display: string;
 	alerts: string[];
 	lignes?: LogistiqueLine[];
 	events?: LogistiqueEvent[];
@@ -150,6 +163,15 @@ export type LogistiqueCreateResponse = {
 	orders: LogistiqueOrder[];
 };
 
+export type LogistiqueResponsibleOption = {
+	id: number;
+	first_name: string;
+	last_name: string;
+	email: string;
+	role: string;
+	label: string;
+};
+
 export type LogistiqueFormValues = {
 	proformas: number[];
 	fournisseur: string;
@@ -157,6 +179,7 @@ export type LogistiqueFormValues = {
 	incoterm: string;
 	transport: string;
 	conditions_paiement: string;
+	responsable: string;
 	date_prevue: string;
 	date_reelle: string;
 	statut: LogistiqueStatut;
@@ -182,4 +205,9 @@ export type LogistiqueFormValues = {
 	tva: string;
 	livraison_locale: string;
 	autres_frais: string;
+	titre_importation_file: File | null;
+	proforma_fournisseur_file: File | null;
+	justificatifs_file: File | null;
+	swift_file: File | null;
+	documents_originaux_file: File | null;
 };

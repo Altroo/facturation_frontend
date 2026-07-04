@@ -11,6 +11,7 @@ import type {
 	LogistiqueListResponse,
 	LogistiqueOrder,
 	LogistiquePaymentMethod,
+	LogistiqueResponsibleOption,
 	LogistiqueStatut,
 } from '@/types/logistiqueTypes';
 
@@ -18,6 +19,7 @@ const LOGISTIQUE_ROOT = process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'
 const LOGISTIQUE_LIST = process.env.NEXT_PUBLIC_LOGISTIQUE_LIST || `${LOGISTIQUE_ROOT}/`;
 const LOGISTIQUE_SWITCH_STATUT = process.env.NEXT_PUBLIC_LOGISTIQUE_SWITCH_STATUT || `${LOGISTIQUE_ROOT}/switch_statut/`;
 const LOGISTIQUE_GENERATE_NUM = process.env.NEXT_PUBLIC_LOGISTIQUE_GENERATE_NUM || `${LOGISTIQUE_ROOT}/generate_num_commande/`;
+const LOGISTIQUE_RESPONSABLES = process.env.NEXT_PUBLIC_LOGISTIQUE_RESPONSABLES || `${LOGISTIQUE_ROOT}/responsables/`;
 
 export const logistiqueApi = createApi({
 	reducerPath: 'logistiqueApi',
@@ -69,12 +71,20 @@ export const logistiqueApi = createApi({
 			}),
 			providesTags: ['Logistique'],
 		}),
-		addLogistique: builder.mutation<LogistiqueCreateResponse, { company_id: number; data: Partial<LogistiqueFormValues> }>({
+		getLogistiqueResponsables: builder.query<LogistiqueResponsibleOption[], { company_id: number }>({
+			query: ({ company_id }) => ({
+				url: LOGISTIQUE_RESPONSABLES,
+				method: 'GET',
+				params: { company_id },
+			}),
+			providesTags: ['Logistique'],
+		}),
+		addLogistique: builder.mutation<LogistiqueCreateResponse, { company_id: number; data: Partial<LogistiqueFormValues> | FormData }>({
 			query: ({ company_id, data }) => ({
 				url: `${LOGISTIQUE_ROOT}/`,
 				method: 'POST',
 				params: { company_id },
-				data: { ...data, company_id },
+				data: data instanceof FormData ? data : { ...data, company_id },
 			}),
 			invalidatesTags: ['Logistique', 'Dashboard'],
 		}),
@@ -125,7 +135,8 @@ export const logistiqueApi = createApi({
 					montant_paiement?: string | number;
 					reference_paiement?: string;
 					methode_paiement?: LogistiquePaymentMethod;
-				};
+					swift_file?: File | null;
+				} | FormData;
 			}
 		>({
 			query: ({ id, data }) => ({
@@ -157,6 +168,7 @@ export const {
 	useGetLogistiqueListQuery,
 	useGetLogistiqueQuery,
 	useGetNumLogistiqueQuery,
+	useGetLogistiqueResponsablesQuery,
 	useAddLogistiqueMutation,
 	useEditLogistiqueMutation,
 	useDeleteLogistiqueMutation,

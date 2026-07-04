@@ -10,6 +10,7 @@ import {
 	Card,
 	CardContent,
 	Divider,
+	IconButton,
 	InputAdornment,
 	Stack,
 	TextField,
@@ -20,17 +21,22 @@ import {
 import {
 	Add as AddIcon,
 	ArrowBack as ArrowBackIcon,
+	AttachFile as AttachFileIcon,
 	CalendarToday as CalendarTodayIcon,
+	Clear as ClearIcon,
 	Description as DescriptionIcon,
 	Edit as EditIcon,
 	Info as InfoIcon,
+	InsertDriveFile as InsertDriveFileIcon,
 	LocalShipping as LocalShippingIcon,
 	Notes as NotesIcon,
 	Payment as PaymentIcon,
+	Person as PersonIcon,
 	Public as PublicIcon,
 	ReceiptLong as ReceiptLongIcon,
 	RequestQuote as RequestQuoteIcon,
 	Scale as ScaleIcon,
+	UploadFile as UploadFileIcon,
 	Warning as WarningIcon,
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -41,6 +47,7 @@ import { useFormik } from 'formik';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
+import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import FormattedNumberInput from '@/components/formikElements/formattedNumberInput/formattedNumberInput';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
@@ -57,11 +64,13 @@ import {
 	useAddLogistiqueMutation,
 	useEditLogistiqueMutation,
 	useGetLogistiqueQuery,
+	useGetLogistiqueResponsablesQuery,
 } from '@/store/services/logistique';
 import { LOGISTIQUE_LIST, LOGISTIQUE_VIEW } from '@/utils/routes';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
+import type { DropDownType } from '@/types/accountTypes';
 import type { FactureClass } from '@/models/classes';
-import type { LogistiqueFormValues, LogistiqueOrder } from '@/types/logistiqueTypes';
+import type { LogistiqueDocumentField, LogistiqueFormValues, LogistiqueOrder, LogistiqueResponsibleOption } from '@/types/logistiqueTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 
 interface Props extends SessionProps {
@@ -105,6 +114,14 @@ const tiStatusOptions: LogistiqueFormValues['statut_titre_importation'][] = [
 
 const paymentMethodOptions: LogistiqueFormValues['methode_paiement'][] = ['', 'LC', 'Virement', 'Remise documentaire'];
 const currencyOptions = ['MAD', 'EUR', 'USD'];
+const documentFields: LogistiqueDocumentField[] = [
+	'titre_importation_file',
+	'proforma_fournisseur_file',
+	'justificatifs_file',
+	'swift_file',
+	'documents_originaux_file',
+];
+const acceptedDocumentTypes = '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png';
 
 const emptyValues: LogistiqueFormValues = {
 	proformas: [],
@@ -113,6 +130,7 @@ const emptyValues: LogistiqueFormValues = {
 	incoterm: '',
 	transport: '',
 	conditions_paiement: '',
+	responsable: '',
 	date_prevue: '',
 	date_reelle: '',
 	statut: 'Réception commande',
@@ -138,6 +156,11 @@ const emptyValues: LogistiqueFormValues = {
 	tva: '0',
 	livraison_locale: '0',
 	autres_frais: '0',
+	titre_importation_file: null,
+	proforma_fournisseur_file: null,
+	justificatifs_file: null,
+	swift_file: null,
+	documents_originaux_file: null,
 };
 
 const stringValue = (value: string | number | null | undefined, fallback = '') => String(value ?? fallback);
@@ -154,6 +177,7 @@ const valuesFromOrder = (order?: LogistiqueOrder): LogistiqueFormValues => {
 		incoterm: order.incoterm ?? '',
 		transport: order.transport ?? '',
 		conditions_paiement: order.conditions_paiement ?? '',
+		responsable: order.responsable ? String(order.responsable) : '',
 		date_prevue: dateValue(order.date_prevue),
 		date_reelle: dateValue(order.date_reelle),
 		statut: order.statut,
@@ -179,12 +203,18 @@ const valuesFromOrder = (order?: LogistiqueOrder): LogistiqueFormValues => {
 		tva: stringValue(order.tva, '0'),
 		livraison_locale: stringValue(order.livraison_locale, '0'),
 		autres_frais: stringValue(order.autres_frais, '0'),
+		titre_importation_file: null,
+		proforma_fournisseur_file: null,
+		justificatifs_file: null,
+		swift_file: null,
+		documents_originaux_file: null,
 	};
 };
 
-const toPayload = (values: LogistiqueFormValues, isEditMode: boolean) => {
+const toPayloadObject = (values: LogistiqueFormValues, isEditMode: boolean) => {
 	const payload: Record<string, unknown> = {
 		...values,
+		responsable: values.responsable ? Number(values.responsable) : null,
 		date_prevue: nullableDate(values.date_prevue),
 		date_reelle: nullableDate(values.date_reelle),
 		date_titre_importation: nullableDate(values.date_titre_importation),
@@ -205,7 +235,35 @@ const toPayload = (values: LogistiqueFormValues, isEditMode: boolean) => {
 	if (isEditMode) {
 		delete payload.proformas;
 	}
-	return payload as Partial<LogistiqueFormValues>;
+	return payload;
+};
+
+const toPayload = (values: LogistiqueFormValues, isEditMode: boolean): Partial<LogistiqueFormValues> | FormData => {
+	const payload = toPayloadObject(values, isEditMode);
+	const hasFiles = documentFields.some((field) => values[field] instanceof File);
+
+	if (!hasFiles) {
+		documentFields.forEach((field) => delete payload[field]);
+		return payload as Partial<LogistiqueFormValues>;
+	}
+
+	const formData = new FormData();
+	Object.entries(payload).forEach(([key, value]) => {
+		if (documentFields.includes(key as LogistiqueDocumentField)) {
+			if (value instanceof File) {
+				formData.append(key, value);
+			}
+			return;
+		}
+		if (Array.isArray(value)) {
+			value.forEach((item) => formData.append(key, String(item)));
+			return;
+		}
+		if (value !== null && value !== undefined) {
+			formData.append(key, String(value));
+		}
+	});
+	return formData;
 };
 
 type FormCardProps = {
@@ -263,6 +321,88 @@ const DateField = ({
 	/>
 );
 
+type DocumentUploadFieldProps = {
+	id: LogistiqueDocumentField;
+	label: string;
+	file: File | null;
+	currentUrl?: string | null;
+	onChange: (file: File | null) => void;
+	onClear: () => void;
+	uploadLabel: string;
+	replaceLabel: string;
+	selectedLabel: string;
+	currentLabel: string;
+	openLabel: string;
+};
+
+const DocumentUploadField: React.FC<DocumentUploadFieldProps> = ({
+	id,
+	label,
+	file,
+	currentUrl,
+	onChange,
+	onClear,
+	uploadLabel,
+	replaceLabel,
+	selectedLabel,
+	currentLabel,
+	openLabel,
+}) => (
+	<Box
+		sx={{
+			border: '1px solid',
+			borderColor: 'divider',
+			borderRadius: 2,
+			p: 2,
+			minHeight: 118,
+			display: 'flex',
+			flexDirection: 'column',
+			gap: 1.5,
+			justifyContent: 'space-between',
+		}}
+	>
+		<Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
+			<InsertDriveFileIcon color="primary" fontSize="small" />
+			<Typography variant="subtitle2" sx={{ fontWeight: 700, overflowWrap: 'anywhere' }}>
+				{label}
+			</Typography>
+		</Stack>
+		<input
+			id={id}
+			type="file"
+			accept={acceptedDocumentTypes}
+			hidden
+			onChange={(event) => onChange(event.target.files?.[0] ?? null)}
+		/>
+		<Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+			<Button component="label" htmlFor={id} variant="outlined" size="small" startIcon={<UploadFileIcon />}>
+				{currentUrl || file ? replaceLabel : uploadLabel}
+			</Button>
+			{currentUrl && !file && (
+				<Button
+					component="a"
+					href={currentUrl}
+					target="_blank"
+					rel="noopener noreferrer"
+					variant="text"
+					size="small"
+					startIcon={<AttachFileIcon />}
+				>
+					{openLabel}
+				</Button>
+			)}
+			{file && (
+				<IconButton size="small" color="error" onClick={onClear} aria-label={`clear-${id}`}>
+					<ClearIcon fontSize="small" />
+				</IconButton>
+			)}
+		</Stack>
+		<Typography variant="caption" color="text.secondary" sx={{ overflowWrap: 'anywhere' }}>
+			{file ? `${selectedLabel}: ${file.name}` : currentUrl ? currentLabel : '-'}
+		</Typography>
+	</Box>
+);
+
 const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 	const { t } = useLanguage();
 	const { onSuccess, onError } = useToast();
@@ -276,6 +416,10 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 	const company = companies?.find((item) => item.id === company_id);
 	const isEditMode = id !== undefined;
 	const canManage = company?.role ? managerRoles.has(company.role) : false;
+	const { data: responsablesData, isLoading: isResponsablesLoading } = useGetLogistiqueResponsablesQuery(
+		{ company_id },
+		{ skip: !token || !canManage },
+	);
 
 	const {
 		data: order,
@@ -295,6 +439,14 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 		if (!proformasData) return [] as Partial<FactureClass>[];
 		return Array.isArray(proformasData) ? proformasData : proformasData.results;
 	}, [proformasData]);
+	const responsableOptions = useMemo<DropDownType[]>(
+		() =>
+			(responsablesData ?? []).map((responsable: LogistiqueResponsibleOption) => ({
+				value: String(responsable.id),
+				code: responsable.label,
+			})),
+		[responsablesData],
+	);
 
 	const initialValues = useMemo(() => valuesFromOrder(order), [order]);
 	const error = isEditMode ? dataError || updateError : addError;
@@ -338,9 +490,29 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 		() => ({
 			proformas: t.logistique.fieldProformas,
 			fournisseur: t.logistique.fieldFournisseur,
+			responsable: t.logistique.fieldResponsable,
 			transport: t.logistique.fieldTransport,
 			statut: t.logistique.fieldStatut,
+			titre_importation_file: t.logistique.fieldTitreImportationFile,
+			proforma_fournisseur_file: t.logistique.fieldProformaFournisseurFile,
+			justificatifs_file: t.logistique.fieldJustificatifsFile,
+			swift_file: t.logistique.fieldSwiftFile,
+			documents_originaux_file: t.logistique.fieldDocumentsOriginauxFile,
 			globalError: t.common.genericError,
+		}),
+		[t],
+	);
+	const selectedResponsable = useMemo(
+		() => responsableOptions.find((option) => option.value === formik.values.responsable) ?? null,
+		[responsableOptions, formik.values.responsable],
+	);
+	const documentLabels = useMemo<Record<LogistiqueDocumentField, string>>(
+		() => ({
+			titre_importation_file: t.logistique.fieldTitreImportationFile,
+			proforma_fournisseur_file: t.logistique.fieldProformaFournisseurFile,
+			justificatifs_file: t.logistique.fieldJustificatifsFile,
+			swift_file: t.logistique.fieldSwiftFile,
+			documents_originaux_file: t.logistique.fieldDocumentsOriginauxFile,
 		}),
 		[t],
 	);
@@ -357,7 +529,7 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 		return errors;
 	}, [formik.errors, hasAttemptedSubmit]);
 
-	const isLoading = isCompaniesLoading || isOrderLoading || isProformasLoading || isAddLoading || isEditLoading || isPending;
+	const isLoading = isCompaniesLoading || isOrderLoading || isProformasLoading || isResponsablesLoading || isAddLoading || isEditLoading || isPending;
 	const shouldShowError = (axiosError?.status ?? 0) > 400 && !isLoading;
 	const title = isEditMode ? t.logistique.editTitle : t.logistique.addTitle;
 
@@ -498,6 +670,18 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 													theme={inputTheme}
 													startIcon={<LocalShippingIcon fontSize="small" />}
 												/>
+												<CustomAutoCompleteSelect
+													id="responsable"
+													label={t.logistique.fieldResponsable}
+													items={responsableOptions}
+													value={selectedResponsable}
+													onChange={(_, value) => formik.setFieldValue('responsable', value?.value ?? '')}
+													noOptionsText={t.logistique.noResponsable}
+													fullWidth
+													size="small"
+													theme={inputTheme}
+													startIcon={<PersonIcon fontSize="small" />}
+												/>
 												<CustomDropDownSelect
 													id="statut"
 													label={t.logistique.fieldStatut}
@@ -596,6 +780,25 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 												<DateField label={t.logistique.fieldDateTI} value={formik.values.date_titre_importation} onChange={(value) => formik.setFieldValue('date_titre_importation', value)} />
 												<DateField label={t.logistique.fieldDateValidationTI} value={formik.values.date_validation_titre_importation} onChange={(value) => formik.setFieldValue('date_validation_titre_importation', value)} />
 												<CustomDropDownSelect id="statut_titre_importation" label={t.logistique.fieldStatutTI} items={tiStatusOptions} value={formik.values.statut_titre_importation} onChange={(event) => formik.setFieldValue('statut_titre_importation', event.target.value)} size="small" theme={inputTheme} startIcon={<InfoIcon fontSize="small" />} />
+											</FormCard>
+
+											<FormCard title={t.logistique.documentsSection} icon={<AttachFileIcon color="primary" />}>
+												{documentFields.map((field) => (
+													<DocumentUploadField
+														key={field}
+														id={field}
+														label={documentLabels[field]}
+														file={formik.values[field]}
+														currentUrl={order?.[field] ?? null}
+														onChange={(file) => formik.setFieldValue(field, file)}
+														onClear={() => formik.setFieldValue(field, null)}
+														uploadLabel={t.logistique.uploadDocument}
+														replaceLabel={t.logistique.replaceDocument}
+														selectedLabel={t.logistique.selectedFile}
+														currentLabel={t.logistique.currentDocument}
+														openLabel={t.logistique.openDocument}
+													/>
+												))}
 											</FormCard>
 
 											<FormCard title={t.logistique.paymentSection} icon={<PaymentIcon color="primary" />}>

@@ -218,6 +218,19 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 			),
 		},
 		{
+			field: 'projects_display',
+			headerName: t.logistique.colProjects,
+			flex: 1.1,
+			minWidth: 150,
+			renderCell: (params: GridRenderCellParams<LogistiqueOrder>) => (
+				<DarkTooltip title={params.value || '-'}>
+					<Typography variant="body2" noWrap>
+						{params.value || '-'}
+					</Typography>
+				</DarkTooltip>
+			),
+		},
+		{
 			field: 'date_prevue',
 			headerName: t.logistique.colDatePrevue,
 			flex: 1,
@@ -259,6 +272,25 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 					variant="outlined"
 				/>
 			),
+		},
+		{
+			field: 'alerts',
+			headerName: t.logistique.colAlerts,
+			flex: 1.2,
+			minWidth: 170,
+			sortable: false,
+			filterable: false,
+			renderCell: (params: GridRenderCellParams<LogistiqueOrder>) => {
+				const alerts = params.row.alerts ?? [];
+				if (!alerts.length) {
+					return <Chip label={t.logistique.noAlerts} size="small" variant="outlined" />;
+				}
+				return (
+					<DarkTooltip title={alerts.join(', ')}>
+						<Chip label={alerts.length === 1 ? alerts[0] : `${alerts.length} ${t.logistique.colAlerts}`} size="small" color="warning" variant="outlined" />
+					</DarkTooltip>
+				);
+			},
 		},
 		{
 			field: 'cout_total',
@@ -376,7 +408,65 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 						color="#6A1B9A"
 						testId="logistique-stats-costs"
 					/>
+					<DashboardStatCard
+						icon={<PaymentIcon />}
+						label={t.logistique.swiftMissing}
+						value={String(stats?.swift_manquant ?? 0)}
+						color="#C62828"
+						testId="logistique-stats-swift"
+					/>
+					<DashboardStatCard
+						icon={<RequestQuoteIcon />}
+						label={t.logistique.docsMissing}
+						value={String(stats?.documents_non_recus ?? 0)}
+						color="#455A64"
+						testId="logistique-stats-docs"
+					/>
+					<DashboardStatCard
+						icon={<LocalShippingIcon />}
+						label={t.logistique.transitNotStarted}
+						value={String(stats?.transit_non_lance ?? 0)}
+						color="#00695C"
+						testId="logistique-stats-transit"
+					/>
 				</Box>
+				{stats?.kpi_fournisseurs?.length ? (
+					<Box sx={{ mb: 3 }}>
+						<Typography variant="h6" sx={{ fontWeight: 700, mb: 1.5 }}>
+							{t.logistique.supplierKpiSection}
+						</Typography>
+						<Box
+							sx={{
+								display: 'grid',
+								gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))', xl: 'repeat(3, minmax(0, 1fr))' },
+								gap: 1.5,
+							}}
+						>
+							{stats.kpi_fournisseurs.map((supplier) => (
+								<Box
+									key={supplier.fournisseur}
+									sx={{
+										border: '1px solid',
+										borderColor: 'divider',
+										borderRadius: 2,
+										p: 2,
+										minWidth: 0,
+									}}
+								>
+									<Typography variant="subtitle2" sx={{ fontWeight: 700, overflowWrap: 'anywhere' }}>
+										{supplier.fournisseur}
+									</Typography>
+									<Typography variant="body2" color="text.secondary">
+										{t.logistique.ordersCount}: {supplier.total_commandes}
+									</Typography>
+									<Typography variant="body2" color="primary" sx={{ fontWeight: 700 }}>
+										{formatMoney(supplier.cout_total)}
+									</Typography>
+								</Box>
+							))}
+						</Box>
+					</Box>
+				) : null}
 				<Divider sx={{ mb: 2 }} />
 			</Box>
 			{canManage && (

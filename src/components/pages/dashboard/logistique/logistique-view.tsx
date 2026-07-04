@@ -1,6 +1,6 @@
 'use client';
 
-import React, { isValidElement, useMemo, useState } from 'react';
+import React, { isValidElement, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
 	Box,
@@ -9,7 +9,11 @@ import {
 	CardContent,
 	Chip,
 	Divider,
+	Alert,
 	Stack,
+	Step,
+	StepLabel,
+	Stepper,
 	TextField,
 	Typography,
 	useMediaQuery,
@@ -18,6 +22,7 @@ import {
 import Grid from '@mui/material/Grid';
 import {
 	ArrowBack as ArrowBackIcon,
+	AttachFile as AttachFileIcon,
 	AssignmentTurnedIn as AssignmentTurnedInIcon,
 	Business as BusinessIcon,
 	CalendarToday as CalendarTodayIcon,
@@ -28,14 +33,19 @@ import {
 	Edit as EditIcon,
 	History as HistoryIcon,
 	Info as InfoIcon,
+	Inventory as InventoryIcon,
 	LocalShipping as LocalShippingIcon,
 	Notes as NotesIcon,
+	OpenInNew as OpenInNewIcon,
 	Payment as PaymentIcon,
+	Person as PersonIcon,
 	Public as PublicIcon,
 	ReceiptLong as ReceiptLongIcon,
 	RequestQuote as RequestQuoteIcon,
 	Scale as ScaleIcon,
 	Send as SendIcon,
+	UploadFile as UploadFileIcon,
+	Warning as WarningIcon,
 } from '@mui/icons-material';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
@@ -54,6 +64,7 @@ import { textInputTheme } from '@/utils/themes';
 import {
 	useDeleteLogistiqueMutation,
 	useGetLogistiqueQuery,
+	usePatchLogistiqueStatutMutation,
 	useRejectLogistiquePaymentMutation,
 	useRequestLogistiquePaymentMutation,
 	useSendLogistiqueSwiftMutation,
@@ -61,7 +72,7 @@ import {
 } from '@/store/services/logistique';
 import { LOGISTIQUE_EDIT, LOGISTIQUE_LIST } from '@/utils/routes';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
-import type { LogistiquePaymentMethod, LogistiquePaymentStatus } from '@/types/logistiqueTypes';
+import type { LogistiqueDocumentField, LogistiquePaymentMethod, LogistiquePaymentStatus, LogistiqueStatut } from '@/types/logistiqueTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 
 interface Props extends SessionProps {
@@ -85,6 +96,35 @@ const inputTheme = textInputTheme();
 const managerRoles = new Set(['Caissier', 'Commercial', 'Logistique']);
 const accountingRoles = new Set(['Caissier', 'Comptable']);
 const paymentMethodOptions: LogistiquePaymentMethod[] = ['', 'LC', 'Virement', 'Remise documentaire'];
+const statusOptions: LogistiqueStatut[] = [
+	'Réception commande',
+	'Commande fournisseur',
+	'Proforma',
+	"Titre d'Importation",
+	'Validation',
+	'Paiement demandé',
+	'Paiement effectué',
+	'SWIFT / Draft LC',
+	'Envoi SWIFT / Draft LC',
+	'Production',
+	'Expédition',
+	'Documents originaux',
+	'Transit',
+	'Dédouanement',
+	'Réception locale',
+	'Livraison client',
+	'Clôture',
+	'Annulé',
+];
+const workflowStatuses = statusOptions.filter((status) => status !== 'Annulé');
+const documentFields: LogistiqueDocumentField[] = [
+	'titre_importation_file',
+	'proforma_fournisseur_file',
+	'justificatifs_file',
+	'swift_file',
+	'documents_originaux_file',
+];
+const acceptedDocumentTypes = '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png';
 
 const paymentColor = (status: LogistiquePaymentStatus) => {
 	if (status === 'Validé') return 'success' as const;
@@ -136,6 +176,40 @@ const DetailCard: React.FC<DetailCardProps> = ({ title, icon, children }) => (
 	</Card>
 );
 
+type DocumentRowProps = {
+	label: string;
+	url?: string | null;
+	openLabel: string;
+};
+
+const DocumentRow: React.FC<DocumentRowProps> = ({ label, url, openLabel }) => (
+	<Stack
+		direction={{ xs: 'column', sm: 'row' }}
+		spacing={1.5}
+		sx={{ alignItems: { xs: 'flex-start', sm: 'center' }, justifyContent: 'space-between', py: 1.5 }}
+	>
+		<Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', minWidth: 0 }}>
+			<AttachFileIcon color={url ? 'primary' : 'disabled'} fontSize="small" />
+			<Typography sx={{ fontWeight: 600, overflowWrap: 'anywhere' }}>{label}</Typography>
+		</Stack>
+		{url ? (
+			<Button
+				component="a"
+				href={url}
+				target="_blank"
+				rel="noopener noreferrer"
+				size="small"
+				variant="outlined"
+				startIcon={<OpenInNewIcon />}
+			>
+				{openLabel}
+			</Button>
+		) : (
+			<Chip label="-" size="small" variant="outlined" />
+		)}
+	</Stack>
+);
+
 const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const token = useInitAccessToken(session);
 	const router = useRouter();
@@ -157,6 +231,7 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 		[error],
 	);
 	const [deleteLogistique] = useDeleteLogistiqueMutation();
+	const [patchStatus] = usePatchLogistiqueStatutMutation();
 	const [requestPayment] = useRequestLogistiquePaymentMutation();
 	const [validatePayment] = useValidateLogistiquePaymentMutation();
 	const [rejectPayment] = useRejectLogistiquePaymentMutation();
@@ -167,6 +242,8 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
 	const [showValidateModal, setShowValidateModal] = useState(false);
 	const [showRejectModal, setShowRejectModal] = useState(false);
+	const [selectedStatus, setSelectedStatus] = useState<LogistiqueStatut>('Réception commande');
+	const [swiftProofFile, setSwiftProofFile] = useState<File | null>(null);
 	const [paymentData, setPaymentData] = useState({
 		date_paiement: '',
 		montant_paiement: '',
@@ -174,6 +251,26 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 		methode_paiement: '' as LogistiquePaymentMethod,
 	});
 	const [rejectNote, setRejectNote] = useState('');
+	const documentLabels = useMemo<Record<LogistiqueDocumentField, string>>(
+		() => ({
+			titre_importation_file: t.logistique.fieldTitreImportationFile,
+			proforma_fournisseur_file: t.logistique.fieldProformaFournisseurFile,
+			justificatifs_file: t.logistique.fieldJustificatifsFile,
+			swift_file: t.logistique.fieldSwiftFile,
+			documents_originaux_file: t.logistique.fieldDocumentsOriginauxFile,
+		}),
+		[t],
+	);
+	const activeWorkflowIndex = Math.max(
+		0,
+		workflowStatuses.indexOf((order?.statut ?? 'Réception commande') as (typeof workflowStatuses)[number]),
+	);
+
+	useEffect(() => {
+		if (order?.statut) {
+			setSelectedStatus(order.statut);
+		}
+	}, [order?.statut]);
 
 	const handleDelete = async () => {
 		try {
@@ -196,11 +293,32 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 		}
 	};
 
+	const handleStatusUpdate = async () => {
+		try {
+			await patchStatus({ id, data: { statut: selectedStatus } }).unwrap();
+			onSuccess(t.logistique.updateSuccess);
+		} catch (err) {
+			onError(extractApiErrorMessage(err, t.logistique.updateError));
+		}
+	};
+
 	const handleValidatePayment = async () => {
 		try {
-			await validatePayment({ id, data: paymentData }).unwrap();
+			let data: typeof paymentData | FormData = paymentData;
+			if (swiftProofFile) {
+				const formData = new FormData();
+				Object.entries(paymentData).forEach(([key, value]) => {
+					if (value) {
+						formData.append(key, value);
+					}
+				});
+				formData.append('swift_file', swiftProofFile);
+				data = formData;
+			}
+			await validatePayment({ id, data }).unwrap();
 			onSuccess(t.logistique.validateSuccess);
 			setShowValidateModal(false);
+			setSwiftProofFile(null);
 		} catch (err) {
 			onError(extractApiErrorMessage(err, t.logistique.validateError));
 		}
@@ -341,9 +459,54 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 							</Card>
 
 							<DetailCard title={t.logistique.fieldStatut} icon={<InfoIcon color="primary" />}>
-								<Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-									<Chip label={order?.statut ?? '-'} size="medium" color="info" variant="outlined" sx={{ fontSize: '1rem', py: 2 }} />
-								</Box>
+								<Stack spacing={3}>
+									<Box sx={{ overflowX: 'auto', pb: 1 }}>
+										<Stepper
+											activeStep={activeWorkflowIndex}
+											alternativeLabel={!isMobile}
+											orientation={isMobile ? 'vertical' : 'horizontal'}
+											sx={{ minWidth: isMobile ? 'auto' : 1800 }}
+										>
+											{workflowStatuses.map((status) => (
+												<Step key={status} completed={workflowStatuses.indexOf(status) < activeWorkflowIndex}>
+													<StepLabel>{status}</StepLabel>
+												</Step>
+											))}
+										</Stepper>
+									</Box>
+									<Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ alignItems: { xs: 'stretch', md: 'center' } }}>
+										<Chip label={order?.statut ?? '-'} size="medium" color="info" variant="outlined" sx={{ fontSize: '1rem', py: 2 }} />
+										{canManage && (
+											<>
+												<CustomDropDownSelect
+													id="statut"
+													label={t.logistique.fieldStatut}
+													items={statusOptions}
+													value={selectedStatus}
+													onChange={(event) => setSelectedStatus(event.target.value as LogistiqueStatut)}
+													size="small"
+													theme={inputTheme}
+													startIcon={<InfoIcon fontSize="small" />}
+												/>
+												<Button variant="contained" size="small" startIcon={<AssignmentTurnedInIcon />} onClick={handleStatusUpdate}>
+													{t.common.update}
+												</Button>
+											</>
+										)}
+									</Stack>
+								</Stack>
+							</DetailCard>
+
+							<DetailCard title={t.logistique.alertsSection} icon={<WarningIcon color="warning" />}>
+								{order?.alerts?.length ? (
+									<Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
+										{order.alerts.map((alert) => (
+											<Chip key={alert} icon={<WarningIcon />} label={alert} color="warning" variant="outlined" />
+										))}
+									</Stack>
+								) : (
+									<Alert severity="success">{t.logistique.noAlerts}</Alert>
+								)}
 							</DetailCard>
 
 							<DetailCard title={t.logistique.generalSection} icon={<BusinessIcon color="primary" />}>
@@ -352,6 +515,8 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 										<InfoRow icon={<ReceiptLongIcon />} label={t.logistique.colNumero} value={order?.numero_commande} />
 										<InfoRow icon={<BusinessIcon />} label={t.logistique.fieldFournisseur} value={order?.fournisseur} />
 										<InfoRow icon={<AssignmentTurnedInIcon />} label={t.logistique.colMarque} value={order?.marque_name} />
+										<InfoRow icon={<PersonIcon />} label={t.logistique.fieldResponsable} value={order?.responsable_name} />
+										<InfoRow icon={<InventoryIcon />} label={t.logistique.colProjects} value={order?.projects_display} />
 										<InfoRow icon={<PaymentIcon />} label={t.logistique.fieldDevise} value={order?.devise} />
 										<InfoRow icon={<LocalShippingIcon />} label={t.logistique.fieldTransport} value={order?.transport} />
 										<InfoRow icon={<PublicIcon />} label={t.logistique.fieldIncoterm} value={order?.incoterm} />
@@ -363,6 +528,7 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 										<InfoRow icon={<DescriptionIcon />} label={t.logistique.fieldNature} value={order?.nature_marchandise} />
 										<InfoRow icon={<ScaleIcon />} label={t.logistique.fieldPoidsNet} value={order?.poids_net} />
 										<InfoRow icon={<ScaleIcon />} label={t.logistique.fieldPoidsBrut} value={order?.poids_brut} />
+										<InfoRow icon={<ScaleIcon />} label={t.logistique.fieldVolume} value={order?.volume} />
 									</Grid>
 								</Grid>
 							</DetailCard>
@@ -382,6 +548,19 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 								</Grid>
 							</DetailCard>
 
+							<DetailCard title={t.logistique.documentsSection} icon={<AttachFileIcon color="primary" />}>
+								<Stack divider={<Divider flexItem />} spacing={0}>
+									{documentFields.map((field) => (
+										<DocumentRow
+											key={field}
+											label={documentLabels[field]}
+											url={order?.[field] ?? null}
+											openLabel={t.logistique.openDocument}
+										/>
+									))}
+								</Stack>
+							</DetailCard>
+
 							<DetailCard title={t.logistique.paymentSection} icon={<PaymentIcon color="primary" />}>
 								<Grid container spacing={2}>
 									<Grid size={{ xs: 12, md: 6 }}>
@@ -393,6 +572,21 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 										<InfoRow icon={<ReceiptLongIcon />} label={t.logistique.fieldReferencePaiement} value={order?.reference_paiement} />
 										<InfoRow icon={<SendIcon />} label={t.logistique.requestPayment} value={formatDate(order?.demande_paiement_envoyee_le ?? null)} />
 										<InfoRow icon={<CheckCircleIcon />} label={t.logistique.validatePayment} value={formatDate(order?.paiement_valide_le ?? null)} />
+									</Grid>
+								</Grid>
+							</DetailCard>
+
+							<DetailCard title={t.logistique.traceabilitySection} icon={<HistoryIcon color="primary" />}>
+								<Grid container spacing={2}>
+									<Grid size={{ xs: 12, md: 6 }}>
+										<InfoRow icon={<SendIcon />} label={t.logistique.requestPayment} value={formatDate(order?.demande_paiement_envoyee_le ?? null)} />
+										<InfoRow icon={<PersonIcon />} label={t.logistique.paymentRequestSentBy} value={order?.demande_paiement_envoyee_par_name} />
+									</Grid>
+									<Grid size={{ xs: 12, md: 6 }}>
+										<InfoRow icon={<CheckCircleIcon />} label={t.logistique.validatePayment} value={formatDate(order?.paiement_valide_le ?? null)} />
+										<InfoRow icon={<PersonIcon />} label={t.logistique.paymentValidatedBy} value={order?.paiement_valide_par_name} />
+										<InfoRow icon={<UploadFileIcon />} label={t.logistique.swiftUploadedAt} value={formatDate(order?.date_upload_swift ?? null)} />
+										<InfoRow icon={<SendIcon />} label={t.logistique.swiftSentAt} value={formatDate(order?.swift_envoye_fournisseur_le ?? null)} />
 									</Grid>
 								</Grid>
 							</DetailCard>
@@ -423,6 +617,11 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 												<Typography variant="body2" color="text.secondary">
 													{proforma.client_name || '-'} - {formatDate(proforma.date_facture)} - {formatMoney(proforma.total_ttc_apres_remise, proforma.devise)}
 												</Typography>
+												{proforma.project_reference && (
+													<Typography variant="body2" color="text.secondary">
+														{t.logistique.colProjects}: {proforma.project_reference}
+													</Typography>
+												)}
 											</Box>
 										))
 									) : (
@@ -444,6 +643,11 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 												<Typography variant="body2" color="text.secondary">
 													{line.client_name || '-'} - {t.documentForm.colQuantite}: {formatNumberWithSpaces(line.quantity, 3)} - {formatMoney(line.total_achat, line.devise_prix_achat)}
 												</Typography>
+												{line.project_reference && (
+													<Typography variant="body2" color="text.secondary">
+														{t.logistique.colProjects}: {line.project_reference}
+													</Typography>
+												)}
 											</Box>
 										))
 									) : (
@@ -497,7 +701,7 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 						titleIconColor="#2E7D32"
 						body={t.logistique.paymentModalBody}
 						actions={[
-							{ text: t.common.cancel, active: false, onClick: () => setShowValidateModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
+							{ text: t.common.cancel, active: false, onClick: () => { setShowValidateModal(false); setSwiftProofFile(null); }, icon: <CloseIcon />, color: '#6B6B6B' },
 							{ text: t.logistique.validatePayment, active: true, onClick: handleValidatePayment, icon: <CheckCircleIcon />, color: '#2E7D32' },
 						]}
 					>
@@ -541,6 +745,31 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 								theme={inputTheme}
 								startIcon={<PaymentIcon fontSize="small" />}
 							/>
+							<Box
+								sx={{
+									border: '1px solid',
+									borderColor: 'divider',
+									borderRadius: 2,
+									p: 2,
+									gridColumn: { sm: '1 / -1' },
+								}}
+							>
+								<input
+									id="swift-proof-file"
+									type="file"
+									accept={acceptedDocumentTypes}
+									hidden
+									onChange={(event) => setSwiftProofFile(event.target.files?.[0] ?? null)}
+								/>
+								<Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+									<Button component="label" htmlFor="swift-proof-file" variant="outlined" size="small" startIcon={<UploadFileIcon />}>
+										{swiftProofFile ? t.logistique.replaceDocument : t.logistique.uploadDocument}
+									</Button>
+									<Typography variant="body2" color="text.secondary" sx={{ overflowWrap: 'anywhere' }}>
+										{swiftProofFile ? `${t.logistique.selectedFile}: ${swiftProofFile.name}` : t.logistique.fieldSwiftFile}
+									</Typography>
+								</Stack>
+							</Box>
 						</Box>
 					</ActionModals>
 				)}
