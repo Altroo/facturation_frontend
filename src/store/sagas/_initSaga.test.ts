@@ -25,6 +25,7 @@ jest.mock('@/utils/apiHelpers', () => ({
 
 describe('init sagas', () => {
 	beforeEach(() => {
+		jest.clearAllMocks();
 		process.env.NEXT_PUBLIC_WS_MAINTENANCE_ROOT = '/ws/maintenance/';
 	});
 
@@ -132,6 +133,29 @@ describe('init sagas', () => {
 		).toPromise();
 
 		expect(dispatched).toEqual([setWSMaintenance(true)]);
+	});
+
+	it('initMaintenanceSaga should ignore bootstrap API failures', async () => {
+		const dispatched: unknown[] = [];
+		(allowAnyInstance as jest.Mock).mockReturnValue({ get: jest.fn() });
+		(getApi as jest.Mock).mockRejectedValue({
+			error: {
+				status_code: 429,
+				message: 'Trop de requêtes',
+				details: { error: ['Requête ralentie.'] },
+			},
+		});
+
+		await expect(
+			runSaga(
+				{
+					dispatch: (action: unknown) => dispatched.push(action),
+				},
+				initMaintenanceSaga,
+			).toPromise(),
+		).resolves.toBeUndefined();
+
+		expect(dispatched).toEqual([]);
 	});
 
 	it('initAppSaga should call initMaintenanceSaga', () => {

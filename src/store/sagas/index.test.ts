@@ -1,4 +1,4 @@
-import { rootSaga } from './index';
+import { formatSagaError, rootSaga } from './index';
 import { watchWS } from '@/store/sagas/wsSaga';
 import { AllEffect, ForkEffect } from 'redux-saga/effects';
 
@@ -37,5 +37,16 @@ describe('rootSaga', () => {
 		// 4 sagas currently:
 		// watchInit, watchAccount, watchCompanies, watchWS
 		expect(effect.payload).toHaveLength(4);
+	});
+
+	it('should preserve useful details when formatting object saga errors', () => {
+		expect(
+			formatSagaError({
+				error: {
+					status_code: 429,
+					message: 'Trop de requêtes',
+				},
+			}),
+		).toBe('{"error":{"status_code":429,"message":"Trop de requêtes"}}');
 	});
 });

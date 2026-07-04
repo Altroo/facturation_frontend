@@ -33,11 +33,15 @@ export function* initMaintenanceSaga() {
 		return;
 	}
 
-	const instance: AxiosInstance = yield call(() => allowAnyInstance());
-	const response: MaintenanceGetRootResponseType = yield call(() => getApi(url, instance));
+	try {
+		const instance: AxiosInstance = yield call(() => allowAnyInstance());
+		const response: MaintenanceGetRootResponseType = yield call(() => getApi(url, instance));
 
-	if (response.status === 200) {
-		yield put(setWSMaintenance(response.data.maintenance));
+		if (response.status === 200) {
+			yield put(setWSMaintenance(response.data.maintenance));
+		}
+	} catch {
+		return;
 	}
 }
 
