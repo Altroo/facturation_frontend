@@ -657,6 +657,13 @@ export type TranslationDictionary = {
 		flowChartTitle: string;
 		costTrendChartTitle: string;
 		supplierCostShareChartTitle: string;
+		flowChartTooltip: string;
+		workflowChartTooltip: string;
+		paymentChartTooltip: string;
+		alertChartTooltip: string;
+		costBreakdownChartTooltip: string;
+		costTrendChartTooltip: string;
+		supplierCostShareChartTooltip: string;
 		createdOrders: string;
 		validatedPayments: string;
 		completedDeliveries: string;

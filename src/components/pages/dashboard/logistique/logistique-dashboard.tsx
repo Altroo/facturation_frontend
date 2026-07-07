@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Alert, Box, Button, Card, CardContent, CardHeader, CircularProgress, Typography } from '@mui/material';
+import { Alert, Box, Button, Card, CardContent, CardHeader, CircularProgress, IconButton, Tooltip as MuiTooltip, Typography } from '@mui/material';
 import {
 	ArcElement,
 	BarElement,
@@ -13,13 +13,15 @@ import {
 	LineElement,
 	PointElement,
 	Title,
-	Tooltip,
+	Tooltip as ChartTooltip,
 	type ChartOptions,
 } from 'chart.js';
 import { Bar, Doughnut, Line } from 'react-chartjs-2';
 import {
 	AssignmentTurnedIn as AssignmentTurnedInIcon,
+	BarChart as BarChartIcon,
 	ErrorOutlined as ErrorOutlinedIcon,
+	InfoOutlined as InfoOutlinedIcon,
 	LocalShipping as LocalShippingIcon,
 	Payment as PaymentIcon,
 	RequestQuote as RequestQuoteIcon,
@@ -34,7 +36,7 @@ import { useLanguage } from '@/utils/hooks';
 import type { SessionProps } from '@/types/_initTypes';
 import type { LogistiqueStats } from '@/types/logistiqueTypes';
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, ChartTooltip, Legend, Filler);
 
 type DashboardContentProps = SessionProps & {
 	company_id: number;
@@ -45,6 +47,7 @@ type ChartCardProps = {
 	children: React.ReactNode;
 	height?: number;
 	wide?: boolean;
+	infoTooltip?: string;
 };
 
 const CHART_COLORS = {
@@ -160,7 +163,7 @@ const formatMonthLabel = (month: string) => {
 
 const hasPositiveData = (values: number[]) => values.some((value) => value > 0);
 
-const ChartCard: React.FC<ChartCardProps> = ({ title, children, height = 320, wide = false }) => (
+const ChartCard: React.FC<ChartCardProps> = ({ title, children, height = 320, wide = false, infoTooltip }) => (
 	<Card
 		elevation={2}
 		sx={{
@@ -175,6 +178,15 @@ const ChartCard: React.FC<ChartCardProps> = ({ title, children, height = 320, wi
 					{title}
 				</Typography>
 			}
+			action={
+				infoTooltip && (
+					<MuiTooltip title={infoTooltip} arrow placement="top">
+						<IconButton size="small" sx={{ color: 'text.secondary' }} aria-label={infoTooltip}>
+							<InfoOutlinedIcon fontSize="small" />
+						</IconButton>
+					</MuiTooltip>
+				)
+			}
 			sx={{ pb: 0 }}
 		/>
 		<CardContent sx={{ pt: 2 }}>
@@ -183,23 +195,33 @@ const ChartCard: React.FC<ChartCardProps> = ({ title, children, height = 320, wi
 	</Card>
 );
 
-const EmptyChart: React.FC<{ message: string }> = ({ message }) => (
-	<Box
-		sx={{
-			height: '100%',
-			display: 'grid',
-			placeItems: 'center',
-			border: '1px dashed',
-			borderColor: 'divider',
-			borderRadius: 2,
-			bgcolor: 'grey.50',
-			px: 2,
-			textAlign: 'center',
-		}}
-	>
-		<Typography color="text.secondary">{message}</Typography>
-	</Box>
-);
+const EmptyChart: React.FC<{ message?: string }> = ({ message }) => {
+	const { t } = useLanguage();
+
+	return (
+		<Box
+			sx={{
+				height: '100%',
+				display: 'flex',
+				flexDirection: 'column',
+				justifyContent: 'center',
+				alignItems: 'center',
+				border: '1px dashed',
+				borderColor: 'grey.300',
+				borderRadius: 2,
+				bgcolor: 'grey.50',
+				px: 2,
+				textAlign: 'center',
+				gap: 1,
+			}}
+		>
+			<BarChartIcon sx={{ color: 'text.secondary', fontSize: 34 }} />
+			<Typography variant="body2" color="text.secondary">
+				{message || t.logistique.noChartData}
+			</Typography>
+		</Box>
+	);
+};
 
 const MonthlyFlowChart: React.FC<{ stats: LogistiqueStats }> = ({ stats }) => {
 	const { t } = useLanguage();
@@ -486,25 +508,25 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ session, company_id
 					mb: 3,
 				}}
 			>
-				<ChartCard title={t.logistique.flowChartTitle} height={360} wide>
+				<ChartCard title={t.logistique.flowChartTitle} height={360} wide infoTooltip={t.logistique.flowChartTooltip}>
 					<MonthlyFlowChart stats={stats} />
 				</ChartCard>
-				<ChartCard title={t.logistique.workflowChartTitle} height={340}>
+				<ChartCard title={t.logistique.workflowChartTitle} height={340} infoTooltip={t.logistique.workflowChartTooltip}>
 					<WorkflowChart stats={stats} />
 				</ChartCard>
-				<ChartCard title={t.logistique.paymentChartTitle} height={340}>
+				<ChartCard title={t.logistique.paymentChartTitle} height={340} infoTooltip={t.logistique.paymentChartTooltip}>
 					<PaymentChart stats={stats} />
 				</ChartCard>
-				<ChartCard title={t.logistique.alertChartTitle}>
+				<ChartCard title={t.logistique.alertChartTitle} infoTooltip={t.logistique.alertChartTooltip}>
 					<AlertsChart stats={stats} />
 				</ChartCard>
-				<ChartCard title={t.logistique.costBreakdownChartTitle}>
+				<ChartCard title={t.logistique.costBreakdownChartTitle} infoTooltip={t.logistique.costBreakdownChartTooltip}>
 					<CostBreakdownChart stats={stats} />
 				</ChartCard>
-				<ChartCard title={t.logistique.costTrendChartTitle}>
+				<ChartCard title={t.logistique.costTrendChartTitle} infoTooltip={t.logistique.costTrendChartTooltip}>
 					<CostTrendChart stats={stats} />
 				</ChartCard>
-				<ChartCard title={t.logistique.supplierCostShareChartTitle}>
+				<ChartCard title={t.logistique.supplierCostShareChartTitle} infoTooltip={t.logistique.supplierCostShareChartTooltip}>
 					<SupplierCostShareChart stats={stats} />
 				</ChartCard>
 			</Box>
