@@ -254,7 +254,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 			field: 'numero_commande',
 			headerName: t.logistique.colNumero,
 			flex: 1,
-			minWidth: 130,
+			minWidth: 125,
 			renderCell: (params: GridRenderCellParams<LogistiqueOrder>) => (
 				<DarkTooltip title={params.value}>
 					<Typography variant="body2" noWrap sx={{ fontWeight: 600 }}>
@@ -267,7 +267,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 			field: 'fournisseur',
 			headerName: t.logistique.colFournisseur,
 			flex: 1.2,
-			minWidth: 150,
+			minWidth: 140,
 			filterOperators: createDropdownFilterOperators(
 				supplierFilterOptions,
 				t.logistique.allSuppliers,
@@ -286,7 +286,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 			field: 'marque_id',
 			headerName: t.logistique.colMarque,
 			flex: 1,
-			minWidth: 120,
+			minWidth: 110,
 			filterOperators: createDropdownFilterOperators(
 				brandFilterOptions,
 				t.logistique.allBrands,
@@ -305,7 +305,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 			field: 'clients_display',
 			headerName: t.logistique.colClients,
 			flex: 1.4,
-			minWidth: 170,
+			minWidth: 150,
 			renderCell: (params: GridRenderCellParams<LogistiqueOrder>) => (
 				<DarkTooltip title={params.value || '-'}>
 					<Typography variant="body2" noWrap>
@@ -318,7 +318,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 			field: 'projects_display',
 			headerName: t.logistique.colProjects,
 			flex: 1.1,
-			minWidth: 150,
+			minWidth: 135,
 			renderCell: (params: GridRenderCellParams<LogistiqueOrder>) => (
 				<DarkTooltip title={params.value || '-'}>
 					<Typography variant="body2" noWrap>
@@ -331,7 +331,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 			field: 'date_prevue',
 			headerName: t.logistique.colDatePrevue,
 			flex: 1,
-			minWidth: 130,
+			minWidth: 125,
 			filterOperators: createDateRangeFilterOperator(t.filterPanel.between),
 			renderCell: (params: GridRenderCellParams<LogistiqueOrder>) => {
 				const formatted = formatDate(params.value as string | null);
@@ -348,7 +348,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 			field: 'statut',
 			headerName: t.logistique.colStatut,
 			flex: 1.2,
-			minWidth: 170,
+			minWidth: 155,
 			filterOperators: createDropdownFilterOperators(
 				statusFilterOptions,
 				t.common.allStatuses,
@@ -365,7 +365,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 			field: 'statut_paiement',
 			headerName: t.logistique.colPaiement,
 			flex: 1,
-			minWidth: 135,
+			minWidth: 125,
 			filterOperators: createDropdownFilterOperators(
 				paymentFilterOptions,
 				t.common.allStatuses,
@@ -387,7 +387,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 			field: 'statut_titre_importation',
 			headerName: t.logistique.fieldStatutTI,
 			flex: 1,
-			minWidth: 150,
+			minWidth: 130,
 			filterOperators: createDropdownFilterOperators(
 				importTitleFilterOptions,
 				t.common.allStatuses,
@@ -404,7 +404,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 			field: 'alerts',
 			headerName: t.logistique.colAlerts,
 			flex: 1.2,
-			minWidth: 170,
+			minWidth: 150,
 			sortable: false,
 			filterable: false,
 			renderCell: (params: GridRenderCellParams<LogistiqueOrder>) => {
@@ -427,7 +427,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 			field: 'cout_total',
 			headerName: t.logistique.colCoutTotal,
 			flex: 1,
-			minWidth: 130,
+			minWidth: 120,
 			filterOperators: createNumericFilterOperators(),
 			renderCell: (params: GridRenderCellParams<LogistiqueOrder>) => {
 				const formatted = formatMoney(params.value, params.row.devise);
@@ -443,10 +443,12 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 		{
 			field: 'actions',
 			headerName: t.common.actions,
-			flex: 1.7,
-			minWidth: 180,
+			flex: 0.8,
+			minWidth: 160,
 			sortable: false,
 			filterable: false,
+			disableColumnMenu: true,
+			resizable: false,
 			renderCell: (params: GridRenderCellParams<LogistiqueOrder>) => {
 				const actions: ActionItem[] = [
 					{
@@ -486,7 +488,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 						color: 'error' as const,
 					});
 				}
-				return <MobileActionsMenu actions={actions} />;
+				return <MobileActionsMenu actions={actions} desktopGap={0.5} />;
 			},
 		},
 	];
@@ -724,6 +726,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 				checkboxSelection={canDelete}
 				selectedIds={selectedIds}
 				onSelectionChange={setSelectedIds}
+				gridMaxWidth={false}
 			/>
 			{showDeleteModal && (
 				<ActionModals

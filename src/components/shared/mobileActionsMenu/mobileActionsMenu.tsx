@@ -17,9 +17,10 @@ export type ActionItem = {
 
 type MobileActionsMenuProps = {
 	actions: ActionItem[];
+	desktopGap?: number;
 };
 
-const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ actions }) => {
+const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ actions, desktopGap = 1 }) => {
 	const theme = useTheme();
 	const { t } = useLanguage();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -96,9 +97,9 @@ const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ actions }) => {
 
 	// On desktop, show individual icon buttons
 	return (
-		<Box sx={{ display: 'flex', gap: 1 }}>
+		<Box sx={{ display: 'flex', gap: desktopGap }}>
 			{visibleActions.map((action, index) => (
-				<DarkTooltip key={index} title={action.label}>
+				<DarkTooltip key={index} title={action.label} describeChild>
 					<span>
 						<IconButton
 							size="small"

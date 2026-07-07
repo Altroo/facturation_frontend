@@ -55,6 +55,8 @@ type PaginatedDataGridProps<T> = {
 	isAllMatchingSelected?: boolean;
 	/** Called when the user clears the all-matching selection */
 	onClearAllMatchingSelected?: () => void;
+	/** Maximum content width for the grid wrapper. Use false when a wide list must use the full page width. */
+	gridMaxWidth?: number | string | false;
 };
 
 /** Type guard for DateRangeFilterValue */
@@ -151,6 +153,7 @@ const PaginatedDataGrid = <T,>({
 	selectAllMatchingLoading,
 	isAllMatchingSelected,
 	onClearAllMatchingSelected,
+	gridMaxWidth = 1600,
 }: PaginatedDataGridProps<T>) => {
 	const { t } = useLanguage();
 	const [internalFilterModel, setInternalFilterModel] = useState<GridFilterModel>({
@@ -378,9 +381,8 @@ const PaginatedDataGrid = <T,>({
 									xs: 'fit-content',
 									sm: 'fit-content',
 									md: '100%',
-									maxWidth: '1600px',
-									mx: 'auto',
 								},
+								...(gridMaxWidth === false ? { maxWidth: 'none', mx: 0 } : { maxWidth: gridMaxWidth, mx: 'auto' }),
 							}}
 						>
 							{/* Select-all-matching banner */}
