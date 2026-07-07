@@ -26,8 +26,8 @@ const ChipSelectFilterBar: React.FC<ChipSelectFilterBarProps> = ({
 	// Compute stable key representing current filter configuration
 	const filterKeys = useMemo(() => filters.map((f) => f.key).join(','), [filters]);
 
-	const [selectedMap, setSelectedMap] = useState<Record<string, number[]>>(() => {
-		const initial: Record<string, number[]> = {};
+	const [selectedMap, setSelectedMap] = useState<Record<string, Array<number | string>>>(() => {
+		const initial: Record<string, Array<number | string>> = {};
 		filters.forEach((f) => {
 			initial[f.key] = [];
 		});
@@ -40,7 +40,7 @@ const ChipSelectFilterBar: React.FC<ChipSelectFilterBarProps> = ({
 	// Reset selectedMap when filter keys change (during render phase)
 	if (lastFilterKeys !== filterKeys) {
 		setLastFilterKeys(filterKeys);
-		const reset: Record<string, number[]> = {};
+		const reset: Record<string, Array<number | string>> = {};
 		filters.forEach((f) => {
 			reset[f.key] = [];
 		});
@@ -48,7 +48,7 @@ const ChipSelectFilterBar: React.FC<ChipSelectFilterBarProps> = ({
 	}
 
 	const buildParams = useCallback(
-		(currentMap: Record<string, number[]>): Record<string, string> => {
+		(currentMap: Record<string, Array<number | string>>): Record<string, string> => {
 			const params: Record<string, string> = {};
 			filters.forEach((f) => {
 				const ids = currentMap[f.key];
@@ -73,7 +73,7 @@ const ChipSelectFilterBar: React.FC<ChipSelectFilterBarProps> = ({
 	}, [selectedMap, buildParams, onFilterChange]);
 
 	const handleChange = useCallback(
-		(key: string, ids: number[]) => {
+		(key: string, ids: Array<number | string>) => {
 			setSelectedMap((prev) => ({
 				...prev,
 				[key]: ids,

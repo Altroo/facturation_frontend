@@ -27,6 +27,7 @@ type Props = {
 	startIcon?: React.ReactNode;
 	endIcon?: React.ReactNode;
 	slotProps?: TextFieldProps['slotProps'];
+	required?: boolean;
 };
 
 const FormattedNumberInput = forwardRef<HTMLInputElement, Props>((props: Props, ref: ForwardedRef<HTMLInputElement>) => {

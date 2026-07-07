@@ -8,15 +8,15 @@ import { chipSelectFilterTheme } from '@/utils/themes';
 import { useLanguage } from '@/utils/hooks';
 
 export interface ChipSelectOption {
-	id: number;
+	id: number | string;
 	nom: string;
 }
 
 export interface ChipSelectFilterProps {
 	label: string;
 	options: ChipSelectOption[];
-	selectedIds: number[];
-	onChange: (ids: number[]) => void;
+	selectedIds: Array<number | string>;
+	onChange: (ids: Array<number | string>) => void;
 	placeholder?: string;
 	theme?: Theme;
 }

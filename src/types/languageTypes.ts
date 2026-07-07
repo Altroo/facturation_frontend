@@ -101,6 +101,7 @@ export type TranslationDictionary = {
 		bonsLivraisonList: string;
 		bonsLivraisonUninvoiced: string;
 		logistique: string;
+		logistiqueDashboard: string;
 		logistiqueList: string;
 		reglement: string;
 		reglementsList: string;
@@ -129,6 +130,7 @@ export type TranslationDictionary = {
 	validation: {
 		required: string;
 		shortRequired: string;
+		positiveRequired: string;
 		tvaInvalid: string;
 		percentageInvalid: string;
 		minLength: (n: number) => string;
@@ -611,6 +613,7 @@ export type TranslationDictionary = {
 		documentTypeName: string;
 	};
 	logistique: {
+		dashboardTitle: string;
 		listTitle: string;
 		detailsTitle: string;
 		backToList: string;
@@ -640,6 +643,32 @@ export type TranslationDictionary = {
 		traceabilitySection: string;
 		alertsSection: string;
 		supplierKpiSection: string;
+		supplierKpiComparisonHint: string;
+		supplierKpiRelativeToMax: string;
+		noSupplierKpi: string;
+		allSuppliers: string;
+		allBrands: string;
+		workflowChartTitle: string;
+		paymentChartTitle: string;
+		alertChartTitle: string;
+		costBreakdownChartTitle: string;
+		supplierOrdersChartTitle: string;
+		supplierCostsChartTitle: string;
+		flowChartTitle: string;
+		costTrendChartTitle: string;
+		supplierCostShareChartTitle: string;
+		createdOrders: string;
+		validatedPayments: string;
+		completedDeliveries: string;
+		monthlyCosts: string;
+		phaseProcurement: string;
+		phaseImport: string;
+		phasePaymentSwift: string;
+		phaseProduction: string;
+		phaseTransitCustoms: string;
+		phaseDelivery: string;
+		phaseClosed: string;
+		noChartData: string;
 		fieldFournisseur: string;
 		fieldResponsable: string;
 		fieldDevise: string;
@@ -682,6 +711,16 @@ export type TranslationDictionary = {
 		selectedFile: string;
 		currentDocument: string;
 		openDocument: string;
+		attachmentsTitle: string;
+		attachmentLabel: string;
+		chooseFiles: string;
+		dropFiles: string;
+		fileHint: string;
+		noAttachments: string;
+		attachmentFile: string;
+		attachmentFiles: string;
+		pendingUpload: string;
+		downloadDocument: string;
 		noAlerts: string;
 		paymentRequestSentBy: string;
 		paymentValidatedBy: string;
@@ -724,6 +763,8 @@ export type TranslationDictionary = {
 		deleteModalBody: string;
 		paymentModalTitle: string;
 		paymentModalBody: string;
+		requestPaymentModalTitle: string;
+		requestPaymentModalBody: string;
 		rejectModalTitle: string;
 		rejectModalBody: string;
 	};

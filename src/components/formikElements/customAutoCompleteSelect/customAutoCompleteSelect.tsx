@@ -25,6 +25,7 @@ type Props = {
 	startIcon?: React.ReactNode;
 	endIcon?: React.ReactNode;
 	slotProps?: TextFieldProps['slotProps'];
+	required?: boolean;
 	renderOption?: (props: React.HTMLAttributes<HTMLLIElement> & { key: Key }, option: DropDownType) => React.ReactNode;
 };
 
@@ -45,6 +46,7 @@ const CustomAutoCompleteSelect: React.FC<Props> = ({
 	onBlur,
 	error,
 	helperText,
+	required,
 	renderOption: renderOptionProp,
 }) => {
 	const { t } = useLanguage();
@@ -89,6 +91,7 @@ const CustomAutoCompleteSelect: React.FC<Props> = ({
 						label={label}
 						error={error}
 						helperText={helperText}
+						required={required}
 						sx={{
 							'& .MuiOutlinedInput-root': {
 								borderRadius: '12px',

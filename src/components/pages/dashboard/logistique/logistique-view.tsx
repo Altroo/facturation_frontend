@@ -1,6 +1,7 @@
 'use client';
 
 import React, { isValidElement, useEffect, useMemo, useState } from 'react';
+import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
 	Box,
@@ -10,6 +11,7 @@ import {
 	Chip,
 	Divider,
 	Alert,
+	Link as MuiLink,
 	Stack,
 	Step,
 	StepLabel,
@@ -22,7 +24,6 @@ import {
 import Grid from '@mui/material/Grid';
 import {
 	ArrowBack as ArrowBackIcon,
-	AttachFile as AttachFileIcon,
 	AssignmentTurnedIn as AssignmentTurnedInIcon,
 	Business as BusinessIcon,
 	CalendarToday as CalendarTodayIcon,
@@ -52,6 +53,7 @@ import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiP
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import NoPermission from '@/components/shared/noPermission/noPermission';
+import { LogistiqueDocumentsViewCard } from '@/components/pages/dashboard/logistique/logistique-documents-card';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import FormattedNumberInput from '@/components/formikElements/formattedNumberInput/formattedNumberInput';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
@@ -70,7 +72,7 @@ import {
 	useSendLogistiqueSwiftMutation,
 	useValidateLogistiquePaymentMutation,
 } from '@/store/services/logistique';
-import { LOGISTIQUE_EDIT, LOGISTIQUE_LIST } from '@/utils/routes';
+import { ARTICLES_VIEW, FACTURE_PRO_FORMA_VIEW, LOGISTIQUE_EDIT, LOGISTIQUE_LIST } from '@/utils/routes';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import type { LogistiqueDocumentField, LogistiquePaymentMethod, LogistiquePaymentStatus, LogistiqueStatut } from '@/types/logistiqueTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
@@ -136,24 +138,38 @@ const paymentColor = (status: LogistiquePaymentStatus) => {
 const formatMoney = (value: string | number | null | undefined, devise = 'MAD') =>
 	`${formatNumberWithSpaces(value ?? 0, 2)} ${devise}`;
 
+const formatDateOnly = (value: string | null | undefined) => {
+	if (!value) return '-';
+	const [datePart] = value.split('T');
+	const [year, month, day] = datePart.split('-').map(Number);
+	if (!year || !month || !day) return formatDate(value);
+	return new Intl.DateTimeFormat('fr-FR', {
+		year: 'numeric',
+		month: 'short',
+		day: '2-digit',
+	}).format(new Date(year, month - 1, day));
+};
+
 const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
-	const theme = useTheme();
-	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 	const displayValue =
 		isValidElement(value) || (value !== null && value !== undefined && value.toString().length > 0) ? value : '-';
 
 	return (
-		<Stack direction="row" spacing={2} sx={{ alignItems: 'flex-start', py: 1.5, flexWrap: 'wrap' }}>
-			<Box sx={{ color: 'primary.main', display: 'flex', alignItems: 'center', minWidth: 40 }}>{icon}</Box>
-			<Stack direction="row" spacing={isMobile ? 0 : 2} sx={{ alignItems: 'center', flex: 1, flexWrap: 'wrap' }}>
-				<Typography sx={{ fontWeight: 600, color: 'text.secondary', minWidth: { xs: '100%', sm: 220 }, wordBreak: 'break-word' }}>
+		<Stack direction="row" spacing={1.5} sx={{ alignItems: 'flex-start', py: 1.5, flexWrap: 'nowrap', minWidth: 0 }}>
+			<Box sx={{ color: 'primary.main', display: 'flex', alignItems: 'center', width: 40, flexShrink: 0 }}>{icon}</Box>
+			<Stack
+				direction={{ xs: 'column', sm: 'row' }}
+				spacing={{ xs: 0.5, sm: 2 }}
+				sx={{ alignItems: { xs: 'flex-start', sm: 'center' }, flex: 1, minWidth: 0 }}
+			>
+				<Typography sx={{ fontWeight: 600, color: 'text.secondary', width: { xs: '100%', sm: 220 }, flexShrink: 0, wordBreak: 'break-word' }}>
 					{label}
 				</Typography>
-				<Box sx={{ flex: 1, minWidth: 0 }}>
+				<Box sx={{ width: { xs: '100%', sm: 'auto' }, flex: { xs: 'none', sm: 1 }, minWidth: 0 }}>
 					{isValidElement(displayValue) ? (
 						displayValue
 					) : (
-						<Typography sx={{ color: 'text.primary', overflowWrap: 'anywhere' }}>{displayValue}</Typography>
+						<Typography sx={{ color: 'text.primary', overflowWrap: 'break-word', wordBreak: 'normal' }}>{displayValue}</Typography>
 					)}
 				</Box>
 			</Stack>
@@ -174,40 +190,6 @@ const DetailCard: React.FC<DetailCardProps> = ({ title, icon, children }) => (
 			{children}
 		</CardContent>
 	</Card>
-);
-
-type DocumentRowProps = {
-	label: string;
-	url?: string | null;
-	openLabel: string;
-};
-
-const DocumentRow: React.FC<DocumentRowProps> = ({ label, url, openLabel }) => (
-	<Stack
-		direction={{ xs: 'column', sm: 'row' }}
-		spacing={1.5}
-		sx={{ alignItems: { xs: 'flex-start', sm: 'center' }, justifyContent: 'space-between', py: 1.5 }}
-	>
-		<Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', minWidth: 0 }}>
-			<AttachFileIcon color={url ? 'primary' : 'disabled'} fontSize="small" />
-			<Typography sx={{ fontWeight: 600, overflowWrap: 'anywhere' }}>{label}</Typography>
-		</Stack>
-		{url ? (
-			<Button
-				component="a"
-				href={url}
-				target="_blank"
-				rel="noopener noreferrer"
-				size="small"
-				variant="outlined"
-				startIcon={<OpenInNewIcon />}
-			>
-				{openLabel}
-			</Button>
-		) : (
-			<Chip label="-" size="small" variant="outlined" />
-		)}
-	</Stack>
 );
 
 const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
@@ -240,6 +222,7 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const { onSuccess, onError } = useToast();
 
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
+	const [showRequestPaymentModal, setShowRequestPaymentModal] = useState(false);
 	const [showValidateModal, setShowValidateModal] = useState(false);
 	const [showRejectModal, setShowRejectModal] = useState(false);
 	const [selectedStatus, setSelectedStatus] = useState<LogistiqueStatut>('Réception commande');
@@ -290,6 +273,8 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 			onSuccess(t.logistique.requestPaymentSuccess);
 		} catch (err) {
 			onError(extractApiErrorMessage(err, t.logistique.requestPaymentError));
+		} finally {
+			setShowRequestPaymentModal(false);
 		}
 	};
 
@@ -373,7 +358,7 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									</Button>
 								)}
 								{canManage && order?.statut_paiement === 'Non demandé' && (
-									<Button variant="outlined" size="small" startIcon={<PaymentIcon />} onClick={handleRequestPayment}>
+									<Button variant="outlined" size="small" startIcon={<PaymentIcon />} onClick={() => setShowRequestPaymentModal(true)}>
 										{t.logistique.requestPayment}
 									</Button>
 								)}
@@ -411,45 +396,45 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 						<Stack spacing={3}>
 							<Card elevation={3} sx={{ borderRadius: 2, bgcolor: 'primary.50' }}>
 								<CardContent sx={{ p: 3 }}>
-									<Grid container spacing={2} sx={{ alignItems: 'center', justifyContent: isMobile ? 'center' : 'space-between' }}>
-										<Grid size={{ xs: 12, sm: 6, md: 3 }}>
-											<Box sx={{ textAlign: 'center', px: 1 }}>
+									<Grid container spacing={2.5} sx={{ alignItems: 'stretch', justifyContent: isMobile ? 'center' : 'space-between' }}>
+										<Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+											<Box sx={{ textAlign: 'center', px: 2, py: 1.5, minHeight: 96, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
 												<Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 0.5 }}>
 													{t.logistique.colNumero.toUpperCase()}
 												</Typography>
-												<Typography variant="h6" sx={{ fontWeight: 800 }}>
+												<Typography variant="h6" sx={{ fontWeight: 800, overflowWrap: 'anywhere', lineHeight: 1.25 }}>
 													{order?.numero_commande ?? '-'}
 												</Typography>
 											</Box>
 										</Grid>
-										<Grid size={{ xs: 12, sm: 6, md: 3 }}>
-											<Box sx={{ textAlign: 'center', px: 1 }}>
+										<Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+											<Box sx={{ textAlign: 'center', px: 2, py: 1.5, minHeight: 96, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
 												<Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 0.5 }}>
 													{t.logistique.fieldFournisseur.toUpperCase()}
 												</Typography>
-												<Typography variant="h6" sx={{ fontWeight: 800 }}>
+												<Typography variant="h6" sx={{ fontWeight: 800, overflowWrap: 'anywhere', lineHeight: 1.25 }}>
 													{order?.fournisseur || '-'}
 												</Typography>
 											</Box>
 										</Grid>
-										<Grid size={{ xs: 12, sm: 6, md: 3 }}>
-											<Box sx={{ textAlign: 'center', px: 1 }}>
+										<Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+											<Box sx={{ textAlign: 'center', px: 2, py: 1.5, minHeight: 96, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
 												<Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 0.5 }}>
 													{t.logistique.colPaiement.toUpperCase()}
 												</Typography>
 												{order?.statut_paiement ? (
-													<Chip label={order.statut_paiement} color={paymentColor(order.statut_paiement)} variant="outlined" />
+													<Chip label={order.statut_paiement} color={paymentColor(order.statut_paiement)} variant="outlined" sx={{ maxWidth: '100%' }} />
 												) : (
 													<Typography>-</Typography>
 												)}
 											</Box>
 										</Grid>
-										<Grid size={{ xs: 12, sm: 6, md: 3 }}>
-											<Box sx={{ textAlign: 'center', px: 1 }}>
+										<Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+											<Box sx={{ textAlign: 'center', px: 2, py: 1.5, minHeight: 96, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
 												<Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 0.5 }}>
 													{t.logistique.colCoutTotal.toUpperCase()}
 												</Typography>
-												<Typography variant="h5" color="primary" sx={{ fontWeight: 900 }}>
+												<Typography variant="h5" color="primary" sx={{ fontWeight: 900, overflowWrap: 'anywhere', lineHeight: 1.2 }}>
 													{formatMoney(order?.cout_total, order?.devise)}
 												</Typography>
 											</Box>
@@ -474,26 +459,53 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 											))}
 										</Stepper>
 									</Box>
-									<Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ alignItems: { xs: 'stretch', md: 'center' } }}>
-										<Chip label={order?.statut ?? '-'} size="medium" color="info" variant="outlined" sx={{ fontSize: '1rem', py: 2 }} />
+									<Box
+										sx={{
+											display: 'grid',
+											gridTemplateColumns: { xs: '1fr', md: 'minmax(180px, max-content) minmax(280px, 1fr) max-content' },
+											gap: 2,
+											alignItems: 'center',
+										}}
+									>
+										<Chip
+											label={order?.statut ?? '-'}
+											size="medium"
+											color="info"
+											variant="outlined"
+											sx={{
+												fontSize: '1rem',
+												py: 2,
+												justifySelf: { xs: 'stretch', md: 'start' },
+												maxWidth: '100%',
+												'& .MuiChip-label': { whiteSpace: 'normal', py: 0.5 },
+											}}
+										/>
 										{canManage && (
 											<>
-												<CustomDropDownSelect
-													id="statut"
-													label={t.logistique.fieldStatut}
-													items={statusOptions}
-													value={selectedStatus}
-													onChange={(event) => setSelectedStatus(event.target.value as LogistiqueStatut)}
-													size="small"
-													theme={inputTheme}
-													startIcon={<InfoIcon fontSize="small" />}
-												/>
-												<Button variant="contained" size="small" startIcon={<AssignmentTurnedInIcon />} onClick={handleStatusUpdate}>
+												<Box sx={{ minWidth: { xs: '100%', md: 280 }, '& .MuiFormControl-root': { width: '100%' } }}>
+													<CustomDropDownSelect
+														id="statut"
+														label={t.logistique.fieldStatut}
+														items={statusOptions}
+														value={selectedStatus}
+														onChange={(event) => setSelectedStatus(event.target.value as LogistiqueStatut)}
+														size="small"
+														theme={inputTheme}
+														startIcon={<InfoIcon fontSize="small" />}
+													/>
+												</Box>
+												<Button
+													variant="contained"
+													size="medium"
+													startIcon={<AssignmentTurnedInIcon />}
+													onClick={handleStatusUpdate}
+													sx={{ minHeight: 44, minWidth: { xs: '100%', md: 150 }, px: 2.5, whiteSpace: 'nowrap' }}
+												>
 													{t.common.update}
 												</Button>
 											</>
 										)}
-									</Stack>
+									</Box>
 								</Stack>
 							</DetailCard>
 
@@ -511,7 +523,7 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 
 							<DetailCard title={t.logistique.generalSection} icon={<BusinessIcon color="primary" />}>
 								<Grid container spacing={2}>
-									<Grid size={{ xs: 12, md: 6 }}>
+									<Grid size={{ xs: 12, lg: 6 }}>
 										<InfoRow icon={<ReceiptLongIcon />} label={t.logistique.colNumero} value={order?.numero_commande} />
 										<InfoRow icon={<BusinessIcon />} label={t.logistique.fieldFournisseur} value={order?.fournisseur} />
 										<InfoRow icon={<AssignmentTurnedInIcon />} label={t.logistique.colMarque} value={order?.marque_name} />
@@ -521,9 +533,9 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 										<InfoRow icon={<LocalShippingIcon />} label={t.logistique.fieldTransport} value={order?.transport} />
 										<InfoRow icon={<PublicIcon />} label={t.logistique.fieldIncoterm} value={order?.incoterm} />
 									</Grid>
-									<Grid size={{ xs: 12, md: 6 }}>
-										<InfoRow icon={<CalendarTodayIcon />} label={t.logistique.fieldDatePrevue} value={formatDate(order?.date_prevue ?? null)} />
-										<InfoRow icon={<CalendarTodayIcon />} label={t.logistique.fieldDateReelle} value={formatDate(order?.date_reelle ?? null)} />
+									<Grid size={{ xs: 12, lg: 6 }}>
+										<InfoRow icon={<CalendarTodayIcon />} label={t.logistique.fieldDatePrevue} value={formatDateOnly(order?.date_prevue)} />
+										<InfoRow icon={<CalendarTodayIcon />} label={t.logistique.fieldDateReelle} value={formatDateOnly(order?.date_reelle)} />
 										<InfoRow icon={<PublicIcon />} label={t.logistique.fieldOrigine} value={order?.origine_marchandise} />
 										<InfoRow icon={<DescriptionIcon />} label={t.logistique.fieldNature} value={order?.nature_marchandise} />
 										<InfoRow icon={<ScaleIcon />} label={t.logistique.fieldPoidsNet} value={order?.poids_net} />
@@ -535,40 +547,35 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 
 							<DetailCard title={t.logistique.importSection} icon={<DescriptionIcon color="primary" />}>
 								<Grid container spacing={2}>
-									<Grid size={{ xs: 12, md: 6 }}>
+									<Grid size={{ xs: 12, lg: 6 }}>
 										<InfoRow icon={<DescriptionIcon />} label={t.logistique.fieldNumeroDomiciliation} value={order?.numero_domiciliation} />
 										<InfoRow icon={<PaymentIcon />} label={t.logistique.fieldBanque} value={order?.banque} />
 										<InfoRow icon={<PaymentIcon />} label={t.logistique.fieldMontantTI} value={formatMoney(order?.montant_titre_importation, order?.devise_titre_importation)} />
 									</Grid>
-									<Grid size={{ xs: 12, md: 6 }}>
+									<Grid size={{ xs: 12, lg: 6 }}>
 										<InfoRow icon={<InfoIcon />} label={t.logistique.fieldStatutTI} value={order?.statut_titre_importation} />
-										<InfoRow icon={<CalendarTodayIcon />} label={t.logistique.fieldDateTI} value={formatDate(order?.date_titre_importation ?? null)} />
-										<InfoRow icon={<CalendarTodayIcon />} label={t.logistique.fieldDateValidationTI} value={formatDate(order?.date_validation_titre_importation ?? null)} />
+										<InfoRow icon={<CalendarTodayIcon />} label={t.logistique.fieldDateTI} value={formatDateOnly(order?.date_titre_importation)} />
+										<InfoRow icon={<CalendarTodayIcon />} label={t.logistique.fieldDateValidationTI} value={formatDateOnly(order?.date_validation_titre_importation)} />
 									</Grid>
 								</Grid>
 							</DetailCard>
 
-							<DetailCard title={t.logistique.documentsSection} icon={<AttachFileIcon color="primary" />}>
-								<Stack divider={<Divider flexItem />} spacing={0}>
-									{documentFields.map((field) => (
-										<DocumentRow
-											key={field}
-											label={documentLabels[field]}
-											url={order?.[field] ?? null}
-											openLabel={t.logistique.openDocument}
-										/>
-									))}
-								</Stack>
-							</DetailCard>
+							<LogistiqueDocumentsViewCard
+								items={documentFields.map((field) => ({
+									field,
+									label: documentLabels[field],
+									currentUrl: order?.[field] ?? null,
+								}))}
+							/>
 
 							<DetailCard title={t.logistique.paymentSection} icon={<PaymentIcon color="primary" />}>
 								<Grid container spacing={2}>
-									<Grid size={{ xs: 12, md: 6 }}>
+									<Grid size={{ xs: 12, lg: 6 }}>
 										<InfoRow icon={<PaymentIcon />} label={t.logistique.fieldMethodePaiement} value={order?.methode_paiement} />
-										<InfoRow icon={<CalendarTodayIcon />} label={t.logistique.fieldDatePaiement} value={formatDate(order?.date_paiement ?? null)} />
+										<InfoRow icon={<CalendarTodayIcon />} label={t.logistique.fieldDatePaiement} value={formatDateOnly(order?.date_paiement)} />
 										<InfoRow icon={<PaymentIcon />} label={t.logistique.fieldMontantPaiement} value={formatMoney(order?.montant_paiement, order?.devise)} />
 									</Grid>
-									<Grid size={{ xs: 12, md: 6 }}>
+									<Grid size={{ xs: 12, lg: 6 }}>
 										<InfoRow icon={<ReceiptLongIcon />} label={t.logistique.fieldReferencePaiement} value={order?.reference_paiement} />
 										<InfoRow icon={<SendIcon />} label={t.logistique.requestPayment} value={formatDate(order?.demande_paiement_envoyee_le ?? null)} />
 										<InfoRow icon={<CheckCircleIcon />} label={t.logistique.validatePayment} value={formatDate(order?.paiement_valide_le ?? null)} />
@@ -578,11 +585,11 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 
 							<DetailCard title={t.logistique.traceabilitySection} icon={<HistoryIcon color="primary" />}>
 								<Grid container spacing={2}>
-									<Grid size={{ xs: 12, md: 6 }}>
+									<Grid size={{ xs: 12, lg: 6 }}>
 										<InfoRow icon={<SendIcon />} label={t.logistique.requestPayment} value={formatDate(order?.demande_paiement_envoyee_le ?? null)} />
 										<InfoRow icon={<PersonIcon />} label={t.logistique.paymentRequestSentBy} value={order?.demande_paiement_envoyee_par_name} />
 									</Grid>
-									<Grid size={{ xs: 12, md: 6 }}>
+									<Grid size={{ xs: 12, lg: 6 }}>
 										<InfoRow icon={<CheckCircleIcon />} label={t.logistique.validatePayment} value={formatDate(order?.paiement_valide_le ?? null)} />
 										<InfoRow icon={<PersonIcon />} label={t.logistique.paymentValidatedBy} value={order?.paiement_valide_par_name} />
 										<InfoRow icon={<UploadFileIcon />} label={t.logistique.swiftUploadedAt} value={formatDate(order?.date_upload_swift ?? null)} />
@@ -593,13 +600,13 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 
 							<DetailCard title={t.logistique.costsSection} icon={<LocalShippingIcon color="primary" />}>
 								<Grid container spacing={2}>
-									<Grid size={{ xs: 12, md: 6 }}>
+									<Grid size={{ xs: 12, lg: 6 }}>
 										<InfoRow icon={<PaymentIcon />} label={t.articles.colPrixAchat} value={formatMoney(order?.cout_achat, order?.devise)} />
 										<InfoRow icon={<LocalShippingIcon />} label={t.logistique.fieldCoutTransport} value={formatMoney(order?.cout_transport, order?.devise)} />
 										<InfoRow icon={<LocalShippingIcon />} label={t.logistique.fieldFraisTransit} value={formatMoney(order?.frais_transit, order?.devise)} />
 										<InfoRow icon={<LocalShippingIcon />} label={t.logistique.fieldFraisDouane} value={formatMoney(order?.frais_douane, order?.devise)} />
 									</Grid>
-									<Grid size={{ xs: 12, md: 6 }}>
+									<Grid size={{ xs: 12, lg: 6 }}>
 										<InfoRow icon={<PaymentIcon />} label={t.logistique.fieldTva} value={formatMoney(order?.tva, order?.devise)} />
 										<InfoRow icon={<LocalShippingIcon />} label={t.logistique.fieldLivraisonLocale} value={formatMoney(order?.livraison_locale, order?.devise)} />
 										<InfoRow icon={<PaymentIcon />} label={t.logistique.fieldAutresFrais} value={formatMoney(order?.autres_frais, order?.devise)} />
@@ -613,9 +620,17 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									{order?.proformas_detail?.length ? (
 										order.proformas_detail.map((proforma) => (
 											<Box key={proforma.id} sx={{ py: 1.5 }}>
-												<Typography sx={{ fontWeight: 700 }}>{proforma.numero_facture}</Typography>
+												<MuiLink
+													component={NextLink}
+													href={FACTURE_PRO_FORMA_VIEW(proforma.id, company_id)}
+													underline="hover"
+													sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, fontWeight: 700, overflowWrap: 'anywhere' }}
+												>
+													{proforma.numero_facture}
+													<OpenInNewIcon sx={{ fontSize: 16 }} />
+												</MuiLink>
 												<Typography variant="body2" color="text.secondary">
-													{proforma.client_name || '-'} - {formatDate(proforma.date_facture)} - {formatMoney(proforma.total_ttc_apres_remise, proforma.devise)}
+													{proforma.client_name || '-'} - {formatDateOnly(proforma.date_facture)} - {formatMoney(proforma.total_ttc_apres_remise, proforma.devise)}
 												</Typography>
 												{proforma.project_reference && (
 													<Typography variant="body2" color="text.secondary">
@@ -637,8 +652,18 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									{order?.lignes?.length ? (
 										order.lignes.map((line) => (
 											<Box key={line.id} sx={{ py: 1.5 }}>
-												<Typography sx={{ fontWeight: 700 }}>
-													{line.article_reference} - {line.designation}
+												<Typography sx={{ fontWeight: 700, overflowWrap: 'anywhere' }}>
+													<MuiLink
+														component={NextLink}
+														href={ARTICLES_VIEW(line.article, company_id)}
+														underline="hover"
+														sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, fontWeight: 700, overflowWrap: 'anywhere' }}
+													>
+														{line.article_reference}
+														<OpenInNewIcon sx={{ fontSize: 16 }} />
+													</MuiLink>
+													{' - '}
+													{line.designation}
 												</Typography>
 												<Typography variant="body2" color="text.secondary">
 													{line.client_name || '-'} - {t.documentForm.colQuantite}: {formatNumberWithSpaces(line.quantity, 3)} - {formatMoney(line.total_achat, line.devise_prix_achat)}
@@ -691,6 +716,18 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 						actions={[
 							{ text: t.common.cancel, active: false, onClick: () => setShowDeleteModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
 							{ text: t.common.delete, active: true, onClick: handleDelete, icon: <DeleteIcon />, color: '#D32F2F' },
+						]}
+					/>
+				)}
+				{showRequestPaymentModal && (
+					<ActionModals
+						title={t.logistique.requestPaymentModalTitle}
+						titleIcon={<PaymentIcon />}
+						titleIconColor="#2E7D32"
+						body={t.logistique.requestPaymentModalBody}
+						actions={[
+							{ text: t.common.cancel, active: false, onClick: () => setShowRequestPaymentModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
+							{ text: t.logistique.requestPayment, active: true, onClick: handleRequestPayment, icon: <PaymentIcon />, color: '#2E7D32' },
 						]}
 					/>
 				)}

@@ -152,6 +152,34 @@ export type LogistiqueStats = {
 		total_commandes: number;
 		cout_total: number | string;
 	}>;
+	fournisseurs: Array<{
+		fournisseur: string;
+	}>;
+	statuts_workflow: Array<{
+		statut: LogistiqueStatut;
+		total: number;
+	}>;
+	statuts_paiement: Array<{
+		statut_paiement: LogistiquePaymentStatus;
+		total: number;
+	}>;
+	couts_detail: {
+		achat: number | string;
+		transport: number | string;
+		transit: number | string;
+		douane: number | string;
+		tva: number | string;
+		livraison_locale: number | string;
+		autres: number | string;
+		total: number | string;
+	};
+	monthly_flow: Array<{
+		month: string;
+		commandes: number;
+		livraisons: number;
+		paiements: number;
+		cout_total: number | string;
+	}>;
 };
 
 export type LogistiqueListResponse = PaginationResponseType<LogistiqueOrder> & {

@@ -10,7 +10,6 @@ import {
 	Card,
 	CardContent,
 	Divider,
-	IconButton,
 	InputAdornment,
 	Stack,
 	TextField,
@@ -21,13 +20,10 @@ import {
 import {
 	Add as AddIcon,
 	ArrowBack as ArrowBackIcon,
-	AttachFile as AttachFileIcon,
 	CalendarToday as CalendarTodayIcon,
-	Clear as ClearIcon,
 	Description as DescriptionIcon,
 	Edit as EditIcon,
 	Info as InfoIcon,
-	InsertDriveFile as InsertDriveFileIcon,
 	LocalShipping as LocalShippingIcon,
 	Notes as NotesIcon,
 	Payment as PaymentIcon,
@@ -36,7 +32,6 @@ import {
 	ReceiptLong as ReceiptLongIcon,
 	RequestQuote as RequestQuoteIcon,
 	Scale as ScaleIcon,
-	UploadFile as UploadFileIcon,
 	Warning as WarningIcon,
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -53,6 +48,7 @@ import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadi
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import NoPermission from '@/components/shared/noPermission/noPermission';
+import { LogistiqueDocumentsFormCard } from '@/components/pages/dashboard/logistique/logistique-documents-card';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import { getUserCompaniesState } from '@/store/selectors';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
@@ -167,6 +163,25 @@ const stringValue = (value: string | number | null | undefined, fallback = '') =
 const dateValue = (value: string | null | undefined) => value ?? '';
 const nullableDate = (value: string) => (value ? value : null);
 const numberString = (value: string) => (value === '' ? '0' : value);
+const requiredOrderFields: Array<keyof LogistiqueFormValues> = [
+	'fournisseur',
+	'devise',
+	'incoterm',
+	'transport',
+	'conditions_paiement',
+	'responsable',
+	'date_prevue',
+	'statut',
+	'origine_marchandise',
+	'nature_marchandise',
+];
+const requiredPositiveOrderFields: Array<keyof LogistiqueFormValues> = ['poids_net', 'poids_brut', 'volume'];
+
+const isBlank = (value: unknown) => value === null || value === undefined || String(value).trim() === '';
+const isPositiveNumber = (value: unknown) => {
+	const parsed = Number(String(value ?? '').replace(/\s/g, '').replace(',', '.'));
+	return Number.isFinite(parsed) && parsed > 0;
+};
 
 const valuesFromOrder = (order?: LogistiqueOrder): LogistiqueFormValues => {
 	if (!order) return emptyValues;
@@ -293,10 +308,16 @@ const DateField = ({
 	label,
 	value,
 	onChange,
+	error,
+	helperText,
+	required,
 }: {
 	label: string;
 	value: string;
 	onChange: (value: string) => void;
+	error?: boolean;
+	helperText?: string;
+	required?: boolean;
 }) => (
 	<DatePicker
 		label={label}
@@ -307,6 +328,9 @@ const DateField = ({
 			textField: {
 				size: 'small',
 				fullWidth: true,
+				error,
+				helperText,
+				required,
 				slotProps: {
 					input: {
 						startAdornment: (
@@ -319,88 +343,6 @@ const DateField = ({
 			},
 		}}
 	/>
-);
-
-type DocumentUploadFieldProps = {
-	id: LogistiqueDocumentField;
-	label: string;
-	file: File | null;
-	currentUrl?: string | null;
-	onChange: (file: File | null) => void;
-	onClear: () => void;
-	uploadLabel: string;
-	replaceLabel: string;
-	selectedLabel: string;
-	currentLabel: string;
-	openLabel: string;
-};
-
-const DocumentUploadField: React.FC<DocumentUploadFieldProps> = ({
-	id,
-	label,
-	file,
-	currentUrl,
-	onChange,
-	onClear,
-	uploadLabel,
-	replaceLabel,
-	selectedLabel,
-	currentLabel,
-	openLabel,
-}) => (
-	<Box
-		sx={{
-			border: '1px solid',
-			borderColor: 'divider',
-			borderRadius: 2,
-			p: 2,
-			minHeight: 118,
-			display: 'flex',
-			flexDirection: 'column',
-			gap: 1.5,
-			justifyContent: 'space-between',
-		}}
-	>
-		<Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
-			<InsertDriveFileIcon color="primary" fontSize="small" />
-			<Typography variant="subtitle2" sx={{ fontWeight: 700, overflowWrap: 'anywhere' }}>
-				{label}
-			</Typography>
-		</Stack>
-		<input
-			id={id}
-			type="file"
-			accept={acceptedDocumentTypes}
-			hidden
-			onChange={(event) => onChange(event.target.files?.[0] ?? null)}
-		/>
-		<Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
-			<Button component="label" htmlFor={id} variant="outlined" size="small" startIcon={<UploadFileIcon />}>
-				{currentUrl || file ? replaceLabel : uploadLabel}
-			</Button>
-			{currentUrl && !file && (
-				<Button
-					component="a"
-					href={currentUrl}
-					target="_blank"
-					rel="noopener noreferrer"
-					variant="text"
-					size="small"
-					startIcon={<AttachFileIcon />}
-				>
-					{openLabel}
-				</Button>
-			)}
-			{file && (
-				<IconButton size="small" color="error" onClick={onClear} aria-label={`clear-${id}`}>
-					<ClearIcon fontSize="small" />
-				</IconButton>
-			)}
-		</Stack>
-		<Typography variant="caption" color="text.secondary" sx={{ overflowWrap: 'anywhere' }}>
-			{file ? `${selectedLabel}: ${file.name}` : currentUrl ? currentLabel : '-'}
-		</Typography>
-	</Box>
 );
 
 const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
@@ -434,6 +376,7 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 	const [editLogistique, { isLoading: isEditLoading, error: updateError }] = useEditLogistiqueMutation();
 	const [isPending, setIsPending] = useState(false);
 	const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+	const [selectedDocumentField, setSelectedDocumentField] = useState<LogistiqueDocumentField>('titre_importation_file');
 
 	const proformas = useMemo(() => {
 		if (!proformasData) return [] as Partial<FactureClass>[];
@@ -461,6 +404,16 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 			if (!isEditMode && values.proformas.length === 0) {
 				errors.proformas = t.validation.required;
 			}
+			requiredOrderFields.forEach((field) => {
+				if (isBlank(values[field])) {
+					errors[field] = t.validation.required;
+				}
+			});
+			requiredPositiveOrderFields.forEach((field) => {
+				if (!isPositiveNumber(values[field])) {
+					errors[field] = t.validation.positiveRequired;
+				}
+			});
 			return errors;
 		},
 		onSubmit: async (values, { setFieldError }) => {
@@ -490,9 +443,18 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 		() => ({
 			proformas: t.logistique.fieldProformas,
 			fournisseur: t.logistique.fieldFournisseur,
+			devise: t.logistique.fieldDevise,
+			incoterm: t.logistique.fieldIncoterm,
 			responsable: t.logistique.fieldResponsable,
 			transport: t.logistique.fieldTransport,
+			conditions_paiement: t.logistique.fieldConditionsPaiement,
+			date_prevue: t.logistique.fieldDatePrevue,
 			statut: t.logistique.fieldStatut,
+			poids_net: t.logistique.fieldPoidsNet,
+			poids_brut: t.logistique.fieldPoidsBrut,
+			volume: t.logistique.fieldVolume,
+			origine_marchandise: t.logistique.fieldOrigine,
+			nature_marchandise: t.logistique.fieldNature,
 			titre_importation_file: t.logistique.fieldTitreImportationFile,
 			proforma_fournisseur_file: t.logistique.fieldProformaFournisseurFile,
 			justificatifs_file: t.logistique.fieldJustificatifsFile,
@@ -528,6 +490,14 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 		}
 		return errors;
 	}, [formik.errors, hasAttemptedSubmit]);
+	const getFieldError = (field: keyof LogistiqueFormValues) => {
+		const errorText = formik.errors[field];
+		if (typeof errorText !== 'string' || (!formik.touched[field] && !hasAttemptedSubmit)) {
+			return undefined;
+		}
+		return errorText;
+	};
+	const hasFieldError = (field: keyof LogistiqueFormValues) => Boolean(getFieldError(field));
 
 	const isLoading = isCompaniesLoading || isOrderLoading || isProformasLoading || isResponsablesLoading || isAddLoading || isEditLoading || isPending;
 	const shouldShowError = (axiosError?.status ?? 0) > 400 && !isLoading;
@@ -596,13 +566,16 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 															<TextField
 																{...params}
 																size="small"
-																label={t.logistique.fieldProformas}
-																error={Boolean(formik.touched.proformas && formik.errors.proformas)}
-																helperText={
-																	formik.touched.proformas && formik.errors.proformas
-																		? String(formik.errors.proformas)
-																		: undefined
+																label={
+																	<Box component="span">
+																		{t.logistique.fieldProformas}{' '}
+																		<Box component="span" sx={{ color: 'error.main' }}>
+																			*
+																		</Box>
+																	</Box>
 																}
+																error={hasFieldError('proformas')}
+																helperText={getFieldError('proformas')}
 																slotProps={{
 																	...params.slotProps,
 																	input: {
@@ -637,6 +610,9 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 													size="small"
 													theme={inputTheme}
 													startIcon={<ReceiptLongIcon fontSize="small" />}
+													required
+													error={hasFieldError('fournisseur')}
+													helperText={getFieldError('fournisseur')}
 												/>
 												<CustomDropDownSelect
 													id="devise"
@@ -647,6 +623,9 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 													size="small"
 													theme={inputTheme}
 													startIcon={<PaymentIcon fontSize="small" />}
+													required
+													error={hasFieldError('devise')}
+													helperText={getFieldError('devise')}
 												/>
 												<CustomTextInput
 													id="incoterm"
@@ -654,10 +633,14 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 													label={t.logistique.fieldIncoterm}
 													value={formik.values.incoterm}
 													onChange={formik.handleChange('incoterm')}
+													onBlur={formik.handleBlur('incoterm')}
 													fullWidth
 													size="small"
 													theme={inputTheme}
 													startIcon={<PublicIcon fontSize="small" />}
+													required
+													error={hasFieldError('incoterm')}
+													helperText={getFieldError('incoterm')}
 												/>
 												<CustomTextInput
 													id="transport"
@@ -665,10 +648,14 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 													label={t.logistique.fieldTransport}
 													value={formik.values.transport}
 													onChange={formik.handleChange('transport')}
+													onBlur={formik.handleBlur('transport')}
 													fullWidth
 													size="small"
 													theme={inputTheme}
 													startIcon={<LocalShippingIcon fontSize="small" />}
+													required
+													error={hasFieldError('transport')}
+													helperText={getFieldError('transport')}
 												/>
 												<CustomAutoCompleteSelect
 													id="responsable"
@@ -676,11 +663,15 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 													items={responsableOptions}
 													value={selectedResponsable}
 													onChange={(_, value) => formik.setFieldValue('responsable', value?.value ?? '')}
+													onBlur={formik.handleBlur('responsable')}
 													noOptionsText={t.logistique.noResponsable}
 													fullWidth
 													size="small"
 													theme={inputTheme}
 													startIcon={<PersonIcon fontSize="small" />}
+													required
+													error={hasFieldError('responsable')}
+													helperText={getFieldError('responsable')}
 												/>
 												<CustomDropDownSelect
 													id="statut"
@@ -688,14 +679,21 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 													items={statusOptions}
 													value={formik.values.statut}
 													onChange={(event) => formik.setFieldValue('statut', event.target.value)}
+													onBlur={formik.handleBlur('statut')}
 													size="small"
 													theme={inputTheme}
 													startIcon={<InfoIcon fontSize="small" />}
+													required
+													error={hasFieldError('statut')}
+													helperText={getFieldError('statut')}
 												/>
 												<DateField
 													label={t.logistique.fieldDatePrevue}
 													value={formik.values.date_prevue}
 													onChange={(value) => formik.setFieldValue('date_prevue', value)}
+													required
+													error={hasFieldError('date_prevue')}
+													helperText={getFieldError('date_prevue')}
 												/>
 												<DateField
 													label={t.logistique.fieldDateReelle}
@@ -708,10 +706,14 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 													label={t.logistique.fieldOrigine}
 													value={formik.values.origine_marchandise}
 													onChange={formik.handleChange('origine_marchandise')}
+													onBlur={formik.handleBlur('origine_marchandise')}
 													fullWidth
 													size="small"
 													theme={inputTheme}
 													startIcon={<PublicIcon fontSize="small" />}
+													required
+													error={hasFieldError('origine_marchandise')}
+													helperText={getFieldError('origine_marchandise')}
 												/>
 												<CustomTextInput
 													id="nature_marchandise"
@@ -719,10 +721,14 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 													label={t.logistique.fieldNature}
 													value={formik.values.nature_marchandise}
 													onChange={formik.handleChange('nature_marchandise')}
+													onBlur={formik.handleBlur('nature_marchandise')}
 													fullWidth
 													size="small"
 													theme={inputTheme}
 													startIcon={<DescriptionIcon fontSize="small" />}
+													required
+													error={hasFieldError('nature_marchandise')}
+													helperText={getFieldError('nature_marchandise')}
 												/>
 												<FormattedNumberInput
 													id="poids_net"
@@ -730,10 +736,14 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 													label={t.logistique.fieldPoidsNet}
 													value={formik.values.poids_net}
 													onChange={formik.handleChange('poids_net')}
+													onBlur={formik.handleBlur('poids_net')}
 													fullWidth
 													size="small"
 													theme={inputTheme}
 													startIcon={<ScaleIcon fontSize="small" />}
+													required
+													error={hasFieldError('poids_net')}
+													helperText={getFieldError('poids_net')}
 												/>
 												<FormattedNumberInput
 													id="poids_brut"
@@ -741,10 +751,14 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 													label={t.logistique.fieldPoidsBrut}
 													value={formik.values.poids_brut}
 													onChange={formik.handleChange('poids_brut')}
+													onBlur={formik.handleBlur('poids_brut')}
 													fullWidth
 													size="small"
 													theme={inputTheme}
 													startIcon={<ScaleIcon fontSize="small" />}
+													required
+													error={hasFieldError('poids_brut')}
+													helperText={getFieldError('poids_brut')}
 												/>
 												<FormattedNumberInput
 													id="volume"
@@ -752,10 +766,14 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 													label={t.logistique.fieldVolume}
 													value={formik.values.volume}
 													onChange={formik.handleChange('volume')}
+													onBlur={formik.handleBlur('volume')}
 													fullWidth
 													size="small"
 													theme={inputTheme}
 													startIcon={<ScaleIcon fontSize="small" />}
+													required
+													error={hasFieldError('volume')}
+													helperText={getFieldError('volume')}
 												/>
 												<Box sx={{ gridColumn: { md: '1 / -1' } }}>
 													<CustomTextInput
@@ -764,10 +782,14 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 														label={t.logistique.fieldConditionsPaiement}
 														value={formik.values.conditions_paiement}
 														onChange={formik.handleChange('conditions_paiement')}
+														onBlur={formik.handleBlur('conditions_paiement')}
 														fullWidth
 														size="small"
 														theme={inputTheme}
 														startIcon={<NotesIcon fontSize="small" />}
+														required
+														error={hasFieldError('conditions_paiement')}
+														helperText={getFieldError('conditions_paiement')}
 													/>
 												</Box>
 											</FormCard>
@@ -782,24 +804,20 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 												<CustomDropDownSelect id="statut_titre_importation" label={t.logistique.fieldStatutTI} items={tiStatusOptions} value={formik.values.statut_titre_importation} onChange={(event) => formik.setFieldValue('statut_titre_importation', event.target.value)} size="small" theme={inputTheme} startIcon={<InfoIcon fontSize="small" />} />
 											</FormCard>
 
-											<FormCard title={t.logistique.documentsSection} icon={<AttachFileIcon color="primary" />}>
-												{documentFields.map((field) => (
-													<DocumentUploadField
-														key={field}
-														id={field}
-														label={documentLabels[field]}
-														file={formik.values[field]}
-														currentUrl={order?.[field] ?? null}
-														onChange={(file) => formik.setFieldValue(field, file)}
-														onClear={() => formik.setFieldValue(field, null)}
-														uploadLabel={t.logistique.uploadDocument}
-														replaceLabel={t.logistique.replaceDocument}
-														selectedLabel={t.logistique.selectedFile}
-														currentLabel={t.logistique.currentDocument}
-														openLabel={t.logistique.openDocument}
-													/>
-												))}
-											</FormCard>
+											<LogistiqueDocumentsFormCard
+												items={documentFields.map((field) => ({
+													field,
+													label: documentLabels[field],
+													file: formik.values[field],
+													currentUrl: order?.[field] ?? null,
+												}))}
+												selectedField={selectedDocumentField}
+												onSelectedFieldChange={setSelectedDocumentField}
+												onFileChange={(field, file) => formik.setFieldValue(field, file)}
+												onClearFile={(field) => formik.setFieldValue(field, null)}
+												isLoading={isPending}
+												accept={acceptedDocumentTypes}
+											/>
 
 											<FormCard title={t.logistique.paymentSection} icon={<PaymentIcon color="primary" />}>
 												<CustomDropDownSelect id="methode_paiement" label={t.logistique.fieldMethodePaiement} items={paymentMethodOptions} value={formik.values.methode_paiement} onChange={(event) => formik.setFieldValue('methode_paiement', event.target.value)} size="small" theme={inputTheme} startIcon={<PaymentIcon fontSize="small" />} />

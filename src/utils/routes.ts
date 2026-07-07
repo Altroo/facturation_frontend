@@ -81,6 +81,7 @@ export const BON_DE_LIVRAISON_EDIT = (id: number, company_id: number) =>
 	`${SITE_ROOT}dashboard/bon-de-livraison/${id}/edit/?company_id=${company_id}`;
 // Logistique
 export const LOGISTIQUE_LIST = `${SITE_ROOT}dashboard/logistique`;
+export const LOGISTIQUE_DASHBOARD = `${SITE_ROOT}dashboard/logistique/dashboard`;
 export const LOGISTIQUE_ADD = (company_id: number) => `${SITE_ROOT}dashboard/logistique/new/?company_id=${company_id}`;
 export const LOGISTIQUE_VIEW = (id: number, company_id: number) =>
 	`${SITE_ROOT}dashboard/logistique/${id}/?company_id=${company_id}`;

@@ -12,11 +12,13 @@ import type {
 	LogistiqueOrder,
 	LogistiquePaymentMethod,
 	LogistiqueResponsibleOption,
+	LogistiqueStats,
 	LogistiqueStatut,
 } from '@/types/logistiqueTypes';
 
 const LOGISTIQUE_ROOT = process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique';
 const LOGISTIQUE_LIST = process.env.NEXT_PUBLIC_LOGISTIQUE_LIST || `${LOGISTIQUE_ROOT}/`;
+const LOGISTIQUE_DASHBOARD = process.env.NEXT_PUBLIC_LOGISTIQUE_DASHBOARD || `${LOGISTIQUE_ROOT}/dashboard/`;
 const LOGISTIQUE_SWITCH_STATUT = process.env.NEXT_PUBLIC_LOGISTIQUE_SWITCH_STATUT || `${LOGISTIQUE_ROOT}/switch_statut/`;
 const LOGISTIQUE_GENERATE_NUM = process.env.NEXT_PUBLIC_LOGISTIQUE_GENERATE_NUM || `${LOGISTIQUE_ROOT}/generate_num_commande/`;
 const LOGISTIQUE_RESPONSABLES = process.env.NEXT_PUBLIC_LOGISTIQUE_RESPONSABLES || `${LOGISTIQUE_ROOT}/responsables/`;
@@ -54,14 +56,22 @@ export const logistiqueApi = createApi({
 					...extraFilters,
 				},
 			}),
-			providesTags: ['Logistique'],
+			providesTags: [{ type: 'Logistique', id: 'LIST' }],
+		}),
+		getLogistiqueDashboard: builder.query<LogistiqueStats, { company_id: number }>({
+			query: ({ company_id }) => ({
+				url: LOGISTIQUE_DASHBOARD,
+				method: 'GET',
+				params: { company_id },
+			}),
+			providesTags: ['Dashboard'],
 		}),
 		getLogistique: builder.query<LogistiqueOrder, { id: number }>({
 			query: ({ id }) => ({
 				url: `${LOGISTIQUE_ROOT}/${id}/`,
 				method: 'GET',
 			}),
-			providesTags: ['Logistique'],
+			providesTags: (_result, _error, { id }) => [{ type: 'Logistique', id }],
 		}),
 		getNumLogistique: builder.query<{ numero_commande: string }, { company_id: number }>({
 			query: ({ company_id }) => ({
@@ -69,7 +79,7 @@ export const logistiqueApi = createApi({
 				method: 'GET',
 				params: { company_id },
 			}),
-			providesTags: ['Logistique'],
+			providesTags: [{ type: 'Logistique', id: 'LIST' }],
 		}),
 		getLogistiqueResponsables: builder.query<LogistiqueResponsibleOption[], { company_id: number }>({
 			query: ({ company_id }) => ({
@@ -77,7 +87,7 @@ export const logistiqueApi = createApi({
 				method: 'GET',
 				params: { company_id },
 			}),
-			providesTags: ['Logistique'],
+			providesTags: [{ type: 'Logistique', id: 'LIST' }],
 		}),
 		addLogistique: builder.mutation<LogistiqueCreateResponse, { company_id: number; data: Partial<LogistiqueFormValues> | FormData }>({
 			query: ({ company_id, data }) => ({
@@ -86,7 +96,7 @@ export const logistiqueApi = createApi({
 				params: { company_id },
 				data: data instanceof FormData ? data : { ...data, company_id },
 			}),
-			invalidatesTags: ['Logistique', 'Dashboard'],
+			invalidatesTags: [{ type: 'Logistique', id: 'LIST' }, 'Dashboard'],
 		}),
 		editLogistique: builder.mutation<LogistiqueOrder, { id: number; data: Partial<LogistiqueFormValues> | FormData }>({
 			query: ({ id, data }) => ({
@@ -94,14 +104,14 @@ export const logistiqueApi = createApi({
 				method: 'PUT',
 				data,
 			}),
-			invalidatesTags: ['Logistique', 'Dashboard'],
+			invalidatesTags: (_result, _error, { id }) => [{ type: 'Logistique', id: 'LIST' }, { type: 'Logistique', id }, 'Dashboard'],
 		}),
 		deleteLogistique: builder.mutation<void | ApiErrorResponseType, { id: number }>({
 			query: ({ id }) => ({
 				url: `${LOGISTIQUE_ROOT}/${id}/`,
 				method: 'DELETE',
 			}),
-			invalidatesTags: ['Logistique', 'Dashboard'],
+			invalidatesTags: [{ type: 'Logistique', id: 'LIST' }, 'Dashboard'],
 		}),
 		bulkDeleteLogistique: builder.mutation<void | ApiErrorResponseType, { ids: number[] }>({
 			query: ({ ids }) => ({
@@ -109,7 +119,7 @@ export const logistiqueApi = createApi({
 				method: 'DELETE',
 				data: { ids },
 			}),
-			invalidatesTags: ['Logistique', 'Dashboard'],
+			invalidatesTags: [{ type: 'Logistique', id: 'LIST' }, 'Dashboard'],
 		}),
 		patchLogistiqueStatut: builder.mutation<LogistiqueOrder, { id: number; data: { statut: LogistiqueStatut } }>({
 			query: ({ id, data }) => ({
@@ -117,14 +127,14 @@ export const logistiqueApi = createApi({
 				method: 'PATCH',
 				data,
 			}),
-			invalidatesTags: ['Logistique', 'Dashboard'],
+			invalidatesTags: (_result, _error, { id }) => [{ type: 'Logistique', id: 'LIST' }, { type: 'Logistique', id }, 'Dashboard'],
 		}),
 		requestLogistiquePayment: builder.mutation<LogistiqueOrder, { id: number }>({
 			query: ({ id }) => ({
 				url: `${LOGISTIQUE_ROOT}/${id}/request_payment/`,
 				method: 'POST',
 			}),
-			invalidatesTags: ['Logistique', 'Dashboard'],
+			invalidatesTags: (_result, _error, { id }) => [{ type: 'Logistique', id: 'LIST' }, { type: 'Logistique', id }, 'Dashboard'],
 		}),
 		validateLogistiquePayment: builder.mutation<
 			LogistiqueOrder,
@@ -144,7 +154,7 @@ export const logistiqueApi = createApi({
 				method: 'POST',
 				data,
 			}),
-			invalidatesTags: ['Logistique', 'Dashboard'],
+			invalidatesTags: (_result, _error, { id }) => [{ type: 'Logistique', id: 'LIST' }, { type: 'Logistique', id }, 'Dashboard'],
 		}),
 		rejectLogistiquePayment: builder.mutation<LogistiqueOrder, { id: number; data?: { note?: string } }>({
 			query: ({ id, data }) => ({
@@ -152,20 +162,21 @@ export const logistiqueApi = createApi({
 				method: 'POST',
 				data: data ?? {},
 			}),
-			invalidatesTags: ['Logistique', 'Dashboard'],
+			invalidatesTags: (_result, _error, { id }) => [{ type: 'Logistique', id: 'LIST' }, { type: 'Logistique', id }, 'Dashboard'],
 		}),
 		sendLogistiqueSwift: builder.mutation<LogistiqueOrder, { id: number }>({
 			query: ({ id }) => ({
 				url: `${LOGISTIQUE_ROOT}/${id}/send_swift/`,
 				method: 'POST',
 			}),
-			invalidatesTags: ['Logistique', 'Dashboard'],
+			invalidatesTags: (_result, _error, { id }) => [{ type: 'Logistique', id: 'LIST' }, { type: 'Logistique', id }, 'Dashboard'],
 		}),
 	}),
 });
 
 export const {
 	useGetLogistiqueListQuery,
+	useGetLogistiqueDashboardQuery,
 	useGetLogistiqueQuery,
 	useGetNumLogistiqueQuery,
 	useGetLogistiqueResponsablesQuery,

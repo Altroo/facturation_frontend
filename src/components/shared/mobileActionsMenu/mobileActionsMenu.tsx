@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { IconButton, Menu, MenuItem, ListItemIcon, ListItemText, useTheme, useMediaQuery, Box } from '@mui/material';
 import { MoreVert as MoreVertIcon } from '@mui/icons-material';
+import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import { useLanguage } from '@/utils/hooks';
 
 export type ActionItem = {
@@ -97,20 +98,23 @@ const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ actions }) => {
 	return (
 		<Box sx={{ display: 'flex', gap: 1 }}>
 			{visibleActions.map((action, index) => (
-				<IconButton
-					key={index}
-					size="small"
-					color={action.color}
-					onClick={(e) => {
-						e.stopPropagation();
-						if (action.disabled) return;
-						action.onClick(e);
-					}}
-					aria-label={action.label}
-					disabled={action.disabled}
-				>
-					{action.icon}
-				</IconButton>
+				<DarkTooltip key={index} title={action.label}>
+					<span>
+						<IconButton
+							size="small"
+							color={action.color}
+							onClick={(e) => {
+								e.stopPropagation();
+								if (action.disabled) return;
+								action.onClick(e);
+							}}
+							aria-label={action.label}
+							disabled={action.disabled}
+						>
+							{action.icon}
+						</IconButton>
+					</span>
+				</DarkTooltip>
 			))}
 		</Box>
 	);

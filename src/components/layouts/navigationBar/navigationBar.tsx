@@ -77,6 +77,7 @@ import {
 	FACTURE_CLIENT_UNPAID,
 	FACTURE_AVOIR_LIST,
 	FACTURE_PRO_FORMA_LIST,
+	LOGISTIQUE_DASHBOARD,
 	LOGISTIQUE_LIST,
 	REGLEMENTS_LIST,
 	SITE_ROOT,
@@ -155,7 +156,10 @@ const getNavigationMenu = (isStaff: boolean, t: TranslationDictionary) => {
 		logistique: {
 			title: t.navigation.logistique,
 			icon: <WarehouseIcon />,
-			items: [{ title: t.navigation.logistiqueList, label: t.navigation.logistiqueList, path: LOGISTIQUE_LIST }],
+			items: [
+				{ title: t.navigation.logistiqueDashboard, label: t.navigation.logistiqueDashboard, path: LOGISTIQUE_DASHBOARD },
+				{ title: t.navigation.logistiqueList, label: t.navigation.logistiqueList, path: LOGISTIQUE_LIST },
+			],
 		},
 		reglement: {
 			title: t.navigation.reglement,
@@ -240,12 +244,14 @@ const AppBar = styled(MuiAppBar, {
 		{
 			props: ({ open }) => open,
 			style: {
-				width: `calc(100% - ${drawerWidth}px)`,
-				marginLeft: `${drawerWidth}px`,
-				transition: theme.transitions.create(['margin', 'width'], {
-					easing: theme.transitions.easing.easeOut,
-					duration: theme.transitions.duration.enteringScreen,
-				}),
+				[theme.breakpoints.up('md')]: {
+					width: `calc(100% - ${drawerWidth}px)`,
+					marginLeft: `${drawerWidth}px`,
+					transition: theme.transitions.create(['margin', 'width'], {
+						easing: theme.transitions.easing.easeOut,
+						duration: theme.transitions.duration.enteringScreen,
+					}),
+				},
 			},
 		},
 	],
@@ -268,6 +274,10 @@ const NavigationBar = (props: Props) => {
 	const dispatch = useAppDispatch();
 	const moreVertRef = useRef<HTMLButtonElement>(null);
 	const [mobileMenuAnchor, setMobileMenuAnchor] = useState<HTMLElement | null>(null);
+
+	useEffect(() => {
+		setOpen(!isMobile);
+	}, [isMobile]);
 
 	// Notification state
 	const unreadCount = useAppSelector(getUnreadNotificationCount);
@@ -442,28 +452,33 @@ const NavigationBar = (props: Props) => {
         <ThemeProvider theme={navigationBarTheme()}>
             <Box sx={{ display: 'flex' }}>
 				<AppBar position="fixed" open={open}>
-					<Toolbar>
+					<Toolbar sx={{ px: { xs: 2, sm: 3 } }}>
 						<Stack
                             direction="row"
                             sx={{
                                 justifyContent: "space-between",
                                 alignItems: "center",
-                                width: "100%"
+                                width: "100%",
+								minWidth: 0
                             }}>
 							<Stack direction="row" spacing={1} sx={{
-                                alignItems: "center"
+                                alignItems: "center",
+								minWidth: 0,
+								flex: 1,
+								overflow: 'hidden'
                             }}>
 								{isMobile && (
-									<IconButton color="inherit" aria-label={t.common.toggleDrawer} onClick={handleDrawerToggle} size="small">
+									<IconButton color="inherit" aria-label={t.common.toggleDrawer} onClick={handleDrawerToggle} size="small" sx={{ flexShrink: 0 }}>
 										<MenuIcon />
 									</IconButton>
 								)}
-								<Typography variant="h6" noWrap component="div">
+								<Typography variant="h6" noWrap component="div" sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>
 									{props.title}
 								</Typography>
 							</Stack>
 						<Stack direction="row" spacing={1} sx={{
-                            alignItems: "center"
+                            alignItems: "center",
+							flexShrink: 0
                         }}>
 							{!loading && session && (
 								<>

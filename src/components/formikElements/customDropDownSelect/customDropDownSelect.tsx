@@ -44,12 +44,13 @@ type Props = {
 	startIcon?: React.ReactNode;
 	endIcon?: React.ReactNode;
 	children?: React.ReactNode;
+	required?: boolean;
 };
 
 const CustomDropDownSelect: React.FC<Props> = (props: Props) => {
 	return (
         <ThemeProvider theme={props.theme}>
-            <FormControl className={`${Styles.formControl} ${props.cssClass}`} disabled={props.disabled}>
+            <FormControl className={`${Styles.formControl} ${props.cssClass}`} disabled={props.disabled} required={props.required}>
 				<InputLabel id={`${props.id}-label`}>{props.label}</InputLabel>
 				<Select
 					labelId={`${props.id}-label`}
