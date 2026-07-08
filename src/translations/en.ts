@@ -361,6 +361,7 @@ export const en: TranslationDictionary = {
 		filterVille: 'City',
 		typePersonneMorale: 'Legal entity',
 		typePersonnePhysique: 'Individual',
+		typeClientDivers: 'Client Divers',
 		allTypes: 'All types',
 		allVilles: 'All cities',
 		fieldCodeClient: 'Client code',

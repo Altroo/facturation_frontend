@@ -1597,6 +1597,20 @@ describe('Zod Schema Validation', () => {
 				}),
 			).toThrow();
 		});
+
+		it('CD: passes with PM-shaped fields empty', () => {
+			expect(() =>
+				clientSchema.parse({
+					code_client: 'CL300',
+					client_type: 'CD',
+					company: 1,
+					raison_sociale: '',
+					ville: null,
+					ICE: '',
+					delai_de_paiement: null,
+				}),
+			).not.toThrow();
+		});
 	});
 
 	// ✅ Additional articleSchema refine branch coverage

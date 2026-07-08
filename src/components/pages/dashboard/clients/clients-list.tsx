@@ -37,22 +37,28 @@ import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActio
 import { useGetCitiesListQuery } from '@/store/services/parameter';
 import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
+import { isNectarRaisonSociale } from '@/utils/nectar';
 
 interface FormikContentProps extends SessionProps {
 	company_id: number;
+	company_raison_sociale?: string;
 	archived: boolean;
 	role: string;
 }
 
 const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
-	const { session, company_id, archived, role } = props;
+	const { session, company_id, company_raison_sociale, archived, role } = props;
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
 	const router = useRouter();
+	const isNectarCompany = isNectarRaisonSociale(company_raison_sociale);
 
 	const typeFilterOptions = [
 		{ value: 'Personne physique', label: t.clients.typePersonnePhysique, color: 'default' as const },
 		{ value: 'Personne morale', label: t.clients.typePersonneMorale, color: 'default' as const },
+		...(isNectarCompany
+			? [{ value: 'Client Divers', label: t.clients.typeClientDivers, color: 'default' as const }]
+			: []),
 	];
 	const token = useInitAccessToken(session);
 
@@ -337,7 +343,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						? t.clients.typePersonnePhysique
 						: params.value === 'Personne morale'
 							? t.clients.typePersonneMorale
-							: (params.value as string);
+							: params.value === 'Client Divers'
+								? t.clients.typeClientDivers
+								: (params.value as string);
 				return (
 					<DarkTooltip title={label}>
 						<Chip label={label} size="small" variant="outlined" />
@@ -614,8 +622,14 @@ const ClientsListClient: React.FC<Props> = ({ session, archived }) => {
 	const { t } = useLanguage();
 	return (
 		<CompanyDocumentsWrapperList session={session} title={archived ? t.clients.archivedTitle : t.clients.listTitle}>
-			{({ company_id, role }) => (
-				<FormikContent archived={archived} session={session} company_id={company_id} role={role} />
+			{({ company_id, role, raison_sociale }) => (
+				<FormikContent
+					archived={archived}
+					session={session}
+					company_id={company_id}
+					company_raison_sociale={raison_sociale}
+					role={role}
+				/>
 			)}
 		</CompanyDocumentsWrapperList>
 	);

@@ -360,6 +360,7 @@ export type TranslationDictionary = {
 		filterVille: string;
 		typePersonneMorale: string;
 		typePersonnePhysique: string;
+		typeClientDivers: string;
 		allTypes: string;
 		allVilles: string;
 		fieldCodeClient: string;

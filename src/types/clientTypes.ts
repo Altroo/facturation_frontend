@@ -1,4 +1,4 @@
-export type TypeClientType = 'PM' | 'PP';
+export type TypeClientType = 'PM' | 'PP' | 'CD';
 
 export type ClientSchemaType = {
 	client_type: TypeClientType;

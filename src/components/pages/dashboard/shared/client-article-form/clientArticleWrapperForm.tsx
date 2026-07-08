@@ -14,7 +14,7 @@ interface Props extends SessionProps {
 	company_id: number;
 	id?: number;
 	entityName: 'article' | 'client';
-	FormikComponent: React.FC<{ token?: string; id?: number; company_id: number }>;
+	FormikComponent: React.FC<{ token?: string; id?: number; company_id: number; company_raison_sociale?: string }>;
 }
 
 const ClientArticleWrapperForm: React.FC<Props> = ({ session, company_id, id, entityName, FormikComponent }) => {
@@ -42,7 +42,12 @@ const ClientArticleWrapperForm: React.FC<Props> = ({ session, company_id, id, en
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
 					{company?.role === 'Caissier' || company?.role === 'Commercial' ? (
 						<Box sx={{ width: '100%' }}>
-							<FormikComponent token={token} id={id} company_id={company_id} />
+							<FormikComponent
+								token={token}
+								id={id}
+								company_id={company_id}
+								company_raison_sociale={company?.raison_sociale}
+							/>
 						</Box>
 					) : (
 						<NoPermission />

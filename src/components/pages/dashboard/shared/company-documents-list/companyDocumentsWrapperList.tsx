@@ -24,7 +24,7 @@ type CompanyLike = {
 
 export type CompanyDocumentsListProps = SessionProps & {
 	title: string;
-	children: (args: { company_id: number; role: string }) => React.ReactNode;
+	children: (args: { company_id: number; role: string; raison_sociale: string }) => React.ReactNode;
 };
 
 const CompanyDocumentsWrapperList: React.FC<CompanyDocumentsListProps> = ({ session, title, children }) => {
@@ -211,7 +211,13 @@ const CompanyDocumentsWrapperList: React.FC<CompanyDocumentsListProps> = ({ sess
 								))}
 							</Tabs>
 						</Paper>
-						{selectedCompany ? children({ company_id: selectedCompany.id, role: selectedCompany.role }) : null}
+						{selectedCompany
+							? children({
+									company_id: selectedCompany.id,
+									role: selectedCompany.role,
+									raison_sociale: selectedCompany.raison_sociale,
+								})
+							: null}
 					</>
 				)}
 			</NavigationBar>

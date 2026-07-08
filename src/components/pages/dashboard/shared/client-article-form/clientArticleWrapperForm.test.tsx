@@ -48,6 +48,7 @@ describe('ClientArticleFormWrapper', () => {
 		token?: string;
 		id?: number;
 		company_id: number;
+		company_raison_sociale?: string;
 	};
 
 	beforeEach(() => {
@@ -56,7 +57,7 @@ describe('ClientArticleFormWrapper', () => {
 
 	it('renders FormikComponent when company role is Caissier and passes token and props', () => {
 		(useInitAccessToken as jest.Mock).mockReturnValue('token-123');
-		const companies = [{ id: 42, role: 'Caissier' }];
+		const companies = [{ id: 42, role: 'Caissier', raison_sociale: 'Company One' }];
 		(useAppSelector as jest.Mock).mockImplementation(() => companies);
 
 		const FormikCalled = jest.fn() as jest.Mock<void, [FormikComponentProps]>;
@@ -82,6 +83,7 @@ describe('ClientArticleFormWrapper', () => {
 		expect(FormikCalled).toHaveBeenCalledTimes(1);
 		const calledProps = FormikCalled.mock.calls[0][0];
 		expect(calledProps.company_id).toBe(42);
+		expect(calledProps.company_raison_sociale).toBe('Company One');
 		expect(calledProps.token).toBe('token-123');
 		expect(calledProps.id).toBe(7);
 	});

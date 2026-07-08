@@ -235,7 +235,7 @@ export const ppRequired = ['nom', 'prenom', 'adresse', 'ville', 'delai_de_paieme
 
 export const clientSchema = z
 	.object({
-		client_type: z.enum(['PM', 'PP']),
+		client_type: z.enum(['PM', 'PP', 'CD']),
 		code_client: requiredTextField(1, 100),
 		company: requiredNumberField(1),
 		// optional fields
@@ -273,7 +273,7 @@ export const clientSchema = z
 					});
 				}
 			});
-		} else {
+		} else if (data.client_type === 'PP') {
 			ppRequired.forEach((key) => {
 				const val = data[key];
 				const isEmpty =

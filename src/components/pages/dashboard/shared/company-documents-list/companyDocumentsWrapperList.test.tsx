@@ -99,6 +99,6 @@ describe('CompanyDocumentsList', () => {
 
 		// Child rendered and called with first company (selectedIndex defaults to 0)
 		expect(screen.getByTestId('child')).toHaveTextContent('id:1 role:Caissier');
-		expect(childFn).toHaveBeenCalledWith({ company_id: 1, role: 'Caissier' });
+		expect(childFn).toHaveBeenCalledWith({ company_id: 1, role: 'Caissier', raison_sociale: 'Company One' });
 	});
 });

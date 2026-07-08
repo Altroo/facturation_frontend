@@ -62,6 +62,7 @@ import { useAddCityMutation, useDeleteCityMutation, useEditCityMutation, useGetC
 import { clientSchema, pmRequired, ppRequired } from '@/utils/formValidationSchemas';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import ClientArticleWrapperForm from '@/components/pages/dashboard/shared/client-article-form/clientArticleWrapperForm';
+import { isNectarRaisonSociale } from '@/utils/nectar';
 
 const inputTheme = textInputTheme();
 
@@ -69,10 +70,11 @@ type FormikContentProps = {
 	token?: string;
 	company_id: number;
 	id?: number;
+	company_raison_sociale?: string;
 };
 
 const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
-	const { token, company_id, id } = props;
+	const { token, company_id, id, company_raison_sociale } = props;
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
 	const isEditMode = id !== undefined;
@@ -147,8 +149,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			const { globalError, ...newPayload } = data;
 			try {
 				// Build payload with irrelevant fields cleared
+				const usesPersonneMoraleFields = data.client_type === 'PM' || data.client_type === 'CD';
 				const payload =
-					data.client_type === 'PM'
+					usesPersonneMoraleFields
 						? {
 								...newPayload,
 								nom: null,
@@ -208,8 +211,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	// Required label helpers
 	const isPM = formik.values.client_type === 'PM';
+	const isPP = formik.values.client_type === 'PP';
+	const isClientDivers = formik.values.client_type === 'CD';
+	const usesPersonneMoraleFields = isPM || isClientDivers;
+	const isNectarCompany = isNectarRaisonSociale(company_raison_sociale);
 	const isRequiredPM = (field: (typeof pmRequired)[number]) => isPM && pmRequired.includes(field);
-	const isRequiredPP = (field: (typeof ppRequired)[number]) => !isPM && ppRequired.includes(field);
+	const isRequiredPP = (field: (typeof ppRequired)[number]) => isPP && ppRequired.includes(field);
 
 	// Collect validation errors from Formik
 	const fieldLabels = useMemo<Record<string, string>>(
@@ -352,6 +359,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								>
 									<ToggleButton value="PM">{t.clients.typePersonneMorale}</ToggleButton>
 									<ToggleButton value="PP">{t.clients.typePersonnePhysique}</ToggleButton>
+									{isNectarCompany && <ToggleButton value="CD">{t.clients.typeClientDivers}</ToggleButton>}
 								</ToggleButtonGroup>
 
 								<Stack spacing={2.5}>
@@ -421,7 +429,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								</Stack>
 								<Divider sx={{ mb: 3 }} />
 
-								{isPM ? (
+								{usesPersonneMoraleFields ? (
 									<Stack spacing={2.5}>
 										<CustomTextInput
 											id="raison_sociale"
@@ -702,7 +710,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										noOptionsText={t.clients.noVille}
 										label={
 											t.clients.fieldVille +
-											(isPM ? (isRequiredPM('ville') ? ' *' : '') : isRequiredPP('ville') ? ' *' : '')
+											(isPM ? (isRequiredPM('ville') ? ' *' : '') : isPP && isRequiredPP('ville') ? ' *' : '')
 										}
 										items={cityItems}
 										theme={theme}
@@ -745,7 +753,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												? isRequiredPM('delai_de_paiement')
 													? ' *'
 													: ''
-												: isRequiredPP('delai_de_paiement')
+												: isPP && isRequiredPP('delai_de_paiement')
 													? ' *'
 													: '')
 										}

@@ -198,7 +198,13 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 		},
 	];
 
-	const isPM = client?.client_type === 'PM';
+	const isPM = client?.client_type === 'PM' || client?.client_type === 'CD';
+	const clientTypeLabel =
+		client?.client_type === 'PM'
+			? t.clients.typePersonneMorale
+			: client?.client_type === 'CD'
+				? t.clients.typeClientDivers
+				: t.clients.typePersonnePhysique;
 	const formatMoney = (value: string | number | null | undefined, devise = 'MAD') =>
 		`${formatNumberWithSpaces(value ?? 0, 2)} ${devise}`;
 	const formatStatementDate = (value: string | null | undefined) => {
@@ -533,9 +539,7 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 										<InfoRow
 											icon={<PersonIcon />}
 											label={t.clients.colType}
-											value={
-												client?.client_type === 'PM' ? t.clients.typePersonneMorale : t.clients.typePersonnePhysique
-											}
+											value={clientTypeLabel}
 										/>
 										<Divider />
 										{isPM ? (

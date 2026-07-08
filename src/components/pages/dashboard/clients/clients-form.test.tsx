@@ -32,7 +32,7 @@ jest.mock('next/navigation', () => ({
 // Mock hooks and selectors
 jest.mock('@/utils/hooks', () => ({
 	__esModule: true,
-	useAppSelector: jest.fn(() => [{ id: 1, role: 'Caissier' }]),
+	useAppSelector: jest.fn(() => [{ id: 1, role: 'Caissier', raison_sociale: 'Other Company' }]),
 	useToast: () => ({ onSuccess: jest.fn(), onError: jest.fn() }),
 	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
 }));
@@ -194,6 +194,8 @@ describe('ClientsForm', () => {
 			isLoading: false,
 			error: undefined,
 		});
+		const { useAppSelector } = jest.requireMock('@/utils/hooks') as { useAppSelector: jest.Mock };
+		useAppSelector.mockReturnValue([{ id: 1, role: 'Caissier', raison_sociale: 'Other Company' }]);
 	});
 
 	afterEach(() => {
@@ -227,6 +229,18 @@ describe('ClientsForm', () => {
 			expect(screen.getByText('Type de client')).toBeInTheDocument();
 			expect(screen.getByText('Identité du client')).toBeInTheDocument();
 			expect(screen.getByText('Contact')).toBeInTheDocument();
+		});
+
+		it('renders Client Divers only for IMMOBILIERE NECTAR', () => {
+			const { useAppSelector } = jest.requireMock('@/utils/hooks') as { useAppSelector: jest.Mock };
+
+			renderWithProviders(<ClientsForm session={mockSession} company_id={1} />);
+			expect(screen.queryByRole('button', { name: 'Client Divers' })).not.toBeInTheDocument();
+
+			cleanup();
+			useAppSelector.mockReturnValue([{ id: 1, role: 'Caissier', raison_sociale: 'IMMOBILIERE NECTAR' }]);
+			renderWithProviders(<ClientsForm session={mockSession} company_id={1} />);
+			expect(screen.getByRole('button', { name: 'Client Divers' })).toBeInTheDocument();
 		});
 	});
 
