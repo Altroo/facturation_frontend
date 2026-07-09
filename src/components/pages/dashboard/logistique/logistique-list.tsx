@@ -137,21 +137,13 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 		{ skip: !token },
 	);
 	const listData = data as LogistiqueListResponse | undefined;
-	const supplierFilterOptions = useMemo(
-		() =>
-			(listData?.stats.fournisseurs ?? []).map((item) => ({
-				value: item.fournisseur,
-				label: item.fournisseur,
-			})),
-		[listData?.stats.fournisseurs],
-	);
 	const brandFilterOptions = useMemo(
 		() =>
-			(marques ?? []).map((item) => ({
+			(listData?.stats.marques?.length ? listData.stats.marques : (marques ?? [])).map((item) => ({
 				value: String(item.id),
 				label: item.nom,
 			})),
-		[marques],
+		[listData?.stats.marques, marques],
 	);
 	const statusFilterOptions = useMemo(
 		() => logisticsStatuses.map((value) => ({ value, label: value, color: statusColor(value) })),
@@ -168,12 +160,6 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 	const chipFilters: ChipFilterConfig[] = useMemo(
 		() => [
 			{ key: 'marque', label: t.logistique.colMarque, paramName: 'marque_ids', options: marques ?? [] },
-			{
-				key: 'fournisseur',
-				label: t.logistique.colFournisseur,
-				paramName: 'fournisseur',
-				options: (listData?.stats.fournisseurs ?? []).map((item) => ({ id: item.fournisseur, nom: item.fournisseur })),
-			},
 			{
 				key: 'statut',
 				label: t.logistique.colStatut,
@@ -195,8 +181,6 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 		],
 		[
 			marques,
-			listData?.stats.fournisseurs,
-			t.logistique.colFournisseur,
 			t.logistique.colMarque,
 			t.logistique.colPaiement,
 			t.logistique.colStatut,
@@ -250,45 +234,26 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 	};
 
 	const columns: GridColDef[] = [
-		{
-			field: 'numero_commande',
-			headerName: t.logistique.colNumero,
-			flex: 1,
-			minWidth: 125,
-			renderCell: (params: GridRenderCellParams<LogistiqueOrder>) => (
-				<DarkTooltip title={params.value}>
-					<Typography variant="body2" noWrap sx={{ fontWeight: 600 }}>
-						{params.value}
-					</Typography>
-				</DarkTooltip>
-			),
-		},
-		{
-			field: 'fournisseur',
-			headerName: t.logistique.colFournisseur,
-			flex: 1.2,
-			minWidth: 140,
-			filterOperators: createDropdownFilterOperators(
-				supplierFilterOptions,
-				t.logistique.allSuppliers,
-				undefined,
-				t.filterPanel.is,
-			),
-			renderCell: (params: GridRenderCellParams<LogistiqueOrder>) => (
-				<DarkTooltip title={params.value || '-'}>
-					<Typography variant="body2" noWrap>
-						{params.value || '-'}
-					</Typography>
-				</DarkTooltip>
-			),
-		},
-		{
-			field: 'marque_id',
-			headerName: t.logistique.colMarque,
-			flex: 1,
-			minWidth: 110,
-			filterOperators: createDropdownFilterOperators(
-				brandFilterOptions,
+			{
+				field: 'numero_commande',
+				headerName: t.logistique.colNumero,
+				flex: 1,
+				minWidth: 125,
+				renderCell: (params: GridRenderCellParams<LogistiqueOrder>) => (
+					<DarkTooltip title={params.value}>
+						<Typography variant="body2" noWrap sx={{ fontWeight: 600 }}>
+							{params.value}
+						</Typography>
+					</DarkTooltip>
+				),
+			},
+			{
+				field: 'marque_id',
+				headerName: t.logistique.colMarque,
+				flex: 1,
+				minWidth: 110,
+				filterOperators: createDropdownFilterOperators(
+					brandFilterOptions,
 				t.logistique.allBrands,
 				undefined,
 				t.filterPanel.is,
@@ -494,9 +459,25 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 	];
 
 	const stats = listData?.stats;
-	const supplierKpis = stats?.kpi_fournisseurs ?? [];
-	const maxSupplierCost = Math.max(...supplierKpis.map((supplier) => numericValue(supplier.cout_total)), 1);
-	const maxSupplierOrders = Math.max(...supplierKpis.map((supplier) => supplier.total_commandes), 1);
+	const brandKpis = useMemo(() => {
+		if (stats?.kpi_marques?.length) {
+			return stats.kpi_marques.map((brand) => ({
+				id: `brand-${brand.marque}`,
+				name: brand.marque__nom || '-',
+				total_commandes: brand.total_commandes,
+				cout_total: brand.cout_total,
+			}));
+		}
+
+		return (stats?.kpi_fournisseurs ?? []).map((brand, index) => ({
+			id: `legacy-brand-${index}-${brand.fournisseur || 'unknown'}`,
+			name: brand.fournisseur || '-',
+			total_commandes: brand.total_commandes,
+			cout_total: brand.cout_total,
+		}));
+	}, [stats?.kpi_fournisseurs, stats?.kpi_marques]);
+	const maxBrandCost = Math.max(...brandKpis.map((brand) => numericValue(brand.cout_total)), 1);
+	const maxBrandOrders = Math.max(...brandKpis.map((brand) => brand.total_commandes), 1);
 
 	return (
 		<>
@@ -573,42 +554,42 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 						color="#00695C"
 						testId="logistique-stats-transit"
 					/>
-				</Box>
-				{stats?.kpi_fournisseurs?.length ? (
-					<Box sx={{ mb: 3 }}>
-						<Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 2, mb: 1.5, flexWrap: 'wrap' }}>
-							<Typography variant="h6" sx={{ fontWeight: 800 }}>
-								{t.logistique.supplierKpiSection}
-							</Typography>
-							<Typography variant="caption" color="text.secondary">
-								{t.logistique.supplierKpiComparisonHint}
-							</Typography>
-						</Box>
-						<Box sx={{ display: 'grid', gap: 1.25 }}>
-							{supplierKpis.map((supplier, index) => {
-								const costValue = numericValue(supplier.cout_total);
-								const costPercent = Math.max(5, Math.round((costValue / maxSupplierCost) * 100));
-								const orderPercent = Math.max(5, Math.round((supplier.total_commandes / maxSupplierOrders) * 100));
-								return (
-									<Box
-										key={supplier.fournisseur}
-										sx={{
-											border: '1px solid',
-											borderColor: 'divider',
-											borderRadius: 2,
-											bgcolor: 'background.paper',
-											p: { xs: 1.5, sm: 2 },
-											display: 'grid',
+					</Box>
+					{brandKpis.length ? (
+						<Box sx={{ mb: 3 }}>
+							<Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 2, mb: 1.5, flexWrap: 'wrap' }}>
+								<Typography variant="h6" sx={{ fontWeight: 800 }}>
+									{t.logistique.supplierKpiSection}
+								</Typography>
+								<Typography variant="caption" color="text.secondary">
+									{t.logistique.supplierKpiComparisonHint}
+								</Typography>
+							</Box>
+							<Box sx={{ display: 'grid', gap: 1.25 }}>
+								{brandKpis.map((brand, index) => {
+									const costValue = numericValue(brand.cout_total);
+									const costPercent = Math.max(5, Math.round((costValue / maxBrandCost) * 100));
+									const orderPercent = Math.max(5, Math.round((brand.total_commandes / maxBrandOrders) * 100));
+									return (
+										<Box
+											key={brand.id}
+											sx={{
+												border: '1px solid',
+												borderColor: 'divider',
+												borderRadius: 2,
+												bgcolor: 'background.paper',
+												p: { xs: 1.5, sm: 2 },
+												display: 'grid',
 											gridTemplateColumns: { xs: '1fr', md: 'minmax(220px, 0.8fr) minmax(320px, 1.6fr)' },
 											gap: { xs: 1.25, md: 2 },
 											alignItems: 'center',
 											minWidth: 0,
-											boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-										}}
-									>
-										<Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, minWidth: 0 }}>
-											<Box
-												sx={{
+												boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+											}}
+										>
+											<Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, minWidth: 0 }}>
+												<Box
+													sx={{
 													width: 34,
 													height: 34,
 													borderRadius: '50%',
@@ -618,26 +599,26 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 													color: index === 0 ? 'primary.contrastText' : 'text.primary',
 													fontWeight: 800,
 													flexShrink: 0,
-												}}
-											>
-												{index + 1}
+													}}
+												>
+													{index + 1}
+												</Box>
+												<Box sx={{ minWidth: 0 }}>
+													<DarkTooltip title={brand.name}>
+														<Typography variant="subtitle2" noWrap sx={{ fontWeight: 800 }}>
+															{brand.name}
+														</Typography>
+													</DarkTooltip>
+												</Box>
 											</Box>
-											<Box sx={{ minWidth: 0 }}>
-												<DarkTooltip title={supplier.fournisseur}>
-													<Typography variant="subtitle2" noWrap sx={{ fontWeight: 800 }}>
-														{supplier.fournisseur}
-													</Typography>
-												</DarkTooltip>
-											</Box>
-										</Box>
-										<Box sx={{ display: 'grid', gap: 1, minWidth: 0 }}>
-											<Box sx={{ display: 'grid', gap: 0.5, minWidth: 0 }}>
-												<Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 1, minWidth: 0 }}>
-													<Typography variant="caption" color="text.secondary">
-														{t.logistique.colCoutTotal}
+											<Box sx={{ display: 'grid', gap: 1, minWidth: 0 }}>
+												<Box sx={{ display: 'grid', gap: 0.5, minWidth: 0 }}>
+													<Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 1, minWidth: 0 }}>
+														<Typography variant="caption" color="text.secondary">
+															{t.logistique.colCoutTotal}
 													</Typography>
 													<Typography variant="caption" sx={{ fontWeight: 800, color: 'text.primary', textAlign: 'right' }}>
-														{formatMoney(supplier.cout_total)} · {costPercent}% {t.logistique.supplierKpiRelativeToMax}
+														{formatMoney(brand.cout_total)} · {costPercent}% {t.logistique.supplierKpiRelativeToMax}
 													</Typography>
 												</Box>
 												<Box sx={{ height: 9, borderRadius: 999, bgcolor: 'grey.100', overflow: 'hidden' }}>
@@ -650,17 +631,17 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 														{t.logistique.ordersCount}
 													</Typography>
 													<Typography variant="caption" sx={{ fontWeight: 800, color: 'text.primary', textAlign: 'right' }}>
-														{supplier.total_commandes} · {orderPercent}% {t.logistique.supplierKpiRelativeToMax}
+														{brand.total_commandes} · {orderPercent}% {t.logistique.supplierKpiRelativeToMax}
 													</Typography>
 												</Box>
 												<Box sx={{ height: 9, borderRadius: 999, bgcolor: 'grey.100', overflow: 'hidden' }}>
 													<Box sx={{ width: `${orderPercent}%`, height: '100%', bgcolor: 'success.main', borderRadius: 999 }} />
 												</Box>
+												</Box>
 											</Box>
 										</Box>
-									</Box>
-								);
-							})}
+									);
+								})}
 						</Box>
 					</Box>
 				) : null}

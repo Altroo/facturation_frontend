@@ -55,7 +55,7 @@ type PaginatedDataGridProps<T> = {
 	isAllMatchingSelected?: boolean;
 	/** Called when the user clears the all-matching selection */
 	onClearAllMatchingSelected?: () => void;
-	/** Maximum content width for the grid wrapper. Use false when a wide list must use the full page width. */
+	/** Maximum content width for the grid wrapper. Defaults to full-width; pass a number/string to cap a compact grid. */
 	gridMaxWidth?: number | string | false;
 };
 
@@ -153,7 +153,7 @@ const PaginatedDataGrid = <T,>({
 	selectAllMatchingLoading,
 	isAllMatchingSelected,
 	onClearAllMatchingSelected,
-	gridMaxWidth = 1600,
+	gridMaxWidth = false,
 }: PaginatedDataGridProps<T>) => {
 	const { t } = useLanguage();
 	const [internalFilterModel, setInternalFilterModel] = useState<GridFilterModel>({

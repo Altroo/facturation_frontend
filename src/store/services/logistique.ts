@@ -12,6 +12,7 @@ import type {
 	LogistiqueOrder,
 	LogistiquePaymentMethod,
 	LogistiqueResponsibleOption,
+	LogistiqueSourcePreview,
 	LogistiqueStats,
 	LogistiqueStatut,
 } from '@/types/logistiqueTypes';
@@ -22,6 +23,7 @@ const LOGISTIQUE_DASHBOARD = process.env.NEXT_PUBLIC_LOGISTIQUE_DASHBOARD || `${
 const LOGISTIQUE_SWITCH_STATUT = process.env.NEXT_PUBLIC_LOGISTIQUE_SWITCH_STATUT || `${LOGISTIQUE_ROOT}/switch_statut/`;
 const LOGISTIQUE_GENERATE_NUM = process.env.NEXT_PUBLIC_LOGISTIQUE_GENERATE_NUM || `${LOGISTIQUE_ROOT}/generate_num_commande/`;
 const LOGISTIQUE_RESPONSABLES = process.env.NEXT_PUBLIC_LOGISTIQUE_RESPONSABLES || `${LOGISTIQUE_ROOT}/responsables/`;
+const LOGISTIQUE_SOURCE_PREVIEW = process.env.NEXT_PUBLIC_LOGISTIQUE_SOURCE_PREVIEW || `${LOGISTIQUE_ROOT}/source_preview/`;
 
 export const logistiqueApi = createApi({
 	reducerPath: 'logistiqueApi',
@@ -88,6 +90,13 @@ export const logistiqueApi = createApi({
 				params: { company_id },
 			}),
 			providesTags: [{ type: 'Logistique', id: 'LIST' }],
+		}),
+		getLogistiqueSourcePreview: builder.query<LogistiqueSourcePreview, { company_id: number; proformas: number[] }>({
+			query: ({ company_id, proformas }) => ({
+				url: LOGISTIQUE_SOURCE_PREVIEW,
+				method: 'POST',
+				data: { company_id, proformas },
+			}),
 		}),
 		addLogistique: builder.mutation<LogistiqueCreateResponse, { company_id: number; data: Partial<LogistiqueFormValues> | FormData }>({
 			query: ({ company_id, data }) => ({
@@ -180,6 +189,7 @@ export const {
 	useGetLogistiqueQuery,
 	useGetNumLogistiqueQuery,
 	useGetLogistiqueResponsablesQuery,
+	useGetLogistiqueSourcePreviewQuery,
 	useAddLogistiqueMutation,
 	useEditLogistiqueMutation,
 	useDeleteLogistiqueMutation,

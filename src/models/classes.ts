@@ -250,6 +250,8 @@ export class FactureClass {
 		public readonly total_paye?: number | string,
 		public readonly reste_a_payer?: number | string,
 		public readonly statut_paiement?: string,
+		public readonly source_devis?: number | null,
+		public readonly source_devis_numero?: string | null,
 		public readonly source_proforma?: number | null,
 		public readonly converted_facture_client?: number | null,
 		public readonly converted_facture_client_numero?: string | null,

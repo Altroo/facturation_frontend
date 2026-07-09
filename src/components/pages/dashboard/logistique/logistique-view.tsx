@@ -410,10 +410,10 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 										<Grid size={{ xs: 12, sm: 6, lg: 3 }}>
 											<Box sx={{ textAlign: 'center', px: 2, py: 1.5, minHeight: 96, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
 												<Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 0.5 }}>
-													{t.logistique.fieldFournisseur.toUpperCase()}
+													{t.logistique.colMarque.toUpperCase()}
 												</Typography>
 												<Typography variant="h6" sx={{ fontWeight: 800, overflowWrap: 'anywhere', lineHeight: 1.25 }}>
-													{order?.fournisseur || '-'}
+													{order?.marque_name || '-'}
 												</Typography>
 											</Box>
 										</Grid>
@@ -525,7 +525,6 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 								<Grid container spacing={2}>
 									<Grid size={{ xs: 12, lg: 6 }}>
 										<InfoRow icon={<ReceiptLongIcon />} label={t.logistique.colNumero} value={order?.numero_commande} />
-										<InfoRow icon={<BusinessIcon />} label={t.logistique.fieldFournisseur} value={order?.fournisseur} />
 										<InfoRow icon={<AssignmentTurnedInIcon />} label={t.logistique.colMarque} value={order?.marque_name} />
 										<InfoRow icon={<PersonIcon />} label={t.logistique.fieldResponsable} value={order?.responsable_name} />
 										<InfoRow icon={<InventoryIcon />} label={t.logistique.colProjects} value={order?.projects_display} />

@@ -155,6 +155,16 @@ export type LogistiqueStats = {
 	fournisseurs: Array<{
 		fournisseur: string;
 	}>;
+	kpi_marques: Array<{
+		marque: number;
+		marque__nom: string;
+		total_commandes: number;
+		cout_total: number | string;
+	}>;
+	marques: Array<{
+		id: number;
+		nom: string;
+	}>;
 	statuts_workflow: Array<{
 		statut: LogistiqueStatut;
 		total: number;
@@ -200,8 +210,48 @@ export type LogistiqueResponsibleOption = {
 	label: string;
 };
 
+export type LogistiqueBrandDetailFormValue = {
+	marque: number;
+	date_prevue: string;
+	date_reelle: string;
+	origine_marchandise: string;
+	nature_marchandise: string;
+};
+
+export type LogistiqueSourcePreviewBrand = {
+	marque: number;
+	marque_name: string;
+	devise: string;
+	proforma_ids: number[];
+	proforma_numbers: string[];
+	source_devis_numbers: string[];
+	client_names: string[];
+	project_references: string[];
+	articles_count: number;
+	total_quantity: number | string;
+	total_achat: number | string;
+};
+
+export type LogistiqueSourcePreviewProforma = {
+	id: number;
+	numero_facture: string;
+	source_devis: number | null;
+	source_devis_numero: string;
+	client_name: string;
+	project_reference: string;
+	date_facture: string;
+	total_ttc_apres_remise: number | string;
+	devise: string;
+};
+
+export type LogistiqueSourcePreview = {
+	proformas: LogistiqueSourcePreviewProforma[];
+	brands: LogistiqueSourcePreviewBrand[];
+};
+
 export type LogistiqueFormValues = {
 	proformas: number[];
+	brand_details: LogistiqueBrandDetailFormValue[];
 	fournisseur: string;
 	devise: string;
 	incoterm: string;

@@ -426,11 +426,19 @@ const CostTrendChart: React.FC<{ stats: LogistiqueStats }> = ({ stats }) => {
 	);
 };
 
-const SupplierCostShareChart: React.FC<{ stats: LogistiqueStats }> = ({ stats }) => {
+const BrandCostShareChart: React.FC<{ stats: LogistiqueStats }> = ({ stats }) => {
 	const { t } = useLanguage();
-	const suppliers = stats.kpi_fournisseurs ?? [];
-	const labels = suppliers.map((supplier) => supplier.fournisseur || '-');
-	const values = suppliers.map((supplier) => numericValue(supplier.cout_total));
+	const brands = stats.kpi_marques?.length
+		? stats.kpi_marques.map((brand) => ({
+				name: brand.marque__nom || '-',
+				cout_total: brand.cout_total,
+			}))
+		: (stats.kpi_fournisseurs ?? []).map((brand) => ({
+				name: brand.fournisseur || '-',
+				cout_total: brand.cout_total,
+			}));
+	const labels = brands.map((brand) => brand.name);
+	const values = brands.map((brand) => numericValue(brand.cout_total));
 
 	if (!hasPositiveData(values)) return <EmptyChart message={t.logistique.noSupplierKpi} />;
 
@@ -522,13 +530,13 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ session, company_id
 				</ChartCard>
 				<ChartCard title={t.logistique.costBreakdownChartTitle} infoTooltip={t.logistique.costBreakdownChartTooltip}>
 					<CostBreakdownChart stats={stats} />
-				</ChartCard>
-				<ChartCard title={t.logistique.costTrendChartTitle} infoTooltip={t.logistique.costTrendChartTooltip}>
-					<CostTrendChart stats={stats} />
-				</ChartCard>
-				<ChartCard title={t.logistique.supplierCostShareChartTitle} infoTooltip={t.logistique.supplierCostShareChartTooltip}>
-					<SupplierCostShareChart stats={stats} />
-				</ChartCard>
+					</ChartCard>
+					<ChartCard title={t.logistique.costTrendChartTitle} infoTooltip={t.logistique.costTrendChartTooltip}>
+						<CostTrendChart stats={stats} />
+					</ChartCard>
+					<ChartCard title={t.logistique.supplierCostShareChartTitle} infoTooltip={t.logistique.supplierCostShareChartTooltip}>
+						<BrandCostShareChart stats={stats} />
+					</ChartCard>
 			</Box>
 		</Box>
 	);

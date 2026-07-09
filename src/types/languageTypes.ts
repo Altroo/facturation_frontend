@@ -632,6 +632,7 @@ export type TranslationDictionary = {
 		colPaiement: string;
 		colCoutTotal: string;
 		fieldProformas: string;
+		fieldSourceDevis: string;
 		noProforma: string;
 		generalSection: string;
 		importSection: string;
@@ -640,6 +641,11 @@ export type TranslationDictionary = {
 		linesSection: string;
 		historySection: string;
 		sourceSection: string;
+		brandSplitSection: string;
+		brandSplitHelp: string;
+		linkedSources: string;
+		selectProformasForBrandSplit: string;
+		completeBrandDetails: string;
 		documentsSection: string;
 		traceabilitySection: string;
 		alertsSection: string;
@@ -703,6 +709,7 @@ export type TranslationDictionary = {
 		fieldMontantPaiement: string;
 		fieldReferencePaiement: string;
 		fieldCoutTransport: string;
+		fieldCoutAchat: string;
 		fieldFraisTransit: string;
 		fieldFraisDouane: string;
 		fieldTva: string;
