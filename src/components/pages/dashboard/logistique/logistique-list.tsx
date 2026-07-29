@@ -143,7 +143,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 				value: String(item.id),
 				label: item.nom,
 			})),
-		[listData?.stats.marques, marques],
+		[listData, marques],
 	);
 	const statusFilterOptions = useMemo(
 		() => logisticsStatuses.map((value) => ({ value, label: value, color: statusColor(value) })),
@@ -475,7 +475,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 			total_commandes: brand.total_commandes,
 			cout_total: brand.cout_total,
 		}));
-	}, [stats?.kpi_fournisseurs, stats?.kpi_marques]);
+	}, [stats]);
 	const maxBrandCost = Math.max(...brandKpis.map((brand) => numericValue(brand.cout_total)), 1);
 	const maxBrandOrders = Math.max(...brandKpis.map((brand) => brand.total_commandes), 1);
 

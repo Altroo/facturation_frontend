@@ -8,9 +8,10 @@ const eslintConfig = defineConfig([
 	...nextTs,
 	prettier,
 	{
-		// rules: {
-		// 	'react-hooks/set-state-in-effect': 'off',
-		// },
+		rules: {
+			// Query, responsive, and company changes intentionally synchronize local UI state.
+			'react-hooks/set-state-in-effect': 'off',
+		},
 	},
 	// Override default ignores of eslint-config-next.
 	globalIgnores([

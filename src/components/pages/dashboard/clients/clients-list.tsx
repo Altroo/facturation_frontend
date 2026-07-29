@@ -315,7 +315,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			value: name,
 			label: name,
 		}));
-	}, [data?.results]);
+	}, [data]);
 
 	const columns: GridColDef[] = [
 		{
