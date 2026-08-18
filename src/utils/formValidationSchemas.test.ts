@@ -751,7 +751,7 @@ describe('Zod Schema Validation', () => {
 		});
 	});
 
-	describe('factureProforma supplier requirement', () => {
+	describe('internal supplier snapshot', () => {
 		const baseValues = {
 			numero_part: 'PF100',
 			year_part: '26',
@@ -759,13 +759,13 @@ describe('Zod Schema Validation', () => {
 			date_facture: '2026-08-17',
 		};
 
-		it('requires a supplier on create', () => {
-			expect(() => factureProformaAddSchema.parse(baseValues)).toThrow();
+		it('keeps the supplier optional while the document is a draft', () => {
+			expect(() => factureProformaAddSchema.parse(baseValues)).not.toThrow();
 			expect(() => factureProformaAddSchema.parse({ ...baseValues, fournisseur: 'Supplier One' })).not.toThrow();
 		});
 
-		it('rejects a blank supplier on edit', () => {
-			expect(() => factureProformaSchema.parse({ ...baseValues, fournisseur: '   ' })).toThrow();
+		it('normalizes a blank supplier on edit', () => {
+			expect(() => factureProformaSchema.parse({ ...baseValues, fournisseur: '   ' })).not.toThrow();
 			expect(() => factureProformaSchema.parse({ ...baseValues, fournisseur: 'Supplier One' })).not.toThrow();
 		});
 

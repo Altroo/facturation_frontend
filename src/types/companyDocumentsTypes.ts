@@ -118,6 +118,8 @@ export interface BaseDocumentData {
 	client: number | null;
 	mode_paiement: number | null;
 	remarque: string | null;
+	fournisseur?: string | null;
+	fournisseur_email?: string | null;
 	remise_type?: TypeRemiseType;
 	remise?: number;
 	lignes: Array<DeviLineSchemaType>;
@@ -139,8 +141,11 @@ export interface FactureDocumentData extends BaseDocumentData {
 	date_facture: string;
 	numero_bon_commande_client: string | null;
 	termes_paiement?: string | null;
-	fournisseur?: string | null;
-	fournisseur_email?: string | null;
+	source_devis?: number | null;
+	source_devis_numero?: string | null;
+	source_proforma?: number | null;
+	source_proforma_numero?: string | null;
+	has_logistics_dossier?: boolean;
 }
 
 /** Facture d'avoir-specific document data */
@@ -160,6 +165,8 @@ export interface BonDeLivraisonDocumentData extends BaseDocumentData {
 	date_bon_livraison: string;
 	numero_bon_commande_client: string | null;
 	livre_par?: number | null;
+	source_facture_client?: number | null;
+	source_facture_client_numero?: string | null;
 }
 
 /** Union type for all document form data types */
@@ -173,6 +180,8 @@ export interface BaseDocumentFormSchema {
 	client: number | null;
 	mode_paiement: number | null;
 	remarque: string | null;
+	fournisseur?: string | null;
+	fournisseur_email?: string | null;
 	remise_type?: TypeRemiseType;
 	remise?: number;
 	lignes: Array<DeviLineSchemaType>;
@@ -194,8 +203,6 @@ export interface FactureFormSchema extends BaseDocumentFormSchema {
 	date_facture: string;
 	numero_bon_commande_client: string | null;
 	termes_paiement?: string | null;
-	fournisseur?: string | null;
-	fournisseur_email?: string | null;
 }
 
 /** Bon de livraison form schema type */

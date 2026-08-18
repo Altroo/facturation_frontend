@@ -43,12 +43,16 @@ jest.mock('next/navigation', () => ({
 jest.mock('next/image', () => ({
 	__esModule: true,
 	// eslint-disable-next-line @next/next/no-img-element
-	default: (props: Record<string, unknown>) => <img {...props}  alt="" />,
+	default: (props: Record<string, unknown>) => <img {...props} alt="" />,
 }));
 jest.mock('@/utils/hooks', () => ({
 	useAppSelector: jest.fn(() => []),
 	useToast: jest.fn(() => ({ onSuccess: jest.fn(), onError: jest.fn() })),
-	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
+	useLanguage: () => ({
+		language: 'fr' as const,
+		setLanguage: jest.fn(),
+		t: jest.requireActual('@/translations').translations.fr,
+	}),
 }));
 jest.mock('@/store/services/client', () => ({
 	useGetClientsListQuery: jest.fn(() => ({ data: [], isLoading: false })),
@@ -96,7 +100,15 @@ jest.mock('@/utils/routes', () => ({
 // Mock form subcomponents
 jest.mock('@/components/formikElements/customTextInput/customTextInput', () => ({
 	__esModule: true,
-	default: (props: { id?: string; label?: string }) => <div data-testid={`text-input-${props.id}`}>{props.label}</div>,
+	default: (props: { id?: string; label?: string; helperText?: string; disabled?: boolean }) => (
+		<div
+			data-testid={`text-input-${props.id}`}
+			data-disabled={String(Boolean(props.disabled))}
+			data-helper={props.helperText || ''}
+		>
+			{props.label}
+		</div>
+	),
 }));
 jest.mock('@/components/formikElements/formattedNumberInput/formattedNumberInput', () => ({
 	__esModule: true,
@@ -108,7 +120,9 @@ jest.mock('@/components/formikElements/customDropDownSelect/customDropDownSelect
 }));
 jest.mock('@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect', () => ({
 	__esModule: true,
-	default: (props: { id?: string; label?: string }) => <div data-testid={`autocomplete-${props.id}`}>{props.label}</div>,
+	default: (props: { id?: string; label?: string }) => (
+		<div data-testid={`autocomplete-${props.id}`}>{props.label}</div>
+	),
 }));
 jest.mock('@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton', () => ({
 	__esModule: true,
@@ -166,7 +180,10 @@ jest.mock('@mui/x-date-pickers/AdapterDateFns', () => ({
 jest.mock('date-fns/locale', () => ({ fr: {} }));
 
 // ── Import the REAL component ─────────────────────────────────────
-import CompanyDocumentFormContent, { generateRowId, type SharedDocumentFormContentProps } from './companyDocumentFormContent';
+import CompanyDocumentFormContent, {
+	generateRowId,
+	type SharedDocumentFormContentProps,
+} from './companyDocumentFormContent';
 
 const mockDevisConfig: DocumentFormConfig<DeviClass> = {
 	documentType: 'devis',
@@ -202,9 +219,15 @@ const createMockMutationFn = () => ({
 	unwrap: jest.fn().mockResolvedValue({ id: 1 }),
 });
 
-const mockAddData = jest.fn(() => createMockMutationFn()) as unknown as SharedDocumentFormContentProps<DeviClass>['addData'];
-const mockUpdateData = jest.fn(() => createMockMutationFn()) as unknown as SharedDocumentFormContentProps<DeviClass>['updateData'];
-const mockPatchStatut = jest.fn(() => createMockMutationFn()) as unknown as SharedDocumentFormContentProps<DeviClass>['patchStatut'];
+const mockAddData = jest.fn(() =>
+	createMockMutationFn(),
+) as unknown as SharedDocumentFormContentProps<DeviClass>['addData'];
+const mockUpdateData = jest.fn(() =>
+	createMockMutationFn(),
+) as unknown as SharedDocumentFormContentProps<DeviClass>['updateData'];
+const mockPatchStatut = jest.fn(() =>
+	createMockMutationFn(),
+) as unknown as SharedDocumentFormContentProps<DeviClass>['patchStatut'];
 
 const defaultProps = {
 	token: 'mock-token',
@@ -280,8 +303,36 @@ describe('CompanyDocumentFormContent', () => {
 
 		it('renders client section with autocomplete', () => {
 			render(<CompanyDocumentFormContent {...defaultProps} />);
-			expect(screen.getByText('Client')).toBeInTheDocument();
+			expect(screen.getByText('Client / Fournisseur')).toBeInTheDocument();
+			expect(screen.getByTestId('text-input-fournisseur')).toBeInTheDocument();
+			expect(screen.getByTestId('text-input-fournisseur_email')).toBeInTheDocument();
 			expect(screen.getByTestId('autocomplete-client')).toBeInTheDocument();
+		});
+
+		it('explains the supplier requirement on pro forma drafts', () => {
+			const proformaConfig = {
+				...mockDevisConfig,
+				documentType: 'facture-pro-forma',
+				fields: {
+					numeroField: 'numero_facture',
+					dateField: 'date_facture',
+					extraField: 'numero_bon_commande_client',
+					extraFieldLabel: 'N° bon de commande client',
+				},
+			} as unknown as DocumentFormConfig<FactureClass>;
+
+			render(
+				<CompanyDocumentFormContent
+					{...(defaultProps as unknown as SharedDocumentFormContentProps<FactureClass>)}
+					config={proformaConfig}
+					rawNumData={{ numero_facture: '001/25' }}
+				/>,
+			);
+
+			expect(screen.getByTestId('text-input-fournisseur')).toHaveAttribute(
+				'data-helper',
+				expect.stringContaining('facultatif en brouillon'),
+			);
 		});
 
 		it('renders payment section', () => {
@@ -381,6 +432,118 @@ describe('CompanyDocumentFormContent', () => {
 			render(<CompanyDocumentFormContent {...editProps} refetchNum={jest.fn()} />);
 			expect(screen.queryByTitle('Réinitialiser le numéro')).not.toBeInTheDocument();
 		});
+
+		it('locks the supplier snapshot on a converted client invoice', () => {
+			const factureConfig = {
+				...mockDevisConfig,
+				documentType: 'facture-client',
+				fields: {
+					numeroField: 'numero_facture',
+					dateField: 'date_facture',
+					extraField: 'numero_bon_commande_client',
+					extraFieldLabel: 'N° bon de commande client',
+				},
+			} as unknown as DocumentFormConfig<FactureClass>;
+
+			render(
+				<CompanyDocumentFormContent
+					{...(defaultProps as unknown as SharedDocumentFormContentProps<FactureClass>)}
+					config={factureConfig}
+					isEditMode
+					id={1}
+					rawData={
+						{
+							id: 1,
+							numero_facture: '001/25',
+							date_facture: '2025-01-01',
+							client: 1,
+							source_proforma: 10,
+							fournisseur: 'Supplier One',
+							fournisseur_email: 'supplier@example.com',
+							lignes: [],
+						} as unknown as SharedDocumentFormContentProps<FactureClass>['rawData']
+					}
+				/>,
+			);
+
+			expect(screen.getByTestId('text-input-fournisseur')).toHaveAttribute('data-disabled', 'true');
+			expect(screen.getByTestId('text-input-fournisseur_email')).toHaveAttribute('data-disabled', 'true');
+		});
+
+		it('keeps a blank linked pro forma supplier editable for legacy remediation', () => {
+			const proformaConfig = {
+				...mockDevisConfig,
+				documentType: 'facture-pro-forma',
+				fields: {
+					numeroField: 'numero_facture',
+					dateField: 'date_facture',
+					extraField: 'numero_bon_commande_client',
+					extraFieldLabel: 'N° bon de commande client',
+				},
+			} as unknown as DocumentFormConfig<FactureClass>;
+
+			render(
+				<CompanyDocumentFormContent
+					{...(defaultProps as unknown as SharedDocumentFormContentProps<FactureClass>)}
+					config={proformaConfig}
+					isEditMode
+					id={1}
+					rawData={
+						{
+							id: 1,
+							numero_facture: 'P001/25',
+							date_facture: '2025-01-01',
+							client: 1,
+							has_logistics_dossier: true,
+							fournisseur: '',
+							fournisseur_email: '',
+							lignes: [],
+						} as unknown as SharedDocumentFormContentProps<FactureClass>['rawData']
+					}
+				/>,
+			);
+
+			expect(screen.getByTestId('text-input-fournisseur')).toHaveAttribute('data-disabled', 'false');
+			expect(screen.getByTestId('text-input-fournisseur')).toHaveAttribute(
+				'data-helper',
+				expect.stringContaining('facultatif en brouillon'),
+			);
+		});
+
+		it('locks a populated linked pro forma supplier', () => {
+			const proformaConfig = {
+				...mockDevisConfig,
+				documentType: 'facture-pro-forma',
+				fields: {
+					numeroField: 'numero_facture',
+					dateField: 'date_facture',
+					extraField: 'numero_bon_commande_client',
+					extraFieldLabel: 'N° bon de commande client',
+				},
+			} as unknown as DocumentFormConfig<FactureClass>;
+
+			render(
+				<CompanyDocumentFormContent
+					{...(defaultProps as unknown as SharedDocumentFormContentProps<FactureClass>)}
+					config={proformaConfig}
+					isEditMode
+					id={1}
+					rawData={
+						{
+							id: 1,
+							numero_facture: 'P001/25',
+							date_facture: '2025-01-01',
+							client: 1,
+							has_logistics_dossier: true,
+							fournisseur: 'Supplier One',
+							lignes: [],
+						} as unknown as SharedDocumentFormContentProps<FactureClass>['rawData']
+					}
+				/>,
+			);
+
+			expect(screen.getByTestId('text-input-fournisseur')).toHaveAttribute('data-disabled', 'true');
+		});
 	});
 
 	// ── Devise section ────────────────────────────────────────────
@@ -430,13 +593,17 @@ describe('CompanyDocumentFormContent', () => {
 	// ── RTK hook calls ────────────────────────────────────────────
 	describe('Hook calls', () => {
 		it('calls useGetClientsListQuery', () => {
-			const { useGetClientsListQuery } = jest.requireMock('@/store/services/client') as { useGetClientsListQuery: jest.Mock };
+			const { useGetClientsListQuery } = jest.requireMock('@/store/services/client') as {
+				useGetClientsListQuery: jest.Mock;
+			};
 			render(<CompanyDocumentFormContent {...defaultProps} />);
 			expect(useGetClientsListQuery).toHaveBeenCalled();
 		});
 
 		it('calls useGetArticlesListQuery', () => {
-			const { useGetArticlesListQuery } = jest.requireMock('@/store/services/article') as { useGetArticlesListQuery: jest.Mock };
+			const { useGetArticlesListQuery } = jest.requireMock('@/store/services/article') as {
+				useGetArticlesListQuery: jest.Mock;
+			};
 			render(<CompanyDocumentFormContent {...defaultProps} />);
 			expect(useGetArticlesListQuery).toHaveBeenCalled();
 		});
@@ -448,7 +615,9 @@ describe('CompanyDocumentFormContent', () => {
 		});
 
 		it('calls useAddModePaiementMutation', () => {
-			const { useAddModePaiementMutation } = jest.requireMock('@/store/services/parameter') as { useAddModePaiementMutation: jest.Mock };
+			const { useAddModePaiementMutation } = jest.requireMock('@/store/services/parameter') as {
+				useAddModePaiementMutation: jest.Mock;
+			};
 			render(<CompanyDocumentFormContent {...defaultProps} />);
 			expect(useAddModePaiementMutation).toHaveBeenCalled();
 		});
@@ -478,7 +647,10 @@ describe('CompanyDocumentFormContent', () => {
 			const hooks = jest.requireMock('@/utils/hooks') as { useAppSelector: jest.Mock };
 			hooks.useAppSelector.mockImplementation((selector: jest.Mock) => {
 				if (selector === selectors.getModePaiementState) {
-					return [{ id: 1, nom: 'Chèque' }, { id: 2, nom: 'Virement' }];
+					return [
+						{ id: 1, nom: 'Chèque' },
+						{ id: 2, nom: 'Virement' },
+					];
 				}
 				return [];
 			});
@@ -492,9 +664,7 @@ describe('CompanyDocumentFormContent', () => {
 				useGetArticlesListQuery: jest.Mock;
 			};
 			articleService.useGetArticlesListQuery.mockReturnValue({
-				data: [
-					{ id: 10, reference: 'ART-1', designation: 'Article 1', prix_vente: 100, prix_achat: 50, tva: 20 },
-				],
+				data: [{ id: 10, reference: 'ART-1', designation: 'Article 1', prix_vente: 100, prix_achat: 50, tva: 20 }],
 				isLoading: false,
 			});
 			const editProps = {
@@ -533,9 +703,7 @@ describe('CompanyDocumentFormContent', () => {
 					remise_type: 'pourcentage',
 					remise: 10,
 					devise: 'MAD',
-					lignes: [
-						{ article: 10, prix_vente: 100, quantity: 2, remise_type: '', remise: 0 },
-					],
+					lignes: [{ article: 10, prix_vente: 100, quantity: 2, remise_type: '', remise: 0 }],
 					globalError: '',
 				},
 				errors: {},
@@ -552,9 +720,7 @@ describe('CompanyDocumentFormContent', () => {
 				useGetArticlesListQuery: jest.Mock;
 			};
 			articleService.useGetArticlesListQuery.mockReturnValue({
-				data: [
-					{ id: 10, reference: 'ART-1', designation: 'Article 1', prix_vente: 100, prix_achat: 50, tva: 20 },
-				],
+				data: [{ id: 10, reference: 'ART-1', designation: 'Article 1', prix_vente: 100, prix_achat: 50, tva: 20 }],
 				isLoading: false,
 			});
 
@@ -583,12 +749,26 @@ describe('CompanyDocumentFormContent', () => {
 			// Reset formik mock
 			formikMock.useFormik.mockReturnValue({
 				values: {
-					numero_part: '001', year_part: '25', client: null, date_devis: '2025-01-01',
-					numero_demande_prix_client: null, mode_paiement: null, remarque: null,
-					remise_type: undefined, remise: undefined, devise: 'MAD', lignes: [], globalError: '',
+					numero_part: '001',
+					year_part: '25',
+					client: null,
+					date_devis: '2025-01-01',
+					numero_demande_prix_client: null,
+					mode_paiement: null,
+					remarque: null,
+					remise_type: undefined,
+					remise: undefined,
+					devise: 'MAD',
+					lignes: [],
+					globalError: '',
 				},
-				errors: {}, touched: {}, handleSubmit: jest.fn(), handleBlur: jest.fn(() => jest.fn()),
-				handleChange: jest.fn(() => jest.fn()), setFieldValue: jest.fn(), submitCount: 0,
+				errors: {},
+				touched: {},
+				handleSubmit: jest.fn(),
+				handleBlur: jest.fn(() => jest.fn()),
+				handleChange: jest.fn(() => jest.fn()),
+				setFieldValue: jest.fn(),
+				submitCount: 0,
 			});
 		});
 
@@ -608,9 +788,17 @@ describe('CompanyDocumentFormContent', () => {
 				isEditMode: true,
 				id: 1,
 				rawData: {
-					id: 1, numero_devis: '001/25', date_devis: '2025-01-01', client: 1,
-					statut: 'En attente' as const, mode_paiement: null, remarque: null,
-					lignes: [], remise_type: undefined, remise: undefined, devise: 'MAD',
+					id: 1,
+					numero_devis: '001/25',
+					date_devis: '2025-01-01',
+					client: 1,
+					statut: 'En attente' as const,
+					mode_paiement: null,
+					remarque: null,
+					lignes: [],
+					remise_type: undefined,
+					remise: undefined,
+					devise: 'MAD',
 				} as unknown as SharedDocumentFormContentProps<DeviClass>['rawData'],
 				updateError: { status: 500, data: { details: 'Update failed' } },
 			};
@@ -644,8 +832,12 @@ describe('CompanyDocumentFormContent', () => {
 				extraFieldLabel: 'N° bon de commande client',
 			},
 			validation: {
-				editSchema: { parse: jest.fn() } as unknown as DocumentFormConfig<BonDeLivraisonClass>['validation']['editSchema'],
-				addSchema: { parse: jest.fn() } as unknown as DocumentFormConfig<BonDeLivraisonClass>['validation']['addSchema'],
+				editSchema: {
+					parse: jest.fn(),
+				} as unknown as DocumentFormConfig<BonDeLivraisonClass>['validation']['editSchema'],
+				addSchema: {
+					parse: jest.fn(),
+				} as unknown as DocumentFormConfig<BonDeLivraisonClass>['validation']['addSchema'],
 			},
 		};
 
@@ -656,10 +848,18 @@ describe('CompanyDocumentFormContent', () => {
 				isEditMode: true,
 				id: 1,
 				rawData: {
-					id: 1, numero_bon_livraison: 'BL-001', date_bon_livraison: '2025-01-01',
-					client: 1, statut: 'En attente' as const, mode_paiement: null,
-					remarque: null, lignes: [], remise_type: undefined, remise: undefined,
-					devise: 'MAD', livre_par: null,
+					id: 1,
+					numero_bon_livraison: 'BL-001',
+					date_bon_livraison: '2025-01-01',
+					client: 1,
+					statut: 'En attente' as const,
+					mode_paiement: null,
+					remarque: null,
+					lignes: [],
+					remise_type: undefined,
+					remise: undefined,
+					devise: 'MAD',
+					livre_par: null,
 				} as unknown as SharedDocumentFormContentProps<DeviClass>['rawData'],
 			};
 			render(<CompanyDocumentFormContent {...editProps} />);
@@ -684,10 +884,18 @@ describe('CompanyDocumentFormContent', () => {
 				isEditMode: true,
 				id: 1,
 				rawData: {
-					id: 1, numero_bon_livraison: 'BL-002', date_bon_livraison: '2025-02-01',
-					client: 1, statut: 'En attente' as const, mode_paiement: null,
-					remarque: null, lignes: [], remise_type: undefined, remise: undefined,
-					devise: 'MAD', livre_par: 1,
+					id: 1,
+					numero_bon_livraison: 'BL-002',
+					date_bon_livraison: '2025-02-01',
+					client: 1,
+					statut: 'En attente' as const,
+					mode_paiement: null,
+					remarque: null,
+					lignes: [],
+					remise_type: undefined,
+					remise: undefined,
+					devise: 'MAD',
+					livre_par: 1,
 				} as unknown as SharedDocumentFormContentProps<DeviClass>['rawData'],
 			};
 			render(<CompanyDocumentFormContent {...editProps} />);
@@ -748,9 +956,16 @@ describe('CompanyDocumentFormContent', () => {
 				isEditMode: true,
 				id: 1,
 				rawData: {
-					id: 1, numero_facture: 'FC-001/25', date_facture: '2025-01-01',
-					client: 1, statut: 'En attente' as const, mode_paiement: null,
-					remarque: null, lignes: [], remise_type: undefined, remise: undefined,
+					id: 1,
+					numero_facture: 'FC-001/25',
+					date_facture: '2025-01-01',
+					client: 1,
+					statut: 'En attente' as const,
+					mode_paiement: null,
+					remarque: null,
+					lignes: [],
+					remise_type: undefined,
+					remise: undefined,
 					devise: 'MAD',
 				} as unknown as SharedDocumentFormContentProps<DeviClass>['rawData'],
 			};

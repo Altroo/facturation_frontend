@@ -752,6 +752,7 @@ export type TranslationDictionary = {
 		noChartData: string;
 		fieldFournisseur: string;
 		fieldSupplierEmail: string;
+		supplierRequiredForProformaAcceptance: string;
 		fieldResponsable: string;
 		fieldDevise: string;
 		fieldIncoterm: string;

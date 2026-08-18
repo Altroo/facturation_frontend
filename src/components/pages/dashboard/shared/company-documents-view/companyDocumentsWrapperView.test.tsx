@@ -52,7 +52,7 @@ jest.mock('@/utils/helpers', () => ({
 		return num.toLocaleString('fr-FR', {
 			minimumFractionDigits: decimals,
 			maximumFractionDigits: decimals,
-			useGrouping: true
+			useGrouping: true,
 		});
 	},
 	extractApiErrorMessage: (error: unknown, fallback: string): string => {
@@ -76,7 +76,11 @@ jest.mock('@/contexts/InitContext', () => ({
 jest.mock('@/utils/hooks', () => ({
 	__esModule: true,
 	useAppSelector: jest.fn(),
-	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
+	useLanguage: () => ({
+		language: 'fr' as const,
+		setLanguage: jest.fn(),
+		t: jest.requireActual('@/translations').translations.fr,
+	}),
 }));
 
 jest.mock('@/store/selectors', () => ({
@@ -179,7 +183,9 @@ describe('CompanyDocumentsView', () => {
 
 		expect(alert).toHaveTextContent('Document introuvable');
 		expect(alert).toHaveTextContent("Cette facture client est introuvable ou n'est plus disponible.");
-		expect(screen.getByText("Le document a peut-être été supprimé ou vous n’avez plus accès à cet élément.")).toBeInTheDocument();
+		expect(
+			screen.getByText('Le document a peut-être été supprimé ou vous n’avez plus accès à cet élément.'),
+		).toBeInTheDocument();
 
 		fireEvent.click(alertQueries.getByRole('button', { name: /Back/i }));
 		fireEvent.click(alertQueries.getByRole('button', { name: /Réessayer/i }));
@@ -189,7 +195,7 @@ describe('CompanyDocumentsView', () => {
 	});
 
 	test('renders content and shows \\`Modifier\\` button for Caissier, clicking navigates to edit route', () => {
-mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
@@ -204,6 +210,8 @@ mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 					date_doc: '2025\\-01\\-01',
 					client_name: 'Client A',
 					mode_paiement_name: 'Cash',
+					fournisseur: 'Supplier One',
+					fournisseur_email: 'supplier@example.com',
 					terms: 'T\\-01',
 					lignes: [{ article: 1, designation: 'Item', prix_vente: 10, quantity: 2 }],
 				},
@@ -215,6 +223,8 @@ mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		expect(screen.getByTestId('totals-card')).toBeInTheDocument();
 		expect(screen.getByTestId('datagrid')).toHaveTextContent('rows:1');
 		expect(screen.getByText('Client A')).toBeInTheDocument();
+		expect(screen.getByText('Supplier One')).toBeInTheDocument();
+		expect(screen.getByText('supplier@example.com')).toBeInTheDocument();
 
 		const editBtn = screen.getByRole('button', { name: /Modifier/i });
 		fireEvent.click(editBtn);
@@ -223,7 +233,7 @@ mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 	});
 
 	test('does not show \\`Modifier\\` button for Lecture', () => {
-mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Lecture' }]);
+		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Lecture' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
@@ -238,7 +248,7 @@ mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Lecture' }]);
 	});
 
 	test('clicking back button navigates to back route', () => {
-mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
@@ -255,7 +265,7 @@ mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 	});
 
 	test('shows Modifier button for Commercial role', () => {
-mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Commercial' }]);
+		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Commercial' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
@@ -270,7 +280,7 @@ mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Commercial' }]);
 	});
 
 	test('renders document content while articles are loading', () => {
-mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: true } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
@@ -286,7 +296,7 @@ mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 	});
 
 	test('renders Livré par field for bon-de-livraison type', () => {
-mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
@@ -307,7 +317,7 @@ mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 	});
 
 	test('renders global remise card when remise is positive and has type', () => {
-mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
@@ -332,7 +342,7 @@ mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 	});
 
 	test('renders global remise card with fixed type', () => {
-mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
@@ -357,7 +367,7 @@ mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 	});
 
 	test('renders remarque card when remarque is provided', () => {
-mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
@@ -382,7 +392,7 @@ mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 	});
 
 	test('does not render remarque card when remarque is empty', () => {
-mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
@@ -407,7 +417,7 @@ mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 	});
 
 	test('handles data with server totals', () => {
-mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
@@ -433,7 +443,7 @@ mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 	});
 
 	test('renders lines in data grid with article details', () => {
-mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({
 			data: [
 				{ id: 1, reference: 'REF-001', marque_name: 'Brand A', categorie_name: 'Cat1', tva: 20, photo: 'photo.jpg' },
@@ -462,7 +472,7 @@ mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 	});
 
 	test('handles system info display with dates', () => {
-mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);

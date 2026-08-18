@@ -6,8 +6,6 @@ import { Button } from '@mui/material';
 import {
 	ArrowBack as ArrowBackIcon,
 	Delete as DeleteIcon,
-	Email as EmailIcon,
-	LocalShipping as LocalShippingIcon,
 	PictureAsPdf as PictureAsPdfIcon,
 } from '@mui/icons-material';
 import {
@@ -176,18 +174,6 @@ const FactureProFormaViewClient: React.FC<Props> = ({ session, company_id, id })
 				linesTitle={t.facturesProforma.linesTitle}
 				termsSecondLabel={t.facturesProforma.termsSecondLabel}
 				getTermsSecondValue={(d) => d?.numero_bon_commande_client}
-				extraDocumentRows={[
-					{
-						icon: <LocalShippingIcon />,
-						label: t.logistique.fieldFournisseur,
-						getValue: (d) => d?.fournisseur,
-					},
-					{
-						icon: <EmailIcon />,
-						label: t.logistique.fieldSupplierEmail,
-						getValue: (d) => d?.fournisseur_email,
-					},
-				]}
 				query={query}
 				headerActions={headerActions}
 			/>

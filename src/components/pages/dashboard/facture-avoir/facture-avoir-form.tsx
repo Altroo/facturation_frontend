@@ -24,6 +24,8 @@ import {
 	Description as DescriptionIcon,
 	Discount as DiscountIcon,
 	Edit as EditIcon,
+	Email as EmailIcon,
+	LocalShipping as LocalShippingIcon,
 	Notes as NotesIcon,
 	Numbers as NumbersIcon,
 	Payment as PaymentIcon,
@@ -87,6 +89,8 @@ type FactureAvoirFormValues = {
 	motif_avoir: FactureAvoirMotif | '';
 	numero_bon_commande_client: string;
 	remarque: string;
+	fournisseur: string;
+	fournisseur_email: string;
 	statut: TypeFactureLivraisonDevisStatus;
 	remise_type: TypeRemiseType;
 	remise: number;
@@ -116,7 +120,7 @@ const normalizeDevise = (value: unknown): string | null => {
 
 const normalizeList = <T,>(raw: Array<Partial<T>> | PaginationResponseType<T> | undefined): Array<Partial<T>> => {
 	if (!raw) return [];
-	return Array.isArray(raw) ? raw : raw.results ?? [];
+	return Array.isArray(raw) ? raw : (raw.results ?? []);
 };
 
 const getNumeroParts = (numero?: string | null) => {
@@ -147,21 +151,24 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 	const theme = useTheme();
 	const searchParams = useSearchParams();
 	const factureOrigineParam = searchParams.get('facture_origine_id');
-	const initialOriginId = factureOrigineParam && !Number.isNaN(Number(factureOrigineParam)) ? Number(factureOrigineParam) : null;
+	const initialOriginId =
+		factureOrigineParam && !Number.isNaN(Number(factureOrigineParam)) ? Number(factureOrigineParam) : null;
 	const [validationErrors, setValidationErrors] = useState<ValidateArticleLinesErrorType>({});
 	const [showAddArticleModal, setShowAddArticleModal] = useState(false);
 	const [showGlobalRemiseModal, setShowGlobalRemiseModal] = useState(false);
 	const [selectedArticles, setSelectedArticles] = useState<Set<number>>(new Set());
 	const topRef = useRef<HTMLDivElement | null>(null);
 
-	const { data: rawData, isLoading: isDataLoading, error: dataError } = useGetFactureAvoirQuery(
-		{ id: id! },
-		{ skip: !token || !isEditMode },
-	);
-	const { data: numData, isLoading: isNumLoading, refetch: refetchNum } = useGetNumFactureAvoirQuery(
-		{ company_id },
-		{ skip: !token || isEditMode },
-	);
+	const {
+		data: rawData,
+		isLoading: isDataLoading,
+		error: dataError,
+	} = useGetFactureAvoirQuery({ id: id! }, { skip: !token || !isEditMode });
+	const {
+		data: numData,
+		isLoading: isNumLoading,
+		refetch: refetchNum,
+	} = useGetNumFactureAvoirQuery({ company_id }, { skip: !token || isEditMode });
 	const { data: initialPrefillData, isFetching: isInitialOriginLoading } = useGetFactureAvoirFromFactureQuery(
 		{ id: initialOriginId! },
 		{ skip: !token || isEditMode || !initialOriginId },
@@ -189,7 +196,8 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 	const clients = useMemo(() => normalizeList<ClientClass>(rawClientsData), [rawClientsData]);
 	const factures = useMemo(() => normalizeList<FactureClass>(rawFacturesData), [rawFacturesData]);
 	const isLocked = isEditMode && rawData?.statut !== 'Brouillon';
-	const isPending = isAddLoading || isUpdateLoading || isPatchLoading || isManualOriginLoading || isInitialOriginLoading;
+	const isPending =
+		isAddLoading || isUpdateLoading || isPatchLoading || isManualOriginLoading || isInitialOriginLoading;
 
 	const currentNumero = rawData?.numero_avoir ?? numData?.numero_avoir ?? '';
 	const initialNumeroParts = getNumeroParts(currentNumero);
@@ -235,8 +243,11 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 			client: rawData?.client ?? initialPrefillData?.client ?? null,
 			mode_paiement: rawData?.mode_paiement ?? initialPrefillData?.mode_paiement ?? null,
 			motif_avoir: (rawData?.motif_avoir as FactureAvoirMotif | undefined) ?? '',
-			numero_bon_commande_client: rawData?.numero_bon_commande_client ?? initialPrefillData?.numero_bon_commande_client ?? '',
+			numero_bon_commande_client:
+				rawData?.numero_bon_commande_client ?? initialPrefillData?.numero_bon_commande_client ?? '',
 			remarque: rawData?.remarque ?? '',
+			fournisseur: rawData?.fournisseur ?? initialPrefillData?.fournisseur ?? '',
+			fournisseur_email: rawData?.fournisseur_email ?? initialPrefillData?.fournisseur_email ?? '',
 			statut: rawData?.statut ?? 'Brouillon',
 			remise_type: rawData?.remise_type ?? initialPrefillData?.remise_type ?? '',
 			remise: Number(rawData?.remise ?? initialPrefillData?.remise ?? 0),
@@ -248,9 +259,13 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 			const errors: FormikErrors<FactureAvoirFormValues> = {};
 			if (!values.motif_avoir) errors.motif_avoir = t.facturesAvoir.motifRequired;
 			if (!isLegacyFreeAvoir && !values.facture_origine) errors.facture_origine = t.facturesAvoir.originRequired;
-			if ((isLegacyFreeAvoir || values.facture_origine) && !values.client) errors.client = t.facturesAvoir.clientRequired;
+			if ((isLegacyFreeAvoir || values.facture_origine) && !values.client)
+				errors.client = t.facturesAvoir.clientRequired;
 			if (!values.date_avoir) errors.date_avoir = t.validation.required;
 			if (!values.lignes.length) errors.lignes = t.facturesAvoir.linesRequired;
+			if (values.fournisseur_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.fournisseur_email)) {
+				errors.fournisseur_email = t.validation.emailInvalid;
+			}
 			return errors;
 		},
 		onSubmit: async (values) => {
@@ -267,6 +282,8 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 					motif_avoir: values.motif_avoir,
 					numero_bon_commande_client: values.numero_bon_commande_client || null,
 					remarque: values.remarque || null,
+					fournisseur: values.fournisseur || '',
+					fournisseur_email: values.fournisseur_email || '',
 					remise_type: values.remise_type,
 					remise: values.remise,
 					devise: values.devise,
@@ -293,7 +310,8 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 
 	const selectedOrigin = originItems.find((item) => item.value === String(formik.values.facture_origine)) ?? null;
 	const selectedClient = clientItems.find((item) => item.value === String(formik.values.client)) ?? null;
-	const selectedModePaiement = modePaiementItems.find((item) => item.value === String(formik.values.mode_paiement)) ?? null;
+	const selectedModePaiement =
+		modePaiementItems.find((item) => item.value === String(formik.values.mode_paiement)) ?? null;
 	const selectedMotif = motifItems.find((item) => item.value === formik.values.motif_avoir) ?? null;
 
 	const fieldLabels = useMemo<Record<string, string>>(
@@ -301,6 +319,8 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 			date_avoir: t.facturesAvoir.fieldDate,
 			facture_origine: t.facturesAvoir.fieldFactureOrigine,
 			client: t.documentForm.fieldClientLabel,
+			fournisseur: t.logistique.fieldFournisseur,
+			fournisseur_email: t.logistique.fieldSupplierEmail,
 			motif_avoir: t.facturesAvoir.fieldMotif,
 			lignes: t.documentForm.fieldLignesLabel,
 		}),
@@ -337,6 +357,8 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 					remise_type: data.remise_type ?? '',
 					remise: Number(data.remise ?? 0),
 					devise: data.devise ?? prev.devise,
+					fournisseur: data.fournisseur ?? '',
+					fournisseur_email: data.fournisseur_email ?? '',
 					lignes: ((data.lignes ?? []) as DeviFactureLineFormValues[]).map((line) => ({
 						...line,
 						remise_type: line.remise_type || '',
@@ -406,17 +428,23 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 		[formik.values.lignes],
 	);
 
-	const existingArticleIds = useMemo(() => new Set(formik.values.lignes.map((line) => line.article)), [formik.values.lignes]);
+	const existingArticleIds = useMemo(
+		() => new Set(formik.values.lignes.map((line) => line.article)),
+		[formik.values.lignes],
+	);
 	const existingArticleLineValues = useMemo(
 		() =>
-			formik.values.lignes.reduce<Record<number, { quantity: number; remise_type: TypeRemiseType; remise: number }>>((acc, line) => {
-				acc[line.article] = {
-					quantity: Number(line.quantity || 1),
-					remise_type: line.remise_type || '',
-					remise: Number(line.remise || 0),
-				};
-				return acc;
-			}, {}),
+			formik.values.lignes.reduce<Record<number, { quantity: number; remise_type: TypeRemiseType; remise: number }>>(
+				(acc, line) => {
+					acc[line.article] = {
+						quantity: Number(line.quantity || 1),
+						remise_type: line.remise_type || '',
+						remise: Number(line.remise || 0),
+					};
+					return acc;
+				},
+				{},
+			),
 		[formik.values.lignes],
 	);
 
@@ -482,8 +510,10 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 		});
 
 		let finalTotalHT = rawTotalHT;
-		if (formik.values.remise_type === 'Pourcentage') finalTotalHT = rawTotalHT * (1 - Number(formik.values.remise || 0) / 100);
-		if (formik.values.remise_type === 'Fixe') finalTotalHT = Math.max(0, rawTotalHT - Number(formik.values.remise || 0));
+		if (formik.values.remise_type === 'Pourcentage')
+			finalTotalHT = rawTotalHT * (1 - Number(formik.values.remise || 0) / 100);
+		if (formik.values.remise_type === 'Fixe')
+			finalTotalHT = Math.max(0, rawTotalHT - Number(formik.values.remise || 0));
 
 		const ratio = rawTotalHT > 0 ? finalTotalHT / rawTotalHT : 0;
 		const totalTVA = linesData.reduce((sum, line) => sum + line.lineHT * ratio * (line.tvaRate / 100), 0);
@@ -678,7 +708,9 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 										id="facture_origine"
 										size="small"
 										noOptionsText={t.facturesAvoir.freeOriginLabel}
-										label={isOriginRequired ? requiredLabel(t.facturesAvoir.selectOrigin) : t.facturesAvoir.selectOrigin}
+										label={
+											isOriginRequired ? requiredLabel(t.facturesAvoir.selectOrigin) : t.facturesAvoir.selectOrigin
+										}
 										items={originItems}
 										theme={theme}
 										value={selectedOrigin}
@@ -689,8 +721,14 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 											if (originId) void applyOrigin(originId);
 										}}
 										onBlur={formik.handleBlur('facture_origine')}
-										error={!effectiveFreeMode && formik.touched.facture_origine && Boolean(formik.errors.facture_origine)}
-										helperText={!effectiveFreeMode && formik.touched.facture_origine ? String(formik.errors.facture_origine || '') : ''}
+										error={
+											!effectiveFreeMode && formik.touched.facture_origine && Boolean(formik.errors.facture_origine)
+										}
+										helperText={
+											!effectiveFreeMode && formik.touched.facture_origine
+												? String(formik.errors.facture_origine || '')
+												: ''
+										}
 										disabled={isEditMode || isLocked || effectiveFreeMode}
 										startIcon={<ReceiptIcon fontSize="small" color="action" />}
 									/>
@@ -703,26 +741,59 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 								<Stack direction="row" spacing={2} sx={{ alignItems: 'center', mb: 2 }}>
 									<PersonIcon color="primary" />
 									<Typography variant="h6" sx={{ fontWeight: 700 }}>
-										Client
+										{`${t.documentForm.clientSection} / ${t.logistique.fieldFournisseur}`}
 									</Typography>
 								</Stack>
 								<Divider sx={{ mb: 3 }} />
-								<CustomAutoCompleteSelect
-									id="client"
-									size="small"
-									noOptionsText={t.documentForm.noClientFound}
-									label={isClientRequired ? requiredLabel(t.facturesAvoir.selectClient) : t.facturesAvoir.selectClient}
-									items={clientItems}
-									theme={theme}
-									value={selectedClient}
-									fullWidth
-									onChange={(_, newValue) => void formik.setFieldValue('client', newValue ? Number(newValue.value) : null)}
-									onBlur={formik.handleBlur('client')}
-									error={formik.touched.client && Boolean(formik.errors.client)}
-									helperText={formik.touched.client ? String(formik.errors.client || '') : ''}
-									disabled={!effectiveFreeMode || isLocked}
-									startIcon={<PersonIcon fontSize="small" color="action" />}
-								/>
+								<Stack spacing={2.5}>
+									<CustomTextInput
+										id="fournisseur"
+										type="text"
+										label={t.logistique.fieldFournisseur}
+										value={formik.values.fournisseur}
+										onChange={formik.handleChange('fournisseur')}
+										fullWidth
+										size="small"
+										theme={inputFieldTheme}
+										startIcon={<LocalShippingIcon fontSize="small" color="action" />}
+										disabled={Boolean(formik.values.facture_origine) || isLocked}
+									/>
+									<CustomTextInput
+										id="fournisseur_email"
+										type="email"
+										label={t.logistique.fieldSupplierEmail}
+										value={formik.values.fournisseur_email}
+										onChange={formik.handleChange('fournisseur_email')}
+										onBlur={formik.handleBlur('fournisseur_email')}
+										error={formik.touched.fournisseur_email && Boolean(formik.errors.fournisseur_email)}
+										helperText={formik.touched.fournisseur_email ? String(formik.errors.fournisseur_email || '') : ''}
+										fullWidth
+										size="small"
+										theme={inputFieldTheme}
+										startIcon={<EmailIcon fontSize="small" color="action" />}
+										disabled={Boolean(formik.values.facture_origine) || isLocked}
+									/>
+									<CustomAutoCompleteSelect
+										id="client"
+										size="small"
+										noOptionsText={t.documentForm.noClientFound}
+										label={
+											isClientRequired ? requiredLabel(t.facturesAvoir.selectClient) : t.facturesAvoir.selectClient
+										}
+										items={clientItems}
+										theme={theme}
+										value={selectedClient}
+										fullWidth
+										onChange={(_, newValue) =>
+											void formik.setFieldValue('client', newValue ? Number(newValue.value) : null)
+										}
+										onBlur={formik.handleBlur('client')}
+										error={formik.touched.client && Boolean(formik.errors.client)}
+										helperText={formik.touched.client ? String(formik.errors.client || '') : ''}
+										disabled={!effectiveFreeMode || isLocked}
+										startIcon={<PersonIcon fontSize="small" color="action" />}
+									/>
+								</Stack>
 							</CardContent>
 						</Card>
 
@@ -745,7 +816,9 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 										theme={theme}
 										value={selectedModePaiement}
 										fullWidth
-										onChange={(_, newValue) => void formik.setFieldValue('mode_paiement', newValue ? Number(newValue.value) : null)}
+										onChange={(_, newValue) =>
+											void formik.setFieldValue('mode_paiement', newValue ? Number(newValue.value) : null)
+										}
 										disabled={isLocked}
 										startIcon={<PaymentIcon fontSize="small" color="action" />}
 									/>

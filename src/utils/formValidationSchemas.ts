@@ -401,6 +401,17 @@ export const devisLivraisonFactureLineSchema = z
 		}
 	});
 
+const supplierSnapshotFields = {
+	fournisseur: z.preprocess(
+		(value) => (typeof value === 'string' ? value.trim() || undefined : value),
+		z
+			.string()
+			.max(255, { error: INPUT_MAX(255) })
+			.optional(),
+	),
+	fournisseur_email: optionalEmailField,
+};
+
 export const deviSchema = z
 	.object({
 		numero_part: requiredTextField(1, 15),
@@ -424,6 +435,7 @@ export const deviSchema = z
 		numero_demande_prix_client: optionalTextField(1, 100).nullable(),
 		mode_paiement: optionalNumberField(0).nullable(),
 		remarque: optionalTextField(2, 2000).nullable(),
+		...supplierSnapshotFields,
 		remise_type: z.enum(['Pourcentage', 'Fixe']).optional().nullable(),
 		remise: z.preprocess(
 			(val) => (typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val),
@@ -489,6 +501,7 @@ export const deviAddSchema = z.object({
 	numero_demande_prix_client: optionalTextField(1, 100).nullable(),
 	mode_paiement: optionalNumberField(0).nullable(),
 	remarque: optionalTextField(2, 2000).nullable(),
+	...supplierSnapshotFields,
 	globalError: optionalTextField(1, 500),
 });
 
@@ -516,6 +529,7 @@ export const factureClientProformaSchema = z
 		termes_paiement: optionalTextField(1, 2000).nullable(),
 		mode_paiement: optionalNumberField(0).nullable(),
 		remarque: optionalTextField(2, 2000).nullable(),
+		...supplierSnapshotFields,
 		remise_type: z.enum(['Pourcentage', 'Fixe']).optional().nullable(),
 		remise: z.preprocess(
 			(val) => (typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val),
@@ -582,20 +596,13 @@ export const factureClientProformaAddSchema = z.object({
 	termes_paiement: optionalTextField(1, 2000).nullable(),
 	mode_paiement: optionalNumberField(0).nullable(),
 	remarque: optionalTextField(2, 2000).nullable(),
+	...supplierSnapshotFields,
 	globalError: optionalTextField(1, 500),
 });
 
-const supplierField = requiredTextField(1, 255)
-	.transform((value) => value.trim())
-	.pipe(z.string().min(1, { error: INPUT_REQUIRED }));
+export const factureProformaSchema = factureClientProformaSchema;
 
-export const factureProformaSchema = factureClientProformaSchema.and(
-	z.object({ fournisseur: supplierField, fournisseur_email: optionalEmailField }),
-);
-
-export const factureProformaAddSchema = factureClientProformaAddSchema.and(
-	z.object({ fournisseur: supplierField, fournisseur_email: optionalEmailField }),
-);
+export const factureProformaAddSchema = factureClientProformaAddSchema;
 
 export const bonDeLivraisonSchema = z
 	.object({
@@ -621,6 +628,7 @@ export const bonDeLivraisonSchema = z
 		mode_paiement: optionalNumberField(0).nullable(),
 		livre_par: optionalNumberField(0).nullable(),
 		remarque: optionalTextField(2, 2000).nullable(),
+		...supplierSnapshotFields,
 		remise_type: z.enum(['Pourcentage', 'Fixe']).optional().nullable(),
 		remise: z.preprocess(
 			(val) => (typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val),
@@ -687,6 +695,7 @@ export const bonDeLivraisonAddSchema = z.object({
 	mode_paiement: optionalNumberField(0).nullable(),
 	livre_par: optionalNumberField(0).nullable(),
 	remarque: optionalTextField(2, 2000).nullable(),
+	...supplierSnapshotFields,
 	globalError: optionalTextField(1, 500),
 });
 

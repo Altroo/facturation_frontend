@@ -216,6 +216,8 @@ export class DeviClass {
 		public readonly total_ttc_apres_remise: number,
 		public readonly devise: string,
 		public lignes: Array<DeviFactureLivraisonLineClass>,
+		public fournisseur?: string | null,
+		public fournisseur_email?: string | null,
 	) {}
 }
 
@@ -257,6 +259,7 @@ export class FactureClass {
 		public readonly source_devis?: number | null,
 		public readonly source_devis_numero?: string | null,
 		public readonly source_proforma?: number | null,
+		public readonly source_proforma_numero?: string | null,
 		public readonly converted_facture_client?: number | null,
 		public readonly converted_facture_client_numero?: string | null,
 	) {}
@@ -293,6 +296,8 @@ export class FactureAvoirClass {
 		public readonly total_ttc_apres_remise: number,
 		public readonly devise: string,
 		public lignes: Array<DeviFactureLivraisonLineClass>,
+		public fournisseur?: string | null,
+		public fournisseur_email?: string | null,
 	) {}
 }
 
@@ -324,6 +329,10 @@ export class BonDeLivraisonClass {
 		public readonly total_ttc_apres_remise: number,
 		public readonly devise: string,
 		public lignes: Array<DeviFactureLivraisonLineClass>,
+		public fournisseur?: string | null,
+		public fournisseur_email?: string | null,
+		public readonly source_facture_client?: number | null,
+		public readonly source_facture_client_numero?: string | null,
 	) {}
 }
 

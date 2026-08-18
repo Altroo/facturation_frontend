@@ -764,6 +764,8 @@ export const en: TranslationDictionary = {
 		noChartData: 'No data available',
 		fieldFournisseur: 'Supplier',
 		fieldSupplierEmail: 'Supplier email',
+		supplierRequiredForProformaAcceptance:
+			'Business rule: optional in draft, this field becomes required only before accepting the pro forma invoice and creating the logistics dossier.',
 		fieldResponsable: 'Logistics responsible',
 		fieldDevise: 'Currency',
 		fieldIncoterm: 'Incoterm',
