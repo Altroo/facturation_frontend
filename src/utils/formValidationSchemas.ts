@@ -585,6 +585,18 @@ export const factureClientProformaAddSchema = z.object({
 	globalError: optionalTextField(1, 500),
 });
 
+const supplierField = requiredTextField(1, 255)
+	.transform((value) => value.trim())
+	.pipe(z.string().min(1, { error: INPUT_REQUIRED }));
+
+export const factureProformaSchema = factureClientProformaSchema.and(
+	z.object({ fournisseur: supplierField, fournisseur_email: optionalEmailField }),
+);
+
+export const factureProformaAddSchema = factureClientProformaAddSchema.and(
+	z.object({ fournisseur: supplierField, fournisseur_email: optionalEmailField }),
+);
+
 export const bonDeLivraisonSchema = z
 	.object({
 		numero_part: requiredTextField(1, 15),
@@ -706,7 +718,9 @@ export const monthlyObjectivesSchema = z.object({
 			if (typeof val === 'string') return parseFloat(val.replace(',', '.'));
 			return val;
 		},
-		z.number({ error: INPUT_REQUIRED }).refine((v) => !Number.isNaN(v), { message: INPUT_REQUIRED })
+		z
+			.number({ error: INPUT_REQUIRED })
+			.refine((v) => !Number.isNaN(v), { message: INPUT_REQUIRED })
 			.min(0, { message: INPUT_MIN(0) }),
 	),
 	objectif_ca_eur: z.preprocess(
@@ -716,7 +730,11 @@ export const monthlyObjectivesSchema = z.object({
 			if (typeof val === 'string') return parseFloat(val.replace(',', '.'));
 			return val;
 		},
-		z.number().min(0, { message: INPUT_MIN(0) }).nullable().optional(),
+		z
+			.number()
+			.min(0, { message: INPUT_MIN(0) })
+			.nullable()
+			.optional(),
 	),
 	objectif_ca_usd: z.preprocess(
 		(val) => {
@@ -725,7 +743,11 @@ export const monthlyObjectivesSchema = z.object({
 			if (typeof val === 'string') return parseFloat(val.replace(',', '.'));
 			return val;
 		},
-		z.number().min(0, { message: INPUT_MIN(0) }).nullable().optional(),
+		z
+			.number()
+			.min(0, { message: INPUT_MIN(0) })
+			.nullable()
+			.optional(),
 	),
 	objectif_factures: z.preprocess(
 		(val) => {

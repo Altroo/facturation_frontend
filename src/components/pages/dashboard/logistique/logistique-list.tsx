@@ -10,9 +10,9 @@ import {
 	Delete as DeleteIcon,
 	Edit as EditIcon,
 	ErrorOutlined as ErrorOutlinedIcon,
-	LocalShipping as LocalShippingIcon,
-	Payment as PaymentIcon,
-	RequestQuote as RequestQuoteIcon,
+		LocalShipping as LocalShippingIcon,
+		Payment as PaymentIcon,
+		RequestQuote as RequestQuoteIcon,
 	Visibility as VisibilityIcon,
 	Warehouse as WarehouseIcon,
 } from '@mui/icons-material';
@@ -28,24 +28,22 @@ import { createDropdownFilterOperators } from '@/components/shared/dropdownFilte
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
 import { createNumericFilterOperators } from '@/components/shared/numericFilter/numericFilterOperator';
 import { useInitAccessToken } from '@/contexts/InitContext';
+import { getInitStateToken } from '@/store/selectors';
 import {
 	useBulkDeleteLogistiqueMutation,
 	useDeleteLogistiqueMutation,
 	useGetLogistiqueListQuery,
-	useRequestLogistiquePaymentMutation,
 } from '@/store/services/logistique';
-import { useGetMarqueListQuery } from '@/store/services/parameter';
 import { LOGISTIQUE_ADD, LOGISTIQUE_EDIT, LOGISTIQUE_VIEW } from '@/utils/routes';
 import { extractApiErrorMessage, formatDate, formatNumberWithSpaces } from '@/utils/helpers';
-import { useLanguage, useToast } from '@/utils/hooks';
+import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
+import {
+	logistiqueGlobalStatusItemsList as logisticsStatuses,
+	logistiqueImportTitleStatusItemsList as importTitleStatuses,
+	logistiquePaymentStatusItemsList as paymentStatuses,
+} from '@/utils/rawData';
 import type { SessionProps } from '@/types/_initTypes';
-import type {
-	LogistiqueImportTitleStatus,
-	LogistiqueListResponse,
-	LogistiqueOrder,
-	LogistiquePaymentStatus,
-	LogistiqueStatut,
-} from '@/types/logistiqueTypes';
+import type { LogistiqueListResponse, LogistiqueOrder, LogistiquePaymentStatus } from '@/types/logistiqueTypes';
 
 interface FormikContentProps extends SessionProps {
 	company_id: number;
@@ -54,40 +52,15 @@ interface FormikContentProps extends SessionProps {
 
 const managerRoles = new Set(['Caissier', 'Commercial', 'Logistique']);
 
-const logisticsStatuses: LogistiqueStatut[] = [
-	'Réception commande',
-	'Commande fournisseur',
-	'Proforma',
-	"Titre d'Importation",
-	'Validation',
-	'Paiement demandé',
-	'Paiement effectué',
-	'SWIFT / Draft LC',
-	'Envoi SWIFT / Draft LC',
-	'Production',
-	'Expédition',
-	'Documents originaux',
-	'Transit',
-	'Dédouanement',
-	'Réception locale',
-	'Livraison client',
-	'Clôture',
-	'Annulé',
-];
-
-const paymentStatuses: LogistiquePaymentStatus[] = ['Non demandé', 'En attente', 'Validé', 'Rejeté'];
-const importTitleStatuses: LogistiqueImportTitleStatus[] = ['À ouvrir', 'Déposé', 'En attente', 'Validé', 'Refusé', 'Expiré', 'Clôturé'];
-
 const statusColor = (status: string) => {
-	if (status === 'Clôture' || status === 'Livraison client') return 'success' as const;
-	if (status === 'Annulé' || status === 'Rejeté') return 'error' as const;
-	if (status.includes('Paiement') || status.includes('SWIFT')) return 'warning' as const;
+	if (status === 'Clôturé') return 'success' as const;
+	if (status === 'Annulé' || status === 'Bloqué' || status === 'En retard') return 'error' as const;
+	if (status === 'À lancer' || status === 'En attente externe' || status === 'À clôturer') return 'warning' as const;
 	return 'info' as const;
 };
 
 const paymentColor = (status: LogistiquePaymentStatus) => {
 	if (status === 'Validé') return 'success' as const;
-	if (status === 'Rejeté') return 'error' as const;
 	if (status === 'En attente') return 'warning' as const;
 	return 'default' as const;
 };
@@ -96,7 +69,11 @@ const formatMoney = (value: string | number | null | undefined, devise = 'MAD') 
 	`${formatNumberWithSpaces(value ?? 0, 2)} ${devise}`;
 
 const numericValue = (value: string | number | null | undefined) => {
-	const parsed = Number(String(value ?? 0).replace(/\s/g, '').replace(',', '.'));
+	const parsed = Number(
+		String(value ?? 0)
+			.replace(/\s/g, '')
+			.replace(',', '.'),
+	);
 	return Number.isFinite(parsed) ? parsed : 0;
 };
 
@@ -105,6 +82,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 	const { onSuccess, onError } = useToast();
 	const router = useRouter();
 	const token = useInitAccessToken(session);
+	const currentUserId = useAppSelector(getInitStateToken).user.pk;
 	const canManage = managerRoles.has(role);
 	const canDelete = role === 'Caissier';
 
@@ -117,9 +95,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 	const [selectedId, setSelectedId] = useState<number | null>(null);
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
 	const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
-	const [showRequestPaymentModal, setShowRequestPaymentModal] = useState(false);
 
-	const { data: marques } = useGetMarqueListQuery({ company_id }, { skip: !token });
 	const mergedFilterParams = useMemo(
 		() => ({ ...chipFilterParams, ...customFilterParams }),
 		[chipFilterParams, customFilterParams],
@@ -137,13 +113,13 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 		{ skip: !token },
 	);
 	const listData = data as LogistiqueListResponse | undefined;
-	const brandFilterOptions = useMemo(
+	const supplierFilterOptions = useMemo(
 		() =>
-			(listData?.stats.marques?.length ? listData.stats.marques : (marques ?? [])).map((item) => ({
-				value: String(item.id),
-				label: item.nom,
+			(listData?.stats.fournisseurs ?? []).map((item) => ({
+				value: item.fournisseur,
+				label: item.fournisseur,
 			})),
-		[listData, marques],
+		[listData],
 	);
 	const statusFilterOptions = useMemo(
 		() => logisticsStatuses.map((value) => ({ value, label: value, color: statusColor(value) })),
@@ -153,17 +129,22 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 		() => paymentStatuses.map((value) => ({ value, label: value, color: paymentColor(value) })),
 		[],
 	);
-	const importTitleFilterOptions = useMemo(
-		() => importTitleStatuses.map((value) => ({ value, label: value })),
-		[],
-	);
+	const importTitleFilterOptions = useMemo(() => importTitleStatuses.map((value) => ({ value, label: value })), []);
 	const chipFilters: ChipFilterConfig[] = useMemo(
 		() => [
-			{ key: 'marque', label: t.logistique.colMarque, paramName: 'marque_ids', options: marques ?? [] },
+			{
+				key: 'fournisseur',
+				label: t.logistique.colFournisseur,
+				paramName: 'fournisseur',
+				options: (listData?.stats.fournisseurs ?? []).map((item) => ({
+					id: item.fournisseur,
+					nom: item.fournisseur,
+				})),
+			},
 			{
 				key: 'statut',
 				label: t.logistique.colStatut,
-				paramName: 'statut',
+				paramName: 'statut_global',
 				options: logisticsStatuses.map((value) => ({ id: value, nom: value })),
 			},
 			{
@@ -180,8 +161,8 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 			},
 		],
 		[
-			marques,
-			t.logistique.colMarque,
+			listData,
+			t.logistique.colFournisseur,
 			t.logistique.colPaiement,
 			t.logistique.colStatut,
 			t.logistique.fieldStatutTI,
@@ -190,7 +171,6 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 
 	const [deleteLogistique] = useDeleteLogistiqueMutation();
 	const [bulkDeleteLogistique] = useBulkDeleteLogistiqueMutation();
-	const [requestPayment] = useRequestLogistiquePaymentMutation();
 
 	const deleteHandler = async () => {
 		if (!selectedId) return;
@@ -219,49 +199,35 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 		}
 	};
 
-	const requestPaymentHandler = async () => {
-		if (!selectedId) return;
-		try {
-			await requestPayment({ id: selectedId }).unwrap();
-			onSuccess(t.logistique.requestPaymentSuccess);
-			refetch();
-		} catch (err) {
-			onError(extractApiErrorMessage(err, t.logistique.requestPaymentError));
-		} finally {
-			setSelectedId(null);
-			setShowRequestPaymentModal(false);
-		}
-	};
-
 	const columns: GridColDef[] = [
-			{
-				field: 'numero_commande',
-				headerName: t.logistique.colNumero,
-				flex: 1,
-				minWidth: 125,
-				renderCell: (params: GridRenderCellParams<LogistiqueOrder>) => (
-					<DarkTooltip title={params.value}>
-						<Typography variant="body2" noWrap sx={{ fontWeight: 600 }}>
-							{params.value}
-						</Typography>
-					</DarkTooltip>
-				),
-			},
-			{
-				field: 'marque_id',
-				headerName: t.logistique.colMarque,
-				flex: 1,
-				minWidth: 110,
-				filterOperators: createDropdownFilterOperators(
-					brandFilterOptions,
-				t.logistique.allBrands,
+		{
+			field: 'numero_commande',
+			headerName: t.logistique.colNumero,
+			flex: 1,
+			minWidth: 125,
+			renderCell: (params: GridRenderCellParams<LogistiqueOrder>) => (
+				<DarkTooltip title={params.value}>
+					<Typography variant="body2" noWrap sx={{ fontWeight: 600 }}>
+						{params.value}
+					</Typography>
+				</DarkTooltip>
+			),
+		},
+		{
+			field: 'fournisseur',
+			headerName: t.logistique.colFournisseur,
+			flex: 1,
+			minWidth: 110,
+			filterOperators: createDropdownFilterOperators(
+				supplierFilterOptions,
+				t.logistique.allSuppliers,
 				undefined,
 				t.filterPanel.is,
 			),
 			renderCell: (params: GridRenderCellParams<LogistiqueOrder>) => (
-				<DarkTooltip title={params.row.marque_name || '-'}>
+				<DarkTooltip title={params.row.fournisseur || '-'}>
 					<Typography variant="body2" noWrap>
-						{params.row.marque_name || '-'}
+						{params.row.fournisseur || '-'}
 					</Typography>
 				</DarkTooltip>
 			),
@@ -310,16 +276,11 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 			},
 		},
 		{
-			field: 'statut',
+			field: 'statut_global',
 			headerName: t.logistique.colStatut,
 			flex: 1.2,
 			minWidth: 155,
-			filterOperators: createDropdownFilterOperators(
-				statusFilterOptions,
-				t.common.allStatuses,
-				true,
-				t.filterPanel.is,
-			),
+			filterOperators: createDropdownFilterOperators(statusFilterOptions, t.common.allStatuses, true, t.filterPanel.is),
 			renderCell: (params: GridRenderCellParams<LogistiqueOrder>) => (
 				<DarkTooltip title={params.value || '-'}>
 					<Chip label={params.value} size="small" color={statusColor(params.value as string)} variant="outlined" />
@@ -383,7 +344,12 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 				}
 				return (
 					<DarkTooltip title={alerts.join(', ')}>
-						<Chip label={alerts.length === 1 ? alerts[0] : `${alerts.length} ${t.logistique.colAlerts}`} size="small" color="warning" variant="outlined" />
+						<Chip
+							label={alerts.length === 1 ? alerts[0] : `${alerts.length} ${t.logistique.colAlerts}`}
+							size="small"
+							color="warning"
+							variant="outlined"
+						/>
 					</DarkTooltip>
 				);
 			},
@@ -423,24 +389,16 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 						color: 'info' as const,
 					},
 				];
-				if (canManage) {
+				const canEditRow =
+					canManage ||
+					(params.row.responsable === currentUserId && params.row.statut_paiement === 'Non demandé');
+				if (canEditRow && params.row.statut_global !== 'Annulé') {
 					actions.push({
 						label: t.common.edit,
 						icon: <EditIcon />,
 						onClick: () => router.push(LOGISTIQUE_EDIT(params.row.id, company_id)),
 						color: 'primary' as const,
 					});
-					if (params.row.statut_paiement === 'Non demandé') {
-						actions.push({
-							label: t.logistique.requestPayment,
-							icon: <PaymentIcon />,
-							onClick: () => {
-								setSelectedId(params.row.id);
-								setShowRequestPaymentModal(true);
-							},
-							color: 'success' as const,
-						});
-					}
 				}
 				if (canDelete) {
 					actions.push({
@@ -459,25 +417,18 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 	];
 
 	const stats = listData?.stats;
-	const brandKpis = useMemo(() => {
-		if (stats?.kpi_marques?.length) {
-			return stats.kpi_marques.map((brand) => ({
-				id: `brand-${brand.marque}`,
-				name: brand.marque__nom || '-',
-				total_commandes: brand.total_commandes,
-				cout_total: brand.cout_total,
-			}));
-		}
-
-		return (stats?.kpi_fournisseurs ?? []).map((brand, index) => ({
-			id: `legacy-brand-${index}-${brand.fournisseur || 'unknown'}`,
-			name: brand.fournisseur || '-',
-			total_commandes: brand.total_commandes,
-			cout_total: brand.cout_total,
-		}));
-	}, [stats]);
-	const maxBrandCost = Math.max(...brandKpis.map((brand) => numericValue(brand.cout_total)), 1);
-	const maxBrandOrders = Math.max(...brandKpis.map((brand) => brand.total_commandes), 1);
+	const supplierKpis = useMemo(
+		() =>
+			(stats?.kpi_fournisseurs ?? []).map((supplier, index) => ({
+				id: `supplier-${index}-${supplier.fournisseur || 'unknown'}`,
+				name: supplier.fournisseur || '-',
+				total_commandes: supplier.total_commandes,
+				cout_total: supplier.cout_total,
+			})),
+		[stats],
+	);
+	const maxSupplierCost = Math.max(...supplierKpis.map((supplier) => numericValue(supplier.cout_total)), 1);
+	const maxSupplierOrders = Math.max(...supplierKpis.map((supplier) => supplier.total_commandes), 1);
 
 	return (
 		<>
@@ -554,42 +505,51 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 						color="#00695C"
 						testId="logistique-stats-transit"
 					/>
-					</Box>
-					{brandKpis.length ? (
-						<Box sx={{ mb: 3 }}>
-							<Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 2, mb: 1.5, flexWrap: 'wrap' }}>
-								<Typography variant="h6" sx={{ fontWeight: 800 }}>
-									{t.logistique.supplierKpiSection}
-								</Typography>
-								<Typography variant="caption" color="text.secondary">
-									{t.logistique.supplierKpiComparisonHint}
-								</Typography>
-							</Box>
-							<Box sx={{ display: 'grid', gap: 1.25 }}>
-								{brandKpis.map((brand, index) => {
-									const costValue = numericValue(brand.cout_total);
-									const costPercent = Math.max(5, Math.round((costValue / maxBrandCost) * 100));
-									const orderPercent = Math.max(5, Math.round((brand.total_commandes / maxBrandOrders) * 100));
-									return (
-										<Box
-											key={brand.id}
-											sx={{
-												border: '1px solid',
-												borderColor: 'divider',
-												borderRadius: 2,
-												bgcolor: 'background.paper',
-												p: { xs: 1.5, sm: 2 },
-												display: 'grid',
+				</Box>
+				{supplierKpis.length ? (
+					<Box sx={{ mb: 3 }}>
+						<Box
+							sx={{
+								display: 'flex',
+								justifyContent: 'space-between',
+								alignItems: 'baseline',
+								gap: 2,
+								mb: 1.5,
+								flexWrap: 'wrap',
+							}}
+						>
+							<Typography variant="h6" sx={{ fontWeight: 800 }}>
+								{t.logistique.supplierKpiSection}
+							</Typography>
+							<Typography variant="caption" color="text.secondary">
+								{t.logistique.supplierKpiComparisonHint}
+							</Typography>
+						</Box>
+						<Box sx={{ display: 'grid', gap: 1.25 }}>
+							{supplierKpis.map((supplier, index) => {
+								const costValue = numericValue(supplier.cout_total);
+								const costPercent = Math.max(5, Math.round((costValue / maxSupplierCost) * 100));
+								const orderPercent = Math.max(5, Math.round((supplier.total_commandes / maxSupplierOrders) * 100));
+								return (
+									<Box
+										key={supplier.id}
+										sx={{
+											border: '1px solid',
+											borderColor: 'divider',
+											borderRadius: 2,
+											bgcolor: 'background.paper',
+											p: { xs: 1.5, sm: 2 },
+											display: 'grid',
 											gridTemplateColumns: { xs: '1fr', md: 'minmax(220px, 0.8fr) minmax(320px, 1.6fr)' },
 											gap: { xs: 1.25, md: 2 },
 											alignItems: 'center',
 											minWidth: 0,
-												boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-											}}
-										>
-											<Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, minWidth: 0 }}>
-												<Box
-													sx={{
+											boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+										}}
+									>
+										<Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, minWidth: 0 }}>
+											<Box
+												sx={{
 													width: 34,
 													height: 34,
 													borderRadius: '50%',
@@ -599,49 +559,85 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 													color: index === 0 ? 'primary.contrastText' : 'text.primary',
 													fontWeight: 800,
 													flexShrink: 0,
+												}}
+											>
+												{index + 1}
+											</Box>
+											<Box sx={{ minWidth: 0 }}>
+												<DarkTooltip title={supplier.name}>
+													<Typography variant="subtitle2" noWrap sx={{ fontWeight: 800 }}>
+														{supplier.name}
+													</Typography>
+												</DarkTooltip>
+											</Box>
+										</Box>
+										<Box sx={{ display: 'grid', gap: 1, minWidth: 0 }}>
+											<Box sx={{ display: 'grid', gap: 0.5, minWidth: 0 }}>
+												<Box
+													sx={{
+														display: 'flex',
+														alignItems: 'baseline',
+														justifyContent: 'space-between',
+														gap: 1,
+														minWidth: 0,
 													}}
 												>
-													{index + 1}
-												</Box>
-												<Box sx={{ minWidth: 0 }}>
-													<DarkTooltip title={brand.name}>
-														<Typography variant="subtitle2" noWrap sx={{ fontWeight: 800 }}>
-															{brand.name}
-														</Typography>
-													</DarkTooltip>
-												</Box>
-											</Box>
-											<Box sx={{ display: 'grid', gap: 1, minWidth: 0 }}>
-												<Box sx={{ display: 'grid', gap: 0.5, minWidth: 0 }}>
-													<Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 1, minWidth: 0 }}>
-														<Typography variant="caption" color="text.secondary">
-															{t.logistique.colCoutTotal}
+													<Typography variant="caption" color="text.secondary">
+														{t.logistique.colCoutTotal}
 													</Typography>
-													<Typography variant="caption" sx={{ fontWeight: 800, color: 'text.primary', textAlign: 'right' }}>
-														{formatMoney(brand.cout_total)} · {costPercent}% {t.logistique.supplierKpiRelativeToMax}
+													<Typography
+														variant="caption"
+														sx={{ fontWeight: 800, color: 'text.primary', textAlign: 'right' }}
+													>
+														{formatMoney(supplier.cout_total)} · {costPercent}% {t.logistique.supplierKpiRelativeToMax}
 													</Typography>
 												</Box>
 												<Box sx={{ height: 9, borderRadius: 999, bgcolor: 'grey.100', overflow: 'hidden' }}>
-													<Box sx={{ width: `${costPercent}%`, height: '100%', bgcolor: 'primary.main', borderRadius: 999 }} />
+													<Box
+														sx={{
+															width: `${costPercent}%`,
+															height: '100%',
+															bgcolor: 'primary.main',
+															borderRadius: 999,
+														}}
+													/>
 												</Box>
 											</Box>
 											<Box sx={{ display: 'grid', gap: 0.5, minWidth: 0 }}>
-												<Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 1, minWidth: 0 }}>
+												<Box
+													sx={{
+														display: 'flex',
+														alignItems: 'baseline',
+														justifyContent: 'space-between',
+														gap: 1,
+														minWidth: 0,
+													}}
+												>
 													<Typography variant="caption" color="text.secondary">
 														{t.logistique.ordersCount}
 													</Typography>
-													<Typography variant="caption" sx={{ fontWeight: 800, color: 'text.primary', textAlign: 'right' }}>
-														{brand.total_commandes} · {orderPercent}% {t.logistique.supplierKpiRelativeToMax}
+													<Typography
+														variant="caption"
+														sx={{ fontWeight: 800, color: 'text.primary', textAlign: 'right' }}
+													>
+														{supplier.total_commandes} · {orderPercent}% {t.logistique.supplierKpiRelativeToMax}
 													</Typography>
 												</Box>
 												<Box sx={{ height: 9, borderRadius: 999, bgcolor: 'grey.100', overflow: 'hidden' }}>
-													<Box sx={{ width: `${orderPercent}%`, height: '100%', bgcolor: 'success.main', borderRadius: 999 }} />
-												</Box>
+													<Box
+														sx={{
+															width: `${orderPercent}%`,
+															height: '100%',
+															bgcolor: 'success.main',
+															borderRadius: 999,
+														}}
+													/>
 												</Box>
 											</Box>
 										</Box>
-									);
-								})}
+									</Box>
+								);
+							})}
 						</Box>
 					</Box>
 				) : null}
@@ -662,7 +658,6 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 				>
 					<Button
 						variant="contained"
-						startIcon={<AddIcon fontSize="small" />}
 						onClick={() => router.push(LOGISTIQUE_ADD(company_id))}
 						sx={{
 							whiteSpace: 'nowrap',
@@ -670,6 +665,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 							py: { xs: 0.8, sm: 1, md: 1 },
 							fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
 						}}
+						startIcon={<AddIcon fontSize="small" />}
 					>
 						{t.logistique.newOrder}
 					</Button>
@@ -716,7 +712,13 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 					titleIconColor="#D32F2F"
 					body={t.logistique.deleteModalBody}
 					actions={[
-						{ text: t.common.cancel, active: false, onClick: () => setShowDeleteModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
+						{
+							text: t.common.cancel,
+							active: false,
+							onClick: () => setShowDeleteModal(false),
+							icon: <CloseIcon />,
+							color: '#6B6B6B',
+						},
 						{ text: t.common.delete, active: true, onClick: deleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
 					]}
 				/>
@@ -728,20 +730,20 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 					titleIconColor="#D32F2F"
 					body={t.logistique.bulkDeleteModalBody(selectedIds.length)}
 					actions={[
-						{ text: t.common.cancel, active: false, onClick: () => setShowBulkDeleteModal(false), icon: <CloseIcon />, color: '#6B6B6B' },
-						{ text: t.logistique.bulkDeleteBtn(selectedIds.length), active: true, onClick: bulkDeleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
-					]}
-				/>
-			)}
-			{showRequestPaymentModal && (
-				<ActionModals
-					title={t.logistique.requestPaymentModalTitle}
-					titleIcon={<PaymentIcon />}
-					titleIconColor="#2E7D32"
-					body={t.logistique.requestPaymentModalBody}
-					actions={[
-						{ text: t.common.cancel, active: false, onClick: () => { setShowRequestPaymentModal(false); setSelectedId(null); }, icon: <CloseIcon />, color: '#6B6B6B' },
-						{ text: t.logistique.requestPayment, active: true, onClick: requestPaymentHandler, icon: <PaymentIcon />, color: '#2E7D32' },
+						{
+							text: t.common.cancel,
+							active: false,
+							onClick: () => setShowBulkDeleteModal(false),
+							icon: <CloseIcon />,
+							color: '#6B6B6B',
+						},
+						{
+							text: t.logistique.bulkDeleteBtn(selectedIds.length),
+							active: true,
+							onClick: bulkDeleteHandler,
+							icon: <DeleteIcon />,
+							color: '#D32F2F',
+						},
 					]}
 				/>
 			)}

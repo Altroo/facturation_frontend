@@ -6,9 +6,16 @@ import { Button } from '@mui/material';
 import {
 	ArrowBack as ArrowBackIcon,
 	Delete as DeleteIcon,
+	Email as EmailIcon,
+	LocalShipping as LocalShippingIcon,
 	PictureAsPdf as PictureAsPdfIcon,
 } from '@mui/icons-material';
-import { FACTURE_PRO_FORMA_EDIT, FACTURE_PRO_FORMA_LIST, FACTURE_PRO_FORMA_PDF, type DocumentPdfType } from '@/utils/routes';
+import {
+	FACTURE_PRO_FORMA_EDIT,
+	FACTURE_PRO_FORMA_LIST,
+	FACTURE_PRO_FORMA_PDF,
+	type DocumentPdfType,
+} from '@/utils/routes';
 import { useDeleteFactureProFormaMutation, useGetFactureProFormaQuery } from '@/store/services/factureProForma';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
@@ -25,6 +32,8 @@ type FactureProFormaData = CompanyDocumentData & {
 	numero_facture?: string | number | null;
 	date_facture?: string | null;
 	numero_bon_commande_client?: string | number | null;
+	fournisseur?: string | null;
+	fournisseur_email?: string | null;
 };
 
 interface Props extends SessionProps {
@@ -91,8 +100,7 @@ const FactureProFormaViewClient: React.FC<Props> = ({ session, company_id, id })
 
 	const isCaissier = company?.role === 'Caissier';
 	const canPrint =
-		Boolean(query.data) &&
-		(isCaissier || company?.role === 'Comptable' || company?.role === 'Commercial');
+		Boolean(query.data) && (isCaissier || company?.role === 'Comptable' || company?.role === 'Commercial');
 
 	const headerActions = (
 		<>
@@ -168,6 +176,18 @@ const FactureProFormaViewClient: React.FC<Props> = ({ session, company_id, id })
 				linesTitle={t.facturesProforma.linesTitle}
 				termsSecondLabel={t.facturesProforma.termsSecondLabel}
 				getTermsSecondValue={(d) => d?.numero_bon_commande_client}
+				extraDocumentRows={[
+					{
+						icon: <LocalShippingIcon />,
+						label: t.logistique.fieldFournisseur,
+						getValue: (d) => d?.fournisseur,
+					},
+					{
+						icon: <EmailIcon />,
+						label: t.logistique.fieldSupplierEmail,
+						getValue: (d) => d?.fournisseur_email,
+					},
+				]}
 				query={query}
 				headerActions={headerActions}
 			/>

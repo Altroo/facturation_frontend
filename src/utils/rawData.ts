@@ -1,5 +1,14 @@
 import type { AccountGenderCodeValueType, DropDownType } from '@/types/accountTypes';
 import type { TranslationDictionary } from '@/types/languageTypes';
+import type {
+	LogistiqueImportTitleStatus,
+	LogistiqueLaunchStatus,
+	LogistiqueLegacyStatut,
+	LogistiquePaymentMethod,
+	LogistiquePaymentStatus,
+	LogistiqueProformaStatus,
+	LogistiqueStatut,
+} from '@/types/logistiqueTypes';
 
 export const genderItemsList: Array<AccountGenderCodeValueType> = [
 	{
@@ -90,4 +99,105 @@ export const getTranslatedRemiseTypeItemsList = (t: TranslationDictionary): Arra
 	{ code: '', value: '' },
 	{ code: 'Pourcentage', value: t.rawData.remiseTypes.percentage },
 	{ code: 'Fixe', value: t.rawData.remiseTypes.fixed },
+];
+
+export const logistiqueGlobalStatusItemsList: LogistiqueStatut[] = [
+	'Brouillon',
+	'À lancer',
+	'En cours',
+	'En attente externe',
+	'Bloqué',
+	'En retard',
+	'À clôturer',
+	'Clôturé',
+	'Annulé',
+	'Rouvert',
+];
+
+export const logistiqueLegacyWorkflowStatusItemsList: LogistiqueLegacyStatut[] = [
+	'Réception commande',
+	'Commande fournisseur',
+	'Proforma',
+	"Titre d'Importation",
+	'Validation',
+	'Paiement demandé',
+	'Paiement effectué',
+	'SWIFT / Draft LC',
+	'Envoi SWIFT / Draft LC',
+	'Production',
+	'Expédition',
+	'Documents originaux',
+	'Transit',
+	'Dédouanement',
+	'Réception locale',
+	'Livraison client',
+	'Clôture',
+];
+
+export const logistiqueLegacyStatusStepIndex: Record<LogistiqueLegacyStatut, number> = {
+	'Réception commande': 0,
+	'Commande fournisseur': 0,
+	Proforma: 1,
+	"Titre d'Importation": 2,
+	Validation: 2,
+	'Paiement demandé': 2,
+	'Paiement effectué': 2,
+	'SWIFT / Draft LC': 2,
+	'Envoi SWIFT / Draft LC': 2,
+	Production: 3,
+	Expédition: 4,
+	'Documents originaux': 4,
+	Transit: 5,
+	Dédouanement: 5,
+	'Réception locale': 6,
+	'Livraison client': 7,
+	Clôture: 8,
+	Annulé: 0,
+};
+
+export const logistiquePaymentStatusItemsList: LogistiquePaymentStatus[] = [
+	'Non demandé',
+	'En attente',
+	'Validé',
+];
+
+export const logistiqueLaunchStatusItemsList: LogistiqueLaunchStatus[] = [
+	'À lancer',
+	'En cours',
+	'En attente proforma',
+	'Bloquée',
+	'Terminée',
+];
+
+export const logistiqueProformaStatusItemsList: LogistiqueProformaStatus[] = [
+	'En attente',
+	'En contrôle',
+	'Correction demandée',
+	'Validée',
+	'Refusée',
+];
+
+export const logistiqueImportTitleStatusItemsList: LogistiqueImportTitleStatus[] = [
+	'À préparer',
+	"Titre d'import validé – En attente de paiement",
+];
+
+export const logistiquePaymentMethodItemsList: LogistiquePaymentMethod[] = [
+	'',
+	'LC',
+	'Virement',
+	'Remise documentaire',
+];
+
+export const logistiqueCurrencyItemsList = ['MAD', 'EUR', 'USD'];
+
+export const getTranslatedLogistiqueMacroSteps = (t: TranslationDictionary): string[] => [
+	t.logistique.macroStepCommandLaunch,
+	t.logistique.macroStepProforma,
+	t.logistique.macroStepPayment,
+	t.logistique.macroStepSupplierPreparation,
+	t.logistique.macroStepShipping,
+	t.logistique.macroStepCustoms,
+	t.logistique.macroStepDelivery,
+	t.logistique.macroStepClosing,
 ];

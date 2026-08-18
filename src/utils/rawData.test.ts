@@ -5,6 +5,14 @@ import {
 	devisFactureStatusItemsList,
 	bonDeLivraisonStatusItemsList,
 	remiseTypeItemsList,
+	logistiqueGlobalStatusItemsList,
+	logistiqueLegacyStatusStepIndex,
+	logistiqueLegacyWorkflowStatusItemsList,
+	logistiqueImportTitleStatusItemsList,
+	logistiqueLaunchStatusItemsList,
+	logistiquePaymentMethodItemsList,
+	logistiquePaymentStatusItemsList,
+	logistiqueProformaStatusItemsList,
 } from './rawData';
 
 describe('items lists', () => {
@@ -155,6 +163,61 @@ describe('items lists', () => {
 				expect(typeof it.value).toBe('string');
 				expect(it.value.length).toBeGreaterThan(0);
 			}
+		});
+	});
+
+	describe('logistique workflow items', () => {
+		it('stores the optimized global statuses in specification order', () => {
+			expect(logistiqueGlobalStatusItemsList).toEqual([
+				'Brouillon',
+				'À lancer',
+				'En cours',
+				'En attente externe',
+				'Bloqué',
+				'En retard',
+				'À clôturer',
+				'Clôturé',
+				'Annulé',
+				'Rouvert',
+			]);
+		});
+
+		it('centralizes payment and import-title choices', () => {
+			expect(logistiquePaymentStatusItemsList).toEqual(['Non demandé', 'En attente', 'Validé']);
+			expect(logistiqueImportTitleStatusItemsList).toEqual([
+				'À préparer',
+				"Titre d'import validé – En attente de paiement",
+			]);
+			expect(logistiquePaymentMethodItemsList).toEqual(['', 'LC', 'Virement', 'Remise documentaire']);
+		});
+
+		it('keeps legacy stages writable and maps downstream progress', () => {
+			expect(logistiqueLegacyWorkflowStatusItemsList).not.toContain('Annulé');
+			expect(logistiqueLegacyStatusStepIndex.Production).toBe(3);
+			expect(logistiqueLegacyStatusStepIndex.Expédition).toBe(4);
+			expect(logistiqueLegacyStatusStepIndex.Transit).toBe(5);
+			expect(logistiqueLegacyStatusStepIndex['Livraison client']).toBe(7);
+			expect(logistiqueLegacyStatusStepIndex.Clôture).toBe(8);
+		});
+
+		it('stores the supplier proforma statuses in specification order', () => {
+			expect(logistiqueProformaStatusItemsList).toEqual([
+				'En attente',
+				'En contrôle',
+				'Correction demandée',
+				'Validée',
+				'Refusée',
+			]);
+		});
+
+		it('stores every order and launch substatus in specification order', () => {
+			expect(logistiqueLaunchStatusItemsList).toEqual([
+				'À lancer',
+				'En cours',
+				'En attente proforma',
+				'Bloquée',
+				'Terminée',
+			]);
 		});
 	});
 });

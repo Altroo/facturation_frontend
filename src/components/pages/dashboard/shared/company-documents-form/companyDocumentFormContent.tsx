@@ -27,6 +27,7 @@ import {
 	Description as DescriptionIcon,
 	Discount as DiscountIcon,
 	Edit as EditIcon,
+	Email as EmailIcon,
 	LocalShipping as LocalShippingIcon,
 	Notes as NotesIcon,
 	Numbers as NumbersIcon,
@@ -217,7 +218,10 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
 	const companies = useAppSelector(getUserCompaniesState);
-	const selectedCompany = useMemo(() => companies?.find((company) => company.id === company_id), [companies, company_id]);
+	const selectedCompany = useMemo(
+		() => companies?.find((company) => company.id === company_id),
+		[companies, company_id],
+	);
 	const canChangeDocumentStatus = Boolean(selectedCompany?.can_change_document_status);
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -299,6 +303,12 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				date_echeance: isEditMode ? (rawData?.date_echeance ?? null) : null,
 				numero_bon_commande_client: isEditMode ? (factureData?.numero_bon_commande_client ?? null) : null,
 				termes_paiement: isEditMode ? (factureData?.termes_paiement ?? null) : null,
+				...(config.documentType === 'facture-pro-forma'
+					? {
+							fournisseur: isEditMode ? (factureData?.fournisseur ?? '') : '',
+							fournisseur_email: isEditMode ? (factureData?.fournisseur_email ?? '') : '',
+						}
+					: {}),
 				mode_paiement: isEditMode ? (rawData?.mode_paiement ?? null) : null,
 				remarque: isEditMode ? (rawData?.remarque ?? null) : null,
 				remise_type: isEditMode ? rawData?.remise_type : undefined,
@@ -930,6 +940,8 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			numero_demande_prix_client: t.documentForm.fieldDemandePrixLabel,
 			numero_bon_commande_client: t.documentForm.fieldBonCommandeLabel,
 			termes_paiement: t.documentForm.fieldTermesPaiementLabel,
+			fournisseur: t.logistique.fieldFournisseur,
+			fournisseur_email: t.logistique.fieldSupplierEmail,
 			mode_paiement: t.documentForm.fieldModePaiementLabel,
 			livre_par: t.documentForm.fieldLivreurLabel,
 			remarque: t.documentForm.fieldRemarqueLabel,
@@ -1000,7 +1012,8 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	// detail (edit) or numero generation (add) plus active mutations.
 	// Articles & clients load in the background – their dropdowns show
 	// individual loading states, but the form skeleton renders immediately.
-	const isLoading = isPatchLoading || isUpdateLoading || isAddLoading || isPending || isDataLoading || isNumLoading || isCompanyLoading;
+	const isLoading =
+		isPatchLoading || isUpdateLoading || isAddLoading || isPending || isDataLoading || isNumLoading || isCompanyLoading;
 	const shouldShowError = (axiosError?.status ?? 0) > 400 && !isLoading;
 
 	// After creation, scroll to the "Lignes" section once data is ready
@@ -1309,11 +1322,60 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 												fontWeight: 700,
 											}}
 										>
-											Client
+											{config.documentType === 'facture-pro-forma'
+												? `${t.documentForm.clientSection} / ${t.logistique.fieldFournisseur}`
+												: t.documentForm.clientSection}
 										</Typography>
 									</Stack>
 									<Divider sx={{ mb: 3 }} />
 									<Stack spacing={2.5}>
+										{config.documentType === 'facture-pro-forma' && (
+											<>
+												<CustomTextInput
+													id="fournisseur"
+													type="text"
+													label={t.logistique.fieldFournisseur}
+													value={(formik.values as FactureFormSchema).fournisseur || ''}
+													onChange={formik.handleChange('fournisseur')}
+													onBlur={formik.handleBlur('fournisseur')}
+													error={
+														Boolean((formik.touched as { fournisseur?: boolean }).fournisseur) &&
+														Boolean((formik.errors as { fournisseur?: string }).fournisseur)
+													}
+													helperText={
+														(formik.touched as { fournisseur?: boolean }).fournisseur
+															? (formik.errors as { fournisseur?: string }).fournisseur
+															: ''
+													}
+													fullWidth
+													size="small"
+													theme={inputFieldTheme}
+													startIcon={<LocalShippingIcon fontSize="small" color="action" />}
+													required
+												/>
+												<CustomTextInput
+													id="fournisseur_email"
+													type="email"
+													label={t.logistique.fieldSupplierEmail}
+													value={(formik.values as FactureFormSchema).fournisseur_email || ''}
+													onChange={formik.handleChange('fournisseur_email')}
+													onBlur={formik.handleBlur('fournisseur_email')}
+													error={
+														Boolean((formik.touched as { fournisseur_email?: boolean }).fournisseur_email) &&
+														Boolean((formik.errors as { fournisseur_email?: string }).fournisseur_email)
+													}
+													helperText={
+														(formik.touched as { fournisseur_email?: boolean }).fournisseur_email
+															? (formik.errors as { fournisseur_email?: string }).fournisseur_email
+															: ''
+													}
+													fullWidth
+													size="small"
+													theme={inputFieldTheme}
+													startIcon={<EmailIcon fontSize="small" color="action" />}
+												/>
+											</>
+										)}
 										<CustomAutoCompleteSelect
 											size="small"
 											id="client"

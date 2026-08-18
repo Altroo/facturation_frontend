@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, cleanup } from '@testing-library/react';
+import { render, screen, cleanup, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import FactureProFormaForm from './facture-pro-forma-form';
 import { Provider } from 'react-redux';
@@ -28,6 +28,7 @@ type FormContentProps = {
 // Mock next/navigation
 const mockPush = jest.fn();
 const mockBack = jest.fn();
+const mockDispatch = jest.fn();
 jest.mock('next/navigation', () => ({
 	__esModule: true,
 	useRouter: () => ({
@@ -45,6 +46,7 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/utils/hooks', () => ({
 	__esModule: true,
 	useAppSelector: jest.fn(() => [{ id: 1, role: 'Caissier' }]),
+	useAppDispatch: () => mockDispatch,
 	useToast: () => ({
 		onSuccess: jest.fn(),
 		onError: jest.fn(),
@@ -243,11 +245,12 @@ describe('FactureProFormaForm mutation wrappers', () => {
 		expect(mockAddFactureProFormaMutation).toHaveBeenCalled();
 	});
 
-	it('updateData wrapper calls editFactureProFormaMutation', () => {
+	it('updateData wrapper calls edit mutation and invalidates logistics caches', async () => {
 		mockEditFactureProFormaMutation.mockReturnValue({ unwrap: jest.fn().mockResolvedValue({}) });
 		renderWithProviders(<FactureProFormaForm session={mockSession} company_id={1} id={1} />);
 		screen.getByTestId('call-update').click();
 		expect(mockEditFactureProFormaMutation).toHaveBeenCalled();
+		await waitFor(() => expect(mockDispatch).toHaveBeenCalled());
 	});
 
 	it('patchStatut wrapper calls patchStatutMutation', () => {

@@ -54,6 +54,8 @@ export type CompanyDocumentData = TotalsFields &
 		livre_par_name?: string | null;
 		remarque?: string | null;
 		termes_paiement?: string | null;
+		fournisseur?: string | null;
+		fournisseur_email?: string | null;
 		devise?: string | null;
 		date_echeance?: string | null;
 	};
@@ -137,6 +139,8 @@ export interface FactureDocumentData extends BaseDocumentData {
 	date_facture: string;
 	numero_bon_commande_client: string | null;
 	termes_paiement?: string | null;
+	fournisseur?: string | null;
+	fournisseur_email?: string | null;
 }
 
 /** Facture d'avoir-specific document data */
@@ -159,7 +163,8 @@ export interface BonDeLivraisonDocumentData extends BaseDocumentData {
 }
 
 /** Union type for all document form data types */
-export type DocumentFormData = DevisDocumentData | FactureDocumentData | BonDeLivraisonDocumentData | FactureAvoirDocumentData;
+export type DocumentFormData =
+	DevisDocumentData | FactureDocumentData | BonDeLivraisonDocumentData | FactureAvoirDocumentData;
 
 /** Base form schema fields (common to all document types) */
 export interface BaseDocumentFormSchema {
@@ -189,6 +194,8 @@ export interface FactureFormSchema extends BaseDocumentFormSchema {
 	date_facture: string;
 	numero_bon_commande_client: string | null;
 	termes_paiement?: string | null;
+	fournisseur?: string | null;
+	fournisseur_email?: string | null;
 }
 
 /** Bon de livraison form schema type */
@@ -217,7 +224,8 @@ export interface BonDeLivraisonNumResponse {
 	numero_bon_livraison: string;
 }
 
-export type DocumentNumResponse = DevisNumResponse | FactureNumResponse | FactureAvoirNumResponse | BonDeLivraisonNumResponse;
+export type DocumentNumResponse =
+	DevisNumResponse | FactureNumResponse | FactureAvoirNumResponse | BonDeLivraisonNumResponse;
 
 /** Labels configuration for document forms */
 export interface DocumentFormLabels {

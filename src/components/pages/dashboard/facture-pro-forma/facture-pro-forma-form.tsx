@@ -5,7 +5,7 @@ import type { TranslationDictionary } from '@/types/languageTypes';
 import type { SessionProps } from '@/types/_initTypes';
 import CompanyDocumentsWrapperForm from '@/components/pages/dashboard/shared/company-documents-form/companyDocumentsWrapperForm';
 import CompanyDocumentFormContent from '@/components/pages/dashboard/shared/company-documents-form/companyDocumentFormContent';
-import { factureClientProformaSchema, factureClientProformaAddSchema } from '@/utils/formValidationSchemas';
+import { factureProformaSchema, factureProformaAddSchema } from '@/utils/formValidationSchemas';
 import { FACTURE_PRO_FORMA_LIST, FACTURE_PRO_FORMA_EDIT } from '@/utils/routes';
 import {
 	useAddFactureProFormaMutation,
@@ -22,7 +22,8 @@ import type {
 } from '@/types/companyDocumentsTypes';
 import type { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
 import type { FactureClass } from '@/models/classes';
-import { useLanguage } from '@/utils/hooks';
+import { useAppDispatch, useLanguage } from '@/utils/hooks';
+import { logistiqueApi } from '@/store/services/logistique';
 
 // Configuration for facture pro forma form
 const createFactureProFormaFormConfig = (t: TranslationDictionary): DocumentFormConfig<FactureClass> => ({
@@ -50,8 +51,8 @@ const createFactureProFormaFormConfig = (t: TranslationDictionary): DocumentForm
 		editRoute: FACTURE_PRO_FORMA_EDIT,
 	},
 	validation: {
-		editSchema: factureClientProformaSchema,
-		addSchema: factureClientProformaAddSchema,
+		editSchema: factureProformaSchema,
+		addSchema: factureProformaAddSchema,
 	},
 });
 type FormikContentProps = {
@@ -64,6 +65,7 @@ type FormikContentProps = {
 
 const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, isEditMode, role }) => {
 	const { t } = useLanguage();
+	const dispatch = useAppDispatch();
 	const factureProFormaFormConfig = React.useMemo(() => createFactureProFormaFormConfig(t), [t]);
 	// Queries
 	const {
@@ -72,9 +74,16 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 		error: dataError,
 	} = useGetFactureProFormaQuery({ id: id! }, { skip: !token || !isEditMode });
 
-	const { data: rawNumData, isLoading: isNumLoading, refetch: refetchNum } = useGetNumFactureProFormaQuery({ company_id }, {
-		skip: !token || isEditMode,
-	});
+	const {
+		data: rawNumData,
+		isLoading: isNumLoading,
+		refetch: refetchNum,
+	} = useGetNumFactureProFormaQuery(
+		{ company_id },
+		{
+			skip: !token || isEditMode,
+		},
+	);
 
 	// Mutations
 	const [addDataMutation, { isLoading: isAddLoading, error: addError }] = useAddFactureProFormaMutation();
@@ -87,7 +96,11 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 	});
 
 	const updateData = (params: { data: DocumentFormSchema; id: number }) => ({
-		unwrap: () => updateDataMutation({ data: params.data, id: params.id }).unwrap(),
+		unwrap: async () => {
+			const response = await updateDataMutation({ data: params.data, id: params.id }).unwrap();
+			dispatch(logistiqueApi.util.invalidateTags(['Logistique', 'Dashboard']));
+			return response;
+		},
 	});
 
 	const patchStatut = (params: { id: number; data: { statut: TypeFactureLivraisonDevisStatus } }) => ({

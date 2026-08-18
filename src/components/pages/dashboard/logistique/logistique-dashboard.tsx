@@ -1,7 +1,18 @@
 'use client';
 
 import React from 'react';
-import { Alert, Box, Button, Card, CardContent, CardHeader, CircularProgress, IconButton, Tooltip as MuiTooltip, Typography } from '@mui/material';
+import {
+	Alert,
+	Box,
+	Button,
+	Card,
+	CardContent,
+	CardHeader,
+	CircularProgress,
+	IconButton,
+	Tooltip as MuiTooltip,
+	Typography,
+} from '@mui/material';
 import {
 	ArcElement,
 	BarElement,
@@ -36,7 +47,18 @@ import { useLanguage } from '@/utils/hooks';
 import type { SessionProps } from '@/types/_initTypes';
 import type { LogistiqueStats } from '@/types/logistiqueTypes';
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, ChartTooltip, Legend, Filler);
+ChartJS.register(
+	CategoryScale,
+	LinearScale,
+	PointElement,
+	LineElement,
+	BarElement,
+	ArcElement,
+	Title,
+	ChartTooltip,
+	Legend,
+	Filler,
+);
 
 type DashboardContentProps = SessionProps & {
 	company_id: number;
@@ -152,7 +174,11 @@ const formatMoney = (value: string | number | null | undefined, devise = 'MAD') 
 	`${formatNumberWithSpaces(value ?? 0, 2)} ${devise}`;
 
 const numericValue = (value: string | number | null | undefined) => {
-	const parsed = Number(String(value ?? 0).replace(/\s/g, '').replace(',', '.'));
+	const parsed = Number(
+		String(value ?? 0)
+			.replace(/\s/g, '')
+			.replace(',', '.'),
+	);
 	return Number.isFinite(parsed) ? parsed : 0;
 };
 
@@ -174,7 +200,10 @@ const ChartCard: React.FC<ChartCardProps> = ({ title, children, height = 320, wi
 	>
 		<CardHeader
 			title={
-				<Typography variant="h6" sx={{ fontSize: { xs: '1rem', sm: '1.1rem' }, fontWeight: 700, overflowWrap: 'anywhere' }}>
+				<Typography
+					variant="h6"
+					sx={{ fontSize: { xs: '1rem', sm: '1.1rem' }, fontWeight: 700, overflowWrap: 'anywhere' }}
+				>
 					{title}
 				</Typography>
 			}
@@ -190,7 +219,9 @@ const ChartCard: React.FC<ChartCardProps> = ({ title, children, height = 320, wi
 			sx={{ pb: 0 }}
 		/>
 		<CardContent sx={{ pt: 2 }}>
-			<Box sx={{ height: { xs: Math.min(height, 280), sm: height }, width: '100%', overflow: 'hidden' }}>{children}</Box>
+			<Box sx={{ height: { xs: Math.min(height, 280), sm: height }, width: '100%', overflow: 'hidden' }}>
+				{children}
+			</Box>
 		</CardContent>
 	</Card>
 );
@@ -271,44 +302,8 @@ const MonthlyFlowChart: React.FC<{ stats: LogistiqueStats }> = ({ stats }) => {
 const WorkflowChart: React.FC<{ stats: LogistiqueStats }> = ({ stats }) => {
 	const { t } = useLanguage();
 	const workflowStats = stats.statuts_workflow ?? [];
-	const phases = [
-		{
-			label: t.logistique.phaseProcurement,
-			statuses: ['Réception commande', 'Commande fournisseur', 'Proforma'],
-		},
-		{
-			label: t.logistique.phaseImport,
-			statuses: ["Titre d'Importation", 'Validation'],
-		},
-		{
-			label: t.logistique.phasePaymentSwift,
-			statuses: ['Paiement demandé', 'Paiement effectué', 'SWIFT / Draft LC', 'Envoi SWIFT / Draft LC'],
-		},
-		{
-			label: t.logistique.phaseProduction,
-			statuses: ['Production', 'Expédition'],
-		},
-		{
-			label: t.logistique.phaseTransitCustoms,
-			statuses: ['Documents originaux', 'Transit', 'Dédouanement'],
-		},
-		{
-			label: t.logistique.phaseDelivery,
-			statuses: ['Réception locale', 'Livraison client'],
-		},
-		{
-			label: t.logistique.phaseClosed,
-			statuses: ['Clôture', 'Annulé'],
-		},
-	].map((phase) => ({
-		label: phase.label,
-		total: workflowStats
-			.filter((item) => phase.statuses.includes(item.statut))
-			.reduce((sum, item) => sum + item.total, 0),
-	}));
-	const visiblePhases = phases.filter((phase) => phase.total > 0);
-	const labels = visiblePhases.map((phase) => phase.label);
-	const values = visiblePhases.map((phase) => phase.total);
+	const labels = workflowStats.map((item) => item.statut);
+	const values = workflowStats.map((item) => item.total);
 
 	if (!hasPositiveData(values)) return <EmptyChart message={t.logistique.noChartData} />;
 
@@ -343,8 +338,20 @@ const PaymentChart: React.FC<{ stats: LogistiqueStats }> = ({ stats }) => {
 
 const AlertsChart: React.FC<{ stats: LogistiqueStats }> = ({ stats }) => {
 	const { t } = useLanguage();
-	const labels = [t.logistique.delays, t.logistique.pendingPayments, t.logistique.swiftMissing, t.logistique.docsMissing, t.logistique.transitNotStarted];
-	const values = [stats.retards, stats.paiements_en_attente, stats.swift_manquant, stats.documents_non_recus, stats.transit_non_lance];
+	const labels = [
+		t.logistique.delays,
+		t.logistique.pendingPayments,
+		t.logistique.swiftMissing,
+		t.logistique.docsMissing,
+		t.logistique.transitNotStarted,
+	];
+	const values = [
+		stats.retards,
+		stats.paiements_en_attente,
+		stats.swift_manquant,
+		stats.documents_non_recus,
+		stats.transit_non_lance,
+	];
 
 	if (!hasPositiveData(values)) return <EmptyChart message={t.logistique.noChartData} />;
 
@@ -355,7 +362,13 @@ const AlertsChart: React.FC<{ stats: LogistiqueStats }> = ({ stats }) => {
 				datasets: [
 					{
 						data: values,
-						backgroundColor: [CHART_COLORS.error, CHART_COLORS.warning, CHART_COLORS.brown, CHART_COLORS.neutral, CHART_COLORS.info],
+						backgroundColor: [
+							CHART_COLORS.error,
+							CHART_COLORS.warning,
+							CHART_COLORS.brown,
+							CHART_COLORS.neutral,
+							CHART_COLORS.info,
+						],
 						borderRadius: 6,
 					},
 				],
@@ -426,19 +439,14 @@ const CostTrendChart: React.FC<{ stats: LogistiqueStats }> = ({ stats }) => {
 	);
 };
 
-const BrandCostShareChart: React.FC<{ stats: LogistiqueStats }> = ({ stats }) => {
+const SupplierCostShareChart: React.FC<{ stats: LogistiqueStats }> = ({ stats }) => {
 	const { t } = useLanguage();
-	const brands = stats.kpi_marques?.length
-		? stats.kpi_marques.map((brand) => ({
-				name: brand.marque__nom || '-',
-				cout_total: brand.cout_total,
-			}))
-		: (stats.kpi_fournisseurs ?? []).map((brand) => ({
-				name: brand.fournisseur || '-',
-				cout_total: brand.cout_total,
-			}));
-	const labels = brands.map((brand) => brand.name);
-	const values = brands.map((brand) => numericValue(brand.cout_total));
+	const suppliers = (stats.kpi_fournisseurs ?? []).map((supplier) => ({
+		name: supplier.fournisseur || '-',
+		cout_total: supplier.cout_total,
+	}));
+	const labels = suppliers.map((supplier) => supplier.name);
+	const values = suppliers.map((supplier) => numericValue(supplier.cout_total));
 
 	if (!hasPositiveData(values)) return <EmptyChart message={t.logistique.noSupplierKpi} />;
 
@@ -500,12 +508,48 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ session, company_id
 					mb: 3,
 				}}
 			>
-				<DashboardStatCard icon={<RequestQuoteIcon />} label={t.logistique.totalOrders} value={String(stats.total_commandes)} color="#1565C0" testId="logistique-dashboard-total" />
-				<DashboardStatCard icon={<WarehouseIcon />} label={t.logistique.inProgress} value={String(stats.commandes_en_cours)} color="#2E7D32" testId="logistique-dashboard-progress" />
-				<DashboardStatCard icon={<ErrorOutlinedIcon />} label={t.logistique.delays} value={String(stats.retards)} color="#C62828" testId="logistique-dashboard-delays" />
-				<DashboardStatCard icon={<PaymentIcon />} label={t.logistique.pendingPayments} value={String(stats.paiements_en_attente)} color="#EF6C00" testId="logistique-dashboard-payments" />
-				<DashboardStatCard icon={<AssignmentTurnedInIcon />} label={t.logistique.deliveries} value={String(stats.livraisons)} color="#6A1B9A" testId="logistique-dashboard-deliveries" />
-				<DashboardStatCard icon={<LocalShippingIcon />} label={t.logistique.logisticsCosts} value={formatMoney(stats.couts_logistiques)} color="#00695C" testId="logistique-dashboard-costs" />
+				<DashboardStatCard
+					icon={<RequestQuoteIcon />}
+					label={t.logistique.totalOrders}
+					value={String(stats.total_commandes)}
+					color="#1565C0"
+					testId="logistique-dashboard-total"
+				/>
+				<DashboardStatCard
+					icon={<WarehouseIcon />}
+					label={t.logistique.inProgress}
+					value={String(stats.commandes_en_cours)}
+					color="#2E7D32"
+					testId="logistique-dashboard-progress"
+				/>
+				<DashboardStatCard
+					icon={<ErrorOutlinedIcon />}
+					label={t.logistique.delays}
+					value={String(stats.retards)}
+					color="#C62828"
+					testId="logistique-dashboard-delays"
+				/>
+				<DashboardStatCard
+					icon={<PaymentIcon />}
+					label={t.logistique.pendingPayments}
+					value={String(stats.paiements_en_attente)}
+					color="#EF6C00"
+					testId="logistique-dashboard-payments"
+				/>
+				<DashboardStatCard
+					icon={<AssignmentTurnedInIcon />}
+					label={t.logistique.deliveries}
+					value={String(stats.livraisons)}
+					color="#6A1B9A"
+					testId="logistique-dashboard-deliveries"
+				/>
+				<DashboardStatCard
+					icon={<LocalShippingIcon />}
+					label={t.logistique.logisticsCosts}
+					value={formatMoney(stats.couts_logistiques)}
+					color="#00695C"
+					testId="logistique-dashboard-costs"
+				/>
 			</Box>
 
 			<Box
@@ -530,13 +574,16 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ session, company_id
 				</ChartCard>
 				<ChartCard title={t.logistique.costBreakdownChartTitle} infoTooltip={t.logistique.costBreakdownChartTooltip}>
 					<CostBreakdownChart stats={stats} />
-					</ChartCard>
-					<ChartCard title={t.logistique.costTrendChartTitle} infoTooltip={t.logistique.costTrendChartTooltip}>
-						<CostTrendChart stats={stats} />
-					</ChartCard>
-					<ChartCard title={t.logistique.supplierCostShareChartTitle} infoTooltip={t.logistique.supplierCostShareChartTooltip}>
-						<BrandCostShareChart stats={stats} />
-					</ChartCard>
+				</ChartCard>
+				<ChartCard title={t.logistique.costTrendChartTitle} infoTooltip={t.logistique.costTrendChartTooltip}>
+					<CostTrendChart stats={stats} />
+				</ChartCard>
+				<ChartCard
+					title={t.logistique.supplierCostShareChartTitle}
+					infoTooltip={t.logistique.supplierCostShareChartTooltip}
+				>
+					<SupplierCostShareChart stats={stats} />
+				</ChartCard>
 			</Box>
 		</Box>
 	);

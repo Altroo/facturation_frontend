@@ -36,4 +36,9 @@ describe('PrimaryLoadingButton', () => {
 		const button = screen.getByRole('button', { name: 'Load' });
 		expect(button.className).toMatch(/custom-class/);
 	});
+
+	it('applies the inverse primary style when requested', () => {
+		render(<PrimaryLoadingButton buttonText="Inverse" loading={false} active inverted />);
+		expect(screen.getByRole('button', { name: 'Inverse' }).className).toMatch(/primaryButtonInverse/);
+	});
 });

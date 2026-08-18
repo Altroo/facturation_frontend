@@ -14,6 +14,8 @@ import {
 	deviAddSchema,
 	factureClientProformaSchema,
 	factureClientProformaAddSchema,
+	factureProformaSchema,
+	factureProformaAddSchema,
 	bonDeLivraisonSchema,
 	bonDeLivraisonAddSchema,
 	reglementSchema,
@@ -78,10 +80,14 @@ describe('Zod Schema Validation', () => {
 	// ✅ passwordResetCodeSchema
 	describe('passwordResetCodeSchema', () => {
 		it('validates 6 digits', () => {
-			expect(() => passwordResetCodeSchema.parse({ one: '1', two: '2', three: '3', four: '4', five: '5', six: '6' })).not.toThrow();
+			expect(() =>
+				passwordResetCodeSchema.parse({ one: '1', two: '2', three: '3', four: '4', five: '5', six: '6' }),
+			).not.toThrow();
 		});
 		it('fails with non-digit input', () => {
-			expect(() => passwordResetCodeSchema.parse({ one: 'a', two: '2', three: '3', four: '4', five: '5', six: '6' })).toThrow();
+			expect(() =>
+				passwordResetCodeSchema.parse({ one: 'a', two: '2', three: '3', four: '4', five: '5', six: '6' }),
+			).toThrow();
 		});
 		it('fails with missing digit', () => {
 			expect(() => passwordResetCodeSchema.parse({ one: '1', two: '2', three: '3', four: '4', five: '5' })).toThrow();
@@ -742,6 +748,41 @@ describe('Zod Schema Validation', () => {
 					date_facture: '2025-12-04',
 				}),
 			).toThrow();
+		});
+	});
+
+	describe('factureProforma supplier requirement', () => {
+		const baseValues = {
+			numero_part: 'PF100',
+			year_part: '26',
+			client: 1,
+			date_facture: '2026-08-17',
+		};
+
+		it('requires a supplier on create', () => {
+			expect(() => factureProformaAddSchema.parse(baseValues)).toThrow();
+			expect(() => factureProformaAddSchema.parse({ ...baseValues, fournisseur: 'Supplier One' })).not.toThrow();
+		});
+
+		it('rejects a blank supplier on edit', () => {
+			expect(() => factureProformaSchema.parse({ ...baseValues, fournisseur: '   ' })).toThrow();
+			expect(() => factureProformaSchema.parse({ ...baseValues, fournisseur: 'Supplier One' })).not.toThrow();
+		});
+
+		it('accepts a blank supplier email and validates a provided address', () => {
+			expect(() =>
+				factureProformaSchema.parse({ ...baseValues, fournisseur: 'Supplier One', fournisseur_email: '' }),
+			).not.toThrow();
+			expect(() =>
+				factureProformaSchema.parse({ ...baseValues, fournisseur: 'Supplier One', fournisseur_email: 'invalid' }),
+			).toThrow();
+			expect(() =>
+				factureProformaSchema.parse({
+					...baseValues,
+					fournisseur: 'Supplier One',
+					fournisseur_email: 'supplier@example.com',
+				}),
+			).not.toThrow();
 		});
 	});
 
@@ -2322,9 +2363,7 @@ describe('Zod Schema Validation', () => {
 					gender: 'M',
 					is_active: true,
 					is_staff: false,
-					companies: [
-						{ membership_id: 1, company_id: 1, raison_sociale: 'Co', role: 'Admin' },
-					],
+					companies: [{ membership_id: 1, company_id: 1, raison_sociale: 'Co', role: 'Admin' }],
 				}),
 			).not.toThrow();
 		});
@@ -2558,15 +2597,11 @@ describe('Zod Schema Validation', () => {
 	// ✅ loginSchema additional branches
 	describe('loginSchema additional branches', () => {
 		it('fails with short password', () => {
-			expect(() =>
-				loginSchema.parse({ email: 'test@example.com', password: 'short' }),
-			).toThrow();
+			expect(() => loginSchema.parse({ email: 'test@example.com', password: 'short' })).toThrow();
 		});
 
 		it('fails with empty email', () => {
-			expect(() =>
-				loginSchema.parse({ email: '', password: 'password123' }),
-			).toThrow();
+			expect(() => loginSchema.parse({ email: '', password: 'password123' })).toThrow();
 		});
 	});
 

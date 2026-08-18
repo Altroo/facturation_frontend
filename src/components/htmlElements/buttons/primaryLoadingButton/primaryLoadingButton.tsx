@@ -12,6 +12,7 @@ type Props = {
 	startIcon?: React.ReactNode;
 	cssClass?: string;
 	children?: React.ReactNode;
+	inverted?: boolean;
 };
 
 const PrimaryLoadingButton: React.FC<Props> = (props: Props) => {
@@ -21,7 +22,7 @@ const PrimaryLoadingButton: React.FC<Props> = (props: Props) => {
 				onClick={props.onClick}
 				loading={props.loading}
 				className={`${Styles.primaryButtonDisabled} 
-			${props.active ? `${Styles.primaryButtonActive}` : ''}
+			${props.active ? (props.inverted ? Styles.primaryButtonInverse : Styles.primaryButtonActive) : ''}
 			${props.cssClass && `${props.cssClass}`}`}
 				disabled={!props.active}
 				type={props.type}

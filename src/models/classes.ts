@@ -220,6 +220,10 @@ export class DeviClass {
 }
 
 export class FactureClass {
+	public fournisseur: string | null = null;
+	public fournisseur_email: string | null = null;
+	public has_logistics_dossier = false;
+
 	constructor(
 		public readonly id: number,
 		public numero_facture: string,
