@@ -5,8 +5,8 @@ import LogistiqueViewClient from '@/components/pages/dashboard/logistique/logist
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-	title: 'Détails de la commande logistique',
-	description: "Consulter les détails d'une commande logistique",
+	title: 'Détails du dossier logistique',
+	description: "Consulter les détails d'un dossier logistique",
 };
 
 type PageProps = {

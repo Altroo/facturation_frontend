@@ -5,8 +5,8 @@ import LogistiqueForm from '@/components/pages/dashboard/logistique/logistique-f
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-	title: 'Modifier commande logistique',
-	description: 'Modifier une commande logistique existante',
+	title: 'Modifier le dossier logistique',
+	description: 'Modifier un dossier logistique existant',
 };
 
 type PageProps = {
