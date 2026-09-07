@@ -26,6 +26,13 @@ const eslintConfig = defineConfig([
 		'coverage',
 		'archives/**',
 	]),
+	{
+		settings: {
+			react: {
+				version: '19.2.8',
+			},
+		},
+	},
 ]);
 
 export default eslintConfig;
