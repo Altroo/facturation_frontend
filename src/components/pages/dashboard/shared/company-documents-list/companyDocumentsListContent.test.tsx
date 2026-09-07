@@ -15,6 +15,7 @@ import type { DeviClass } from '@/models/classes';
 const mockPush = jest.fn();
 const mockRouter = {
 	push: mockPush,
+	bfcacheId: "1",
 	back: jest.fn(),
 	forward: jest.fn(),
 	refresh: jest.fn(),
