@@ -236,7 +236,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						can_validate_factures: false,
 						can_change_document_status: false,
 					},
-				]);
+				]).then();
 				setSelectedUser(null);
 				setSelectedRole('');
 			}
@@ -786,25 +786,25 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									const updated = formik.values.managed_by.map((entry, i) =>
 										i === index ? { ...entry, role: newRole } : entry,
 									);
-									formik.setFieldValue('managed_by', updated);
+									formik.setFieldValue('managed_by', updated).then();
 								}}
 								onInvoiceValidationChange={(index, checked) => {
 									const updated = formik.values.managed_by.map((entry, i) =>
 										i === index ? { ...entry, can_validate_factures: checked } : entry,
 									);
-									formik.setFieldValue('managed_by', updated);
+									formik.setFieldValue('managed_by', updated).then();
 								}}
 								onDocumentStatusChangePermissionChange={(index, checked) => {
 									const updated = formik.values.managed_by.map((entry, i) =>
 										i === index ? { ...entry, can_change_document_status: checked } : entry,
 									);
-									formik.setFieldValue('managed_by', updated);
+									formik.setFieldValue('managed_by', updated).then();
 								}}
 								showInvoiceValidationPermission
 								showDocumentStatusChangePermission
 								onDelete={(index) => {
 									const filtered = formik.values.managed_by.filter((_, i) => i !== index);
-									formik.setFieldValue('managed_by', filtered);
+									formik.setFieldValue('managed_by', filtered).then();
 								}}
 								addSectionProps={{
 									title: t.shared.addUser,
