@@ -1273,10 +1273,6 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 												{order.demande_paiement_email_erreur ? `: ${order.demande_paiement_email_erreur}` : ''}
 											</Alert>
 										)}
-										{isOrderResponsible && !order?.fournisseur_email && (
-											<Alert severity="warning">{t.logistique.supplierEmailRequired}</Alert>
-										)}
-
 										{isOrderResponsible &&
 											!isOrderCancelled &&
 											order?.is_proforma_step_complete &&
@@ -1284,7 +1280,7 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 												<Box sx={{ alignSelf: { xs: 'stretch', sm: 'flex-start' } }}>
 													<PrimaryLoadingButton
 														buttonText={t.logistique.requestPayment}
-														active={hasCompleteImportTitle}
+														active
 														loading={false}
 														type="button"
 														startIcon={<PaymentIcon />}
