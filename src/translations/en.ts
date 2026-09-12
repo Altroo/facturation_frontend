@@ -641,7 +641,7 @@ export const en: TranslationDictionary = {
 		colStatut: 'Status',
 		colPaiement: 'Payment',
 		colCoutTotal: 'Total cost',
-		fieldProformas: 'Validated client order (accepted pro forma invoice)',
+		fieldProformas: 'Pro forma invoice with "Accepted" status',
 		fieldSourceDevis: 'Source quote',
 		fieldClientOrder: 'Client order no.',
 		fieldOrderDate: 'Client order date',
@@ -654,7 +654,7 @@ export const en: TranslationDictionary = {
 		costsSection: 'Logistics costs',
 		linesSection: 'Articles',
 		historySection: 'History',
-		sourceSection: 'Validated client order (accepted pro forma invoice)',
+		sourceSection: 'Source pro forma invoice (status "Accepted")',
 		brandSplitSection: 'Inherited order data',
 		brandSplitHelp:
 			'Supplier, client, article, quantity, price, and currency data are inherited automatically from the accepted pro forma invoice.',

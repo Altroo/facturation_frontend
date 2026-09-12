@@ -642,7 +642,7 @@ export const fr: TranslationDictionary = {
 		colStatut: 'Statut',
 		colPaiement: 'Paiement',
 		colCoutTotal: 'Coût total',
-		fieldProformas: 'Commande client validée (facture pro forma acceptée)',
+		fieldProformas: 'Facture pro forma au statut « Accepté »',
 		fieldSourceDevis: 'Devis source',
 		fieldClientOrder: 'N° commande client',
 		fieldOrderDate: 'Date commande client',
@@ -655,7 +655,7 @@ export const fr: TranslationDictionary = {
 		costsSection: 'Coûts logistiques',
 		linesSection: 'Articles',
 		historySection: 'Historique',
-		sourceSection: 'Commande client validée (facture pro forma acceptée)',
+		sourceSection: 'Facture pro forma source (statut « Accepté »)',
 		brandSplitSection: 'Données reprises de la commande',
 		brandSplitHelp:
 			'Le fournisseur, le client, les articles, les quantités, les prix et la devise sont repris automatiquement depuis la facture pro forma acceptée.',

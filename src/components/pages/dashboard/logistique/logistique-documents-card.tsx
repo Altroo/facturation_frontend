@@ -228,7 +228,11 @@ export const LogistiqueDocumentsFormCard: React.FC<LogistiqueDocumentsFormCardPr
 				<Divider />
 
 				<Stack spacing={2} sx={{ p: 3 }}>
-					<Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5} sx={{ alignItems: { xs: 'stretch', md: 'center' } }}>
+					<Stack
+						direction={{ xs: 'column', md: 'row' }}
+						spacing={1.5}
+						sx={{ alignItems: { xs: 'stretch', md: 'center' } }}
+					>
 						<TextField
 							select
 							size="small"
@@ -392,17 +396,33 @@ export const LogistiqueDocumentsFormCard: React.FC<LogistiqueDocumentsFormCardPr
 	);
 };
 
-export const LogistiqueDocumentsViewCard: React.FC<LogistiqueDocumentsViewCardProps> = ({ items, isLoading = false }) => {
+export const LogistiqueDocumentsViewCard: React.FC<LogistiqueDocumentsViewCardProps> = ({
+	items,
+	isLoading = false,
+}) => {
 	const { t } = useLanguage();
 	const attachments = items.filter((item) => item.currentUrl);
 
 	return (
-		<Card elevation={2} sx={{ borderRadius: 2, overflow: 'hidden' }}>
-			<CardContent sx={{ p: 0 }}>
-				<Header count={attachments.length} />
-				<Divider />
+		<Card elevation={2} sx={{ borderRadius: 2 }}>
+			<CardContent sx={{ p: 3 }}>
+				<Stack direction="row" spacing={2} sx={{ alignItems: 'center', mb: 2 }}>
+					<AttachFileIcon color="primary" />
+					<Typography variant="h6" sx={{ fontWeight: 700 }}>
+						{t.logistique.attachmentsTitle}
+					</Typography>
+					<Chip
+						label={`${attachments.length} ${
+							attachments.length > 1 ? t.logistique.attachmentFiles : t.logistique.attachmentFile
+						}`}
+						size="small"
+						variant="outlined"
+						sx={{ ml: 'auto !important' }}
+					/>
+				</Stack>
+				<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 
-				<Stack spacing={2} sx={{ p: 3 }}>
+				<Stack spacing={2}>
 					{isLoading ? <LinearProgress /> : null}
 
 					{!isLoading && attachments.length === 0 ? (
