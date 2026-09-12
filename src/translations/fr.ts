@@ -630,6 +630,8 @@ export const fr: TranslationDictionary = {
 		reopenOrderModalBody: 'Le dossier sera réactivé et le workflow pourra reprendre.',
 		statusUpdateSuccess: 'Statut du dossier mis à jour.',
 		statusUpdateError: 'Erreur lors de la mise à jour du statut du dossier.',
+		startSupplierPreparation: 'Passer à la préparation fournisseur',
+		supplierPreparationSuccess: 'Le dossier est passé à la préparation fournisseur.',
 		addTitle: 'Créer un dossier logistique',
 		editTitle: 'Modifier le dossier logistique',
 		colNumero: 'Référence dossier',

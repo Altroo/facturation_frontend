@@ -90,6 +90,7 @@ import {
 	useGetLogistiqueQuery,
 	usePatchLogistiqueLaunchStatusMutation,
 	usePatchLogistiqueStatutMutation,
+	usePatchLogistiqueWorkflowStatusMutation,
 	useRejectLogistiquePaymentMutation,
 	useRecordLogistiqueProformaRequestMutation,
 	useRecordLogistiquePaymentExecutionMutation,
@@ -266,6 +267,8 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	);
 	const [deleteLogistique] = useDeleteLogistiqueMutation();
 	const [patchGlobalStatus, { isLoading: isChangingGlobalStatus }] = usePatchLogistiqueStatutMutation();
+	const [patchWorkflowStatus, { isLoading: isChangingWorkflowStatus }] =
+		usePatchLogistiqueWorkflowStatusMutation();
 	const [patchLaunchStatus, { isLoading: isChangingLaunchStatus }] = usePatchLogistiqueLaunchStatusMutation();
 	const [recordProformaRequest, { isLoading: isRecordingProformaRequest }] =
 		useRecordLogistiqueProformaRequestMutation();
@@ -341,6 +344,15 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 			? 1
 			: (logistiqueLegacyStatusStepIndex[order.statut] ?? 2);
 	const isOrderCancelled = order?.statut_global === 'Annulé';
+	const canStartSupplierPreparation = Boolean(
+		canManage &&
+		order &&
+		!isOrderCancelled &&
+		order.statut === 'Envoi SWIFT / Draft LC' &&
+		order.statut_paiement === 'Validé' &&
+		order.statut_banque_paiement === 'Confirmé' &&
+		Number(order.solde_restant) === 0,
+	);
 	const isOrderResponsible = Boolean(currentUserId && order?.responsable === currentUserId);
 	const canProcessAssignedPayment = Boolean(
 		isAccountingUser && currentUserId && order?.paiement_assigne_a === currentUserId,
@@ -473,6 +485,15 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 			setShowRequestPaymentModal(false);
 		} catch (err) {
 			onError(extractApiErrorMessage(err, t.logistique.requestPaymentError));
+		}
+	};
+
+	const handleStartSupplierPreparation = async () => {
+		try {
+			await patchWorkflowStatus({ id, data: { statut: 'Production' } }).unwrap();
+			onSuccess(t.logistique.supplierPreparationSuccess);
+		} catch (err) {
+			onError(extractApiErrorMessage(err, t.logistique.statusUpdateError));
 		}
 	};
 
@@ -1372,6 +1393,17 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 												sx={{ alignSelf: 'flex-start' }}
 											>
 												{t.logistique.blockPayment}
+											</Button>
+										)}
+										{canStartSupplierPreparation && (
+											<Button
+												variant="contained"
+												startIcon={<InventoryIcon />}
+												disabled={isChangingWorkflowStatus}
+												onClick={handleStartSupplierPreparation}
+												sx={{ alignSelf: 'flex-start' }}
+											>
+												{t.logistique.startSupplierPreparation}
 											</Button>
 										)}
 									</Stack>

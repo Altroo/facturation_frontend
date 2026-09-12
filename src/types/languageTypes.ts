@@ -627,6 +627,8 @@ export type TranslationDictionary = {
 		reopenOrderModalBody: string;
 		statusUpdateSuccess: string;
 		statusUpdateError: string;
+		startSupplierPreparation: string;
+		supplierPreparationSuccess: string;
 		addTitle: string;
 		editTitle: string;
 		colNumero: string;

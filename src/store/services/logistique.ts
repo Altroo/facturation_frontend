@@ -10,6 +10,7 @@ import type {
 	LogistiqueFormValues,
 	LogistiqueListResponse,
 	LogistiqueLaunchStatus,
+	LogistiqueLegacyStatut,
 	LogistiqueOrder,
 	LogistiqueResponsibleOption,
 	LogistiqueSourcePreview,
@@ -24,6 +25,8 @@ const LOGISTIQUE_LIST = process.env.NEXT_PUBLIC_LOGISTIQUE_LIST || `${LOGISTIQUE
 const LOGISTIQUE_DASHBOARD = process.env.NEXT_PUBLIC_LOGISTIQUE_DASHBOARD || `${LOGISTIQUE_ROOT}/dashboard/`;
 const LOGISTIQUE_SWITCH_GLOBAL_STATUS =
 	process.env.NEXT_PUBLIC_LOGISTIQUE_SWITCH_GLOBAL_STATUS || `${LOGISTIQUE_ROOT}/switch_global_status/`;
+const LOGISTIQUE_SWITCH_STATUS =
+	process.env.NEXT_PUBLIC_LOGISTIQUE_SWITCH_STATUS || `${LOGISTIQUE_ROOT}/switch_statut/`;
 const LOGISTIQUE_GENERATE_NUM =
 	process.env.NEXT_PUBLIC_LOGISTIQUE_GENERATE_NUM || `${LOGISTIQUE_ROOT}/generate_num_commande/`;
 const LOGISTIQUE_RESPONSABLES = process.env.NEXT_PUBLIC_LOGISTIQUE_RESPONSABLES || `${LOGISTIQUE_ROOT}/responsables/`;
@@ -168,6 +171,21 @@ export const logistiqueApi = createApi({
 		>({
 			query: ({ id, data }) => ({
 				url: `${LOGISTIQUE_SWITCH_GLOBAL_STATUS}${id}/`,
+				method: 'PATCH',
+				data,
+			}),
+			invalidatesTags: (_result, _error, { id }) => [
+				{ type: 'Logistique', id: 'LIST' },
+				{ type: 'Logistique', id },
+				'Dashboard',
+			],
+		}),
+		patchLogistiqueWorkflowStatus: builder.mutation<
+			Pick<LogistiqueOrder, 'statut' | 'statut_global'>,
+			{ id: number; data: { statut: LogistiqueLegacyStatut } }
+		>({
+			query: ({ id, data }) => ({
+				url: `${LOGISTIQUE_SWITCH_STATUS}${id}/`,
 				method: 'PATCH',
 				data,
 			}),
@@ -362,6 +380,7 @@ export const {
 	useDeleteLogistiqueMutation,
 	useBulkDeleteLogistiqueMutation,
 	usePatchLogistiqueStatutMutation,
+	usePatchLogistiqueWorkflowStatusMutation,
 	usePatchLogistiqueLaunchStatusMutation,
 	useRecordLogistiqueProformaRequestMutation,
 	useReviewLogistiqueSupplierProformaMutation,

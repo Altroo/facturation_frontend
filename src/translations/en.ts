@@ -629,6 +629,8 @@ export const en: TranslationDictionary = {
 		reopenOrderModalBody: 'The file will be reactivated and the workflow can resume.',
 		statusUpdateSuccess: 'File status updated.',
 		statusUpdateError: 'Failed to update the file status.',
+		startSupplierPreparation: 'Move to supplier preparation',
+		supplierPreparationSuccess: 'The file moved to supplier preparation.',
 		addTitle: 'Create a logistics file',
 		editTitle: 'Edit logistics file',
 		colNumero: 'File reference',
