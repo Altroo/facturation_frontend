@@ -1,3 +1,4 @@
+import React from 'react';
 import { jest } from '@jest/globals';
 
 type MockState = { value: number };

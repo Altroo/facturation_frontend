@@ -24,10 +24,11 @@ type CompanyLike = {
 
 export type CompanyDocumentsListProps = SessionProps & {
 	title: string;
+	requestedCompanyId?: number;
 	children: (args: { company_id: number; role: string; raison_sociale: string }) => React.ReactNode;
 };
 
-const CompanyDocumentsWrapperList: React.FC<CompanyDocumentsListProps> = ({ session, title, children }) => {
+const CompanyDocumentsWrapperList: React.FC<CompanyDocumentsListProps> = ({ session, title, requestedCompanyId, children }) => {
 	const token = useInitAccessToken(session);
 	const router = useRouter();
 	const { t } = useLanguage();
@@ -63,6 +64,14 @@ const CompanyDocumentsWrapperList: React.FC<CompanyDocumentsListProps> = ({ sess
 			}
 		}
 	}, [validIndex]);
+
+	useEffect(() => {
+		if (!requestedCompanyId) return;
+		const requestedIndex = companies.findIndex((company) => company.id === requestedCompanyId);
+		if (requestedIndex < 0 || requestedIndex === validIndex) return;
+		setSelectedIndex(requestedIndex);
+		localStorage.setItem('selectedCompanyIndex', String(requestedIndex));
+	}, [companies, requestedCompanyId, validIndex]);
 
 	const selectedCompany = useMemo(() => companies?.[validIndex] ?? null, [companies, validIndex]);
 

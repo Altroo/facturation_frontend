@@ -24,6 +24,7 @@ export type ArticleSchemaType = {
 	prix_vente?: number;
 	devise_prix_vente?: CurrencyType;
 	tva?: number;
+	stock_minimum?: number;
 	remarque?: string;
 	globalError?: string;
 };

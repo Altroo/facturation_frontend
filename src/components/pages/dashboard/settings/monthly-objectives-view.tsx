@@ -28,10 +28,9 @@ import { useInitAccessToken } from '@/contexts/InitContext';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import { getProfilState } from '@/store/selectors';
-import type { MonthlyObjectivesSettings } from '@/store/services/dashboard';
 import {
 	useCreateMonthlyObjectivesSettingsMutation,
-	useGetAllMonthlyObjectivesSettingsQuery,
+	useGetMonthlyObjectivesSettingsByCompanyQuery,
 	useUpdateMonthlyObjectivesSettingsMutation,
 } from '@/store/services/dashboard';
 import { getLabelForKey, parseNumber, setFormikAutoErrors } from '@/utils/helpers';
@@ -52,19 +51,26 @@ type MonthlyObjectivesFormValues = {
 // Props for the FormikContent component
 type FormikContentProps = {
 	companyId: number;
-	existingObjectives?: MonthlyObjectivesSettings | null;
+	token?: string;
 	usesForeignCurrency: boolean;
 };
 
-const FormikContent: React.FC<FormikContentProps> = ({ companyId, existingObjectives, usesForeignCurrency }) => {
+const FormikContent: React.FC<FormikContentProps> = ({ companyId, token, usesForeignCurrency }) => {
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
+	const {
+		data: existingObjectives,
+		isLoading: isObjectivesLoading,
+		error: objectivesError,
+	} = useGetMonthlyObjectivesSettingsByCompanyQuery(companyId, { skip: !token });
 	const isEditMode = existingObjectives !== undefined && existingObjectives !== null;
 
 	const [addData, { isLoading: isAddLoading, error: addError }] = useCreateMonthlyObjectivesSettingsMutation();
 	const [updateData, { isLoading: isUpdateLoading, error: updateError }] = useUpdateMonthlyObjectivesSettingsMutation();
 
-	const error = isEditMode ? updateError : addError;
+	const objectivesAxiosError = objectivesError as ResponseDataInterface<ApiErrorResponseType> | undefined;
+	const loadError = objectivesAxiosError?.status === 404 ? undefined : objectivesError;
+	const error = loadError || (isEditMode ? updateError : addError);
 	const axiosError = useMemo(
 		() => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),
 		[error],
@@ -148,7 +154,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, existingObject
 
 	const hasValidationErrors = Object.keys(validationErrors).length > 0;
 
-	const isLoading = isAddLoading || isUpdateLoading || isPending;
+	const isLoading = isObjectivesLoading || isAddLoading || isUpdateLoading || isPending;
 	const shouldShowError = (axiosError?.status ?? 0) > 400 && !isLoading;
 
 	return (
@@ -357,14 +363,6 @@ const MonthlyObjectivesView: React.FC<SessionProps> = ({ session }) => {
 	const profil = useAppSelector(getProfilState);
 	const is_staff = profil?.is_staff || false;
 	const { data: companiesData } = useGetUserCompaniesQuery(undefined, { skip: !token });
-	const { data: objectivesData, isLoading: isLoadingObjectives } = useGetAllMonthlyObjectivesSettingsQuery(undefined, {
-		skip: !token,
-	});
-
-	if (isLoadingObjectives) {
-		return <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />;
-	}
-
 	if (!is_staff) {
 		return <NoPermission />;
 	}
@@ -372,13 +370,12 @@ const MonthlyObjectivesView: React.FC<SessionProps> = ({ session }) => {
 	return (
 		<CompanyDocumentsWrapperList session={session} title={t.monthlyObjectives.pageTitle}>
 			{({ company_id }) => {
-				const objectives = objectivesData?.find((obj) => obj.company === company_id);
 				const company = companiesData?.find((c) => c.id === company_id);
 				const usesForeignCurrency = company?.uses_foreign_currency ?? false;
 				return (
 					<FormikContent
 						companyId={company_id}
-						existingObjectives={objectives}
+						token={token}
 						usesForeignCurrency={usesForeignCurrency}
 					/>
 				);

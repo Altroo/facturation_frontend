@@ -36,8 +36,6 @@ import {
 } from 'chart.js';
 import { Bar, Doughnut, Line, Pie } from 'react-chartjs-2';
 import {
-	type DateFilterParams,
-	type ObjectiveData,
 	useGetClientMultidimensionalProfileQuery,
 	useGetCollectionRateQuery,
 	useGetDiscountImpactAnalysisQuery,
@@ -59,6 +57,7 @@ import {
 	useGetTopClientsByRevenueQuery,
 	useGetTopProductsByQuantityQuery,
 } from '@/store/services/dashboard';
+import type { DateFilterParams, ObjectiveData } from '@/types/dashboardTypes';
 import { useGetCompanyQuery } from '@/store/services/company';
 import { useGetClientsListQuery } from '@/store/services/client';
 import CurrencyToggle from '@/components/shared/currencyToggle/currencyToggle';

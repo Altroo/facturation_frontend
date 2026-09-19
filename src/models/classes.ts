@@ -27,6 +27,8 @@ export class GroupClass {
 }
 
 export class CompanyClass {
+	public stock_management_enabled = false;
+
 	constructor(
 		public readonly id: number,
 		public date_created: string | null,
@@ -90,6 +92,15 @@ export class ClientClass {
 }
 
 export class ArticleClass {
+	public stock_minimum = 0;
+	public readonly stock_management_enabled = false;
+	public readonly physical_quantity = 0;
+	public readonly reserved_quantity = 0;
+	public readonly available_quantity = 0;
+	public readonly incoming_quantity = 0;
+	public readonly projected_quantity = 0;
+	public readonly stock_state: 'not_managed' | 'disponible' | 'minimum' | 'a_approvisionner' = 'not_managed';
+
 	constructor(
 		public readonly id: number,
 		public reference: string,
@@ -187,6 +198,13 @@ export class DeviFactureLivraisonLineClass {
 		public quantity: number,
 		public remise_type: TypeRemiseType,
 		public remise: number,
+		public readonly stock_coverage?: {
+			status: 'not_managed' | 'disponible' | 'couvert_par_stock_entrant' | 'a_approvisionner';
+			requested_quantity: number;
+			available_quantity?: number;
+			incoming_quantity?: number;
+			shortage_quantity?: number;
+		},
 	) {}
 }
 

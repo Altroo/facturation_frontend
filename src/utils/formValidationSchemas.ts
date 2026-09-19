@@ -202,6 +202,7 @@ export const companySchema = z.object({
 	cachet: base64ImageField,
 	cachet_cropped: base64ImageField,
 	uses_foreign_currency: z.boolean().default(false),
+	stock_management_enabled: z.boolean().default(false),
 	globalError: optionalTextField(1, 500),
 });
 
@@ -310,6 +311,7 @@ export const articleSchema = z
 		prix_vente: optionalNumberField(0).nullable(),
 		devise_prix_vente: z.enum(['MAD', 'EUR', 'USD']).default('MAD'),
 		tva: optionalTVANumberField(0),
+		stock_minimum: optionalNumberField(0).default(0),
 		remarque: optionalTextField(2, 2000).nullable(),
 		globalError: optionalTextField(1, 500),
 	})
@@ -782,4 +784,46 @@ export const monthlyObjectivesSchema = z.object({
 			.min(0, { message: INPUT_MIN(0) })
 			.max(100, { message: POURCENTAGE_INPUT_INVALID }),
 	),
+});
+
+const stockDecimalField = (minimum?: number) =>
+	z.preprocess(
+		(value) => {
+			if (value === undefined || value === null || value === '') return NaN;
+			return typeof value === 'string' ? Number(value.replace(',', '.')) : value;
+		},
+		z
+			.number({ error: INPUT_REQUIRED })
+			.refine((value) => Number.isFinite(value), { error: INPUT_REQUIRED })
+			.refine((value) => minimum === undefined || value >= minimum, { error: INPUT_MIN(minimum ?? 0) }),
+	);
+
+export const stockAdjustmentSchema = z.object({
+	movement_type: z.enum(['opening', 'adjustment']),
+	article: requiredChoiceNumberField(),
+	emplacement: requiredChoiceNumberField(),
+	quantity: stockDecimalField().refine((value) => value !== 0, {
+		error: 'La quantité ne peut pas être nulle',
+	}),
+	reason: requiredTextField(1, 1000),
+	globalError: optionalTextField(1, 500),
+});
+
+export const stockReceiptSchema = z.object({
+	logistics_order: requiredChoiceNumberField(),
+	logistics_line: requiredChoiceNumberField(),
+	emplacement: requiredChoiceNumberField(),
+	quantity: stockDecimalField(0.001),
+	reference: optionalTextField(1, 255).default(''),
+	note: optionalTextField(1, 1000).default(''),
+	globalError: optionalTextField(1, 500),
+});
+
+export const stockInventorySchema = z.object({
+	article: requiredChoiceNumberField(),
+	emplacement: requiredChoiceNumberField(),
+	counted_quantity: stockDecimalField(0),
+	reference: optionalTextField(1, 255).default(''),
+	note: optionalTextField(1, 1000).default(''),
+	globalError: optionalTextField(1, 500),
 });

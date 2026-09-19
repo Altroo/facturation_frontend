@@ -56,6 +56,7 @@ export type CompanyFormValuesType = {
 	cachet_cropped: string | ArrayBuffer;
 	managed_by: ManagedByEntry[];
 	uses_foreign_currency: boolean;
+	stock_management_enabled: boolean;
 	globalError?: string;
 };
 
@@ -64,6 +65,7 @@ export type CompaniesUserCompaniesType = {
 	raison_sociale: string;
 	role: string;
 	uses_foreign_currency: boolean;
+	stock_management_enabled?: boolean;
 	can_validate_factures?: boolean;
 	can_change_document_status?: boolean;
 };

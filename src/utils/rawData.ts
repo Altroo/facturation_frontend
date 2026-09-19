@@ -21,11 +21,6 @@ export const genderItemsList: Array<AccountGenderCodeValueType> = [
 	},
 ];
 
-export const getTranslatedGenderItemsList = (t: TranslationDictionary): Array<AccountGenderCodeValueType> => [
-	{ code: 'H', value: t.rawData.genders.male },
-	{ code: 'F', value: t.rawData.genders.female },
-];
-
 export const nbrEmployeItemsList: Array<DropDownType> = [
 	{ code: '1 à 5', value: '1 à 5' },
 	{ code: '5 à 10', value: '5 à 10' },
@@ -34,27 +29,12 @@ export const nbrEmployeItemsList: Array<DropDownType> = [
 	{ code: 'plus que 100', value: 'plus que 100' },
 ];
 
-export const getTranslatedNbrEmployeItemsList = (t: TranslationDictionary): Array<DropDownType> => [
-	{ code: '1 à 5', value: t.rawData.employeeRanges['1to5'] },
-	{ code: '5 à 10', value: t.rawData.employeeRanges['5to10'] },
-	{ code: '10 à 50', value: t.rawData.employeeRanges['10to50'] },
-	{ code: '50 à 100', value: t.rawData.employeeRanges['50to100'] },
-	{ code: 'plus que 100', value: t.rawData.employeeRanges.moreThan100 },
-];
-
 // '', 'Mme', 'Mlle', 'M.'
 export const civiliteItemsList: Array<DropDownType> = [
 	{ code: '', value: '' },
 	{ code: 'M.', value: 'M.' },
 	{ code: 'Mme', value: 'Mme' },
 	{ code: 'Mlle', value: 'Mlle' },
-];
-
-export const getTranslatedCiviliteItemsList = (t: TranslationDictionary): Array<DropDownType> => [
-	{ code: '', value: '' },
-	{ code: 'M.', value: t.rawData.civilites.mr },
-	{ code: 'Mme', value: t.rawData.civilites.mrs },
-	{ code: 'Mlle', value: t.rawData.civilites.miss },
 ];
 
 // 'Brouillon', 'Envoyé', 'Accepté', 'Refusé', 'Annulé', 'Expiré'
@@ -68,24 +48,9 @@ export const devisFactureStatusItemsList: Array<DropDownType> = [
 	{ code: 'Expiré', value: 'Expiré' },
 ];
 
-export const getTranslatedDevisFactureStatusItemsList = (t: TranslationDictionary): Array<DropDownType> => [
-	{ code: '', value: '' },
-	{ code: 'Brouillon', value: t.rawData.documentStatuses.draft },
-	{ code: 'Envoyé', value: t.rawData.documentStatuses.sent },
-	{ code: 'Accepté', value: t.rawData.documentStatuses.accepted },
-	{ code: 'Refusé', value: t.rawData.documentStatuses.refused },
-	{ code: 'Annulé', value: t.rawData.documentStatuses.cancelled },
-	{ code: 'Expiré', value: t.rawData.documentStatuses.expired },
-];
-
 export const bonDeLivraisonStatusItemsList: Array<DropDownType> = [
 	...devisFactureStatusItemsList,
 	{ code: 'Facturé', value: 'Facturé' },
-];
-
-export const getTranslatedBonDeLivraisonStatusItemsList = (t: TranslationDictionary): Array<DropDownType> => [
-	...getTranslatedDevisFactureStatusItemsList(t),
-	{ code: 'Facturé', value: t.rawData.documentStatuses.invoiced },
 ];
 
 // 'Pourcentage', 'Fixe'
@@ -93,12 +58,6 @@ export const remiseTypeItemsList: Array<DropDownType> = [
 	{ code: '', value: '' },
 	{ code: 'Pourcentage', value: 'Pourcentage' },
 	{ code: 'Fixe', value: 'Fixe' },
-];
-
-export const getTranslatedRemiseTypeItemsList = (t: TranslationDictionary): Array<DropDownType> => [
-	{ code: '', value: '' },
-	{ code: 'Pourcentage', value: t.rawData.remiseTypes.percentage },
-	{ code: 'Fixe', value: t.rawData.remiseTypes.fixed },
 ];
 
 export const logistiqueGlobalStatusItemsList: LogistiqueStatut[] = [
@@ -134,26 +93,30 @@ export const logistiqueLegacyWorkflowStatusItemsList: LogistiqueLegacyStatut[] =
 	'Clôture',
 ];
 
-export const logistiqueLegacyStatusStepIndex: Record<LogistiqueLegacyStatut, number> = {
-	'Réception commande': 0,
-	'Commande fournisseur': 0,
-	Proforma: 1,
-	"Titre d'Importation": 2,
-	Validation: 2,
-	'Paiement demandé': 2,
-	'Paiement effectué': 2,
-	'SWIFT / Draft LC': 2,
-	'Envoi SWIFT / Draft LC': 2,
-	Production: 3,
-	Expédition: 4,
-	'Documents originaux': 4,
-	Transit: 5,
-	Dédouanement: 5,
-	'Réception locale': 6,
-	'Livraison client': 7,
-	Clôture: 8,
-	Annulé: 0,
-};
+const logistiqueLegacyStatusStepEntries = [
+	['Réception commande', 0],
+	['Commande fournisseur', 0],
+	['Proforma', 1],
+	["Titre d'Importation", 2],
+	['Validation', 2],
+	['Paiement demandé', 2],
+	['Paiement effectué', 2],
+	['SWIFT / Draft LC', 2],
+	['Envoi SWIFT / Draft LC', 2],
+	['Production', 3],
+	['Expédition', 4],
+	['Documents originaux', 4],
+	['Transit', 5],
+	['Dédouanement', 5],
+	['Réception locale', 6],
+	['Livraison client', 7],
+	['Clôture', 8],
+	['Annulé', 0],
+] satisfies Array<[LogistiqueLegacyStatut, number]>;
+
+export const logistiqueLegacyStatusStepIndex = Object.fromEntries(
+	logistiqueLegacyStatusStepEntries,
+) as Record<LogistiqueLegacyStatut, number>;
 
 export const logistiquePaymentStatusItemsList: LogistiquePaymentStatus[] = [
 	'Non demandé',

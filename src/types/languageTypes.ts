@@ -103,6 +103,11 @@ export type TranslationDictionary = {
 		logistique: string;
 		logistiqueDashboard: string;
 		logistiqueList: string;
+		stock: string;
+		stockState: string;
+		stockMovements: string;
+		stockReceipts: string;
+		stockInventories: string;
 		reglement: string;
 		reglementsList: string;
 		companies: string;
@@ -627,6 +632,8 @@ export type TranslationDictionary = {
 		reopenOrderModalBody: string;
 		statusUpdateSuccess: string;
 		statusUpdateError: string;
+		startSupplierPreparation: string;
+		supplierPreparationSuccess: string;
 		addTitle: string;
 		editTitle: string;
 		colNumero: string;
@@ -651,6 +658,10 @@ export type TranslationDictionary = {
 		paymentSection: string;
 		costsSection: string;
 		linesSection: string;
+		incomingStock: string;
+		receivedQuantity: string;
+		remainingQuantity: string;
+		locationToDefine: string;
 		historySection: string;
 		sourceSection: string;
 		brandSplitSection: string;
@@ -1020,6 +1031,8 @@ export type TranslationDictionary = {
 		bulkSuspendBtn: (n: number) => string;
 		foreignCurrencyLabel: string;
 		foreignCurrencyHelper: string;
+		stockManagementLabel: string;
+		stockManagementHelper: string;
 		fetchIdsError: string;
 		allEmployeeCounts: string;
 	};
@@ -1107,6 +1120,8 @@ export type TranslationDictionary = {
 		notifyExpiringQuote: string;
 		notifyUninvoicedBdl: string;
 		notifyDocumentCreated: string;
+		notifyLowStock: string;
+		lowStockRepeatHours: string;
 		quoteExpiryDays: string;
 		quoteExpiryOptions: { value: number; label: string }[];
 		save: string;

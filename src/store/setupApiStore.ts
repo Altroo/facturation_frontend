@@ -6,8 +6,8 @@ import accountReducer from '@/store/slices/accountSlice';
 
 type RtkApiLike = {
 	reducerPath: string;
-	reducer: unknown;
-	middleware: unknown;
+	reducer: Reducer;
+	middleware: Middleware;
 };
 
 export function setupApiStore(api: RtkApiLike, extraMiddleware: Middleware[] = []) {
@@ -16,7 +16,7 @@ export function setupApiStore(api: RtkApiLike, extraMiddleware: Middleware[] = [
 	const reducer = combineReducers({
 		_init: _initReducer,
 		account: accountReducer,
-		[api.reducerPath]: api.reducer as Reducer,
+		[api.reducerPath]: api.reducer,
 	});
 
 	const store = configureStore({
@@ -25,7 +25,7 @@ export function setupApiStore(api: RtkApiLike, extraMiddleware: Middleware[] = [
 			getDefaultMiddleware({
 				serializableCheck: false,
 				thunk: true,
-			}).concat(sagaMiddleware, api.middleware as Middleware, ...extraMiddleware),
+			}).concat(sagaMiddleware, api.middleware, ...extraMiddleware),
 		devTools: false,
 	});
 

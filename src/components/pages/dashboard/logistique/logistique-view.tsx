@@ -62,6 +62,7 @@ import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import NoPermission from '@/components/shared/noPermission/noPermission';
+import DashboardStatCard from '@/components/shared/dashboardStatCard/dashboardStatCard';
 import {
 	LogistiqueDocumentsFormCard,
 	LogistiqueDocumentsViewCard,
@@ -89,6 +90,7 @@ import {
 	useGetLogistiqueQuery,
 	usePatchLogistiqueLaunchStatusMutation,
 	usePatchLogistiqueStatutMutation,
+	usePatchLogistiqueWorkflowStatusMutation,
 	useRejectLogistiquePaymentMutation,
 	useRecordLogistiqueProformaRequestMutation,
 	useRecordLogistiquePaymentExecutionMutation,
@@ -99,7 +101,13 @@ import {
 	useStartLogistiquePaymentMutation,
 	useValidateLogistiquePaymentMutation,
 } from '@/store/services/logistique';
-import { ARTICLES_VIEW, FACTURE_PRO_FORMA_VIEW, LOGISTIQUE_EDIT, LOGISTIQUE_LIST } from '@/utils/routes';
+import {
+	ARTICLES_VIEW,
+	FACTURE_PRO_FORMA_VIEW,
+	LOGISTIQUE_EDIT,
+	LOGISTIQUE_LIST,
+	STOCK_RECEIPTS,
+} from '@/utils/routes';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import type {
 	LogistiqueDocumentField,
@@ -107,7 +115,6 @@ import type {
 	LogistiqueLaunchStatus,
 	LogistiquePaymentMethod,
 	LogistiquePaymentInstallment,
-	LogistiquePaymentStatus,
 	LogistiqueProformaStatus,
 	LogistiqueStatut,
 	LogistiqueSupplierProformaReviewAction,
@@ -145,20 +152,19 @@ const acceptedDocumentTypes = '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png';
 const proformaDecisionItems = logistiqueProformaStatusItemsList.filter(
 	(status): status is Exclude<LogistiqueProformaStatus, 'En attente'> => status !== 'En attente',
 );
-const proformaActionByStatus: Record<
-	Exclude<LogistiqueProformaStatus, 'En attente'>,
-	LogistiqueSupplierProformaReviewAction
-> = {
-	'En contrôle': 'control',
-	'Correction demandée': 'request_correction',
-	Validée: 'validate',
-	Refusée: 'reject',
-};
-
-const paymentColor = (status: LogistiquePaymentStatus) => {
-	if (status === 'Validé') return 'success' as const;
-	if (status === 'En attente') return 'warning' as const;
-	return 'default' as const;
+const getProformaReviewAction = (
+	status: Exclude<LogistiqueProformaStatus, 'En attente'>,
+): LogistiqueSupplierProformaReviewAction => {
+	switch (status) {
+		case 'En contrôle':
+			return 'control';
+		case 'Correction demandée':
+			return 'request_correction';
+		case 'Validée':
+			return 'validate';
+		case 'Refusée':
+			return 'reject';
+	}
 };
 
 const emailDeliveryColor = (status: LogistiqueEmailDeliveryStatus) => {
@@ -184,35 +190,46 @@ const formatDateOnly = (value: string | null | undefined) => {
 };
 
 const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
+	const theme = useTheme();
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 	const displayValue =
 		isValidElement(value) || (value !== null && value !== undefined && value.toString().length > 0) ? value : '-';
 
 	return (
-		<Stack direction="row" spacing={1.5} sx={{ alignItems: 'flex-start', py: 1.5, flexWrap: 'nowrap', minWidth: 0 }}>
-			<Box sx={{ color: 'primary.main', display: 'flex', alignItems: 'center', width: 40, flexShrink: 0 }}>{icon}</Box>
+		<Stack
+			direction="row"
+			spacing={2}
+			sx={{
+				alignItems: 'flex-start',
+				py: 1.5,
+				flexWrap: 'wrap',
+			}}
+		>
+			<Box sx={{ color: 'primary.main', display: 'flex', alignItems: 'center', minWidth: 40 }}>{icon}</Box>
 			<Stack
-				direction={{ xs: 'column', sm: 'row' }}
-				spacing={{ xs: 0.5, sm: 2 }}
-				sx={{ alignItems: { xs: 'flex-start', sm: 'center' }, flex: 1, minWidth: 0 }}
+				direction="row"
+				spacing={isMobile ? 0 : 2}
+				sx={{
+					alignItems: 'center',
+					flex: 1,
+					flexWrap: 'wrap',
+				}}
 			>
 				<Typography
 					sx={{
 						fontWeight: 600,
 						color: 'text.secondary',
-						width: { xs: '100%', sm: 220 },
-						flexShrink: 0,
+						minWidth: { xs: '100%', sm: 200 },
 						wordBreak: 'break-word',
 					}}
 				>
 					{label}
 				</Typography>
-				<Box sx={{ width: { xs: '100%', sm: 'auto' }, flex: { xs: 'none', sm: 1 }, minWidth: 0 }}>
+				<Box sx={{ flex: 1 }}>
 					{isValidElement(displayValue) ? (
 						displayValue
 					) : (
-						<Typography sx={{ color: 'text.primary', overflowWrap: 'break-word', wordBreak: 'normal' }}>
-							{displayValue}
-						</Typography>
+						<Typography sx={{ color: 'text.primary' }}>{displayValue}</Typography>
 					)}
 				</Box>
 			</Stack>
@@ -223,13 +240,13 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 const DetailCard: React.FC<DetailCardProps> = ({ title, icon, children }) => (
 	<Card elevation={2} sx={{ borderRadius: 2 }}>
 		<CardContent sx={{ p: 3 }}>
-			<Stack direction="row" spacing={3} sx={{ alignItems: 'center' }}>
+			<Stack direction="row" spacing={2} sx={{ alignItems: 'center', mb: 2 }}>
 				{icon}
 				<Typography variant="h6" sx={{ fontWeight: 700 }}>
 					{title}
 				</Typography>
 			</Stack>
-			<Divider sx={{ my: 2 }} />
+			<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 			{children}
 		</CardContent>
 	</Card>
@@ -261,6 +278,8 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	);
 	const [deleteLogistique] = useDeleteLogistiqueMutation();
 	const [patchGlobalStatus, { isLoading: isChangingGlobalStatus }] = usePatchLogistiqueStatutMutation();
+	const [patchWorkflowStatus, { isLoading: isChangingWorkflowStatus }] =
+		usePatchLogistiqueWorkflowStatusMutation();
 	const [patchLaunchStatus, { isLoading: isChangingLaunchStatus }] = usePatchLogistiqueLaunchStatusMutation();
 	const [recordProformaRequest, { isLoading: isRecordingProformaRequest }] =
 		useRecordLogistiqueProformaRequestMutation();
@@ -336,6 +355,15 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 			? 1
 			: (logistiqueLegacyStatusStepIndex[order.statut] ?? 2);
 	const isOrderCancelled = order?.statut_global === 'Annulé';
+	const canStartSupplierPreparation = Boolean(
+		canManage &&
+		order &&
+		!isOrderCancelled &&
+		order.statut === 'Envoi SWIFT / Draft LC' &&
+		order.statut_paiement === 'Validé' &&
+		order.statut_banque_paiement === 'Confirmé' &&
+		Number(order.solde_restant) === 0,
+	);
 	const isOrderResponsible = Boolean(currentUserId && order?.responsable === currentUserId);
 	const canProcessAssignedPayment = Boolean(
 		isAccountingUser && currentUserId && order?.paiement_assigne_a === currentUserId,
@@ -471,6 +499,15 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 		}
 	};
 
+	const handleStartSupplierPreparation = async () => {
+		try {
+			await patchWorkflowStatus({ id, data: { statut: 'Production' } }).unwrap();
+			onSuccess(t.logistique.supplierPreparationSuccess);
+		} catch (err) {
+			onError(extractApiErrorMessage(err, t.logistique.statusUpdateError));
+		}
+	};
+
 	const handleRetryPaymentEmail = async () => {
 		try {
 			await retryPaymentEmail({ id }).unwrap();
@@ -525,7 +562,7 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 		try {
 			await reviewSupplierProforma({
 				id,
-				action: proformaActionByStatus[proformaDecision],
+				action: getProformaReviewAction(proformaDecision),
 				data,
 			}).unwrap();
 			onSuccess(t.logistique.proformaReviewSuccess);
@@ -632,6 +669,7 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 			onError(extractApiErrorMessage(err, t.logistique.confirmReceiptError));
 		}
 	};
+	const events = order?.events ?? [];
 
 	return (
 		<LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
@@ -653,6 +691,20 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 							</Button>
 							{!isLoading && !error && canRead && (
 								<Stack direction="row" sx={{ gap: 1, flexWrap: 'wrap' }}>
+									{role === 'Logistique' &&
+										company?.stock_management_enabled === true &&
+										order?.statut_commande_lancement === 'Terminée' &&
+										order.statut_global !== 'Annulé' &&
+										!['Réception locale', 'Livraison client', 'Clôture', 'Annulé'].includes(order.statut) && (
+											<Button
+												variant="contained"
+												size="small"
+												startIcon={<InventoryIcon />}
+												onClick={() => router.push(`${STOCK_RECEIPTS}&company_id=${company_id}`)}
+											>
+												Réceptionner le stock
+											</Button>
+										)}
 									{(canManage || (isOrderResponsible && order?.statut_paiement === 'Non demandé')) &&
 										!isOrderCancelled && (
 											<Button
@@ -709,108 +761,40 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 							<ApiAlert errorDetails={axiosError?.data.details} />
 						) : (
 							<Stack spacing={3}>
-								<Card elevation={3} sx={{ borderRadius: 2, bgcolor: 'primary.50' }}>
-									<CardContent sx={{ p: 3 }}>
-										<Grid
-											container
-											spacing={2.5}
-											sx={{ alignItems: 'stretch', justifyContent: isMobile ? 'center' : 'space-between' }}
-										>
-											<Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-												<Box
-													sx={{
-														textAlign: 'center',
-														px: 2,
-														py: 1.5,
-														minHeight: 96,
-														display: 'flex',
-														flexDirection: 'column',
-														justifyContent: 'center',
-													}}
-												>
-													<Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 0.5 }}>
-														{t.logistique.colNumero.toUpperCase()}
-													</Typography>
-													<Typography variant="h6" sx={{ fontWeight: 800, overflowWrap: 'anywhere', lineHeight: 1.25 }}>
-														{order?.numero_commande ?? '-'}
-													</Typography>
-												</Box>
-											</Grid>
-											<Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-												<Box
-													sx={{
-														textAlign: 'center',
-														px: 2,
-														py: 1.5,
-														minHeight: 96,
-														display: 'flex',
-														flexDirection: 'column',
-														justifyContent: 'center',
-													}}
-												>
-													<Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 0.5 }}>
-														{t.logistique.colFournisseur.toUpperCase()}
-													</Typography>
-													<Typography variant="h6" sx={{ fontWeight: 800, overflowWrap: 'anywhere', lineHeight: 1.25 }}>
-														{order?.fournisseur || '-'}
-													</Typography>
-												</Box>
-											</Grid>
-											<Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-												<Box
-													sx={{
-														textAlign: 'center',
-														px: 2,
-														py: 1.5,
-														minHeight: 96,
-														display: 'flex',
-														flexDirection: 'column',
-														justifyContent: 'center',
-														alignItems: 'center',
-													}}
-												>
-													<Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 0.5 }}>
-														{t.logistique.colPaiement.toUpperCase()}
-													</Typography>
-													{order?.statut_paiement ? (
-														<Chip
-															label={order.statut_paiement}
-															color={paymentColor(order.statut_paiement)}
-															variant="outlined"
-															sx={{ maxWidth: '100%' }}
-														/>
-													) : (
-														<Typography>-</Typography>
-													)}
-												</Box>
-											</Grid>
-											<Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-												<Box
-													sx={{
-														textAlign: 'center',
-														px: 2,
-														py: 1.5,
-														minHeight: 96,
-														display: 'flex',
-														flexDirection: 'column',
-														justifyContent: 'center',
-													}}
-												>
-													<Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 0.5 }}>
-														{t.logistique.colCoutTotal.toUpperCase()}
-													</Typography>
-													<Typography
-														variant="h5"
-														color="primary"
-														sx={{ fontWeight: 900, overflowWrap: 'anywhere', lineHeight: 1.2 }}
-													>
-														{formatMoney(order?.cout_total, order?.devise)}
-													</Typography>
-												</Box>
-											</Grid>
-										</Grid>
-									</CardContent>
-								</Card>
+								<Box
+									sx={{
+										display: 'grid',
+										gridTemplateColumns: isMobile ? '1fr' : { xs: '1fr', sm: '1fr 1fr', lg: '1fr 1fr 1fr 1fr' },
+										gap: 2,
+									}}
+								>
+									<DashboardStatCard
+										icon={<ReceiptLongIcon />}
+										label={t.logistique.colNumero}
+										value={order?.numero_commande ?? '-'}
+										color="#1565C0"
+									/>
+									<DashboardStatCard
+										icon={<BusinessIcon />}
+										label={t.logistique.colFournisseur}
+										value={order?.fournisseur || '-'}
+										color="#6A1B9A"
+									/>
+									<DashboardStatCard
+										icon={<PaymentIcon />}
+										label={t.logistique.colPaiement}
+										value={order?.statut_paiement ?? '-'}
+										color={order?.statut_paiement === 'Validé' ? '#2E7D32' : '#ED6C02'}
+										valueColor={order?.statut_paiement === 'Validé' ? 'success.main' : 'text.primary'}
+									/>
+									<DashboardStatCard
+										icon={<LocalShippingIcon />}
+										label={t.logistique.colCoutTotal}
+										value={formatMoney(order?.cout_total, order?.devise)}
+										color="#00897B"
+										valueColor="primary.main"
+									/>
+								</Box>
 
 								<DetailCard title={t.logistique.fieldGlobalStatus} icon={<InfoIcon color="primary" />}>
 									<Stack spacing={3}>
@@ -836,7 +820,7 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 											sx={{
 												fontSize: '1rem',
 												py: 2,
-												justifySelf: { xs: 'stretch', md: 'start' },
+												alignSelf: 'flex-start',
 												maxWidth: '100%',
 												'& .MuiChip-label': { whiteSpace: 'normal', py: 0.5 },
 											}}
@@ -846,7 +830,7 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 
 								<DetailCard title={t.logistique.commandLaunchSection} icon={<RequestQuoteIcon color="primary" />}>
 									<Stack spacing={2.5}>
-										<Alert severity={order?.is_launch_step_complete ? 'success' : 'info'}>
+										<Alert variant="outlined" severity={order?.is_launch_step_complete ? 'success' : 'info'}>
 											{order?.is_launch_step_complete
 												? t.logistique.commandLaunchMilestone
 												: t.logistique.commandLaunchObjective}
@@ -957,6 +941,7 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 								<DetailCard title={t.logistique.proformaComplianceSection} icon={<DescriptionIcon color="primary" />}>
 									<Stack spacing={2.5}>
 										<Alert
+											variant="outlined"
 											severity={
 												!order?.is_launch_step_complete
 													? 'info'
@@ -1075,17 +1060,15 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									</Stack>
 								</DetailCard>
 
-								<DetailCard title={t.logistique.alertsSection} icon={<WarningIcon color="warning" />}>
-									{order?.alerts?.length ? (
+								{order?.alerts?.length ? (
+									<DetailCard title={t.logistique.alertsSection} icon={<WarningIcon color="warning" />}>
 										<Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
 											{order.alerts.map((alert) => (
 												<Chip key={alert} icon={<WarningIcon />} label={alert} color="warning" variant="outlined" />
 											))}
 										</Stack>
-									) : (
-										<Alert severity="success">{t.logistique.noAlerts}</Alert>
-									)}
-								</DetailCard>
+									</DetailCard>
+								) : null}
 
 								<DetailCard title={t.logistique.generalSection} icon={<BusinessIcon color="primary" />}>
 									<Grid container spacing={2}>
@@ -1197,7 +1180,9 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 								<DetailCard title={t.logistique.paymentSection} icon={<PaymentIcon color="primary" />}>
 									<Stack spacing={2.5}>
 										{!order?.is_proforma_step_complete && (
-											<Alert severity="info">{t.logistique.paymentStepLocked}</Alert>
+											<Alert variant="outlined" severity="info">
+												{t.logistique.paymentStepLocked}
+											</Alert>
 										)}
 										<Grid container spacing={2}>
 											<Grid size={{ xs: 12, lg: 6 }}>
@@ -1256,6 +1241,7 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 										</Grid>
 										{order?.demande_paiement_email_relance_disponible && (
 											<Alert
+												variant="outlined"
 												severity={
 													order.demande_paiement_email_statut === 'Historique non vérifié' ? 'warning' : 'error'
 												}
@@ -1290,7 +1276,9 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 												</Box>
 											)}
 										{isOrderResponsible && order?.statut_paiement === 'Non demandé' && !hasCompleteImportTitle && (
-											<Alert severity="warning">{t.logistique.incompleteImportTitle}</Alert>
+											<Alert variant="outlined" severity="warning">
+												{t.logistique.incompleteImportTitle}
+											</Alert>
 										)}
 
 										<Stack spacing={1.5}>
@@ -1324,6 +1312,7 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 																)}
 																{installment.preuve_email_relance_disponible && (
 																	<Alert
+																		variant="outlined"
 																		severity={
 																			installment.preuve_email_statut === 'Historique non vérifié' ? 'warning' : 'error'
 																		}
@@ -1431,6 +1420,17 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 												{t.logistique.blockPayment}
 											</Button>
 										)}
+										{canStartSupplierPreparation && (
+											<Button
+												variant="contained"
+												startIcon={<InventoryIcon />}
+												disabled={isChangingWorkflowStatus}
+												onClick={handleStartSupplierPreparation}
+												sx={{ alignSelf: 'flex-start' }}
+											>
+												{t.logistique.startSupplierPreparation}
+											</Button>
+										)}
 									</Stack>
 								</DetailCard>
 
@@ -1523,35 +1523,53 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 								</DetailCard>
 
 								<DetailCard title={t.logistique.sourceSection} icon={<RequestQuoteIcon color="primary" />}>
-									<Stack divider={<Divider flexItem />} spacing={0}>
+									<Stack divider={<Divider flexItem />} spacing={2}>
 										{order?.proformas_detail?.length ? (
 											order.proformas_detail.map((proforma) => (
-												<Box key={proforma.id} sx={{ py: 1.5 }}>
-													<MuiLink
-														component={NextLink}
-														href={FACTURE_PRO_FORMA_VIEW(proforma.id, company_id)}
-														underline="hover"
-														sx={{
-															display: 'inline-flex',
-															alignItems: 'center',
-															gap: 0.5,
-															fontWeight: 700,
-															overflowWrap: 'anywhere',
-														}}
-													>
-														{proforma.numero_facture}
-														<OpenInNewIcon sx={{ fontSize: 16 }} />
-													</MuiLink>
-													<Typography variant="body2" color="text.secondary">
-														{proforma.client_name || '-'} - {formatDateOnly(proforma.date_facture)} -{' '}
-														{formatMoney(proforma.total_ttc_apres_remise, proforma.devise)}
-													</Typography>
+												<Stack key={proforma.id} divider={<Divider flexItem />} spacing={0}>
+													<InfoRow
+														icon={<ReceiptLongIcon />}
+														label={t.facturesProforma.documentNumberLabel}
+														value={
+															<MuiLink
+																component={NextLink}
+																href={FACTURE_PRO_FORMA_VIEW(proforma.id, company_id)}
+																underline="hover"
+																sx={{
+																	display: 'inline-flex',
+																	alignItems: 'center',
+																	gap: 0.5,
+																	fontWeight: 700,
+																}}
+															>
+																{proforma.numero_facture}
+																<OpenInNewIcon sx={{ fontSize: 16 }} />
+															</MuiLink>
+														}
+													/>
+													<InfoRow
+														icon={<BusinessIcon />}
+														label={t.logistique.colClients}
+														value={proforma.client_name}
+													/>
+													<InfoRow
+														icon={<CalendarTodayIcon />}
+														label={t.facturesProforma.documentDateLabel}
+														value={formatDateOnly(proforma.date_facture)}
+													/>
+													<InfoRow
+														icon={<PaymentIcon />}
+														label={t.totalsCard.totalTTC}
+														value={formatMoney(proforma.total_ttc_apres_remise, proforma.devise)}
+													/>
 													{proforma.project_reference && (
-														<Typography variant="body2" color="text.secondary">
-															{t.logistique.colProjects}: {proforma.project_reference}
-														</Typography>
+														<InfoRow
+															icon={<InventoryIcon />}
+															label={t.logistique.colProjects}
+															value={proforma.project_reference}
+														/>
 													)}
-												</Box>
+												</Stack>
 											))
 										) : (
 											<Typography variant="body2" color="text.secondary">
@@ -1562,40 +1580,54 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 								</DetailCard>
 
 								<DetailCard title={t.logistique.linesSection} icon={<ReceiptLongIcon color="primary" />}>
-									<Stack divider={<Divider flexItem />} spacing={0}>
+									<Stack divider={<Divider flexItem />} spacing={2}>
 										{order?.lignes?.length ? (
 											order.lignes.map((line) => (
-												<Box key={line.id} sx={{ py: 1.5 }}>
-													<Typography sx={{ fontWeight: 700, overflowWrap: 'anywhere' }}>
-														<MuiLink
-															component={NextLink}
-															href={ARTICLES_VIEW(line.article, company_id)}
-															underline="hover"
-															sx={{
-																display: 'inline-flex',
-																alignItems: 'center',
-																gap: 0.5,
-																fontWeight: 700,
-																overflowWrap: 'anywhere',
-															}}
-														>
-															{line.article_reference}
-															<OpenInNewIcon sx={{ fontSize: 16 }} />
-														</MuiLink>
-														{' - '}
-														{line.designation}
-													</Typography>
-													<Typography variant="body2" color="text.secondary">
-														{line.client_name || '-'} - {t.documentForm.colQuantite}:{' '}
-														{formatNumberWithSpaces(line.quantity, 3)} -{' '}
-														{formatMoney(line.total_achat, line.devise_prix_achat)}
-													</Typography>
-													{line.project_reference && (
-														<Typography variant="body2" color="text.secondary">
-															{t.logistique.colProjects}: {line.project_reference}
-														</Typography>
+												<Stack key={line.id} divider={<Divider flexItem />} spacing={0}>
+													<InfoRow
+														icon={<InventoryIcon />}
+														label={t.logistique.linesSection}
+														value={
+															<Stack spacing={0.25}>
+																<MuiLink
+																	component={NextLink}
+																	href={ARTICLES_VIEW(line.article, company_id)}
+																	underline="hover"
+																	sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, fontWeight: 700 }}
+																>
+																	{line.article_reference}
+																	<OpenInNewIcon sx={{ fontSize: 16 }} />
+																</MuiLink>
+																<Typography variant="body2">{line.designation}</Typography>
+															</Stack>
+														}
+													/>
+													<InfoRow icon={<BusinessIcon />} label={t.logistique.colClients} value={line.client_name} />
+													<InfoRow
+														icon={<InventoryIcon />}
+														label={t.documentForm.colQuantite}
+														value={formatNumberWithSpaces(line.quantity, 3)}
+													/>
+													<InfoRow
+														icon={<PaymentIcon />}
+														label={t.totalsCard.totalPrixAchat}
+														value={formatMoney(line.total_achat, line.devise_prix_achat)}
+													/>
+													{line.incoming_active && (
+														<InfoRow
+															icon={<LocalShippingIcon />}
+															label={t.logistique.incomingStock}
+															value={`${t.logistique.receivedQuantity} : ${formatNumberWithSpaces(line.received_quantity, 3)} — ${t.logistique.remainingQuantity} : ${formatNumberWithSpaces(line.remaining_quantity, 3)} — ${line.expected_emplacement_name || t.logistique.locationToDefine}`}
+														/>
 													)}
-												</Box>
+													{line.project_reference && (
+														<InfoRow
+															icon={<AssignmentTurnedInIcon />}
+															label={t.logistique.colProjects}
+															value={line.project_reference}
+														/>
+													)}
+												</Stack>
 											))
 										) : (
 											<Typography variant="body2" color="text.secondary">
@@ -1606,18 +1638,67 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 								</DetailCard>
 
 								<DetailCard title={t.logistique.historySection} icon={<HistoryIcon color="primary" />}>
-									<Stack divider={<Divider flexItem />} spacing={0}>
-										{order?.events?.length ? (
-											order.events.map((event) => (
-												<Box key={event.id} sx={{ py: 1.5 }}>
-													<Typography sx={{ fontWeight: 700 }}>{event.action}</Typography>
-													<Typography variant="body2" color="text.secondary">
-														{formatDate(event.date_created)} - {event.user_name || '-'}
-														{event.old_value || event.new_value
-															? ` (${event.old_value || '-'} -> ${event.new_value || '-'})`
-															: ''}
-													</Typography>
-													{event.note && <Typography variant="body2">{event.note}</Typography>}
+									<Stack spacing={0}>
+										{events.length ? (
+											events.map((event, index) => (
+												<Box
+													key={event.id}
+													sx={{
+														display: 'grid',
+														gridTemplateColumns: '32px minmax(0, 1fr)',
+														columnGap: 2,
+														pb: index === events.length - 1 ? 0 : 2.5,
+													}}
+												>
+													<Box sx={{ position: 'relative', display: 'flex', justifyContent: 'center', pt: 0.75 }}>
+														<Box
+															sx={{
+																width: 12,
+																height: 12,
+																borderRadius: '50%',
+																bgcolor: 'primary.main',
+																border: '3px solid',
+																borderColor: 'background.paper',
+																boxShadow: '0 0 0 2px',
+																color: 'primary.light',
+																zIndex: 1,
+															}}
+														/>
+														{index < events.length - 1 && (
+															<Box
+																sx={{
+																	position: 'absolute',
+																	top: 16,
+																	bottom: -20,
+																	width: 2,
+																	bgcolor: 'divider',
+																}}
+															/>
+														)}
+													</Box>
+													<Stack spacing={0.75} sx={{ minWidth: 0 }}>
+														<Stack
+															direction={{ xs: 'column', md: 'row' }}
+															sx={{ justifyContent: 'space-between', gap: 0.5 }}
+														>
+															<Typography sx={{ fontWeight: 700 }}>{event.action}</Typography>
+															<Typography variant="body2" color="text.secondary" sx={{ flexShrink: 0 }}>
+																{formatDate(event.date_created)}
+															</Typography>
+														</Stack>
+														<Typography variant="body2" color="text.secondary">
+															{event.user_name || '-'}
+														</Typography>
+														{(event.old_value || event.new_value) && (
+															<Chip
+																label={`${event.old_value || '-'} → ${event.new_value || '-'}`}
+																size="small"
+																variant="outlined"
+																sx={{ alignSelf: 'flex-start', maxWidth: '100%' }}
+															/>
+														)}
+														{event.note && <Typography variant="body2">{event.note}</Typography>}
+													</Stack>
 												</Box>
 											))
 										) : (
@@ -2017,9 +2098,9 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 											},
 										]}
 										selectedField="proforma_fournisseur_file"
-										onSelectedFieldChange={() => undefined}
-										onFileChange={(_field, file) => setSupplierProformaFile(file)}
-										onClearFile={() => setSupplierProformaFile(null)}
+										onSelectedFieldChangeAction={() => undefined}
+										onFileChangeAction={(_field, file) => setSupplierProformaFile(file)}
+										onClearFileAction={() => setSupplierProformaFile(null)}
 										isLoading={isReviewingSupplierProforma}
 										accept={acceptedDocumentTypes}
 									/>

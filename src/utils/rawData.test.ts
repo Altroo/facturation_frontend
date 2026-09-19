@@ -194,10 +194,10 @@ describe('items lists', () => {
 		it('keeps legacy stages writable and maps downstream progress', () => {
 			expect(logistiqueLegacyWorkflowStatusItemsList).not.toContain('Annulé');
 			expect(logistiqueLegacyStatusStepIndex.Production).toBe(3);
-			expect(logistiqueLegacyStatusStepIndex.Expédition).toBe(4);
+			expect(logistiqueLegacyStatusStepIndex['Exp\u00e9dition']).toBe(4);
 			expect(logistiqueLegacyStatusStepIndex.Transit).toBe(5);
 			expect(logistiqueLegacyStatusStepIndex['Livraison client']).toBe(7);
-			expect(logistiqueLegacyStatusStepIndex.Clôture).toBe(8);
+			expect(logistiqueLegacyStatusStepIndex['Cl\u00f4ture']).toBe(8);
 		});
 
 		it('stores the supplier proforma statuses in specification order', () => {

@@ -45,6 +45,8 @@ const FormikContent: React.FC = () => {
 			notify_expiring_quote: preferences?.notify_expiring_quote ?? true,
 			notify_uninvoiced_bdl: preferences?.notify_uninvoiced_bdl ?? true,
 			notify_document_created: preferences?.notify_document_created ?? true,
+			notify_low_stock: preferences?.notify_low_stock ?? true,
+			low_stock_repeat_hours: preferences?.low_stock_repeat_hours ?? 24,
 			quote_expiry_days: preferences?.quote_expiry_days ?? 7,
 			globalError: '',
 		},
@@ -57,6 +59,8 @@ const FormikContent: React.FC = () => {
 					notify_expiring_quote: values.notify_expiring_quote,
 					notify_uninvoiced_bdl: values.notify_uninvoiced_bdl,
 					notify_document_created: values.notify_document_created,
+					notify_low_stock: values.notify_low_stock,
+					low_stock_repeat_hours: values.low_stock_repeat_hours,
 					quote_expiry_days: values.quote_expiry_days,
 				}).unwrap();
 				onSuccess(t.settings.notificationUpdateSuccess);
@@ -136,6 +140,28 @@ const FormikContent: React.FC = () => {
 								}
 								label={t.settings.notifyDocumentCreated}
 							/>
+							<FormControlLabel
+								control={
+									<Switch
+										checked={formik.values.notify_low_stock}
+										onChange={(e) => formik.setFieldValue('notify_low_stock', e.target.checked)}
+									/>
+								}
+								label={t.settings.notifyLowStock}
+							/>
+							<FormControl size="small" fullWidth disabled={!formik.values.notify_low_stock}>
+								<InputLabel id="low-stock-repeat-hours-label">{t.settings.lowStockRepeatHours}</InputLabel>
+								<Select
+									labelId="low-stock-repeat-hours-label"
+									value={String(formik.values.low_stock_repeat_hours)}
+									label={t.settings.lowStockRepeatHours}
+									onChange={(e: SelectChangeEvent) => formik.setFieldValue('low_stock_repeat_hours', Number(e.target.value))}
+								>
+									{[6, 12, 24, 48, 72].map((hours) => (
+										<MenuItem key={hours} value={String(hours)}>{hours} h</MenuItem>
+									))}
+								</Select>
+							</FormControl>
 							<FormControl size="small" fullWidth>
 								<InputLabel id="quote-expiry-days-label">{t.settings.quoteExpiryDays}</InputLabel>
 								<Select

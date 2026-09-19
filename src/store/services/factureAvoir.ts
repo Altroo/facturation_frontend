@@ -8,11 +8,7 @@ import type { FactureAvoirListResponseType } from '@/types/companyDocumentsTypes
 import type { RootState } from '@/store/store';
 import { initToken } from '@/store/slices/_initSlice';
 import type { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
-
-export type FactureAvoirFromFactureResponse = Partial<FactureAvoirClass> & {
-	facture_total?: string;
-	already_credited_total?: string;
-};
+import type { FactureAvoirFromFactureResponse } from '@/types/facturationTypes';
 
 export const factureAvoirApi = createApi({
 	reducerPath: 'factureAvoirApi',

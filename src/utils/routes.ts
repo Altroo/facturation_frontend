@@ -87,6 +87,23 @@ export const LOGISTIQUE_VIEW = (id: number, company_id: number) =>
 	`${SITE_ROOT}dashboard/logistique/${id}/?company_id=${company_id}`;
 export const LOGISTIQUE_EDIT = (id: number, company_id: number) =>
 	`${SITE_ROOT}dashboard/logistique/${id}/edit/?company_id=${company_id}`;
+// Stock
+export const STOCK_LIST = `${SITE_ROOT}dashboard/stock`;
+export const STOCK_ADD = (company_id: number, balance_id?: number) =>
+	`${SITE_ROOT}dashboard/stock/new/?company_id=${company_id}${balance_id ? `&balance_id=${balance_id}` : ''}`;
+export const STOCK_VIEW = (id: number, company_id: number) => `${SITE_ROOT}dashboard/stock/${id}/?company_id=${company_id}`;
+export const STOCK_MOVEMENTS = `${SITE_ROOT}dashboard/stock/movements`;
+export const STOCK_MOVEMENT_VIEW = (id: number, company_id: number) =>
+	`${SITE_ROOT}dashboard/stock/movements/${id}/?company_id=${company_id}`;
+export const STOCK_RECEIPTS = `${SITE_ROOT}dashboard/stock/receipts`;
+export const STOCK_RECEIPTS_ADD = (company_id: number) => `${SITE_ROOT}dashboard/stock/receipts/new/?company_id=${company_id}`;
+export const STOCK_RECEIPT_VIEW = (id: number, company_id: number) =>
+	`${SITE_ROOT}dashboard/stock/receipts/${id}/?company_id=${company_id}`;
+export const STOCK_INVENTORIES = `${SITE_ROOT}dashboard/stock/inventories`;
+export const STOCK_INVENTORIES_ADD = (company_id: number) =>
+	`${SITE_ROOT}dashboard/stock/inventories/new/?company_id=${company_id}`;
+export const STOCK_INVENTORY_VIEW = (id: number, company_id: number) =>
+	`${SITE_ROOT}dashboard/stock/inventories/${id}/?company_id=${company_id}`;
 // Reglement
 export const REGLEMENTS_LIST = `${SITE_ROOT}dashboard/reglements`;
 export const REGLEMENTS_ADD = (company_id: number, facture_client_id?: number) =>

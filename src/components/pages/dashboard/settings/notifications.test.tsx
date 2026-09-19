@@ -44,6 +44,8 @@ jest.mock('@/store/services/notification', () => ({
 			notify_expiring_quote: false,
 			notify_uninvoiced_bdl: true,
 			notify_document_created: true,
+			notify_low_stock: true,
+			low_stock_repeat_hours: 24,
 			quote_expiry_days: 7,
 		},
 		isLoading: false,
@@ -104,6 +106,7 @@ describe('NotificationsClient', () => {
 		expect(screen.getByText('Devis expirant bientôt')).toBeInTheDocument();
 		expect(screen.getByText('Bons de livraison non facturés')).toBeInTheDocument();
 		expect(screen.getByText('Création de documents')).toBeInTheDocument();
+		expect(screen.getByText('Stock minimum atteint')).toBeInTheDocument();
 		expect(screen.getByLabelText('Alerter X jours après envoi du devis')).toBeInTheDocument();
 	});
 
@@ -113,6 +116,7 @@ describe('NotificationsClient', () => {
 		expect(screen.getByLabelText('Devis expirant bientôt')).not.toBeChecked();
 		expect(screen.getByLabelText('Bons de livraison non facturés')).toBeChecked();
 		expect(screen.getByLabelText('Création de documents')).toBeChecked();
+		expect(screen.getByLabelText('Stock minimum atteint')).toBeChecked();
 	});
 
 	it('calls updatePreferences on submit', async () => {
@@ -124,6 +128,8 @@ describe('NotificationsClient', () => {
 				notify_expiring_quote: false,
 				notify_uninvoiced_bdl: true,
 				notify_document_created: true,
+				notify_low_stock: true,
+				low_stock_repeat_hours: 24,
 				quote_expiry_days: 7,
 			});
 		});

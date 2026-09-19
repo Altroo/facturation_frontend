@@ -24,6 +24,12 @@ type Ligne = {
 	quantity?: number | string | null;
 	remise?: number | string | null;
 	remise_type?: TypeRemiseType | null;
+	stock_coverage?: {
+		status: 'not_managed' | 'disponible' | 'couvert_par_stock_entrant' | 'a_approvisionner';
+		available_quantity?: number | string;
+		incoming_quantity?: number | string;
+		shortage_quantity?: number | string;
+	} | null;
 };
 
 type TotalsFields = {

@@ -95,6 +95,7 @@ const CustomAutoCompleteSelect: React.FC<Props> = ({
 						sx={{
 							'& .MuiOutlinedInput-root': {
 								borderRadius: '12px',
+								...(startIcon ? { paddingLeft: '14px !important' } : {}),
 							},
 						}}
 						slotProps={{

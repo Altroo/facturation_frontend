@@ -163,6 +163,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			cachet_cropped: rawData?.cachet_cropped ?? '',
 			managed_by: computedManagedBy,
 			uses_foreign_currency: rawData?.uses_foreign_currency ?? false,
+			stock_management_enabled: rawData?.stock_management_enabled ?? false,
 			globalError: '',
 		},
 		enableReinitialize: true,
@@ -226,17 +227,19 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			const userId = parseInt(selectedUser.value);
 			const userData = usersData?.find((u) => u.id === userId);
 			if (userData?.id && userData.first_name && userData.last_name) {
-				formik.setFieldValue('managed_by', [
-					...formik.values.managed_by,
-					{
-						pk: userData.id,
-						role: selectedRole,
-						first_name: userData.first_name,
-						last_name: userData.last_name,
-						can_validate_factures: false,
-						can_change_document_status: false,
-					},
-				]).then();
+				formik
+					.setFieldValue('managed_by', [
+						...formik.values.managed_by,
+						{
+							pk: userData.id,
+							role: selectedRole,
+							first_name: userData.first_name,
+							last_name: userData.last_name,
+							can_validate_factures: false,
+							can_change_document_status: false,
+						},
+					])
+					.then();
 				setSelectedUser(null);
 				setSelectedRole('');
 			}
@@ -268,6 +271,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			cachet_cropped: t.companies.stampLabel,
 			managed_by: t.companies.managersSection,
 			uses_foreign_currency: t.companies.foreignCurrencyLabel,
+			stock_management_enabled: t.companies.stockManagementLabel,
 			globalError: t.common.genericError,
 		}),
 		[t],
@@ -767,6 +771,20 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									}
 									label={t.companies.foreignCurrencyLabel}
 								/>
+								<FormControlLabel
+									control={
+										<Switch
+											checked={formik.values.stock_management_enabled}
+											onChange={(e) => formik.setFieldValue('stock_management_enabled', e.target.checked)}
+											disabled={rawData?.stock_management_enabled === true}
+											color="primary"
+										/>
+									}
+									label={t.companies.stockManagementLabel}
+								/>
+								<Typography variant="caption" color="text.secondary">
+									{t.companies.stockManagementHelper}
+								</Typography>
 							</CardContent>
 						</Card>
 

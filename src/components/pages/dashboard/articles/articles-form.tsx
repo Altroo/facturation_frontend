@@ -170,6 +170,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			photo_cropped: rawData?.photo ?? '',
 			// default 20 unless backend gives another value
 			tva: rawData?.tva ?? 20,
+			stock_minimum: rawData?.stock_minimum ?? 0,
 			remarque: rawData?.remarque ?? '',
 			globalError: '',
 		},
@@ -292,6 +293,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			prix_achat: isNectarCompany ? t.articles.colPrixTTC : t.articles.colPrixAchat,
 			prix_vente: prixHTLabel,
 			tva: t.articles.fieldTva,
+			stock_minimum: 'Stock minimum',
 			categorie: t.articles.filterCategorie,
 			emplacement: t.articles.filterEmplacement,
 			unite: t.articles.filterUnite,
@@ -497,6 +499,28 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										theme={inputTheme}
 										startIcon={<DescriptionIcon fontSize="small" />}
 									/>
+									{formik.values.type_article === 'Produit' && companyData?.stock_management_enabled && (
+										<FormattedNumberInput
+											id="stock_minimum"
+											type="text"
+											label="Stock minimum"
+											value={formik.values.stock_minimum ?? 0}
+											onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+												const parsed = parseNumber(e.target.value);
+												if (parsed !== null && parsed >= 0) formik.setFieldValue('stock_minimum', parsed);
+											}}
+											onBlur={formik.handleBlur('stock_minimum')}
+											error={formik.touched.stock_minimum && Boolean(formik.errors.stock_minimum)}
+											helperText={
+												formik.touched.stock_minimum ? formik.errors.stock_minimum : '0 désactive les alertes'
+											}
+											fullWidth={false}
+											size="small"
+											theme={inputTheme}
+											startIcon={<WarningIcon fontSize="small" />}
+											decimals={3}
+										/>
+									)}
 								</Stack>
 							</CardContent>
 						</Card>

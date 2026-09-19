@@ -13,6 +13,7 @@ import {
 	Edit as EditIcon,
 	Fingerprint as FingerprintIcon,
 	Inventory2 as Inventory2Icon,
+	LocalShipping as LocalShippingIcon,
 	LocationOn as LocationOnIcon,
 	Notes as NotesIcon,
 	Receipt as ReceiptIcon,
@@ -20,6 +21,7 @@ import {
 	ShoppingCart as ShoppingCartIcon,
 	Star as StarIcon,
 	Straighten as StraightenIcon,
+	Warning as WarningIcon,
 } from '@mui/icons-material';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { ARTICLES_EDIT, ARTICLES_LIST } from '@/utils/routes';
@@ -425,6 +427,27 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									</Stack>
 								</CardContent>
 							</Card>
+
+							{client?.stock_management_enabled && client.type_article === 'Produit' && (
+								<Card elevation={2} sx={{ borderRadius: 2 }}>
+									<CardContent sx={{ p: 3 }}>
+										<Stack direction="row" spacing={2} sx={{ alignItems: 'center', mb: 2 }}>
+											<Inventory2Icon color="primary" />
+											<Typography variant="h6" sx={{ fontWeight: 700 }}>Stock</Typography>
+										</Stack>
+										<Divider />
+										<InfoRow icon={<Inventory2Icon />} label="Physique" value={formatNumberWithSpaces(client.physical_quantity, 3)} />
+										<Divider />
+										<InfoRow icon={<Inventory2Icon />} label="Réservé" value={formatNumberWithSpaces(client.reserved_quantity, 3)} />
+										<Divider />
+										<InfoRow icon={<Inventory2Icon />} label="Disponible" value={formatNumberWithSpaces(client.available_quantity, 3)} />
+										<Divider />
+										<InfoRow icon={<LocalShippingIcon />} label="Entrant" value={formatNumberWithSpaces(client.incoming_quantity, 3)} />
+										<Divider />
+										<InfoRow icon={<WarningIcon />} label="Stock minimum" value={formatNumberWithSpaces(client.stock_minimum, 3)} />
+									</CardContent>
+								</Card>
+							)}
 
 							{/* Remarque */}
 							<Card elevation={2} sx={{ borderRadius: 2 }}>

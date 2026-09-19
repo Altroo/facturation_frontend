@@ -469,6 +469,25 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				</DarkTooltip>
 			),
 		},
+		...(companyData?.stock_management_enabled
+			? [
+					{
+						field: 'available_quantity',
+						headerName: 'Stock disponible',
+						flex: 1,
+						minWidth: 125,
+						type: 'number' as const,
+						renderCell: (params: GridRenderCellParams<ArticleClass>) => (
+							<Chip
+								size="small"
+								label={params.row.type_article === 'Service' ? '—' : formatNumberWithSpaces(params.value, 3)}
+								color={params.row.stock_state === 'minimum' || params.row.stock_state === 'a_approvisionner' ? 'warning' : 'success'}
+								variant="outlined"
+							/>
+						),
+					},
+			  ]
+			: []),
 		{
 			field: 'prix_achat',
 			headerName: t.articles.colPrixAchat,

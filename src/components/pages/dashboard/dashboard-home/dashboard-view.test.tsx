@@ -23,7 +23,7 @@ import type {
 	ProductMarginVolumeData,
 	MonthlyGlobalPerformanceData,
 	SectionMicroTrendsData,
-} from '@/store/services/dashboard';
+} from '@/types/dashboardTypes';
 
 // Define hook return type for proper typing
 interface QueryResult<T> {
@@ -225,6 +225,25 @@ jest.mock('@/store/services/company', () => ({
 	__esModule: true,
 	useGetCompanyQuery: () => ({
 		data: { id: 1, uses_foreign_currency: false },
+		isLoading: false,
+		error: undefined,
+		refetch: jest.fn(),
+	}),
+}));
+
+// Mock client service used by the dashboard filters
+jest.mock('@/store/services/client', () => ({
+	__esModule: true,
+	useGetClientsListQuery: () => ({
+		data: [
+			{
+				id: 1,
+				raison_sociale: 'Client A',
+				nom: '',
+				prenom: '',
+				code_client: 'CLI001',
+			},
+		],
 		isLoading: false,
 		error: undefined,
 		refetch: jest.fn(),

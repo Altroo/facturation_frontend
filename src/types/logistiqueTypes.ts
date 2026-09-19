@@ -64,6 +64,11 @@ export type LogistiqueLine = {
 	marque_name: string;
 	project_reference: string;
 	quantity: number | string;
+	received_quantity: number | string;
+	remaining_quantity: number | string;
+	expected_emplacement: number | null;
+	expected_emplacement_name: string | null;
+	incoming_active: boolean;
 	prix_achat: number | string;
 	devise_prix_achat: string;
 	prix_vente: number | string;

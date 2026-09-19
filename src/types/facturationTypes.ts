@@ -1,11 +1,19 @@
+import type { FactureAvoirClass } from '@/models/classes';
+
 // Notification types for the facturation system
+
+export type FactureAvoirFromFactureResponse = Partial<FactureAvoirClass> & {
+	facture_total?: string;
+	already_credited_total?: string;
+};
 
 export type NotificationTypeValue =
 	| 'overdue_invoice'
 	| 'expiring_quote'
 	| 'uninvoiced_bdl'
 	| 'status_change'
-	| 'document_created';
+	| 'document_created'
+	| 'low_stock';
 
 export type QuoteExpiryDaysValue = 0 | 1 | 3 | 7 | 14 | 30;
 
@@ -26,6 +34,8 @@ export interface NotificationPreferenceType {
 	notify_expiring_quote: boolean;
 	notify_uninvoiced_bdl: boolean;
 	notify_document_created: boolean;
+	notify_low_stock: boolean;
+	low_stock_repeat_hours: number;
 	quote_expiry_days: QuoteExpiryDaysValue;
 	date_created: string;
 	date_updated: string;
@@ -36,6 +46,8 @@ export interface NotificationPreferenceFormValues {
 	notify_expiring_quote: boolean;
 	notify_uninvoiced_bdl: boolean;
 	notify_document_created: boolean;
+	notify_low_stock: boolean;
+	low_stock_repeat_hours: number;
 	quote_expiry_days: QuoteExpiryDaysValue;
 	globalError: string;
 }

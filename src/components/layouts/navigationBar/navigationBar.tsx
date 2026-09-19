@@ -43,6 +43,7 @@ import {
 	ReceiptLongOutlined as ReceiptLongOutlinedIcon,
 	RequestQuote as RequestQuoteIcon,
 	LocalShipping as LocalShippingIcon,
+	Inventory2 as Inventory2Icon,
 	Warehouse as WarehouseIcon,
 	Payment as PaymentIcon,
 	Domain as DomainIcon,
@@ -79,6 +80,10 @@ import {
 	FACTURE_PRO_FORMA_LIST,
 	LOGISTIQUE_DASHBOARD,
 	LOGISTIQUE_LIST,
+	STOCK_INVENTORIES,
+	STOCK_LIST,
+	STOCK_MOVEMENTS,
+	STOCK_RECEIPTS,
 	REGLEMENTS_LIST,
 	SITE_ROOT,
 	USERS_ADD,
@@ -159,6 +164,16 @@ const getNavigationMenu = (isStaff: boolean, t: TranslationDictionary) => {
 			items: [
 				{ title: t.navigation.logistiqueDashboard, label: t.navigation.logistiqueDashboard, path: LOGISTIQUE_DASHBOARD },
 				{ title: t.navigation.logistiqueList, label: t.navigation.logistiqueList, path: LOGISTIQUE_LIST },
+			],
+		},
+		stock: {
+			title: t.navigation.stock,
+			icon: <Inventory2Icon />,
+			items: [
+				{ title: t.navigation.stockState, label: t.navigation.stockState, path: STOCK_LIST },
+				{ title: t.navigation.stockMovements, label: t.navigation.stockMovements, path: STOCK_MOVEMENTS },
+				{ title: t.navigation.stockReceipts, label: t.navigation.stockReceipts, path: STOCK_RECEIPTS },
+				{ title: t.navigation.stockInventories, label: t.navigation.stockInventories, path: STOCK_INVENTORIES },
 			],
 		},
 		reglement: {

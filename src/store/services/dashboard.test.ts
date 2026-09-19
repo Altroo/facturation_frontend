@@ -1,4 +1,30 @@
-// Mock axiosBaseQuery BEFORE importing dashboard - jest.mock is hoisted
+import { configureStore } from '@reduxjs/toolkit';
+import * as axiosBaseQueryModule from '@/utils/axiosBaseQuery';
+import { dashboardApi, buildDateQueryString } from './dashboard';
+import type {
+	ClientMultidimensionalData,
+	CollectionRateData,
+	DateFilterParams,
+	DiscountImpactData,
+	InvoiceStatusData,
+	KPICardsData,
+	MonthlyDocumentVolumeData,
+	MonthlyGlobalPerformanceData,
+	MonthlyObjectivesData,
+	MonthlyRevenueData,
+	OverdueReceivablesData,
+	PaymentDelayData,
+	PaymentStatusData,
+	PaymentTimelineData,
+	ProductMarginVolumeData,
+	ProductPriceVolumeData,
+	QuoteConversionData,
+	RevenueByTypeData,
+	SectionMicroTrendsData,
+	TopClientData,
+	TopProductData,
+} from '@/types/dashboardTypes';
+
 jest.mock('@/utils/axiosBaseQuery', () => {
 	const fn = jest.fn(() => Promise.resolve({ data: {} }));
 	return {
@@ -20,32 +46,9 @@ jest.mock('@/store/slices/_initSlice', () => ({
 	initToken: jest.fn(),
 }));
 
-import { configureStore } from '@reduxjs/toolkit';
-import {
-	dashboardApi,
-	buildDateQueryString,
-	type DateFilterParams,
-	type MonthlyRevenueData,
-	type RevenueByTypeData,
-	type PaymentStatusData,
-	type CollectionRateData,
-	type TopClientData,
-	type TopProductData,
-	type QuoteConversionData,
-	type ProductPriceVolumeData,
-	type InvoiceStatusData,
-	type MonthlyDocumentVolumeData,
-	type PaymentTimelineData,
-	type OverdueReceivablesData,
-	type PaymentDelayData,
-	type ClientMultidimensionalData,
-	type KPICardsData,
-	type MonthlyObjectivesData,
-	type DiscountImpactData,
-	type ProductMarginVolumeData,
-	type MonthlyGlobalPerformanceData,
-	type SectionMicroTrendsData,
-} from './dashboard';
+const mockDashboardBaseQuery = (
+	axiosBaseQueryModule as typeof axiosBaseQueryModule & { __mockFn: jest.Mock }
+).__mockFn;
 
 describe('dashboardApi', () => {
 	it('should be defined', () => {
@@ -323,14 +326,9 @@ describe('dashboardApi', () => {
 		const mutationEndpoints = [
 			'createMonthlyObjectivesSettings',
 			'updateMonthlyObjectivesSettings',
-			'patchMonthlyObjectivesSettings',
-			'deleteMonthlyObjectivesSettings',
 		] as const;
 
-		const settingsQueryEndpoints = [
-			'getAllMonthlyObjectivesSettings',
-			'getMonthlyObjectivesSettingsByCompany',
-		] as const;
+		const settingsQueryEndpoints = ['getMonthlyObjectivesSettingsByCompany'] as const;
 
 		it.each(queryEndpoints)('endpoint %s has initiate method', (name) => {
 			const endpoint = dashboardApi.endpoints[name];
@@ -373,13 +371,9 @@ describe('dashboardApi', () => {
 				middleware: (getDefault) => getDefault().concat(dashboardApi.middleware),
 			});
 
-		const getMockBaseQuery = () =>
-			(jest.requireMock('@/utils/axiosBaseQuery') as { __mockFn: jest.Mock }).__mockFn;
-
 		beforeEach(() => {
-			const fn = getMockBaseQuery();
-			fn.mockReset();
-			fn.mockResolvedValue({ data: {} });
+			mockDashboardBaseQuery.mockReset();
+			mockDashboardBaseQuery.mockResolvedValue({ data: {} });
 		});
 
 		const dateQueryEndpoints = [
@@ -409,7 +403,7 @@ describe('dashboardApi', () => {
 			'dispatching %s calls query with correct URL',
 			async (endpointName, expectedUrlPrefix) => {
 				const store = createTestStore();
-				const fn = getMockBaseQuery();
+				const fn = mockDashboardBaseQuery;
 				const callCountBefore = fn.mock.calls.length;
 				const endpoint = dashboardApi.endpoints[endpointName];
 				const action = endpoint.initiate({ company_id: 1 } as DateFilterParams);
@@ -423,32 +417,21 @@ describe('dashboardApi', () => {
 			},
 		);
 
-		it('dispatches getAllMonthlyObjectivesSettings', async () => {
-			const store = createTestStore();
-			const fn = getMockBaseQuery();
-			const before = fn.mock.calls.length;
-			store.dispatch(dashboardApi.endpoints.getAllMonthlyObjectivesSettings.initiate());
-			await new Promise((r) => setTimeout(r, 50));
-			const lastCall = fn.mock.calls[fn.mock.calls.length - 1];
-			expect(fn.mock.calls.length).toBeGreaterThan(before);
-			expect((lastCall[0] as Record<string, unknown>).url).toBe('/dashboard/objectives/');
-			expect((lastCall[0] as Record<string, unknown>).method).toBe('GET');
-		});
-
 		it('dispatches getMonthlyObjectivesSettingsByCompany', async () => {
 			const store = createTestStore();
-			const fn = getMockBaseQuery();
+			const fn = mockDashboardBaseQuery;
 			const before = fn.mock.calls.length;
-			store.dispatch(dashboardApi.endpoints.getMonthlyObjectivesSettingsByCompany.initiate(5));
+			store.dispatch(dashboardApi.endpoints.getMonthlyObjectivesSettingsByCompany.initiate(7));
 			await new Promise((r) => setTimeout(r, 50));
 			const lastCall = fn.mock.calls[fn.mock.calls.length - 1];
 			expect(fn.mock.calls.length).toBeGreaterThan(before);
-			expect((lastCall[0] as Record<string, unknown>).url).toBe('/dashboard/objectives/by-company/5/');
+			expect((lastCall[0] as Record<string, unknown>).url).toBe('/dashboard/objectives/by-company/7/');
+			expect((lastCall[0] as Record<string, unknown>).method).toBe('GET');
 		});
 
 		it('dispatches createMonthlyObjectivesSettings', async () => {
 			const store = createTestStore();
-			const fn = getMockBaseQuery();
+			const fn = mockDashboardBaseQuery;
 			const before = fn.mock.calls.length;
 			store.dispatch(
 				dashboardApi.endpoints.createMonthlyObjectivesSettings.initiate({
@@ -466,7 +449,7 @@ describe('dashboardApi', () => {
 
 		it('dispatches updateMonthlyObjectivesSettings', async () => {
 			const store = createTestStore();
-			const fn = getMockBaseQuery();
+			const fn = mockDashboardBaseQuery;
 			const before = fn.mock.calls.length;
 			store.dispatch(
 				dashboardApi.endpoints.updateMonthlyObjectivesSettings.initiate({
@@ -481,33 +464,5 @@ describe('dashboardApi', () => {
 			expect((lastCall[0] as Record<string, unknown>).method).toBe('PUT');
 		});
 
-		it('dispatches patchMonthlyObjectivesSettings', async () => {
-			const store = createTestStore();
-			const fn = getMockBaseQuery();
-			const before = fn.mock.calls.length;
-			store.dispatch(
-				dashboardApi.endpoints.patchMonthlyObjectivesSettings.initiate({
-					id: 2,
-					data: { objectif_ca: '15000' },
-				}),
-			);
-			await new Promise((r) => setTimeout(r, 50));
-			const lastCall = fn.mock.calls[fn.mock.calls.length - 1];
-			expect(fn.mock.calls.length).toBeGreaterThan(before);
-			expect((lastCall[0] as Record<string, unknown>).url).toBe('/dashboard/objectives/2/');
-			expect((lastCall[0] as Record<string, unknown>).method).toBe('PATCH');
-		});
-
-		it('dispatches deleteMonthlyObjectivesSettings', async () => {
-			const store = createTestStore();
-			const fn = getMockBaseQuery();
-			const before = fn.mock.calls.length;
-			store.dispatch(dashboardApi.endpoints.deleteMonthlyObjectivesSettings.initiate(3));
-			await new Promise((r) => setTimeout(r, 50));
-			const lastCall = fn.mock.calls[fn.mock.calls.length - 1];
-			expect(fn.mock.calls.length).toBeGreaterThan(before);
-			expect((lastCall[0] as Record<string, unknown>).url).toBe('/dashboard/objectives/3/');
-			expect((lastCall[0] as Record<string, unknown>).method).toBe('DELETE');
-		});
 	});
 });

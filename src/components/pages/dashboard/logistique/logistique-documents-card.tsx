@@ -40,9 +40,9 @@ export type LogistiqueDocumentItem = {
 type LogistiqueDocumentsFormCardProps = {
 	items: LogistiqueDocumentItem[];
 	selectedField: LogistiqueDocumentField;
-	onSelectedFieldChange: (field: LogistiqueDocumentField) => void;
-	onFileChange: (field: LogistiqueDocumentField, file: File | null) => void;
-	onClearFile: (field: LogistiqueDocumentField) => void;
+	onSelectedFieldChangeAction: (field: LogistiqueDocumentField) => void;
+	onFileChangeAction: (field: LogistiqueDocumentField, file: File | null) => void;
+	onClearFileAction: (field: LogistiqueDocumentField) => void;
 	isLoading?: boolean;
 	accept?: string;
 };
@@ -192,9 +192,9 @@ const Header: React.FC<{ count: number }> = ({ count }) => {
 export const LogistiqueDocumentsFormCard: React.FC<LogistiqueDocumentsFormCardProps> = ({
 	items,
 	selectedField,
-	onSelectedFieldChange,
-	onFileChange,
-	onClearFile,
+	onSelectedFieldChangeAction,
+	onFileChangeAction,
+	onClearFileAction,
 	isLoading = false,
 	accept,
 }) => {
@@ -207,7 +207,7 @@ export const LogistiqueDocumentsFormCard: React.FC<LogistiqueDocumentsFormCardPr
 
 	const handleFiles = (files: File[]) => {
 		if (!selectedItem || files.length === 0) return;
-		onFileChange(selectedItem.field, files[0]);
+		onFileChangeAction(selectedItem.field, files[0]);
 	};
 
 	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -228,13 +228,17 @@ export const LogistiqueDocumentsFormCard: React.FC<LogistiqueDocumentsFormCardPr
 				<Divider />
 
 				<Stack spacing={2} sx={{ p: 3 }}>
-					<Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5} sx={{ alignItems: { xs: 'stretch', md: 'center' } }}>
+					<Stack
+						direction={{ xs: 'column', md: 'row' }}
+						spacing={1.5}
+						sx={{ alignItems: { xs: 'stretch', md: 'center' } }}
+					>
 						<TextField
 							select
 							size="small"
 							label={t.logistique.attachmentLabel}
 							value={selectedItem?.field ?? ''}
-							onChange={(event) => onSelectedFieldChange(event.target.value as LogistiqueDocumentField)}
+							onChange={(event) => onSelectedFieldChangeAction(event.target.value as LogistiqueDocumentField)}
 							fullWidth
 						>
 							{items.map((item) => (
@@ -372,7 +376,7 @@ export const LogistiqueDocumentsFormCard: React.FC<LogistiqueDocumentsFormCardPr
 															disabled={isLoading}
 															onClick={(event) => {
 																event.stopPropagation();
-																onClearFile(item.field);
+																onClearFileAction(item.field);
 															}}
 														>
 															<ClearIcon fontSize="small" />
@@ -392,17 +396,33 @@ export const LogistiqueDocumentsFormCard: React.FC<LogistiqueDocumentsFormCardPr
 	);
 };
 
-export const LogistiqueDocumentsViewCard: React.FC<LogistiqueDocumentsViewCardProps> = ({ items, isLoading = false }) => {
+export const LogistiqueDocumentsViewCard: React.FC<LogistiqueDocumentsViewCardProps> = ({
+	items,
+	isLoading = false,
+}) => {
 	const { t } = useLanguage();
 	const attachments = items.filter((item) => item.currentUrl);
 
 	return (
-		<Card elevation={2} sx={{ borderRadius: 2, overflow: 'hidden' }}>
-			<CardContent sx={{ p: 0 }}>
-				<Header count={attachments.length} />
-				<Divider />
+		<Card elevation={2} sx={{ borderRadius: 2 }}>
+			<CardContent sx={{ p: 3 }}>
+				<Stack direction="row" spacing={2} sx={{ alignItems: 'center', mb: 2 }}>
+					<AttachFileIcon color="primary" />
+					<Typography variant="h6" sx={{ fontWeight: 700 }}>
+						{t.logistique.attachmentsTitle}
+					</Typography>
+					<Chip
+						label={`${attachments.length} ${
+							attachments.length > 1 ? t.logistique.attachmentFiles : t.logistique.attachmentFile
+						}`}
+						size="small"
+						variant="outlined"
+						sx={{ ml: 'auto !important' }}
+					/>
+				</Stack>
+				<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 
-				<Stack spacing={2} sx={{ p: 3 }}>
+				<Stack spacing={2}>
 					{isLoading ? <LinearProgress /> : null}
 
 					{!isLoading && attachments.length === 0 ? (

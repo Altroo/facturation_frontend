@@ -57,6 +57,8 @@ type PaginatedDataGridProps<T> = {
 	onClearAllMatchingSelected?: () => void;
 	/** Maximum content width for the grid wrapper. Defaults to full-width; pass a number/string to cap a compact grid. */
 	gridMaxWidth?: number | string | false;
+	/** Removes page-level spacing when the grid is rendered inside a view card. */
+	embedded?: boolean;
 };
 
 /** Type guard for DateRangeFilterValue */
@@ -154,6 +156,7 @@ const PaginatedDataGrid = <T,>({
 	isAllMatchingSelected,
 	onClearAllMatchingSelected,
 	gridMaxWidth = false,
+	embedded = false,
 }: PaginatedDataGridProps<T>) => {
 	const { t } = useLanguage();
 	const [internalFilterModel, setInternalFilterModel] = useState<GridFilterModel>({
@@ -359,7 +362,7 @@ const PaginatedDataGrid = <T,>({
 				direction="column"
 				spacing={2}
 				sx={{
-					mt: '32px',
+					mt: embedded ? 0 : '32px',
 					overflowX: 'auto',
 					overflowY: 'hidden',
 				}}
@@ -371,8 +374,8 @@ const PaginatedDataGrid = <T,>({
 							width: '100%',
 							WebkitOverflowScrolling: 'touch',
 							overscrollBehavior: 'contain',
-							px: { xs: 1, sm: 2, md: 3 },
-							mb: { xs: 1, sm: 2, md: 3 },
+							px: embedded ? 0 : { xs: 1, sm: 2, md: 3 },
+							mb: embedded ? 0 : { xs: 1, sm: 2, md: 3 },
 						}}
 					>
 						<Box
@@ -475,6 +478,15 @@ const PaginatedDataGrid = <T,>({
 								onFilterModelChange={handleFilterChange}
 								sx={{
 									height: '100%',
+									'& .MuiDataGrid-toolbar': {
+										position: { xs: 'sticky', md: 'static' },
+										left: 0,
+										zIndex: 1,
+									width: embedded
+										? 'auto'
+										: { xs: 'calc(100vw - 16px)', sm: 'calc(100vw - 32px)', md: 'auto' },
+										bgcolor: 'background.paper',
+									},
 									'& .MuiDataGrid-cell': { display: 'flex', alignItems: 'center' },
 									'& .MuiDataGrid-row:hover': { cursor: 'pointer' },
 								}}

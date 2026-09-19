@@ -606,6 +606,30 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 					},
 				},
 				{
+					field: 'stock_coverage',
+					headerName: 'Disponibilité',
+					flex: 1.2,
+					minWidth: 170,
+					sortable: false,
+					filterable: false,
+					renderCell: (params: GridRenderCellParams) => {
+						const coverage = (params.row as {
+							stock_coverage?: { status?: string; available_quantity?: number | string; incoming_quantity?: number | string };
+						}).stock_coverage;
+						const labels: Record<string, string> = {
+							disponible: 'Disponible',
+							couvert_par_stock_entrant: 'Couvert par stock entrant',
+							a_approvisionner: 'À approvisionner',
+							not_managed: 'Non géré',
+						};
+						const color = coverage?.status === 'disponible' ? 'success' : coverage?.status === 'couvert_par_stock_entrant' ? 'info' : coverage?.status === 'a_approvisionner' ? 'warning' : 'default';
+						const detail = coverage?.status === 'couvert_par_stock_entrant'
+							? `Disponible ${formatNumberWithSpaces(coverage.available_quantity, 3)}, entrant ${formatNumberWithSpaces(coverage.incoming_quantity, 3)}`
+							: '';
+						return <DarkTooltip title={detail}><Chip size="small" color={color} label={labels[coverage?.status ?? 'not_managed']} /></DarkTooltip>;
+					},
+				},
+				{
 					field: 'taxes',
 					headerName: t.documentForm.colTaxes,
 					flex: 0.8,
@@ -693,10 +717,11 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 					},
 				},
 			].filter((column) => {
+				if (column.field === 'stock_coverage' && type !== 'devis') return false;
 				if (!isNectarCompany) return !['taxes', 'montant'].includes(column.field);
 				return !['prix_achat', 'remise_type', 'remise'].includes(column.field);
 			}),
-		[articlesData, t, isNectarCompany],
+		[articlesData, t, isNectarCompany, type],
 	);
 
 	const dateLabel = formatDate(getDocumentDateRaw(rawData) ?? null) || '-';

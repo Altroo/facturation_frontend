@@ -33,13 +33,6 @@ export const citiesApi = createApi({
 			}),
 			providesTags: ['Cities'],
 		}),
-		getCity: builder.query<CitiesClass, { id: number }>({
-			query: ({ id }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_VILLE}${id}/`,
-				method: 'GET',
-			}),
-			providesTags: ['Cities'],
-		}),
 		deleteCity: builder.mutation<void | ApiErrorResponseType, { id: number }>({
 			query: ({ id }) => ({
 				url: `${process.env.NEXT_PUBLIC_PARAMETER_VILLE}${id}/`,
@@ -84,13 +77,6 @@ export const marqueApi = createApi({
 			}),
 			providesTags: ['Marque'],
 		}),
-		getMarque: builder.query<MarqueClass, { id: number }>({
-			query: ({ id }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_MARQUE}${id}/`,
-				method: 'GET',
-			}),
-			providesTags: ['Marque'],
-		}),
 		deleteMarque: builder.mutation<void | ApiErrorResponseType, { id: number }>({
 			query: ({ id }) => ({
 				url: `${process.env.NEXT_PUBLIC_PARAMETER_MARQUE}${id}/`,
@@ -132,13 +118,6 @@ export const categorieApi = createApi({
 				url: process.env.NEXT_PUBLIC_PARAMETER_CATEGORIE,
 				method: 'GET',
 				params: { company_id },
-			}),
-			providesTags: ['Categorie'],
-		}),
-		getCategorie: builder.query<CategorieClass, { id: number }>({
-			query: ({ id }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_CATEGORIE}${id}/`,
-				method: 'GET',
 			}),
 			providesTags: ['Categorie'],
 		}),
@@ -188,13 +167,6 @@ export const uniteApi = createApi({
 			}),
 			providesTags: ['Unite'],
 		}),
-		getUnite: builder.query<UniteClass, { id: number }>({
-			query: ({ id }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_UNITE}${id}/`,
-				method: 'GET',
-			}),
-			providesTags: ['Unite'],
-		}),
 		deleteUnite: builder.mutation<void | ApiErrorResponseType, { id: number }>({
 			query: ({ id }) => ({
 				url: `${process.env.NEXT_PUBLIC_PARAMETER_UNITE}${id}/`,
@@ -236,13 +208,6 @@ export const emplacementApi = createApi({
 				url: process.env.NEXT_PUBLIC_PARAMETER_EMPLACEMENT,
 				method: 'GET',
 				params: { company_id },
-			}),
-			providesTags: ['Emplacement'],
-		}),
-		getEmplacement: builder.query<EmplacementClass, { id: number }>({
-			query: ({ id }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_EMPLACEMENT}${id}/`,
-				method: 'GET',
 			}),
 			providesTags: ['Emplacement'],
 		}),
@@ -293,13 +258,6 @@ export const modePaiementApi = createApi({
 			}),
 			providesTags: ['ModePaiement'],
 		}),
-		getModePaiement: builder.query<ModePaiementClass, { id: number }>({
-			query: ({ id }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_PAIEMENT}${id}/`,
-				method: 'GET',
-			}),
-			providesTags: ['ModePaiement'],
-		}),
 		deleteModePaiement: builder.mutation<void | ApiErrorResponseType, { id: number }>({
 			query: ({ id }) => ({
 				url: `${process.env.NEXT_PUBLIC_PARAMETER_MODE_PAIEMENT}${id}/`,
@@ -347,13 +305,6 @@ export const livreParApi = createApi({
 			}),
 			providesTags: ['LivrePar'],
 		}),
-		getLivrePar: builder.query<LivreParClass, { id: number }>({
-			query: ({ id }) => ({
-				url: `${process.env.NEXT_PUBLIC_PARAMETER_LIVRE_PAR}${id}/`,
-				method: 'GET',
-			}),
-			providesTags: ['LivrePar'],
-		}),
 		deleteLivrePar: builder.mutation<void | ApiErrorResponseType, { id: number }>({
 			query: ({ id }) => ({
 				url: `${process.env.NEXT_PUBLIC_PARAMETER_LIVRE_PAR}${id}/`,
@@ -384,7 +335,6 @@ export const {
 	useGetModePaiementListQuery,
 	useDeleteModePaiementMutation,
 	useEditModePaiementMutation,
-	useGetModePaiementQuery,
 	useAddModePaiementMutation,
 } = modePaiementApi;
 
@@ -392,7 +342,6 @@ export const {
 	useGetMarqueListQuery,
 	useDeleteMarqueMutation,
 	useEditMarqueMutation,
-	useGetMarqueQuery,
 	useAddMarqueMutation,
 } = marqueApi;
 
@@ -400,7 +349,6 @@ export const {
 	useGetCategorieListQuery,
 	useDeleteCategorieMutation,
 	useEditCategorieMutation,
-	useGetCategorieQuery,
 	useAddCategorieMutation,
 } = categorieApi;
 
@@ -408,7 +356,6 @@ export const {
 	useGetUniteListQuery,
 	useDeleteUniteMutation,
 	useEditUniteMutation,
-	useGetUniteQuery,
 	useAddUniteMutation,
 } = uniteApi;
 
@@ -416,7 +363,6 @@ export const {
 	useGetEmplacementListQuery,
 	useDeleteEmplacementMutation,
 	useEditEmplacementMutation,
-	useGetEmplacementQuery,
 	useAddEmplacementMutation,
 } = emplacementApi;
 
@@ -424,7 +370,6 @@ export const {
 	useGetCitiesListQuery,
 	useDeleteCityMutation,
 	useEditCityMutation,
-	useGetCityQuery,
 	useAddCityMutation,
 } = citiesApi;
 
@@ -432,6 +377,5 @@ export const {
 	useGetLivreParListQuery,
 	useDeleteLivreParMutation,
 	useEditLivreParMutation,
-	useGetLivreParQuery,
 	useAddLivreParMutation,
 } = livreParApi;

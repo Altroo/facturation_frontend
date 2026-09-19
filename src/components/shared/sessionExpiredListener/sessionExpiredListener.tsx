@@ -1,6 +1,6 @@
 'use client';
 
-import { useContext, useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { ToastContext } from '@/contexts/toastContext';
 import { useLanguage } from '@/utils/hooks';
 
