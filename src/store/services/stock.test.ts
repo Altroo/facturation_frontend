@@ -1,12 +1,26 @@
 import { stockApi } from '@/store/services/stock';
 import { setupApiStore } from '@/store/setupApiStore';
 
+const originalStockRoot = process.env.NEXT_PUBLIC_STOCK_ROOT;
+const mockBaseQuery = jest.fn(async (request: { url: string }) => {
+	void request;
+	return { data: { ok: true, logistics_order: 1 } };
+});
+
 beforeAll(() => {
-	process.env.NEXT_PUBLIC_STOCK_ROOT ||= '/stock';
+	Reflect.deleteProperty(process.env, 'NEXT_PUBLIC_STOCK_ROOT');
+});
+
+afterAll(() => {
+	if (originalStockRoot === undefined) {
+		Reflect.deleteProperty(process.env, 'NEXT_PUBLIC_STOCK_ROOT');
+	} else {
+		process.env.NEXT_PUBLIC_STOCK_ROOT = originalStockRoot;
+	}
 });
 
 jest.mock('@/utils/axiosBaseQuery', () => ({
-	axiosBaseQuery: () => async () => ({ data: { ok: true, logistics_order: 1 } }),
+	axiosBaseQuery: () => (request: { url: string }) => mockBaseQuery(request),
 }));
 
 describe('stockApi endpoints', () => {
@@ -115,7 +129,11 @@ describe('stockApi endpoints', () => {
 	];
 
 	it.each(endpointCalls)('%s completes without an API error', async (_name, callEndpoint) => {
+		mockBaseQuery.mockClear();
 		await expect(callEndpoint()).resolves.toEqual(expect.objectContaining({ ok: true }));
+		const [request] = mockBaseQuery.mock.calls.at(-1) ?? [];
+		expect(request?.url).toMatch(/^\/stock\//);
+		expect(request?.url).not.toContain('undefined');
 	});
 
 	it('exposes every tested endpoint', () => {

@@ -42,7 +42,7 @@ export const logistiqueApi = createApi({
 			}
 		>({
 			query: ({ company_id, with_pagination, page, pageSize, search, ...extraFilters }) => ({
-				url: process.env.NEXT_PUBLIC_LOGISTIQUE_LIST || `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT}/`,
+				url: process.env.NEXT_PUBLIC_LOGISTIQUE_LIST || `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/`,
 				method: 'GET',
 				params: {
 					company_id,
@@ -59,7 +59,7 @@ export const logistiqueApi = createApi({
 			query: ({ company_id }) => ({
 				url:
 					process.env.NEXT_PUBLIC_LOGISTIQUE_DASHBOARD ||
-					`${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT}/dashboard/`,
+					`${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/dashboard/`,
 				method: 'GET',
 				params: { company_id },
 			}),
@@ -67,7 +67,7 @@ export const logistiqueApi = createApi({
 		}),
 		getLogistique: builder.query<LogistiqueOrder, { id: number }>({
 			query: ({ id }) => ({
-				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT}/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/${id}/`,
 				method: 'GET',
 			}),
 			providesTags: (_result, _error, { id }) => [{ type: 'Logistique', id }],
@@ -76,7 +76,7 @@ export const logistiqueApi = createApi({
 			query: ({ company_id }) => ({
 				url:
 					process.env.NEXT_PUBLIC_LOGISTIQUE_GENERATE_NUM ||
-					`${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT}/generate_num_commande/`,
+					`${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/generate_num_commande/`,
 				method: 'GET',
 				params: { company_id },
 			}),
@@ -86,7 +86,7 @@ export const logistiqueApi = createApi({
 			query: ({ company_id }) => ({
 				url:
 					process.env.NEXT_PUBLIC_LOGISTIQUE_RESPONSABLES ||
-					`${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT}/responsables/`,
+					`${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/responsables/`,
 				method: 'GET',
 				params: { company_id },
 			}),
@@ -96,7 +96,7 @@ export const logistiqueApi = createApi({
 			query: ({ company_id, proformas }) => ({
 				url:
 					process.env.NEXT_PUBLIC_LOGISTIQUE_SOURCE_PREVIEW ||
-					`${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT}/source_preview/`,
+					`${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/source_preview/`,
 				method: 'POST',
 				data: { company_id, proformas },
 			}),
@@ -106,7 +106,7 @@ export const logistiqueApi = createApi({
 			{ company_id: number; data: Partial<LogistiqueFormValues> | FormData }
 		>({
 			query: ({ company_id, data }) => ({
-				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT}/`,
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/`,
 				method: 'POST',
 				params: { company_id },
 				data: data instanceof FormData ? data : { ...data, company_id },
@@ -123,7 +123,7 @@ export const logistiqueApi = createApi({
 		}),
 		editLogistique: builder.mutation<LogistiqueOrder, { id: number; data: Partial<LogistiqueFormValues> | FormData }>({
 			query: ({ id, data }) => ({
-				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT}/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/${id}/`,
 				method: 'PUT',
 				data,
 			}),
@@ -135,7 +135,7 @@ export const logistiqueApi = createApi({
 		}),
 		deleteLogistique: builder.mutation<void | ApiErrorResponseType, { id: number }>({
 			query: ({ id }) => ({
-				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT}/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/${id}/`,
 				method: 'DELETE',
 			}),
 			invalidatesTags: [{ type: 'Logistique', id: 'LIST' }, 'Dashboard'],
@@ -148,7 +148,7 @@ export const logistiqueApi = createApi({
 		}),
 		bulkDeleteLogistique: builder.mutation<void | ApiErrorResponseType, { ids: number[] }>({
 			query: ({ ids }) => ({
-				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT}/bulk_delete/`,
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/bulk_delete/`,
 				method: 'DELETE',
 				data: { ids },
 			}),
@@ -165,7 +165,7 @@ export const logistiqueApi = createApi({
 			{ id: number; data: { statut: LogistiqueStatut } }
 		>({
 			query: ({ id, data }) => ({
-				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_SWITCH_GLOBAL_STATUS || `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT}/switch_global_status/`}${id}/`,
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_SWITCH_GLOBAL_STATUS || `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/switch_global_status/`}${id}/`,
 				method: 'PATCH',
 				data,
 			}),
@@ -180,7 +180,7 @@ export const logistiqueApi = createApi({
 			{ id: number; data: { statut: LogistiqueLegacyStatut } }
 		>({
 			query: ({ id, data }) => ({
-				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_SWITCH_STATUT || `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT}/switch_statut/`}${id}/`,
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_SWITCH_STATUT || `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/switch_statut/`}${id}/`,
 				method: 'PATCH',
 				data,
 			}),
@@ -195,7 +195,7 @@ export const logistiqueApi = createApi({
 			{ id: number; data: { statut: LogistiqueLaunchStatus } }
 		>({
 			query: ({ id, data }) => ({
-				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT}/${id}/launch_status/`,
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/${id}/launch_status/`,
 				method: 'PATCH',
 				data,
 			}),
@@ -210,7 +210,7 @@ export const logistiqueApi = createApi({
 			{ id: number; prochaine_relance_proforma: string }
 		>({
 			query: ({ id, prochaine_relance_proforma }) => ({
-				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT}/${id}/record_proforma_request/`,
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/${id}/record_proforma_request/`,
 				method: 'POST',
 				data: { prochaine_relance_proforma },
 			}),
@@ -227,7 +227,7 @@ export const logistiqueApi = createApi({
 			query: ({ id, action, data }) => {
 				data.set('action', action);
 				return {
-					url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT}/${id}/review_supplier_proforma/`,
+					url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/${id}/review_supplier_proforma/`,
 					method: 'POST',
 					data,
 				};
@@ -246,7 +246,7 @@ export const logistiqueApi = createApi({
 			}
 		>({
 			query: ({ id, echeancier }) => ({
-				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT}/${id}/request_payment/`,
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/${id}/request_payment/`,
 				method: 'POST',
 				data: { echeancier },
 			}),
@@ -258,7 +258,7 @@ export const logistiqueApi = createApi({
 		}),
 		retryLogistiquePaymentEmail: builder.mutation<LogistiqueOrder, { id: number }>({
 			query: ({ id }) => ({
-				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT}/${id}/retry_payment_email/`,
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/${id}/retry_payment_email/`,
 				method: 'POST',
 			}),
 			invalidatesTags: (_result, _error, { id }) => [
@@ -269,7 +269,7 @@ export const logistiqueApi = createApi({
 		}),
 		startLogistiquePayment: builder.mutation<LogistiqueOrder, { id: number; echeance_id: number }>({
 			query: ({ id, echeance_id }) => ({
-				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT}/${id}/start_payment/`,
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/${id}/start_payment/`,
 				method: 'POST',
 				data: { echeance_id },
 			}),
@@ -296,7 +296,7 @@ export const logistiqueApi = createApi({
 			}
 		>({
 			query: ({ id, data }) => ({
-				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT}/${id}/record_payment_execution/`,
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/${id}/record_payment_execution/`,
 				method: 'POST',
 				data,
 			}),
@@ -314,7 +314,7 @@ export const logistiqueApi = createApi({
 			}
 		>({
 			query: ({ id, data }) => ({
-				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT}/${id}/validate_payment/`,
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/${id}/validate_payment/`,
 				method: 'POST',
 				data,
 			}),
@@ -326,7 +326,7 @@ export const logistiqueApi = createApi({
 		}),
 		rejectLogistiquePayment: builder.mutation<LogistiqueOrder, { id: number; data?: { note?: string } }>({
 			query: ({ id, data }) => ({
-				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT}/${id}/reject_payment/`,
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/${id}/reject_payment/`,
 				method: 'POST',
 				data: data ?? {},
 			}),
@@ -338,7 +338,7 @@ export const logistiqueApi = createApi({
 		}),
 		sendLogistiqueSwift: builder.mutation<LogistiqueOrder, { id: number; echeance_id: number }>({
 			query: ({ id, echeance_id }) => ({
-				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT}/${id}/send_swift/`,
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/${id}/send_swift/`,
 				method: 'POST',
 				data: { echeance_id },
 			}),
@@ -350,7 +350,7 @@ export const logistiqueApi = createApi({
 		}),
 		confirmLogistiquePaymentReceipt: builder.mutation<LogistiqueOrder, { id: number; echeance_id: number }>({
 			query: ({ id, echeance_id }) => ({
-				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT}/${id}/confirm_payment_receipt/`,
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/${id}/confirm_payment_receipt/`,
 				method: 'POST',
 				data: { echeance_id },
 			}),

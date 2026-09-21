@@ -1,15 +1,39 @@
 import { logistiqueApi } from '@/store/services/logistique';
 import { setupApiStore } from '@/store/setupApiStore';
 
+const logistiqueEnvKeys = [
+	'NEXT_PUBLIC_LOGISTIQUE_DASHBOARD',
+	'NEXT_PUBLIC_LOGISTIQUE_GENERATE_NUM',
+	'NEXT_PUBLIC_LOGISTIQUE_LIST',
+	'NEXT_PUBLIC_LOGISTIQUE_RESPONSABLES',
+	'NEXT_PUBLIC_LOGISTIQUE_ROOT',
+	'NEXT_PUBLIC_LOGISTIQUE_SOURCE_PREVIEW',
+	'NEXT_PUBLIC_LOGISTIQUE_SWITCH_GLOBAL_STATUS',
+	'NEXT_PUBLIC_LOGISTIQUE_SWITCH_STATUT',
+] as const;
+const originalLogistiqueEnv = Object.fromEntries(logistiqueEnvKeys.map((key) => [key, process.env[key]]));
+const mockBaseQuery = jest.fn(async (request: { url: string }) => {
+	void request;
+	return { data: { ok: true, logistics_order: 1 } };
+});
+
 beforeAll(() => {
-	process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT ||= '/logistique';
-	process.env.NEXT_PUBLIC_LOGISTIQUE_LIST ||= '/logistique/';
-	process.env.NEXT_PUBLIC_LOGISTIQUE_GENERATE_NUM ||= '/logistique/generate_num_commande/';
-	process.env.NEXT_PUBLIC_LOGISTIQUE_SWITCH_STATUT ||= '/logistique/switch_statut/';
+	logistiqueEnvKeys.forEach((key) => delete process.env[key]);
+});
+
+afterAll(() => {
+	logistiqueEnvKeys.forEach((key) => {
+		const value = originalLogistiqueEnv[key];
+		if (value === undefined) {
+			delete process.env[key];
+		} else {
+			process.env[key] = value;
+		}
+	});
 });
 
 jest.mock('@/utils/axiosBaseQuery', () => ({
-	axiosBaseQuery: () => async () => ({ data: { ok: true, logistics_order: 1 } }),
+	axiosBaseQuery: () => (request: { url: string }) => mockBaseQuery(request),
 }));
 
 describe('logistiqueApi endpoints', () => {
@@ -188,7 +212,11 @@ describe('logistiqueApi endpoints', () => {
 	];
 
 	it.each(endpointCalls)('%s completes without an API error', async (_name, callEndpoint) => {
+		mockBaseQuery.mockClear();
 		await expect(callEndpoint()).resolves.toEqual(expect.objectContaining({ ok: true }));
+		const [request] = mockBaseQuery.mock.calls.at(-1) ?? [];
+		expect(request?.url).toMatch(/^\/logistique\//);
+		expect(request?.url).not.toContain('undefined');
 	});
 
 	it('exposes every tested endpoint', () => {

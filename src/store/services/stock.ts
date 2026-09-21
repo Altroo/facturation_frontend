@@ -42,7 +42,7 @@ export const stockApi = createApi({
 			}
 		>({
 			query: ({ company_id, page = 1, pageSize = 25, search, low_only, article_id, filters = {} }) => ({
-				url: `${process.env.NEXT_PUBLIC_STOCK_ROOT}/balances/`,
+				url: `${process.env.NEXT_PUBLIC_STOCK_ROOT || '/stock'}/balances/`,
 				method: 'GET',
 				params: { company_id, page, page_size: pageSize, search, low_only, article_id, pagination: true, ...filters },
 			}),
@@ -50,7 +50,7 @@ export const stockApi = createApi({
 		}),
 		getStockBalance: builder.query<StockBalance, { company_id: number; id: number }>({
 			query: ({ company_id, id }) => ({
-				url: `${process.env.NEXT_PUBLIC_STOCK_ROOT}/balances/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_STOCK_ROOT || '/stock'}/balances/${id}/`,
 				method: 'GET',
 				params: { company_id },
 			}),
@@ -68,7 +68,7 @@ export const stockApi = createApi({
 			}
 		>({
 			query: ({ company_id, page = 1, pageSize = 25, search, article_id, filters = {} }) => ({
-				url: `${process.env.NEXT_PUBLIC_STOCK_ROOT}/movements/`,
+				url: `${process.env.NEXT_PUBLIC_STOCK_ROOT || '/stock'}/movements/`,
 				method: 'GET',
 				params: { company_id, page, page_size: pageSize, search, article_id, ...filters },
 			}),
@@ -76,7 +76,7 @@ export const stockApi = createApi({
 		}),
 		getStockMovement: builder.query<StockMovement, { company_id: number; id: number }>({
 			query: ({ company_id, id }) => ({
-				url: `${process.env.NEXT_PUBLIC_STOCK_ROOT}/movements/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_STOCK_ROOT || '/stock'}/movements/${id}/`,
 				method: 'GET',
 				params: { company_id },
 			}),
@@ -93,7 +93,7 @@ export const stockApi = createApi({
 				reason: string;
 			}
 		>({
-			query: (data) => ({ url: `${process.env.NEXT_PUBLIC_STOCK_ROOT}/adjustments/`, method: 'POST', data }),
+			query: (data) => ({ url: `${process.env.NEXT_PUBLIC_STOCK_ROOT || '/stock'}/adjustments/`, method: 'POST', data }),
 			invalidatesTags: ['StockBalance', 'StockMovement'],
 			async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
 				try {
@@ -109,7 +109,7 @@ export const stockApi = createApi({
 			{ company_id: number; page?: number; pageSize?: number; search?: string; filters?: StockListFilters }
 		>({
 			query: ({ company_id, page = 1, pageSize = 25, search, filters = {} }) => ({
-				url: `${process.env.NEXT_PUBLIC_STOCK_ROOT}/receipts/`,
+				url: `${process.env.NEXT_PUBLIC_STOCK_ROOT || '/stock'}/receipts/`,
 				method: 'GET',
 				params: { company_id, page, page_size: pageSize, search, ...filters },
 			}),
@@ -117,7 +117,7 @@ export const stockApi = createApi({
 		}),
 		getStockReceipt: builder.query<StockReceipt, { company_id: number; id: number }>({
 			query: ({ company_id, id }) => ({
-				url: `${process.env.NEXT_PUBLIC_STOCK_ROOT}/receipts/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_STOCK_ROOT || '/stock'}/receipts/${id}/`,
 				method: 'GET',
 				params: { company_id },
 			}),
@@ -133,12 +133,12 @@ export const stockApi = createApi({
 				lines: Array<{ logistics_line: number; article: number; emplacement: number; quantity: number }>;
 			}
 		>({
-			query: (data) => ({ url: `${process.env.NEXT_PUBLIC_STOCK_ROOT}/receipts/`, method: 'POST', data }),
+			query: (data) => ({ url: `${process.env.NEXT_PUBLIC_STOCK_ROOT || '/stock'}/receipts/`, method: 'POST', data }),
 			invalidatesTags: ['StockReceipt'],
 		}),
 		validateStockReceipt: builder.mutation<StockReceipt, { company_id: number; id: number }>({
 			query: ({ company_id, id }) => ({
-				url: `${process.env.NEXT_PUBLIC_STOCK_ROOT}/receipts/${id}/validate/`,
+				url: `${process.env.NEXT_PUBLIC_STOCK_ROOT || '/stock'}/receipts/${id}/validate/`,
 				method: 'POST',
 				data: { company_id },
 			}),
@@ -160,7 +160,7 @@ export const stockApi = createApi({
 		}),
 		cancelStockReceipt: builder.mutation<StockReceipt, { company_id: number; id: number }>({
 			query: ({ company_id, id }) => ({
-				url: `${process.env.NEXT_PUBLIC_STOCK_ROOT}/receipts/${id}/cancel/`,
+				url: `${process.env.NEXT_PUBLIC_STOCK_ROOT || '/stock'}/receipts/${id}/cancel/`,
 				method: 'POST',
 				data: { company_id },
 			}),
@@ -185,7 +185,7 @@ export const stockApi = createApi({
 			{ company_id: number; page?: number; pageSize?: number; search?: string; filters?: StockListFilters }
 		>({
 			query: ({ company_id, page = 1, pageSize = 25, search, filters = {} }) => ({
-				url: `${process.env.NEXT_PUBLIC_STOCK_ROOT}/inventories/`,
+				url: `${process.env.NEXT_PUBLIC_STOCK_ROOT || '/stock'}/inventories/`,
 				method: 'GET',
 				params: { company_id, page, page_size: pageSize, search, ...filters },
 			}),
@@ -193,7 +193,7 @@ export const stockApi = createApi({
 		}),
 		getInventory: builder.query<InventorySession, { company_id: number; id: number }>({
 			query: ({ company_id, id }) => ({
-				url: `${process.env.NEXT_PUBLIC_STOCK_ROOT}/inventories/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_STOCK_ROOT || '/stock'}/inventories/${id}/`,
 				method: 'GET',
 				params: { company_id },
 			}),
@@ -209,12 +209,12 @@ export const stockApi = createApi({
 				lines: Array<{ article: number; counted_quantity: number }>;
 			}
 		>({
-			query: (data) => ({ url: `${process.env.NEXT_PUBLIC_STOCK_ROOT}/inventories/`, method: 'POST', data }),
+			query: (data) => ({ url: `${process.env.NEXT_PUBLIC_STOCK_ROOT || '/stock'}/inventories/`, method: 'POST', data }),
 			invalidatesTags: ['Inventory'],
 		}),
 		validateInventory: builder.mutation<InventorySession, { company_id: number; id: number }>({
 			query: ({ company_id, id }) => ({
-				url: `${process.env.NEXT_PUBLIC_STOCK_ROOT}/inventories/${id}/validate/`,
+				url: `${process.env.NEXT_PUBLIC_STOCK_ROOT || '/stock'}/inventories/${id}/validate/`,
 				method: 'POST',
 				data: { company_id },
 			}),
