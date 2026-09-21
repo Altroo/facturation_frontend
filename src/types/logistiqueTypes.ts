@@ -24,7 +24,6 @@ export type LogistiqueLegacyStatut =
 	| 'Envoi SWIFT / Draft LC'
 	| 'Production'
 	| 'Expédition'
-	| 'Documents originaux'
 	| 'Transit'
 	| 'Dédouanement'
 	| 'Réception locale'
@@ -45,6 +44,7 @@ export type LogistiqueBankPaymentStatus =
 export type LogistiqueAccountingPaymentStatus =
 	'Paiement à traiter' | 'Paiement en cours' | 'Paiement effectué – Justificatif à joindre' | 'Paiement validé';
 export type LogistiquePaymentMethod = '' | 'LC' | 'Virement' | 'Remise documentaire';
+export type LogistiqueOriginalDocumentStatus = '' | 'Demandé' | 'Réceptionné' | 'Retourné pour correction' | 'Refusé';
 export type LogistiqueDocumentField =
 	| 'titre_importation_file'
 	| 'proforma_fournisseur_file'
@@ -87,6 +87,16 @@ export type LogistiqueEvent = {
 	date_created: string;
 };
 
+export type LogistiqueProcessNote = {
+	id: number;
+	statut: string;
+	remarque: string;
+	fichier: string | null;
+	user: number | null;
+	user_name: string | null;
+	date_created: string;
+};
+
 export type LogistiqueProformaDetail = {
 	id: number;
 	numero_facture: string;
@@ -103,6 +113,7 @@ export type LogistiquePaymentInstallment = {
 	id: number;
 	date_echeance: string;
 	montant_prevu: number | string;
+	pourcentage: number | string;
 	devise: string;
 	statut_traitement: LogistiqueAccountingPaymentStatus;
 	date_paiement: string | null;
@@ -138,10 +149,13 @@ export type LogistiqueOrder = {
 	fournisseur_email: string;
 	marque: number | null;
 	marque_name: string | null;
+	marques: number[];
+	marques_names: string[];
 	devise: string;
 	incoterm: string;
 	transport: string;
 	conditions_paiement: string;
+	description: string;
 	responsable: number | null;
 	responsable_name: string | null;
 	date_prevue: string | null;
@@ -162,6 +176,7 @@ export type LogistiqueOrder = {
 	delai_proforma_jours: number | null;
 	ecart_prix_proforma: boolean;
 	ecart_quantite_proforma: boolean;
+	ecart_autre_proforma: boolean;
 	notes_ecarts_proforma: string;
 	proforma_controlee_le: string | null;
 	proforma_controlee_par: number | null;
@@ -183,6 +198,7 @@ export type LogistiqueOrder = {
 	date_validation_titre_importation: string | null;
 	statut_titre_importation: LogistiqueImportTitleStatus;
 	methode_paiement: LogistiquePaymentMethod;
+	avance_pourcentage: number | string | null;
 	statut_paiement: LogistiquePaymentStatus;
 	statut_banque_paiement: LogistiqueBankPaymentStatus;
 	statut_traitement_paiement: LogistiqueAccountingPaymentStatus;
@@ -223,6 +239,8 @@ export type LogistiqueOrder = {
 	justificatifs_file: string | null;
 	swift_file: string | null;
 	documents_originaux_file: string | null;
+	documents_originaux_requis: boolean;
+	statut_documents_originaux: LogistiqueOriginalDocumentStatus;
 	created_by_user_name: string | null;
 	date_created: string;
 	date_updated: string;
@@ -235,6 +253,7 @@ export type LogistiqueOrder = {
 	events?: LogistiqueEvent[];
 	proformas_detail?: LogistiqueProformaDetail[];
 	echeancier_paiement?: LogistiquePaymentInstallment[];
+	process_notes?: LogistiqueProcessNote[];
 };
 
 export type LogistiqueStats = {
@@ -322,13 +341,23 @@ export type LogistiqueSourcePreviewProforma = {
 	date_facture: string;
 	total_ttc_apres_remise: number | string;
 	devise: string;
+};
+
+export type LogistiqueSourcePreview = {
+	proformas: LogistiqueSourcePreviewProforma[];
+	fournisseur: string;
+	fournisseur_email: string;
+	devise: string;
 	articles_count: number;
 	total_quantity: number | string;
 	total_achat: number | string;
 };
 
-export type LogistiqueSourcePreview = {
-	proformas: LogistiqueSourcePreviewProforma[];
+export type LogistiqueSupplier = {
+	fournisseur: string;
+	fournisseur_email: string;
+	total_dossiers: number;
+	derniere_activite: string;
 };
 
 export type LogistiqueFormValues = {
@@ -338,6 +367,8 @@ export type LogistiqueFormValues = {
 	incoterm: string;
 	transport: string;
 	conditions_paiement: string;
+	description: string;
+	marques: number[];
 	responsable: string;
 	date_prevue: string;
 	date_reelle: string;
@@ -355,6 +386,7 @@ export type LogistiqueFormValues = {
 	date_validation_titre_importation: string;
 	statut_titre_importation: LogistiqueImportTitleStatus;
 	methode_paiement: LogistiquePaymentMethod;
+	avance_pourcentage: string;
 	date_paiement: string;
 	montant_paiement: string;
 	devise_paiement: string;
@@ -372,4 +404,6 @@ export type LogistiqueFormValues = {
 	justificatifs_file: File | null;
 	swift_file: File | null;
 	documents_originaux_file: File | null;
+	documents_originaux_requis: boolean;
+	statut_documents_originaux: LogistiqueOriginalDocumentStatus;
 };

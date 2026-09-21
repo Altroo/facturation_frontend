@@ -103,6 +103,7 @@ export type TranslationDictionary = {
 		logistique: string;
 		logistiqueDashboard: string;
 		logistiqueList: string;
+		logistiqueSuppliers: string;
 		stock: string;
 		stockState: string;
 		stockMovements: string;
@@ -702,6 +703,7 @@ export type TranslationDictionary = {
 		fieldTargetUnitPrices: string;
 		fieldPriceVariance: string;
 		fieldQuantityVariance: string;
+		fieldOtherVariance: string;
 		fieldVarianceNotes: string;
 		fieldProformaControlledAt: string;
 		fieldProformaControlledBy: string;
@@ -769,6 +771,8 @@ export type TranslationDictionary = {
 		fieldIncoterm: string;
 		fieldTransport: string;
 		fieldConditionsPaiement: string;
+		fieldDescription: string;
+		fieldBrands: string;
 		fieldDatePrevue: string;
 		fieldDateReelle: string;
 		fieldStatut: string;
@@ -785,6 +789,7 @@ export type TranslationDictionary = {
 		fieldDateValidationTI: string;
 		fieldStatutTI: string;
 		fieldMethodePaiement: string;
+		fieldAdvancePercentage: string;
 		fieldDatePaiement: string;
 		fieldMontantPaiement: string;
 		fieldDevisePaiement: string;
@@ -806,6 +811,8 @@ export type TranslationDictionary = {
 		fieldJustificatifsFile: string;
 		fieldSwiftFile: string;
 		fieldDocumentsOriginauxFile: string;
+		fieldOriginalDocumentsRequired: string;
+		fieldOriginalDocumentsStatus: string;
 		noResponsable: string;
 		uploadDocument: string;
 		replaceDocument: string;

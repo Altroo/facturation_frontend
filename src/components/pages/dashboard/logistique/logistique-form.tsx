@@ -9,8 +9,10 @@ import {
 	Button,
 	Card,
 	CardContent,
+	Checkbox,
 	Chip,
 	Divider,
+	FormControlLabel,
 	InputAdornment,
 	Stack,
 	TextField,
@@ -31,6 +33,7 @@ import {
 	Public as PublicIcon,
 	RequestQuote as RequestQuoteIcon,
 	Scale as ScaleIcon,
+	Star as StarIcon,
 	Warning as WarningIcon,
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -42,6 +45,7 @@ import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
+import EntityCrudControls from '@/components/shared/entityCrudControls/entityCrudControls';
 import FormattedNumberInput from '@/components/formikElements/formattedNumberInput/formattedNumberInput';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
@@ -62,6 +66,12 @@ import {
 	useGetLogistiqueResponsablesQuery,
 	useGetLogistiqueSourcePreviewQuery,
 } from '@/store/services/logistique';
+import {
+	useAddMarqueMutation,
+	useDeleteMarqueMutation,
+	useEditMarqueMutation,
+	useGetMarqueListQuery,
+} from '@/store/services/parameter';
 import { LOGISTIQUE_LIST, LOGISTIQUE_VIEW } from '@/utils/routes';
 import {
 	logistiqueCurrencyItemsList,
@@ -103,6 +113,7 @@ const importTitleFields: Array<keyof LogistiqueFormValues> = [
 	'devise_titre_importation',
 	'date_titre_importation',
 	'methode_paiement',
+	'avance_pourcentage',
 	'titre_importation_file',
 ];
 
@@ -113,6 +124,8 @@ const emptyValues: LogistiqueFormValues = {
 	incoterm: '',
 	transport: '',
 	conditions_paiement: '',
+	description: '',
+	marques: [],
 	responsable: '',
 	date_prevue: '',
 	date_reelle: '',
@@ -130,6 +143,7 @@ const emptyValues: LogistiqueFormValues = {
 	date_validation_titre_importation: '',
 	statut_titre_importation: 'À préparer',
 	methode_paiement: '',
+	avance_pourcentage: '',
 	date_paiement: '',
 	montant_paiement: '0',
 	devise_paiement: 'MAD',
@@ -147,6 +161,8 @@ const emptyValues: LogistiqueFormValues = {
 	justificatifs_file: null,
 	swift_file: null,
 	documents_originaux_file: null,
+	documents_originaux_requis: false,
+	statut_documents_originaux: '',
 };
 
 const stringValue = (value: string | number | null | undefined, fallback = '') => String(value ?? fallback);
@@ -165,6 +181,8 @@ const valuesFromOrder = (order?: LogistiqueOrder): LogistiqueFormValues => {
 		incoterm: order.incoterm ?? '',
 		transport: order.transport ?? '',
 		conditions_paiement: order.conditions_paiement ?? '',
+		description: order.description ?? '',
+		marques: order.marques ?? [],
 		responsable: order.responsable ? String(order.responsable) : '',
 		date_prevue: dateValue(order.date_prevue),
 		date_reelle: dateValue(order.date_reelle),
@@ -182,12 +200,13 @@ const valuesFromOrder = (order?: LogistiqueOrder): LogistiqueFormValues => {
 		date_validation_titre_importation: dateValue(order.date_validation_titre_importation),
 		statut_titre_importation: order.statut_titre_importation,
 		methode_paiement: order.methode_paiement ?? '',
+		avance_pourcentage: stringValue(order.avance_pourcentage),
 		date_paiement: dateValue(order.date_paiement),
-	montant_paiement: stringValue(order.montant_paiement, '0'),
-	devise_paiement: order.devise_paiement ?? order.devise_titre_importation ?? 'MAD',
-	banque_paiement: order.banque_paiement ?? '',
-	reference_paiement: order.reference_paiement ?? '',
-	commentaire_paiement: order.commentaire_paiement ?? '',
+		montant_paiement: stringValue(order.montant_paiement, '0'),
+		devise_paiement: order.devise_paiement ?? order.devise_titre_importation ?? 'MAD',
+		banque_paiement: order.banque_paiement ?? '',
+		reference_paiement: order.reference_paiement ?? '',
+		commentaire_paiement: order.commentaire_paiement ?? '',
 		cout_transport: stringValue(order.cout_transport, '0'),
 		frais_transit: stringValue(order.frais_transit, '0'),
 		frais_douane: stringValue(order.frais_douane, '0'),
@@ -199,6 +218,8 @@ const valuesFromOrder = (order?: LogistiqueOrder): LogistiqueFormValues => {
 		justificatifs_file: null,
 		swift_file: null,
 		documents_originaux_file: null,
+		documents_originaux_requis: order.documents_originaux_requis ?? false,
+		statut_documents_originaux: order.statut_documents_originaux ?? '',
 	};
 };
 
@@ -228,6 +249,7 @@ const toPayloadObject = (
 		poids_brut: numberString(values.poids_brut),
 		volume: numberString(values.volume),
 		montant_titre_importation: numberString(values.montant_titre_importation),
+		avance_pourcentage: values.avance_pourcentage === '' ? null : numberString(values.avance_pourcentage),
 		montant_paiement: numberString(values.montant_paiement),
 		cout_transport: numberString(values.cout_transport),
 		frais_transit: numberString(values.frais_transit),
@@ -411,6 +433,13 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 		{ company_id, statut: 'Accepté' },
 		{ skip: !token || isEditMode },
 	);
+	const { data: marquesData = [], isLoading: isMarquesLoading } = useGetMarqueListQuery(
+		{ company_id },
+		{ skip: !token || !isEditMode || !canManage },
+	);
+	const [addMarque] = useAddMarqueMutation();
+	const [editMarque] = useEditMarqueMutation();
+	const [deleteMarque] = useDeleteMarqueMutation();
 
 	const [addLogistique, { isLoading: isAddLoading, error: addError }] = useAddLogistiqueMutation();
 	const [editLogistique, { isLoading: isEditLoading, error: updateError }] = useEditLogistiqueMutation();
@@ -432,8 +461,16 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 			})),
 		[responsablesData],
 	);
+	const marqueOptions = useMemo<DropDownType[]>(
+		() => marquesData.map((marque) => ({ value: String(marque.id), code: marque.nom })),
+		[marquesData],
+	);
 
-	const initialValues = useMemo(() => valuesFromOrder(order), [order]);
+	const initialValues = useMemo(
+		() =>
+			order ? valuesFromOrder(order) : { ...emptyValues, responsable: currentUserId ? String(currentUserId) : '' },
+		[order, currentUserId],
+	);
 	const isOrderResponsible = Boolean(currentUserId && order?.responsable === currentUserId);
 	const isImportTitleLocked = Boolean(isEditMode && order && order.statut_paiement !== 'Non demandé');
 	const canEditImportTitle = Boolean(isEditMode && isOrderResponsible && !isImportTitleLocked);
@@ -442,13 +479,11 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 		canManage || Boolean(isEditMode && (isOrderLoading || (isOrderResponsible && !isImportTitleLocked)));
 	const editableDocumentFields = useMemo(
 		() =>
-			documentFields.filter(
-				(field) => {
-					if (field === 'proforma_fournisseur_file' || field === 'swift_file') return false;
-					if (field === 'titre_importation_file') return canEditImportTitle;
-					return canManage;
-				},
-			),
+			documentFields.filter((field) => {
+				if (field === 'proforma_fournisseur_file' || field === 'swift_file') return false;
+				if (field === 'titre_importation_file') return canEditImportTitle;
+				return canManage;
+			}),
 		[canEditImportTitle, canManage],
 	);
 	const error = isEditMode ? dataError || updateError : addError;
@@ -462,9 +497,6 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 			const errors: Partial<Record<keyof LogistiqueFormValues, string>> = {};
 			if (!isEditMode && values.proformas.length === 0) {
 				errors.proformas = t.validation.required;
-			}
-			if (!isEditMode && values.proformas.length > 1) {
-				errors.proformas = t.logistique.selectSingleProforma;
 			}
 			if (!isEditMode && isBlank(values.date_prevue)) {
 				errors.date_prevue = t.validation.required;
@@ -540,6 +572,11 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 		() => responsableOptions.find((option) => option.value === formik.values.responsable) ?? null,
 		[responsableOptions, formik.values.responsable],
 	);
+	const selectedMarques = useMemo(
+		() => marqueOptions.filter((option) => formik.values.marques.includes(Number(option.value))),
+		[marqueOptions, formik.values.marques],
+	);
+	const selectedMarqueForCrud = selectedMarques.at(-1) ?? null;
 
 	const documentLabels = useMemo<Record<LogistiqueDocumentField, string>>(
 		() => ({
@@ -578,13 +615,14 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 		? (sourcePreviewError as ResponseDataInterface<ApiErrorResponseType>)
 		: undefined;
 
-	const selectedSource = sourcePreview?.proformas[0];
+	const selectedSources = sourcePreview?.proformas ?? [];
 
 	const isLoading =
 		isCompaniesLoading ||
 		isOrderLoading ||
 		isProformasLoading ||
 		isResponsablesLoading ||
+		isMarquesLoading ||
 		isAddLoading ||
 		isEditLoading ||
 		isPending;
@@ -642,8 +680,11 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 											{!isEditMode && (
 												<FormCard title={t.logistique.sourceSection} icon={<RequestQuoteIcon color="primary" />}>
 													<Autocomplete
+														multiple
 														options={proformas}
-														value={proformas.find((proforma) => formik.values.proformas[0] === proforma.id) ?? null}
+														value={proformas.filter(
+															(proforma) => proforma.id && formik.values.proformas.includes(proforma.id),
+														)}
 														getOptionLabel={(option) =>
 															`${option.numero_bon_commande_client ? `${option.numero_bon_commande_client} - ` : ''}${option.numero_facture ?? ''}${option.client_name ? ` - ${option.client_name}` : ''}`
 														}
@@ -651,7 +692,10 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 														onChange={(_, selected) => {
 															setHasAttemptedSubmit(false);
 															formik.setErrors({});
-															void formik.setFieldValue('proformas', selected?.id ? [selected.id] : []);
+															void formik.setFieldValue(
+																'proformas',
+																selected.flatMap((proforma) => (proforma.id ? [proforma.id] : [])),
+															);
 														}}
 														renderInput={(params) => (
 															<TextField
@@ -723,7 +767,7 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 														<Box sx={{ gridColumn: { md: '1 / -1' } }}>
 															<ApiAlert errorDetails={sourcePreviewAxiosError.data?.details} />
 														</Box>
-													) : selectedSource ? (
+													) : selectedSources.length > 0 && sourcePreview ? (
 														<Stack spacing={2.5} sx={{ gridColumn: { md: '1 / -1' } }}>
 															<Alert severity="info" icon={<InfoIcon />}>
 																{t.logistique.brandSplitHelp}
@@ -736,15 +780,18 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 																}}
 															>
 																{[
-																	[t.logistique.fieldFournisseur, selectedSource.fournisseur],
-																	[t.logistique.fieldSupplierEmail, selectedSource.fournisseur_email],
-																	[t.logistique.colClients, selectedSource.client_name],
-																	[t.logistique.fieldClientOrder, selectedSource.project_reference],
-																	[t.logistique.fieldArticlesCount, selectedSource.articles_count],
-																	[t.documentForm.colQuantite, selectedSource.total_quantity],
+																	[t.logistique.fieldFournisseur, sourcePreview.fournisseur],
+																	[t.logistique.fieldSupplierEmail, sourcePreview.fournisseur_email],
+																	[t.logistique.colClients, selectedSources.map((item) => item.client_name).join(', ')],
+																	[
+																		t.logistique.fieldClientOrder,
+																		selectedSources.map((item) => item.project_reference).join(', '),
+																	],
+																	[t.logistique.fieldArticlesCount, sourcePreview.articles_count],
+																	[t.documentForm.colQuantite, sourcePreview.total_quantity],
 																	[
 																		t.logistique.fieldCoutAchat,
-																		formatAmount(selectedSource.total_achat, selectedSource.devise),
+																		formatAmount(sourcePreview.total_achat, sourcePreview.devise),
 																	],
 																].map(([label, value]) => (
 																	<Box
@@ -761,7 +808,8 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 																))}
 															</Box>
 															<Typography variant="body2" color="text.secondary">
-																{t.logistique.linkedSources}: {selectedSource.numero_facture}
+																{t.logistique.linkedSources}:{' '}
+																{selectedSources.map((item) => item.numero_facture).join(', ')}
 															</Typography>
 														</Stack>
 													) : null}
@@ -866,7 +914,10 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 													</FormCard>
 
 													{canManage && (
-														<FormCard title={t.logistique.generalSection} icon={<InfoIcon color="primary" />}>
+														<FormCard
+															title={`2. ${t.logistique.proformaComplianceSection.replace(/^2\.\s*/, '')}`}
+															icon={<InfoIcon color="primary" />}
+														>
 															<CustomDropDownSelect
 																id="devise"
 																label={t.logistique.fieldDevise}
@@ -879,16 +930,6 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 																disabled
 																error={hasFieldError('devise')}
 																helperText={getFieldError('devise')}
-															/>
-															<CustomDropDownSelect
-																id="statut"
-																label={t.logistique.fieldStatut}
-																items={logistiqueLegacyWorkflowStatusItemsList}
-																value={formik.values.statut}
-																onChange={(event) => formik.setFieldValue('statut', event.target.value)}
-																size="small"
-																theme={inputTheme}
-																startIcon={<InfoIcon fontSize="small" />}
 															/>
 															<CustomTextInput
 																id="transport"
@@ -904,6 +945,19 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 																error={hasFieldError('transport')}
 																helperText={getFieldError('transport')}
 															/>
+															<Box sx={{ gridColumn: { md: '1 / -1' } }}>
+																<CustomTextInput
+																	id="description"
+																	type="textarea"
+																	label={t.logistique.fieldDescription}
+																	value={formik.values.description}
+																	onChange={formik.handleChange('description')}
+																	fullWidth
+																	size="small"
+																	theme={inputTheme}
+																	startIcon={<DescriptionIcon fontSize="small" />}
+																/>
+															</Box>
 															<CustomAutoCompleteSelect
 																id="responsable"
 																label={t.logistique.fieldResponsable}
@@ -919,6 +973,45 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 																error={hasFieldError('responsable')}
 																helperText={getFieldError('responsable')}
 															/>
+															<Box sx={{ gridColumn: { md: '1 / -1' }, display: 'flex', gap: 1, alignItems: 'center' }}>
+																<Autocomplete
+																	multiple
+																	fullWidth
+																	options={marqueOptions}
+																	value={selectedMarques}
+																	getOptionLabel={(option) => option.code}
+																	isOptionEqualToValue={(option, value) => option.value === value.value}
+																	onChange={(_, values) =>
+																		formik.setFieldValue(
+																			'marques',
+																			values.map((item) => Number(item.value)),
+																		)
+																	}
+																	renderInput={(params) => (
+																		<TextField {...params} size="small" label={t.logistique.fieldBrands} />
+																	)}
+																/>
+																<EntityCrudControls
+																	label={t.logistique.fieldBrands.toLowerCase()}
+																	icon={<StarIcon fontSize="small" />}
+																	inputTheme={inputTheme}
+																	selectedItem={selectedMarqueForCrud}
+																	addEntity={(args) => addMarque({ data: { ...args.data, company: company_id } })}
+																	editEntity={({ id: marqueId, data }) =>
+																		editMarque({ id: marqueId, data: { ...data, company: company_id } })
+																	}
+																	deleteEntity={({ id: marqueId }) => deleteMarque({ id: marqueId })}
+																	onAddSuccess={(newId) =>
+																		formik.setFieldValue('marques', [...formik.values.marques, newId])
+																	}
+																	onDeleteSuccess={() =>
+																		formik.setFieldValue(
+																			'marques',
+																			formik.values.marques.filter((id) => id !== Number(selectedMarqueForCrud?.value)),
+																		)
+																	}
+																/>
+															</Box>
 															<DateField
 																label={t.logistique.fieldDatePrevue}
 																value={formik.values.date_prevue}
@@ -1007,6 +1100,57 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 														</FormCard>
 													)}
 
+													{canManage && (
+														<FormCard
+															title={`4. ${t.logistique.macroStepSupplierPreparation}`}
+															icon={<LocalShippingIcon color="primary" />}
+														>
+															<CustomDropDownSelect
+																id="statut"
+																label={t.logistique.fieldStatut}
+																items={logistiqueLegacyWorkflowStatusItemsList}
+																value={formik.values.statut}
+																onChange={(event) => formik.setFieldValue('statut', event.target.value)}
+																size="small"
+																theme={inputTheme}
+																startIcon={<InfoIcon fontSize="small" />}
+															/>
+															<FormControlLabel
+																control={
+																	<Checkbox
+																		checked={formik.values.documents_originaux_requis}
+																		onChange={(event) => {
+																			void formik.setFieldValue('documents_originaux_requis', event.target.checked);
+																			if (!event.target.checked)
+																				void formik.setFieldValue('statut_documents_originaux', '');
+																		}}
+																	/>
+																}
+																label={t.logistique.fieldOriginalDocumentsRequired}
+															/>
+															{formik.values.documents_originaux_requis && (
+																<CustomDropDownSelect
+																	id="statut_documents_originaux"
+																	label={t.logistique.fieldOriginalDocumentsStatus}
+																	items={['Demandé', 'Réceptionné', 'Retourné pour correction', 'Refusé']}
+																	value={formik.values.statut_documents_originaux}
+																	onChange={(event) =>
+																		formik.setFieldValue('statut_documents_originaux', event.target.value)
+																	}
+																	size="small"
+																	theme={inputTheme}
+																	startIcon={<DescriptionIcon fontSize="small" />}
+																/>
+															)}
+															{formik.values.documents_originaux_requis &&
+																formik.values.statut_documents_originaux !== 'Réceptionné' && (
+																	<Alert severity="warning" sx={{ gridColumn: { md: '1 / -1' } }}>
+																		Documents originaux non réceptionnés.
+																	</Alert>
+																)}
+														</FormCard>
+													)}
+
 													{canEditImportTitle && (
 														<FormCard title={t.logistique.importSection} icon={<DescriptionIcon color="primary" />}>
 															{isImportTitleLocked && (
@@ -1031,12 +1175,29 @@ const LogistiqueForm: React.FC<Props> = ({ session, company_id, id }) => {
 																label={t.logistique.fieldMethodePaiement}
 																items={logistiquePaymentMethodItemsList}
 																value={formik.values.methode_paiement}
-																onChange={(event) => formik.setFieldValue('methode_paiement', event.target.value)}
+																onChange={(event) => {
+																	void formik.setFieldValue('methode_paiement', event.target.value);
+																	if (event.target.value !== 'LC') void formik.setFieldValue('avance_pourcentage', '');
+																}}
 																size="small"
 																theme={inputTheme}
 																startIcon={<PaymentIcon fontSize="small" />}
 																disabled={isImportTitleLocked}
 															/>
+															{formik.values.methode_paiement === 'LC' && (
+																<FormattedNumberInput
+																	id="avance_pourcentage"
+																	type="text"
+																	label={t.logistique.fieldAdvancePercentage}
+																	value={formik.values.avance_pourcentage}
+																	onChange={formik.handleChange('avance_pourcentage')}
+																	fullWidth
+																	size="small"
+																	theme={inputTheme}
+																	startIcon={<PaymentIcon fontSize="small" />}
+																	disabled={isImportTitleLocked}
+																/>
+															)}
 															<CustomTextInput
 																id="banque"
 																type="text"

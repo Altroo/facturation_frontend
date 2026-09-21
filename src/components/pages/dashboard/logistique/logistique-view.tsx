@@ -97,7 +97,8 @@ import {
 	useRequestLogistiquePaymentMutation,
 	useRetryLogistiquePaymentEmailMutation,
 	useReviewLogistiqueSupplierProformaMutation,
-	useSendLogistiqueSwiftMutation,
+	useSetLogistiqueProofEmailStatusMutation,
+	useAddLogistiqueProcessNoteMutation,
 	useStartLogistiquePaymentMutation,
 	useValidateLogistiquePaymentMutation,
 } from '@/store/services/logistique';
@@ -278,8 +279,7 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	);
 	const [deleteLogistique] = useDeleteLogistiqueMutation();
 	const [patchGlobalStatus, { isLoading: isChangingGlobalStatus }] = usePatchLogistiqueStatutMutation();
-	const [patchWorkflowStatus, { isLoading: isChangingWorkflowStatus }] =
-		usePatchLogistiqueWorkflowStatusMutation();
+	const [patchWorkflowStatus, { isLoading: isChangingWorkflowStatus }] = usePatchLogistiqueWorkflowStatusMutation();
 	const [patchLaunchStatus, { isLoading: isChangingLaunchStatus }] = usePatchLogistiqueLaunchStatusMutation();
 	const [recordProformaRequest, { isLoading: isRecordingProformaRequest }] =
 		useRecordLogistiqueProformaRequestMutation();
@@ -291,7 +291,8 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const [recordPaymentExecution] = useRecordLogistiquePaymentExecutionMutation();
 	const [validatePayment] = useValidateLogistiquePaymentMutation();
 	const [rejectPayment] = useRejectLogistiquePaymentMutation();
-	const [sendSwift, { isLoading: isSendingProofEmail }] = useSendLogistiqueSwiftMutation();
+	const [setProofEmailStatus, { isLoading: isUpdatingProofEmail }] = useSetLogistiqueProofEmailStatusMutation();
+	const [addProcessNote, { isLoading: isAddingProcessNote }] = useAddLogistiqueProcessNoteMutation();
 	const [confirmPaymentReceipt] = useConfirmLogistiquePaymentReceiptMutation();
 	const { t } = useLanguage();
 	const { onSuccess, onError } = useToast();
@@ -323,11 +324,12 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 		delai_proforma_jours: '',
 		ecart_prix_proforma: false,
 		ecart_quantite_proforma: false,
+		ecart_autre_proforma: false,
 		notes_ecarts_proforma: '',
 	});
 	const [swiftProofFile, setSwiftProofFile] = useState<File | null>(null);
 	const [selectedInstallment, setSelectedInstallment] = useState<LogistiquePaymentInstallment | null>(null);
-	const [paymentSchedule, setPaymentSchedule] = useState([{ date_echeance: '', montant_prevu: '', devise: 'MAD' }]);
+	const [paymentSchedule, setPaymentSchedule] = useState([{ date_echeance: '', pourcentage: '100' }]);
 	const [paymentData, setPaymentData] = useState({
 		date_paiement: '',
 		montant_paiement: '',
@@ -338,6 +340,8 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 		commentaire_paiement: '',
 	});
 	const [rejectNote, setRejectNote] = useState('');
+	const [processRemark, setProcessRemark] = useState('');
+	const [processFile, setProcessFile] = useState<File | null>(null);
 	const documentLabels = useMemo<Record<LogistiqueDocumentField, string>>(
 		() => ({
 			titre_importation_file: t.logistique.fieldTitreImportationFile,
@@ -377,13 +381,11 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 		order?.methode_paiement &&
 		order?.titre_importation_file,
 	);
-	const scheduledAmount = paymentSchedule.reduce((total, item) => total + Number(item.montant_prevu || 0), 0);
+	const scheduledPercentage = paymentSchedule.reduce((total, item) => total + Number(item.pourcentage || 0), 0);
 	const hasCompletePaymentSchedule = Boolean(
 		paymentSchedule.length &&
-		paymentSchedule.every(
-			(item) => item.date_echeance && Number(item.montant_prevu) > 0 && item.devise === order?.devise_titre_importation,
-		) &&
-		Math.abs(scheduledAmount - Number(order?.montant_titre_importation || 0)) < 0.005,
+		paymentSchedule.every((item) => item.date_echeance && Number(item.pourcentage) > 0) &&
+		Math.abs(scheduledPercentage - 100) < 0.005,
 	);
 	const hasCompletePaymentData = Boolean(
 		selectedInstallment &&
@@ -391,7 +393,6 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 		Number(paymentData.montant_paiement) > 0 &&
 		paymentData.devise_paiement &&
 		paymentData.banque_paiement.trim() &&
-		paymentData.reference_paiement.trim() &&
 		paymentData.methode_paiement,
 	);
 	const targetQuantity = useMemo(
@@ -427,7 +428,10 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 		supplierProformaData.delai_proforma_jours !== '' &&
 		(supplierProformaFile || order?.proforma_fournisseur_file),
 	);
-	const hasProformaVariance = supplierProformaData.ecart_prix_proforma || supplierProformaData.ecart_quantite_proforma;
+	const hasProformaVariance =
+		supplierProformaData.ecart_prix_proforma ||
+		supplierProformaData.ecart_quantite_proforma ||
+		supplierProformaData.ecart_autre_proforma;
 	const isProformaDecisionValid =
 		(proformaDecision === 'Correction demandée' &&
 			hasProformaVariance &&
@@ -456,6 +460,7 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 			delai_proforma_jours: order.delai_proforma_jours === null ? '' : String(order.delai_proforma_jours),
 			ecart_prix_proforma: order.ecart_prix_proforma,
 			ecart_quantite_proforma: order.ecart_quantite_proforma,
+			ecart_autre_proforma: order.ecart_autre_proforma,
 			notes_ecarts_proforma: order.notes_ecarts_proforma ?? '',
 		});
 		setProformaDecision(
@@ -521,8 +526,7 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 		setPaymentSchedule([
 			{
 				date_echeance: '',
-				montant_prevu: Number(order?.montant_titre_importation) > 0 ? String(order?.montant_titre_importation) : '',
-				devise: order?.devise_titre_importation || order?.devise || 'MAD',
+				pourcentage: '100',
 			},
 		]);
 		setShowRequestPaymentModal(true);
@@ -652,12 +656,27 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 		}
 	};
 
-	const handleSendSwift = async (installment: LogistiquePaymentInstallment) => {
+	const handleProofEmailStatus = async (installment: LogistiquePaymentInstallment, emailSent: boolean) => {
 		try {
-			await sendSwift({ id, echeance_id: installment.id }).unwrap();
+			await setProofEmailStatus({ id, echeance_id: installment.id, email_envoye: emailSent }).unwrap();
 			onSuccess(t.logistique.swiftSuccess);
 		} catch (err) {
 			onError(extractApiErrorMessage(err, t.logistique.swiftError));
+		}
+	};
+
+	const handleAddProcessNote = async () => {
+		if (!processRemark.trim()) return;
+		const data = new FormData();
+		data.append('remarque', processRemark.trim());
+		if (processFile) data.append('fichier', processFile);
+		try {
+			await addProcessNote({ id, data }).unwrap();
+			setProcessRemark('');
+			setProcessFile(null);
+			onSuccess('Remarque ajoutée.');
+		} catch (err) {
+			onError(extractApiErrorMessage(err, "Erreur lors de l'ajout de la remarque."));
 		}
 	};
 
@@ -1025,6 +1044,11 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 													}
 												/>
 												<InfoRow
+													icon={<WarningIcon />}
+													label={t.logistique.fieldOtherVariance}
+													value={order?.ecart_autre_proforma ? t.logistique.varianceDetected : t.logistique.noVariance}
+												/>
+												<InfoRow
 													icon={<NotesIcon />}
 													label={t.logistique.fieldVarianceNotes}
 													value={order?.notes_ecarts_proforma}
@@ -1105,12 +1129,31 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 												value={order?.transport}
 											/>
 											<InfoRow icon={<PublicIcon />} label={t.logistique.fieldIncoterm} value={order?.incoterm} />
+											<InfoRow
+												icon={<DescriptionIcon />}
+												label={t.logistique.fieldDescription}
+												value={order?.description}
+											/>
+											<InfoRow
+												icon={<InventoryIcon />}
+												label={t.logistique.fieldBrands}
+												value={order?.marques_names?.join(', ')}
+											/>
 										</Grid>
 										<Grid size={{ xs: 12, lg: 6 }}>
 											<InfoRow
 												icon={<CalendarTodayIcon />}
 												label={t.logistique.fieldDatePrevue}
 												value={formatDateOnly(order?.date_prevue)}
+											/>
+											<InfoRow
+												icon={<DescriptionIcon />}
+												label={t.logistique.fieldOriginalDocumentsStatus}
+												value={
+													order?.documents_originaux_requis
+														? order.statut_documents_originaux || 'Non renseigné'
+														: 'Non requis'
+												}
 											/>
 											<InfoRow
 												icon={<CalendarTodayIcon />}
@@ -1227,6 +1270,17 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 													label={t.logistique.fieldMethodePaiement}
 													value={order?.methode_paiement}
 												/>
+												{order?.methode_paiement === 'LC' && (
+													<InfoRow
+														icon={<PaymentIcon />}
+														label={t.logistique.fieldAdvancePercentage}
+														value={
+															order.avance_pourcentage === null || order.avance_pourcentage === ''
+																? '-'
+																: `${formatNumberWithSpaces(order.avance_pourcentage, 2)} %`
+														}
+													/>
+												)}
 												<InfoRow
 													icon={<PaymentIcon />}
 													label={t.logistique.fieldRemainingBalance}
@@ -1296,6 +1350,7 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 																>
 																	<Typography sx={{ fontWeight: 700 }}>
 																		{formatDateOnly(installment.date_echeance)} ·{' '}
+																		{formatNumberWithSpaces(installment.pourcentage, 2)} % ·{' '}
 																		{formatMoney(installment.montant_prevu, installment.devise)}
 																	</Typography>
 																	<Chip label={installment.statut_traitement} size="small" variant="outlined" />
@@ -1372,20 +1427,20 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 																				{t.logistique.validatePayment}
 																			</Button>
 																		)}
-																	{isOrderResponsible &&
-																		installment.paiement_valide_le &&
-																		installment.preuve_email_statut !== 'Envoyé' &&
-																		(!['En attente', 'Envoi en cours'].includes(installment.preuve_email_statut) ||
-																			installment.preuve_email_relance_disponible) && (
-																			<Button
-																				variant="outlined"
-																				startIcon={<SendIcon />}
-																				disabled={!order?.fournisseur_email || isSendingProofEmail}
-																				onClick={() => handleSendSwift(installment)}
-																			>
-																				{t.logistique.sendPaymentProof}
-																			</Button>
-																		)}
+																	{isOrderResponsible && installment.paiement_valide_le && (
+																		<FormControlLabel
+																			control={
+																				<Checkbox
+																					checked={installment.preuve_email_statut === 'Envoyé'}
+																					disabled={isUpdatingProofEmail}
+																					onChange={(event) =>
+																						handleProofEmailStatus(installment, event.target.checked)
+																					}
+																				/>
+																			}
+																			label={t.logistique.sendPaymentProof}
+																		/>
+																	)}
 																	{isOrderResponsible &&
 																		installment.preuve_email_statut === 'Envoyé' &&
 																		installment.preuve_envoyee_fournisseur_le &&
@@ -1708,6 +1763,75 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 										)}
 									</Stack>
 								</DetailCard>
+
+								<DetailCard title="Remarques du processus" icon={<NotesIcon color="primary" />}>
+									<Stack spacing={2}>
+										{(canManage || isOrderResponsible || canProcessAssignedPayment) && !isOrderCancelled && (
+											<Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr auto' }, gap: 1.5 }}>
+												<CustomTextInput
+													id="process_remark"
+													type="textarea"
+													label="Remarque"
+													value={processRemark}
+													onChange={(event) => setProcessRemark(event.target.value)}
+													fullWidth
+													size="small"
+													theme={inputTheme}
+													startIcon={<NotesIcon fontSize="small" />}
+												/>
+												<Stack spacing={1} sx={{ minWidth: 210 }}>
+													<Button component="label" variant="outlined" startIcon={<UploadFileIcon />}>
+														{processFile?.name || 'Joindre un fichier'}
+														<input
+															type="file"
+															hidden
+															accept={acceptedDocumentTypes}
+															onChange={(event) => setProcessFile(event.target.files?.[0] ?? null)}
+														/>
+													</Button>
+													<Button
+														variant="contained"
+														disabled={!processRemark.trim() || isAddingProcessNote}
+														onClick={handleAddProcessNote}
+													>
+														Ajouter
+													</Button>
+												</Stack>
+											</Box>
+										)}
+										<Divider />
+										{order?.process_notes?.length ? (
+											order.process_notes.map((note) => (
+												<Stack key={note.id} spacing={0.5} sx={{ py: 1 }}>
+													<Stack
+														direction={{ xs: 'column', sm: 'row' }}
+														sx={{ justifyContent: 'space-between', gap: 1 }}
+													>
+														<Chip
+															label={note.statut}
+															size="small"
+															variant="outlined"
+															sx={{ alignSelf: 'flex-start' }}
+														/>
+														<Typography variant="caption" color="text.secondary">
+															{note.user_name || '-'} · {formatDate(note.date_created)}
+														</Typography>
+													</Stack>
+													<Typography>{note.remarque}</Typography>
+													{note.fichier && (
+														<MuiLink href={note.fichier} target="_blank" rel="noopener noreferrer">
+															Ouvrir la pièce jointe
+														</MuiLink>
+													)}
+												</Stack>
+											))
+										) : (
+											<Typography variant="body2" color="text.secondary">
+												Aucune remarque.
+											</Typography>
+										)}
+									</Stack>
+								</DetailCard>
 							</Stack>
 						)}
 					</Stack>
@@ -1922,7 +2046,6 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									size="small"
 									theme={inputTheme}
 									startIcon={<ReceiptLongIcon fontSize="small" />}
-									required
 								/>
 								<DatePicker
 									label={t.logistique.fieldSupplierProformaDate}
@@ -2071,6 +2194,20 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 										}
 										label={t.logistique.fieldQuantityVariance}
 									/>
+									<FormControlLabel
+										control={
+											<Checkbox
+												checked={supplierProformaData.ecart_autre_proforma}
+												onChange={(event) =>
+													setSupplierProformaData((prev) => ({
+														...prev,
+														ecart_autre_proforma: event.target.checked,
+													}))
+												}
+											/>
+										}
+										label={`${t.logistique.fieldOtherVariance} *`}
+									/>
 								</Stack>
 								<Box sx={{ gridColumn: { sm: '1 / -1' } }}>
 									<CustomTextInput
@@ -2140,7 +2277,7 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 								{paymentSchedule.map((item, index) => (
 									<Box
 										key={index}
-										sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 140px auto' }, gap: 1.5 }}
+										sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr auto' }, gap: 1.5 }}
 									>
 										<DatePicker
 											label={t.logistique.fieldDueDate}
@@ -2156,14 +2293,14 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 											slotProps={{ textField: { size: 'small', fullWidth: true, required: true } }}
 										/>
 										<FormattedNumberInput
-											id={`montant_prevu_${index}`}
+											id={`pourcentage_${index}`}
 											type="text"
 											label={t.logistique.fieldPlannedAmount}
-											value={item.montant_prevu}
+											value={item.pourcentage}
 											onChange={(event) =>
 												setPaymentSchedule((previous) =>
 													previous.map((row, rowIndex) =>
-														rowIndex === index ? { ...row, montant_prevu: event.target.value } : row,
+														rowIndex === index ? { ...row, pourcentage: event.target.value } : row,
 													),
 												)
 											}
@@ -2171,21 +2308,6 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 											size="small"
 											theme={inputTheme}
 											required
-										/>
-										<CustomDropDownSelect
-											id={`devise_echeance_${index}`}
-											label={t.logistique.fieldDevisePaiement}
-											items={logistiqueCurrencyItemsList}
-											value={item.devise}
-											onChange={(event) =>
-												setPaymentSchedule((previous) =>
-													previous.map((row, rowIndex) =>
-														rowIndex === index ? { ...row, devise: event.target.value } : row,
-													),
-												)
-											}
-											size="small"
-											theme={inputTheme}
 										/>
 										<Button
 											color="error"
@@ -2203,17 +2325,14 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									variant="outlined"
 									startIcon={<AddIcon />}
 									onClick={() =>
-										setPaymentSchedule((previous) => [
-											...previous,
-											{ date_echeance: '', montant_prevu: '', devise: order?.devise_titre_importation || 'MAD' },
-										])
+										setPaymentSchedule((previous) => [...previous, { date_echeance: '', pourcentage: '' }])
 									}
 									sx={{ alignSelf: 'flex-start' }}
 								>
 									{t.logistique.addInstallment}
 								</Button>
 								<Alert severity={hasCompletePaymentSchedule ? 'success' : 'warning'}>
-									{t.logistique.scheduleTotal(formatMoney(scheduledAmount, order?.devise_titre_importation))}
+									{t.logistique.scheduleTotal(formatNumberWithSpaces(scheduledPercentage, 2))}
 								</Alert>
 							</Stack>
 						</ActionModals>
@@ -2318,7 +2437,6 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									size="small"
 									theme={inputTheme}
 									startIcon={<ReceiptLongIcon fontSize="small" />}
-									required
 								/>
 								<CustomDropDownSelect
 									id="methode_paiement"

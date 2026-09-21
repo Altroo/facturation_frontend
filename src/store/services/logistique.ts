@@ -16,6 +16,8 @@ import type {
 	LogistiqueSourcePreview,
 	LogistiqueStats,
 	LogistiqueStatut,
+	LogistiqueSupplier,
+	LogistiqueProcessNote,
 	LogistiqueSupplierProformaReviewAction,
 } from '@/types/logistiqueTypes';
 import { factureProFormaApi } from '@/store/services/factureProForma';
@@ -87,6 +89,14 @@ export const logistiqueApi = createApi({
 				url:
 					process.env.NEXT_PUBLIC_LOGISTIQUE_RESPONSABLES ||
 					`${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/responsables/`,
+				method: 'GET',
+				params: { company_id },
+			}),
+			providesTags: [{ type: 'Logistique', id: 'LIST' }],
+		}),
+		getLogistiqueSuppliers: builder.query<LogistiqueSupplier[], { company_id: number }>({
+			query: ({ company_id }) => ({
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/fournisseurs/`,
 				method: 'GET',
 				params: { company_id },
 			}),
@@ -242,7 +252,7 @@ export const logistiqueApi = createApi({
 			LogistiqueOrder,
 			{
 				id: number;
-				echeancier: Array<{ date_echeance: string; montant_prevu: string; devise: string }>;
+				echeancier: Array<{ date_echeance: string; pourcentage: string }>;
 			}
 		>({
 			query: ({ id, echeancier }) => ({
@@ -336,17 +346,28 @@ export const logistiqueApi = createApi({
 				'Dashboard',
 			],
 		}),
-		sendLogistiqueSwift: builder.mutation<LogistiqueOrder, { id: number; echeance_id: number }>({
-			query: ({ id, echeance_id }) => ({
+		setLogistiqueProofEmailStatus: builder.mutation<
+			LogistiqueOrder,
+			{ id: number; echeance_id: number; email_envoye: boolean }
+		>({
+			query: ({ id, echeance_id, email_envoye }) => ({
 				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/${id}/send_swift/`,
 				method: 'POST',
-				data: { echeance_id },
+				data: { echeance_id, email_envoye },
 			}),
 			invalidatesTags: (_result, _error, { id }) => [
 				{ type: 'Logistique', id: 'LIST' },
 				{ type: 'Logistique', id },
 				'Dashboard',
 			],
+		}),
+		addLogistiqueProcessNote: builder.mutation<LogistiqueProcessNote, { id: number; data: FormData }>({
+			query: ({ id, data }) => ({
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/${id}/process_notes/`,
+				method: 'POST',
+				data,
+			}),
+			invalidatesTags: (_result, _error, { id }) => [{ type: 'Logistique', id }],
 		}),
 		confirmLogistiquePaymentReceipt: builder.mutation<LogistiqueOrder, { id: number; echeance_id: number }>({
 			query: ({ id, echeance_id }) => ({
@@ -369,6 +390,7 @@ export const {
 	useGetLogistiqueQuery,
 	useGetNumLogistiqueQuery,
 	useGetLogistiqueResponsablesQuery,
+	useGetLogistiqueSuppliersQuery,
 	useGetLogistiqueSourcePreviewQuery,
 	useAddLogistiqueMutation,
 	useEditLogistiqueMutation,
@@ -385,6 +407,7 @@ export const {
 	useRecordLogistiquePaymentExecutionMutation,
 	useValidateLogistiquePaymentMutation,
 	useRejectLogistiquePaymentMutation,
-	useSendLogistiqueSwiftMutation,
+	useSetLogistiqueProofEmailStatusMutation,
+	useAddLogistiqueProcessNoteMutation,
 	useConfirmLogistiquePaymentReceiptMutation,
 } = logistiqueApi;

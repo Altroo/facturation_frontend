@@ -43,18 +43,17 @@ describe('logistiqueApi endpoints', () => {
 		[
 			'getLogistiqueList',
 			async () =>
-				storeRef.store
-					.dispatch(logistiqueApi.endpoints.getLogistiqueList.initiate({ company_id: 1 }))
-					.unwrap(),
+				storeRef.store.dispatch(logistiqueApi.endpoints.getLogistiqueList.initiate({ company_id: 1 })).unwrap(),
 		],
 		[
 			'getLogistiqueDashboard',
 			async () =>
-				storeRef.store
-					.dispatch(logistiqueApi.endpoints.getLogistiqueDashboard.initiate({ company_id: 1 }))
-					.unwrap(),
+				storeRef.store.dispatch(logistiqueApi.endpoints.getLogistiqueDashboard.initiate({ company_id: 1 })).unwrap(),
 		],
-		['getLogistique', async () => storeRef.store.dispatch(logistiqueApi.endpoints.getLogistique.initiate({ id: 1 })).unwrap()],
+		[
+			'getLogistique',
+			async () => storeRef.store.dispatch(logistiqueApi.endpoints.getLogistique.initiate({ id: 1 })).unwrap(),
+		],
 		[
 			'getNumLogistique',
 			async () =>
@@ -63,9 +62,12 @@ describe('logistiqueApi endpoints', () => {
 		[
 			'getLogistiqueResponsables',
 			async () =>
-				storeRef.store
-					.dispatch(logistiqueApi.endpoints.getLogistiqueResponsables.initiate({ company_id: 1 }))
-					.unwrap(),
+				storeRef.store.dispatch(logistiqueApi.endpoints.getLogistiqueResponsables.initiate({ company_id: 1 })).unwrap(),
+		],
+		[
+			'getLogistiqueSuppliers',
+			async () =>
+				storeRef.store.dispatch(logistiqueApi.endpoints.getLogistiqueSuppliers.initiate({ company_id: 1 })).unwrap(),
 		],
 		[
 			'getLogistiqueSourcePreview',
@@ -77,19 +79,21 @@ describe('logistiqueApi endpoints', () => {
 		[
 			'addLogistique',
 			async () =>
-				storeRef.store
-					.dispatch(logistiqueApi.endpoints.addLogistique.initiate({ company_id: 1, data: {} }))
-					.unwrap(),
+				storeRef.store.dispatch(logistiqueApi.endpoints.addLogistique.initiate({ company_id: 1, data: {} })).unwrap(),
 		],
 		[
 			'editLogistique',
 			async () =>
 				storeRef.store.dispatch(logistiqueApi.endpoints.editLogistique.initiate({ id: 1, data: {} })).unwrap(),
 		],
-		['deleteLogistique', async () => storeRef.store.dispatch(logistiqueApi.endpoints.deleteLogistique.initiate({ id: 1 })).unwrap()],
+		[
+			'deleteLogistique',
+			async () => storeRef.store.dispatch(logistiqueApi.endpoints.deleteLogistique.initiate({ id: 1 })).unwrap(),
+		],
 		[
 			'bulkDeleteLogistique',
-			async () => storeRef.store.dispatch(logistiqueApi.endpoints.bulkDeleteLogistique.initiate({ ids: [1, 2] })).unwrap(),
+			async () =>
+				storeRef.store.dispatch(logistiqueApi.endpoints.bulkDeleteLogistique.initiate({ ids: [1, 2] })).unwrap(),
 		],
 		[
 			'patchLogistiqueStatut',
@@ -102,14 +106,18 @@ describe('logistiqueApi endpoints', () => {
 			'patchLogistiqueWorkflowStatus',
 			async () =>
 				storeRef.store
-					.dispatch(logistiqueApi.endpoints.patchLogistiqueWorkflowStatus.initiate({ id: 1, data: { statut: 'Proforma' } }))
+					.dispatch(
+						logistiqueApi.endpoints.patchLogistiqueWorkflowStatus.initiate({ id: 1, data: { statut: 'Proforma' } }),
+					)
 					.unwrap(),
 		],
 		[
 			'patchLogistiqueLaunchStatus',
 			async () =>
 				storeRef.store
-					.dispatch(logistiqueApi.endpoints.patchLogistiqueLaunchStatus.initiate({ id: 1, data: { statut: 'En cours' } }))
+					.dispatch(
+						logistiqueApi.endpoints.patchLogistiqueLaunchStatus.initiate({ id: 1, data: { statut: 'En cours' } }),
+					)
 					.unwrap(),
 		],
 		[
@@ -144,14 +152,15 @@ describe('logistiqueApi endpoints', () => {
 					.dispatch(
 						logistiqueApi.endpoints.requestLogistiquePayment.initiate({
 							id: 1,
-							echeancier: [{ date_echeance: '2026-09-20', montant_prevu: '100', devise: 'MAD' }],
+							echeancier: [{ date_echeance: '2026-09-20', pourcentage: '100' }],
 						}),
 					)
 					.unwrap(),
 		],
 		[
 			'retryLogistiquePaymentEmail',
-			async () => storeRef.store.dispatch(logistiqueApi.endpoints.retryLogistiquePaymentEmail.initiate({ id: 1 })).unwrap(),
+			async () =>
+				storeRef.store.dispatch(logistiqueApi.endpoints.retryLogistiquePaymentEmail.initiate({ id: 1 })).unwrap(),
 		],
 		[
 			'startLogistiquePayment',
@@ -192,14 +201,22 @@ describe('logistiqueApi endpoints', () => {
 			'rejectLogistiquePayment',
 			async () =>
 				storeRef.store
-					.dispatch(logistiqueApi.endpoints.rejectLogistiquePayment.initiate({ id: 1, data: { note: 'Missing proof' } }))
+					.dispatch(
+						logistiqueApi.endpoints.rejectLogistiquePayment.initiate({ id: 1, data: { note: 'Missing proof' } }),
+					)
 					.unwrap(),
 		],
 		[
-			'sendLogistiqueSwift',
+			'setLogistiqueProofEmailStatus',
 			async () =>
 				storeRef.store
-					.dispatch(logistiqueApi.endpoints.sendLogistiqueSwift.initiate({ id: 1, echeance_id: 2 }))
+					.dispatch(
+						logistiqueApi.endpoints.setLogistiqueProofEmailStatus.initiate({
+							id: 1,
+							echeance_id: 2,
+							email_envoye: true,
+						}),
+					)
 					.unwrap(),
 		],
 		[
@@ -207,6 +224,13 @@ describe('logistiqueApi endpoints', () => {
 			async () =>
 				storeRef.store
 					.dispatch(logistiqueApi.endpoints.confirmLogistiquePaymentReceipt.initiate({ id: 1, echeance_id: 2 }))
+					.unwrap(),
+		],
+		[
+			'addLogistiqueProcessNote',
+			async () =>
+				storeRef.store
+					.dispatch(logistiqueApi.endpoints.addLogistiqueProcessNote.initiate({ id: 1, data: formData() }))
 					.unwrap(),
 		],
 	];
