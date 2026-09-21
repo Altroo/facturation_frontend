@@ -346,8 +346,10 @@ jest.mock('@/components/htmlElements/buttons/primaryLoadingButton/primaryLoading
 
 jest.mock('@/components/shared/chipSelectFilter/chipSelectFilterBar', () => ({
 	__esModule: true,
-	default: ({ filters }: { filters: Array<{ label: string }> }) => (
-		<div data-testid="chip-filter-bar">{filters.map((filter) => filter.label).join(' ')}</div>
+	default: ({ filters, columns }: { filters: Array<{ label: string }>; columns?: number }) => (
+		<div data-testid="chip-filter-bar" data-filter-layout={columns ? `fixed-${columns}` : 'auto'}>
+			{filters.map((filter) => filter.label).join(' ')}
+		</div>
 	),
 }));
 

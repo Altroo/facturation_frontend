@@ -13,6 +13,7 @@ import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chip
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
 import type { ActionItem } from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
+import StockDisabledState from '@/components/pages/dashboard/stock/stock-disabled-state';
 import { createNumericFilterOperators } from '@/components/shared/numericFilter/numericFilterOperator';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { useGetCompanyQuery } from '@/store/services/company';
@@ -215,7 +216,7 @@ const StockListContent: React.FC<{ company_id: number; role: string }> = ({ comp
 
 	if (companyLoading) return <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />;
 	if (!enabled) {
-		return <Box sx={{ px: { xs: 1, sm: 2, md: 3 }, py: 3 }}>La gestion de stock est désactivée pour cette entreprise.</Box>;
+		return <StockDisabledState />;
 	}
 
 	return (
@@ -236,7 +237,7 @@ const StockListContent: React.FC<{ company_id: number; role: string }> = ({ comp
 					</Button>
 				</Box>
 			)}
-			<ChipSelectFilterBar filters={chipFilters} onFilterChange={setChipFilterParams} columns={2} />
+			<ChipSelectFilterBar filters={chipFilters} onFilterChange={setChipFilterParams} />
 			<PaginatedDataGrid
 				data={balances.data}
 				isLoading={balances.isLoading || balances.isFetching}

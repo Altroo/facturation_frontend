@@ -203,7 +203,7 @@ const StockInventoriesContent: React.FC<{ company_id: number; role: string }> = 
 					</Button>
 				</Box>
 			)}
-			<ChipSelectFilterBar filters={chipFilters} onFilterChange={setChipFilterParams} columns={2} />
+			<ChipSelectFilterBar filters={chipFilters} onFilterChange={setChipFilterParams} />
 			<PaginatedDataGrid
 				data={inventories.data}
 				isLoading={inventories.isLoading || inventories.isFetching}

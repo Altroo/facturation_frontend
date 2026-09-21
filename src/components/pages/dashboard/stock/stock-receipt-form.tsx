@@ -34,6 +34,7 @@ import CustomTextInput from '@/components/formikElements/customTextInput/customT
 import FormattedNumberInput from '@/components/formikElements/formattedNumberInput/formattedNumberInput';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import StockFormWrapper from '@/components/pages/dashboard/stock/stock-form-wrapper';
+import StockDisabledState from '@/components/pages/dashboard/stock/stock-disabled-state';
 import { useGetCompanyQuery } from '@/store/services/company';
 import { useGetLogistiqueListQuery, useGetLogistiqueQuery } from '@/store/services/logistique';
 import { useGetEmplacementListQuery } from '@/store/services/parameter';
@@ -239,7 +240,7 @@ const StockReceiptFormContent: React.FC<StockReceiptFormContentProps> = ({ token
 			)}
 			{formik.errors.globalError && <span className={Styles.errorMessage}>{formik.errors.globalError}</span>}
 			{company && !company.stock_management_enabled ? (
-				<Alert severity="warning">La gestion de stock est désactivée pour cette entreprise.</Alert>
+				<StockDisabledState />
 			) : isLoading ? (
 				<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
 			) : shouldShowError ? (

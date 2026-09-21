@@ -9,6 +9,7 @@ describe('StockReceiptsListClient', () => {
 		render(<StockReceiptsListClient session={mockSession} />);
 
 		expect(screen.getByRole('button', { name: 'Nouvelle réception' })).toBeInTheDocument();
+		expect(screen.getByTestId('chip-filter-bar')).toHaveAttribute('data-filter-layout', 'auto');
 		fireEvent.click(screen.getByRole('button', { name: 'Valider la réception' }));
 		expect(screen.getByRole('dialog', { name: 'Valider la réception' })).toBeInTheDocument();
 		expect(screen.getByText(/quantités reçues seront ajoutées au stock/i)).toBeInTheDocument();
