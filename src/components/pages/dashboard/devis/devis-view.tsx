@@ -158,7 +158,6 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 				type="devis"
 				title={t.devis.detailsTitle}
 				backLabel={t.devis.backToList}
-				backTo={DEVIS_LIST}
 				editTo={DEVIS_EDIT}
 				documentNumberLabel={t.devis.documentNumberLabel}
 				getDocumentNumber={(d) => d?.numero_devis}

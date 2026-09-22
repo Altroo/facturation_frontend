@@ -99,10 +99,11 @@ jest.mock('@/store/services/company', () => ({
 }));
 
 const pushMock = jest.fn();
+const backMock = jest.fn();
 const refreshMock = jest.fn();
 jest.mock('next/navigation', () => ({
 	__esModule: true,
-	useRouter: () => ({ push: pushMock, refresh: refreshMock }),
+	useRouter: () => ({ push: pushMock, back: backMock, refresh: refreshMock }),
 }));
 
 import { useAppSelector } from '@/utils/hooks';
@@ -125,7 +126,6 @@ const buildProps = (overrides?: Partial<CompanyDocumentsViewProps<TestDoc>>): Co
 		type: 'devis',
 		title: 'Doc view',
 		backLabel: 'Back',
-		backTo: '/back',
 		editTo: (id: number, companyId: number) => `/edit/${companyId}/${id}`,
 		documentNumberLabel: 'Number',
 		getDocumentNumber: (d) => d?.numero,
@@ -190,7 +190,7 @@ describe('CompanyDocumentsView', () => {
 		fireEvent.click(alertQueries.getByRole('button', { name: /Back/i }));
 		fireEvent.click(alertQueries.getByRole('button', { name: /Réessayer/i }));
 
-		expect(pushMock).toHaveBeenCalledWith('/back');
+		expect(backMock).toHaveBeenCalledTimes(1);
 		expect(refreshMock).toHaveBeenCalled();
 	});
 
@@ -247,21 +247,20 @@ describe('CompanyDocumentsView', () => {
 		expect(screen.queryByRole('button', { name: /Modifier/i })).not.toBeInTheDocument();
 	});
 
-	test('clicking back button navigates to back route', () => {
+	test('clicking back button returns to the previous page', () => {
 		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
 
 		const props = buildProps({
-			backTo: '/documents',
 			query: { isLoading: false, error: undefined, data: { statut: 'Brouillon', lignes: [] } },
 		});
 
 		render(<CompanyDocumentsWrapperView<TestDoc> {...props} />);
 
 		fireEvent.click(screen.getByRole('button', { name: 'Back' }));
-		expect(pushMock).toHaveBeenCalledWith('/documents');
+		expect(backMock).toHaveBeenCalledTimes(1);
 	});
 
 	test('shows Modifier button for Commercial role', () => {

@@ -88,7 +88,6 @@ export interface CompanyDocumentsViewProps<TData extends CompanyDocumentData> ex
 	type: DocumentType;
 	title: string;
 	backLabel: string;
-	backTo: string;
 	editTo: (id: number, companyId: number) => string;
 
 	// document-specific fields

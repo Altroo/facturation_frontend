@@ -116,13 +116,14 @@ const { useGetArticlesListQuery } = jest.requireMock('@/store/services/article')
 
 describe('BonDeLivraisonViewClient UI and navigation', () => {
 	const mockPush = jest.fn();
+	const mockBack = jest.fn();
 
 	beforeEach(() => {
 		(useRouter as jest.Mock).mockReturnValue({
 			push: mockPush,
+			back: mockBack,
 			replace: jest.fn(),
 			refresh: jest.fn(),
-			back: jest.fn(),
 			forward: jest.fn(),
 			prefetch: jest.fn(),
 		});
@@ -192,7 +193,7 @@ describe('BonDeLivraisonViewClient UI and navigation', () => {
 
 		renderWithProviders(<BonDeLivraisonViewClient {...defaultProps} />);
 		fireEvent.click(screen.getByText('Liste des bons de livraison', { selector: 'button' }));
-		expect(mockPush).toHaveBeenCalled();
+		expect(mockBack).toHaveBeenCalled();
 	});
 
 	it('shows and navigates with "Modifier" button when role is Caissier', () => {

@@ -19,11 +19,12 @@ const mockStore = configureStore({
 
 // Mock next/navigation
 const mockPush = jest.fn();
+const mockBack = jest.fn();
 jest.mock('next/navigation', () => ({
 	__esModule: true,
 	useRouter: () => ({
 		push: mockPush,
-		back: jest.fn(),
+		back: mockBack,
 		replace: jest.fn(),
 		refresh: jest.fn(),
 		forward: jest.fn(),
@@ -206,7 +207,7 @@ describe('ReglementViewClient', () => {
 		const backButton = screen.getByText('Liste des règlements', { selector: 'button' });
 		expect(backButton).toBeInTheDocument();
 		fireEvent.click(backButton);
-		expect(mockPush).toHaveBeenCalled();
+		expect(mockBack).toHaveBeenCalled();
 	});
 
 	it('shows "Modifier" button when role is Caissier and statut is Valide', () => {

@@ -44,7 +44,6 @@ import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '
 import type { StockReceiptLine } from '@/types/stockTypes';
 import { extractApiErrorMessage, formatDate, formatNumberWithSpaces } from '@/utils/helpers';
 import { useAppSelector, useToast } from '@/utils/hooks';
-import { STOCK_RECEIPTS } from '@/utils/routes';
 
 type InfoRowProps = {
 	icon: React.ReactNode;
@@ -169,7 +168,7 @@ const StockReceiptView: React.FC<StockReceiptViewProps> = ({ session, company_id
 						<Button
 							variant="outlined"
 							startIcon={<ArrowBackIcon />}
-							onClick={() => router.push(`${STOCK_RECEIPTS}?company_id=${company_id}`)}
+							onClick={() => router.back()}
 							sx={{ width: isMobile ? '100%' : 'auto' }}
 						>
 							Retour aux réceptions

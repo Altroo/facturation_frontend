@@ -47,7 +47,7 @@ import type { StockReceiptFormValues } from '@/types/stockTypes';
 import { formatNumberWithSpaces, getLabelForKey, parseNumber, setFormikAutoErrors } from '@/utils/helpers';
 import { stockReceiptSchema } from '@/utils/formValidationSchemas';
 import { useToast } from '@/utils/hooks';
-import { STOCK_RECEIPT_VIEW, STOCK_RECEIPTS } from '@/utils/routes';
+import { STOCK_RECEIPT_VIEW } from '@/utils/routes';
 import { textInputTheme } from '@/utils/themes';
 
 const inputTheme = textInputTheme();
@@ -211,7 +211,7 @@ const StockReceiptFormContent: React.FC<StockReceiptFormContentProps> = ({ token
 				<Button
 					variant="outlined"
 					startIcon={<ArrowBackIcon />}
-					onClick={() => router.push(`${STOCK_RECEIPTS}?company_id=${company_id}`)}
+					onClick={() => router.back()}
 					sx={{
 						whiteSpace: 'nowrap',
 						px: { xs: 1.5, sm: 2, md: 3 },

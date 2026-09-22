@@ -158,7 +158,6 @@ const BonDeLivraisonViewClient: React.FC<Props> = ({ session, company_id, id }) 
 				type="bon-de-livraison"
 				title={t.bonsLivraison.detailsTitle}
 				backLabel={t.bonsLivraison.backToList}
-				backTo={BON_DE_LIVRAISON_LIST}
 				editTo={BON_DE_LIVRAISON_EDIT}
 				documentNumberLabel={t.bonsLivraison.documentNumberLabel}
 				getDocumentNumber={(b) => b?.numero_bon_livraison}

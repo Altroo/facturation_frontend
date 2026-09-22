@@ -346,7 +346,6 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 	type,
 	title,
 	backLabel,
-	backTo,
 	editTo,
 	documentNumberLabel,
 	getDocumentNumber,
@@ -748,7 +747,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 						<Button
 							variant="outlined"
 							startIcon={<ArrowBackIcon />}
-							onClick={() => router.push(backTo)}
+							onClick={() => router.back()}
 							sx={{ width: isMobile ? '100%' : 'auto' }}
 						>
 							{backLabel}
@@ -785,7 +784,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 							helpText={t.common.documentErrorHelp}
 							backLabel={backLabel}
 							retryLabel={t.common.retry}
-							onBack={() => router.push(backTo)}
+							onBack={() => router.back()}
 							onRetry={() => router.refresh()}
 						/>
 					) : (

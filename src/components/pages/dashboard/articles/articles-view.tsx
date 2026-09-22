@@ -190,7 +190,7 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 						<Button
 							variant="outlined"
 							startIcon={<ArrowBackIcon />}
-							onClick={() => router.push(ARTICLES_LIST)}
+							onClick={() => router.back()}
 							sx={{ width: isMobile ? '100%' : 'auto' }}
 						>
 							{t.articles.backToList}

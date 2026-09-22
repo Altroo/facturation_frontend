@@ -207,7 +207,7 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 						<Button
 							variant="outlined"
 							startIcon={<ArrowBackIcon />}
-							onClick={() => router.push(REGLEMENTS_LIST)}
+							onClick={() => router.back()}
 							sx={{ width: isMobile ? '100%' : 'auto' }}
 						>
 							{t.reglements.backToList}

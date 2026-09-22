@@ -116,13 +116,14 @@ const { useGetArticlesListQuery } = jest.requireMock('@/store/services/article')
 
 describe('DevisViewClient UI and navigation', () => {
 	const mockPush = jest.fn();
+	const mockBack = jest.fn();
 
 	beforeEach(() => {
 		(useRouter as jest.Mock).mockReturnValue({
 			push: mockPush,
+			back: mockBack,
 			replace: jest.fn(),
 			refresh: jest.fn(),
-			back: jest.fn(),
 			forward: jest.fn(),
 			prefetch: jest.fn(),
 		});
@@ -193,7 +194,7 @@ describe('DevisViewClient UI and navigation', () => {
 
 		renderWithProviders(<DevisViewClient {...defaultProps} />);
 		fireEvent.click(screen.getByText('Liste des devis', { selector: 'button' }));
-		expect(mockPush).toHaveBeenCalled();
+		expect(mockBack).toHaveBeenCalled();
 	});
 
 	it('shows and navigates with "Modifier" button when role is Caissier', () => {

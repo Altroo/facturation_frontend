@@ -31,7 +31,7 @@ import Styles from '@/styles/dashboard/dashboard.module.sass';
 import type { SessionProps } from '@/types/_initTypes';
 import type { StockMovement } from '@/types/stockTypes';
 import { formatDate, formatNumberWithSpaces } from '@/utils/helpers';
-import { STOCK_MOVEMENTS, STOCK_VIEW } from '@/utils/routes';
+import { STOCK_VIEW } from '@/utils/routes';
 
 type InfoRowProps = {
 	icon: React.ReactNode;
@@ -106,7 +106,7 @@ const StockMovementView: React.FC<StockMovementViewProps> = ({ session, company_
 						<Button
 							variant="outlined"
 							startIcon={<ArrowBackIcon />}
-							onClick={() => router.push(`${STOCK_MOVEMENTS}?company_id=${company_id}`)}
+							onClick={() => router.back()}
 							sx={{ width: isMobile ? '100%' : 'auto' }}
 						>
 							Mouvements de stock

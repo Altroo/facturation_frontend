@@ -45,7 +45,7 @@ import type { SessionProps } from '@/types/_initTypes';
 import type { StockMovement, StockState } from '@/types/stockTypes';
 import { formatDate, formatNumberWithSpaces } from '@/utils/helpers';
 import { useAppSelector } from '@/utils/hooks';
-import { STOCK_ADD, STOCK_LIST, STOCK_MOVEMENT_VIEW } from '@/utils/routes';
+import { STOCK_ADD, STOCK_MOVEMENT_VIEW } from '@/utils/routes';
 
 type InfoRowProps = {
 	icon: React.ReactNode;
@@ -248,7 +248,7 @@ const StockView: React.FC<StockViewProps> = ({ session, company_id, id }) => {
 						<Button
 							variant="outlined"
 							startIcon={<ArrowBackIcon />}
-							onClick={() => router.push(`${STOCK_LIST}?company_id=${company_id}`)}
+							onClick={() => router.back()}
 							sx={{ width: isMobile ? '100%' : 'auto' }}
 						>
 							État du stock

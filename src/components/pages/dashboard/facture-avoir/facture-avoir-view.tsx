@@ -124,7 +124,6 @@ const FactureAvoirViewClient: React.FC<Props> = ({ session, company_id, id }) =>
 				type="facture-avoir"
 				title={t.facturesAvoir.detailsTitle}
 				backLabel={t.facturesAvoir.backToList}
-				backTo={FACTURE_AVOIR_LIST}
 				editTo={FACTURE_AVOIR_EDIT}
 				documentNumberLabel={t.facturesAvoir.documentNumberLabel}
 				getDocumentNumber={(d) => d?.numero_avoir}

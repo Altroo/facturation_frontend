@@ -195,7 +195,6 @@ const FactureClientViewClient: React.FC<Props> = ({ session, company_id, id }) =
 				type="facture-client"
 				title={t.facturesClient.detailsTitle}
 				backLabel={t.facturesClient.backToList}
-				backTo={FACTURE_CLIENT_LIST}
 				editTo={FACTURE_CLIENT_EDIT}
 				documentNumberLabel={t.facturesClient.documentNumberLabel}
 				getDocumentNumber={(d) => d?.numero_facture}

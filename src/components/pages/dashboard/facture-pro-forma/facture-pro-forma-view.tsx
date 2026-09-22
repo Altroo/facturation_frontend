@@ -164,7 +164,6 @@ const FactureProFormaViewClient: React.FC<Props> = ({ session, company_id, id })
 				type="facture-pro-forma"
 				title={t.facturesProforma.detailsTitle}
 				backLabel={t.facturesProforma.backToList}
-				backTo={FACTURE_PRO_FORMA_LIST}
 				editTo={FACTURE_PRO_FORMA_EDIT}
 				documentNumberLabel={t.facturesProforma.documentNumberLabel}
 				getDocumentNumber={(d) => d?.numero_facture}

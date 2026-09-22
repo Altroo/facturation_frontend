@@ -47,7 +47,7 @@ import type { StockInventoryFormValues } from '@/types/stockTypes';
 import { getLabelForKey, parseNumber, setFormikAutoErrors } from '@/utils/helpers';
 import { stockInventorySchema } from '@/utils/formValidationSchemas';
 import { useToast } from '@/utils/hooks';
-import { STOCK_INVENTORIES, STOCK_INVENTORY_VIEW } from '@/utils/routes';
+import { STOCK_INVENTORY_VIEW } from '@/utils/routes';
 import { textInputTheme } from '@/utils/themes';
 
 const inputTheme = textInputTheme();
@@ -181,7 +181,7 @@ const StockInventoryFormContent: React.FC<StockInventoryFormContentProps> = ({ t
 				<Button
 					variant="outlined"
 					startIcon={<ArrowBackIcon />}
-					onClick={() => router.push(`${STOCK_INVENTORIES}?company_id=${company_id}`)}
+					onClick={() => router.back()}
 					sx={{
 						whiteSpace: 'nowrap',
 						px: { xs: 1.5, sm: 2, md: 3 },

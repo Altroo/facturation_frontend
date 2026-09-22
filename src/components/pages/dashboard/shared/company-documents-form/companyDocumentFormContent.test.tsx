@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, cleanup } from '@testing-library/react';
+import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import type { DocumentFormConfig } from '@/types/companyDocumentsTypes';
 import { DeviClass, BonDeLivraisonClass, FactureClass } from '@/models/classes';
@@ -37,8 +37,9 @@ jest.mock('formik', () => {
 jest.mock('zod-formik-adapter', () => ({
 	toFormikValidationSchema: jest.fn(() => undefined),
 }));
+const mockBack = jest.fn();
 jest.mock('next/navigation', () => ({
-	useRouter: jest.fn(() => ({ push: jest.fn() })),
+	useRouter: jest.fn(() => ({ push: jest.fn(), back: mockBack })),
 }));
 jest.mock('next/image', () => ({
 	__esModule: true,
@@ -280,9 +281,12 @@ describe('CompanyDocumentFormContent', () => {
 
 	// ── Add mode (form rendering) ─────────────────────────────────
 	describe('Add mode', () => {
-		it('renders the back button with config label', () => {
+		it('returns to the previous page from the back button', () => {
 			render(<CompanyDocumentFormContent {...defaultProps} />);
-			expect(screen.getByText('Liste des devis')).toBeInTheDocument();
+			const backButton = screen.getByText('Liste des devis');
+			expect(backButton).toBeInTheDocument();
+			fireEvent.click(backButton);
+			expect(mockBack).toHaveBeenCalledTimes(1);
 		});
 
 		it('renders document info section', () => {

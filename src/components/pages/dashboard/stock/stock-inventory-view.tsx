@@ -36,7 +36,6 @@ import type { SessionProps } from '@/types/_initTypes';
 import type { InventoryLine } from '@/types/stockTypes';
 import { extractApiErrorMessage, formatDate, formatNumberWithSpaces } from '@/utils/helpers';
 import { useAppSelector, useToast } from '@/utils/hooks';
-import { STOCK_INVENTORIES } from '@/utils/routes';
 
 type InfoRowProps = {
 	icon: React.ReactNode;
@@ -174,7 +173,7 @@ const StockInventoryView: React.FC<StockInventoryViewProps> = ({ session, compan
 						<Button
 							variant="outlined"
 							startIcon={<ArrowBackIcon />}
-							onClick={() => router.push(`${STOCK_INVENTORIES}?company_id=${company_id}`)}
+							onClick={() => router.back()}
 							sx={{ width: isMobile ? '100%' : 'auto' }}
 						>
 							Inventaires de stock
