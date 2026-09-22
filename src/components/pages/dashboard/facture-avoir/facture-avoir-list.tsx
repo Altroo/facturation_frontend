@@ -24,7 +24,8 @@ import type { SessionProps } from '@/types/_initTypes';
 import type { FactureAvoirClass } from '@/models/classes';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import CompanyDocumentsListContent from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsListContent';
-import type { DocumentListConfig, FactureAvoirListResponseType, PaginationModel } from '@/types/companyDocumentsTypes';
+import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
+import type { DocumentListConfig, FactureAvoirListResponseType } from '@/types/companyDocumentsTypes';
 import { formatNumberWithSpaces } from '@/utils/helpers';
 import CurrencyToggle from '@/components/shared/currencyToggle/currencyToggle';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
@@ -130,7 +131,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 	const factureAvoirListConfig = React.useMemo(() => createFactureAvoirListConfig(t), [t]);
 	const { data: companyData } = useGetCompanyQuery({ id: company_id }, { skip: !token });
 	const usesForeignCurrency = companyData?.uses_foreign_currency === true;
-	const [paginationModel, setPaginationModel] = useState<PaginationModel>({ page: 0, pageSize: 10 });
+	const [paginationModel, setPaginationModel] = useDataGridPagination();
 	const [searchTerm, setSearchTerm] = useState<string>('');
 	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [], logicOperator: GridLogicOperator.And });
 	const [selectedDevise, setSelectedDevise] = useState<'MAD' | 'EUR' | 'USD'>('MAD');

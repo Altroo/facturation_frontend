@@ -10,7 +10,8 @@ import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import type { BonDeLivraisonClass } from '@/models/classes';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import CompanyDocumentsListContent from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsListContent';
-import type { DocumentListConfig, PaginationModel } from '@/types/companyDocumentsTypes';
+import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
+import type { DocumentListConfig } from '@/types/companyDocumentsTypes';
 import { useLanguage } from '@/utils/hooks';
 
 const createBonDeLivraisonUninvoicedListConfig = (t: TranslationDictionary): DocumentListConfig<BonDeLivraisonClass> => ({
@@ -50,10 +51,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 	const bonDeLivraisonUninvoicedListConfig = React.useMemo(() => createBonDeLivraisonUninvoicedListConfig(t), [t]);
 	const token = useInitAccessToken(session);
 
-	const [paginationModel, setPaginationModel] = useState<PaginationModel>({
-		page: 0,
-		pageSize: 10,
-	});
+	const [paginationModel, setPaginationModel] = useDataGridPagination();
 	const [searchTerm, setSearchTerm] = useState<string>('');
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
 

@@ -21,10 +21,11 @@ import {
 import { useGetCompanyQuery } from '@/store/services/company';
 import { BON_DE_LIVRAISON_EDIT, FACTURE_CLIENT_ADD, FACTURE_CLIENT_EDIT, FACTURE_CLIENT_VIEW } from '@/utils/routes';
 import type { SessionProps } from '@/types/_initTypes';
-import type { DocumentListConfig, FactureClientListResponseType, PaginationModel } from '@/types/companyDocumentsTypes';
+import type { DocumentListConfig, FactureClientListResponseType } from '@/types/companyDocumentsTypes';
 import type { FactureClass } from '@/models/classes';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import CompanyDocumentsListContent from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsListContent';
+import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
 import DashboardStatCard from '@/components/shared/dashboardStatCard/dashboardStatCard';
 import { formatNumberWithSpaces } from '@/utils/helpers';
 import { useLanguage } from '@/utils/hooks';
@@ -80,10 +81,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 	const { data: companyData } = useGetCompanyQuery({ id: company_id }, { skip: !token });
 	const usesForeignCurrency = companyData?.uses_foreign_currency === true;
 
-	const [paginationModel, setPaginationModel] = useState<PaginationModel>({
-		page: 0,
-		pageSize: 10,
-	});
+	const [paginationModel, setPaginationModel] = useDataGridPagination();
 	const [searchTerm, setSearchTerm] = useState<string>('');
 	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
 	const [selectedDevise, setSelectedDevise] = useState<'MAD' | 'EUR' | 'USD'>('MAD');

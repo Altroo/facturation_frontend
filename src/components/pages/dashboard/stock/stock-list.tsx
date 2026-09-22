@@ -13,6 +13,7 @@ import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chip
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
 import type { ActionItem } from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
+import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
 import StockDisabledState from '@/components/pages/dashboard/stock/stock-disabled-state';
 import { createNumericFilterOperators } from '@/components/shared/numericFilter/numericFilterOperator';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
@@ -46,7 +47,7 @@ const quantityText = (value: string, color: string) => (
 
 const StockListContent: React.FC<{ company_id: number; role: string }> = ({ company_id, role }) => {
 	const router = useRouter();
-	const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
+	const [paginationModel, setPaginationModel] = useDataGridPagination();
 	const [searchTerm, setSearchTerm] = useState('');
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
 	const [chipFilterParams, setChipFilterParams] = useState<Record<string, string>>({});

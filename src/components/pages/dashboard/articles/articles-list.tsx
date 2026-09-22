@@ -32,6 +32,7 @@ import { ARTICLES_ADD, ARTICLES_EDIT, ARTICLES_VIEW } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
+import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type { ArticleClass } from '@/models/classes';
 import { extractApiErrorMessage, formatDate, formatNumberWithSpaces } from '@/utils/helpers';
@@ -74,10 +75,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const usesForeignCurrency = companyData?.uses_foreign_currency === true;
 	const isNectarCompany = isNectarRaisonSociale(companyData?.raison_sociale);
 
-	const [paginationModel, setPaginationModel] = useState<{ page: number; pageSize: number }>({
-		page: 0,
-		pageSize: 10,
-	});
+	const [paginationModel, setPaginationModel] = useDataGridPagination();
 	const [searchTerm, setSearchTerm] = useState<string>('');
 	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [], logicOperator: GridLogicOperator.And });
 	const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);

@@ -12,6 +12,7 @@ import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chip
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
 import type { ActionItem } from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
+import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 import { useGetEmplacementListQuery } from '@/store/services/parameter';
@@ -41,7 +42,7 @@ const StockInventoriesContent: React.FC<{ company_id: number; role: string }> = 
 	const router = useRouter();
 	const { onSuccess, onError } = useToast();
 	const canAdjust = role === 'Caissier';
-	const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
+	const [paginationModel, setPaginationModel] = useDataGridPagination();
 	const [searchTerm, setSearchTerm] = useState('');
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
 	const [chipFilterParams, setChipFilterParams] = useState<Record<string, string>>({});

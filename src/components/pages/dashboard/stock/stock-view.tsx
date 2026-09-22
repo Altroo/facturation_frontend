@@ -33,6 +33,7 @@ import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import DashboardStatCard from '@/components/shared/dashboardStatCard/dashboardStatCard';
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
+import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 import { createNumericFilterOperators } from '@/components/shared/numericFilter/numericFilterOperator';
@@ -130,7 +131,7 @@ const StockView: React.FC<StockViewProps> = ({ session, company_id, id }) => {
 	const role = companies?.find((company) => company.id === company_id)?.role;
 	const canAdjust = role === 'Caissier';
 	const { data: balance, isLoading, isError } = useGetStockBalanceQuery({ company_id, id }, { skip: !token });
-	const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
+	const [paginationModel, setPaginationModel] = useDataGridPagination();
 	const [searchTerm, setSearchTerm] = useState('');
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
 	const [filterModel, setFilterModel] = useState<GridFilterModel>({

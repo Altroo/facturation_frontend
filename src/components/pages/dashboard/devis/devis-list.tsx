@@ -18,7 +18,8 @@ import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import type { DeviClass } from '@/models/classes';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import CompanyDocumentsListContent from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsListContent';
-import type { DocumentListConfig, PaginationModel } from '@/types/companyDocumentsTypes';
+import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
+import type { DocumentListConfig } from '@/types/companyDocumentsTypes';
 import { useGetModePaiementListQuery } from '@/store/services/parameter';
 import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
@@ -120,10 +121,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 	const devisListConfig = React.useMemo(() => createDevisListConfig(t), [t]);
 	const token = useInitAccessToken(session);
 
-	const [paginationModel, setPaginationModel] = useState<PaginationModel>({
-		page: 0,
-		pageSize: 10,
-	});
+	const [paginationModel, setPaginationModel] = useDataGridPagination();
 	const [searchTerm, setSearchTerm] = useState('');
 	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [], logicOperator: GridLogicOperator.And });
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});

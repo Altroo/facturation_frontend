@@ -25,6 +25,7 @@ import { COMPANIES_ADD, COMPANIES_EDIT, COMPANIES_VIEW } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
+import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type { CompanyClass } from '@/models/classes';
 import { formatDate } from '@/utils/helpers';
@@ -48,10 +49,7 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
 	const token = useInitAccessToken(session);
-	const [paginationModel, setPaginationModel] = useState<{ page: number; pageSize: number }>({
-		page: 0,
-		pageSize: 10,
-	});
+	const [paginationModel, setPaginationModel] = useDataGridPagination();
 	const [searchTerm, setSearchTerm] = useState<string>('');
 	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
 	const [showSuspendModal, setShowSuspendModal] = useState<boolean>(false);

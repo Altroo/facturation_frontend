@@ -31,6 +31,7 @@ import TextButton from '@/components/htmlElements/buttons/textButton/textButton'
 import type { SessionProps } from '@/types/_initTypes';
 import type { ReglementListResponseType, ReglementStatutType } from '@/types/reglementTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
+import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type { ReglementClass } from '@/models/classes';
 import { extractApiErrorMessage, formatDate, formatNumberWithSpaces } from '@/utils/helpers';
@@ -75,10 +76,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const { data: companyData } = useGetCompanyQuery({ id: company_id }, { skip: !token });
 	const usesForeignCurrency = companyData?.uses_foreign_currency === true;
 
-	const [paginationModel, setPaginationModel] = useState<{ page: number; pageSize: number }>({
-		page: 0,
-		pageSize: 10,
-	});
+	const [paginationModel, setPaginationModel] = useDataGridPagination();
 	const [searchTerm, setSearchTerm] = useState<string>('');
 	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [], logicOperator: GridLogicOperator.And });
 	const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);

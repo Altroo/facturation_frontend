@@ -19,6 +19,7 @@ import {
 import { GridColDef, GridFilterModel, GridLogicOperator, GridRenderCellParams } from '@mui/x-data-grid';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
+import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
 import DashboardStatCard from '@/components/shared/dashboardStatCard/dashboardStatCard';
 import ChipSelectFilterBar, { type ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
@@ -86,7 +87,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 	const canManage = managerRoles.has(role);
 	const canDelete = role === 'Caissier';
 
-	const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
+	const [paginationModel, setPaginationModel] = useDataGridPagination();
 	const [searchTerm, setSearchTerm] = useState('');
 	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [], logicOperator: GridLogicOperator.And });
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
