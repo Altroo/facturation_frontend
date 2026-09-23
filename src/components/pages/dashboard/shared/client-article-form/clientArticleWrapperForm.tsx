@@ -1,7 +1,6 @@
 'use client';
 
-import React from 'react';
-import type { SessionProps } from '@/types/_initTypes';
+import { type FC } from 'react';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
@@ -9,15 +8,9 @@ import { Box, Stack } from '@mui/material';
 import { useAppSelector, useLanguage } from '@/utils/hooks';
 import { getUserCompaniesState } from '@/store/selectors';
 import NoPermission from '@/components/shared/noPermission/noPermission';
+import type { ClientArticleWrapperFormProps as Props } from '@/types/articleTypes';
 
-interface Props extends SessionProps {
-	company_id: number;
-	id?: number;
-	entityName: 'article' | 'client';
-	FormikComponent: React.FC<{ token?: string; id?: number; company_id: number; company_raison_sociale?: string }>;
-}
-
-const ClientArticleWrapperForm: React.FC<Props> = ({ session, company_id, id, entityName, FormikComponent }) => {
+const ClientArticleWrapperForm: FC<Props> = ({ session, company_id, id, entityName, FormikComponent }) => {
 	const { t } = useLanguage();
 	const token = useInitAccessToken(session);
 	const companies = useAppSelector(getUserCompaniesState);

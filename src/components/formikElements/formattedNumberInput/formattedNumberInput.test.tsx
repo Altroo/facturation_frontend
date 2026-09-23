@@ -1,22 +1,22 @@
-import React from 'react';
+import { forwardRef, type ChangeEvent, type FocusEvent, type Ref } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 // Mock CustomTextInput to expose all relevant props
 jest.mock('@/components/formikElements/customTextInput/customTextInput', () => ({
 	__esModule: true,
-	default: React.forwardRef(function MockCustomTextInput(
+	default: forwardRef(function MockCustomTextInput(
 		props: {
 			value?: string;
-			onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-			onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
+			onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
+			onBlur?: (e: FocusEvent<HTMLInputElement>) => void;
 			label?: string;
 			error?: boolean;
 			helperText?: string;
 			disabled?: boolean;
 			slotProps?: { htmlInput?: { onFocus?: () => void } };
 		},
-		ref: React.Ref<HTMLInputElement>,
+		ref: Ref<HTMLInputElement>,
 	) {
 		return (
 			<input
@@ -48,7 +48,6 @@ jest.mock('@/utils/helpers', () => ({
 		return isNaN(parsed) ? null : parsed;
 	},
 }));
-
 import FormattedNumberInput from './formattedNumberInput';
 import { createTheme } from '@mui/material/styles';
 

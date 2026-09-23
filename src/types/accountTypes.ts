@@ -1,6 +1,8 @@
 import type { ResponseDataInterface, SagaPayloadType, TokenType } from '@/types/_initTypes';
 import type { GroupClass, UserClass } from '@/models/classes';
 
+export type PasswordResetCodeField = 'one' | 'two' | 'three' | 'four' | 'five' | 'six';
+
 //!- Account State
 export interface AccountStateInterface {
 	profil: UserClass | Record<string, unknown>;
@@ -47,3 +49,21 @@ export interface PasswordResetResponse extends TokenType {
 		new_password2: string;
 	};
 }
+
+export type EnterCodePageContentProps = {
+	email: string;
+};
+
+export type EnterCodeProps = {
+	email: string;
+};
+
+export type SetPasswordPageContentProps = {
+	email: string;
+	code: string;
+};
+
+export type SetPasswordProps = {
+	email: string;
+	code: string;
+};

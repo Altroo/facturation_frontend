@@ -8,11 +8,7 @@ export const metadata: Metadata = {
 	title: 'Modifier Article',
 	description: 'Modifier un article existant',
 };
-
-type PageProps = {
-	params: Promise<{ id: string }>;
-	searchParams: Promise<{ company_id: string }>;
-};
+import type { CompanyScopedDetailRouteProps as PageProps } from '@/types/routeTypes';
 
 const ArticleEditPage = async (props: PageProps) => {
 	const session = await auth();

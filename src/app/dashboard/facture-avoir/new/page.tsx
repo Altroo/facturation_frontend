@@ -8,10 +8,7 @@ export const metadata: Metadata = {
 	title: "Nouvelle facture d'avoir",
 	description: "Créer une nouvelle facture d'avoir",
 };
-
-type PageProps = {
-	searchParams: Promise<{ company_id: string }>;
-};
+import type { CompanyScopedNewRouteProps as PageProps } from '@/types/routeTypes';
 
 const FactureAvoirNewPage = async (props: PageProps) => {
 	const session = await auth();

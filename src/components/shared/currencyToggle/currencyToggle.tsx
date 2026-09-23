@@ -1,17 +1,8 @@
-import React from 'react';
+import { type FC, type MouseEvent } from 'react';
 import { Box, ToggleButtonGroup, ToggleButton } from '@mui/material';
+import type { CurrencyToggleProps } from '@/types/uiTypes';
 
-interface CurrencyToggleProps {
-	selectedDevise: 'MAD' | 'EUR' | 'USD';
-	onDeviseChange: (devise: 'MAD' | 'EUR' | 'USD') => void;
-	usesForeignCurrency: boolean;
-}
-
-const CurrencyToggle: React.FC<CurrencyToggleProps> = ({
-	selectedDevise,
-	onDeviseChange,
-	usesForeignCurrency,
-}) => {
+const CurrencyToggle: FC<CurrencyToggleProps> = ({ selectedDevise, onDeviseChange, usesForeignCurrency }) => {
 	if (!usesForeignCurrency) return null;
 
 	return (
@@ -19,7 +10,7 @@ const CurrencyToggle: React.FC<CurrencyToggleProps> = ({
 			<ToggleButtonGroup
 				value={selectedDevise}
 				exclusive
-				onChange={(event: React.MouseEvent<HTMLElement>, newDevise: 'MAD' | 'EUR' | 'USD' | null) => {
+				onChange={(event: MouseEvent<HTMLElement>, newDevise: 'MAD' | 'EUR' | 'USD' | null) => {
 					if (newDevise !== null) {
 						onDeviseChange(newDevise);
 					}

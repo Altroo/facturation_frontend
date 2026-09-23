@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { runWithCleanup } from '@/utils/runWithCleanup';
+import { useEffect, useState, type FC } from 'react';
 import Styles from '@/styles/dashboard/settings/settings.module.sass';
 import type { SelectChangeEvent } from '@mui/material';
 import {
@@ -28,7 +29,7 @@ import { useLanguage, useToast } from '@/utils/hooks';
 import { Edit as EditIcon } from '@mui/icons-material';
 import type { NotificationPreferenceFormValues, QuoteExpiryDaysValue } from '@/types/facturationTypes';
 
-const FormikContent: React.FC = () => {
+const FormikContent: FC = () => {
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
 	const quoteExpiryOptions: { value: QuoteExpiryDaysValue; label: string }[] = t.settings.quoteExpiryOptions as {
@@ -53,23 +54,28 @@ const FormikContent: React.FC = () => {
 		enableReinitialize: true,
 		onSubmit: async (values, { setFieldError }) => {
 			setIsPending(true);
-			try {
-				await updatePreferences({
-					notify_overdue_invoice: values.notify_overdue_invoice,
-					notify_expiring_quote: values.notify_expiring_quote,
-					notify_uninvoiced_bdl: values.notify_uninvoiced_bdl,
-					notify_document_created: values.notify_document_created,
-					notify_low_stock: values.notify_low_stock,
-					low_stock_repeat_hours: values.low_stock_repeat_hours,
-					quote_expiry_days: values.quote_expiry_days,
-				}).unwrap();
-				onSuccess(t.settings.notificationUpdateSuccess);
-			} catch (e) {
-				onError(t.settings.notificationUpdateError);
-				setFormikAutoErrors({ e, setFieldError });
-			} finally {
-				setIsPending(false);
-			}
+			await runWithCleanup(
+				async () => {
+					try {
+						await updatePreferences({
+							notify_overdue_invoice: values.notify_overdue_invoice,
+							notify_expiring_quote: values.notify_expiring_quote,
+							notify_uninvoiced_bdl: values.notify_uninvoiced_bdl,
+							notify_document_created: values.notify_document_created,
+							notify_low_stock: values.notify_low_stock,
+							low_stock_repeat_hours: values.low_stock_repeat_hours,
+							quote_expiry_days: values.quote_expiry_days,
+						}).unwrap();
+						onSuccess(t.settings.notificationUpdateSuccess);
+					} catch (e) {
+						onError(t.settings.notificationUpdateError);
+						setFormikAutoErrors({ e, setFieldError });
+					}
+				},
+				() => {
+					setIsPending(false);
+				},
+			);
 		},
 	});
 
@@ -108,7 +114,7 @@ const FormikContent: React.FC = () => {
 								control={
 									<Switch
 										checked={formik.values.notify_overdue_invoice}
-										onChange={(e) => formik.setFieldValue('notify_overdue_invoice', e.target.checked)}
+										onChange={(e) => void formik.setFieldValue('notify_overdue_invoice', e.target.checked)}
 									/>
 								}
 								label={t.settings.notifyOverdueInvoice}
@@ -117,7 +123,7 @@ const FormikContent: React.FC = () => {
 								control={
 									<Switch
 										checked={formik.values.notify_expiring_quote}
-										onChange={(e) => formik.setFieldValue('notify_expiring_quote', e.target.checked)}
+										onChange={(e) => void formik.setFieldValue('notify_expiring_quote', e.target.checked)}
 									/>
 								}
 								label={t.settings.notifyExpiringQuote}
@@ -126,7 +132,7 @@ const FormikContent: React.FC = () => {
 								control={
 									<Switch
 										checked={formik.values.notify_uninvoiced_bdl}
-										onChange={(e) => formik.setFieldValue('notify_uninvoiced_bdl', e.target.checked)}
+										onChange={(e) => void formik.setFieldValue('notify_uninvoiced_bdl', e.target.checked)}
 									/>
 								}
 								label={t.settings.notifyUninvoicedBdl}
@@ -135,7 +141,7 @@ const FormikContent: React.FC = () => {
 								control={
 									<Switch
 										checked={formik.values.notify_document_created}
-										onChange={(e) => formik.setFieldValue('notify_document_created', e.target.checked)}
+										onChange={(e) => void formik.setFieldValue('notify_document_created', e.target.checked)}
 									/>
 								}
 								label={t.settings.notifyDocumentCreated}
@@ -144,7 +150,7 @@ const FormikContent: React.FC = () => {
 								control={
 									<Switch
 										checked={formik.values.notify_low_stock}
-										onChange={(e) => formik.setFieldValue('notify_low_stock', e.target.checked)}
+										onChange={(e) => void formik.setFieldValue('notify_low_stock', e.target.checked)}
 									/>
 								}
 								label={t.settings.notifyLowStock}
@@ -155,10 +161,14 @@ const FormikContent: React.FC = () => {
 									labelId="low-stock-repeat-hours-label"
 									value={String(formik.values.low_stock_repeat_hours)}
 									label={t.settings.lowStockRepeatHours}
-									onChange={(e: SelectChangeEvent) => formik.setFieldValue('low_stock_repeat_hours', Number(e.target.value))}
+									onChange={(e: SelectChangeEvent) =>
+										void formik.setFieldValue('low_stock_repeat_hours', Number(e.target.value))
+									}
 								>
 									{[6, 12, 24, 48, 72].map((hours) => (
-										<MenuItem key={hours} value={String(hours)}>{hours} h</MenuItem>
+										<MenuItem key={hours} value={String(hours)}>
+											{hours} h
+										</MenuItem>
 									))}
 								</Select>
 							</FormControl>
@@ -168,7 +178,9 @@ const FormikContent: React.FC = () => {
 									labelId="quote-expiry-days-label"
 									value={String(formik.values.quote_expiry_days)}
 									label={t.settings.quoteExpiryDays}
-									onChange={(e: SelectChangeEvent) => formik.setFieldValue('quote_expiry_days', Number(e.target.value))}
+									onChange={(e: SelectChangeEvent) =>
+										void formik.setFieldValue('quote_expiry_days', Number(e.target.value))
+									}
 								>
 									{quoteExpiryOptions.map((opt) => (
 										<MenuItem key={opt.value} value={String(opt.value)}>
@@ -194,7 +206,7 @@ const FormikContent: React.FC = () => {
 	);
 };
 
-const NotificationsClient: React.FC = () => {
+const NotificationsClient: FC = () => {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 	const { t } = useLanguage();

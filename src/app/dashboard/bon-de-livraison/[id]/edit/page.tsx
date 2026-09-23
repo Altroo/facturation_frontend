@@ -8,11 +8,7 @@ export const metadata: Metadata = {
 	title: 'Modifier Bon de Livraison',
 	description: 'Modifier un bon de livraison existant',
 };
-
-type PageProps = {
-	params: Promise<{ id: number }>;
-	searchParams: Promise<{ company_id: string }>;
-};
+import type { CompanyScopedEditRouteProps as PageProps } from '@/types/routeTypes';
 
 const BonDeLivraisonEditPage = async (props: PageProps) => {
 	const session = await auth();
@@ -28,7 +24,7 @@ const BonDeLivraisonEditPage = async (props: PageProps) => {
 		redirect(BON_DE_LIVRAISON_LIST);
 	}
 
-	return <BonDeLivraisonForm session={session} id={id} company_id={Number(company_id)} />;
+	return <BonDeLivraisonForm session={session} id={Number(id)} company_id={Number(company_id)} />;
 };
 
 export default BonDeLivraisonEditPage;

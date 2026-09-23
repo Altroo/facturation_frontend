@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 import { renderToStaticMarkup } from 'react-dom/server';
-import React from 'react';
+import { createElement, type ReactElement } from 'react';
 
 type Session = { user: { pk: number; email: string } } | null;
 
@@ -19,9 +19,7 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/components/pages/dashboard/facture-avoir/facture-avoir-form', () => ({
 	__esModule: true,
 	default: (props: { company_id?: number }) => {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const React = require('react');
-		return React.createElement('div', null, `FACTURE_AVOIR_FORM:${props.company_id}`);
+		return createElement('div', null, `FACTURE_AVOIR_FORM:${props.company_id}`);
 	},
 }));
 
@@ -43,7 +41,9 @@ describe('FactureAvoirNewPage server component', () => {
 		mockAuth.mockResolvedValueOnce(null);
 
 		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const Page = require('./page').default as (props: { searchParams: Promise<{ company_id: string }> }) => Promise<unknown>;
+		const Page = require('./page').default as (props: {
+			searchParams: Promise<{ company_id: string }>;
+		}) => Promise<unknown>;
 
 		await Page({ searchParams: Promise.resolve({ company_id: '4' }) });
 		expect(mockRedirect).toHaveBeenCalledWith(AUTH_LOGIN);
@@ -53,7 +53,9 @@ describe('FactureAvoirNewPage server component', () => {
 		mockAuth.mockResolvedValueOnce({ user: { pk: 3, email: 'user@example.com' } });
 
 		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const Page = require('./page').default as (props: { searchParams: Promise<{ company_id: string }> }) => Promise<unknown>;
+		const Page = require('./page').default as (props: {
+			searchParams: Promise<{ company_id: string }>;
+		}) => Promise<unknown>;
 
 		await Page({ searchParams: Promise.resolve({ company_id: 'bad' }) });
 		expect(mockRedirect).toHaveBeenCalledWith(FACTURE_AVOIR_LIST);
@@ -63,9 +65,11 @@ describe('FactureAvoirNewPage server component', () => {
 		mockAuth.mockResolvedValueOnce({ user: { pk: 3, email: 'user@example.com' } });
 
 		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const Page = require('./page').default as (props: { searchParams: Promise<{ company_id: string }> }) => Promise<unknown>;
+		const Page = require('./page').default as (props: {
+			searchParams: Promise<{ company_id: string }>;
+		}) => Promise<unknown>;
 
 		const result = await Page({ searchParams: Promise.resolve({ company_id: '8' }) });
-		expect(renderToStaticMarkup(result as React.ReactElement)).toContain('FACTURE_AVOIR_FORM:8');
+		expect(renderToStaticMarkup(result as ReactElement)).toContain('FACTURE_AVOIR_FORM:8');
 	});
 });

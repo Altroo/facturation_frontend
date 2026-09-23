@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { Desktop, TabletAndMobile } from './clientHelpers';
 import useMediaQuery from '@mui/material/useMediaQuery';

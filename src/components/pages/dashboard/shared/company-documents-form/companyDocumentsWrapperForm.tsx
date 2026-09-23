@@ -1,34 +1,16 @@
 'use client';
 
-import React from 'react';
-import { Stack, Box } from '@mui/material';
+import { type FC } from 'react';
+import { Box, Stack } from '@mui/material';
 import { getUserCompaniesState } from '@/store/selectors';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import { useAppSelector } from '@/utils/hooks';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import type { SessionProps } from '@/types/_initTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import NoPermission from '@/components/shared/noPermission/noPermission';
+import type { CompanyDocumentsWrapperFormProps as Props } from '@/types/companyDocumentsTypes';
 
-interface DocumentConfig {
-	addTitle: string;
-	editTitle: string;
-}
-
-interface Props extends SessionProps {
-	company_id: number;
-	id?: number;
-	documentConfig: DocumentConfig;
-	FormComponent: React.ComponentType<{
-		company_id: number;
-		token?: string;
-		id?: number;
-		isEditMode: boolean;
-		role?: string;
-	}>;
-}
-
-const CompanyDocumentsWrapperForm: React.FC<Props> = (props: Props) => {
+const CompanyDocumentsWrapperForm: FC<Props> = (props: Props) => {
 	const { session, company_id, id, documentConfig, FormComponent } = props;
 	const token = useInitAccessToken(session);
 	const companies = useAppSelector(getUserCompaniesState);
@@ -42,7 +24,13 @@ const CompanyDocumentsWrapperForm: React.FC<Props> = (props: Props) => {
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
 					{company?.role === 'Caissier' || company?.role === 'Commercial' ? (
 						<Box sx={{ width: '100%' }}>
-							<FormComponent company_id={company_id} token={token} id={id} isEditMode={isEditMode} role={company?.role} />
+							<FormComponent
+								company_id={company_id}
+								token={token}
+								id={id}
+								isEditMode={isEditMode}
+								role={company?.role}
+							/>
 						</Box>
 					) : (
 						<NoPermission />

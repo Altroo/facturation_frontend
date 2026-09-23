@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import { type FC, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@mui/material';
 import {
@@ -15,29 +15,18 @@ import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import { extractApiErrorMessage } from '@/utils/helpers';
 import { getUserCompaniesState } from '@/store/selectors';
 import { fetchPdfBlob } from '@/utils/apiHelpers';
+import { runWithCleanup } from '@/utils/runWithCleanup';
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
-import type { SessionProps } from '@/types/_initTypes';
 import CompanyDocumentsWrapperView from '@/components/pages/dashboard/shared/company-documents-view/companyDocumentsWrapperView';
-import type { CompanyDocumentData } from '@/types/companyDocumentsTypes';
+import type { DevisData, DevisViewProps as Props } from '@/types/companyDocumentsTypes';
 
-type DevisData = CompanyDocumentData & {
-	numero_devis?: string | number | null;
-	date_devis?: string | null;
-	numero_demande_prix_client?: string | number | null;
-};
-
-interface Props extends SessionProps {
-	company_id: number;
-	id: number;
-}
-
-const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
+const DevisViewClient: FC<Props> = ({ session, company_id, id }) => {
 	const query = useGetDeviQuery({ id });
 	const router = useRouter();
 	const token = useInitAccessToken(session);
 	const companies = useAppSelector(getUserCompaniesState);
-	const company = useMemo(() => companies?.find((c) => c.id === company_id), [companies, company_id]);
+	const company = companies?.find((c) => c.id === company_id);
 	const [deleteRecord] = useDeleteDeviMutation();
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
@@ -46,15 +35,18 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const [pendingPdfType, setPendingPdfType] = useState<DocumentPdfType | null>(null);
 
 	const handleDelete = async () => {
-		try {
-			await deleteRecord({ id }).unwrap();
-			onSuccess(t.devis.deleteSuccess);
-			router.push(DEVIS_LIST);
-		} catch (err) {
-			onError(extractApiErrorMessage(err, t.devis.deleteError));
-		} finally {
-			setShowDeleteModal(false);
-		}
+		await runWithCleanup(
+			async () => {
+				try {
+					await deleteRecord({ id }).unwrap();
+					onSuccess(t.devis.deleteSuccess);
+					router.push(DEVIS_LIST);
+				} catch (err) {
+					onError(extractApiErrorMessage(err, t.devis.deleteError));
+				}
+			},
+			() => setShowDeleteModal(false),
+		);
 	};
 
 	const deleteModalActions = [
@@ -76,23 +68,25 @@ const DevisViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const handleLanguageSelect = async (language: 'fr' | 'en') => {
 		setShowLanguageModal(false);
 		if (!token || !pendingPdfType) return;
-		try {
-			const url = DEVIS_PDF(id, company_id, pendingPdfType, language);
-			const blob = await fetchPdfBlob(url, token);
-			const blobUrl = window.URL.createObjectURL(blob);
-			window.open(blobUrl, '_blank');
-			setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60_000);
-		} catch {
-			onError(t.errors.documentOpenError);
-		} finally {
-			setPendingPdfType(null);
-		}
+		await runWithCleanup(
+			async () => {
+				try {
+					const url = DEVIS_PDF(id, company_id, pendingPdfType, language);
+					const blob = await fetchPdfBlob(url, token);
+					const blobUrl = window.URL.createObjectURL(blob);
+					window.open(blobUrl, '_blank');
+					setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60_000);
+				} catch {
+					onError(t.errors.documentOpenError);
+				}
+			},
+			() => setPendingPdfType(null),
+		);
 	};
 
 	const isCaissier = company?.role === 'Caissier';
 	const canPrint =
-		Boolean(query.data) &&
-		(isCaissier || company?.role === 'Comptable' || company?.role === 'Commercial');
+		Boolean(query.data) && (isCaissier || company?.role === 'Comptable' || company?.role === 'Commercial');
 
 	const headerActions = (
 		<>

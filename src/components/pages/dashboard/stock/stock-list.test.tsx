@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { mockSession, setMockListRole } from './stock-test-helpers';
 import StockListClient from './stock-list';

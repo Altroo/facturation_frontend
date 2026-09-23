@@ -4,12 +4,12 @@ import NavigationBar from './navigationBar';
 import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
 import { store } from '@/store/store';
-import React from 'react';
+import { type ReactNode } from 'react';
 import { translations } from '@/translations';
 
 jest.mock('@/utils/clientHelpers', () => ({
-	Desktop: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
-	TabletAndMobile: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
+	Desktop: ({ children }: { children?: ReactNode }) => <>{children}</>,
+	TabletAndMobile: ({ children }: { children?: ReactNode }) => <>{children}</>,
 }));
 
 // Dynamic mock for pathname
@@ -256,7 +256,7 @@ describe('NavigationBar additional behaviors', () => {
 		// On mobile, toggle button should exist and be clickable
 		const toggleBtnMobile = screen.getByLabelText('Basculer le tiroir de navigation');
 		expect(toggleBtnMobile).toBeInTheDocument();
-		
+
 		// Clicking should toggle the drawer on mobile
 		await userEvent.click(toggleBtnMobile);
 	});

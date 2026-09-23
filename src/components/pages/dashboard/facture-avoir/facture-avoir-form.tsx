@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { runWithErrorHandler } from '@/utils/runWithCleanup';
+import { type FC, type MouseEvent, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
 	Alert,
@@ -39,12 +40,12 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { fr } from 'date-fns/locale';
 import { type FormikErrors, useFormik } from 'formik';
 import type { GridColDef } from '@mui/x-data-grid';
-
 import CompanyDocumentsWrapperForm from '@/components/pages/dashboard/shared/company-documents-form/companyDocumentsWrapperForm';
 import { generateRowId } from '@/components/pages/dashboard/shared/company-documents-form/companyDocumentFormContent';
 import { useDocumentLinesColumns } from '@/components/pages/dashboard/shared/company-documents-form/useDocumentLinesColumns';
 import LinesGrid from '@/components/shared/linesGrid/linesGrid';
-import AddArticleModal, { type SelectedArticlePopupValues } from '@/components/shared/addArticleModal/addArticleModal';
+import AddArticleModal from '@/components/shared/addArticleModal/addArticleModal';
+import type { SelectedArticlePopupValues } from '@/types/articleTypes';
 import GlobalRemiseModal from '@/components/shared/globalRemiseModal/globalRemiseModal';
 import FactureDevisTotalsCard from '@/components/shared/factureDevistotalCard/factureDevisTotalsCard';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
@@ -52,59 +53,34 @@ import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiP
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
-
 import { useGetArticlesListQuery } from '@/store/services/article';
 import { useGetClientsListQuery } from '@/store/services/client';
 import { useGetFactureClientListQuery } from '@/store/services/factureClient';
 import {
 	useAddFactureAvoirMutation,
 	useEditFactureAvoirMutation,
-	useGetFactureAvoirQuery,
 	useGetFactureAvoirFromFactureQuery,
+	useGetFactureAvoirQuery,
 	useGetNumFactureAvoirQuery,
 	useLazyGetFactureAvoirFromFactureQuery,
 	usePatchFactureAvoirStatutMutation,
 } from '@/store/services/factureAvoir';
 import { useGetModePaiementListQuery } from '@/store/services/parameter';
 import type { ArticleClass, ClientClass, FactureAvoirClass, FactureClass } from '@/models/classes';
-import type { SessionProps, PaginationResponseType } from '@/types/_initTypes';
+import type { PaginationResponseType } from '@/types/_initTypes';
 import type { DropDownType } from '@/types/accountTypes';
-import type { DeviFactureLineFormValues, TypeFactureLivraisonDevisStatus, TypeRemiseType } from '@/types/devisTypes';
-import type { ValidateArticleLinesErrorType } from '@/types/devisTypes';
+import type { DeviFactureLineFormValues, TypeRemiseType, ValidateArticleLinesErrorType } from '@/types/devisTypes';
 import { FACTURE_AVOIR_EDIT, FACTURE_AVOIR_VIEW } from '@/utils/routes';
 import { extractApiErrorMessage, formatLocalDate, parseNumber } from '@/utils/helpers';
 import { customDropdownTheme, textInputTheme } from '@/utils/themes';
 import { useLanguage, useToast } from '@/utils/hooks';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
-
-type FactureAvoirMotif = 'retour_marchandise' | 'erreur_facturation' | 'remise' | 'annulation' | 'autre';
-
-type FactureAvoirFormValues = {
-	numero_part: string;
-	year_part: string;
-	date_avoir: string;
-	facture_origine: number | null;
-	client: number | null;
-	mode_paiement: number | null;
-	motif_avoir: FactureAvoirMotif | '';
-	numero_bon_commande_client: string;
-	remarque: string;
-	fournisseur: string;
-	fournisseur_email: string;
-	statut: TypeFactureLivraisonDevisStatus;
-	remise_type: TypeRemiseType;
-	remise: number;
-	devise: string;
-	lignes: DeviFactureLineFormValues[];
-};
-
-type FormikContentProps = {
-	token?: string;
-	company_id: number;
-	id?: number;
-	isEditMode: boolean;
-	role?: string;
-};
+import type {
+	FactureAvoirFormFormikContentProps as FormikContentProps,
+	FactureAvoirFormProps as Props,
+	FactureAvoirFormValues,
+	FactureAvoirMotif,
+} from '@/types/companyDocumentsTypes';
 
 const inputFieldTheme = textInputTheme();
 
@@ -144,7 +120,7 @@ const buildLinePayload = (lines: DeviFactureLineFormValues[]) =>
 		remise: Number(line.remise || 0),
 	}));
 
-const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, isEditMode, role }) => {
+const FormikContent: FC<FormikContentProps> = ({ token, company_id, id, isEditMode, role }) => {
 	const { t } = useLanguage();
 	const { onSuccess, onError } = useToast();
 	const router = useRouter();
@@ -192,9 +168,9 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 	const [patchStatut, { isLoading: isPatchLoading }] = usePatchFactureAvoirStatutMutation();
 	const isLegacyFreeAvoir = Boolean(isEditMode && rawData && !rawData.facture_origine);
 
-	const articles = useMemo(() => normalizeList<ArticleClass>(rawArticlesData), [rawArticlesData]);
-	const clients = useMemo(() => normalizeList<ClientClass>(rawClientsData), [rawClientsData]);
-	const factures = useMemo(() => normalizeList<FactureClass>(rawFacturesData), [rawFacturesData]);
+	const articles = normalizeList<ArticleClass>(rawArticlesData);
+	const clients = normalizeList<ClientClass>(rawClientsData);
+	const factures = normalizeList<FactureClass>(rawFacturesData);
 	const isLocked = isEditMode && rawData?.statut !== 'Brouillon';
 	const isPending =
 		isAddLoading || isUpdateLoading || isPatchLoading || isManualOriginLoading || isInitialOriginLoading;
@@ -202,37 +178,26 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 	const currentNumero = rawData?.numero_avoir ?? numData?.numero_avoir ?? '';
 	const initialNumeroParts = getNumeroParts(currentNumero);
 
-	const motifItems = useMemo<DropDownType[]>(
-		() => [
-			{ value: 'retour_marchandise', code: t.facturesAvoir.motifRetour },
-			{ value: 'erreur_facturation', code: t.facturesAvoir.motifErreur },
-			{ value: 'remise', code: t.facturesAvoir.motifRemise },
-			{ value: 'annulation', code: t.facturesAvoir.motifAnnulation },
-			{ value: 'autre', code: t.facturesAvoir.motifAutre },
-		],
-		[t],
-	);
-	const originItems = useMemo<DropDownType[]>(
-		() =>
-			factures.map((facture) => ({
-				value: String(facture.id),
-				code: `${facture.numero_facture ?? ''} - ${facture.client_name ?? ''}`.trim(),
-			})),
-		[factures],
-	);
-	const clientItems = useMemo<DropDownType[]>(
-		() =>
-			clients.map((client) => ({
-				value: String(client.id),
-				code: clientLabel(client),
-				archived: Boolean(client.archived),
-			})),
-		[clients],
-	);
-	const modePaiementItems = useMemo<DropDownType[]>(
-		() => (modesPaiement ?? []).map((mode) => ({ value: String(mode.id), code: mode.nom })),
-		[modesPaiement],
-	);
+	const motifItems = [
+		{ value: 'retour_marchandise', code: t.facturesAvoir.motifRetour },
+		{ value: 'erreur_facturation', code: t.facturesAvoir.motifErreur },
+		{ value: 'remise', code: t.facturesAvoir.motifRemise },
+		{ value: 'annulation', code: t.facturesAvoir.motifAnnulation },
+		{ value: 'autre', code: t.facturesAvoir.motifAutre },
+	] as DropDownType[];
+	const originItems = factures.map((facture) => ({
+		value: String(facture.id),
+		code: `${facture.numero_facture ?? ''} - ${facture.client_name ?? ''}`.trim(),
+	})) as DropDownType[];
+	const clientItems = clients.map((client) => ({
+		value: String(client.id),
+		code: clientLabel(client),
+		archived: Boolean(client.archived),
+	})) as DropDownType[];
+	const modePaiementItems = (modesPaiement ?? []).map((mode) => ({
+		value: String(mode.id),
+		code: mode.nom,
+	})) as DropDownType[];
 
 	const formik = useFormik<FactureAvoirFormValues>({
 		initialValues: {
@@ -273,38 +238,41 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 				onError(t.facturesAvoir.onlyDraftEditable);
 				return;
 			}
-			try {
-				const payload = {
-					date_avoir: values.date_avoir,
-					facture_origine: values.facture_origine,
-					client: values.client,
-					mode_paiement: values.mode_paiement,
-					motif_avoir: values.motif_avoir,
-					numero_bon_commande_client: values.numero_bon_commande_client || null,
-					remarque: values.remarque || null,
-					fournisseur: values.fournisseur || '',
-					fournisseur_email: values.fournisseur_email || '',
-					remise_type: values.remise_type,
-					remise: values.remise,
-					devise: values.devise,
-					lignes: buildLinePayload(values.lignes),
-				} as unknown as Partial<FactureAvoirClass>;
+			await runWithErrorHandler(
+				async () => {
+					const payload = {
+						date_avoir: values.date_avoir,
+						facture_origine: values.facture_origine,
+						client: values.client,
+						mode_paiement: values.mode_paiement,
+						motif_avoir: values.motif_avoir,
+						numero_bon_commande_client: values.numero_bon_commande_client || null,
+						remarque: values.remarque || null,
+						fournisseur: values.fournisseur || '',
+						fournisseur_email: values.fournisseur_email || '',
+						remise_type: values.remise_type,
+						remise: values.remise,
+						devise: values.devise,
+						lignes: buildLinePayload(values.lignes),
+					} as unknown as Partial<FactureAvoirClass>;
 
-				if (isEditMode && id) {
-					await editFactureAvoir({ id, data: payload }).unwrap();
-					if (values.statut !== rawData?.statut) {
-						await patchStatut({ id, data: { statut: values.statut } }).unwrap();
+					if (isEditMode && id) {
+						await editFactureAvoir({ id, data: payload }).unwrap();
+						if (values.statut !== rawData?.statut) {
+							await patchStatut({ id, data: { statut: values.statut } }).unwrap();
+						}
+						onSuccess(t.facturesAvoir.updateSuccess);
+						router.push(FACTURE_AVOIR_VIEW(id, company_id));
+					} else {
+						const created = await addFactureAvoir({ data: payload }).unwrap();
+						onSuccess(t.facturesAvoir.addSuccess);
+						router.push(FACTURE_AVOIR_EDIT(created.id, company_id));
 					}
-					onSuccess(t.facturesAvoir.updateSuccess);
-					router.push(FACTURE_AVOIR_VIEW(id, company_id));
-				} else {
-					const created = await addFactureAvoir({ data: payload }).unwrap();
-					onSuccess(t.facturesAvoir.addSuccess);
-					router.push(FACTURE_AVOIR_EDIT(created.id, company_id));
-				}
-			} catch (err) {
-				onError(extractApiErrorMessage(err, isEditMode ? t.facturesAvoir.updateError : t.facturesAvoir.addError));
-			}
+				},
+				(err) => {
+					onError(extractApiErrorMessage(err, isEditMode ? t.facturesAvoir.updateError : t.facturesAvoir.addError));
+				},
+			);
 		},
 	});
 
@@ -314,99 +282,88 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 		modePaiementItems.find((item) => item.value === String(formik.values.mode_paiement)) ?? null;
 	const selectedMotif = motifItems.find((item) => item.value === formik.values.motif_avoir) ?? null;
 
-	const fieldLabels = useMemo<Record<string, string>>(
-		() => ({
-			date_avoir: t.facturesAvoir.fieldDate,
-			facture_origine: t.facturesAvoir.fieldFactureOrigine,
-			client: t.documentForm.fieldClientLabel,
-			fournisseur: t.logistique.fieldFournisseur,
-			fournisseur_email: t.logistique.fieldSupplierEmail,
-			motif_avoir: t.facturesAvoir.fieldMotif,
-			lignes: t.documentForm.fieldLignesLabel,
-		}),
-		[t],
-	);
-	const validationEntries = useMemo(() => {
+	const fieldLabels = {
+		date_avoir: t.facturesAvoir.fieldDate,
+		facture_origine: t.facturesAvoir.fieldFactureOrigine,
+		client: t.documentForm.fieldClientLabel,
+		fournisseur: t.logistique.fieldFournisseur,
+		fournisseur_email: t.logistique.fieldSupplierEmail,
+		motif_avoir: t.facturesAvoir.fieldMotif,
+		lignes: t.documentForm.fieldLignesLabel,
+	} as Record<string, string>;
+	const validationEntries = (() => {
 		const entries: Array<[string, string]> = [];
 		Object.entries(formik.errors).forEach(([key, value]) => {
 			if (typeof value === 'string') entries.push([key, value]);
 		});
 		Object.entries(validationErrors).forEach(([key, value]) => entries.push([key, String(value)]));
 		return entries;
-	}, [formik.errors, validationErrors]);
+	})();
 	const showValidationAlert = validationEntries.length > 0 && formik.submitCount > 0;
+
+	const notifyValidationError = useEffectEvent(() => {
+		onError(t.common.correctErrors);
+	});
 
 	useEffect(() => {
 		if (!showValidationAlert) return;
-		onError(t.common.correctErrors);
+		notifyValidationError();
 		window.scrollTo({ top: 0, behavior: 'smooth' });
-	}, [formik.submitCount, onError, showValidationAlert, t]);
+	}, [formik.submitCount, showValidationAlert]);
 
-	const applyOrigin = useCallback(
-		async (originId: number | null) => {
-			if (!originId) return;
-			try {
-				const data = await loadFromFacture({ id: originId }).unwrap();
-				await formik.setValues((prev) => ({
-					...prev,
-					facture_origine: data.facture_origine ?? originId,
-					client: data.client ?? prev.client,
-					mode_paiement: data.mode_paiement ?? prev.mode_paiement,
-					date_avoir: (data.date_avoir as string | undefined) ?? prev.date_avoir,
-					numero_bon_commande_client: data.numero_bon_commande_client ?? '',
-					remise_type: data.remise_type ?? '',
-					remise: Number(data.remise ?? 0),
-					devise: data.devise ?? prev.devise,
-					fournisseur: data.fournisseur ?? '',
-					fournisseur_email: data.fournisseur_email ?? '',
-					lignes: ((data.lignes ?? []) as DeviFactureLineFormValues[]).map((line) => ({
-						...line,
-						remise_type: line.remise_type || '',
-						remise: Number(line.remise || 0),
-					})),
-				}));
-				setValidationErrors({});
-			} catch (err) {
-				onError(extractApiErrorMessage(err, t.facturesAvoir.addError));
-			}
-		},
-		[formik, loadFromFacture, onError, t],
-	);
+	const applyOrigin = async (originId: number | null) => {
+		if (!originId) return;
+		try {
+			const data = await loadFromFacture({ id: originId }).unwrap();
+			await formik.setValues((prev) => ({
+				...prev,
+				facture_origine: data.facture_origine ?? originId,
+				client: data.client ?? prev.client,
+				mode_paiement: data.mode_paiement ?? prev.mode_paiement,
+				date_avoir: (data.date_avoir as string | undefined) ?? prev.date_avoir,
+				numero_bon_commande_client: data.numero_bon_commande_client ?? '',
+				remise_type: data.remise_type ?? '',
+				remise: Number(data.remise ?? 0),
+				devise: data.devise ?? prev.devise,
+				fournisseur: data.fournisseur ?? '',
+				fournisseur_email: data.fournisseur_email ?? '',
+				lignes: ((data.lignes ?? []) as DeviFactureLineFormValues[]).map((line) => ({
+					...line,
+					remise_type: line.remise_type || '',
+					remise: Number(line.remise || 0),
+				})),
+			}));
+			setValidationErrors({});
+		} catch (err) {
+			onError(extractApiErrorMessage(err, t.facturesAvoir.addError));
+		}
+	};
 
-	const getLines = useCallback(() => formik.values.lignes, [formik.values.lignes]);
-	const getArticleById = useCallback(
-		(articleRef: number | string | Partial<ArticleClass> | undefined) => {
-			const articleId = typeof articleRef === 'object' && articleRef !== null ? articleRef.id : Number(articleRef);
-			return articles.find((article) => article.id === articleId);
-		},
-		[articles],
-	);
+	const getLines = () => formik.values.lignes;
+	const getArticleById = (articleRef: number | string | Partial<ArticleClass> | undefined) => {
+		const articleId = typeof articleRef === 'object' && articleRef !== null ? articleRef.id : Number(articleRef);
+		return articles.find((article) => article.id === articleId);
+	};
 
-	const handleLineChange = useCallback(
-		(index: number, field: keyof DeviFactureLineFormValues, value: string | number) => {
-			if (isLocked) return;
-			const updatedLines = [...formik.values.lignes];
-			updatedLines[index] = { ...updatedLines[index], [field]: value };
-			if (field === 'remise_type' && !value) updatedLines[index].remise = 0;
-			void formik.setFieldValue('lignes', updatedLines);
-		},
-		[formik, isLocked],
-	);
+	const handleLineChange = (index: number, field: keyof DeviFactureLineFormValues, value: string | number) => {
+		if (isLocked) return;
+		const updatedLines = [...formik.values.lignes];
+		updatedLines[index] = { ...updatedLines[index], [field]: value };
+		if (field === 'remise_type' && !value) updatedLines[index].remise = 0;
+		void formik.setFieldValue('lignes', updatedLines);
+	};
 	const handleLineChangeRef = useRef(handleLineChange);
 	useEffect(() => {
 		handleLineChangeRef.current = handleLineChange;
-	}, [handleLineChange]);
+	});
 
-	const handleDeleteLine = useCallback(
-		(index: number) => {
-			if (isLocked) return;
-			void formik.setFieldValue(
-				'lignes',
-				formik.values.lignes.filter((_, i) => i !== index),
-			);
-		},
-		[formik, isLocked],
-	);
+	const handleDeleteLine = (index: number) => {
+		if (isLocked) return;
+		void formik.setFieldValue(
+			'lignes',
+			formik.values.lignes.filter((_, i) => i !== index),
+		);
+	};
 
 	const { linesColumns } = useDocumentLinesColumns({
 		getLines,
@@ -418,74 +375,59 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 		getArticleById,
 	});
 
-	const rows = useMemo(
-		() =>
-			formik.values.lignes.map((ligne, index) => ({
-				...ligne,
-				id: generateRowId(ligne.article, index),
-				rowIndex: index,
-			})),
-		[formik.values.lignes],
-	);
+	const rows = formik.values.lignes.map((ligne, index) => ({
+		...ligne,
+		id: generateRowId(ligne.article, index),
+		rowIndex: index,
+	}));
 
-	const existingArticleIds = useMemo(
-		() => new Set(formik.values.lignes.map((line) => line.article)),
-		[formik.values.lignes],
-	);
-	const existingArticleLineValues = useMemo(
-		() =>
-			formik.values.lignes.reduce<Record<number, { quantity: number; remise_type: TypeRemiseType; remise: number }>>(
-				(acc, line) => {
-					acc[line.article] = {
-						quantity: Number(line.quantity || 1),
-						remise_type: line.remise_type || '',
-						remise: Number(line.remise || 0),
-					};
-					return acc;
-				},
-				{},
-			),
-		[formik.values.lignes],
-	);
+	const existingArticleIds = new Set(formik.values.lignes.map((line) => line.article));
+	const existingArticleLineValues = formik.values.lignes.reduce<
+		Record<number, { quantity: number; remise_type: TypeRemiseType; remise: number }>
+	>((acc, line) => {
+		acc[line.article] = {
+			quantity: Number(line.quantity || 1),
+			remise_type: line.remise_type || '',
+			remise: Number(line.remise || 0),
+		};
+		return acc;
+	}, {});
 
-	const handleAddArticles = useCallback(
-		(selectedArticlesData: SelectedArticlePopupValues[]) => {
-			const currentLines = [...formik.values.lignes];
-			const lineIndexByArticleId = new Map<number, number>();
-			currentLines.forEach((line, index) => lineIndexByArticleId.set(line.article, index));
-			selectedArticlesData.forEach((selection) => {
-				const article = getArticleById(selection.articleId) ?? selection.articleData;
-				if (!article) return;
-				const parsedQuantity = parseNumber(String(selection.quantity)) ?? 1;
-				const remiseType = (selection.remise_type || '') as TypeRemiseType;
-				const parsedRemise = parseNumber(String(selection.remise)) ?? 0;
-				const nextLine: DeviFactureLineFormValues = {
-					article: selection.articleId,
-					reference: article.reference || '',
-					designation: article.designation || '',
-					prix_achat: Number(article.prix_achat || 0),
-					devise_prix_achat: article.devise_prix_achat || 'MAD',
-					prix_vente: Number(article.prix_vente || 0),
-					devise_prix_vente: article.devise_prix_vente || article.devise_prix_achat || 'MAD',
-					quantity: parsedQuantity > 0 ? parsedQuantity : 1,
-					remise_type: remiseType,
-					remise: remiseType ? Math.max(0, parsedRemise) : 0,
-				};
-				const existingIndex = lineIndexByArticleId.get(selection.articleId);
-				if (existingIndex !== undefined) {
-					currentLines[existingIndex] = { ...currentLines[existingIndex], ...nextLine };
-				} else {
-					currentLines.push(nextLine);
-				}
-			});
-			void formik.setFieldValue('lignes', currentLines);
-			setShowAddArticleModal(false);
-			setSelectedArticles(new Set());
-		},
-		[formik, getArticleById],
-	);
+	const handleAddArticles = (selectedArticlesData: SelectedArticlePopupValues[]) => {
+		const currentLines = [...formik.values.lignes];
+		const lineIndexByArticleId = new Map<number, number>();
+		currentLines.forEach((line, index) => lineIndexByArticleId.set(line.article, index));
+		selectedArticlesData.forEach((selection) => {
+			const article = getArticleById(selection.articleId) ?? selection.articleData;
+			if (!article) return;
+			const parsedQuantity = parseNumber(String(selection.quantity)) ?? 1;
+			const remiseType = (selection.remise_type || '') as TypeRemiseType;
+			const parsedRemise = parseNumber(String(selection.remise)) ?? 0;
+			const nextLine: DeviFactureLineFormValues = {
+				article: selection.articleId,
+				reference: article.reference || '',
+				designation: article.designation || '',
+				prix_achat: Number(article.prix_achat || 0),
+				devise_prix_achat: article.devise_prix_achat || 'MAD',
+				prix_vente: Number(article.prix_vente || 0),
+				devise_prix_vente: article.devise_prix_vente || article.devise_prix_achat || 'MAD',
+				quantity: parsedQuantity > 0 ? parsedQuantity : 1,
+				remise_type: remiseType,
+				remise: remiseType ? Math.max(0, parsedRemise) : 0,
+			};
+			const existingIndex = lineIndexByArticleId.get(selection.articleId);
+			if (existingIndex !== undefined) {
+				currentLines[existingIndex] = { ...currentLines[existingIndex], ...nextLine };
+			} else {
+				currentLines.push(nextLine);
+			}
+		});
+		void formik.setFieldValue('lignes', currentLines);
+		setShowAddArticleModal(false);
+		setSelectedArticles(new Set());
+	};
 
-	const totals = useMemo(() => {
+	const totals = (() => {
 		let rawTotalHT = 0;
 		let totalPrixAchat = 0;
 		let totalPrixAchatDevise: string | null = null;
@@ -525,15 +467,12 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 			totalTTC: rawTotalHT + totalTVA,
 			totalTTCApresRemise: finalTotalHT + totalTVA,
 		};
-	}, [formik.values.lignes, formik.values.remise, formik.values.remise_type, getArticleById]);
+	})();
 
-	const handleApplyGlobalRemise = useCallback(
-		(type: 'Pourcentage' | 'Fixe' | '', value: number) => {
-			void formik.setFieldValue('remise_type', type);
-			void formik.setFieldValue('remise', value);
-		},
-		[formik],
-	);
+	const handleApplyGlobalRemise = (type: 'Pourcentage' | 'Fixe' | '', value: number) => {
+		void formik.setFieldValue('remise_type', type);
+		void formik.setFieldValue('remise', value);
+	};
 
 	const apiError = addError || updateError || dataError;
 	const dataGridColumns = linesColumns as GridColDef[];
@@ -951,7 +890,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 								type="submit"
 								loading={isPending}
 								startIcon={isEditMode ? <EditIcon /> : <AddIcon />}
-								onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+								onClick={(event: MouseEvent<HTMLButtonElement>) => {
 									if (showValidationAlert) {
 										event.preventDefault();
 										onError(t.common.correctErrors);
@@ -987,12 +926,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 	);
 };
 
-interface Props extends SessionProps {
-	company_id: number;
-	id?: number;
-}
-
-const FactureAvoirForm: React.FC<Props> = ({ session, company_id, id }) => {
+const FactureAvoirForm: FC<Props> = ({ session, company_id, id }) => {
 	const { t } = useLanguage();
 	return (
 		<CompanyDocumentsWrapperForm

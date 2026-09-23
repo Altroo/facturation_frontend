@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
@@ -42,9 +41,8 @@ jest.mock('@/components/shared/globalRemiseModal/globalRemiseModal', () => ({
 jest.mock('@/utils/themes', () => ({
 	textInputTheme: jest.fn(() => ({})),
 }));
-
-import DocumentFormModals, { type DocumentFormModalsProps } from './DocumentFormModals';
-import type { DocumentFormConfig, DocumentListClass } from '@/types/companyDocumentsTypes';
+import DocumentFormModals from './DocumentFormModals';
+import type { DocumentFormConfig, DocumentFormModalsProps, DocumentListClass } from '@/types/companyDocumentsTypes';
 
 // ── Helpers ────────────────────────────────────────────────────────
 const baseConfig: DocumentFormConfig<DocumentListClass> = {
@@ -159,10 +157,11 @@ describe('DocumentFormModals', () => {
 
 		it('calls setShowDeleteConfirm(false) when "Non" button is clicked', () => {
 			const setShowDeleteConfirm = jest.fn();
-			render(<DocumentFormModals {...defaultProps} showDeleteConfirm={true} setShowDeleteConfirm={setShowDeleteConfirm} />);
+			render(
+				<DocumentFormModals {...defaultProps} showDeleteConfirm={true} setShowDeleteConfirm={setShowDeleteConfirm} />,
+			);
 			fireEvent.click(screen.getByTestId('action-modal-btn-Non'));
 			expect(setShowDeleteConfirm).toHaveBeenCalledWith(false);
 		});
 	});
-
 });

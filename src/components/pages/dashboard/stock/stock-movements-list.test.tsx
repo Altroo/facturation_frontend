@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { mockSession } from './stock-test-helpers';
 import StockMovementsListClient from './stock-movements-list';

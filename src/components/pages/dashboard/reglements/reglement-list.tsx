@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import { runWithCleanup } from '@/utils/runWithCleanup';
+import { useState, type FC, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, Chip, Divider, Typography } from '@mui/material';
 import CurrencyToggle from '@/components/shared/currencyToggle/currencyToggle';
@@ -38,7 +39,7 @@ import { extractApiErrorMessage, formatDate, formatNumberWithSpaces } from '@/ut
 import { getUserCompaniesState } from '@/store/selectors';
 import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import { useGetModePaiementListQuery } from '@/store/services/parameter';
-import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
+import type { ChipFilterConfig } from '@/types/uiTypes';
 import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
@@ -48,18 +49,9 @@ import DashboardStatCard from '@/components/shared/dashboardStatCard/dashboardSt
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
 import { useGetCompanyQuery } from '@/store/services/company';
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
+import type { ReglementListFormikContentProps as FormikContentProps } from '@/types/reglementTypes';
 
-interface FormikContentProps extends SessionProps {
-	company_id: number;
-	role: string;
-}
-
-export const statutFilterOptions = [
-	{ value: 'Valide', label: 'Valide', color: 'success' as const },
-	{ value: 'Annulé', label: 'Annulé', color: 'error' as const },
-];
-
-const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
+const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 	const { session, company_id, role } = props;
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
@@ -70,7 +62,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const router = useRouter();
 	const token = useInitAccessToken(session);
 	const companies = useAppSelector(getUserCompaniesState);
-	const selectedCompany = useMemo(() => companies?.find((company) => company.id === company_id), [companies, company_id]);
+	const selectedCompany = companies?.find((company) => company.id === company_id);
 	const canChangeDocumentStatus = selectedCompany?.can_change_document_status === true;
 
 	const { data: companyData } = useGetCompanyQuery({ id: company_id }, { skip: !token });
@@ -84,7 +76,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const [selectedDevise, setSelectedDevise] = useState<'MAD' | 'EUR' | 'USD'>('MAD');
 
 	// Reset to MAD when company changes or doesn't use foreign currency
-	React.useEffect(() => {
+	useEffect(() => {
 		if (!usesForeignCurrency) {
 			setSelectedDevise('MAD');
 		}
@@ -104,22 +96,16 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const { data: modePaiement } = useGetModePaiementListQuery({ company_id }, { skip: !token });
 
-	const chipFilters: ChipFilterConfig[] = React.useMemo(
-		() => [
-			{
-				key: 'mode_reglement',
-				label: t.reglements.filterModeReglement,
-				paramName: 'mode_reglement_ids',
-				options: modePaiement ?? [],
-			},
-		],
-		[modePaiement, t],
-	);
+	const chipFilters: ChipFilterConfig[] = [
+		{
+			key: 'mode_reglement',
+			label: t.reglements.filterModeReglement,
+			paramName: 'mode_reglement_ids',
+			options: modePaiement ?? [],
+		},
+	];
 
-	const mergedFilterParams = React.useMemo(
-		() => ({ ...chipFilterParams, ...customFilterParams }),
-		[chipFilterParams, customFilterParams],
-	);
+	const mergedFilterParams = { ...chipFilterParams, ...customFilterParams };
 
 	const {
 		data: rawData,
@@ -138,7 +124,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	);
 	const data = rawData as ReglementListResponseType | undefined;
 
-	const clientFilterOptions = useMemo(() => {
+	const clientFilterOptions = (() => {
 		if (!data?.results) return [];
 		const objectMap = new Map<number, string>();
 		data.results.forEach((reglement) => {
@@ -150,22 +136,27 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			value: name,
 			label: name,
 		}));
-	}, [data]);
+	})();
 
 	const [deleteRecord] = useDeleteReglementMutation();
 	const [bulkDeleteReglements] = useBulkDeleteReglementsMutation();
 	const [patchStatut] = usePatchReglementStatutMutation();
 
 	const deleteHandler = async () => {
-		try {
-			await deleteRecord({ id: selectedId! }).unwrap();
-			onSuccess(t.reglements.deleteSuccess);
-			refetch();
-		} catch (err) {
-			onError(extractApiErrorMessage(err, t.reglements.deleteError));
-		} finally {
-			setShowDeleteModal(false);
-		}
+		await runWithCleanup(
+			async () => {
+				try {
+					await deleteRecord({ id: selectedId! }).unwrap();
+					onSuccess(t.reglements.deleteSuccess);
+					refetch();
+				} catch (err) {
+					onError(extractApiErrorMessage(err, t.reglements.deleteError));
+				}
+			},
+			() => {
+				setShowDeleteModal(false);
+			},
+		);
 	};
 
 	const deleteModalActions = [
@@ -189,16 +180,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	};
 
 	const bulkDeleteHandler = async () => {
-		try {
-			await bulkDeleteReglements({ ids: selectedIds }).unwrap();
-			onSuccess(t.reglements.bulkDeleteSuccess(selectedIds.length));
-		} catch (err) {
-			onError(extractApiErrorMessage(err, t.reglements.bulkDeleteError));
-		} finally {
-			setSelectedIds([]);
-			setShowBulkDeleteModal(false);
-			refetch();
-		}
+		await runWithCleanup(
+			async () => {
+				try {
+					await bulkDeleteReglements({ ids: selectedIds }).unwrap();
+					onSuccess(t.reglements.bulkDeleteSuccess(selectedIds.length));
+				} catch (err) {
+					onError(extractApiErrorMessage(err, t.reglements.bulkDeleteError));
+				}
+			},
+			() => {
+				setSelectedIds([]);
+				setShowBulkDeleteModal(false);
+				refetch();
+			},
+		);
 	};
 
 	const bulkDeleteModalActions = [
@@ -221,19 +217,24 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const cancelHandler = async () => {
 		if (!cancelTarget) return;
 		if (!canChangeDocumentStatus) return;
-		try {
-			await patchStatut({
-				id: cancelTarget,
-				data: { statut: 'Annulé' as ReglementStatutType },
-			}).unwrap();
-			onSuccess(t.reglements.cancelSuccess);
-			refetch();
-		} catch {
-			onError(t.reglements.cancelError);
-		} finally {
-			setShowCancelModal(false);
-			setCancelTarget(null);
-		}
+		await runWithCleanup(
+			async () => {
+				try {
+					await patchStatut({
+						id: cancelTarget,
+						data: { statut: 'Annulé' as ReglementStatutType },
+					}).unwrap();
+					onSuccess(t.reglements.cancelSuccess);
+					refetch();
+				} catch {
+					onError(t.reglements.cancelError);
+				}
+			},
+			() => {
+				setShowCancelModal(false);
+				setCancelTarget(null);
+			},
+		);
 	};
 
 	const cancelModalActions = [
@@ -278,20 +279,25 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			return;
 		}
 
-		try {
-			const url = REGLEMENT_PDF(printReglementId, company_id, language);
-			const blob = await fetchPdfBlob(url, token);
-			const blobUrl = window.URL.createObjectURL(blob);
-			window.open(blobUrl, '_blank');
+		await runWithCleanup(
+			async () => {
+				try {
+					const url = REGLEMENT_PDF(printReglementId, company_id, language);
+					const blob = await fetchPdfBlob(url, token);
+					const blobUrl = window.URL.createObjectURL(blob);
+					window.open(blobUrl, '_blank');
 
-			setTimeout(() => {
-				window.URL.revokeObjectURL(blobUrl);
-			}, 60_000);
-		} catch {
-			onError(t.errors.documentOpenError);
-		} finally {
-			setPrintReglementId(null);
-		}
+					setTimeout(() => {
+						window.URL.revokeObjectURL(blobUrl);
+					}, 60_000);
+				} catch {
+					onError(t.errors.documentOpenError);
+				}
+			},
+			() => {
+				setPrintReglementId(null);
+			},
+		);
 	};
 
 	const handleLanguageModalClose = () => {
@@ -626,7 +632,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	);
 };
 
-const ReglementListClient: React.FC<SessionProps> = ({ session }) => {
+const ReglementListClient: FC<SessionProps> = ({ session }) => {
 	const { t } = useLanguage();
 	return (
 		<CompanyDocumentsWrapperList session={session} title={t.reglements.listTitle}>

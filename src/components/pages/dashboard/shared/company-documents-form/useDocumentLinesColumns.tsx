@@ -1,34 +1,21 @@
 'use client';
 
-import React, { useMemo, useCallback } from 'react';
-import { Box, Typography, Tooltip, InputAdornment, IconButton } from '@mui/material';
+import { type ChangeEvent, type JSX } from 'react';
+import { Box, IconButton, InputAdornment, Tooltip, Typography } from '@mui/material';
 import { Delete as DeleteIcon, Inventory2 as Inventory2Icon } from '@mui/icons-material';
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import FormattedNumberInput from '@/components/formikElements/formattedNumberInput/formattedNumberInput';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
-import { parseNumber, safeParseForInput, formatNumberWithSpaces } from '@/utils/helpers';
-import { gridInputTheme, customGridDropdownTheme } from '@/utils/themes';
+import { formatNumberWithSpaces, parseNumber, safeParseForInput } from '@/utils/helpers';
+import { customGridDropdownTheme, gridInputTheme } from '@/utils/themes';
 import { remiseTypeItemsList } from '@/utils/rawData';
 import Image from 'next/image';
-import type { ArticleClass } from '@/models/classes';
-import type { DeviFactureLineFormValues } from '@/types/companyDocumentsTypes';
-import type { ValidateArticleLinesErrorType } from '@/types/devisTypes';
 import { generateRowId } from './companyDocumentFormContent';
 import { useLanguage } from '@/utils/hooks';
+import type { UseDocumentLinesColumnsParams } from '@/types/companyDocumentsTypes';
 
 const gridFieldTheme = gridInputTheme();
-
-export interface UseDocumentLinesColumnsParams {
-	getLines: () => DeviFactureLineFormValues[];
-	validationErrors: ValidateArticleLinesErrorType;
-	role?: string;
-	devise: string;
-	handleLineChangeRef: React.RefObject<(index: number, field: keyof DeviFactureLineFormValues, value: string | number) => void>;
-	handleDeleteLine: (index: number) => void;
-	getArticleById: (articleRef: number | string | Partial<ArticleClass> | undefined) => Partial<ArticleClass> | undefined;
-	isNectarCompany?: boolean;
-}
 
 export const useDocumentLinesColumns = ({
 	getLines,
@@ -41,31 +28,22 @@ export const useDocumentLinesColumns = ({
 	isNectarCompany = false,
 }: UseDocumentLinesColumnsParams): { linesColumns: GridColDef[] } => {
 	const { t } = useLanguage();
-	const getRowIndexFromParams = useCallback(
-		(params: GridRenderCellParams): number => {
-			const rowIndex =
-				typeof params.row === 'object' && params.row !== null && 'rowIndex' in params.row
-					? Number((params.row as { rowIndex?: number }).rowIndex)
-					: NaN;
-			if (Number.isInteger(rowIndex) && rowIndex >= 0) {
-				return rowIndex;
-			}
+	const getRowIndexFromParams = (params: GridRenderCellParams): number => {
+		const rowIndex =
+			typeof params.row === 'object' && params.row !== null && 'rowIndex' in params.row
+				? Number((params.row as { rowIndex?: number }).rowIndex)
+				: NaN;
+		if (Number.isInteger(rowIndex) && rowIndex >= 0) {
+			return rowIndex;
+		}
 
-			const idStr = String(params.id);
-			const lines = getLines();
-			const idx = lines.findIndex((l, i) => generateRowId(l.article, i) === idStr);
-			return idx >= 0 ? idx : 0;
-		},
-		[getLines],
-	);
+		const idStr = String(params.id);
+		const lines = getLines();
+		const idx = lines.findIndex((l, i) => generateRowId(l.article, i) === idStr);
+		return idx >= 0 ? idx : 0;
+	};
 
-	const [renderPrixVenteCell, renderQuantityCell, renderRemiseCell] = useMemo<
-		[
-			(params: GridRenderCellParams) => React.JSX.Element,
-			(params: GridRenderCellParams) => React.JSX.Element,
-			(params: GridRenderCellParams) => React.JSX.Element,
-		]
-	>(() => {
+	const [renderPrixVenteCell, renderQuantityCell, renderRemiseCell] = (() => {
 		const prix = (params: GridRenderCellParams) => {
 			const rowIndex = getRowIndexFromParams(params);
 			const ligne = getLines()[rowIndex];
@@ -94,7 +72,7 @@ export const useDocumentLinesColumns = ({
 								id={`prix_vente_${rowIndex}`}
 								type="text"
 								value={rawValue}
-								onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+								onChange={(e: ChangeEvent<HTMLInputElement>) => {
 									const raw = (e.target as HTMLInputElement).value;
 									const parsed = parseNumber(raw);
 									if (parsed !== null && parsed < 0) return;
@@ -128,7 +106,7 @@ export const useDocumentLinesColumns = ({
 							id={`quantity_${rowIndex}`}
 							type="text"
 							value={rawValue}
-							onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+							onChange={(e: ChangeEvent<HTMLInputElement>) => {
 								const raw = (e.target as HTMLInputElement).value;
 								const parsed = parseNumber(raw);
 								if (parsed !== null && parsed < 0.01) return;
@@ -160,7 +138,7 @@ export const useDocumentLinesColumns = ({
 							id={`remise_${rowIndex}`}
 							type="text"
 							value={rawValue}
-							onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+							onChange={(e: ChangeEvent<HTMLInputElement>) => {
 								const raw = (e.target as HTMLInputElement).value;
 								const parsed = parseNumber(raw);
 								if (parsed !== null && parsed < 0) return;
@@ -184,290 +162,298 @@ export const useDocumentLinesColumns = ({
 			);
 		};
 		return [prix, quantity, remise];
-	}, [getRowIndexFromParams, getLines, validationErrors, role, devise, handleLineChangeRef, getArticleById]);
+	})() as [
+		(params: GridRenderCellParams) => JSX.Element,
+		(params: GridRenderCellParams) => JSX.Element,
+		(params: GridRenderCellParams) => JSX.Element,
+	];
 
-	const linesColumns: GridColDef[] = useMemo(
-		() => [
-			{
-				field: 'photo',
-				headerName: t.documentForm.colPhoto,
-				flex: 0.5, minWidth: 60,
-				sortable: false,
-				filterable: false,
-				editable: false,
-				renderCell: (params: GridRenderCellParams) => {
-					const article = getArticleById(params.row.article);
-					return (
-						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-							<DarkTooltip
-								title={
-									article?.photo ? (
-										<Box
-											sx={{ width: 260, height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-										>
-											<Image
-												src={article.photo as string}
-												alt={article?.reference as string}
-												width={260}
-												height={260}
-												style={{ objectFit: 'contain', display: 'block' }}
-											/>
-										</Box>
-									) : (
-										''
-									)
-								}
-								placement="right"
-								arrow
-								enterDelay={100}
-								leaveDelay={200}
-								slotProps={{ tooltip: { sx: { pointerEvents: 'auto' } } }}
-							>
-								{article?.photo ? (
+	const linesColumns: GridColDef[] = [
+		{
+			field: 'photo',
+			headerName: t.documentForm.colPhoto,
+			flex: 0.5,
+			minWidth: 60,
+			sortable: false,
+			filterable: false,
+			editable: false,
+			renderCell: (params: GridRenderCellParams) => {
+				const article = getArticleById(params.row.article);
+				return (
+					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+						<DarkTooltip
+							title={
+								article?.photo ? (
 									<Box
-										component="img"
-										src={article.photo as string}
-										alt={article?.reference as string | undefined}
-										sx={{ width: 40, height: 40, borderRadius: 1, objectFit: 'cover' }}
-									/>
-								) : (
-									<Box
-										sx={{
-											width: 40,
-											height: 40,
-											borderRadius: 1,
-											backgroundColor: '#E0E0E0',
-											display: 'flex',
-											alignItems: 'center',
-											justifyContent: 'center',
-										}}
+										sx={{ width: 260, height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
 									>
-										<Inventory2Icon sx={{ fontSize: 20, color: '#9E9E9E' }} />
+										<Image
+											src={article.photo as string}
+											alt={article?.reference as string}
+											width={260}
+											height={260}
+											style={{ objectFit: 'contain', display: 'block' }}
+										/>
 									</Box>
-								)}
-							</DarkTooltip>
-						</Box>
-					);
-				},
-			},
-			{
-				field: 'reference',
-				headerName: t.documentForm.colReference,
-				flex: 0.8, minWidth: 90,
-				renderCell: (params: GridRenderCellParams) => {
-					const article = getArticleById(params.row.article);
-					const value = params.row.reference || article?.reference || '';
-					const isArchived = article?.archived === true;
-					return (
-						<DarkTooltip title={isArchived ? `${value} (${t.common.archived})` : value}>
-							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', gap: 0.5 }}>
-								<Typography variant="body2" noWrap sx={{ textAlign: 'left' }}>
-									{value}
-								</Typography>
-								{isArchived && (
-									<Typography variant="caption" noWrap sx={{ color: '#ED6C02', fontWeight: 600, whiteSpace: 'nowrap' }}>
-										({t.common.archived})
-									</Typography>
-								)}
-							</Box>
-						</DarkTooltip>
-					);
-				},
-			},
-			{
-				field: 'designation',
-				headerName: t.documentForm.colDesignation,
-				flex: 1, minWidth: 90,
-				renderCell: (params: GridRenderCellParams) => {
-					const value = params.row.designation ?? '';
-					return (
-						<DarkTooltip title={value}>
-							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-								<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
-									{value}
-								</Typography>
-							</Box>
-						</DarkTooltip>
-					);
-				},
-			},
-			{
-				field: 'marque',
-				headerName: t.documentForm.colMarque,
-				flex: 1, minWidth: 100,
-				renderCell: (params: GridRenderCellParams) => {
-					const article = getArticleById(params.row.article);
-					const value = article?.marque_name ?? '';
-					return (
-						<DarkTooltip title={value}>
-							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-								<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
-									{value}
-								</Typography>
-							</Box>
-						</DarkTooltip>
-					);
-				},
-			},
-			{
-				field: 'categorie',
-				headerName: t.documentForm.colCategorie,
-				flex: 1, minWidth: 100,
-				renderCell: (params: GridRenderCellParams) => {
-					const article = getArticleById(params.row.article);
-					const value = article?.categorie_name ?? '';
-					return (
-						<DarkTooltip title={value}>
-							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-								<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
-									{value}
-								</Typography>
-							</Box>
-						</DarkTooltip>
-					);
-				},
-			},
-			{
-				field: 'prix_achat',
-				headerName: t.documentForm.colPrixAchat,
-				flex: 1, minWidth: 110,
-				renderCell: (params: GridRenderCellParams) => {
-					const value = formatNumberWithSpaces(params.row.prix_achat ?? 0, 2) + ' ' + (params.row.devise_prix_achat || 'MAD');
-					return (
-						<DarkTooltip title={value}>
-							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-								<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
-									{value}
-								</Typography>
-							</Box>
-						</DarkTooltip>
-					);
-				},
-			},
-			{
-				field: 'prix_vente',
-				headerName: isNectarCompany ? t.documentForm.colPrixUnitaire : t.documentForm.colPrixVente,
-				flex: 1.8,
-				minWidth: 170,
-				renderCell: renderPrixVenteCell,
-			},
-			{ field: 'quantity', headerName: t.documentForm.colQuantite, flex: 1.5, minWidth: 160, renderCell: renderQuantityCell },
-			{
-				field: 'taxes',
-				headerName: t.documentForm.colTaxes,
-				flex: 0.8,
-				minWidth: 90,
-				sortable: false,
-				filterable: false,
-				renderCell: (params: GridRenderCellParams) => {
-					const rowIndex = getRowIndexFromParams(params);
-					const ligne = getLines()[rowIndex];
-					const article = getArticleById(ligne?.article);
-					const tvaRate = parseNumber(article?.tva ?? '') ?? 0;
-					const value = `${formatNumberWithSpaces(tvaRate, 1)}%`;
-					return (
-						<DarkTooltip title={value}>
-							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-								<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
-									{value}
-								</Typography>
-							</Box>
-						</DarkTooltip>
-					);
-				},
-			},
-			{
-				field: 'montant',
-				headerName: t.documentForm.colMontant,
-				flex: 1,
-				minWidth: 120,
-				sortable: false,
-				filterable: false,
-				renderCell: (params: GridRenderCellParams) => {
-					const rowIndex = getRowIndexFromParams(params);
-					const ligne = getLines()[rowIndex];
-					const prixVente = parseNumber(ligne?.prix_vente ?? '') ?? 0;
-					const quantity = parseNumber(ligne?.quantity ?? '') ?? 1;
-					const amount = prixVente * (Number.isFinite(quantity) ? quantity : 1);
-					const value = `${formatNumberWithSpaces(amount, 2)} ${ligne?.devise_prix_vente || devise}`;
-					return (
-						<DarkTooltip title={value}>
-							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-								<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
-									{value}
-								</Typography>
-							</Box>
-						</DarkTooltip>
-					);
-				},
-			},
-			{
-				field: 'remise_type',
-				headerName: t.documentForm.colTypeRemise,
-				flex: 1.2, minWidth: 150,
-				renderCell: (params: GridRenderCellParams) => {
-					const rowIndex = getRowIndexFromParams(params);
-					const value = getLines()[rowIndex]?.remise_type ?? '';
-					const errorKey = `ligne_${rowIndex}_remise`;
-					const helperText = validationErrors[errorKey] || '';
-					const hasError = !!validationErrors[errorKey];
-					return (
-						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-							<Tooltip title={helperText} arrow>
-								<CustomDropDownSelect
-									id={`remise_type_${rowIndex}`}
-									label=""
-									size="small"
-									error={hasError}
-									items={remiseTypeItemsList}
-									value={value}
-									onChange={(e) => handleLineChangeRef.current(rowIndex, 'remise_type', e.target.value)}
-									theme={customGridDropdownTheme()}
+								) : (
+									''
+								)
+							}
+							placement="right"
+							arrow
+							enterDelay={100}
+							leaveDelay={200}
+							slotProps={{ tooltip: { sx: { pointerEvents: 'auto' } } }}
+						>
+							{article?.photo ? (
+								<Box
+									component="img"
+									src={article.photo as string}
+									alt={article?.reference as string | undefined}
+									sx={{ width: 40, height: 40, borderRadius: 1, objectFit: 'cover' }}
 								/>
-							</Tooltip>
-						</Box>
-					);
-				},
+							) : (
+								<Box
+									sx={{
+										width: 40,
+										height: 40,
+										borderRadius: 1,
+										backgroundColor: '#E0E0E0',
+										display: 'flex',
+										alignItems: 'center',
+										justifyContent: 'center',
+									}}
+								>
+									<Inventory2Icon sx={{ fontSize: 20, color: '#9E9E9E' }} />
+								</Box>
+							)}
+						</DarkTooltip>
+					</Box>
+				);
 			},
-			{ field: 'remise', headerName: t.documentForm.colRemise, flex: 1.2, minWidth: 120, renderCell: renderRemiseCell },
-			{
-				field: 'actions',
-				headerName: t.documentForm.colActions,
-				flex: 0.6, minWidth: 70,
-				sortable: false,
-				filterable: false,
-				renderCell: (params: GridRenderCellParams) => {
-					const rowIndex = getRowIndexFromParams(params);
-					return (
+		},
+		{
+			field: 'reference',
+			headerName: t.documentForm.colReference,
+			flex: 0.8,
+			minWidth: 90,
+			renderCell: (params: GridRenderCellParams) => {
+				const article = getArticleById(params.row.article);
+				const value = params.row.reference || article?.reference || '';
+				const isArchived = article?.archived === true;
+				return (
+					<DarkTooltip title={isArchived ? `${value} (${t.common.archived})` : value}>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left' }}>
+								{value}
+							</Typography>
+							{isArchived && (
+								<Typography variant="caption" noWrap sx={{ color: '#ED6C02', fontWeight: 600, whiteSpace: 'nowrap' }}>
+									({t.common.archived})
+								</Typography>
+							)}
+						</Box>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'designation',
+			headerName: t.documentForm.colDesignation,
+			flex: 1,
+			minWidth: 90,
+			renderCell: (params: GridRenderCellParams) => {
+				const value = params.row.designation ?? '';
+				return (
+					<DarkTooltip title={value}>
 						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-							<Tooltip title={t.common.delete}>
-								<IconButton size="small" color="error" aria-label={t.documentForm.deleteLineAriaLabel} onClick={() => handleDeleteLine(rowIndex)}>
-									<DeleteIcon />
-								</IconButton>
-							</Tooltip>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+								{value}
+							</Typography>
 						</Box>
-					);
-				},
+					</DarkTooltip>
+				);
 			},
-		].filter((column) => {
-			if (!isNectarCompany) return !['taxes', 'montant'].includes(column.field);
-			return !['prix_achat', 'remise_type', 'remise'].includes(column.field);
-		}),
-		[
-			renderPrixVenteCell,
-			renderQuantityCell,
-			renderRemiseCell,
-			getArticleById,
-			getRowIndexFromParams,
-			getLines,
-			validationErrors,
-			handleDeleteLine,
-			handleLineChangeRef,
-			isNectarCompany,
-			devise,
-			t,
-		],
-	);
+		},
+		{
+			field: 'marque',
+			headerName: t.documentForm.colMarque,
+			flex: 1,
+			minWidth: 100,
+			renderCell: (params: GridRenderCellParams) => {
+				const article = getArticleById(params.row.article);
+				const value = article?.marque_name ?? '';
+				return (
+					<DarkTooltip title={value}>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+								{value}
+							</Typography>
+						</Box>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'categorie',
+			headerName: t.documentForm.colCategorie,
+			flex: 1,
+			minWidth: 100,
+			renderCell: (params: GridRenderCellParams) => {
+				const article = getArticleById(params.row.article);
+				const value = article?.categorie_name ?? '';
+				return (
+					<DarkTooltip title={value}>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+								{value}
+							</Typography>
+						</Box>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'prix_achat',
+			headerName: t.documentForm.colPrixAchat,
+			flex: 1,
+			minWidth: 110,
+			renderCell: (params: GridRenderCellParams) => {
+				const value =
+					formatNumberWithSpaces(params.row.prix_achat ?? 0, 2) + ' ' + (params.row.devise_prix_achat || 'MAD');
+				return (
+					<DarkTooltip title={value}>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+								{value}
+							</Typography>
+						</Box>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'prix_vente',
+			headerName: isNectarCompany ? t.documentForm.colPrixUnitaire : t.documentForm.colPrixVente,
+			flex: 1.8,
+			minWidth: 170,
+			renderCell: renderPrixVenteCell,
+		},
+		{
+			field: 'quantity',
+			headerName: t.documentForm.colQuantite,
+			flex: 1.5,
+			minWidth: 160,
+			renderCell: renderQuantityCell,
+		},
+		{
+			field: 'taxes',
+			headerName: t.documentForm.colTaxes,
+			flex: 0.8,
+			minWidth: 90,
+			sortable: false,
+			filterable: false,
+			renderCell: (params: GridRenderCellParams) => {
+				const rowIndex = getRowIndexFromParams(params);
+				const ligne = getLines()[rowIndex];
+				const article = getArticleById(ligne?.article);
+				const tvaRate = parseNumber(article?.tva ?? '') ?? 0;
+				const value = `${formatNumberWithSpaces(tvaRate, 1)}%`;
+				return (
+					<DarkTooltip title={value}>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+								{value}
+							</Typography>
+						</Box>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'montant',
+			headerName: t.documentForm.colMontant,
+			flex: 1,
+			minWidth: 120,
+			sortable: false,
+			filterable: false,
+			renderCell: (params: GridRenderCellParams) => {
+				const rowIndex = getRowIndexFromParams(params);
+				const ligne = getLines()[rowIndex];
+				const prixVente = parseNumber(ligne?.prix_vente ?? '') ?? 0;
+				const quantity = parseNumber(ligne?.quantity ?? '') ?? 1;
+				const amount = prixVente * (Number.isFinite(quantity) ? quantity : 1);
+				const value = `${formatNumberWithSpaces(amount, 2)} ${ligne?.devise_prix_vente || devise}`;
+				return (
+					<DarkTooltip title={value}>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+								{value}
+							</Typography>
+						</Box>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'remise_type',
+			headerName: t.documentForm.colTypeRemise,
+			flex: 1.2,
+			minWidth: 150,
+			renderCell: (params: GridRenderCellParams) => {
+				const rowIndex = getRowIndexFromParams(params);
+				const value = getLines()[rowIndex]?.remise_type ?? '';
+				const errorKey = `ligne_${rowIndex}_remise`;
+				const helperText = validationErrors[errorKey] || '';
+				const hasError = !!validationErrors[errorKey];
+				return (
+					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+						<Tooltip title={helperText} arrow>
+							<CustomDropDownSelect
+								id={`remise_type_${rowIndex}`}
+								label=""
+								size="small"
+								error={hasError}
+								items={remiseTypeItemsList}
+								value={value}
+								onChange={(e) => handleLineChangeRef.current(rowIndex, 'remise_type', e.target.value)}
+								theme={customGridDropdownTheme()}
+							/>
+						</Tooltip>
+					</Box>
+				);
+			},
+		},
+		{ field: 'remise', headerName: t.documentForm.colRemise, flex: 1.2, minWidth: 120, renderCell: renderRemiseCell },
+		{
+			field: 'actions',
+			headerName: t.documentForm.colActions,
+			flex: 0.6,
+			minWidth: 70,
+			sortable: false,
+			filterable: false,
+			renderCell: (params: GridRenderCellParams) => {
+				const rowIndex = getRowIndexFromParams(params);
+				return (
+					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+						<Tooltip title={t.common.delete}>
+							<IconButton
+								size="small"
+								color="error"
+								aria-label={t.documentForm.deleteLineAriaLabel}
+								onClick={() => handleDeleteLine(rowIndex)}
+							>
+								<DeleteIcon />
+							</IconButton>
+						</Tooltip>
+					</Box>
+				);
+			},
+		},
+	].filter((column) => {
+		if (!isNectarCompany) return !['taxes', 'montant'].includes(column.field);
+		return !['prix_achat', 'remise_type', 'remise'].includes(column.field);
+	});
 
 	return { linesColumns };
 };

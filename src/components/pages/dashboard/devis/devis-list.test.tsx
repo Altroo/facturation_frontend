@@ -1,7 +1,8 @@
-import React from 'react';
+import { type ReactNode } from 'react';
 import { render, screen, cleanup, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import type { AppSession } from '@/types/_initTypes';
+import { translations } from '@/translations';
 
 // Mock next/navigation
 const mockPush = jest.fn();
@@ -30,7 +31,11 @@ jest.mock('@/utils/hooks', () => ({
 		onError: mockOnError,
 	}),
 	useAppSelector: jest.fn(() => []),
-	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
+	useLanguage: () => ({
+		language: 'fr' as const,
+		setLanguage: jest.fn(),
+		t: jest.requireActual('@/translations').translations.fr,
+	}),
 }));
 
 // Mock RTK Query hooks
@@ -103,7 +108,7 @@ jest.mock('@/components/pages/dashboard/shared/company-documents-list/companyDoc
 		children,
 		title,
 	}: {
-		children: (props: { company_id: number; role: string }) => React.ReactNode;
+		children: (props: { company_id: number; role: string }) => ReactNode;
 		title: string;
 	}) => (
 		<div data-testid="company-wrapper">
@@ -181,7 +186,7 @@ jest.mock('@/components/htmlElements/modals/actionModal/actionModals', () => ({
 // Mock other dependencies
 jest.mock('@/components/htmlElements/tooltip/darkTooltip/darkTooltip', () => ({
 	__esModule: true,
-	default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+	default: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
 
 jest.mock('@/components/htmlElements/buttons/textButton/textButton', () => ({
@@ -204,7 +209,7 @@ jest.mock('@/utils/helpers', () => ({
 		return num.toLocaleString('fr-FR', {
 			minimumFractionDigits: decimals,
 			maximumFractionDigits: decimals,
-			useGrouping: true
+			useGrouping: true,
 		});
 	},
 	hexToRGB: (_hex: string, alpha?: number) => (alpha !== undefined ? `rgba(0,0,0,${alpha})` : 'rgb(0,0,0)'),
@@ -212,7 +217,7 @@ jest.mock('@/utils/helpers', () => ({
 interface PrintAction {
 	key: string;
 	label: string;
-	icon: React.ReactNode;
+	icon: ReactNode;
 	iconColor: string;
 	urlGenerator: (id: number, companyId: number) => string;
 }
@@ -228,9 +233,7 @@ interface CapturedConfig {
 }
 
 let capturedConfig: CapturedConfig | null = null;
-let capturedOnCustomFilterParamsChange:
-	| ((params: Record<string, string>) => void)
-	| null = null;
+let capturedOnCustomFilterParamsChange: ((params: Record<string, string>) => void) | null = null;
 
 jest.mock('@/components/pages/dashboard/shared/company-documents-list/companyDocumentsListContent', () => {
 	const actualModule = jest.requireActual(
@@ -238,9 +241,9 @@ jest.mock('@/components/pages/dashboard/shared/company-documents-list/companyDoc
 	);
 	return {
 		__esModule: true,
-		// Keep actual exports for getStatutColor and statutFilterOptions
+		// Keep actual status helpers
 		getStatutColor: actualModule.getStatutColor,
-		statutFilterOptions: actualModule.statutFilterOptions,
+		createStatutFilterOptions: actualModule.createStatutFilterOptions,
 		default: (props: {
 			config: CapturedConfig;
 			onFilterModelChange?: (model: {
@@ -301,7 +304,7 @@ jest.mock('@/components/pages/dashboard/shared/company-documents-list/companyDoc
 });
 
 // Import after mocks
-import DevisListClient, { getStatutColor, statutFilterOptions } from './devis-list';
+import DevisListClient, { createStatutFilterOptions, getStatutColor } from './devis-list';
 
 const mockSession: AppSession = {
 	accessToken: 'test-access-token',
@@ -363,6 +366,7 @@ describe('DevisListClient', () => {
 	});
 
 	describe('statutFilterOptions', () => {
+		const statutFilterOptions = createStatutFilterOptions(translations.fr);
 		it('has correct length', () => {
 			expect(statutFilterOptions).toHaveLength(6);
 		});

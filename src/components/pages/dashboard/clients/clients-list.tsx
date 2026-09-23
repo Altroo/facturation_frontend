@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useCallback, useState } from 'react';
+import { runWithCleanup, runWithErrorHandler } from '@/utils/runWithCleanup';
+import { type FC, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, Chip, Typography } from '@mui/material';
 import {
@@ -24,7 +25,7 @@ import {
 } from '@/store/services/client';
 import { CLIENTS_ADD, CLIENTS_EDIT, CLIENTS_VIEW } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
-import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
+import type { PaginationResponseType } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
@@ -36,18 +37,15 @@ import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilt
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
 import { useGetCitiesListQuery } from '@/store/services/parameter';
-import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
+import type { ChipFilterConfig } from '@/types/uiTypes';
 import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 import { isNectarRaisonSociale } from '@/utils/nectar';
+import type {
+	ClientsListFormikContentProps as FormikContentProps,
+	ClientsListProps as Props,
+} from '@/types/clientTypes';
 
-interface FormikContentProps extends SessionProps {
-	company_id: number;
-	company_raison_sociale?: string;
-	archived: boolean;
-	role: string;
-}
-
-const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
+const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 	const { session, company_id, company_raison_sociale, archived, role } = props;
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
@@ -84,15 +82,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const { data: cities } = useGetCitiesListQuery({ company_id }, { skip: !token });
 
-	const chipFilters: ChipFilterConfig[] = React.useMemo(
-		() => [{ key: 'ville', label: t.clients.filterVille, paramName: 'ville_ids', options: cities ?? [] }],
-		[cities, t],
-	);
+	const chipFilters: ChipFilterConfig[] = [
+		{ key: 'ville', label: t.clients.filterVille, paramName: 'ville_ids', options: cities ?? [] },
+	];
 
-	const mergedFilterParams = React.useMemo(
-		() => ({ ...chipFilterParams, ...customFilterParams }),
-		[chipFilterParams, customFilterParams],
-	);
+	const mergedFilterParams = { ...chipFilterParams, ...customFilterParams };
 
 	// Call query hook at component level
 	const {
@@ -120,18 +114,23 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const [fetchAllClientIds, { isLoading: isLoadingAllIds }] = useLazyGetClientsListQuery();
 
 	const deleteHandler = async () => {
-		try {
-			await deleteRecord({ id: selectedId! }).unwrap();
-			onSuccess(t.clients.deleteSuccess);
-			refetch();
-		} catch (err) {
-			onError(extractApiErrorMessage(err, t.clients.deleteError));
-		} finally {
-			setShowDeleteModal(false);
-			// Remove only the deleted item from selection (preserve remaining bulk selection)
-			// Do NOT clear isAllMatchingSelected — user stays in 'all matching' mode minus this one item
-			setSelectedIds((prev) => prev.filter((id) => id !== selectedId));
-		}
+		await runWithCleanup(
+			async () => {
+				try {
+					await deleteRecord({ id: selectedId! }).unwrap();
+					onSuccess(t.clients.deleteSuccess);
+					refetch();
+				} catch (err) {
+					onError(extractApiErrorMessage(err, t.clients.deleteError));
+				}
+			},
+			() => {
+				setShowDeleteModal(false);
+				// Remove only the deleted item from selection (preserve remaining bulk selection)
+				// Do NOT clear isAllMatchingSelected — user stays in 'all matching' mode minus this one item
+				setSelectedIds((prev) => prev.filter((id) => id !== selectedId));
+			},
+		);
 	};
 
 	const deleteModalActions = [
@@ -152,30 +151,35 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const archiveHandler = async () => {
 		if (!archiveTarget) return;
-		try {
-			await patchArchive({
-				id: archiveTarget,
-				data: { archived: !archived },
-			}).unwrap();
-			if (archived) {
-				onSuccess(t.clients.unarchiveSuccess);
-			} else {
-				onSuccess(t.clients.archiveSuccess);
-			}
-			refetch();
-		} catch {
-			if (archived) {
-				onError(t.clients.unarchiveError);
-			} else {
-				onError(t.clients.archiveError);
-			}
-		} finally {
-			setShowArchiveModal(false);
-			setArchiveTarget(null);
-			// Remove only the archived item from selection (preserve remaining bulk selection)
-			// Do NOT clear isAllMatchingSelected — user stays in 'all matching' mode minus this one item
-			setSelectedIds((prev) => prev.filter((id) => id !== archiveTarget));
-		}
+		await runWithCleanup(
+			async () => {
+				try {
+					await patchArchive({
+						id: archiveTarget,
+						data: { archived: !archived },
+					}).unwrap();
+					if (archived) {
+						onSuccess(t.clients.unarchiveSuccess);
+					} else {
+						onSuccess(t.clients.archiveSuccess);
+					}
+					refetch();
+				} catch {
+					if (archived) {
+						onError(t.clients.unarchiveError);
+					} else {
+						onError(t.clients.archiveError);
+					}
+				}
+			},
+			() => {
+				setShowArchiveModal(false);
+				setArchiveTarget(null);
+				// Remove only the archived item from selection (preserve remaining bulk selection)
+				// Do NOT clear isAllMatchingSelected — user stays in 'all matching' mode minus this one item
+				setSelectedIds((prev) => prev.filter((id) => id !== archiveTarget));
+			},
+		);
 	};
 
 	const archiveModalActions = [
@@ -203,12 +207,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		setShowArchiveModal(true);
 	};
 
-	const handleSelectionChange = useCallback((ids: number[]) => {
+	const handleSelectionChange = (ids: number[]) => {
 		setSelectedIds(ids);
 		setIsAllMatchingSelected(false);
-	}, []);
+	};
 
-	const handleSelectAllMatching = useCallback(async () => {
+	const handleSelectAllMatching = async () => {
 		try {
 			const result = await fetchAllClientIds({
 				company_id,
@@ -222,25 +226,30 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		} catch {
 			onError(t.shared.selectionError);
 		}
-	}, [company_id, archived, mergedFilterParams, fetchAllClientIds, onError, t]);
+	};
 
-	const handleClearAllMatching = useCallback(() => {
+	const handleClearAllMatching = () => {
 		setIsAllMatchingSelected(false);
 		setSelectedIds([]);
-	}, []);
+	};
 
 	const bulkDeleteHandler = async () => {
-		try {
-			await bulkDeleteClients({ ids: selectedIds }).unwrap();
-			onSuccess(t.clients.bulkDeleteSuccess(selectedIds.length));
-		} catch (err) {
-			onError(extractApiErrorMessage(err, t.clients.bulkDeleteError));
-		} finally {
-			setSelectedIds([]);
-			setIsAllMatchingSelected(false);
-			setShowBulkDeleteModal(false);
-			refetch();
-		}
+		await runWithCleanup(
+			async () => {
+				try {
+					await bulkDeleteClients({ ids: selectedIds }).unwrap();
+					onSuccess(t.clients.bulkDeleteSuccess(selectedIds.length));
+				} catch (err) {
+					onError(extractApiErrorMessage(err, t.clients.bulkDeleteError));
+				}
+			},
+			() => {
+				setSelectedIds([]);
+				setIsAllMatchingSelected(false);
+				setShowBulkDeleteModal(false);
+				refetch();
+			},
+		);
 	};
 
 	const bulkDeleteModalActions = [
@@ -262,21 +271,29 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const bulkArchiveHandler = async () => {
 		const archiving = bulkArchiveAction === 'archive';
-		try {
-			await bulkArchiveClients({ ids: selectedIds, archived: archiving }).unwrap();
-			onSuccess(
-				bulkArchiveAction === 'archive'
-					? t.clients.bulkArchiveSuccess(selectedIds.length)
-					: t.clients.bulkUnarchiveSuccess(selectedIds.length),
-			);
-		} catch {
-			onError(bulkArchiveAction === 'archive' ? t.clients.bulkArchiveError : t.clients.bulkUnarchiveError);
-		} finally {
-			setSelectedIds([]);
-			setIsAllMatchingSelected(false);
-			setShowBulkArchiveModal(false);
-			refetch();
-		}
+		await runWithCleanup(
+			async () => {
+				await runWithErrorHandler(
+					async () => {
+						await bulkArchiveClients({ ids: selectedIds, archived: archiving }).unwrap();
+						onSuccess(
+							bulkArchiveAction === 'archive'
+								? t.clients.bulkArchiveSuccess(selectedIds.length)
+								: t.clients.bulkUnarchiveSuccess(selectedIds.length),
+						);
+					},
+					() => {
+						onError(bulkArchiveAction === 'archive' ? t.clients.bulkArchiveError : t.clients.bulkUnarchiveError);
+					},
+				);
+			},
+			() => {
+				setSelectedIds([]);
+				setIsAllMatchingSelected(false);
+				setShowBulkArchiveModal(false);
+				refetch();
+			},
+		);
 	};
 
 	const bulkArchiveModalActions = [
@@ -299,7 +316,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		},
 	];
 
-	const villeFilterOptions = React.useMemo(() => {
+	const villeFilterOptions = (() => {
 		if (!data?.results) return [];
 
 		const objectMap = new Map<number, string>();
@@ -313,7 +330,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			value: name,
 			label: name,
 		}));
-	}, [data]);
+	})();
 
 	const columns: GridColDef[] = [
 		{
@@ -612,11 +629,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	);
 };
 
-interface Props extends SessionProps {
-	archived: boolean;
-}
-
-const ClientsListClient: React.FC<Props> = ({ session, archived }) => {
+const ClientsListClient: FC<Props> = ({ session, archived }) => {
 	const { t } = useLanguage();
 	return (
 		<CompanyDocumentsWrapperList session={session} title={archived ? t.clients.archivedTitle : t.clients.listTitle}>

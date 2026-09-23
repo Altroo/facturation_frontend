@@ -1,9 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState, type FC } from 'react';
 import type { TranslationDictionary } from '@/types/languageTypes';
 import { useRouter } from 'next/navigation';
-import { ReceiptLong as ReceiptLongIcon, ReceiptLongOutlined as ReceiptLongOutlinedIcon, Print as PrintIcon } from '@mui/icons-material';
+import {
+	ReceiptLong as ReceiptLongIcon,
+	ReceiptLongOutlined as ReceiptLongOutlinedIcon,
+	Print as PrintIcon,
+} from '@mui/icons-material';
 import { GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import {
@@ -13,7 +17,14 @@ import {
 	useConvertDeviToFactureClientMutation,
 	useBulkDeleteDevisMutation,
 } from '@/store/services/devi';
-import { DEVIS_EDIT, DEVIS_VIEW, DEVIS_ADD, FACTURE_PRO_FORMA_EDIT, FACTURE_CLIENT_EDIT, DEVIS_PDF } from '@/utils/routes';
+import {
+	DEVIS_EDIT,
+	DEVIS_VIEW,
+	DEVIS_ADD,
+	FACTURE_PRO_FORMA_EDIT,
+	FACTURE_CLIENT_EDIT,
+	DEVIS_PDF,
+} from '@/utils/routes';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import type { DeviClass } from '@/models/classes';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
@@ -22,12 +33,13 @@ import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/use
 import type { DocumentListConfig } from '@/types/companyDocumentsTypes';
 import { useGetModePaiementListQuery } from '@/store/services/parameter';
 import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
-import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
+import type { ChipFilterConfig } from '@/types/uiTypes';
 import { useLanguage } from '@/utils/hooks';
+import type { DevisListFormikContentProps as FormikContentProps } from '@/types/companyDocumentsTypes';
 
 export {
 	getStatutColor,
-	statutFilterOptions,
+	createStatutFilterOptions,
 } from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsListContent';
 
 const createDevisListConfig = (t: TranslationDictionary): DocumentListConfig<DeviClass> => ({
@@ -109,16 +121,12 @@ const createDevisListConfig = (t: TranslationDictionary): DocumentListConfig<Dev
 		},
 	],
 });
-interface FormikContentProps extends SessionProps {
-	company_id: number;
-	role: string;
-}
 
-const FormikContent: React.FC<FormikContentProps> = (props) => {
+const FormikContent: FC<FormikContentProps> = (props) => {
 	const { session, company_id, role } = props;
 	const router = useRouter();
 	const { t } = useLanguage();
-	const devisListConfig = React.useMemo(() => createDevisListConfig(t), [t]);
+	const devisListConfig = createDevisListConfig(t);
 	const token = useInitAccessToken(session);
 
 	const [paginationModel, setPaginationModel] = useDataGridPagination();
@@ -129,17 +137,16 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 
 	const { data: modePaiement } = useGetModePaiementListQuery({ company_id }, { skip: !token });
 
-	const chipFilters: ChipFilterConfig[] = React.useMemo(
-		() => [
-			{ key: 'mode_paiement', label: t.devis.filterModePaiement, paramName: 'mode_paiement_ids', options: modePaiement ?? [] },
-		],
-		[modePaiement, t],
-	);
+	const chipFilters: ChipFilterConfig[] = [
+		{
+			key: 'mode_paiement',
+			label: t.devis.filterModePaiement,
+			paramName: 'mode_paiement_ids',
+			options: modePaiement ?? [],
+		},
+	];
 
-	const mergedFilterParams = React.useMemo(
-		() => ({ ...chipFilterParams, ...customFilterParams }),
-		[chipFilterParams, customFilterParams],
-	);
+	const mergedFilterParams = { ...chipFilterParams, ...customFilterParams };
 
 	// Query hook
 	const {
@@ -205,7 +212,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 	);
 };
 
-const DevisListClient: React.FC<SessionProps> = ({ session }) => {
+const DevisListClient: FC<SessionProps> = ({ session }) => {
 	const { t } = useLanguage();
 	return (
 		<CompanyDocumentsWrapperList session={session} title={t.devis.listTitle}>

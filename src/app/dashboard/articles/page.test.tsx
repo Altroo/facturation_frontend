@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 import { renderToStaticMarkup } from 'react-dom/server';
-import React from 'react';
+import { createElement, type ReactElement } from 'react';
 
 type SessionUser = { pk: number; email: string };
 type Session = { user: SessionUser } | null;
@@ -24,9 +24,7 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/components/pages/dashboard/articles/articles-list', () => ({
 	__esModule: true,
 	default: (props: { session?: Session; archived?: boolean }) => {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const React = require('react');
-		return React.createElement(
+		return createElement(
 			'div',
 			null,
 			`ARTICLES_LIST_MARKER:${JSON.stringify(props?.session ?? null)}:ARCHIVED=${props?.archived ?? false}`,
@@ -76,7 +74,7 @@ describe('ArticlesListPage server component', () => {
 		});
 
 		const result = await Page!();
-		const html = renderToStaticMarkup(result as unknown as React.ReactElement);
+		const html = renderToStaticMarkup(result as unknown as ReactElement);
 		const decoded = html.replace(/&quot;/g, '"');
 
 		expect(decoded).toContain('"pk":77');

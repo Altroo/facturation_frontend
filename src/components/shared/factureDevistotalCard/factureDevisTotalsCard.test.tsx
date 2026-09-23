@@ -1,13 +1,11 @@
-import React from 'react';
+import { type FC, type ReactNode } from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import FactureDevisTotalsCard from './factureDevisTotalsCard';
 
 const theme = createTheme();
-const Wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-	<ThemeProvider theme={theme}>{children}</ThemeProvider>
-);
+const Wrapper: FC<{ children: ReactNode }> = ({ children }) => <ThemeProvider theme={theme}>{children}</ThemeProvider>;
 
 describe('FactureDevisTotalsCard', () => {
 	const totals = {

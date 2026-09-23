@@ -1,6 +1,7 @@
-import React from 'react';
+import { type SyntheticEvent, type ReactNode } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import AddManagedBySection, { AddManagedBySectionProps } from './addManagedBySection';
+import AddManagedBySection from './addManagedBySection';
+import type { AddManagedBySectionProps } from '@/types/companyTypes';
 import '@testing-library/jest-dom';
 import type { SelectChangeEvent } from '@mui/material/Select';
 import type { DropDownType } from '@/types/accountTypes';
@@ -12,9 +13,9 @@ interface AutocompleteProps {
 	fullWidth: boolean;
 	items: DropDownType[];
 	value: DropDownType | null;
-	onChange: (event: React.SyntheticEvent, value: DropDownType | null) => void;
+	onChange: (event: SyntheticEvent, value: DropDownType | null) => void;
 	theme: object;
-	startIcon: React.ReactNode;
+	startIcon: ReactNode;
 }
 
 interface DropdownProps {
@@ -24,7 +25,7 @@ interface DropdownProps {
 	value: string;
 	onChange: (event: SelectChangeEvent) => void;
 	theme: object;
-	startIcon: React.ReactNode;
+	startIcon: ReactNode;
 }
 // ✅ Mock CustomAutocompleteSelect with startIcon rendered
 jest.mock('@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect', () => {

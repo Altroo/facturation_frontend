@@ -8,10 +8,7 @@ export const metadata: Metadata = {
 	title: 'Modifier Société',
 	description: 'Modifier une société existante',
 };
-
-type PageProps = {
-	params: Promise<{ id: number }>;
-};
+import type { IdNumberRouteProps as PageProps } from '@/types/routeTypes';
 
 const CompaniesEditPage = async (props: PageProps) => {
 	const session = await auth();
@@ -25,7 +22,7 @@ const CompaniesEditPage = async (props: PageProps) => {
 		redirect(COMPANIES_LIST);
 	}
 
-	return <CompaniesForm session={session} id={id} />;
+	return <CompaniesForm session={session} id={Number(id)} />;
 };
 
 export default CompaniesEditPage;

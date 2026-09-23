@@ -1,46 +1,23 @@
 'use client';
 
-import React, { useState, ForwardedRef, forwardRef } from 'react';
-import type { Theme } from '@mui/material/styles';
-import type { TextFieldProps } from '@mui/material/TextField';
+import { useState, type ChangeEvent, type FocusEvent } from 'react';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import { formatNumberWithSpaces, parseFormattedNumber } from '@/utils/helpers';
+import type { FormattedNumberInputProps as Props } from '@/types/uiTypes';
 
-type Props = {
-	type: React.HTMLInputTypeAttribute;
-	id: string;
-	value: string | number;
-	onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-	theme: Theme;
-	decimals?: number; // Number of decimal places (default: 2)
-	onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
-	cssClass?: string;
-	helperText?: string;
-	error?: boolean;
-	placeholder?: string;
-	label?: string;
-	fullWidth?: boolean;
-	size?: 'small' | 'medium';
-	disabled?: boolean;
-	variant?: 'filled' | 'standard' | 'outlined';
-	onClick?: () => void;
-	startIcon?: React.ReactNode;
-	endIcon?: React.ReactNode;
-	slotProps?: TextFieldProps['slotProps'];
-	required?: boolean;
-};
-
-const FormattedNumberInput = forwardRef<HTMLInputElement, Props>((props: Props, ref: ForwardedRef<HTMLInputElement>) => {
-	const { value, onChange, decimals = 2, onBlur, ...restOfProps } = props;
+const FormattedNumberInput = (props: Props) => {
+	const { value, onChange, decimals = 2, onBlur, ref, ...restOfProps } = props;
 	const [isFocused, setIsFocused] = useState(false);
 	const [editValue, setEditValue] = useState('');
 
 	// Determine what to display
 	const displayValue = isFocused
 		? editValue
-		: (value === null || value === undefined || value === '' ? '' : formatNumberWithSpaces(value, decimals));
+		: value === null || value === undefined || value === ''
+			? ''
+			: formatNumberWithSpaces(value, decimals);
 
-	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+	const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
 		const inputValue = e.target.value;
 		setEditValue(inputValue);
 
@@ -54,7 +31,7 @@ const FormattedNumberInput = forwardRef<HTMLInputElement, Props>((props: Props, 
 				...e.target,
 				value: parsed !== null ? String(parsed) : inputValue,
 			},
-		} as React.ChangeEvent<HTMLInputElement>;
+		} as ChangeEvent<HTMLInputElement>;
 
 		onChange(syntheticEvent);
 	};
@@ -67,7 +44,7 @@ const FormattedNumberInput = forwardRef<HTMLInputElement, Props>((props: Props, 
 		setEditValue(parsed !== null ? String(parsed) : raw);
 	};
 
-	const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+	const handleBlur = (e: FocusEvent<HTMLInputElement>) => {
 		setIsFocused(false);
 		setEditValue('');
 
@@ -93,7 +70,7 @@ const FormattedNumberInput = forwardRef<HTMLInputElement, Props>((props: Props, 
 			}}
 		/>
 	);
-});
+};
 
 FormattedNumberInput.displayName = 'FormattedNumberInput';
 export default FormattedNumberInput;

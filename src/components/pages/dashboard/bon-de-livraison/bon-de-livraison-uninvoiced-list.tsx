@@ -1,10 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState, type FC } from 'react';
 import type { TranslationDictionary } from '@/types/languageTypes';
 import { useRouter } from 'next/navigation';
 import { useInitAccessToken } from '@/contexts/InitContext';
-import { useDeleteBonDeLivraisonMutation, useGetBonDeLivraisonUninvoicedListQuery } from '@/store/services/bonDeLivraison';
+import {
+	useDeleteBonDeLivraisonMutation,
+	useGetBonDeLivraisonUninvoicedListQuery,
+} from '@/store/services/bonDeLivraison';
 import { BON_DE_LIVRAISON_ADD, BON_DE_LIVRAISON_EDIT, BON_DE_LIVRAISON_VIEW } from '@/utils/routes';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import type { BonDeLivraisonClass } from '@/models/classes';
@@ -13,8 +16,11 @@ import CompanyDocumentsListContent from '@/components/pages/dashboard/shared/com
 import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
 import type { DocumentListConfig } from '@/types/companyDocumentsTypes';
 import { useLanguage } from '@/utils/hooks';
+import type { BonDeLivraisonUninvoicedListFormikContentProps as FormikContentProps } from '@/types/companyDocumentsTypes';
 
-const createBonDeLivraisonUninvoicedListConfig = (t: TranslationDictionary): DocumentListConfig<BonDeLivraisonClass> => ({
+const createBonDeLivraisonUninvoicedListConfig = (
+	t: TranslationDictionary,
+): DocumentListConfig<BonDeLivraisonClass> => ({
 	documentType: 'bon-de-livraison',
 	labels: {
 		documentTypeName: t.bonsLivraison.documentTypeName,
@@ -39,16 +45,12 @@ const createBonDeLivraisonUninvoicedListConfig = (t: TranslationDictionary): Doc
 		extraFieldHeaderName: t.bonsLivraison.colNumeroBonCommande,
 	},
 });
-interface FormikContentProps extends SessionProps {
-	company_id: number;
-	role: string;
-}
 
-const FormikContent: React.FC<FormikContentProps> = (props) => {
+const FormikContent: FC<FormikContentProps> = (props) => {
 	const { session, company_id, role } = props;
 	const router = useRouter();
 	const { t } = useLanguage();
-	const bonDeLivraisonUninvoicedListConfig = React.useMemo(() => createBonDeLivraisonUninvoicedListConfig(t), [t]);
+	const bonDeLivraisonUninvoicedListConfig = createBonDeLivraisonUninvoicedListConfig(t);
 	const token = useInitAccessToken(session);
 
 	const [paginationModel, setPaginationModel] = useDataGridPagination();
@@ -93,7 +95,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 	);
 };
 
-const BonDeLivraisonUninvoicedListClient: React.FC<SessionProps> = ({ session }) => {
+const BonDeLivraisonUninvoicedListClient: FC<SessionProps> = ({ session }) => {
 	const { t } = useLanguage();
 	return (
 		<CompanyDocumentsWrapperList session={session} title={t.bonsLivraison.uninvoicedTitle}>

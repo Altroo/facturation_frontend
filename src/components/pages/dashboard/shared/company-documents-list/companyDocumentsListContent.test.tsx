@@ -1,4 +1,4 @@
-import React from 'react';
+import { type ReactNode } from 'react';
 import { render, screen, cleanup, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { Description as DescriptionIcon, Receipt as ReceiptIcon } from '@mui/icons-material';
@@ -10,12 +10,13 @@ import type {
 	PaginationModel,
 } from '@/types/companyDocumentsTypes';
 import type { DeviClass } from '@/models/classes';
+import { translations } from '@/translations';
 
 // Mock next/navigation
 const mockPush = jest.fn();
 const mockRouter = {
 	push: mockPush,
-	bfcacheId: "1",
+	bfcacheId: '1',
 	back: jest.fn(),
 	forward: jest.fn(),
 	refresh: jest.fn(),
@@ -35,13 +36,17 @@ jest.mock('@/utils/hooks', () => ({
 		onSuccess: mockOnSuccess,
 		onError: mockOnError,
 	}),
-	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
+	useLanguage: () => ({
+		language: 'fr' as const,
+		setLanguage: jest.fn(),
+		t: jest.requireActual('@/translations').translations.fr,
+	}),
 }));
 
 // Mock dependencies
 jest.mock('@/components/htmlElements/tooltip/darkTooltip/darkTooltip', () => ({
 	__esModule: true,
-	default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+	default: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
 
 jest.mock('@/components/htmlElements/buttons/textButton/textButton', () => ({
@@ -71,7 +76,7 @@ jest.mock('@/utils/helpers', () => ({
 		return num.toLocaleString('fr-FR', {
 			minimumFractionDigits: decimals,
 			maximumFractionDigits: decimals,
-			useGrouping: true
+			useGrouping: true,
 		});
 	},
 	extractApiErrorMessage: (error: unknown, fallback: string) => fallback,
@@ -87,7 +92,7 @@ jest.mock('@/components/shared/paginatedDataGrid/paginatedDataGrid', () => ({
 		columns: Array<{
 			field: string;
 			headerName: string;
-			renderCell?: (params: { value: string; row: DeviClass }) => React.ReactNode;
+			renderCell?: (params: { value: string; row: DeviClass }) => ReactNode;
 		}>;
 		data?: DocumentListQueryResult<DeviClass>['data'];
 		isLoading?: boolean;
@@ -149,7 +154,7 @@ jest.mock('@/components/htmlElements/modals/actionModal/actionModals', () => ({
 }));
 
 // Import after mocks
-import CompanyDocumentsListContent, { getStatutColor, statutFilterOptions } from './companyDocumentsListContent';
+import CompanyDocumentsListContent, { createStatutFilterOptions, getStatutColor } from './companyDocumentsListContent';
 
 // Mock data
 const mockDevisData: Partial<DeviClass>[] = [
@@ -342,6 +347,7 @@ describe('CompanyDocumentsListContent', () => {
 	});
 
 	describe('statutFilterOptions', () => {
+		const statutFilterOptions = createStatutFilterOptions(translations.fr);
 		it('has correct length', () => {
 			expect(statutFilterOptions).toHaveLength(6);
 		});
@@ -466,7 +472,9 @@ describe('CompanyDocumentsListContent', () => {
 		});
 
 		it('uses the full client list for client filter options including personne physique', () => {
-			const { createDropdownFilterOperators } = jest.requireMock('@/components/shared/dropdownFilter/dropdownFilter') as {
+			const { createDropdownFilterOperators } = jest.requireMock(
+				'@/components/shared/dropdownFilter/dropdownFilter',
+			) as {
 				createDropdownFilterOperators: jest.Mock;
 			};
 			mockUseGetClientsListQuery.mockReturnValue({

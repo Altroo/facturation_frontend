@@ -8,10 +8,7 @@ export const metadata: Metadata = {
 	title: 'Nouveau Devis',
 	description: 'Créer un nouveau devis',
 };
-
-type PageProps = {
-	searchParams: Promise<{ company_id: string }>;
-};
+import type { CompanyScopedNewRouteProps as PageProps } from '@/types/routeTypes';
 
 const DeviNewPage = async (props: PageProps) => {
 	const session = await auth();

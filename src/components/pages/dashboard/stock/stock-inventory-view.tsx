@@ -1,6 +1,6 @@
 'use client';
 
-import React, { isValidElement, useMemo } from 'react';
+import { type FC, isValidElement } from 'react';
 import { useRouter } from 'next/navigation';
 import {
 	Box,
@@ -32,18 +32,15 @@ import { useInitAccessToken } from '@/contexts/InitContext';
 import { getUserCompaniesState } from '@/store/selectors';
 import { useGetInventoryQuery, useValidateInventoryMutation } from '@/store/services/stock';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
-import type { SessionProps } from '@/types/_initTypes';
-import type { InventoryLine } from '@/types/stockTypes';
+import type {
+	InventoryLine,
+	StockInventoryViewInfoRowProps as InfoRowProps,
+	StockInventoryViewProps,
+} from '@/types/stockTypes';
 import { extractApiErrorMessage, formatDate, formatNumberWithSpaces } from '@/utils/helpers';
 import { useAppSelector, useToast } from '@/utils/hooks';
 
-type InfoRowProps = {
-	icon: React.ReactNode;
-	label: string;
-	value: React.ReactNode | string | number | null | undefined;
-};
-
-const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
+const InfoRow: FC<InfoRowProps> = ({ icon, label, value }) => {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 	const displayValue = isValidElement(value) ? value : value && value.toString().length > 0 ? value : '—';
@@ -51,11 +48,7 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 	return (
 		<Stack direction="row" spacing={2} sx={{ alignItems: 'flex-start', py: 1.5, flexWrap: 'wrap' }}>
 			<Box sx={{ color: 'primary.main', display: 'flex', alignItems: 'center', minWidth: 40 }}>{icon}</Box>
-			<Stack
-				direction="row"
-				spacing={isMobile ? 0 : 2}
-				sx={{ alignItems: 'center', flex: 1, flexWrap: 'wrap' }}
-			>
+			<Stack direction="row" spacing={isMobile ? 0 : 2} sx={{ alignItems: 'center', flex: 1, flexWrap: 'wrap' }}>
 				<Typography
 					sx={{
 						fontWeight: 600,
@@ -78,9 +71,7 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 	);
 };
 
-type StockInventoryViewProps = SessionProps & { company_id: number; id: number };
-
-const StockInventoryView: React.FC<StockInventoryViewProps> = ({ session, company_id, id }) => {
+const StockInventoryView: FC<StockInventoryViewProps> = ({ session, company_id, id }) => {
 	const token = useInitAccessToken(session);
 	const router = useRouter();
 	const theme = useTheme();
@@ -90,62 +81,57 @@ const StockInventoryView: React.FC<StockInventoryViewProps> = ({ session, compan
 	const canAdjust = companies?.find((company) => company.id === company_id)?.role === 'Caissier';
 	const { data: inventory, isLoading, isError } = useGetInventoryQuery({ company_id, id }, { skip: !token });
 	const [validateInventory, validateState] = useValidateInventoryMutation();
-	const columns = useMemo<GridColDef<InventoryLine>[]>(
-		() => [
-			{ field: 'article_reference', headerName: 'Référence', minWidth: 150, flex: 0.8 },
-			{ field: 'article_designation', headerName: 'Désignation', minWidth: 240, flex: 1.5 },
-			{
-				field: 'expected_quantity',
-				headerName: 'Quantité attendue',
-				type: 'number',
-				minWidth: 160,
-				flex: 0.9,
-				valueGetter: (value: string | number | null | undefined) => Number(value ?? 0),
-				renderCell: (params) => (
-					<Typography color="primary" sx={{ fontWeight: 600 }}>
-						{formatNumberWithSpaces(params.row.expected_quantity, 3)}
-					</Typography>
-				),
-			},
-			{
-				field: 'counted_quantity',
-				headerName: 'Quantité comptée',
-				type: 'number',
-				minWidth: 160,
-				flex: 0.9,
-				valueGetter: (value: string | number | null | undefined) => Number(value ?? 0),
-				renderCell: (params) => (
-					<Typography sx={{ fontWeight: 600 }}>
-						{formatNumberWithSpaces(params.row.counted_quantity, 3)}
-					</Typography>
-				),
-			},
-			{
-				field: 'difference',
-				headerName: 'Écart',
-				type: 'number',
-				minWidth: 130,
-				flex: 0.8,
-				valueGetter: (value: string | number | null | undefined) => Number(value ?? 0),
-				renderCell: (params) => (
-					<Typography
-						color={
-							Number(params.row.difference) === 0
-								? 'text.primary'
-								: Number(params.row.difference) > 0
-									? 'success.main'
-									: 'error.main'
-						}
-						sx={{ fontWeight: 700 }}
-					>
-						{Number(params.row.difference) > 0 ? '+' : ''}
-						{formatNumberWithSpaces(params.row.difference, 3)}
-					</Typography>
-				),
-			},
-		],
-		[],
-	);
+	const columns = [
+		{ field: 'article_reference', headerName: 'Référence', minWidth: 150, flex: 0.8 },
+		{ field: 'article_designation', headerName: 'Désignation', minWidth: 240, flex: 1.5 },
+		{
+			field: 'expected_quantity',
+			headerName: 'Quantité attendue',
+			type: 'number',
+			minWidth: 160,
+			flex: 0.9,
+			valueGetter: (value: string | number | null | undefined) => Number(value ?? 0),
+			renderCell: (params) => (
+				<Typography color="primary" sx={{ fontWeight: 600 }}>
+					{formatNumberWithSpaces(params.row.expected_quantity, 3)}
+				</Typography>
+			),
+		},
+		{
+			field: 'counted_quantity',
+			headerName: 'Quantité comptée',
+			type: 'number',
+			minWidth: 160,
+			flex: 0.9,
+			valueGetter: (value: string | number | null | undefined) => Number(value ?? 0),
+			renderCell: (params) => (
+				<Typography sx={{ fontWeight: 600 }}>{formatNumberWithSpaces(params.row.counted_quantity, 3)}</Typography>
+			),
+		},
+		{
+			field: 'difference',
+			headerName: 'Écart',
+			type: 'number',
+			minWidth: 130,
+			flex: 0.8,
+			valueGetter: (value: string | number | null | undefined) => Number(value ?? 0),
+			renderCell: (params) => (
+				<Typography
+					color={
+						Number(params.row.difference) === 0
+							? 'text.primary'
+							: Number(params.row.difference) > 0
+								? 'success.main'
+								: 'error.main'
+					}
+					sx={{ fontWeight: 700 }}
+				>
+					{Number(params.row.difference) > 0 ? '+' : ''}
+					{formatNumberWithSpaces(params.row.difference, 3)}
+				</Typography>
+			),
+		},
+	] as GridColDef<InventoryLine>[];
 
 	const handleValidate = async () => {
 		try {
@@ -210,7 +196,11 @@ const StockInventoryView: React.FC<StockInventoryViewProps> = ({ session, compan
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 									<Stack spacing={0}>
-										<InfoRow icon={<FactCheckIcon />} label="Référence" value={inventory.reference || `INV-${inventory.id}`} />
+										<InfoRow
+											icon={<FactCheckIcon />}
+											label="Référence"
+											value={inventory.reference || `INV-${inventory.id}`}
+										/>
 										<Divider />
 										<InfoRow icon={<WarehouseIcon />} label="Emplacement" value={inventory.emplacement_name} />
 										<Divider />
@@ -233,7 +223,11 @@ const StockInventoryView: React.FC<StockInventoryViewProps> = ({ session, compan
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 									<Stack spacing={0}>
-										<InfoRow icon={<CalendarTodayIcon />} label="Date de création" value={formatDate(inventory.date_created)} />
+										<InfoRow
+											icon={<CalendarTodayIcon />}
+											label="Date de création"
+											value={formatDate(inventory.date_created)}
+										/>
 										<Divider />
 										<InfoRow icon={<PersonIcon />} label="Créé par" value={inventory.created_by_name} />
 										<Divider />

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState, type FC, useEffect } from 'react';
 import type { TranslationDictionary } from '@/types/languageTypes';
 import { useRouter } from 'next/navigation';
 import { Box, Divider } from '@mui/material';
@@ -29,6 +29,7 @@ import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/use
 import DashboardStatCard from '@/components/shared/dashboardStatCard/dashboardStatCard';
 import { formatNumberWithSpaces } from '@/utils/helpers';
 import { useLanguage } from '@/utils/hooks';
+import type { FactureClientUnpaidListFormikContentProps as FormikContentProps } from '@/types/companyDocumentsTypes';
 
 const createFactureClientUnpaidListConfig = (t: TranslationDictionary): DocumentListConfig<FactureClass> => ({
 	documentType: 'facture-client',
@@ -66,16 +67,12 @@ const createFactureClientUnpaidListConfig = (t: TranslationDictionary): Document
 		},
 	],
 });
-interface FormikContentProps extends SessionProps {
-	company_id: number;
-	role: string;
-}
 
-const FormikContent: React.FC<FormikContentProps> = (props) => {
+const FormikContent: FC<FormikContentProps> = (props) => {
 	const { session, company_id, role } = props;
 	const router = useRouter();
 	const { t } = useLanguage();
-	const factureClientUnpaidListConfig = React.useMemo(() => createFactureClientUnpaidListConfig(t), [t]);
+	const factureClientUnpaidListConfig = createFactureClientUnpaidListConfig(t);
 	const token = useInitAccessToken(session);
 
 	const { data: companyData } = useGetCompanyQuery({ id: company_id }, { skip: !token });
@@ -88,7 +85,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
 
 	// Reset to MAD when company changes or doesn't use foreign currency
-	React.useEffect(() => {
+	useEffect(() => {
 		if (!usesForeignCurrency) {
 			setSelectedDevise('MAD');
 		}
@@ -201,7 +198,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 	);
 };
 
-const FactureClientUnpaidListClient: React.FC<SessionProps> = ({ session }) => {
+const FactureClientUnpaidListClient: FC<SessionProps> = ({ session }) => {
 	const { t } = useLanguage();
 	return (
 		<CompanyDocumentsWrapperList session={session} title={t.facturesClient.unpaidListTitle}>

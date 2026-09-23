@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import { useState, type FC, type ChangeEvent } from 'react';
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Typography } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import type { ArticleClass } from '@/models/classes';
@@ -24,38 +24,12 @@ import type { TypeRemiseType } from '@/types/devisTypes';
 import { useLanguage } from '@/utils/hooks';
 import { useGetArticlesListQuery } from '@/store/services/article';
 import type { PaginationResponseType } from '@/types/_initTypes';
+import type { SelectedArticlePopupValues, ArticlePopupValues, AddArticleModalProps } from '@/types/articleTypes';
 
 const gridFieldTheme = gridInputTheme();
 const gridSelectTheme = customGridDropdownTheme();
 
-export interface SelectedArticlePopupValues {
-	articleId: number;
-	articleData: Partial<ArticleClass>;
-	quantity: string | number;
-	remise_type: TypeRemiseType;
-	remise: string | number;
-}
-
-type ArticlePopupValues = {
-	quantity: string | number;
-	remise_type: TypeRemiseType;
-	remise: string | number;
-};
-
-interface AddArticleModalProps {
-	open: boolean;
-	onClose: () => void;
-	companyId: number;
-	selectedArticles: Set<number>;
-	setSelectedArticles: (selection: Set<number>) => void;
-	onAdd: (selectedArticlesData: SelectedArticlePopupValues[]) => void;
-	existingArticleIds: Set<number>;
-	existingArticleLineValues?: Record<number, ArticlePopupValues>;
-	documentDevise?: string;
-	disableRemise?: boolean;
-}
-
-const AddArticleModal: React.FC<AddArticleModalProps> = ({
+const AddArticleModal: FC<AddArticleModalProps> = ({
 	open,
 	onClose,
 	companyId,
@@ -78,10 +52,7 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 		setFilterModel({ items: [], quickFilterValues: [] });
 	};
 
-	const searchTerm = useMemo(
-		() => (filterModel.quickFilterValues ?? []).join(' ').trim(),
-		[filterModel.quickFilterValues],
-	);
+	const searchTerm = (filterModel.quickFilterValues ?? []).join(' ').trim();
 
 	const { data: rawArticlesData, isLoading } = useGetArticlesListQuery(
 		{
@@ -96,21 +67,17 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 		{ skip: !open },
 	);
 	const paginatedArticles = rawArticlesData as PaginationResponseType<Partial<ArticleClass>> | undefined;
-	const articles = useMemo(() => paginatedArticles?.results ?? [], [paginatedArticles]);
+	const articles = paginatedArticles?.results ?? [];
 	const totalArticlesCount = paginatedArticles?.count ?? 0;
 
-	const availableArticles = useMemo(
-		() =>
-			articles.filter((article) => {
-				if (!article.id) return false;
-				// If document has a currency set, filter by matching devise_prix_vente
-				if (documentDevise && documentDevise !== 'MAD') {
-					return article.devise_prix_vente === documentDevise;
-				}
-				return true;
-			}),
-		[articles, documentDevise],
-	);
+	const availableArticles = articles.filter((article) => {
+		if (!article.id) return false;
+		// If document has a currency set, filter by matching devise_prix_vente
+		if (documentDevise && documentDevise !== 'MAD') {
+			return article.devise_prix_vente === documentDevise;
+		}
+		return true;
+	});
 
 	const getRowPopupValues = (articleId: number): ArticlePopupValues => {
 		const existingValues = articlePopupValues[articleId];
@@ -338,7 +305,7 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 							id={`popup_quantity_${articleId}`}
 							type="text"
 							value={rowValues.quantity}
-							onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+							onChange={(e: ChangeEvent<HTMLInputElement>) => {
 								const raw = (e.target as HTMLInputElement).value;
 								const parsed = parseNumber(raw);
 								if (parsed !== null && parsed < 0.01) return;
@@ -408,7 +375,7 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 							id={`popup_remise_${articleId}`}
 							type="text"
 							value={rowValues.remise}
-							onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+							onChange={(e: ChangeEvent<HTMLInputElement>) => {
 								const raw = (e.target as HTMLInputElement).value;
 								const parsed = parseNumber(raw);
 								if (parsed !== null && parsed < 0) return;
@@ -535,17 +502,17 @@ const AddArticleModal: React.FC<AddArticleModalProps> = ({
 					{t.addArticleModal.cancelBtn}
 				</Button>
 				<Button
-				variant="contained"
-				onClick={() => {
-					const payload: SelectedArticlePopupValues[] = Array.from(selectedArticles).map((articleId) => {
-						const values = getRowPopupValues(articleId);
-						const articleData = availableArticles.find((article) => article.id === articleId) ?? { id: articleId };
-						return {
-							articleId,
-							articleData,
-							quantity: values.quantity,
-							remise_type: disableRemise ? '' : values.remise_type || '',
-							remise: disableRemise ? 0 : values.remise,
+					variant="contained"
+					onClick={() => {
+						const payload: SelectedArticlePopupValues[] = Array.from(selectedArticles).map((articleId) => {
+							const values = getRowPopupValues(articleId);
+							const articleData = availableArticles.find((article) => article.id === articleId) ?? { id: articleId };
+							return {
+								articleId,
+								articleData,
+								quantity: values.quantity,
+								remise_type: disableRemise ? '' : values.remise_type || '',
+								remise: disableRemise ? 0 : values.remise,
 							};
 						});
 						resetModalState();

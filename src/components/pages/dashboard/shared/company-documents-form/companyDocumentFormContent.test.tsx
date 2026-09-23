@@ -1,4 +1,4 @@
-import React from 'react';
+import { type ReactNode } from 'react';
 import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import type { DocumentFormConfig } from '@/types/companyDocumentsTypes';
@@ -151,7 +151,7 @@ jest.mock('@/components/shared/globalRemiseModal/globalRemiseModal', () => ({
 }));
 jest.mock('@/components/htmlElements/tooltip/darkTooltip/darkTooltip', () => ({
 	__esModule: true,
-	default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+	default: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
 jest.mock('@/components/shared/addEntityModal/addEntityModal', () => ({
 	__esModule: true,
@@ -173,7 +173,7 @@ jest.mock('@mui/x-date-pickers/DatePicker', () => ({
 	DatePicker: (props: { label?: string }) => <div data-testid="date-picker">{props.label}</div>,
 }));
 jest.mock('@mui/x-date-pickers/LocalizationProvider', () => ({
-	LocalizationProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+	LocalizationProvider: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
 jest.mock('@mui/x-date-pickers/AdapterDateFns', () => ({
 	AdapterDateFns: jest.fn(),
@@ -181,10 +181,8 @@ jest.mock('@mui/x-date-pickers/AdapterDateFns', () => ({
 jest.mock('date-fns/locale', () => ({ fr: {} }));
 
 // ── Import the REAL component ─────────────────────────────────────
-import CompanyDocumentFormContent, {
-	generateRowId,
-	type SharedDocumentFormContentProps,
-} from './companyDocumentFormContent';
+import CompanyDocumentFormContent, { generateRowId } from './companyDocumentFormContent';
+import type { SharedDocumentFormContentProps } from '@/types/companyDocumentsTypes';
 
 const mockDevisConfig: DocumentFormConfig<DeviClass> = {
 	documentType: 'devis',

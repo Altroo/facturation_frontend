@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useCallback, useState } from 'react';
+import { useRef, useState, type FC, type ChangeEvent } from 'react';
 import Styles from './customSquareImageUploading.module.sass';
 import { Box, Stack } from '@mui/material';
 import Image from 'next/image';
@@ -9,16 +9,9 @@ import SquareImageInputFile from '../../htmlElements/buttons/squareImageInputFil
 import Cropper, { type ReactCropperElement } from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
 import { useLanguage } from '@/utils/hooks';
+import type { CustomSquareImageUploadingProps as Props } from '@/types/uiTypes';
 
-type Props = {
-	image: string | ArrayBuffer | null;
-	croppedImage?: string | ArrayBuffer | null;
-	onChange: (image: string | ArrayBuffer | null) => void;
-	onCrop: (data: string | null) => void;
-	cssClasse?: string;
-};
-
-const CustomSquareImageUploading: React.FC<Props> = ({ image, croppedImage, onChange, onCrop, cssClasse }) => {
+const CustomSquareImageUploading: FC<Props> = ({ image, croppedImage, onChange, onCrop, cssClasse }) => {
 	const cropperRef = useRef<ReactCropperElement>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const { t } = useLanguage();
@@ -32,7 +25,7 @@ const CustomSquareImageUploading: React.FC<Props> = ({ image, croppedImage, onCh
 		}
 	};
 
-	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+	const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (file) {
 			const reader = new FileReader();
@@ -46,7 +39,7 @@ const CustomSquareImageUploading: React.FC<Props> = ({ image, croppedImage, onCh
 		}
 	};
 
-	const handleCrop = useCallback(() => {
+	const handleCrop = () => {
 		const cropper = cropperRef.current?.cropper;
 		if (!cropper) return;
 
@@ -55,7 +48,7 @@ const CustomSquareImageUploading: React.FC<Props> = ({ image, croppedImage, onCh
 			const croppedData = canvas.toDataURL('image/png');
 			onCrop(croppedData);
 		}
-	}, [onCrop]);
+	};
 
 	const handleClear = () => {
 		onChange(null);
@@ -67,12 +60,12 @@ const CustomSquareImageUploading: React.FC<Props> = ({ image, croppedImage, onCh
 		}
 	};
 
-	const handleReady = useCallback(() => {
+	const handleReady = () => {
 		if (isNewUpload) {
 			handleCrop();
 			setIsNewUpload(false);
 		}
-	}, [isNewUpload, handleCrop]);
+	};
 
 	const handleEditClick = () => {
 		setIsEditing(true);
@@ -82,24 +75,29 @@ const CustomSquareImageUploading: React.FC<Props> = ({ image, croppedImage, onCh
 	const displayImage = showCropper ? image : croppedImage;
 
 	return (
-        <Stack className={`${Styles.rootStackWrapper} ${cssClasse}`} direction="row" sx={{
-            alignItems: "center"
-        }}>
-            <input
+		<Stack
+			className={`${Styles.rootStackWrapper} ${cssClasse}`}
+			direction="row"
+			sx={{
+				alignItems: 'center',
+			}}
+		>
+			<input
 				type="file"
 				accept="image/jpeg,image/png"
 				style={{ display: 'none' }}
 				ref={fileInputRef}
 				onChange={handleFileChange}
 			/>
-            {displayImage ? (
+			{displayImage ? (
 				<Stack
-                    className={Styles.addImagesWrapper}
-                    direction="row"
-                    sx={{
-                        justifyContent: "center",
-                        alignItems: "center"
-                    }}>
+					className={Styles.addImagesWrapper}
+					direction="row"
+					sx={{
+						justifyContent: 'center',
+						alignItems: 'center',
+					}}
+				>
 					{showCropper ? (
 						<>
 							<Cropper
@@ -166,8 +164,8 @@ const CustomSquareImageUploading: React.FC<Props> = ({ image, croppedImage, onCh
 			) : (
 				<SquareImageInputFile onImageUpload={handleImageUploadClick} />
 			)}
-        </Stack>
-    );
+		</Stack>
+	);
 };
 
 export default CustomSquareImageUploading;

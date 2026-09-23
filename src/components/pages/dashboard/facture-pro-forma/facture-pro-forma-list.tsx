@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState, type FC } from 'react';
 import type { TranslationDictionary } from '@/types/languageTypes';
 import { useRouter } from 'next/navigation';
 import { ReceiptLong as ReceiptLongIcon, Print as PrintIcon } from '@mui/icons-material';
@@ -27,8 +27,9 @@ import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/use
 import type { DocumentListConfig } from '@/types/companyDocumentsTypes';
 import { useGetModePaiementListQuery } from '@/store/services/parameter';
 import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
-import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
+import type { ChipFilterConfig } from '@/types/uiTypes';
 import { useLanguage } from '@/utils/hooks';
+import type { FactureProFormaListFormikContentProps as FormikContentProps } from '@/types/companyDocumentsTypes';
 
 const createFactureProFormaListConfig = (t: TranslationDictionary): DocumentListConfig<FactureClass> => ({
 	documentType: 'facture-pro-forma',
@@ -61,7 +62,8 @@ const createFactureProFormaListConfig = (t: TranslationDictionary): DocumentList
 			icon: <ReceiptLongIcon fontSize="small" color="success" />,
 			modalTitle: t.facturesProforma.convertToFactureTitle,
 			modalBody: t.facturesProforma.convertToFactureBody,
-			disabled: (row) => Boolean((row as FactureClass).converted_facture_client) || !['Envoyé', 'Accepté'].includes(row.statut),
+			disabled: (row) =>
+				Boolean((row as FactureClass).converted_facture_client) || !['Envoyé', 'Accepté'].includes(row.statut),
 			completed: (row) => Boolean((row as FactureClass).converted_facture_client),
 			completedLabel: t.facturesProforma.alreadyConverted,
 			redirectRoute: FACTURE_CLIENT_EDIT,
@@ -73,41 +75,41 @@ const createFactureProFormaListConfig = (t: TranslationDictionary): DocumentList
 			label: t.common.pdfWithDiscount,
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#1976d2',
-			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') => FACTURE_PRO_FORMA_PDF(id, companyId, 'avec_remise', language),
+			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') =>
+				FACTURE_PRO_FORMA_PDF(id, companyId, 'avec_remise', language),
 		},
 		{
 			key: 'sans_remise',
 			label: t.common.pdfWithoutDiscount,
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#2e7d32',
-			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') => FACTURE_PRO_FORMA_PDF(id, companyId, 'sans_remise', language),
+			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') =>
+				FACTURE_PRO_FORMA_PDF(id, companyId, 'sans_remise', language),
 		},
 		{
 			key: 'avec_unite_sans_remise',
 			label: t.common.pdfWithUnitWithoutDiscount,
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#7b1fa2',
-			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') => FACTURE_PRO_FORMA_PDF(id, companyId, 'avec_unite_sans_remise', language),
+			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') =>
+				FACTURE_PRO_FORMA_PDF(id, companyId, 'avec_unite_sans_remise', language),
 		},
 		{
 			key: 'avec_unite_avec_remise',
 			label: t.common.pdfWithUnitWithDiscount,
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#ed6c02',
-			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') => FACTURE_PRO_FORMA_PDF(id, companyId, 'avec_unite_avec_remise', language),
+			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') =>
+				FACTURE_PRO_FORMA_PDF(id, companyId, 'avec_unite_avec_remise', language),
 		},
 	],
 });
-interface FormikContentProps extends SessionProps {
-	company_id: number;
-	role: string;
-}
 
-const FormikContent: React.FC<FormikContentProps> = (props) => {
+const FormikContent: FC<FormikContentProps> = (props) => {
 	const { session, company_id, role } = props;
 	const router = useRouter();
 	const { t } = useLanguage();
-	const factureProFormaListConfig = React.useMemo(() => createFactureProFormaListConfig(t), [t]);
+	const factureProFormaListConfig = createFactureProFormaListConfig(t);
 	const token = useInitAccessToken(session);
 
 	const [paginationModel, setPaginationModel] = useDataGridPagination();
@@ -118,17 +120,16 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 
 	const { data: modePaiement } = useGetModePaiementListQuery({ company_id }, { skip: !token });
 
-	const chipFilters: ChipFilterConfig[] = React.useMemo(
-		() => [
-			{ key: 'mode_paiement', label: t.facturesProforma.filterModePaiement, paramName: 'mode_paiement_ids', options: modePaiement ?? [] },
-		],
-		[modePaiement, t],
-	);
+	const chipFilters: ChipFilterConfig[] = [
+		{
+			key: 'mode_paiement',
+			label: t.facturesProforma.filterModePaiement,
+			paramName: 'mode_paiement_ids',
+			options: modePaiement ?? [],
+		},
+	];
 
-	const mergedFilterParams = React.useMemo(
-		() => ({ ...chipFilterParams, ...customFilterParams }),
-		[chipFilterParams, customFilterParams],
-	);
+	const mergedFilterParams = { ...chipFilterParams, ...customFilterParams };
 
 	const {
 		data: rawData,
@@ -187,7 +188,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 	);
 };
 
-const FactureProFormaListClient: React.FC<SessionProps> = ({ session }) => {
+const FactureProFormaListClient: FC<SessionProps> = ({ session }) => {
 	const { t } = useLanguage();
 	return (
 		<CompanyDocumentsWrapperList session={session} title={t.facturesProforma.listTitle}>

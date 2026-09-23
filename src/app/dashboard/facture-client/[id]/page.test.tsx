@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 import { renderToStaticMarkup } from 'react-dom/server';
-import React from 'react';
+import { createElement, type ReactElement } from 'react';
 import { AUTH_LOGIN, FACTURE_CLIENT_LIST } from '@/utils/routes';
 
 type SessionUser = { pk: number; email: string };
@@ -25,9 +25,7 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/components/pages/dashboard/facture-client/facture-client-view', () => ({
 	__esModule: true,
 	default: (props: { session?: Session; id?: number; company_id?: number }) => {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const React = require('react');
-		return React.createElement(
+		return createElement(
 			'div',
 			null,
 			`FACTURE_CLIENT_VIEW_MARKER:${JSON.stringify(props?.session ?? null)}:ID=${props?.id ?? ''}:COMPANY_ID=${props?.company_id ?? ''}`,
@@ -113,7 +111,7 @@ describe('FactureClientViewPage server component', () => {
 			searchParams: Promise.resolve({ company_id: '456' }),
 		});
 
-		const html = renderToStaticMarkup(result as unknown as React.ReactElement);
+		const html = renderToStaticMarkup(result as unknown as ReactElement);
 		const decoded = html.replace(/&quot;/g, '"');
 
 		expect(decoded).toContain('"pk":99');

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import { runWithCleanup } from '@/utils/runWithCleanup';
+import { useState, type FC } from 'react';
 import Styles from '@/styles/auth/auth.module.sass';
 import { setFormikAutoErrors } from '@/utils/helpers';
 import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
@@ -18,15 +19,11 @@ import { useSetPasswordMutation } from '@/store/services/account';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import { Edit as EditIcon, Lock as LockIcon } from '@mui/icons-material';
 import { useLanguage } from '@/utils/hooks';
+import type { SetPasswordPageContentProps, SetPasswordProps as Props } from '@/types/accountTypes';
 
 const inputTheme = textInputTheme();
 
-type SetPasswordPageContentProps = {
-	email: string;
-	code: string;
-};
-
-const SetPasswordPageContent: React.FC<SetPasswordPageContentProps> = ({ email, code }) => {
+const SetPasswordPageContent: FC<SetPasswordPageContentProps> = ({ email, code }) => {
 	const router = useRouter();
 	const [isPending, setIsPending] = useState(false);
 	const { t } = useLanguage();
@@ -42,20 +39,25 @@ const SetPasswordPageContent: React.FC<SetPasswordPageContentProps> = ({ email, 
 		validationSchema: toFormikValidationSchema(passwordResetConfirmationSchema),
 		onSubmit: async (values, { setFieldError }) => {
 			setIsPending(true);
-			try {
-				await setPassword({
-					email,
-					code,
-					new_password: values.new_password,
-					new_password2: values.new_password2,
-				}).unwrap();
-				await cookiesPoster('/api/cookies', { pass_updated: 1 });
-				router.push(AUTH_RESET_PASSWORD_COMPLETE);
-			} catch (e) {
-				setFormikAutoErrors({ e, setFieldError });
-			} finally {
-				setIsPending(false);
-			}
+			await runWithCleanup(
+				async () => {
+					try {
+						await setPassword({
+							email,
+							code,
+							new_password: values.new_password,
+							new_password2: values.new_password2,
+						}).unwrap();
+						await cookiesPoster('/api/cookies', { pass_updated: 1 });
+						router.push(AUTH_RESET_PASSWORD_COMPLETE);
+					} catch (e) {
+						setFormikAutoErrors({ e, setFieldError });
+					}
+				},
+				() => {
+					setIsPending(false);
+				},
+			);
 		},
 	});
 
@@ -124,12 +126,7 @@ const SetPasswordPageContent: React.FC<SetPasswordPageContentProps> = ({ email, 
 	);
 };
 
-type Props = {
-	email: string;
-	code: string;
-};
-
-const SetPasswordClient: React.FC<Props> = ({ email, code }) => (
+const SetPasswordClient: FC<Props> = ({ email, code }) => (
 	<>
 		<Desktop>
 			<div>

@@ -1,8 +1,8 @@
-import React from 'react';
+import { type Ref, type FC, type SyntheticEvent } from 'react';
 import { Slide, Snackbar, Stack, ThemeProvider } from '@mui/material';
 import type { SlideProps } from '@mui/material/Slide';
 import Styles from './customToast.module.sass';
-import MuiAlert, { AlertColor, AlertProps } from '@mui/material/Alert';
+import MuiAlert, { AlertProps } from '@mui/material/Alert';
 import { customToastTheme } from '@/utils/themes';
 import {
 	CheckCircle as CheckCircleIcon,
@@ -10,25 +10,18 @@ import {
 	Info as InfoIcon,
 	WarningAmber as WarningAmberIcon,
 } from '@mui/icons-material';
+import type { CustomToastProps as Props } from '@/types/uiTypes';
 
-type Props = {
-	type: AlertColor;
-	show: boolean;
-	setShow: React.Dispatch<React.SetStateAction<boolean>>;
-	message: string;
-	children?: React.ReactNode;
-};
-
-const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(props, ref) {
-	return <MuiAlert elevation={6} ref={ref} variant="outlined" {...props} />;
-});
+const Alert = ({ ref, ...props }: AlertProps & { ref?: Ref<HTMLDivElement> }) => (
+	<MuiAlert elevation={6} ref={ref} variant="outlined" {...props} />
+);
 
 const TransitionUp = (props: SlideProps) => <Slide {...props} direction="up" />;
 
-const CustomToast: React.FC<Props> = (props) => {
+const CustomToast: FC<Props> = (props) => {
 	const { type } = props;
 
-	const handleClose = (_event?: React.SyntheticEvent | Event, reason?: string) => {
+	const handleClose = (_event?: SyntheticEvent | Event, reason?: string) => {
 		if (reason === 'clickaway') return;
 		props.setShow(false);
 	};

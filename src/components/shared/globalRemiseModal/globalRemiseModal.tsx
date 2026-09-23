@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState, type FC } from 'react';
 import {
 	Alert,
 	Button,
@@ -17,25 +17,11 @@ import CustomTextInput from '@/components/formikElements/customTextInput/customT
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import { customDropdownTheme, textInputTheme } from '@/utils/themes';
 import { useLanguage } from '@/utils/hooks';
-
-interface GlobalRemiseModalProps {
-	open: boolean;
-	onClose: () => void;
-	currentType: string;
-	currentValue: number;
-	onApply: (type: 'Pourcentage' | 'Fixe' | '', value: number) => void;
-	devise?: string;
-}
-
-interface ModalState {
-	type: 'Pourcentage' | 'Fixe' | '';
-	value: number;
-	error: string;
-}
+import type { GlobalRemiseModalProps, ModalState } from '@/types/uiTypes';
 
 const MIN_VALUE = 0.01;
 
-const GlobalRemiseModalContent: React.FC<GlobalRemiseModalProps> = ({
+const GlobalRemiseModalContent: FC<GlobalRemiseModalProps> = ({
 	open,
 	onClose,
 	currentType,
@@ -177,7 +163,7 @@ const GlobalRemiseModalContent: React.FC<GlobalRemiseModalProps> = ({
 	);
 };
 
-const GlobalRemiseModal: React.FC<GlobalRemiseModalProps> = (props) => {
+const GlobalRemiseModal: FC<GlobalRemiseModalProps> = (props) => {
 	return (
 		<GlobalRemiseModalContent key={props.open ? `${props.currentType}-${props.currentValue}` : 'closed'} {...props} />
 	);

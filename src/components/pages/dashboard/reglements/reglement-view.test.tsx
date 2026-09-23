@@ -1,4 +1,4 @@
-import React from 'react';
+import { type ReactNode, type ReactElement } from 'react';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
@@ -37,7 +37,11 @@ jest.mock('@/utils/hooks', () => ({
 	__esModule: true,
 	useAppSelector: jest.fn(() => [{ id: 1, role: 'Caissier' }]),
 	useToast: jest.fn(() => ({ onSuccess: jest.fn(), onError: jest.fn() })),
-	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
+	useLanguage: () => ({
+		language: 'fr' as const,
+		setLanguage: jest.fn(),
+		t: jest.requireActual('@/translations').translations.fr,
+	}),
 }));
 
 jest.mock('@/store/selectors', () => ({
@@ -63,7 +67,7 @@ jest.mock('@/store/services/reglement', () => ({
 // Mock NavigationBar
 jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 	__esModule: true,
-	default: ({ children, title }: { children: React.ReactNode; title: string }) => (
+	default: ({ children, title }: { children: ReactNode; title: string }) => (
 		<div data-testid="navigation-bar">
 			<h1 data-testid="nav-title">{title}</h1>
 			{children}
@@ -100,7 +104,9 @@ jest.mock('@/utils/helpers', () => ({
 
 jest.mock('@/utils/routes', () => ({
 	REGLEMENTS_LIST: '/dashboard/reglements',
-	REGLEMENTS_EDIT: jest.fn((id: number, companyId: number) => `/dashboard/reglements/${id}/edit?company_id=${companyId}`),
+	REGLEMENTS_EDIT: jest.fn(
+		(id: number, companyId: number) => `/dashboard/reglements/${id}/edit?company_id=${companyId}`,
+	),
 }));
 
 // Import after mocks
@@ -142,7 +148,7 @@ const mockReglement = {
 	reste_a_payer: 500,
 };
 
-const renderWithProviders = (ui: React.ReactElement) => render(<Provider store={mockStore}>{ui}</Provider>);
+const renderWithProviders = (ui: ReactElement) => render(<Provider store={mockStore}>{ui}</Provider>);
 
 const defaultProps = { session: mockSession, company_id: 1, id: 123 };
 

@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
-import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
+import { runWithCleanup, runWithErrorHandler } from '@/utils/runWithCleanup';
+import { type FC, type MouseEvent, useState } from 'react';
+import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import {
 	Alert,
@@ -56,24 +57,28 @@ import {
 } from '@/store/services/client';
 import { getLabelForKey, setFormikAutoErrors } from '@/utils/helpers';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
-import type { ClientSchemaType, TypeClientType } from '@/types/clientTypes';
+import type {
+	ClientSchemaType,
+	ClientsFormFormikContentProps as FormikContentProps,
+	ClientsFormProps as Props,
+	TypeClientType,
+} from '@/types/clientTypes';
 import EntityCrudControls from '@/components/shared/entityCrudControls/entityCrudControls';
-import { useAddCityMutation, useDeleteCityMutation, useEditCityMutation, useGetCitiesListQuery } from '@/store/services/parameter';
-import { clientSchema, pmRequired, ppRequired } from '@/utils/formValidationSchemas';
+import {
+	useAddCityMutation,
+	useDeleteCityMutation,
+	useEditCityMutation,
+	useGetCitiesListQuery,
+} from '@/store/services/parameter';
+import { clientSchema } from '@/utils/formValidationSchemas';
+import { pmRequired, ppRequired } from '@/utils/rawData';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import ClientArticleWrapperForm from '@/components/pages/dashboard/shared/client-article-form/clientArticleWrapperForm';
 import { isNectarRaisonSociale } from '@/utils/nectar';
 
 const inputTheme = textInputTheme();
 
-type FormikContentProps = {
-	token?: string;
-	company_id: number;
-	id?: number;
-	company_raison_sociale?: string;
-};
-
-const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
+const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 	const { token, company_id, id, company_raison_sociale } = props;
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
@@ -147,44 +152,51 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			setIsPending(true);
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const { globalError, ...newPayload } = data;
-			try {
-				// Build payload with irrelevant fields cleared
-				const usesPersonneMoraleFields = data.client_type === 'PM' || data.client_type === 'CD';
-				const payload =
-					usesPersonneMoraleFields
-						? {
-								...newPayload,
-								nom: null,
-								prenom: null,
-								tel: null,
-							}
-						: {
-								...newPayload,
-								raison_sociale: null,
-								ICE: null,
-								registre_de_commerce: null,
-							};
+			await runWithCleanup(
+				async () => {
+					await runWithErrorHandler(
+						async () => {
+							// Build payload with irrelevant fields cleared
+							const usesPersonneMoraleFields = data.client_type === 'PM' || data.client_type === 'CD';
+							const payload = usesPersonneMoraleFields
+								? {
+										...newPayload,
+										nom: null,
+										prenom: null,
+										tel: null,
+									}
+								: {
+										...newPayload,
+										raison_sociale: null,
+										ICE: null,
+										registre_de_commerce: null,
+									};
 
-				if (isEditMode) {
-					await updateClient({ data: payload, id: id! }).unwrap();
-					onSuccess(t.clients.updateSuccess);
-				} else {
-					await addClient({ data: payload }).unwrap();
-					onSuccess(t.clients.addSuccess);
-				}
-				if (!isEditMode) {
-					router.replace(CLIENTS_LIST);
-				}
-			} catch (e) {
-				if (isEditMode) {
-					onError(t.clients.updateError);
-				} else {
-					onError(t.clients.addError);
-				}
-				setFormikAutoErrors({ e, setFieldError });
-			} finally {
-				setIsPending(false);
-			}
+							if (isEditMode) {
+								await updateClient({ data: payload, id: id! }).unwrap();
+								onSuccess(t.clients.updateSuccess);
+							} else {
+								await addClient({ data: payload }).unwrap();
+								onSuccess(t.clients.addSuccess);
+							}
+							if (!isEditMode) {
+								router.replace(CLIENTS_LIST);
+							}
+						},
+						(e) => {
+							if (isEditMode) {
+								onError(t.clients.updateError);
+							} else {
+								onError(t.clients.addError);
+							}
+							setFormikAutoErrors({ e, setFieldError });
+						},
+					);
+				},
+				() => {
+					setIsPending(false);
+				},
+			);
 		},
 	});
 
@@ -193,21 +205,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const axiosError = error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined;
 
 	// Stable cityItems
-	const cityItems: DropDownType[] = useMemo(
-		() =>
-			(citiesData ?? []).map((c) => ({
-				value: String(c.id),
-				code: c.nom,
-			})),
-		[citiesData],
-	);
+	const cityItems: DropDownType[] = (citiesData ?? []).map((c) => ({
+		value: String(c.id),
+		code: c.nom,
+	}));
 
 	// Derive selectedCity without local state or effects
-	const selectedCity = useMemo<DropDownType | null>(() => {
+	const selectedCity = (() => {
 		const v = formik.values.ville;
 		if (!v || cityItems.length === 0) return null;
 		return cityItems.find((c) => c.value === String(v)) ?? null;
-	}, [formik.values.ville, cityItems]);
+	})() as DropDownType | null;
 
 	// Required label helpers
 	const isPM = formik.values.client_type === 'PM';
@@ -219,40 +227,37 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const isRequiredPP = (field: (typeof ppRequired)[number]) => isPP && ppRequired.includes(field);
 
 	// Collect validation errors from Formik
-	const fieldLabels = useMemo<Record<string, string>>(
-		() => ({
-			reference: t.articles.colReference,
-			designation: t.articles.colDesignation,
-			prix_achat: t.articles.colPrixAchat,
-			prix_vente: t.articles.colPrixVente,
-			tva: t.articles.fieldTva,
-			categorie: t.articles.filterCategorie,
-			emplacement: t.articles.filterEmplacement,
-			unite: t.articles.filterUnite,
-			marque: t.articles.filterMarque,
-			remarque: t.clients.fieldRemarque,
-			photo: t.articles.fieldPhoto,
-			photo_cropped: t.articles.fieldPhotoCropped,
-			globalError: t.common.genericError,
-			raison_sociale: t.clients.fieldRaisonSociale,
-			nom: t.clients.fieldNom,
-			prenom: t.clients.fieldPrenom,
-			adresse: t.clients.fieldAdresse,
-			ville: t.clients.fieldVille,
-			tel: t.clients.fieldTelephone,
-			email: t.clients.fieldEmail,
-			ICE: t.clients.fieldICE,
-			registre_de_commerce: t.clients.fieldRegistreCommerce,
-			identifiant_fiscal: t.clients.fieldIdentifiantFiscal,
-			taxe_professionnelle: t.clients.fieldTaxeProfessionnelle,
-			CNSS: t.clients.fieldCNSS,
-			numero_du_compte: t.clients.fieldNumeroCompte,
-			delai_de_paiement: t.clients.fieldDelaiPaiement,
-		}),
-		[t],
-	);
+	const fieldLabels = {
+		reference: t.articles.colReference,
+		designation: t.articles.colDesignation,
+		prix_achat: t.articles.colPrixAchat,
+		prix_vente: t.articles.colPrixVente,
+		tva: t.articles.fieldTva,
+		categorie: t.articles.filterCategorie,
+		emplacement: t.articles.filterEmplacement,
+		unite: t.articles.filterUnite,
+		marque: t.articles.filterMarque,
+		remarque: t.clients.fieldRemarque,
+		photo: t.articles.fieldPhoto,
+		photo_cropped: t.articles.fieldPhotoCropped,
+		globalError: t.common.genericError,
+		raison_sociale: t.clients.fieldRaisonSociale,
+		nom: t.clients.fieldNom,
+		prenom: t.clients.fieldPrenom,
+		adresse: t.clients.fieldAdresse,
+		ville: t.clients.fieldVille,
+		tel: t.clients.fieldTelephone,
+		email: t.clients.fieldEmail,
+		ICE: t.clients.fieldICE,
+		registre_de_commerce: t.clients.fieldRegistreCommerce,
+		identifiant_fiscal: t.clients.fieldIdentifiantFiscal,
+		taxe_professionnelle: t.clients.fieldTaxeProfessionnelle,
+		CNSS: t.clients.fieldCNSS,
+		numero_du_compte: t.clients.fieldNumeroCompte,
+		delai_de_paiement: t.clients.fieldDelaiPaiement,
+	} as Record<string, string>;
 
-	const validationErrors = useMemo(() => {
+	const validationErrors = (() => {
 		const errors: Record<string, string> = {};
 		if (hasAttemptedSubmit) {
 			Object.entries(formik.errors).forEach(([key, value]) => {
@@ -262,7 +267,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			});
 		}
 		return errors;
-	}, [formik.errors, hasAttemptedSubmit]);
+	})();
 
 	const hasValidationErrors = Object.keys(validationErrors).length > 0;
 
@@ -351,7 +356,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									exclusive
 									onChange={(_, val) => {
 										if (val) {
-											formik.setFieldValue('client_type', val);
+											void formik.setFieldValue('client_type', val);
 											formik.setErrors({});
 										}
 									}}
@@ -717,7 +722,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										value={selectedCity}
 										fullWidth
 										onChange={(_, newVal) => {
-											formik.setFieldValue('ville', newVal ? Number(newVal.value) : null);
+											void formik.setFieldValue('ville', newVal ? Number(newVal.value) : null);
 										}}
 										onBlur={formik.handleBlur('ville')}
 										error={formik.touched.ville && Boolean(formik.errors.ville)}
@@ -735,10 +740,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												}
 												deleteEntity={({ id: entityId }) => deleteCity({ id: entityId })}
 												onAddSuccess={(newId) => {
-													formik.setFieldValue('ville', newId);
+													void formik.setFieldValue('ville', newId);
 												}}
 												onDeleteSuccess={() => {
-													formik.setFieldValue('ville', null);
+													void formik.setFieldValue('ville', null);
 												}}
 											/>
 										}
@@ -761,7 +766,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										onChange={(e) => {
 											const value = e.target.value === '' ? null : Number(e.target.value);
 											if (value !== null && value < 0) return;
-											formik.setFieldValue('delai_de_paiement', value);
+											void formik.setFieldValue('delai_de_paiement', value);
 										}}
 										onBlur={formik.handleBlur('delai_de_paiement')}
 										error={formik.touched.delai_de_paiement && Boolean(formik.errors.delai_de_paiement)}
@@ -827,7 +832,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								type="submit"
 								loading={isPending}
 								startIcon={isEditMode ? <EditIcon /> : <AddIcon />}
-								onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+								onClick={(e: MouseEvent<HTMLButtonElement>) => {
 									setHasAttemptedSubmit(true);
 									if (!formik.isValid) {
 										e.preventDefault();
@@ -846,12 +851,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	);
 };
 
-interface Props extends SessionProps {
-	company_id: number;
-	id?: number;
-}
-
-const ClientsForm: React.FC<Props> = (props) => (
+const ClientsForm: FC<Props> = (props) => (
 	<ClientArticleWrapperForm {...props} entityName="client" FormikComponent={FormikContent} />
 );
 

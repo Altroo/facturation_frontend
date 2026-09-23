@@ -1,39 +1,15 @@
 'use client';
 
-import React, { ReactNode } from 'react';
+import { type FC } from 'react';
 import { Box, Button, Stack, Typography } from '@mui/material';
-import { SxProps, Theme } from '@mui/system';
 import { customDropdownTheme } from '@/utils/themes';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import { Add as AddIcon } from '@mui/icons-material';
-import type { DropDownType } from '@/types/accountTypes';
-import type { SelectChangeEvent } from '@mui/material/Select';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import { useLanguage } from '@/utils/hooks';
+import type { AddManagedBySectionProps } from '@/types/companyTypes';
 
-export interface AddManagedBySectionProps {
-	title: string;
-	isMobile: boolean;
-	selectId: string;
-	selectLabel: string;
-	selectItems: DropDownType[];
-	selectValue: DropDownType | null;
-	onSelectChange: (event: React.SyntheticEvent, value: DropDownType | null) => void;
-	selectIcon: ReactNode;
-
-	roleId: string;
-	roleLabel: string;
-	roleOptions: { value: string; code: string }[];
-	roleValue: string;
-	onRoleChange: (event: SelectChangeEvent) => void;
-	roleIcon: ReactNode;
-
-	onAdd: () => void;
-	isAddDisabled: boolean;
-	sx?: SxProps<Theme>;
-}
-
-const AddManagedBySection: React.FC<AddManagedBySectionProps> = ({
+const AddManagedBySection: FC<AddManagedBySectionProps> = ({
 	title,
 	isMobile,
 	selectId,

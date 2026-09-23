@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
-import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
+import { runWithCleanup } from '@/utils/runWithCleanup';
+import { useEffect, useState, type FC, type ChangeEvent, type InputHTMLAttributes, type MouseEvent } from 'react';
+import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import {
 	Alert,
@@ -61,17 +62,14 @@ import {
 } from '@/store/services/parameter';
 import NoPermission from '@/components/shared/noPermission/noPermission';
 import { useGetClientsListQuery } from '@/store/services/client';
+import type {
+	ReglementFormFormikContentProps as FormikContentProps,
+	ReglementFormProps as Props,
+} from '@/types/reglementTypes';
 
 const inputTheme = textInputTheme();
 
-type FormikContentProps = {
-	token?: string;
-	company_id: number;
-	id?: number;
-	facture_client_id?: number;
-};
-
-const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
+const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 	const { token, company_id, id, facture_client_id } = props;
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
@@ -133,27 +131,32 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			setIsPending(true);
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const { globalError, ...payload } = data;
-			try {
-				if (isEditMode) {
-					await updateReglement({ data: payload, id: id! }).unwrap();
-					onSuccess(t.reglements.updateSuccess);
-				} else {
-					await addReglement({ data: payload }).unwrap();
-					onSuccess(t.reglements.addSuccess);
-				}
-				if (!isEditMode) {
-					router.replace(REGLEMENTS_LIST);
-				}
-			} catch (e) {
-				if (!isEditMode) {
-					onError(t.reglements.addError);
-				} else {
-					onError(t.reglements.updateError);
-				}
-				setFormikAutoErrors({ e, setFieldError });
-			} finally {
-				setIsPending(false);
-			}
+			await runWithCleanup(
+				async () => {
+					try {
+						if (isEditMode) {
+							await updateReglement({ data: payload, id: id! }).unwrap();
+							onSuccess(t.reglements.updateSuccess);
+						} else {
+							await addReglement({ data: payload }).unwrap();
+							onSuccess(t.reglements.addSuccess);
+						}
+						if (!isEditMode) {
+							router.replace(REGLEMENTS_LIST);
+						}
+					} catch (e) {
+						if (!isEditMode) {
+							onError(t.reglements.addError);
+						} else {
+							onError(t.reglements.updateError);
+						}
+						setFormikAutoErrors({ e, setFieldError });
+					}
+				},
+				() => {
+					setIsPending(false);
+				},
+			);
 		},
 	});
 
@@ -162,7 +165,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const axiosError = error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined;
 
 	// Factures dropdown items - showing only unpaid or partially paid
-	const factureItems: DropDownType[] = useMemo(() => {
+	const factureItems: DropDownType[] = (() => {
 		const items: DropDownType[] = [];
 
 		// If editing, and we have rawData, include the current facture first
@@ -188,15 +191,15 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		}
 
 		return items;
-	}, [facturesForPayment, isEditMode, rawData]);
+	})();
 
-	const selectedFacture = useMemo<DropDownType | null>(() => {
+	const selectedFacture = (() => {
 		const v = formik.values.facture_client;
 		if (!v || factureItems.length === 0) return null;
 		return factureItems.find((f) => f.value === String(v)) ?? null;
-	}, [formik.values.facture_client, factureItems]);
+	})() as DropDownType | null;
 
-	const clientItems: DropDownType[] = useMemo(() => {
+	const clientItems: DropDownType[] = (() => {
 		const clients = Array.isArray(rawClientsData) ? rawClientsData : (rawClientsData?.results ?? []);
 		return clients.map((client) => ({
 			value: String(client.id),
@@ -206,34 +209,36 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				client.code_client ||
 				`Client #${client.id}`,
 		}));
-	}, [rawClientsData]);
+	})();
 
-	const selectedClient = useMemo<DropDownType | null>(() => {
+	const selectedClient = (() => {
 		if (!selectedClientId || clientItems.length === 0) return null;
 		return clientItems.find((client) => client.value === String(selectedClientId)) ?? null;
-	}, [selectedClientId, clientItems]);
+	})() as DropDownType | null;
 
 	// Get remaining amount for selected facture
-	const selectedFactureRemainingAmount = useMemo<number>(() => {
+	const selectedFactureRemainingAmount = (() => {
 		const v = formik.values.facture_client;
 		if (!v || !facturesForPayment) return 0;
 		const facture = facturesForPayment.find((f) => f.id === v);
 		if (!facture) return 0;
 		const parsed = parseNumber(facture.remaining_amount);
 		return parsed ?? 0;
-	}, [formik.values.facture_client, facturesForPayment]);
+	})() as number;
 
 	// Disable montant field when no facture is selected
 	const isMontantDisabled = !formik.values.facture_client || formik.values.facture_client === 0;
 
 	// Handle facture selection change - clear montant when facture is removed
 	// Only call setFieldValue when montant actually differs to avoid needless state updates
+	const factureClientId = formik.values.facture_client;
+	const montantValue = formik.values.montant;
+	const setFieldValue = formik.setFieldValue;
 	useEffect(() => {
-		if ((!formik.values.facture_client || formik.values.facture_client === 0) && formik.values.montant !== 0) {
-			formik.setFieldValue('montant', 0);
+		if ((!factureClientId || factureClientId === 0) && montantValue !== 0) {
+			void setFieldValue('montant', 0);
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [formik.values.facture_client, formik.values.montant]);
+	}, [factureClientId, montantValue, setFieldValue]);
 
 	useEffect(() => {
 		if (isEditMode && rawData?.client) {
@@ -242,36 +247,29 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	}, [isEditMode, rawData?.client]);
 
 	// Modes Règlement dropdown items
-	const modeReglementItems: DropDownType[] = useMemo(
-		() =>
-			(modesReglementsData ?? []).map((m) => ({
-				value: String(m.id),
-				code: m.nom,
-			})),
-		[modesReglementsData],
-	);
+	const modeReglementItems: DropDownType[] = (modesReglementsData ?? []).map((m) => ({
+		value: String(m.id),
+		code: m.nom,
+	}));
 
-	const selectedModeReglement = useMemo<DropDownType | null>(() => {
+	const selectedModeReglement = (() => {
 		const v = formik.values.mode_reglement;
 		if (!v || modeReglementItems.length === 0) return null;
 		return modeReglementItems.find((m) => m.value === String(v)) ?? null;
-	}, [formik.values.mode_reglement, modeReglementItems]);
+	})() as DropDownType | null;
 
 	// Collect validation errors from Formik
-	const fieldLabels = useMemo<Record<string, string>>(
-		() => ({
-			facture_client: t.reglements.fieldFactureClient,
-			mode_reglement: t.reglements.fieldModeReglement,
-			libelle: t.reglements.fieldLibelle,
-			observations: t.reglements.fieldObservations,
-			montant: t.reglements.fieldMontant,
-			date_reglement: t.reglements.fieldDateReglement,
-			globalError: t.common.genericError,
-		}),
-		[t],
-	);
+	const fieldLabels = {
+		facture_client: t.reglements.fieldFactureClient,
+		mode_reglement: t.reglements.fieldModeReglement,
+		libelle: t.reglements.fieldLibelle,
+		observations: t.reglements.fieldObservations,
+		montant: t.reglements.fieldMontant,
+		date_reglement: t.reglements.fieldDateReglement,
+		globalError: t.common.genericError,
+	} as Record<string, string>;
 
-	const validationErrors = useMemo(() => {
+	const validationErrors = (() => {
 		const errors: Record<string, string> = {};
 		if (hasAttemptedSubmit) {
 			Object.entries(formik.errors).forEach(([key, value]) => {
@@ -281,21 +279,26 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			});
 		}
 		return errors;
-	}, [formik.errors, hasAttemptedSubmit]);
+	})();
 
 	const hasValidationErrors = Object.keys(validationErrors).length > 0;
 
 	const isLoading =
-		isAddLoading || isUpdateLoading || isPending || (isEditMode && isDataLoading) || isFacturesLoading || isClientsLoading;
+		isAddLoading ||
+		isUpdateLoading ||
+		isPending ||
+		(isEditMode && isDataLoading) ||
+		isFacturesLoading ||
+		isClientsLoading;
 	const shouldShowError = (axiosError?.status ?? 0) > 400 && !isLoading;
 
 	// Financial info for edit mode
 	// In edit mode, use rawData.devise; in create mode, get devise from selected facture
-	const selectedFactureData = useMemo(() => {
+	const selectedFactureData = (() => {
 		const v = formik.values.facture_client;
 		if (!v || !facturesForPayment) return null;
 		return facturesForPayment.find((f) => f.id === v) ?? null;
-	}, [formik.values.facture_client, facturesForPayment]);
+	})();
 
 	const devise = rawData?.devise || selectedFactureData?.devise || 'MAD';
 	const montantFacture =
@@ -486,8 +489,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												const nextClientId = newValue?.value ? Number(newValue.value) : null;
 												setSelectedClientId(nextClientId);
 												if (!isEditMode) {
-													formik.setFieldValue('facture_client', 0);
-													formik.setFieldValue('montant', 0);
+													void formik.setFieldValue('facture_client', 0);
+													void formik.setFieldValue('montant', 0);
 												}
 											}}
 											disabled={isEditMode}
@@ -503,7 +506,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											value={selectedFacture}
 											fullWidth
 											onChange={(_, newValue) => {
-												formik.setFieldValue('facture_client', newValue?.value ? Number(newValue.value) : 0);
+												void formik.setFieldValue('facture_client', newValue?.value ? Number(newValue.value) : 0);
 											}}
 											onBlur={formik.handleBlur('facture_client')}
 											error={formik.touched.facture_client && Boolean(formik.errors.facture_client)}
@@ -560,7 +563,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											value={selectedModeReglement}
 											fullWidth
 											onChange={(_, newValue) => {
-												formik.setFieldValue('mode_reglement', newValue?.value ? Number(newValue.value) : null);
+												void formik.setFieldValue('mode_reglement', newValue?.value ? Number(newValue.value) : null);
 											}}
 											onBlur={formik.handleBlur('mode_reglement')}
 											error={formik.touched.mode_reglement && Boolean(formik.errors.mode_reglement)}
@@ -578,10 +581,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 													}
 													deleteEntity={({ id: entityId }) => deleteModeReglement({ id: entityId })}
 													onAddSuccess={(newId) => {
-														formik.setFieldValue('mode_reglement', newId);
+														void formik.setFieldValue('mode_reglement', newId);
 													}}
 													onDeleteSuccess={() => {
-														formik.setFieldValue('mode_reglement', null);
+														void formik.setFieldValue('mode_reglement', null);
 													}}
 												/>
 											}
@@ -591,7 +594,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											type="text"
 											label={`Montant (${devise}) *`}
 											value={String(formik.values.montant)}
-											onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+											onChange={(e: ChangeEvent<HTMLInputElement>) => {
 												const raw = e.target.value;
 												const parsed = parseNumber(raw);
 												if (parsed !== null && parsed < 0) return;
@@ -601,10 +604,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 													selectedFactureRemainingAmount > 0 &&
 													parsed > selectedFactureRemainingAmount
 												) {
-													formik.setFieldValue('montant', selectedFactureRemainingAmount);
+													void formik.setFieldValue('montant', selectedFactureRemainingAmount);
 													return;
 												}
-												formik.setFieldValue('montant', parsed === null ? raw : parsed);
+												void formik.setFieldValue('montant', parsed === null ? raw : parsed);
 											}}
 											onBlur={formik.handleBlur('montant')}
 											error={formik.touched.montant && Boolean(formik.errors.montant)}
@@ -686,7 +689,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										<DatePicker
 											label={t.reglements.fieldDateReglement}
 											value={formik.values.date_reglement ? new Date(formik.values.date_reglement) : null}
-											onChange={(date) => formik.setFieldValue('date_reglement', date ? formatLocalDate(date) : '')}
+											onChange={(date) =>
+												void formik.setFieldValue('date_reglement', date ? formatLocalDate(date) : '')
+											}
 											format="dd/MM/yyyy"
 											slotProps={{
 												textField: {
@@ -695,7 +700,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 													slotProps: {
 														htmlInput: {
 															'data-testid': 'input-date_reglement',
-														} as React.InputHTMLAttributes<HTMLInputElement>,
+														} as InputHTMLAttributes<HTMLInputElement>,
 														input: {
 															startAdornment: (
 																<InputAdornment position="start">
@@ -716,7 +721,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								<PrimaryLoadingButton
 									buttonText={isEditMode ? t.common.update : t.reglements.addTitle}
 									active={!isPending}
-									onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+									onClick={(e: MouseEvent<HTMLButtonElement>) => {
 										setHasAttemptedSubmit(true);
 										if (!formik.isValid) {
 											e.preventDefault();
@@ -739,13 +744,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	);
 };
 
-interface Props extends SessionProps {
-	company_id: number;
-	id?: number;
-	facture_client_id?: number;
-}
-
-const ReglementForm: React.FC<Props> = ({ session, company_id, id, facture_client_id }) => {
+const ReglementForm: FC<Props> = ({ session, company_id, id, facture_client_id }) => {
 	const token = useInitAccessToken(session);
 	const companies = useAppSelector(getUserCompaniesState);
 	const company = companies?.find((comp) => comp.id === company_id);

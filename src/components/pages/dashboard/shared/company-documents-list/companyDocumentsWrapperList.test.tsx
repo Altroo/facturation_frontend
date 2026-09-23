@@ -1,11 +1,12 @@
-import React from 'react';
+import { type ReactNode } from 'react';
 import { render, screen, cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import CompanyDocumentsWrapperList, { CompanyDocumentsListProps } from './companyDocumentsWrapperList';
+import CompanyDocumentsWrapperList from './companyDocumentsWrapperList';
+import type { CompanyDocumentsListProps } from '@/types/companyDocumentsTypes';
 
 jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 	__esModule: true,
-	default: ({ children }: { children?: React.ReactNode }) => <div data-testid="nav">{children}</div>,
+	default: ({ children }: { children?: ReactNode }) => <div data-testid="nav">{children}</div>,
 }));
 
 jest.mock('@/components/formikElements/apiLoading/apiProgress/apiProgress', () => ({
@@ -29,7 +30,6 @@ jest.mock('next/navigation', () => ({
 	__esModule: true,
 	useRouter: () => ({ push: pushMock }),
 }));
-
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 
 const mockedUseGetUserCompaniesQuery = useGetUserCompaniesQuery as jest.MockedFunction<

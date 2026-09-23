@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 import { renderToStaticMarkup } from 'react-dom/server';
-import React from 'react';
+import { createElement, type ReactElement } from 'react';
 
 type SessionUser = { pk: number; email: string };
 type Session = { user: SessionUser } | null;
@@ -24,9 +24,7 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/components/pages/dashboard/clients/clients-form', () => ({
 	__esModule: true,
 	default: (props: { session?: Session; company_id?: number }) => {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const React = require('react');
-		return React.createElement(
+		return createElement(
 			'div',
 			null,
 			`CLIENTS_FORM_MARKER:${JSON.stringify(props?.session ?? null)}:COMPANY_ID=${props?.company_id ?? ''}`,
@@ -97,7 +95,7 @@ describe('ClientsNewCompanyIDPage server component', () => {
 			searchParams: Promise.resolve({ company_id: '456' }),
 		});
 
-		const html = renderToStaticMarkup(result as unknown as React.ReactElement);
+		const html = renderToStaticMarkup(result as unknown as ReactElement);
 		const decoded = html.replace(/&quot;/g, '"');
 
 		expect(decoded).toContain('"pk":99');

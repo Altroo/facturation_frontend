@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import { useState, type FC } from 'react';
 import {
 	Autocomplete,
 	Box,
@@ -57,7 +57,12 @@ import {
 	useGetTopClientsByRevenueQuery,
 	useGetTopProductsByQuantityQuery,
 } from '@/store/services/dashboard';
-import type { DateFilterParams, ObjectiveData } from '@/types/dashboardTypes';
+import type {
+	DashboardChartCardProps as ChartCardProps,
+	DashboardClientOption,
+	DateFilterParams,
+	ObjectiveData,
+} from '@/types/dashboardTypes';
 import { useGetCompanyQuery } from '@/store/services/company';
 import { useGetClientsListQuery } from '@/store/services/client';
 import CurrencyToggle from '@/components/shared/currencyToggle/currencyToggle';
@@ -67,6 +72,14 @@ import Link from 'next/link';
 import { DASHBOARD_OBJECTIFS_MENSUELS } from '@/utils/routes';
 import { getProfilState } from '@/store/selectors';
 import { useAppSelector, useLanguage } from '@/utils/hooks';
+import { dashboardChartColors as CHART_COLORS, dashboardPieColors as PIE_COLORS } from '@/utils/rawData';
+import type {
+	EmptyChartProps,
+	SectionTitleProps,
+	DateFilterProps,
+	ChartProps,
+	DashboardViewDashboardContentProps as DashboardContentProps,
+} from '@/types/dashboardTypes';
 
 // Register Chart.js components
 ChartJS.register(
@@ -82,54 +95,8 @@ ChartJS.register(
 	Filler,
 );
 
-// Chart color palette
-const CHART_COLORS = {
-	primary: 'rgba(25, 118, 210, 0.8)',
-	primaryLight: 'rgba(25, 118, 210, 0.2)',
-	secondary: 'rgba(156, 39, 176, 0.8)',
-	secondaryLight: 'rgba(156, 39, 176, 0.2)',
-	success: 'rgba(46, 125, 50, 0.8)',
-	successLight: 'rgba(46, 125, 50, 0.2)',
-	warning: 'rgba(237, 108, 2, 0.8)',
-	warningLight: 'rgba(237, 108, 2, 0.2)',
-	error: 'rgba(211, 47, 47, 0.8)',
-	errorLight: 'rgba(211, 47, 47, 0.2)',
-	info: 'rgba(2, 136, 209, 0.8)',
-	infoLight: 'rgba(2, 136, 209, 0.2)',
-};
-
-const PIE_COLORS = [
-	'rgba(25, 118, 210, 0.8)',
-	'rgba(46, 125, 50, 0.8)',
-	'rgba(237, 108, 2, 0.8)',
-	'rgba(156, 39, 176, 0.8)',
-	'rgba(211, 47, 47, 0.8)',
-	'rgba(0, 188, 212, 0.8)',
-	'rgba(255, 193, 7, 0.8)',
-	'rgba(121, 85, 72, 0.8)',
-];
-
-type DashboardClientOption = {
-	id: number;
-	label: string;
-};
-
 // Chart wrapper component for consistent styling
-type ChartCardProps = {
-	title: string;
-	description?: string;
-	children: React.ReactNode;
-	height?:
-		| number
-		| {
-				xs?: number;
-				sm?: number;
-				md?: number;
-		  };
-	infoTooltip?: string;
-};
-
-const ChartCard: React.FC<ChartCardProps> = ({ title, description, children, height, infoTooltip }) => {
+const ChartCard: FC<ChartCardProps> = ({ title, description, children, height, infoTooltip }) => {
 	// Normalize height into an object
 	const heightSx =
 		typeof height === 'number'
@@ -182,7 +149,7 @@ const ChartCard: React.FC<ChartCardProps> = ({ title, description, children, hei
 };
 
 // Loading component
-const LoadingChart: React.FC = () => (
+const LoadingChart: FC = () => (
 	<Box
 		sx={{
 			display: 'flex',
@@ -196,11 +163,8 @@ const LoadingChart: React.FC = () => (
 );
 
 // Empty data component with improved styling
-interface EmptyChartProps {
-	message?: string;
-}
 
-const EmptyChart: React.FC<EmptyChartProps> = ({ message }) => {
+const EmptyChart: FC<EmptyChartProps> = ({ message }) => {
 	const { t } = useLanguage();
 	return (
 		<Box
@@ -239,11 +203,8 @@ const EmptyChart: React.FC<EmptyChartProps> = ({ message }) => {
 };
 
 // Section Title Component for responsive headings
-interface SectionTitleProps {
-	children: React.ReactNode;
-}
 
-const SectionTitle: React.FC<SectionTitleProps> = ({ children }) => (
+const SectionTitle: FC<SectionTitleProps> = ({ children }) => (
 	<Typography
 		variant="h5"
 		gutterBottom
@@ -257,20 +218,8 @@ const SectionTitle: React.FC<SectionTitleProps> = ({ children }) => (
 );
 
 // Date Filter Component
-interface DateFilterProps {
-	dateFrom: Date | null;
-	dateTo: Date | null;
-	onDateFromChange: (date: Date | null) => void;
-	onDateToChange: (date: Date | null) => void;
-	clientOptions: DashboardClientOption[];
-	selectedClient: DashboardClientOption | null;
-	onClientChange: (client: DashboardClientOption | null) => void;
-	projectRef: string;
-	onProjectRefChange: (value: string) => void;
-	onReset: () => void;
-}
 
-const DateFilter: React.FC<DateFilterProps> = ({
+const DateFilter: FC<DateFilterProps> = ({
 	dateFrom,
 	dateTo,
 	onDateFromChange,
@@ -337,13 +286,8 @@ const DateFilter: React.FC<DateFilterProps> = ({
 };
 
 // Financial Overview Charts
-interface ChartProps {
-	dateParams: DateFilterParams;
-	company_id: number;
-	devise: 'MAD' | 'EUR' | 'USD';
-}
 
-const MonthlyRevenueChart: React.FC<ChartProps> = ({ dateParams, company_id, devise }) => {
+const MonthlyRevenueChart: FC<ChartProps> = ({ dateParams, company_id, devise }) => {
 	const { t } = useLanguage();
 	const { data, isLoading, error } = useGetMonthlyRevenueEvolutionQuery({ ...dateParams, company_id });
 
@@ -367,7 +311,7 @@ const MonthlyRevenueChart: React.FC<ChartProps> = ({ dateParams, company_id, dev
 	return <Line data={chartData} options={{ responsive: true, maintainAspectRatio: false }} />;
 };
 
-const RevenueByTypeChart: React.FC<ChartProps> = ({ dateParams, company_id }) => {
+const RevenueByTypeChart: FC<ChartProps> = ({ dateParams, company_id }) => {
 	const { t } = useLanguage();
 	const { data, isLoading, error } = useGetRevenueByDocumentTypeQuery({ ...dateParams, company_id });
 
@@ -391,7 +335,7 @@ const RevenueByTypeChart: React.FC<ChartProps> = ({ dateParams, company_id }) =>
 	return <Pie data={chartData} options={commonChartOptions} />;
 };
 
-const PaymentStatusChart: React.FC<ChartProps> = ({ dateParams, company_id }) => {
+const PaymentStatusChart: FC<ChartProps> = ({ dateParams, company_id }) => {
 	const { t } = useLanguage();
 	const { data, isLoading, error } = useGetPaymentStatusOverviewQuery({ ...dateParams, company_id });
 
@@ -416,7 +360,7 @@ const PaymentStatusChart: React.FC<ChartProps> = ({ dateParams, company_id }) =>
 	return <Bar data={chartData} options={commonChartOptions} />;
 };
 
-const CollectionRateGauge: React.FC<ChartProps> = ({ dateParams, company_id, devise }) => {
+const CollectionRateGauge: FC<ChartProps> = ({ dateParams, company_id, devise }) => {
 	const { t } = useLanguage();
 	const { data, isLoading, error } = useGetCollectionRateQuery({ ...dateParams, company_id });
 
@@ -486,7 +430,7 @@ const CollectionRateGauge: React.FC<ChartProps> = ({ dateParams, company_id, dev
 };
 
 // Commercial Performance Charts
-const TopClientsChart: React.FC<ChartProps> = ({ dateParams, company_id, devise }) => {
+const TopClientsChart: FC<ChartProps> = ({ dateParams, company_id, devise }) => {
 	const { t } = useLanguage();
 	const { data, isLoading, error } = useGetTopClientsByRevenueQuery({ ...dateParams, company_id });
 
@@ -516,7 +460,7 @@ const TopClientsChart: React.FC<ChartProps> = ({ dateParams, company_id, devise 
 	);
 };
 
-const TopProductsChart: React.FC<ChartProps> = ({ dateParams, company_id }) => {
+const TopProductsChart: FC<ChartProps> = ({ dateParams, company_id }) => {
 	const { t } = useLanguage();
 	const { data, isLoading, error } = useGetTopProductsByQuantityQuery({ ...dateParams, company_id });
 
@@ -546,7 +490,7 @@ const TopProductsChart: React.FC<ChartProps> = ({ dateParams, company_id }) => {
 	);
 };
 
-const QuoteConversionChart: React.FC<ChartProps> = ({ dateParams, company_id }) => {
+const QuoteConversionChart: FC<ChartProps> = ({ dateParams, company_id }) => {
 	const { t } = useLanguage();
 	const { data, isLoading, error } = useGetQuoteConversionRateQuery({ ...dateParams, company_id });
 
@@ -566,7 +510,7 @@ const QuoteConversionChart: React.FC<ChartProps> = ({ dateParams, company_id }) 
 	return <Doughnut data={chartData} options={commonChartOptions} />;
 };
 
-const ProductPriceVolumeChart: React.FC<ChartProps> = ({ dateParams, company_id, devise }) => {
+const ProductPriceVolumeChart: FC<ChartProps> = ({ dateParams, company_id, devise }) => {
 	const { t } = useLanguage();
 	const { data, isLoading, error } = useGetProductPriceVolumeAnalysisQuery({ ...dateParams, company_id });
 
@@ -635,7 +579,7 @@ const ProductPriceVolumeChart: React.FC<ChartProps> = ({ dateParams, company_id,
 };
 
 // Operational Indicators Charts
-const InvoiceStatusChart: React.FC<ChartProps> = ({ dateParams, company_id }) => {
+const InvoiceStatusChart: FC<ChartProps> = ({ dateParams, company_id }) => {
 	const { t } = useLanguage();
 	const { data, isLoading, error } = useGetInvoiceStatusDistributionQuery({ ...dateParams, company_id });
 
@@ -656,7 +600,7 @@ const InvoiceStatusChart: React.FC<ChartProps> = ({ dateParams, company_id }) =>
 	return <Bar data={chartData} options={commonChartOptions} />;
 };
 
-const DocumentVolumeChart: React.FC<ChartProps> = ({ dateParams, company_id }) => {
+const DocumentVolumeChart: FC<ChartProps> = ({ dateParams, company_id }) => {
 	const { t } = useLanguage();
 	const { data, isLoading, error } = useGetMonthlyDocumentVolumeQuery({ ...dateParams, company_id });
 
@@ -694,7 +638,7 @@ const DocumentVolumeChart: React.FC<ChartProps> = ({ dateParams, company_id }) =
 };
 
 // Cash Flow Charts
-const PaymentTimelineChart: React.FC<ChartProps> = ({ dateParams, company_id, devise }) => {
+const PaymentTimelineChart: FC<ChartProps> = ({ dateParams, company_id, devise }) => {
 	const { t } = useLanguage();
 	const { data, isLoading, error } = useGetPaymentTimelineQuery({ ...dateParams, company_id });
 
@@ -724,7 +668,7 @@ const PaymentTimelineChart: React.FC<ChartProps> = ({ dateParams, company_id, de
 	return <Line data={chartData} options={commonChartOptions} />;
 };
 
-const OverdueReceivablesChart: React.FC<ChartProps> = ({ dateParams, company_id, devise }) => {
+const OverdueReceivablesChart: FC<ChartProps> = ({ dateParams, company_id, devise }) => {
 	const { t } = useLanguage();
 	const { data, isLoading, error } = useGetOverdueReceivablesQuery({ ...dateParams, company_id });
 
@@ -768,7 +712,7 @@ const OverdueReceivablesChart: React.FC<ChartProps> = ({ dateParams, company_id,
 	);
 };
 
-const PaymentDelayChart: React.FC<ChartProps> = ({ dateParams, company_id }) => {
+const PaymentDelayChart: FC<ChartProps> = ({ dateParams, company_id }) => {
 	const { t } = useLanguage();
 	const { data, isLoading, error } = useGetPaymentDelayByClientQuery({ ...dateParams, company_id });
 
@@ -828,7 +772,7 @@ const commonChartOptions = {
 };
 
 // Client Analysis Chart
-const ClientProfileMetricsChart: React.FC<ChartProps> = ({ dateParams, company_id }) => {
+const ClientProfileMetricsChart: FC<ChartProps> = ({ dateParams, company_id }) => {
 	const { t } = useLanguage();
 	const { data, isLoading, error } = useGetClientMultidimensionalProfileQuery({ ...dateParams, company_id });
 
@@ -874,7 +818,7 @@ const ClientProfileMetricsChart: React.FC<ChartProps> = ({ dateParams, company_i
 };
 
 // KPI Cards
-const KPICardsSection: React.FC<ChartProps> = ({ dateParams, company_id, devise = 'MAD' }) => {
+const KPICardsSection: FC<ChartProps> = ({ dateParams, company_id, devise = 'MAD' }) => {
 	const { t } = useLanguage();
 	const { data, isLoading, error } = useGetKPICardsWithTrendsQuery({ ...dateParams, company_id });
 
@@ -992,7 +936,7 @@ const KPICardsSection: React.FC<ChartProps> = ({ dateParams, company_id, devise 
 	);
 };
 
-const MonthlyObjectivesSection: React.FC<ChartProps> = ({ dateParams, company_id, devise = 'MAD' }) => {
+const MonthlyObjectivesSection: FC<ChartProps> = ({ dateParams, company_id, devise = 'MAD' }) => {
 	const { t } = useLanguage();
 	const { data, isLoading, error } = useGetMonthlyObjectivesQuery({ ...dateParams, company_id });
 	const { is_staff } = useAppSelector(getProfilState);
@@ -1130,7 +1074,7 @@ const MonthlyObjectivesSection: React.FC<ChartProps> = ({ dateParams, company_id
 };
 
 // Discount & Margin Analysis Charts
-const DiscountImpactChart: React.FC<ChartProps> = ({ dateParams, company_id, devise }) => {
+const DiscountImpactChart: FC<ChartProps> = ({ dateParams, company_id, devise }) => {
 	const { t } = useLanguage();
 	const { data, isLoading, error } = useGetDiscountImpactAnalysisQuery({ ...dateParams, company_id });
 
@@ -1178,7 +1122,7 @@ const DiscountImpactChart: React.FC<ChartProps> = ({ dateParams, company_id, dev
 	);
 };
 
-const ProductMarginChart: React.FC<ChartProps> = ({ dateParams, company_id, devise }) => {
+const ProductMarginChart: FC<ChartProps> = ({ dateParams, company_id, devise }) => {
 	const { t } = useLanguage();
 	const { data, isLoading, error } = useGetProductMarginVolumeQuery({ ...dateParams, company_id });
 
@@ -1247,7 +1191,7 @@ const ProductMarginChart: React.FC<ChartProps> = ({ dateParams, company_id, devi
 };
 
 // Synthetic Dashboards
-const GlobalPerformanceComparisonChart: React.FC<ChartProps> = ({ dateParams, company_id }) => {
+const GlobalPerformanceComparisonChart: FC<ChartProps> = ({ dateParams, company_id }) => {
 	const { t } = useLanguage();
 	const { data, isLoading, error } = useGetMonthlyGlobalPerformanceQuery({ ...dateParams, company_id });
 
@@ -1298,7 +1242,7 @@ const GlobalPerformanceComparisonChart: React.FC<ChartProps> = ({ dateParams, co
 	return <Bar data={chartData} options={commonChartOptions} />;
 };
 
-const SectionMicroTrendsChart: React.FC<ChartProps> = ({ dateParams, company_id }) => {
+const SectionMicroTrendsChart: FC<ChartProps> = ({ dateParams, company_id }) => {
 	const { t } = useLanguage();
 	const { data, isLoading, error } = useGetSectionMicroTrendsQuery({ ...dateParams, company_id });
 
@@ -1385,11 +1329,8 @@ const SectionMicroTrendsChart: React.FC<ChartProps> = ({ dateParams, company_id 
 };
 
 // Main Dashboard Component
-interface DashboardContentProps {
-	company_id: number;
-}
 
-const DashboardContent: React.FC<DashboardContentProps> = ({ company_id }) => {
+const DashboardContent: FC<DashboardContentProps> = ({ company_id }) => {
 	const { t } = useLanguage();
 	const [dateFrom, setDateFrom] = useState<Date | null>(subMonths(new Date(), 12));
 	const [dateTo, setDateTo] = useState<Date | null>(new Date());
@@ -1401,7 +1342,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ company_id }) => {
 	const { data: rawClientsData } = useGetClientsListQuery({ company_id, with_pagination: false });
 	const usesForeignCurrency = companyData?.uses_foreign_currency || false;
 
-	const clientOptions = useMemo<DashboardClientOption[]>(() => {
+	const clientOptions = (() => {
 		const clients = Array.isArray(rawClientsData) ? rawClientsData : (rawClientsData?.results ?? []);
 		return clients.map((client) => ({
 			id: Number(client.id),
@@ -1411,19 +1352,16 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ company_id }) => {
 				client.code_client ||
 				`Client #${client.id}`,
 		}));
-	}, [rawClientsData]);
+	})() as DashboardClientOption[];
 
-	const dateParams = useMemo<DateFilterParams>(
-		() => ({
-			date_from: dateFrom ? format(dateFrom, 'yyyy-MM-dd') : undefined,
-			date_to: dateTo ? format(dateTo, 'yyyy-MM-dd') : undefined,
-			company_id,
-			devise: selectedDevise,
-			client_id: selectedClient?.id,
-			project: projectRef.trim() || undefined,
-		}),
-		[dateFrom, dateTo, company_id, selectedDevise, selectedClient, projectRef],
-	);
+	const dateParams = {
+		date_from: dateFrom ? format(dateFrom, 'yyyy-MM-dd') : undefined,
+		date_to: dateTo ? format(dateTo, 'yyyy-MM-dd') : undefined,
+		company_id,
+		devise: selectedDevise,
+		client_id: selectedClient?.id,
+		project: projectRef.trim() || undefined,
+	} as DateFilterParams;
 
 	const handleReset = () => {
 		setDateFrom(subMonths(new Date(), 12));
@@ -1717,7 +1655,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ company_id }) => {
 	);
 };
 
-const DashboardClient: React.FC<SessionProps> = ({ session }) => {
+const DashboardClient: FC<SessionProps> = ({ session }) => {
 	const { t } = useLanguage();
 	return (
 		<CompanyDocumentsWrapperList session={session} title={t.dashboard.mainTitle}>

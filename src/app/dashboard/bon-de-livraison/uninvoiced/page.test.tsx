@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 import { renderToStaticMarkup } from 'react-dom/server';
-import React from 'react';
+import { createElement, type ReactElement } from 'react';
 
 type SessionUser = { pk: number; email: string };
 type Session = { user: SessionUser } | null;
@@ -21,9 +21,7 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/components/pages/dashboard/bon-de-livraison/bon-de-livraison-uninvoiced-list', () => ({
 	__esModule: true,
 	default: (props: { session?: Session }) => {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const React = require('react');
-		return React.createElement(
+		return createElement(
 			'div',
 			null,
 			`BON_DE_LIVRAISON_UNINVOICED_LIST_CLIENT_MARKER:${JSON.stringify(props?.session ?? null)}`,
@@ -73,7 +71,7 @@ describe('BonDeLivraisonUninvoicedListPage server component', () => {
 		});
 
 		const result = await Page!();
-		const html = renderToStaticMarkup(result as unknown as React.ReactElement);
+		const html = renderToStaticMarkup(result as unknown as ReactElement);
 		const decoded = html.replace(/&quot;/g, '"');
 
 		expect(decoded).toContain('"pk":202');

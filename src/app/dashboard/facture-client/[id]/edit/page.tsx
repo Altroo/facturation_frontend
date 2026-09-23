@@ -8,11 +8,7 @@ export const metadata: Metadata = {
 	title: 'Modifier Facture Client',
 	description: 'Modifier une facture client existante',
 };
-
-type PageProps = {
-	params: Promise<{ id: number }>;
-	searchParams: Promise<{ company_id: string }>;
-};
+import type { CompanyScopedEditRouteProps as PageProps } from '@/types/routeTypes';
 
 const FactureClientEditPage = async (props: PageProps) => {
 	const session = await auth();
@@ -28,7 +24,7 @@ const FactureClientEditPage = async (props: PageProps) => {
 		redirect(FACTURE_CLIENT_LIST);
 	}
 
-	return <FactureClientForm session={session} id={id} company_id={Number(company_id)} />;
+	return <FactureClientForm session={session} id={Number(id)} company_id={Number(company_id)} />;
 };
 
 export default FactureClientEditPage;

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useEffectEvent } from 'react';
 import type { LogistiqueOrder } from '@/types/logistiqueTypes';
 
 const ACTIVE_DELIVERY_STATUSES = new Set(['En attente', 'Envoi en cours']);
@@ -33,11 +33,15 @@ export const useLogistiqueEmailPolling = (
 ) => {
 	const shouldPoll = enabled && hasPendingLogistiqueEmailDelivery(order);
 
+	const poll = useEffectEvent(() => {
+		void refetch();
+	});
+
 	useEffect(() => {
 		if (!shouldPoll) return undefined;
 		const interval = window.setInterval(() => {
-			void refetch();
+			poll();
 		}, 2500);
 		return () => window.clearInterval(interval);
-	}, [refetch, shouldPoll]);
+	}, [shouldPoll]);
 };

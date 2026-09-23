@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 import { renderToStaticMarkup } from 'react-dom/server';
-import React from 'react';
+import { createElement, type ReactElement } from 'react';
 
 type SessionUser = { pk: number; email: string };
 type Session = { user: SessionUser } | null;
@@ -24,9 +24,7 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/components/pages/dashboard/reglements/reglement-form', () => ({
 	__esModule: true,
 	default: (props: { session?: Session; id?: number; company_id?: number }) => {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const React = require('react');
-		return React.createElement(
+		return createElement(
 			'div',
 			null,
 			`REGLEMENT_FORM_EDIT_MARKER:${JSON.stringify(props?.session ?? null)}:ID=${props?.id}:COMPANY=${props?.company_id}`,
@@ -55,7 +53,10 @@ describe('ReglementEditPage server component', () => {
 	it('redirects to AUTH_LOGIN when no session', async () => {
 		mockAuth.mockResolvedValueOnce(null);
 
-		let Page: (props: { params: Promise<{ id: string }>; searchParams: Promise<{ company_id: string }> }) => Promise<unknown>;
+		let Page: (props: {
+			params: Promise<{ id: string }>;
+			searchParams: Promise<{ company_id: string }>;
+		}) => Promise<unknown>;
 		jest.isolateModules(() => {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
 			const mod = require('./page');
@@ -73,7 +74,10 @@ describe('ReglementEditPage server component', () => {
 		const sessionValue: Session = { user: { pk: 77, email: 'test@site.com' } };
 		mockAuth.mockResolvedValueOnce(sessionValue);
 
-		let Page: (props: { params: Promise<{ id: string }>; searchParams: Promise<{ company_id: string }> }) => Promise<unknown>;
+		let Page: (props: {
+			params: Promise<{ id: string }>;
+			searchParams: Promise<{ company_id: string }>;
+		}) => Promise<unknown>;
 		jest.isolateModules(() => {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
 			const mod = require('./page');
@@ -91,7 +95,10 @@ describe('ReglementEditPage server component', () => {
 		const sessionValue: Session = { user: { pk: 77, email: 'test@site.com' } };
 		mockAuth.mockResolvedValueOnce(sessionValue);
 
-		let Page: (props: { params: Promise<{ id: string }>; searchParams: Promise<{ company_id: string }> }) => Promise<unknown>;
+		let Page: (props: {
+			params: Promise<{ id: string }>;
+			searchParams: Promise<{ company_id: string }>;
+		}) => Promise<unknown>;
 		jest.isolateModules(() => {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
 			const mod = require('./page');
@@ -109,7 +116,10 @@ describe('ReglementEditPage server component', () => {
 		const sessionValue: Session = { user: { pk: 77, email: 'test@site.com' } };
 		mockAuth.mockResolvedValueOnce(sessionValue);
 
-		let Page: (props: { params: Promise<{ id: string }>; searchParams: Promise<{ company_id: string }> }) => Promise<unknown>;
+		let Page: (props: {
+			params: Promise<{ id: string }>;
+			searchParams: Promise<{ company_id: string }>;
+		}) => Promise<unknown>;
 		jest.isolateModules(() => {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
 			const mod = require('./page');
@@ -127,7 +137,10 @@ describe('ReglementEditPage server component', () => {
 		const sessionValue: Session = { user: { pk: 77, email: 'reglement@site.com' } };
 		mockAuth.mockResolvedValueOnce(sessionValue);
 
-		let Page: (props: { params: Promise<{ id: string }>; searchParams: Promise<{ company_id: string }> }) => Promise<unknown>;
+		let Page: (props: {
+			params: Promise<{ id: string }>;
+			searchParams: Promise<{ company_id: string }>;
+		}) => Promise<unknown>;
 		jest.isolateModules(() => {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
 			const mod = require('./page');
@@ -138,7 +151,7 @@ describe('ReglementEditPage server component', () => {
 			params: Promise.resolve({ id: '123' }),
 			searchParams: Promise.resolve({ company_id: '456' }),
 		});
-		const html = renderToStaticMarkup(result as unknown as React.ReactElement);
+		const html = renderToStaticMarkup(result as unknown as ReactElement);
 		const decoded = html.replace(/&quot;/g, '"');
 
 		expect(decoded).toContain('"pk":77');

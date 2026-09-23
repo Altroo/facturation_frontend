@@ -1,6 +1,7 @@
 'use client';
 
-import React, { isValidElement, useMemo, useState } from 'react';
+import { runWithCleanup } from '@/utils/runWithCleanup';
+import { isValidElement, useState, type FC } from 'react';
 import {
 	Box,
 	Button,
@@ -31,7 +32,7 @@ import { REGLEMENT_PDF, REGLEMENTS_EDIT, REGLEMENTS_LIST } from '@/utils/routes'
 import { useRouter } from 'next/navigation';
 import { useDeleteReglementMutation, useGetReglementQuery } from '@/store/services/reglement';
 import { useInitAccessToken } from '@/contexts/InitContext';
-import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
+import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
@@ -42,18 +43,13 @@ import { getStatutColor } from '@/components/pages/dashboard/devis/devis-list';
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import { fetchPdfBlob } from '@/utils/apiHelpers';
+import type { ReglementViewInfoRowProps as InfoRowProps, ReglementViewProps as Props } from '@/types/reglementTypes';
 
-interface InfoRowProps {
-	icon: React.ReactNode;
-	label: string;
-	value: string | number | null | undefined | React.ReactNode;
-}
-
-const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
+const InfoRow: FC<InfoRowProps> = ({ icon, label, value }) => {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 	const displayValue =
-		React.isValidElement(value) || (value !== null && value !== undefined && value.toString().length > 0) ? value : '-';
+		isValidElement(value) || (value !== null && value !== undefined && value.toString().length > 0) ? value : '-';
 
 	return (
 		<Stack
@@ -108,12 +104,7 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 	);
 };
 
-interface Props extends SessionProps {
-	company_id: number;
-	id: number;
-}
-
-const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
+const ReglementViewClient: FC<Props> = ({ session, company_id, id }) => {
 	const token = useInitAccessToken(session);
 	const companies = useAppSelector(getUserCompaniesState);
 	const router = useRouter();
@@ -121,13 +112,8 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
 	const { data: reglement, isLoading, error } = useGetReglementQuery({ id }, { skip: !token });
-	const axiosError = useMemo(
-		() => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),
-		[error],
-	);
-	const company = useMemo(() => {
-		return companies?.find((comp) => comp.id === company_id);
-	}, [companies, company_id]);
+	const axiosError = error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined;
+	const company = companies?.find((comp) => comp.id === company_id);
 
 	const [deleteRecord] = useDeleteReglementMutation();
 	const { onSuccess, onError } = useToast();
@@ -136,15 +122,20 @@ const ReglementViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const [showLanguageModal, setShowLanguageModal] = useState(false);
 
 	const handleDelete = async () => {
-		try {
-			await deleteRecord({ id }).unwrap();
-			onSuccess(t.reglements.deleteSuccess);
-			router.push(REGLEMENTS_LIST);
-		} catch (err) {
-			onError(extractApiErrorMessage(err, t.reglements.deleteError));
-		} finally {
-			setShowDeleteModal(false);
-		}
+		await runWithCleanup(
+			async () => {
+				try {
+					await deleteRecord({ id }).unwrap();
+					onSuccess(t.reglements.deleteSuccess);
+					router.push(REGLEMENTS_LIST);
+				} catch (err) {
+					onError(extractApiErrorMessage(err, t.reglements.deleteError));
+				}
+			},
+			() => {
+				setShowDeleteModal(false);
+			},
+		);
 	};
 
 	const deleteModalActions = [

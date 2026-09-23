@@ -1,3 +1,18 @@
+import type { ReactNode } from 'react';
+
+export type DashboardClientOption = {
+	id: number;
+	label: string;
+};
+
+export type DashboardChartCardProps = {
+	title: string;
+	description?: string;
+	children: ReactNode;
+	height?: number | { xs?: number; sm?: number; md?: number };
+	infoTooltip?: string;
+};
+
 export interface DateFilterParams {
 	date_from?: string;
 	date_to?: string;
@@ -183,4 +198,64 @@ export interface SectionMicroTrendsData {
 	commercial: number[];
 	operational: number[];
 	cashflow: number[];
+}
+
+export interface EmptyChartProps {
+	message?: string;
+}
+
+export interface SectionTitleProps {
+	children: ReactNode;
+}
+
+export interface DateFilterProps {
+	dateFrom: Date | null;
+	dateTo: Date | null;
+	onDateFromChange: (date: Date | null) => void;
+	onDateToChange: (date: Date | null) => void;
+	clientOptions: DashboardClientOption[];
+	selectedClient: DashboardClientOption | null;
+	onClientChange: (client: DashboardClientOption | null) => void;
+	projectRef: string;
+	onProjectRefChange: (value: string) => void;
+	onReset: () => void;
+}
+
+export interface ChartProps {
+	dateParams: DateFilterParams;
+	company_id: number;
+	devise: 'MAD' | 'EUR' | 'USD';
+}
+
+export interface DashboardViewDashboardContentProps {
+	company_id: number;
+}
+
+export type formikContentType = {
+	token: string | undefined;
+};
+
+export type MonthlyObjectivesFormValues = {
+	objectif_ca: string | number;
+	objectif_ca_eur?: string | number | null;
+	objectif_ca_usd?: string | number | null;
+	objectif_factures: number;
+	objectif_conversion: string | number;
+	globalError: string;
+};
+
+export type MonthlyObjectivesViewFormikContentProps = {
+	companyId: number;
+	token?: string;
+	usesForeignCurrency: boolean;
+};
+
+export interface DashboardStatCardProps {
+	icon: ReactNode;
+	label: string;
+	value: string;
+	color: string;
+	valueColor?: string;
+	isLoading?: boolean;
+	testId?: string;
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import { type ReactNode, type ReactElement } from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import DevisViewClient from './devis-view';
 import { Provider } from 'react-redux';
@@ -30,7 +30,7 @@ jest.mock('@/contexts/InitContext', () => ({
 
 jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 	__esModule: true,
-	default: ({ children }: { children?: React.ReactNode }) => <div data-testid="navigation-bar">{children}</div>,
+	default: ({ children }: { children?: ReactNode }) => <div data-testid="navigation-bar">{children}</div>,
 }));
 
 // Mock selector
@@ -62,7 +62,7 @@ const mockSession = {
 	},
 };
 
-const renderWithProviders = (ui: React.ReactElement) => render(<Provider store={store}>{ui}</Provider>);
+const renderWithProviders = (ui: ReactElement) => render(<Provider store={store}>{ui}</Provider>);
 
 const defaultProps = { session: mockSession, company_id: 1, id: 123 };
 

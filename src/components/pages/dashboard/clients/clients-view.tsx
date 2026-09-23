@@ -1,6 +1,7 @@
 'use client';
 
-import React, { isValidElement, useMemo, useState } from 'react';
+import { runWithCleanup } from '@/utils/runWithCleanup';
+import { type FC, Fragment, isValidElement, useState } from 'react';
 import {
 	Box,
 	Button,
@@ -41,8 +42,8 @@ import {
 	Notes as NotesIcon,
 	Payment as PaymentIcon,
 	Person as PersonIcon,
-	Print as PrintIcon,
 	Phone as PhoneIcon,
+	Print as PrintIcon,
 	Receipt as ReceiptIcon,
 } from '@mui/icons-material';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
@@ -50,7 +51,7 @@ import { CLIENTS_EDIT, CLIENTS_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import { useDeleteClientMutation, useGetClientHistoryQuery, useGetClientQuery } from '@/store/services/client';
 import { useInitAccessToken } from '@/contexts/InitContext';
-import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
+import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
@@ -58,17 +59,18 @@ import ActionModals from '@/components/htmlElements/modals/actionModal/actionMod
 import { getUserCompaniesState } from '@/store/selectors';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import { extractApiErrorMessage, formatDate, formatNumberWithSpaces } from '@/utils/helpers';
+import type {
+	AccountStatementRow,
+	ClientsViewInfoRowProps as InfoRowProps,
+	ClientsViewProps as Props,
+	StatementEntryType,
+	StatementType,
+} from '@/types/clientTypes';
 
-interface InfoRowProps {
-	icon: React.ReactNode;
-	label: string;
-	value: string | number | null | undefined | React.ReactNode;
-}
-
-const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
+const InfoRow: FC<InfoRowProps> = ({ icon, label, value }) => {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-	const displayValue = React.isValidElement(value) ? value : value && value.toString().length > 1 ? value : '-';
+	const displayValue = isValidElement(value) ? value : value && value.toString().length > 1 ? value : '-';
 
 	return (
 		<Stack
@@ -123,27 +125,7 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 	);
 };
 
-type StatementEntryType = 'invoice' | 'credit_note' | 'payment' | 'opening';
-type StatementType = 'all' | Exclude<StatementEntryType, 'opening'>;
-
-type AccountStatementRow = {
-	id: string;
-	type: StatementEntryType;
-	date: string;
-	dueDate: string;
-	piece: string;
-	label: string;
-	devise: string;
-	debit: number;
-	credit: number;
-};
-
-interface Props extends SessionProps {
-	company_id: number;
-	id: number;
-}
-
-const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
+const ClientsViewClient: FC<Props> = ({ session, company_id, id }) => {
 	const token = useInitAccessToken(session);
 	const companies = useAppSelector(getUserCompaniesState);
 	const router = useRouter();
@@ -152,13 +134,8 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 
 	const { data: client, isLoading, error } = useGetClientQuery({ id }, { skip: !token });
 	const { data: history, isLoading: isHistoryLoading } = useGetClientHistoryQuery({ id }, { skip: !token });
-	const axiosError = useMemo(
-		() => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),
-		[error],
-	);
-	const company = useMemo(() => {
-		return companies?.find((comp) => comp.id === company_id);
-	}, [companies, company_id]);
+	const axiosError = error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined;
+	const company = companies?.find((comp) => comp.id === company_id);
 
 	const [deleteRecord] = useDeleteClientMutation();
 	const { onSuccess, onError } = useToast();
@@ -170,15 +147,20 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const [statementType, setStatementType] = useState<StatementType>('all');
 
 	const handleDelete = async () => {
-		try {
-			await deleteRecord({ id }).unwrap();
-			onSuccess(t.clients.deleteSuccess);
-			router.push(CLIENTS_LIST);
-		} catch (err) {
-			onError(extractApiErrorMessage(err, t.clients.deleteError));
-		} finally {
-			setShowDeleteModal(false);
-		}
+		await runWithCleanup(
+			async () => {
+				try {
+					await deleteRecord({ id }).unwrap();
+					onSuccess(t.clients.deleteSuccess);
+					router.push(CLIENTS_LIST);
+				} catch (err) {
+					onError(extractApiErrorMessage(err, t.clients.deleteError));
+				}
+			},
+			() => {
+				setShowDeleteModal(false);
+			},
+		);
 	};
 
 	const deleteModalActions = [
@@ -222,14 +204,11 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	};
 	const clientDisplayName =
 		client?.raison_sociale || [client?.nom, client?.prenom].filter(Boolean).join(' ') || client?.code_client || '-';
-	const historyRows = [
-		history?.devis ?? [],
-		history?.factures ?? [],
-		history?.avoirs ?? [],
-		history?.reglements ?? [],
-	][historyTab];
+	const historyRows = [history?.devis ?? [], history?.factures ?? [], history?.avoirs ?? [], history?.reglements ?? []][
+		historyTab
+	];
 
-	const accountStatementRows = useMemo<AccountStatementRow[]>(() => {
+	const accountStatementRows = (() => {
 		const typeOrder: Record<StatementEntryType, number> = {
 			opening: 0,
 			invoice: 1,
@@ -305,18 +284,9 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 		}
 
 		return rows;
-	}, [
-		clientDisplayName,
-		history,
-		statementDateFrom,
-		statementDateTo,
-		statementType,
-		t.clients.statementCreditNotePiece,
-		t.clients.statementInvoicePiece,
-		t.clients.statementPaymentPiece,
-	]);
+	})() as AccountStatementRow[];
 
-	const statementTotals = useMemo(() => {
+	const statementTotals = (() => {
 		const totals: Record<string, { debit: number; credit: number }> = {};
 		accountStatementRows.forEach((row) => {
 			if (!totals[row.devise]) totals[row.devise] = { debit: 0, credit: 0 };
@@ -329,7 +299,7 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 			credit: total.credit,
 			balance: total.debit - total.credit,
 		}));
-	}, [accountStatementRows]);
+	})();
 	const hasMultipleStatementCurrencies = statementTotals.length > 1;
 	const formatStatementAmount = (value: string | number | null | undefined, devise = 'MAD') =>
 		`${formatNumberWithSpaces(value ?? 0, 2)}${hasMultipleStatementCurrencies ? ` ${devise}` : ''}`;
@@ -536,11 +506,7 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									<Stack spacing={0}>
 										<InfoRow icon={<BadgeIcon />} label={t.clients.fieldCodeClient} value={client?.code_client} />
 										<Divider />
-										<InfoRow
-											icon={<PersonIcon />}
-											label={t.clients.colType}
-											value={clientTypeLabel}
-										/>
+										<InfoRow icon={<PersonIcon />} label={t.clients.colType} value={clientTypeLabel} />
 										<Divider />
 										{isPM ? (
 											<>
@@ -803,7 +769,7 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 													</TableBody>
 													<TableFooter>
 														{statementTotals.map((total) => (
-															<React.Fragment key={total.devise}>
+															<Fragment key={total.devise}>
 																<TableRow>
 																	<TableCell colSpan={4} />
 																	<TableCell align="right" sx={{ fontWeight: 700 }}>
@@ -822,7 +788,7 @@ const ClientsViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 																		{formatStatementAmount(total.balance, total.devise)}
 																	</TableCell>
 																</TableRow>
-															</React.Fragment>
+															</Fragment>
 														))}
 													</TableFooter>
 												</Table>

@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 import { renderToStaticMarkup } from 'react-dom/server';
-import React from 'react';
+import { createElement, type ReactElement } from 'react';
 
 // types
 type SessionUser = { pk: number; email: string };
@@ -35,9 +35,7 @@ jest.mock('next/headers', () => ({
 jest.mock('@/components/pages/auth/reset-password/enterCode', () => ({
 	__esModule: true,
 	default: (props: { email?: string }) => {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const React = require('react');
-		return React.createElement('div', null, `ENTER_CODE_CLIENT_MARKER:${props?.email ?? ''}`);
+		return createElement('div', null, `ENTER_CODE_CLIENT_MARKER:${props?.email ?? ''}`);
 	},
 }));
 
@@ -104,7 +102,7 @@ describe('EnterCodePage server component', () => {
 		});
 
 		const result = await Page!();
-		const html = renderToStaticMarkup(result as unknown as React.ReactElement);
+		const html = renderToStaticMarkup(result as unknown as ReactElement);
 		expect(html).toContain('ENTER_CODE_CLIENT_MARKER:user@example.com');
 		expect(mockRedirect).not.toHaveBeenCalled();
 	});

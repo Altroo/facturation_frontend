@@ -1,22 +1,34 @@
 'use client';
 
-import React, { useState } from 'react';
+import { type FC, useState } from 'react';
 import type { TranslationDictionary } from '@/types/languageTypes';
 import { useRouter } from 'next/navigation';
 import { Print as PrintIcon } from '@mui/icons-material';
 import { GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
 import { useInitAccessToken } from '@/contexts/InitContext';
-import { useDeleteBonDeLivraisonMutation, useGetBonDeLivraisonListQuery, useBulkDeleteBonDeLivraisonMutation } from '@/store/services/bonDeLivraison';
-import { useGetModePaiementListQuery, useGetLivreParListQuery } from '@/store/services/parameter';
-import { BON_DE_LIVRAISON_ADD, BON_DE_LIVRAISON_EDIT, BON_DE_LIVRAISON_VIEW, BON_DE_LIVRAISON_PDF } from '@/utils/routes';
+import {
+	useBulkDeleteBonDeLivraisonMutation,
+	useDeleteBonDeLivraisonMutation,
+	useGetBonDeLivraisonListQuery,
+} from '@/store/services/bonDeLivraison';
+import { useGetLivreParListQuery, useGetModePaiementListQuery } from '@/store/services/parameter';
+import {
+	BON_DE_LIVRAISON_ADD,
+	BON_DE_LIVRAISON_EDIT,
+	BON_DE_LIVRAISON_PDF,
+	BON_DE_LIVRAISON_VIEW,
+} from '@/utils/routes';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import type { BonDeLivraisonClass } from '@/models/classes';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import CompanyDocumentsListContent from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsListContent';
 import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
-import type { DocumentListConfig } from '@/types/companyDocumentsTypes';
+import type {
+	BonDeLivraisonListFormikContentProps as FormikContentProps,
+	DocumentListConfig,
+} from '@/types/companyDocumentsTypes';
+import type { ChipFilterConfig } from '@/types/uiTypes';
 import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
-import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 import { useLanguage } from '@/utils/hooks';
 
 const createBonDeLivraisonListConfig = (t: TranslationDictionary): DocumentListConfig<BonDeLivraisonClass> => ({
@@ -49,41 +61,41 @@ const createBonDeLivraisonListConfig = (t: TranslationDictionary): DocumentListC
 			label: t.common.pdfWithDiscount,
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#1976d2',
-			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') => BON_DE_LIVRAISON_PDF(id, companyId, 'avec_remise', language),
+			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') =>
+				BON_DE_LIVRAISON_PDF(id, companyId, 'avec_remise', language),
 		},
 		{
 			key: 'sans_remise',
 			label: t.common.pdfWithoutDiscount,
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#2e7d32',
-			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') => BON_DE_LIVRAISON_PDF(id, companyId, 'sans_remise', language),
+			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') =>
+				BON_DE_LIVRAISON_PDF(id, companyId, 'sans_remise', language),
 		},
 		{
 			key: 'avec_unite_sans_remise',
 			label: t.common.pdfWithUnitWithoutDiscount,
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#7b1fa2',
-			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') => BON_DE_LIVRAISON_PDF(id, companyId, 'avec_unite_sans_remise', language),
+			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') =>
+				BON_DE_LIVRAISON_PDF(id, companyId, 'avec_unite_sans_remise', language),
 		},
 		{
 			key: 'avec_unite_avec_remise',
 			label: t.common.pdfWithUnitWithDiscount,
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#ed6c02',
-			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') => BON_DE_LIVRAISON_PDF(id, companyId, 'avec_unite_avec_remise', language),
+			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') =>
+				BON_DE_LIVRAISON_PDF(id, companyId, 'avec_unite_avec_remise', language),
 		},
 	],
 });
-interface FormikContentProps extends SessionProps {
-	company_id: number;
-	role: string;
-}
 
-const FormikContent: React.FC<FormikContentProps> = (props) => {
+const FormikContent: FC<FormikContentProps> = (props) => {
 	const { session, company_id, role } = props;
 	const router = useRouter();
 	const { t } = useLanguage();
-	const bonDeLivraisonListConfig = React.useMemo(() => createBonDeLivraisonListConfig(t), [t]);
+	const bonDeLivraisonListConfig = createBonDeLivraisonListConfig(t);
 	const token = useInitAccessToken(session);
 
 	const [paginationModel, setPaginationModel] = useDataGridPagination();
@@ -95,18 +107,17 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 	const { data: modePaiement } = useGetModePaiementListQuery({ company_id }, { skip: !token });
 	const { data: livrePar } = useGetLivreParListQuery({ company_id }, { skip: !token });
 
-	const chipFilters: ChipFilterConfig[] = React.useMemo(
-		() => [
-			{ key: 'mode_paiement', label: t.bonsLivraison.filterModePaiement, paramName: 'mode_paiement_ids', options: modePaiement ?? [] },
-			{ key: 'livre_par', label: t.bonsLivraison.filterLivrePar, paramName: 'livre_par_ids', options: livrePar ?? [] },
-		],
-		[modePaiement, livrePar, t],
-	);
+	const chipFilters: ChipFilterConfig[] = [
+		{
+			key: 'mode_paiement',
+			label: t.bonsLivraison.filterModePaiement,
+			paramName: 'mode_paiement_ids',
+			options: modePaiement ?? [],
+		},
+		{ key: 'livre_par', label: t.bonsLivraison.filterLivrePar, paramName: 'livre_par_ids', options: livrePar ?? [] },
+	];
 
-	const mergedFilterParams = React.useMemo(
-		() => ({ ...chipFilterParams, ...customFilterParams }),
-		[chipFilterParams, customFilterParams],
-	);
+	const mergedFilterParams = { ...chipFilterParams, ...customFilterParams };
 
 	const {
 		data: rawData,
@@ -153,7 +164,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 	);
 };
 
-const BonDeLivraisonListClient: React.FC<SessionProps> = ({ session }) => {
+const BonDeLivraisonListClient: FC<SessionProps> = ({ session }) => {
 	const { t } = useLanguage();
 	return (
 		<CompanyDocumentsWrapperList session={session} title={t.bonsLivraison.listTitle}>

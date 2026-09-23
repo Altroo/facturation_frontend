@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useCallback, useMemo, useState } from 'react';
+import { runWithCleanup } from '@/utils/runWithCleanup';
+import { useState, type FC } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Box, Button, Chip, Typography } from '@mui/material';
 import {
@@ -15,9 +16,9 @@ import { GridLogicOperator } from '@mui/x-data-grid';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
-import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
+import type { ChipFilterConfig } from '@/types/uiTypes';
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
-import type { ActionItem } from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
+import type { ActionItem } from '@/types/uiTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
@@ -32,15 +33,10 @@ import type { StockReceipt } from '@/types/stockTypes';
 import { extractApiErrorMessage, formatDate, formatNumberWithSpaces } from '@/utils/helpers';
 import { useToast } from '@/utils/hooks';
 import { STOCK_RECEIPTS_ADD, STOCK_RECEIPT_VIEW } from '@/utils/routes';
-
-const receiptStatusOptions = [
-	{ id: 'draft', nom: 'Brouillon', value: 'draft', label: 'Brouillon' },
-	{ id: 'validated', nom: 'Validée', value: 'validated', label: 'Validée' },
-	{ id: 'cancelled', nom: 'Annulée', value: 'cancelled', label: 'Annulée' },
-];
+import { stockReceiptStatusOptions } from '@/utils/rawData';
 
 const receiptStatusLabel = (status: StockReceipt['status']) =>
-	receiptStatusOptions.find((option) => option.value === status)?.label ?? status;
+	stockReceiptStatusOptions.find((option) => option.value === status)?.label ?? status;
 
 const receiptStatusColor = (status: StockReceipt['status']): 'default' | 'success' | 'error' => {
 	if (status === 'validated') return 'success';
@@ -48,7 +44,7 @@ const receiptStatusColor = (status: StockReceipt['status']): 'default' | 'succes
 	return 'default';
 };
 
-const StockReceiptsContent: React.FC<{ company_id: number; role: string }> = ({ company_id, role }) => {
+const StockReceiptsContent: FC<{ company_id: number; role: string }> = ({ company_id, role }) => {
 	const router = useRouter();
 	const { onSuccess, onError } = useToast();
 	const canReceive = role === 'Logistique';
@@ -58,10 +54,7 @@ const StockReceiptsContent: React.FC<{ company_id: number; role: string }> = ({ 
 	const [chipFilterParams, setChipFilterParams] = useState<Record<string, string>>({});
 	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [], logicOperator: GridLogicOperator.And });
 	const [pendingAction, setPendingAction] = useState<{ type: 'validate' | 'cancel'; id: number } | null>(null);
-	const filters = useMemo(
-		() => ({ ...chipFilterParams, ...customFilterParams }),
-		[chipFilterParams, customFilterParams],
-	);
+	const filters = { ...chipFilterParams, ...customFilterParams };
 	const receipts = useGetStockReceiptsQuery({
 		company_id,
 		page: paginationModel.page + 1,
@@ -69,143 +62,143 @@ const StockReceiptsContent: React.FC<{ company_id: number; role: string }> = ({ 
 		search: searchTerm,
 		filters,
 	});
-	const logisticsOrderOptions = useMemo(
-		() =>
-			Array.from(
-				new Map(
-					(receipts.data?.results ?? []).map((receipt) => [
-						receipt.logistics_order,
-						{ id: receipt.logistics_order, nom: receipt.logistics_order_number },
-					]),
-				).values(),
-			),
-		[receipts.data?.results],
+	const logisticsOrderOptions = Array.from(
+		new Map(
+			(receipts.data?.results ?? []).map((receipt) => [
+				receipt.logistics_order,
+				{ id: receipt.logistics_order, nom: receipt.logistics_order_number },
+			]),
+		).values(),
 	);
-	const chipFilters = useMemo<ChipFilterConfig[]>(
-		() => [
-			{ key: 'status', label: 'Statut', paramName: 'statuses', options: receiptStatusOptions },
-			{ key: 'logistics', label: 'Dossier logistique', paramName: 'logistics_order_ids', options: logisticsOrderOptions },
-		],
-		[logisticsOrderOptions],
-	);
+	const chipFilters = [
+		{ key: 'status', label: 'Statut', paramName: 'statuses', options: stockReceiptStatusOptions },
+		{ key: 'logistics', label: 'Dossier logistique', paramName: 'logistics_order_ids', options: logisticsOrderOptions },
+	] as ChipFilterConfig[];
 	const [validateReceipt, validateState] = useValidateStockReceiptMutation();
 	const [cancelReceipt, cancelState] = useCancelStockReceiptMutation();
 
-	const handleValidate = useCallback(async (id: number) => {
-		try {
-			await validateReceipt({ company_id, id }).unwrap();
-			onSuccess('Réception validée et ajoutée au stock.');
-		} catch (error) {
-			onError(extractApiErrorMessage(error, 'Impossible de valider la réception.'));
-		} finally {
-			setPendingAction(null);
-		}
-	}, [company_id, onError, onSuccess, validateReceipt]);
+	const handleValidate = async (id: number) => {
+		await runWithCleanup(
+			async () => {
+				try {
+					await validateReceipt({ company_id, id }).unwrap();
+					onSuccess('Réception validée et ajoutée au stock.');
+				} catch (error) {
+					onError(extractApiErrorMessage(error, 'Impossible de valider la réception.'));
+				}
+			},
+			() => {
+				setPendingAction(null);
+			},
+		);
+	};
 
-	const handleCancel = useCallback(async (id: number) => {
-		try {
-			await cancelReceipt({ company_id, id }).unwrap();
-			onSuccess('Réception annulée.');
-		} catch (error) {
-			onError(extractApiErrorMessage(error, "Impossible d'annuler la réception."));
-		} finally {
-			setPendingAction(null);
-		}
-	}, [cancelReceipt, company_id, onError, onSuccess]);
+	const handleCancel = async (id: number) => {
+		await runWithCleanup(
+			async () => {
+				try {
+					await cancelReceipt({ company_id, id }).unwrap();
+					onSuccess('Réception annulée.');
+				} catch (error) {
+					onError(extractApiErrorMessage(error, "Impossible d'annuler la réception."));
+				}
+			},
+			() => {
+				setPendingAction(null);
+			},
+		);
+	};
 
-	const columns = useMemo<GridColDef[]>(
-		() => [
-			{
-				field: 'reference',
-				headerName: 'Référence',
-				minWidth: 130,
-				flex: 0.9,
-				valueGetter: (value: string | null | undefined, row: StockReceipt) => value || `REC-${row.id}`,
+	const columns = [
+		{
+			field: 'reference',
+			headerName: 'Référence',
+			minWidth: 130,
+			flex: 0.9,
+			valueGetter: (value: string | null | undefined, row: StockReceipt) => value || `REC-${row.id}`,
+		},
+		{ field: 'logistics_order_number', headerName: 'Dossier logistique', minWidth: 145, flex: 0.9 },
+		{
+			field: 'lines',
+			headerName: 'Articles reçus',
+			minWidth: 145,
+			flex: 1,
+			sortable: false,
+			filterable: false,
+			renderCell: (params: GridRenderCellParams<StockReceipt>) => (
+				<Typography variant="body2" color="primary" noWrap sx={{ fontWeight: 600 }}>
+					{params.row.lines
+						.map((line) => `${line.article_reference}: ${formatNumberWithSpaces(line.quantity, 3)}`)
+						.join(', ')}
+				</Typography>
+			),
+		},
+		{
+			field: 'status',
+			headerName: 'Statut',
+			minWidth: 115,
+			flex: 0.8,
+			filterOperators: createDropdownFilterOperators(stockReceiptStatusOptions, 'Tous les statuts', true),
+			renderCell: (params: GridRenderCellParams<StockReceipt>) => (
+				<Chip
+					size="small"
+					variant="outlined"
+					label={receiptStatusLabel(params.row.status)}
+					color={receiptStatusColor(params.row.status)}
+				/>
+			),
+		},
+		{ field: 'created_by_name', headerName: 'Créée par', minWidth: 140, flex: 0.9 },
+		{
+			field: 'date_created',
+			headerName: 'Date',
+			minWidth: 155,
+			flex: 1.3,
+			filterOperators: createDateRangeFilterOperator('entre'),
+			renderCell: (params: GridRenderCellParams<StockReceipt>) => (
+				<Typography variant="body2" noWrap>
+					{formatDate(params.row.date_created).split(',')[0]}
+				</Typography>
+			),
+		},
+		{
+			field: 'actions',
+			headerName: 'Actions',
+			minWidth: 130,
+			flex: 1.1,
+			sortable: false,
+			filterable: false,
+			renderCell: (params: GridRenderCellParams<StockReceipt>) => {
+				const actions: ActionItem[] = [
+					{
+						label: 'Voir la réception',
+						icon: <VisibilityIcon />,
+						onClick: () => router.push(STOCK_RECEIPT_VIEW(params.row.id, company_id)),
+						color: 'info' as const,
+					},
+				];
+				if (canReceive && params.row.status === 'draft') {
+					actions.push({
+						label: 'Valider la réception',
+						icon: <CheckCircleIcon />,
+						onClick: () => setPendingAction({ type: 'validate', id: params.row.id }),
+						color: 'success' as const,
+						disabled: validateState.isLoading,
+					});
+				}
+				if (canReceive && params.row.status === 'validated') {
+					actions.push({
+						label: 'Annuler la réception',
+						icon: <CancelIcon />,
+						onClick: () => setPendingAction({ type: 'cancel', id: params.row.id }),
+						color: 'error' as const,
+						disabled: cancelState.isLoading,
+					});
+				}
+				return <MobileActionsMenu actions={actions} />;
 			},
-			{ field: 'logistics_order_number', headerName: 'Dossier logistique', minWidth: 145, flex: 0.9 },
-			{
-				field: 'lines',
-				headerName: 'Articles reçus',
-				minWidth: 145,
-				flex: 1,
-				sortable: false,
-				filterable: false,
-				renderCell: (params: GridRenderCellParams<StockReceipt>) => (
-					<Typography variant="body2" color="primary" noWrap sx={{ fontWeight: 600 }}>
-						{params.row.lines
-							.map((line) => `${line.article_reference}: ${formatNumberWithSpaces(line.quantity, 3)}`)
-							.join(', ')}
-					</Typography>
-				),
-			},
-			{
-				field: 'status',
-				headerName: 'Statut',
-				minWidth: 115,
-				flex: 0.8,
-				filterOperators: createDropdownFilterOperators(receiptStatusOptions, 'Tous les statuts', true),
-				renderCell: (params: GridRenderCellParams<StockReceipt>) => (
-					<Chip
-						size="small"
-						variant="outlined"
-						label={receiptStatusLabel(params.row.status)}
-						color={receiptStatusColor(params.row.status)}
-					/>
-				),
-			},
-			{ field: 'created_by_name', headerName: 'Créée par', minWidth: 140, flex: 0.9 },
-			{
-				field: 'date_created',
-				headerName: 'Date',
-				minWidth: 155,
-				flex: 1.3,
-				filterOperators: createDateRangeFilterOperator('entre'),
-				renderCell: (params: GridRenderCellParams<StockReceipt>) => (
-					<Typography variant="body2" noWrap>
-						{formatDate(params.row.date_created).split(',')[0]}
-					</Typography>
-				),
-			},
-			{
-				field: 'actions',
-				headerName: 'Actions',
-				minWidth: 130,
-				flex: 1.1,
-				sortable: false,
-				filterable: false,
-				renderCell: (params: GridRenderCellParams<StockReceipt>) => {
-					const actions: ActionItem[] = [
-						{
-							label: 'Voir la réception',
-							icon: <VisibilityIcon />,
-							onClick: () => router.push(STOCK_RECEIPT_VIEW(params.row.id, company_id)),
-							color: 'info' as const,
-						},
-					];
-					if (canReceive && params.row.status === 'draft') {
-						actions.push({
-							label: 'Valider la réception',
-							icon: <CheckCircleIcon />,
-							onClick: () => setPendingAction({ type: 'validate', id: params.row.id }),
-							color: 'success' as const,
-							disabled: validateState.isLoading,
-						});
-					}
-					if (canReceive && params.row.status === 'validated') {
-						actions.push({
-							label: 'Annuler la réception',
-							icon: <CancelIcon />,
-							onClick: () => setPendingAction({ type: 'cancel', id: params.row.id }),
-							color: 'error' as const,
-							disabled: cancelState.isLoading,
-						});
-					}
-					return <MobileActionsMenu actions={actions} />;
-				},
-			},
-		],
-		[canReceive, cancelState.isLoading, company_id, router, validateState.isLoading],
-	);
+		},
+	] as GridColDef[];
 
 	return (
 		<>
@@ -220,7 +213,11 @@ const StockReceiptsContent: React.FC<{ company_id: number; role: string }> = ({ 
 						mb: { xs: 1, sm: 2, md: 3 },
 					}}
 				>
-					<Button variant="contained" startIcon={<AddIcon />} onClick={() => router.push(STOCK_RECEIPTS_ADD(company_id))}>
+					<Button
+						variant="contained"
+						startIcon={<AddIcon />}
+						onClick={() => router.push(STOCK_RECEIPTS_ADD(company_id))}
+					>
 						Nouvelle réception
 					</Button>
 				</Box>
@@ -297,7 +294,7 @@ const StockReceiptsContent: React.FC<{ company_id: number; role: string }> = ({ 
 	);
 };
 
-const StockReceiptsListClient: React.FC<SessionProps> = ({ session }) => {
+const StockReceiptsListClient: FC<SessionProps> = ({ session }) => {
 	const searchParams = useSearchParams();
 	const requestedCompanyId = Number(searchParams.get('company_id')) || undefined;
 	return (

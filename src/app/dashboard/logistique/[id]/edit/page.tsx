@@ -8,11 +8,7 @@ export const metadata: Metadata = {
 	title: 'Modifier le dossier logistique',
 	description: 'Modifier un dossier logistique existant',
 };
-
-type PageProps = {
-	params: Promise<{ id: string }>;
-	searchParams: Promise<{ company_id: string }>;
-};
+import type { CompanyScopedDetailRouteProps as PageProps } from '@/types/routeTypes';
 
 const LogistiqueEditPage = async (props: PageProps) => {
 	const session = await auth();

@@ -1,18 +1,10 @@
 'use client';
 
-import React from 'react';
+import { type FC } from 'react';
 import { Alert, Stack } from '@mui/material';
-import type { SxProps } from '@mui/system';
-import type { Theme } from '@mui/material/styles';
 import { useLanguage } from '@/utils/hooks';
-
-type Props = {
-	errorDetails?: Record<string, string[] | string> | string | null;
-	cssStyle?: SxProps<Theme>;
-	children?: React.ReactNode;
-};
-
-const GLOBAL_ERROR_KEYS = new Set(['detail', 'error', 'globalError', 'message', 'non_field_errors']);
+import { globalErrorKeys } from '@/utils/rawData';
+import type { ApiAlertProps as Props } from '@/types/uiTypes';
 
 const formatErrorKey = (key: string) =>
 	key
@@ -34,13 +26,13 @@ const getErrorMessages = (errorDetails?: Record<string, string[] | string> | str
 		for (const item of values) {
 			const message = String(item).trim();
 			if (!message) continue;
-			messages.push(GLOBAL_ERROR_KEYS.has(key) ? message : `${formatErrorKey(key)} : ${message}`);
+			messages.push(globalErrorKeys.has(key) ? message : `${formatErrorKey(key)} : ${message}`);
 		}
 	}
 	return messages;
 };
 
-const ApiAlert: React.FC<Props> = (props: Props) => {
+const ApiAlert: FC<Props> = (props: Props) => {
 	const { t } = useLanguage();
 	const errorMessages = getErrorMessages(props.errorDetails);
 

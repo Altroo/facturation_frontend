@@ -1,25 +1,26 @@
 'use client';
 
-import React from 'react';
+import { type FC } from 'react';
 import type { TranslationDictionary } from '@/types/languageTypes';
-import type { SessionProps } from '@/types/_initTypes';
 import CompanyDocumentsWrapperForm from '@/components/pages/dashboard/shared/company-documents-form/companyDocumentsWrapperForm';
 import CompanyDocumentFormContent from '@/components/pages/dashboard/shared/company-documents-form/companyDocumentFormContent';
-import { bonDeLivraisonSchema, bonDeLivraisonAddSchema } from '@/utils/formValidationSchemas';
-import { BON_DE_LIVRAISON_LIST, BON_DE_LIVRAISON_EDIT } from '@/utils/routes';
+import { bonDeLivraisonAddSchema, bonDeLivraisonSchema } from '@/utils/formValidationSchemas';
+import { BON_DE_LIVRAISON_EDIT, BON_DE_LIVRAISON_LIST } from '@/utils/routes';
 import {
 	useAddBonDeLivraisonMutation,
 	useEditBonDeLivraisonMutation,
 	useGetBonDeLivraisonQuery,
-	usePatchStatutMutation,
 	useGetNumBonDeLivraisonQuery,
+	usePatchStatutMutation,
 } from '@/store/services/bonDeLivraison';
 import type {
+	BonDeLivraisonDocumentData,
+	BonDeLivraisonFormFormikContentProps as FormikContentProps,
+	BonDeLivraisonFormProps as Props,
+	BonDeLivraisonNumResponse,
 	DocumentFormConfig,
 	DocumentFormSchema,
-	BonDeLivraisonDocumentData,
-	BonDeLivraisonNumResponse,
-} from '@/types/companyDocumentsTypes';
+} from '@/types/companyDocumentsTypes'; // Configuration for bon de livraison form
 import type { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
 import type { BonDeLivraisonClass } from '@/models/classes';
 import { useLanguage } from '@/utils/hooks';
@@ -54,17 +55,10 @@ const createBonDeLivraisonFormConfig = (t: TranslationDictionary): DocumentFormC
 		addSchema: bonDeLivraisonAddSchema,
 	},
 });
-type FormikContentProps = {
-	token?: string;
-	company_id: number;
-	id?: number;
-	isEditMode: boolean;
-	role?: string;
-};
 
-const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, isEditMode, role }) => {
+const FormikContent: FC<FormikContentProps> = ({ token, company_id, id, isEditMode, role }) => {
 	const { t } = useLanguage();
-	const bonDeLivraisonFormConfig = React.useMemo(() => createBonDeLivraisonFormConfig(t), [t]);
+	const bonDeLivraisonFormConfig = createBonDeLivraisonFormConfig(t);
 	// Queries
 	const {
 		data: rawData,
@@ -72,9 +66,16 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 		error: dataError,
 	} = useGetBonDeLivraisonQuery({ id: id! }, { skip: !token || !isEditMode });
 
-	const { data: rawNumData, isLoading: isNumLoading, refetch: refetchNum } = useGetNumBonDeLivraisonQuery({ company_id }, {
-		skip: !token || isEditMode,
-	});
+	const {
+		data: rawNumData,
+		isLoading: isNumLoading,
+		refetch: refetchNum,
+	} = useGetNumBonDeLivraisonQuery(
+		{ company_id },
+		{
+			skip: !token || isEditMode,
+		},
+	);
 
 	// Mutations
 	const [addDataMutation, { isLoading: isAddLoading, error: addError }] = useAddBonDeLivraisonMutation();
@@ -121,12 +122,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 	);
 };
 
-interface Props extends SessionProps {
-	company_id: number;
-	id?: number;
-}
-
-const BonDeLivraisonForm: React.FC<Props> = ({ session, company_id, id }) => {
+const BonDeLivraisonForm: FC<Props> = ({ session, company_id, id }) => {
 	const { t } = useLanguage();
 	return (
 		<CompanyDocumentsWrapperForm

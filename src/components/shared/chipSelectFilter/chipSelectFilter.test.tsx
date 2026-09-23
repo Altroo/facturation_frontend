@@ -1,12 +1,11 @@
-import React from 'react';
+import { type ReactElement } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import ChipSelectFilter from './chipSelectFilter';
-import type { ChipSelectOption } from './chipSelectFilter';
+import type { ChipSelectOption } from '@/types/uiTypes';
 import '@testing-library/jest-dom';
 
-const renderWithTheme = (ui: React.ReactElement) =>
-	render(<ThemeProvider theme={createTheme()}>{ui}</ThemeProvider>);
+const renderWithTheme = (ui: ReactElement) => render(<ThemeProvider theme={createTheme()}>{ui}</ThemeProvider>);
 
 const options: ChipSelectOption[] = [
 	{ id: 1, nom: 'Céramique' },
@@ -20,14 +19,7 @@ describe('ChipSelectFilter component', () => {
 	});
 
 	it('renders label text', () => {
-		renderWithTheme(
-			<ChipSelectFilter
-				label="Catégorie"
-				options={options}
-				selectedIds={[]}
-				onChange={jest.fn()}
-			/>,
-		);
+		renderWithTheme(<ChipSelectFilter label="Catégorie" options={options} selectedIds={[]} onChange={jest.fn()} />);
 		expect(screen.getByText('Catégorie')).toBeInTheDocument();
 	});
 
@@ -45,40 +37,19 @@ describe('ChipSelectFilter component', () => {
 	});
 
 	it('renders default placeholder when none provided', () => {
-		renderWithTheme(
-			<ChipSelectFilter
-				label="Catégorie"
-				options={options}
-				selectedIds={[]}
-				onChange={jest.fn()}
-			/>,
-		);
+		renderWithTheme(<ChipSelectFilter label="Catégorie" options={options} selectedIds={[]} onChange={jest.fn()} />);
 		expect(screen.getByPlaceholderText('Filtrer par catégorie')).toBeInTheDocument();
 	});
 
 	it('renders selected options as chips', () => {
-		renderWithTheme(
-			<ChipSelectFilter
-				label="Catégorie"
-				options={options}
-				selectedIds={[1, 3]}
-				onChange={jest.fn()}
-			/>,
-		);
+		renderWithTheme(<ChipSelectFilter label="Catégorie" options={options} selectedIds={[1, 3]} onChange={jest.fn()} />);
 		expect(screen.getByText('Céramique')).toBeInTheDocument();
 		expect(screen.getByText('Métal')).toBeInTheDocument();
 		expect(screen.queryByText('Bois')).not.toBeInTheDocument();
 	});
 
 	it('shows options when input is focused and typed', () => {
-		renderWithTheme(
-			<ChipSelectFilter
-				label="Catégorie"
-				options={options}
-				selectedIds={[]}
-				onChange={jest.fn()}
-			/>,
-		);
+		renderWithTheme(<ChipSelectFilter label="Catégorie" options={options} selectedIds={[]} onChange={jest.fn()} />);
 		const input = screen.getByRole('combobox');
 		fireEvent.mouseDown(input);
 		fireEvent.change(input, { target: { value: 'Cér' } });
@@ -87,14 +58,7 @@ describe('ChipSelectFilter component', () => {
 
 	it('calls onChange when an option is selected', () => {
 		const onChangeMock = jest.fn();
-		renderWithTheme(
-			<ChipSelectFilter
-				label="Catégorie"
-				options={options}
-				selectedIds={[]}
-				onChange={onChangeMock}
-			/>,
-		);
+		renderWithTheme(<ChipSelectFilter label="Catégorie" options={options} selectedIds={[]} onChange={onChangeMock} />);
 		const input = screen.getByRole('combobox');
 		fireEvent.mouseDown(input);
 		fireEvent.click(screen.getByText('Céramique'));
@@ -104,12 +68,7 @@ describe('ChipSelectFilter component', () => {
 	it('calls onChange when a chip is removed', () => {
 		const onChangeMock = jest.fn();
 		renderWithTheme(
-			<ChipSelectFilter
-				label="Catégorie"
-				options={options}
-				selectedIds={[1, 2]}
-				onChange={onChangeMock}
-			/>,
+			<ChipSelectFilter label="Catégorie" options={options} selectedIds={[1, 2]} onChange={onChangeMock} />,
 		);
 		// Find the cancel icon on the first chip
 		const cancelButtons = screen.getAllByTestId('CancelIcon');
@@ -118,28 +77,14 @@ describe('ChipSelectFilter component', () => {
 	});
 
 	it('renders with empty options', () => {
-		renderWithTheme(
-			<ChipSelectFilter
-				label="Catégorie"
-				options={[]}
-				selectedIds={[]}
-				onChange={jest.fn()}
-			/>,
-		);
+		renderWithTheme(<ChipSelectFilter label="Catégorie" options={[]} selectedIds={[]} onChange={jest.fn()} />);
 		const input = screen.getByRole('combobox');
 		fireEvent.mouseDown(input);
 		expect(screen.getByText('Aucune option')).toBeInTheDocument();
 	});
 
 	it('filters options based on input text', () => {
-		renderWithTheme(
-			<ChipSelectFilter
-				label="Catégorie"
-				options={options}
-				selectedIds={[]}
-				onChange={jest.fn()}
-			/>,
-		);
+		renderWithTheme(<ChipSelectFilter label="Catégorie" options={options} selectedIds={[]} onChange={jest.fn()} />);
 		const input = screen.getByRole('combobox');
 		fireEvent.mouseDown(input);
 		fireEvent.change(input, { target: { value: 'Bois' } });
@@ -148,14 +93,7 @@ describe('ChipSelectFilter component', () => {
 
 	it('handles multiple selections correctly', () => {
 		const onChangeMock = jest.fn();
-		renderWithTheme(
-			<ChipSelectFilter
-				label="Catégorie"
-				options={options}
-				selectedIds={[1]}
-				onChange={onChangeMock}
-			/>,
-		);
+		renderWithTheme(<ChipSelectFilter label="Catégorie" options={options} selectedIds={[1]} onChange={onChangeMock} />);
 		const input = screen.getByRole('combobox');
 		fireEvent.mouseDown(input);
 		fireEvent.click(screen.getByText('Bois'));

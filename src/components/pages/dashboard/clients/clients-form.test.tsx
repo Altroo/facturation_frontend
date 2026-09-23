@@ -1,4 +1,4 @@
-import React from 'react';
+import { type ReactNode, type ReactElement } from 'react';
 import { render, screen, cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
@@ -11,8 +11,7 @@ const mockStore = configureStore({
 		_init: () => ({}),
 		account: () => ({}),
 	},
-	middleware: (getDefaultMiddleware) =>
-		getDefaultMiddleware({ serializableCheck: false }),
+	middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false }),
 });
 
 // Mock next/navigation
@@ -34,7 +33,11 @@ jest.mock('@/utils/hooks', () => ({
 	__esModule: true,
 	useAppSelector: jest.fn(() => [{ id: 1, role: 'Caissier', raison_sociale: 'Other Company' }]),
 	useToast: () => ({ onSuccess: jest.fn(), onError: jest.fn() }),
-	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
+	useLanguage: () => ({
+		language: 'fr' as const,
+		setLanguage: jest.fn(),
+		t: jest.requireActual('@/translations').translations.fr,
+	}),
 }));
 
 jest.mock('@/store/selectors', () => ({
@@ -54,8 +57,7 @@ const mockEditClientMutation = jest.fn();
 
 jest.mock('@/store/services/client', () => ({
 	__esModule: true,
-	useGetClientQuery: (params: { id: number }, options: { skip: boolean }) =>
-		mockUseGetClientQuery(params, options),
+	useGetClientQuery: (params: { id: number }, options: { skip: boolean }) => mockUseGetClientQuery(params, options),
 	useGetCodeClientQuery: jest.fn(() => ({
 		data: { code_client: 'CLI-001' },
 		isLoading: false,
@@ -76,7 +78,7 @@ jest.mock('@/store/services/parameter', () => ({
 // Mock NavigationBar
 jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 	__esModule: true,
-	default: ({ children, title }: { children: React.ReactNode; title: string }) => (
+	default: ({ children, title }: { children: ReactNode; title: string }) => (
 		<div data-testid="navigation-bar">
 			<h1 data-testid="nav-title">{title}</h1>
 			{children}
@@ -182,7 +184,7 @@ const mockSession: AppSession = {
 	},
 };
 
-const renderWithProviders = (ui: React.ReactElement) => {
+const renderWithProviders = (ui: ReactElement) => {
 	return render(<Provider store={mockStore}>{ui}</Provider>);
 };
 
@@ -504,7 +506,10 @@ describe('ClientsForm', () => {
 			const paramService = jest.requireMock('@/store/services/parameter') as {
 				useGetCitiesListQuery: jest.Mock;
 			};
-			paramService.useGetCitiesListQuery.mockReturnValue({ data: [{ id: 999, nom: 'Unknown City' }], isLoading: false });
+			paramService.useGetCitiesListQuery.mockReturnValue({
+				data: [{ id: 999, nom: 'Unknown City' }],
+				isLoading: false,
+			});
 			mockUseGetClientQuery.mockReturnValue({
 				data: {
 					id: 50,
@@ -545,7 +550,7 @@ describe('ClientsForm', () => {
 				isLoading: false,
 				error: undefined,
 			});
-			
+
 			renderWithProviders(<ClientsForm session={mockSession} company_id={1} id={99} />);
 			expect(screen.getByTestId('navigation-bar')).toBeInTheDocument();
 		});
@@ -556,7 +561,7 @@ describe('ClientsForm', () => {
 			};
 			const mockMutate = jest.fn();
 			clientService.useAddClientMutation = () => [mockMutate, { isLoading: true, error: undefined }];
-			
+
 			renderWithProviders(<ClientsForm session={mockSession} company_id={1} />);
 			expect(screen.getByTestId('api-loader')).toBeInTheDocument();
 		});
@@ -567,13 +572,13 @@ describe('ClientsForm', () => {
 			};
 			const mockMutate = jest.fn();
 			clientService.useEditClientMutation = () => [mockMutate, { isLoading: true, error: undefined }];
-			
+
 			mockUseGetClientQuery.mockReturnValue({
 				data: { id: 99, client_type: 'PM', code_client: 'CLI-099' },
 				isLoading: false,
 				error: undefined,
 			});
-			
+
 			renderWithProviders(<ClientsForm session={mockSession} company_id={1} id={99} />);
 			expect(screen.getByTestId('api-loader')).toBeInTheDocument();
 		});

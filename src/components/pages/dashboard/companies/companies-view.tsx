@@ -1,8 +1,9 @@
 'use client';
 
-import React, { isValidElement, useMemo, useState } from 'react';
+import { runWithCleanup } from '@/utils/runWithCleanup';
+import { type FC, isValidElement, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
+import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import { useGetCompanyQuery, useSuspendCompanyMutation } from '@/store/services/company';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
@@ -54,14 +55,18 @@ import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import { formatDate } from '@/utils/helpers';
 import { useLanguage, useToast } from '@/utils/hooks';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
+import type {
+	CompaniesViewInfoRowProps as InfoRowProps,
+	CompaniesViewProps as Props,
+	ManagedByType,
+} from '@/types/companyTypes';
 
-interface InfoRowProps {
-	icon: React.ReactNode;
-	label: string;
-	value: string | number | null | undefined | React.ReactNode;
-}
+const formatManagerName = ({ first_name, last_name, id }: ManagedByType): string => {
+	const fullName = `${first_name ?? ''} ${last_name ?? ''}`.trim();
+	return fullName || `Utilisateur ${id}`;
+};
 
-const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
+const InfoRow: FC<InfoRowProps> = ({ icon, label, value }) => {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -119,18 +124,11 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 	);
 };
 
-interface Props extends SessionProps {
-	id: number;
-}
-
-const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
+const CompaniesViewClient: FC<Props> = ({ session, id }) => {
 	const router = useRouter();
 	const token = useInitAccessToken(session);
 	const { data: companyData, isLoading, error } = useGetCompanyQuery({ id }, { skip: !token });
-	const axiosError = useMemo(
-		() => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),
-		[error],
-	);
+	const axiosError = error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined;
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -140,15 +138,20 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 	const [showSuspendModal, setShowSuspendModal] = useState(false);
 
 	const handleSuspend = async () => {
-		try {
-			await suspendRecord({ id }).unwrap();
-			onSuccess(t.companies.suspendSuccess);
-			router.push(COMPANIES_LIST);
-		} catch {
-			onError(t.companies.suspendError);
-		} finally {
-			setShowSuspendModal(false);
-		}
+		await runWithCleanup(
+			async () => {
+				try {
+					await suspendRecord({ id }).unwrap();
+					onSuccess(t.companies.suspendSuccess);
+					router.push(COMPANIES_LIST);
+				} catch {
+					onError(t.companies.suspendError);
+				}
+			},
+			() => {
+				setShowSuspendModal(false);
+			},
+		);
 	};
 
 	const suspendModalActions = [
@@ -609,8 +612,7 @@ const CompaniesViewClient: React.FC<Props> = ({ session, id }) => {
 																			fontWeight: 600,
 																		}}
 																	>
-																		{`${manager.first_name ?? ''} ${manager.last_name ?? ''}`.trim() ||
-																			`Utilisateur ${manager.id}`}
+																		{formatManagerName(manager)}
 																	</Typography>
 																	{manager.id && (
 																		<Typography

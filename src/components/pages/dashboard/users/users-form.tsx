@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
-import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
+import { runWithCleanup, runWithErrorHandler } from '@/utils/runWithCleanup';
+import { useState, type FC, type MouseEvent } from 'react';
+import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import {
 	Alert,
@@ -58,15 +59,11 @@ import type { CompanyClass } from '@/models/classes';
 import ManagedByTableSection from '@/components/shared/addManagedByTable/addManagedByTable';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import CompanyUsersWrapperForm from '@/components/pages/dashboard/shared/companies-users-form/companyUsersWrapperForm';
+import type { UsersFormFormikContentProps as FormikContentProps, UsersFormProps as Props } from '@/types/usersTypes';
 
 const inputTheme = textInputTheme();
 
-type FormikContentProps = {
-	token: string | undefined;
-	id?: number;
-};
-
-const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
+const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 	const { token, id } = props;
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
@@ -87,9 +84,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	// Compose error without local state or effects
 	const error = checkEmailError || (isEditMode ? dataError || updateError : addError);
-	const axiosError: ResponseDataInterface<ApiErrorResponseType> | undefined = useMemo(() => {
-		return error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined;
-	}, [error]);
+	const axiosError: ResponseDataInterface<ApiErrorResponseType> | undefined = error
+		? (error as ResponseDataInterface<ApiErrorResponseType>)
+		: undefined;
 
 	const groupes = useAppSelector(getGroupesState);
 	const [isPending, setIsPending] = useState(false);
@@ -125,64 +122,65 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			setIsPending(true);
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const { globalError, ...payload } = data;
-			try {
-				if (rawData?.email !== data.email) {
-					await checkEmail({ email: data.email }).unwrap();
-				}
-				if (isEditMode) {
-					await updateUser({ data: payload, id: id }).unwrap();
-					onSuccess(t.users.updateSuccess);
-				} else {
-					await addUser({ data: payload }).unwrap();
-					onSuccess(t.users.addSuccess);
-				}
-				if (!isEditMode) {
-					router.replace(USERS_LIST);
-				}
-			} catch (e) {
-				if (isEditMode) {
-					onError(t.users.updateError);
-				} else {
-					onError(t.users.addError);
-				}
-				setFormikAutoErrors({ e, setFieldError });
-			} finally {
-				setIsPending(false);
-			}
+			await runWithCleanup(
+				async () => {
+					await runWithErrorHandler(
+						async () => {
+							if (rawData?.email !== data.email) {
+								await checkEmail({ email: data.email }).unwrap();
+							}
+							if (isEditMode) {
+								await updateUser({ data: payload, id: id }).unwrap();
+								onSuccess(t.users.updateSuccess);
+							} else {
+								await addUser({ data: payload }).unwrap();
+								onSuccess(t.users.addSuccess);
+							}
+							if (!isEditMode) {
+								router.replace(USERS_LIST);
+							}
+						},
+						(e) => {
+							if (isEditMode) {
+								onError(t.users.updateError);
+							} else {
+								onError(t.users.addError);
+							}
+							setFormikAutoErrors({ e, setFieldError });
+						},
+					);
+				},
+				() => {
+					setIsPending(false);
+				},
+			);
 		},
 	});
 
 	// Derive role options
-	const roleOptions = useMemo(() => groupes.map((role) => ({ value: role, code: role })), [groupes]);
+	const roleOptions = groupes.map((role) => ({ value: role, code: role }));
 
 	// Expose companies to your table under the same name, derived from Formik
-	const companiesAdmin: Array<UserCompaniesType> = useMemo(
-		() => formik.values.companies ?? [],
-		[formik.values.companies],
-	);
+	const companiesAdmin: Array<UserCompaniesType> = formik.values.companies ?? [];
 
 	// Expose a setter with the same name that writes back into Formik
 	const setCompaniesAdmin = (next: Array<UserCompaniesType>) => {
-		formik.setFieldValue('companies', next, true);
+		void formik.setFieldValue('companies', next, true);
 	};
 
-	const managedCompanyIds = useMemo(() => companiesAdmin.map((entry) => entry.company_id), [companiesAdmin]);
+	const managedCompanyIds = companiesAdmin.map((entry) => entry.company_id);
 
-	const availableCompanies: DropDownType[] = useMemo(
-		() =>
-			(companiesData ?? [])
-				.filter(
-					(company): company is Partial<CompanyClass> & { id: number; raison_sociale: string } =>
-						typeof company.id === 'number' &&
-						typeof company.raison_sociale === 'string' &&
-						!managedCompanyIds.includes(company.id),
-				)
-				.map((company) => ({
-					value: company.id.toString(),
-					code: company.raison_sociale,
-				})),
-		[companiesData, managedCompanyIds],
-	);
+	const availableCompanies: DropDownType[] = (companiesData ?? [])
+		.filter(
+			(company): company is Partial<CompanyClass> & { id: number; raison_sociale: string } =>
+				typeof company.id === 'number' &&
+				typeof company.raison_sociale === 'string' &&
+				!managedCompanyIds.includes(company.id),
+		)
+		.map((company) => ({
+			value: company.id.toString(),
+			code: company.raison_sociale,
+		}));
 
 	const [selectedCompany, setSelectedCompany] = useState<DropDownType | null>(null);
 	const [selectedRole, setSelectedRole] = useState<string>('');
@@ -214,23 +212,20 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	};
 
 	// Collect validation errors from Formik
-	const fieldLabels = useMemo<Record<string, string>>(
-		() => ({
-			email: t.users.fieldEmail,
-			first_name: t.users.fieldNom,
-			last_name: t.users.fieldPrenom,
-			gender: t.users.fieldSexe,
-			is_active: t.users.isActiveLabel,
-			is_staff: t.users.isAdminLabel,
-			companies: t.users.companiesSection,
-			avatar: t.users.photoSection,
-			avatar_cropped: t.users.fieldAvatarCropped,
-			globalError: t.common.genericError,
-		}),
-		[t],
-	);
+	const fieldLabels = {
+		email: t.users.fieldEmail,
+		first_name: t.users.fieldNom,
+		last_name: t.users.fieldPrenom,
+		gender: t.users.fieldSexe,
+		is_active: t.users.isActiveLabel,
+		is_staff: t.users.isAdminLabel,
+		companies: t.users.companiesSection,
+		avatar: t.users.photoSection,
+		avatar_cropped: t.users.fieldAvatarCropped,
+		globalError: t.common.genericError,
+	} as Record<string, string>;
 
-	const validationErrors = useMemo(() => {
+	const validationErrors = (() => {
 		const errors: Record<string, string> = {};
 		if (hasAttemptedSubmit) {
 			Object.entries(formik.errors).forEach(([key, value]) => {
@@ -240,7 +235,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			});
 		}
 		return errors;
-	}, [formik.errors, hasAttemptedSubmit]);
+	})();
 
 	const hasValidationErrors = Object.keys(validationErrors).length > 0;
 
@@ -332,8 +327,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomSquareImageUploading
 										image={formik.values.avatar}
 										croppedImage={formik.values.avatar_cropped}
-										onChange={(img) => formik.setFieldValue('avatar', img)}
-										onCrop={(cropped) => formik.setFieldValue('avatar_cropped', cropped)}
+										onChange={(img) => void formik.setFieldValue('avatar', img)}
+										onCrop={(cropped) => void formik.setFieldValue('avatar_cropped', cropped)}
 									/>
 								</Box>
 							</CardContent>
@@ -411,7 +406,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										label={t.users.fieldSexe}
 										items={genderItemsList}
 										value={formik.values.gender}
-										onChange={(e) => formik.setFieldValue('gender', e.target.value)}
+										onChange={(e) => void formik.setFieldValue('gender', e.target.value)}
 										theme={customDropdownTheme()}
 										startIcon={<GroupsIcon fontSize="small" />}
 										onBlur={formik.handleBlur('gender')}
@@ -560,7 +555,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								active={!isPending}
 								loading={isPending}
 								startIcon={isEditMode ? <EditIcon /> : <AddIcon />}
-								onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+								onClick={(e: MouseEvent<HTMLButtonElement>) => {
 									setHasAttemptedSubmit(true);
 									if (!formik.isValid) {
 										e.preventDefault();
@@ -579,11 +574,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	);
 };
 
-interface Props extends SessionProps {
-	id?: number;
-}
-
-const UsersForm: React.FC<Props> = ({ session, id }) => (
+const UsersForm: FC<Props> = ({ session, id }) => (
 	<CompanyUsersWrapperForm session={session} id={id} entityName="utilisateur" FormikComponent={FormikContent} />
 );
 

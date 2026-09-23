@@ -1,10 +1,10 @@
-import React from 'react';
+import { type FC } from 'react';
 import type { Metadata } from 'next';
 import '@/styles/globals.sass';
-import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
+import { AppRouterCacheProvider } from '@mui/material-nextjs/v16-appRouter';
 import SessionProvider from '@/providers/sessionProvider';
 import StoreProvider from '@/providers/storeProvider';
-import type { AppProps } from 'next/app';
+import type { EntryPointProps } from '@/types/routeTypes';
 import { InitContextProvider } from '@/contexts/InitContext';
 import type { Viewport } from 'next';
 import ThemeProvider from '@/providers/themeProvider';
@@ -65,11 +65,7 @@ export const viewport: Viewport = {
 	themeColor: '#ffffff',
 };
 
-interface EntryPointProps extends AppProps {
-	children: React.ReactNode;
-}
-
-const RootLayout: React.FC<EntryPointProps> = async (props) => {
+const RootLayout: FC<EntryPointProps> = async (props) => {
 	const cookieStore = await cookies();
 	const lang = cookieStore.get('app-language')?.value === 'en' ? 'en' : 'fr';
 	return (

@@ -1,26 +1,19 @@
 'use client';
 
-import React, { useRef } from 'react';
+import { useRef, type FC, type ChangeEvent, type MouseEvent } from 'react';
 import Styles from './circularAvatarInputFile.module.sass';
 import Image from 'next/image';
 import { AddAPhoto as AddAPhotoIcon } from '@mui/icons-material';
 import { Stack } from '@mui/material';
 import { useLanguage } from '@/utils/hooks';
+import type { CircularAvatarInputFileProps as Props } from '@/types/uiTypes';
 
-type Props = {
-	preview: string | ArrayBuffer | null;
-	active: boolean;
-	setAvatar?: (file: File | null) => void;
-	children?: React.ReactNode;
-	showText?: boolean;
-};
-
-const CircularAvatarInputFile: React.FC<Props> = (props: Props) => {
+const CircularAvatarInputFile: FC<Props> = (props: Props) => {
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const { setAvatar } = props;
 	const { t } = useLanguage();
 
-	const avatarInputOnChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+	const avatarInputOnChangeHandler = (e: ChangeEvent<HTMLInputElement>) => {
 		if (!e.target.files) {
 			return;
 		}
@@ -36,7 +29,7 @@ const CircularAvatarInputFile: React.FC<Props> = (props: Props) => {
 	};
 
 	// opens hidden avatar input
-	const avatarInputOnClickHandler = (e: React.MouseEvent<HTMLDivElement | HTMLSpanElement>) => {
+	const avatarInputOnClickHandler = (e: MouseEvent<HTMLDivElement | HTMLSpanElement>) => {
 		e.preventDefault();
 		if (!fileInputRef.current) {
 			return;
@@ -45,14 +38,15 @@ const CircularAvatarInputFile: React.FC<Props> = (props: Props) => {
 	};
 
 	return (
-        <Stack
-            direction="column"
-            spacing={1}
-            sx={{
-                justifyContent: "center",
-                alignItems: "center"
-            }}>
-            <div>
+		<Stack
+			direction="column"
+			spacing={1}
+			sx={{
+				justifyContent: 'center',
+				alignItems: 'center',
+			}}
+		>
+			<div>
 				<input
 					type="file"
 					className={Styles.hiddenFile}
@@ -72,7 +66,7 @@ const CircularAvatarInputFile: React.FC<Props> = (props: Props) => {
 					{props.preview && (
 						<Image
 							src={props.preview as string}
-						alt={t.common.avatarPreview}
+							alt={t.common.avatarPreview}
 							width={100}
 							height={100}
 							loading="eager"
@@ -86,7 +80,7 @@ const CircularAvatarInputFile: React.FC<Props> = (props: Props) => {
 					/>
 				</div>
 			</div>
-            {props.showText && (
+			{props.showText && (
 				<span
 					className={Styles.addPictureSpan}
 					onClick={(e) => {
@@ -98,8 +92,8 @@ const CircularAvatarInputFile: React.FC<Props> = (props: Props) => {
 					{t.common.editPhoto}
 				</span>
 			)}
-        </Stack>
-    );
+		</Stack>
+	);
 };
 
 export default CircularAvatarInputFile;

@@ -8,11 +8,7 @@ export const metadata: Metadata = {
 	title: "Détails de la facture d'avoir",
 	description: "Consulter les détails d'une facture d'avoir",
 };
-
-type PageProps = {
-	params: Promise<{ id: string }>;
-	searchParams: Promise<{ company_id: string }>;
-};
+import type { CompanyScopedDetailRouteProps as PageProps } from '@/types/routeTypes';
 
 const FactureAvoirViewPage = async (props: PageProps) => {
 	const session = await auth();

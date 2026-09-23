@@ -8,11 +8,7 @@ export const metadata: Metadata = {
 	title: 'Modifier Devis',
 	description: 'Modifier un devis existant',
 };
-
-type PageProps = {
-	params: Promise<{ id: number }>;
-	searchParams: Promise<{ company_id: string }>;
-};
+import type { CompanyScopedEditRouteProps as PageProps } from '@/types/routeTypes';
 
 const DevisEditPage = async (props: PageProps) => {
 	const session = await auth();
@@ -28,7 +24,7 @@ const DevisEditPage = async (props: PageProps) => {
 		redirect(DEVIS_LIST);
 	}
 
-	return <DevisForm session={session} id={id} company_id={Number(company_id)} />;
+	return <DevisForm session={session} id={Number(id)} company_id={Number(company_id)} />;
 };
 
 export default DevisEditPage;

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import { runWithCleanup } from '@/utils/runWithCleanup';
+import { type FC, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Link as MuiLink } from '@mui/material';
 import {
@@ -10,7 +11,13 @@ import {
 	PictureAsPdf as PictureAsPdfIcon,
 	ReceiptLong as ReceiptLongIcon,
 } from '@mui/icons-material';
-import { FACTURE_AVOIR_EDIT, FACTURE_AVOIR_LIST, FACTURE_AVOIR_PDF, FACTURE_CLIENT_VIEW, type DocumentPdfType } from '@/utils/routes';
+import {
+	type DocumentPdfType,
+	FACTURE_AVOIR_EDIT,
+	FACTURE_AVOIR_LIST,
+	FACTURE_AVOIR_PDF,
+	FACTURE_CLIENT_VIEW,
+} from '@/utils/routes';
 import { useDeleteFactureAvoirMutation, useGetFactureAvoirQuery } from '@/store/services/factureAvoir';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
@@ -18,32 +25,16 @@ import { getUserCompaniesState } from '@/store/selectors';
 import { extractApiErrorMessage } from '@/utils/helpers';
 import { fetchPdfBlob } from '@/utils/apiHelpers';
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
-import type { SessionProps } from '@/types/_initTypes';
 import CompanyDocumentsWrapperView from '@/components/pages/dashboard/shared/company-documents-view/companyDocumentsWrapperView';
-import type { CompanyDocumentData } from '@/types/companyDocumentsTypes';
+import type { FactureAvoirData, FactureAvoirViewProps as Props } from '@/types/companyDocumentsTypes';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 
-type FactureAvoirData = CompanyDocumentData & {
-	numero_avoir?: string | number | null;
-	date_avoir?: string | null;
-	facture_origine?: number | null;
-	facture_origine_numero?: string | null;
-	facture_origine_date?: string | null;
-	motif_avoir_label?: string | null;
-	numero_bon_commande_client?: string | number | null;
-};
-
-interface Props extends SessionProps {
-	company_id: number;
-	id: number;
-}
-
-const FactureAvoirViewClient: React.FC<Props> = ({ session, company_id, id }) => {
+const FactureAvoirViewClient: FC<Props> = ({ session, company_id, id }) => {
 	const query = useGetFactureAvoirQuery({ id });
 	const token = useInitAccessToken(session);
 	const router = useRouter();
 	const companies = useAppSelector(getUserCompaniesState);
-	const company = useMemo(() => companies?.find((c) => c.id === company_id), [companies, company_id]);
+	const company = companies?.find((c) => c.id === company_id);
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
 	const [showLanguageModal, setShowLanguageModal] = useState(false);
@@ -57,15 +48,20 @@ const FactureAvoirViewClient: React.FC<Props> = ({ session, company_id, id }) =>
 	const canDelete = company?.role === 'Caissier' && Boolean(query.data);
 
 	const handleDelete = async () => {
-		try {
-			await deleteFactureAvoir({ id }).unwrap();
-			onSuccess(t.facturesAvoir.deleteSuccess);
-			router.push(FACTURE_AVOIR_LIST);
-		} catch (err) {
-			onError(extractApiErrorMessage(err, t.facturesAvoir.deleteError));
-		} finally {
-			setShowDeleteModal(false);
-		}
+		await runWithCleanup(
+			async () => {
+				try {
+					await deleteFactureAvoir({ id }).unwrap();
+					onSuccess(t.facturesAvoir.deleteSuccess);
+					router.push(FACTURE_AVOIR_LIST);
+				} catch (err) {
+					onError(extractApiErrorMessage(err, t.facturesAvoir.deleteError));
+				}
+			},
+			() => {
+				setShowDeleteModal(false);
+			},
+		);
 	};
 
 	const openPdf = (type: DocumentPdfType) => {
@@ -76,39 +72,73 @@ const FactureAvoirViewClient: React.FC<Props> = ({ session, company_id, id }) =>
 	const handleLanguageSelect = async (language: 'fr' | 'en') => {
 		setShowLanguageModal(false);
 		if (!token || !pendingPdfType) return;
-		try {
-			const url = FACTURE_AVOIR_PDF(id, company_id, pendingPdfType, language);
-			const blob = await fetchPdfBlob(url, token);
-			const blobUrl = window.URL.createObjectURL(blob);
-			window.open(blobUrl, '_blank');
-			setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60_000);
-		} catch {
-			onError(t.errors.documentOpenError);
-		} finally {
-			setPendingPdfType(null);
-		}
+		await runWithCleanup(
+			async () => {
+				try {
+					const url = FACTURE_AVOIR_PDF(id, company_id, pendingPdfType, language);
+					const blob = await fetchPdfBlob(url, token);
+					const blobUrl = window.URL.createObjectURL(blob);
+					window.open(blobUrl, '_blank');
+					setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60_000);
+				} catch {
+					onError(t.errors.documentOpenError);
+				}
+			},
+			() => {
+				setPendingPdfType(null);
+			},
+		);
 	};
 
 	const headerActions = (
 		<>
 			{canPrint && (
 				<>
-					<Button variant="outlined" color="error" size="small" startIcon={<PictureAsPdfIcon />} onClick={() => openPdf('avec_remise')}>
+					<Button
+						variant="outlined"
+						color="error"
+						size="small"
+						startIcon={<PictureAsPdfIcon />}
+						onClick={() => openPdf('avec_remise')}
+					>
 						PDF (remise)
 					</Button>
-					<Button variant="outlined" size="small" startIcon={<PictureAsPdfIcon />} onClick={() => openPdf('sans_remise')}>
+					<Button
+						variant="outlined"
+						size="small"
+						startIcon={<PictureAsPdfIcon />}
+						onClick={() => openPdf('sans_remise')}
+					>
 						{t.common.pdfWithoutDiscount}
 					</Button>
-					<Button variant="outlined" color="warning" size="small" startIcon={<PictureAsPdfIcon />} onClick={() => openPdf('avec_unite_sans_remise')}>
+					<Button
+						variant="outlined"
+						color="warning"
+						size="small"
+						startIcon={<PictureAsPdfIcon />}
+						onClick={() => openPdf('avec_unite_sans_remise')}
+					>
 						{t.common.pdfWithUnitWithoutDiscount}
 					</Button>
-					<Button variant="outlined" color="warning" size="small" startIcon={<PictureAsPdfIcon />} onClick={() => openPdf('avec_unite_avec_remise')}>
+					<Button
+						variant="outlined"
+						color="warning"
+						size="small"
+						startIcon={<PictureAsPdfIcon />}
+						onClick={() => openPdf('avec_unite_avec_remise')}
+					>
 						{t.common.pdfWithUnitWithDiscount}
 					</Button>
 				</>
 			)}
 			{canDelete && (
-				<Button variant="outlined" color="error" size="small" startIcon={<DeleteIcon />} onClick={() => setShowDeleteModal(true)}>
+				<Button
+					variant="outlined"
+					color="error"
+					size="small"
+					startIcon={<DeleteIcon />}
+					onClick={() => setShowDeleteModal(true)}
+				>
 					{t.common.delete}
 				</Button>
 			)}

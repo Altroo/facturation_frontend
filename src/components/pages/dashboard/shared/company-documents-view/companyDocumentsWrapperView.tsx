@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import { type FC, Fragment, isValidElement } from 'react';
 import {
 	Alert,
 	AlertTitle,
@@ -37,12 +37,10 @@ import { DataGrid, type GridColDef, type GridRenderCellParams } from '@mui/x-dat
 import { frFR } from '@mui/x-data-grid/locales';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import FactureDevisTotalsCard from '@/components/shared/factureDevistotalCard/factureDevisTotalsCard';
-
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import { useAppSelector, useLanguage } from '@/utils/hooks';
 import { getUserCompaniesState } from '@/store/selectors';
@@ -50,23 +48,22 @@ import { useGetArticlesListQuery } from '@/store/services/article';
 import { extractApiErrorMessage, formatDate, formatNumberWithSpaces } from '@/utils/helpers';
 import { isNectarRaisonSociale } from '@/utils/nectar';
 import { useInitAccessToken } from '@/contexts/InitContext';
-
 import type { ArticleClass } from '@/models/classes';
 import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import { getStatutColor } from '@/components/pages/dashboard/devis/devis-list';
-import type { CompanyDocumentData, CompanyDocumentsViewProps, Totals } from '@/types/companyDocumentsTypes';
+import type {
+	CompanyDocumentData,
+	CompanyDocumentsViewProps,
+	CompanyDocumentsWrapperViewInfoRowProps as InfoRowProps,
+	DocumentErrorStateProps,
+	Totals,
+} from '@/types/companyDocumentsTypes';
 
-interface InfoRowProps {
-	icon: React.ReactNode;
-	label: string;
-	value: string | number | null | undefined | React.ReactNode;
-}
-
-const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
+const InfoRow: FC<InfoRowProps> = ({ icon, label, value }) => {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-	const displayValue = React.isValidElement(value)
+	const displayValue = isValidElement(value)
 		? value
 		: value === null || value === undefined || String(value).trim() === ''
 			? '-'
@@ -103,7 +100,7 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 					{label}
 				</Typography>
 				<Box sx={{ flex: 1 }}>
-					{React.isValidElement(displayValue) ? (
+					{isValidElement(displayValue) ? (
 						displayValue
 					) : (
 						<Typography sx={{ color: 'text.primary' }}>{displayValue}</Typography>
@@ -114,17 +111,7 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 	);
 };
 
-type DocumentErrorStateProps = {
-	title: string;
-	message: string;
-	helpText: string;
-	backLabel: string;
-	retryLabel: string;
-	onBack: () => void;
-	onRetry: () => void;
-};
-
-const DocumentErrorState: React.FC<DocumentErrorStateProps> = ({
+const DocumentErrorState: FC<DocumentErrorStateProps> = ({
 	title,
 	message,
 	helpText,
@@ -375,353 +362,362 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 		{ skip: !token },
 	);
 
-	const articlesData = useMemo(() => {
+	const articlesData = (() => {
 		if (Array.isArray(rawArticlesData)) return rawArticlesData as Array<Partial<ArticleClass>>;
 		return undefined;
-	}, [rawArticlesData]);
+	})();
 
-	const axiosError = useMemo(
-		() => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),
-		[error],
-	);
+	const axiosError = error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined;
 	const errorStatus = Number(axiosError?.status ?? 0);
 	const documentErrorTitle = errorStatus === 404 ? t.common.documentNotFoundTitle : t.common.documentLoadErrorTitle;
 	const documentErrorMessage = extractApiErrorMessage(axiosError, t.common.genericError);
 
-	const company = useMemo(() => companies?.find((comp) => comp.id === company_id), [companies, company_id]);
+	const company = companies?.find((comp) => comp.id === company_id);
 	const isNectarCompany = isNectarRaisonSociale(company?.raison_sociale);
 
-	const totals = useMemo(() => computeTotals(rawData, articlesData), [rawData, articlesData]);
+	const totals = computeTotals(rawData, articlesData);
 
-	const linesColumns: GridColDef[] = useMemo(
-		() =>
-			[
-				{
-					field: 'photo',
-					headerName: t.documentView.colPhoto,
-					flex: 0.5,
-					minWidth: 60,
-					renderCell: (params: GridRenderCellParams) => {
-						const articleId = toNumber((params.row as { article?: unknown }).article, NaN);
-						const article = Number.isFinite(articleId) ? articlesData?.find((a) => a.id === articleId) : undefined;
+	const linesColumns: GridColDef[] = [
+		{
+			field: 'photo',
+			headerName: t.documentView.colPhoto,
+			flex: 0.5,
+			minWidth: 60,
+			renderCell: (params: GridRenderCellParams) => {
+				const articleId = toNumber((params.row as { article?: unknown }).article, NaN);
+				const article = Number.isFinite(articleId) ? articlesData?.find((a) => a.id === articleId) : undefined;
 
-						return (
-							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-								<DarkTooltip
-									title={
-										article?.photo ? (
-											<Box
-												sx={{
-													width: 260,
-													height: 260,
-													display: 'flex',
-													alignItems: 'center',
-													justifyContent: 'center',
-												}}
-											>
-												<Image
-													src={String(article.photo)}
-													alt={String(article.reference ?? '')}
-													width={260}
-													height={260}
-													style={{ objectFit: 'contain', display: 'block' }}
-												/>
-											</Box>
-										) : (
-											''
-										)
-									}
-									placement="right"
-									arrow
-									enterDelay={100}
-									leaveDelay={200}
-									slotProps={{ tooltip: { sx: { pointerEvents: 'auto' } } }}
-								>
-									{article?.photo ? (
-										<Box
-											component="img"
+				return (
+					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+						<DarkTooltip
+							title={
+								article?.photo ? (
+									<Box
+										sx={{
+											width: 260,
+											height: 260,
+											display: 'flex',
+											alignItems: 'center',
+											justifyContent: 'center',
+										}}
+									>
+										<Image
 											src={String(article.photo)}
-											alt={article?.reference ? String(article.reference) : undefined}
-											sx={{ width: 40, height: 40, borderRadius: 1, objectFit: 'cover' }}
+											alt={String(article.reference ?? '')}
+											width={260}
+											height={260}
+											style={{ objectFit: 'contain', display: 'block' }}
 										/>
-									) : (
-										<Box
-											sx={{
-												width: 40,
-												height: 40,
-												borderRadius: 1,
-												backgroundColor: '#E0E0E0',
-												display: 'flex',
-												alignItems: 'center',
-												justifyContent: 'center',
-											}}
-										>
-											<Inventory2Icon sx={{ fontSize: 20, color: '#9E9E9E' }} />
-										</Box>
-									)}
-								</DarkTooltip>
-							</Box>
-						);
-					},
-					sortable: false,
-					filterable: false,
-				},
-				{
-					field: 'reference',
-					headerName: t.documentView.colReference,
-					flex: 0.8,
-					minWidth: 90,
-					renderCell: (params: GridRenderCellParams) => {
-						const articleId = toNumber((params.row as { article?: unknown }).article, NaN);
-						const article = Number.isFinite(articleId) ? articlesData?.find((a) => a.id === articleId) : undefined;
-						const value = article?.reference ? String(article.reference) : '';
-						return (
-							<DarkTooltip title={value}>
-								<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-									<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
-										{value}
-									</Typography>
+									</Box>
+								) : (
+									''
+								)
+							}
+							placement="right"
+							arrow
+							enterDelay={100}
+							leaveDelay={200}
+							slotProps={{ tooltip: { sx: { pointerEvents: 'auto' } } }}
+						>
+							{article?.photo ? (
+								<Box
+									component="img"
+									src={String(article.photo)}
+									alt={article?.reference ? String(article.reference) : undefined}
+									sx={{ width: 40, height: 40, borderRadius: 1, objectFit: 'cover' }}
+								/>
+							) : (
+								<Box
+									sx={{
+										width: 40,
+										height: 40,
+										borderRadius: 1,
+										backgroundColor: '#E0E0E0',
+										display: 'flex',
+										alignItems: 'center',
+										justifyContent: 'center',
+									}}
+								>
+									<Inventory2Icon sx={{ fontSize: 20, color: '#9E9E9E' }} />
 								</Box>
-							</DarkTooltip>
-						);
-					},
-				},
-				{
-					field: 'designation',
-					headerName: t.documentView.colDesignation,
-					flex: 1.4,
-					minWidth: 120,
-					renderCell: (params: GridRenderCellParams) => {
-						const value = (params.row as { designation?: unknown }).designation;
-						const label = value === null || value === undefined ? '' : String(value);
-						return (
-							<DarkTooltip title={label}>
-								<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-									<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
-										{label}
-									</Typography>
-								</Box>
-							</DarkTooltip>
-						);
-					},
-				},
-				{
-					field: 'marque',
-					headerName: t.documentView.colMarque,
-					flex: 1,
-					minWidth: 100,
-					renderCell: (params: GridRenderCellParams) => {
-						const articleId = toNumber((params.row as { article?: unknown }).article, NaN);
-						const article = Number.isFinite(articleId) ? articlesData?.find((a) => a.id === articleId) : undefined;
-						const value = article?.marque_name ? String(article.marque_name) : '';
-						return (
-							<DarkTooltip title={value}>
-								<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-									<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
-										{value}
-									</Typography>
-								</Box>
-							</DarkTooltip>
-						);
-					},
-				},
-				{
-					field: 'categorie',
-					headerName: t.documentView.colCategorie,
-					flex: 1,
-					minWidth: 100,
-					renderCell: (params: GridRenderCellParams) => {
-						const articleId = toNumber((params.row as { article?: unknown }).article, NaN);
-						const article = Number.isFinite(articleId) ? articlesData?.find((a) => a.id === articleId) : undefined;
-						const value = article?.categorie_name ? String(article.categorie_name) : '';
-						return (
-							<DarkTooltip title={value}>
-								<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-									<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
-										{value}
-									</Typography>
-								</Box>
-							</DarkTooltip>
-						);
-					},
-				},
-				{
-					field: 'prix_achat',
-					headerName: t.documentView.colPrixAchat,
-					flex: 1,
-					minWidth: 110,
-					renderCell: (params: GridRenderCellParams) => {
-						const value =
-							formatNumberWithSpaces(params.row.prix_achat ?? 0, 2) + ' ' + (params.row.devise_prix_achat || 'MAD');
-						return (
-							<DarkTooltip title={value}>
-								<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-									<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
-										{value}
-									</Typography>
-								</Box>
-							</DarkTooltip>
-						);
-					},
-				},
-				{
-					field: 'prix_vente',
-					headerName: isNectarCompany ? t.documentForm.colPrixUnitaire : t.documentView.colPrixVente,
-					flex: 1,
-					minWidth: 110,
-					renderCell: (params: GridRenderCellParams) => {
-						const value =
-							formatNumberWithSpaces(params.row.prix_vente ?? 0, 2) + ' ' + (params.row.devise_prix_vente || 'MAD');
-						return (
-							<DarkTooltip title={value}>
-								<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-									<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
-										{value}
-									</Typography>
-								</Box>
-							</DarkTooltip>
-						);
-					},
-				},
-				{
-					field: 'quantity',
-					headerName: t.documentView.colQuantite,
-					flex: 0.8,
-					minWidth: 90,
-					renderCell: (params: GridRenderCellParams) => {
-						const raw = (params.row as { quantity?: unknown }).quantity;
-						const value = raw === null || raw === undefined ? 1 : String(raw);
-						const articleId = toNumber((params.row as { article?: unknown }).article, NaN);
-						const article = Number.isFinite(articleId) ? articlesData?.find((a) => a.id === articleId) : undefined;
-						const uniteName = article?.unite_name ? String(article.unite_name) : '';
-						return (
-							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-								<Typography variant="body2">
-									{value}
-									{uniteName ? ` ${uniteName}` : ''}
-								</Typography>
-							</Box>
-						);
-					},
-				},
-				{
-					field: 'stock_coverage',
-					headerName: 'Disponibilité',
-					flex: 1.2,
-					minWidth: 170,
-					sortable: false,
-					filterable: false,
-					renderCell: (params: GridRenderCellParams) => {
-						const coverage = (params.row as {
-							stock_coverage?: { status?: string; available_quantity?: number | string; incoming_quantity?: number | string };
-						}).stock_coverage;
-						const labels: Record<string, string> = {
-							disponible: 'Disponible',
-							couvert_par_stock_entrant: 'Couvert par stock entrant',
-							a_approvisionner: 'À approvisionner',
-							not_managed: 'Non géré',
+							)}
+						</DarkTooltip>
+					</Box>
+				);
+			},
+			sortable: false,
+			filterable: false,
+		},
+		{
+			field: 'reference',
+			headerName: t.documentView.colReference,
+			flex: 0.8,
+			minWidth: 90,
+			renderCell: (params: GridRenderCellParams) => {
+				const articleId = toNumber((params.row as { article?: unknown }).article, NaN);
+				const article = Number.isFinite(articleId) ? articlesData?.find((a) => a.id === articleId) : undefined;
+				const value = article?.reference ? String(article.reference) : '';
+				return (
+					<DarkTooltip title={value}>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+								{value}
+							</Typography>
+						</Box>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'designation',
+			headerName: t.documentView.colDesignation,
+			flex: 1.4,
+			minWidth: 120,
+			renderCell: (params: GridRenderCellParams) => {
+				const value = (params.row as { designation?: unknown }).designation;
+				const label = value === null || value === undefined ? '' : String(value);
+				return (
+					<DarkTooltip title={label}>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+								{label}
+							</Typography>
+						</Box>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'marque',
+			headerName: t.documentView.colMarque,
+			flex: 1,
+			minWidth: 100,
+			renderCell: (params: GridRenderCellParams) => {
+				const articleId = toNumber((params.row as { article?: unknown }).article, NaN);
+				const article = Number.isFinite(articleId) ? articlesData?.find((a) => a.id === articleId) : undefined;
+				const value = article?.marque_name ? String(article.marque_name) : '';
+				return (
+					<DarkTooltip title={value}>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+								{value}
+							</Typography>
+						</Box>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'categorie',
+			headerName: t.documentView.colCategorie,
+			flex: 1,
+			minWidth: 100,
+			renderCell: (params: GridRenderCellParams) => {
+				const articleId = toNumber((params.row as { article?: unknown }).article, NaN);
+				const article = Number.isFinite(articleId) ? articlesData?.find((a) => a.id === articleId) : undefined;
+				const value = article?.categorie_name ? String(article.categorie_name) : '';
+				return (
+					<DarkTooltip title={value}>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+								{value}
+							</Typography>
+						</Box>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'prix_achat',
+			headerName: t.documentView.colPrixAchat,
+			flex: 1,
+			minWidth: 110,
+			renderCell: (params: GridRenderCellParams) => {
+				const value =
+					formatNumberWithSpaces(params.row.prix_achat ?? 0, 2) + ' ' + (params.row.devise_prix_achat || 'MAD');
+				return (
+					<DarkTooltip title={value}>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+								{value}
+							</Typography>
+						</Box>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'prix_vente',
+			headerName: isNectarCompany ? t.documentForm.colPrixUnitaire : t.documentView.colPrixVente,
+			flex: 1,
+			minWidth: 110,
+			renderCell: (params: GridRenderCellParams) => {
+				const value =
+					formatNumberWithSpaces(params.row.prix_vente ?? 0, 2) + ' ' + (params.row.devise_prix_vente || 'MAD');
+				return (
+					<DarkTooltip title={value}>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+								{value}
+							</Typography>
+						</Box>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'quantity',
+			headerName: t.documentView.colQuantite,
+			flex: 0.8,
+			minWidth: 90,
+			renderCell: (params: GridRenderCellParams) => {
+				const raw = (params.row as { quantity?: unknown }).quantity;
+				const value = raw === null || raw === undefined ? 1 : String(raw);
+				const articleId = toNumber((params.row as { article?: unknown }).article, NaN);
+				const article = Number.isFinite(articleId) ? articlesData?.find((a) => a.id === articleId) : undefined;
+				const uniteName = article?.unite_name ? String(article.unite_name) : '';
+				return (
+					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+						<Typography variant="body2">
+							{value}
+							{uniteName ? ` ${uniteName}` : ''}
+						</Typography>
+					</Box>
+				);
+			},
+		},
+		{
+			field: 'stock_coverage',
+			headerName: 'Disponibilité',
+			flex: 1.2,
+			minWidth: 170,
+			sortable: false,
+			filterable: false,
+			renderCell: (params: GridRenderCellParams) => {
+				const coverage = (
+					params.row as {
+						stock_coverage?: {
+							status?: string;
+							available_quantity?: number | string;
+							incoming_quantity?: number | string;
 						};
-						const color = coverage?.status === 'disponible' ? 'success' : coverage?.status === 'couvert_par_stock_entrant' ? 'info' : coverage?.status === 'a_approvisionner' ? 'warning' : 'default';
-						const detail = coverage?.status === 'couvert_par_stock_entrant'
-							? `Disponible ${formatNumberWithSpaces(coverage.available_quantity, 3)}, entrant ${formatNumberWithSpaces(coverage.incoming_quantity, 3)}`
-							: '';
-						return <DarkTooltip title={detail}><Chip size="small" color={color} label={labels[coverage?.status ?? 'not_managed']} /></DarkTooltip>;
-					},
-				},
-				{
-					field: 'taxes',
-					headerName: t.documentForm.colTaxes,
-					flex: 0.8,
-					minWidth: 90,
-					sortable: false,
-					filterable: false,
-					renderCell: (params: GridRenderCellParams) => {
-						const articleId = toNumber((params.row as { article?: unknown }).article, NaN);
-						const article = Number.isFinite(articleId) ? articlesData?.find((a) => a.id === articleId) : undefined;
-						const tvaRate = toNumber(article?.tva, 0);
-						const value = `${formatNumberWithSpaces(tvaRate, 1)}%`;
-						return (
-							<DarkTooltip title={value}>
-								<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-									<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
-										{value}
-									</Typography>
-								</Box>
-							</DarkTooltip>
-						);
-					},
-				},
-				{
-					field: 'montant',
-					headerName: t.documentForm.colMontant,
-					flex: 1,
-					minWidth: 120,
-					sortable: false,
-					filterable: false,
-					renderCell: (params: GridRenderCellParams) => {
-						const row = params.row as {
-							prix_vente?: unknown;
-							quantity?: unknown;
-							devise_prix_vente?: unknown;
-						};
-						const prixVente = toNumber(row.prix_vente, 0);
-						const quantity = toNumber(row.quantity, 1);
-						const amount = prixVente * (Number.isFinite(quantity) ? quantity : 1);
-						const devise =
-							row.devise_prix_vente === null || row.devise_prix_vente === undefined
-								? 'MAD'
-								: String(row.devise_prix_vente);
-						const value = `${formatNumberWithSpaces(amount, 2)} ${devise}`;
-						return (
-							<DarkTooltip title={value}>
-								<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-									<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
-										{value}
-									</Typography>
-								</Box>
-							</DarkTooltip>
-						);
-					},
-				},
-				{
-					field: 'remise_type',
-					headerName: t.documentView.colTypeRemise,
-					flex: 0.8,
-					minWidth: 90,
-					renderCell: (params: GridRenderCellParams) => {
-						const value = (params.row as { remise_type?: unknown }).remise_type;
-						const label = value === null || value === undefined ? '' : String(value);
-						return (
-							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-								<Typography variant="body2">{label || '-'}</Typography>
-							</Box>
-						);
-					},
-				},
-				{
-					field: 'remise',
-					headerName: t.documentView.colRemise,
-					flex: 0.8,
-					minWidth: 90,
-					renderCell: (params: GridRenderCellParams) => {
-						const row = params.row as { remise?: unknown; remise_type?: unknown };
-						const remise = toNumber(row.remise, 0);
-						const remiseType = row.remise_type === null || row.remise_type === undefined ? '' : String(row.remise_type);
-						const value = remise > 0 ? `${remise}${remiseType === 'Pourcentage' ? '%' : ' MAD'}` : '-';
-						return (
-							<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-								<Typography variant="body2">{value}</Typography>
-							</Box>
-						);
-					},
-				},
-			].filter((column) => {
-				if (column.field === 'stock_coverage' && type !== 'devis') return false;
-				if (!isNectarCompany) return !['taxes', 'montant'].includes(column.field);
-				return !['prix_achat', 'remise_type', 'remise'].includes(column.field);
-			}),
-		[articlesData, t, isNectarCompany, type],
-	);
+					}
+				).stock_coverage;
+				const labels: Record<string, string> = {
+					disponible: 'Disponible',
+					couvert_par_stock_entrant: 'Couvert par stock entrant',
+					a_approvisionner: 'À approvisionner',
+					not_managed: 'Non géré',
+				};
+				const color =
+					coverage?.status === 'disponible'
+						? 'success'
+						: coverage?.status === 'couvert_par_stock_entrant'
+							? 'info'
+							: coverage?.status === 'a_approvisionner'
+								? 'warning'
+								: 'default';
+				const detail =
+					coverage?.status === 'couvert_par_stock_entrant'
+						? `Disponible ${formatNumberWithSpaces(coverage.available_quantity, 3)}, entrant ${formatNumberWithSpaces(coverage.incoming_quantity, 3)}`
+						: '';
+				return (
+					<DarkTooltip title={detail}>
+						<Chip size="small" color={color} label={labels[coverage?.status ?? 'not_managed']} />
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'taxes',
+			headerName: t.documentForm.colTaxes,
+			flex: 0.8,
+			minWidth: 90,
+			sortable: false,
+			filterable: false,
+			renderCell: (params: GridRenderCellParams) => {
+				const articleId = toNumber((params.row as { article?: unknown }).article, NaN);
+				const article = Number.isFinite(articleId) ? articlesData?.find((a) => a.id === articleId) : undefined;
+				const tvaRate = toNumber(article?.tva, 0);
+				const value = `${formatNumberWithSpaces(tvaRate, 1)}%`;
+				return (
+					<DarkTooltip title={value}>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+								{value}
+							</Typography>
+						</Box>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'montant',
+			headerName: t.documentForm.colMontant,
+			flex: 1,
+			minWidth: 120,
+			sortable: false,
+			filterable: false,
+			renderCell: (params: GridRenderCellParams) => {
+				const row = params.row as {
+					prix_vente?: unknown;
+					quantity?: unknown;
+					devise_prix_vente?: unknown;
+				};
+				const prixVente = toNumber(row.prix_vente, 0);
+				const quantity = toNumber(row.quantity, 1);
+				const amount = prixVente * (Number.isFinite(quantity) ? quantity : 1);
+				const devise =
+					row.devise_prix_vente === null || row.devise_prix_vente === undefined ? 'MAD' : String(row.devise_prix_vente);
+				const value = `${formatNumberWithSpaces(amount, 2)} ${devise}`;
+				return (
+					<DarkTooltip title={value}>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
+								{value}
+							</Typography>
+						</Box>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'remise_type',
+			headerName: t.documentView.colTypeRemise,
+			flex: 0.8,
+			minWidth: 90,
+			renderCell: (params: GridRenderCellParams) => {
+				const value = (params.row as { remise_type?: unknown }).remise_type;
+				const label = value === null || value === undefined ? '' : String(value);
+				return (
+					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+						<Typography variant="body2">{label || '-'}</Typography>
+					</Box>
+				);
+			},
+		},
+		{
+			field: 'remise',
+			headerName: t.documentView.colRemise,
+			flex: 0.8,
+			minWidth: 90,
+			renderCell: (params: GridRenderCellParams) => {
+				const row = params.row as { remise?: unknown; remise_type?: unknown };
+				const remise = toNumber(row.remise, 0);
+				const remiseType = row.remise_type === null || row.remise_type === undefined ? '' : String(row.remise_type);
+				const value = remise > 0 ? `${remise}${remiseType === 'Pourcentage' ? '%' : ' MAD'}` : '-';
+				return (
+					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+						<Typography variant="body2">{value}</Typography>
+					</Box>
+				);
+			},
+		},
+	].filter((column) => {
+		if (column.field === 'stock_coverage' && type !== 'devis') return false;
+		if (!isNectarCompany) return !['taxes', 'montant'].includes(column.field);
+		return !['prix_achat', 'remise_type', 'remise'].includes(column.field);
+	});
 
 	const dateLabel = formatDate(getDocumentDateRaw(rawData) ?? null) || '-';
 
@@ -855,10 +851,10 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 											</>
 										)}
 										{extraDocumentRows.map((row, index) => (
-											<React.Fragment key={`${row.label}-${index}`}>
+											<Fragment key={`${row.label}-${index}`}>
 												<Divider />
 												<InfoRow icon={row.icon} label={row.label} value={row.getValue(rawData)} />
-											</React.Fragment>
+											</Fragment>
 										))}
 									</Stack>
 								</CardContent>

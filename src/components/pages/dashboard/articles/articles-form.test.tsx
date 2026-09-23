@@ -1,4 +1,4 @@
-import React from 'react';
+import { type ReactNode, type ChangeEvent, type SyntheticEvent, type ReactElement } from 'react';
 import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
@@ -11,8 +11,7 @@ const mockStore = configureStore({
 		_init: () => ({}),
 		account: () => ({}),
 	},
-	middleware: (getDefaultMiddleware) =>
-		getDefaultMiddleware({ serializableCheck: false }),
+	middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false }),
 });
 
 // Mock next/navigation
@@ -34,7 +33,11 @@ jest.mock('@/utils/hooks', () => ({
 	__esModule: true,
 	useAppSelector: jest.fn(() => [{ id: 1, role: 'Caissier' }]),
 	useToast: () => ({ onSuccess: jest.fn(), onError: jest.fn() }),
-	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
+	useLanguage: () => ({
+		language: 'fr' as const,
+		setLanguage: jest.fn(),
+		t: jest.requireActual('@/translations').translations.fr,
+	}),
 }));
 
 jest.mock('@/store/selectors', () => ({
@@ -68,8 +71,14 @@ interface MutationResult {
 const mockUseGetArticleQuery = jest.fn();
 const mockAddArticleMutation = jest.fn();
 const mockEditArticleMutation = jest.fn();
-const mockUseAddArticleMutation = jest.fn((): [jest.Mock, MutationResult] => [mockAddArticleMutation, { isLoading: false, error: undefined }]);
-const mockUseEditArticleMutation = jest.fn((): [jest.Mock, MutationResult] => [mockEditArticleMutation, { isLoading: false, error: undefined }]);
+const mockUseAddArticleMutation = jest.fn((): [jest.Mock, MutationResult] => [
+	mockAddArticleMutation,
+	{ isLoading: false, error: undefined },
+]);
+const mockUseEditArticleMutation = jest.fn((): [jest.Mock, MutationResult] => [
+	mockEditArticleMutation,
+	{ isLoading: false, error: undefined },
+]);
 const mockUseGetCodeReferenceQuery = jest.fn((): CodeReferenceQueryResult => ({
 	data: { reference: 'ART-001' },
 	isLoading: false,
@@ -78,8 +87,7 @@ const mockUseGetCodeReferenceQuery = jest.fn((): CodeReferenceQueryResult => ({
 
 jest.mock('@/store/services/article', () => ({
 	__esModule: true,
-	useGetArticleQuery: (params: { id: number }, options: { skip: boolean }) =>
-		mockUseGetArticleQuery(params, options),
+	useGetArticleQuery: (params: { id: number }, options: { skip: boolean }) => mockUseGetArticleQuery(params, options),
 	useGetCodeReferenceQuery: () => mockUseGetCodeReferenceQuery(),
 	useAddArticleMutation: () => mockUseAddArticleMutation(),
 	useEditArticleMutation: () => mockUseEditArticleMutation(),
@@ -118,7 +126,7 @@ jest.mock('@/store/services/company', () => ({
 // Mock NavigationBar
 jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 	__esModule: true,
-	default: ({ children, title }: { children: React.ReactNode; title: string }) => (
+	default: ({ children, title }: { children: ReactNode; title: string }) => (
 		<div data-testid="navigation-bar">
 			<h1 data-testid="nav-title">{title}</h1>
 			{children}
@@ -139,7 +147,17 @@ jest.mock('@/components/shared/entityCrudControls/entityCrudControls', () => ({
 // Mock form subcomponents (interactive)
 jest.mock('@/components/formikElements/customTextInput/customTextInput', () => ({
 	__esModule: true,
-	default: ({ id, label, onChange, onBlur }: { id: string; label: string; onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void; onBlur?: () => void }) => (
+	default: ({
+		id,
+		label,
+		onChange,
+		onBlur,
+	}: {
+		id: string;
+		label: string;
+		onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
+		onBlur?: () => void;
+	}) => (
 		<div data-testid={`input-${id}`}>
 			<label>{label}</label>
 			<input data-testid={`input-field-${id}`} onChange={onChange} onBlur={() => onBlur?.()} />
@@ -149,30 +167,69 @@ jest.mock('@/components/formikElements/customTextInput/customTextInput', () => (
 
 jest.mock('@/components/formikElements/formattedNumberInput/formattedNumberInput', () => ({
 	__esModule: true,
-	default: ({ id, label, onChange, onBlur }: { id: string; label: string; onChange?: (values: { floatValue: number | undefined }) => void; onBlur?: () => void }) => (
+	default: ({
+		id,
+		label,
+		onChange,
+		onBlur,
+	}: {
+		id: string;
+		label: string;
+		onChange?: (values: { floatValue: number | undefined }) => void;
+		onBlur?: () => void;
+	}) => (
 		<div data-testid={`input-${id}`}>
 			<label>{label}</label>
-			<input data-testid={`input-field-${id}`} onChange={(e) => onChange?.({ floatValue: parseFloat(e.target.value) || undefined })} onBlur={() => onBlur?.()} />
+			<input
+				data-testid={`input-field-${id}`}
+				onChange={(e) => onChange?.({ floatValue: parseFloat(e.target.value) || undefined })}
+				onBlur={() => onBlur?.()}
+			/>
 		</div>
 	),
 }));
 
 jest.mock('@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect', () => ({
 	__esModule: true,
-	default: ({ id, label, onChange, onBlur }: { id: string; label: string; onChange?: (event: React.SyntheticEvent, value: { id: number; label: string } | null) => void; onBlur?: () => void }) => (
+	default: ({
+		id,
+		label,
+		onChange,
+		onBlur,
+	}: {
+		id: string;
+		label: string;
+		onChange?: (event: SyntheticEvent, value: { id: number; label: string } | null) => void;
+		onBlur?: () => void;
+	}) => (
 		<div data-testid={`select-${id}`}>
 			<label>{label}</label>
-			<input data-testid={`select-field-${id}`} onChange={(e) => onChange?.(e, { id: parseInt(e.target.value) || 0, label: e.target.value })} onBlur={() => onBlur?.()} />
+			<input
+				data-testid={`select-field-${id}`}
+				onChange={(e) => onChange?.(e, { id: parseInt(e.target.value) || 0, label: e.target.value })}
+				onBlur={() => onBlur?.()}
+			/>
 		</div>
 	),
 }));
 
 jest.mock('@/components/formikElements/customDropDownSelect/customDropDownSelect', () => ({
 	__esModule: true,
-	default: ({ id, label, onChange }: { id: string; label: string; onChange?: (event: React.ChangeEvent<HTMLSelectElement>) => void }) => (
+	default: ({
+		id,
+		label,
+		onChange,
+	}: {
+		id: string;
+		label: string;
+		onChange?: (event: ChangeEvent<HTMLSelectElement>) => void;
+	}) => (
 		<div data-testid={`dropdown-${id}`}>
 			<label>{label}</label>
-			<select data-testid={`dropdown-field-${id}`} onChange={onChange}><option value="">-</option><option value="EUR">EUR</option></select>
+			<select data-testid={`dropdown-field-${id}`} onChange={onChange}>
+				<option value="">-</option>
+				<option value="EUR">EUR</option>
+			</select>
 		</div>
 	),
 }));
@@ -182,7 +239,13 @@ jest.mock('@/components/formikElements/customSquareImageUploading/customSquareIm
 	default: ({ label, onChange }: { label: string; onChange?: (imageList: { data_url: string }[]) => void }) => (
 		<div data-testid="image-upload">
 			<span>{label}</span>
-			<button data-testid="upload-btn" type="button" onClick={() => onChange?.([{ data_url: 'data:image/png;base64,test' }])}>Upload</button>
+			<button
+				data-testid="upload-btn"
+				type="button"
+				onClick={() => onChange?.([{ data_url: 'data:image/png;base64,test' }])}
+			>
+				Upload
+			</button>
 		</div>
 	),
 }));
@@ -258,7 +321,7 @@ const mockSession: AppSession = {
 	},
 };
 
-const renderWithProviders = (ui: React.ReactElement) => {
+const renderWithProviders = (ui: ReactElement) => {
 	return render(<Provider store={mockStore}>{ui}</Provider>);
 };
 

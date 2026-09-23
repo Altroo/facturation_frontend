@@ -1,4 +1,4 @@
-import React from 'react';
+import { type ReactNode } from 'react';
 import { render, screen, cleanup, fireEvent, act, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import type { AppSession } from '@/types/_initTypes';
@@ -26,7 +26,11 @@ const mockOnSuccess = jest.fn();
 const mockOnError = jest.fn();
 jest.mock('@/utils/hooks', () => ({
 	useToast: () => ({ onSuccess: mockOnSuccess, onError: mockOnError }),
-	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
+	useLanguage: () => ({
+		language: 'fr' as const,
+		setLanguage: jest.fn(),
+		t: jest.requireActual('@/translations').translations.fr,
+	}),
 }));
 
 // Mock RTK Query hooks
@@ -78,7 +82,7 @@ jest.mock('@/store/services/account', () => ({
 // Mock NavigationBar
 jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 	__esModule: true,
-	default: ({ children, title }: { children: React.ReactNode; title: string }) => (
+	default: ({ children, title }: { children: ReactNode; title: string }) => (
 		<div data-testid="navigation-bar">
 			<h1 data-testid="nav-title">{title}</h1>
 			{children}
@@ -88,7 +92,7 @@ jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 
 // Mock Protected
 jest.mock('@/components/layouts/protected/protected', () => ({
-	Protected: ({ children }: { children: React.ReactNode }) => <div data-testid="protected">{children}</div>,
+	Protected: ({ children }: { children: ReactNode }) => <div data-testid="protected">{children}</div>,
 }));
 
 // Enhanced PaginatedDataGrid mock that calls renderCell
@@ -101,7 +105,7 @@ jest.mock('@/components/shared/paginatedDataGrid/paginatedDataGrid', () => ({
 		columns: Array<{
 			field: string;
 			headerName: string;
-			renderCell?: (params: { value: unknown; row: Record<string, unknown>; field: string }) => React.ReactNode;
+			renderCell?: (params: { value: unknown; row: Record<string, unknown>; field: string }) => ReactNode;
 		}>;
 		data?: { results?: Array<Record<string, unknown>> };
 		isLoading?: boolean;
@@ -179,7 +183,7 @@ jest.mock('@/components/shared/mobileActionsMenu/mobileActionsMenu', () => ({
 
 jest.mock('@/components/htmlElements/tooltip/darkTooltip/darkTooltip', () => ({
 	__esModule: true,
-	default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+	default: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
 
 jest.mock('@/components/shared/dropdownFilter/dropdownFilter', () => ({
@@ -201,7 +205,6 @@ jest.mock('next/image', () => ({
 	// eslint-disable-next-line @next/next/no-img-element
 	default: (props: Record<string, unknown>) => <img {...props} alt="" />,
 }));
-
 import UsersListClient from './users-list';
 
 const mockSession: AppSession = {
@@ -210,7 +213,16 @@ const mockSession: AppSession = {
 	accessTokenExpiration: '2099-12-31T23:59:59Z',
 	refreshTokenExpiration: '2099-12-31T23:59:59Z',
 	expires: '2099-12-31T23:59:59Z',
-	user: { id: '1', pk: 1, email: 'test@example.com', emailVerified: null, name: 'Test User', first_name: 'Test', last_name: 'User', image: null },
+	user: {
+		id: '1',
+		pk: 1,
+		email: 'test@example.com',
+		emailVerified: null,
+		name: 'Test User',
+		first_name: 'Test',
+		last_name: 'User',
+		image: null,
+	},
 };
 
 describe('UsersListClient', () => {
@@ -306,23 +318,33 @@ describe('UsersListClient', () => {
 
 		it('opens delete modal', async () => {
 			render(<UsersListClient session={mockSession} />);
-			await act(async () => { fireEvent.click(screen.getAllByText('Supprimer')[0]); });
+			await act(async () => {
+				fireEvent.click(screen.getAllByText('Supprimer')[0]);
+			});
 			expect(screen.getByTestId('action-modal')).toBeInTheDocument();
 			expect(screen.getByText('Supprimer cet utilisateur ?')).toBeInTheDocument();
 		});
 
 		it('closes delete modal on Annuler', async () => {
 			render(<UsersListClient session={mockSession} />);
-			await act(async () => { fireEvent.click(screen.getAllByText('Supprimer')[0]); });
-			await act(async () => { fireEvent.click(screen.getByText('Annuler')); });
+			await act(async () => {
+				fireEvent.click(screen.getAllByText('Supprimer')[0]);
+			});
+			await act(async () => {
+				fireEvent.click(screen.getByText('Annuler'));
+			});
 			expect(screen.queryByTestId('action-modal')).not.toBeInTheDocument();
 		});
 
 		it('deletes user on confirm', async () => {
 			render(<UsersListClient session={mockSession} />);
-			await act(async () => { fireEvent.click(screen.getAllByText('Supprimer')[0]); });
+			await act(async () => {
+				fireEvent.click(screen.getAllByText('Supprimer')[0]);
+			});
 			const btns = screen.getAllByText('Supprimer');
-			await act(async () => { fireEvent.click(btns[btns.length - 1]); });
+			await act(async () => {
+				fireEvent.click(btns[btns.length - 1]);
+			});
 			await waitFor(() => {
 				expect(mockDeleteUser).toHaveBeenCalled();
 				expect(mockOnSuccess).toHaveBeenCalledWith('Utilisateur supprimée avec succès');
@@ -332,9 +354,13 @@ describe('UsersListClient', () => {
 		it('handles delete error', async () => {
 			mockDeleteUser.mockReturnValueOnce({ unwrap: () => Promise.reject(new Error('fail')) });
 			render(<UsersListClient session={mockSession} />);
-			await act(async () => { fireEvent.click(screen.getAllByText('Supprimer')[0]); });
+			await act(async () => {
+				fireEvent.click(screen.getAllByText('Supprimer')[0]);
+			});
 			const btns = screen.getAllByText('Supprimer');
-			await act(async () => { fireEvent.click(btns[btns.length - 1]); });
+			await act(async () => {
+				fireEvent.click(btns[btns.length - 1]);
+			});
 			await waitFor(() => {
 				expect(mockOnError).toHaveBeenCalledWith("Erreur lors de la suppression de l'utilisateur");
 			});
@@ -344,7 +370,18 @@ describe('UsersListClient', () => {
 	describe('Column headers', () => {
 		it('renders all expected column headers', () => {
 			render(<UsersListClient session={mockSession} />);
-			for (const h of ['Avatar', 'Nom', 'Prénom', 'Email', 'Sexe', 'Admin', 'Active', "Date d'inscription", 'Dernière connexion', 'Actions']) {
+			for (const h of [
+				'Avatar',
+				'Nom',
+				'Prénom',
+				'Email',
+				'Sexe',
+				'Admin',
+				'Active',
+				"Date d'inscription",
+				'Dernière connexion',
+				'Actions',
+			]) {
 				expect(screen.getByText(h)).toBeInTheDocument();
 			}
 		});
@@ -352,13 +389,21 @@ describe('UsersListClient', () => {
 
 	describe('Loading and empty states', () => {
 		it('renders grid when loading', () => {
-			mockUseGetUsersListQuery.mockReturnValueOnce({ data: { results: [], count: 0, next: null, previous: null }, isLoading: true, refetch: mockRefetch });
+			mockUseGetUsersListQuery.mockReturnValueOnce({
+				data: { results: [], count: 0, next: null, previous: null },
+				isLoading: true,
+				refetch: mockRefetch,
+			});
 			render(<UsersListClient session={mockSession} />);
 			expect(screen.getByTestId('paginated-data-grid')).toBeInTheDocument();
 		});
 
 		it('renders grid when empty', () => {
-			mockUseGetUsersListQuery.mockReturnValueOnce({ data: { results: [], count: 0, next: null, previous: null }, isLoading: false, refetch: mockRefetch });
+			mockUseGetUsersListQuery.mockReturnValueOnce({
+				data: { results: [], count: 0, next: null, previous: null },
+				isLoading: false,
+				refetch: mockRefetch,
+			});
 			render(<UsersListClient session={mockSession} />);
 			expect(screen.getByTestId('paginated-data-grid')).toBeInTheDocument();
 		});

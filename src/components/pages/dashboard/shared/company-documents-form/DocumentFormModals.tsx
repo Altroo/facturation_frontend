@@ -1,46 +1,12 @@
 'use client';
 
-import React from 'react';
-import {
-	Close as CloseIcon,
-	Delete as DeleteIcon,
-} from '@mui/icons-material';
+import { type JSX } from 'react';
+import { Close as CloseIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
-import type { SelectedArticlePopupValues } from '@/components/shared/addArticleModal/addArticleModal';
 import AddArticleModal from '@/components/shared/addArticleModal/addArticleModal';
 import GlobalRemiseModal from '@/components/shared/globalRemiseModal/globalRemiseModal';
-import type { TypeRemiseType } from '@/types/devisTypes';
-import type { DocumentFormConfig, DocumentListClass } from '@/types/companyDocumentsTypes';
+import type { DocumentFormModalsProps, DocumentListClass } from '@/types/companyDocumentsTypes';
 import { useLanguage } from '@/utils/hooks';
-
-export interface DocumentFormModalsProps<TDocument extends DocumentListClass = DocumentListClass> {
-	isEditMode: boolean;
-	config: DocumentFormConfig<TDocument>;
-	companyId: number;
-	// Add Article modal
-	showAddArticleModal: boolean;
-	setShowAddArticleModal: (v: boolean) => void;
-	selectedArticles: Set<number>;
-	setSelectedArticles: (v: Set<number>) => void;
-	handleAddArticles: (selectedArticlesData: SelectedArticlePopupValues[]) => void;
-	existingArticleIds: Set<number>;
-	existingArticleLineValues?: Record<
-		number,
-		{ quantity: string | number; remise_type: TypeRemiseType; remise: string | number }
-	>;
-	documentDevise: string;
-	// Global Remise modal
-	showGlobalRemiseModal: boolean;
-	setShowGlobalRemiseModal: (v: boolean) => void;
-	currentRemiseType: string;
-	currentRemiseValue: number;
-	handleApplyGlobalRemise: (type: 'Pourcentage' | 'Fixe' | '', value: number) => void;
-	disableRemise?: boolean;
-	// Delete Confirm modal
-	showDeleteConfirm: boolean;
-	setShowDeleteConfirm: (v: boolean) => void;
-	confirmDeleteLine: () => void;
-}
 
 const DocumentFormModals = <TDocument extends DocumentListClass = DocumentListClass>({
 	isEditMode,
@@ -62,7 +28,7 @@ const DocumentFormModals = <TDocument extends DocumentListClass = DocumentListCl
 	showDeleteConfirm,
 	setShowDeleteConfirm,
 	confirmDeleteLine,
-}: DocumentFormModalsProps<TDocument>): React.JSX.Element => {
+}: DocumentFormModalsProps<TDocument>): JSX.Element => {
 	const { t } = useLanguage();
 	return (
 		<>

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useCallback, useState } from 'react';
+import { runWithCleanup } from '@/utils/runWithCleanup';
+import { useState, type FC } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, Chip, Stack, Typography } from '@mui/material';
 import {
@@ -36,15 +37,7 @@ import { createDropdownFilterOperators } from '@/components/shared/dropdownFilte
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
 
-export const nbrEmployeFilterOptions = [
-	{ value: '1 à 5', label: '1 à 5', color: 'default' as const },
-	{ value: '5 à 10', label: '5 à 10', color: 'default' as const },
-	{ value: '10 à 50', label: '10 à 50', color: 'default' as const },
-	{ value: '50 à 100', label: '50 à 100', color: 'default' as const },
-	{ value: 'plus que 100', label: 'plus que 100', color: 'default' as const },
-];
-
-const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
+const CompaniesListClient: FC<SessionProps> = ({ session }: SessionProps) => {
 	const router = useRouter();
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
@@ -84,38 +77,48 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 	const [fetchAllCompanyIds, { isLoading: isLoadingAllIds }] = useLazyGetCompaniesListQuery();
 
 	const suspendHandler = async () => {
-		try {
-			await suspendRecord({ id: selectedId! }).unwrap();
-			onSuccess(t.companies.suspendSuccess);
-			refetch();
-		} catch {
-			onError(t.companies.suspendError);
-		} finally {
-			setShowSuspendModal(false);
-			setSelectedIds((prev) => prev.filter((id) => id !== selectedId));
-		}
+		await runWithCleanup(
+			async () => {
+				try {
+					await suspendRecord({ id: selectedId! }).unwrap();
+					onSuccess(t.companies.suspendSuccess);
+					refetch();
+				} catch {
+					onError(t.companies.suspendError);
+				}
+			},
+			() => {
+				setShowSuspendModal(false);
+				setSelectedIds((prev) => prev.filter((id) => id !== selectedId));
+			},
+		);
 	};
 
 	const bulkSuspendHandler = async () => {
-		try {
-			await bulkSuspendCompanies({ ids: selectedIds }).unwrap();
-			onSuccess(t.companies.bulkSuspendSuccess(selectedIds.length));
-			refetch();
-		} catch {
-			onError(t.companies.bulkSuspendError);
-		} finally {
-			setShowBulkSuspendModal(false);
-			setSelectedIds([]);
-			setIsAllMatchingSelected(false);
-		}
+		await runWithCleanup(
+			async () => {
+				try {
+					await bulkSuspendCompanies({ ids: selectedIds }).unwrap();
+					onSuccess(t.companies.bulkSuspendSuccess(selectedIds.length));
+					refetch();
+				} catch {
+					onError(t.companies.bulkSuspendError);
+				}
+			},
+			() => {
+				setShowBulkSuspendModal(false);
+				setSelectedIds([]);
+				setIsAllMatchingSelected(false);
+			},
+		);
 	};
 
-	const handleSelectionChange = useCallback((ids: number[]) => {
+	const handleSelectionChange = (ids: number[]) => {
 		setSelectedIds(ids);
 		setIsAllMatchingSelected(false);
-	}, []);
+	};
 
-	const handleSelectAllMatching = useCallback(async () => {
+	const handleSelectAllMatching = async () => {
 		try {
 			const result = await fetchAllCompanyIds({
 				with_pagination: false,
@@ -129,12 +132,12 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		} catch {
 			onError(t.companies.fetchIdsError);
 		}
-	}, [fetchAllCompanyIds, customFilterParams, onError, t]);
+	};
 
-	const handleClearAllMatching = useCallback(() => {
+	const handleClearAllMatching = () => {
 		setSelectedIds([]);
 		setIsAllMatchingSelected(false);
-	}, []);
+	};
 
 	const deleteModalActions = [
 		{
@@ -152,16 +155,13 @@ const CompaniesListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		setShowSuspendModal(true);
 	};
 
-	const localNbrEmployeFilterOptions = React.useMemo(
-		() => [
-			{ value: '1 à 5', label: t.rawData.employeeRanges['1to5'], color: 'default' as const },
-			{ value: '5 à 10', label: t.rawData.employeeRanges['5to10'], color: 'default' as const },
-			{ value: '10 à 50', label: t.rawData.employeeRanges['10to50'], color: 'default' as const },
-			{ value: '50 à 100', label: t.rawData.employeeRanges['50to100'], color: 'default' as const },
-			{ value: 'plus que 100', label: t.rawData.employeeRanges.moreThan100, color: 'default' as const },
-		],
-		[t],
-	);
+	const localNbrEmployeFilterOptions = [
+		{ value: '1 à 5', label: t.rawData.employeeRanges['1to5'], color: 'default' as const },
+		{ value: '5 à 10', label: t.rawData.employeeRanges['5to10'], color: 'default' as const },
+		{ value: '10 à 50', label: t.rawData.employeeRanges['10to50'], color: 'default' as const },
+		{ value: '50 à 100', label: t.rawData.employeeRanges['50to100'], color: 'default' as const },
+		{ value: 'plus que 100', label: t.rawData.employeeRanges.moreThan100, color: 'default' as const },
+	];
 
 	const columns: GridColDef[] = [
 		{

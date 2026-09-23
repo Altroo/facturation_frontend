@@ -1,4 +1,4 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 import { jest } from '@jest/globals';
 
 type MockState = { value: number };
@@ -30,10 +30,10 @@ beforeEach(() => {
 
 	jest.doMock('@/contexts/toastContext', () => {
 		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const React = require('react');
+		const { createContext } = require('react');
 		return {
 			__esModule: true,
-			ToastContext: React.createContext(mockToastCtx),
+			ToastContext: createContext(mockToastCtx),
 		};
 	});
 });
@@ -63,7 +63,7 @@ describe('useAppDispatch / useAppSelector', () => {
 
 describe('useToast', () => {
 	// eslint-disable-next-line @typescript-eslint/no-require-imports
-	const React = require('react');
+	const { createElement, Fragment } = require('react');
 	// eslint-disable-next-line @typescript-eslint/no-require-imports
 	const { render, screen } = require('@testing-library/react');
 	// eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -73,16 +73,16 @@ describe('useToast', () => {
 
 	function TestComponent() {
 		const ctx = useToast();
-		return React.createElement(
-			React.Fragment,
+		return createElement(
+			Fragment,
 			null,
-			React.createElement('div', { 'data-testid': 'has-show' }, typeof ctx.showToast),
-			React.createElement('div', { 'data-testid': 'has-hide' }, typeof ctx.hideToast),
+			createElement('div', { 'data-testid': 'has-show' }, typeof ctx.showToast),
+			createElement('div', { 'data-testid': 'has-hide' }, typeof ctx.hideToast),
 		);
 	}
 
 	it('returns the mocked toast context value', () => {
-		render(React.createElement(ToastContext.Provider, { value: mockToastCtx }, React.createElement(TestComponent)));
+		render(createElement(ToastContext.Provider, { value: mockToastCtx }, createElement(TestComponent)));
 
 		expect(screen.getByTestId('has-show').textContent).toBe('function');
 		expect(screen.getByTestId('has-hide').textContent).toBe('function');
@@ -119,7 +119,7 @@ describe('useIsClient', () => {
 
 describe('useLanguage', () => {
 	// eslint-disable-next-line @typescript-eslint/no-require-imports
-	const React = require('react');
+	const { createElement } = require('react');
 	// eslint-disable-next-line @typescript-eslint/no-require-imports
 	const { renderHook } = require('@testing-library/react');
 	// eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -135,8 +135,8 @@ describe('useLanguage', () => {
 			setLanguage: jest.fn(),
 			t: translations.en,
 		};
-		const wrapper = ({ children }: { children: React.ReactNode }) =>
-			React.createElement(LanguageContext.Provider, { value: mockCtx }, children);
+		const wrapper = ({ children }: { children: ReactNode }) =>
+			createElement(LanguageContext.Provider, { value: mockCtx }, children);
 
 		const { result } = renderHook(() => useLanguage(), { wrapper });
 		expect(result.current.language).toBe('en');

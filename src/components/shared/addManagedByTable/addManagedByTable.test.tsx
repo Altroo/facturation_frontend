@@ -1,10 +1,9 @@
-import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import ManagedByTableSection from './addManagedByTable';
 import '@testing-library/jest-dom';
 import type { ManagedByType } from '@/types/companyTypes';
 import type { UserCompaniesType } from '@/types/usersTypes';
-import type { AddManagedBySectionProps } from '../addManagedBySection/addManagedBySection';
+import type { AddManagedBySectionProps } from '@/types/companyTypes';
 import type { SelectChangeEvent } from '@mui/material/Select';
 
 // ✅ Mock AddManagedBySection

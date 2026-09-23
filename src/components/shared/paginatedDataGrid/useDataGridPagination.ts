@@ -1,13 +1,13 @@
 'use client';
 
-import { useCallback, useMemo, useSyncExternalStore } from 'react';
+import { useSyncExternalStore } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { GridPaginationModel } from '@mui/x-data-grid';
+import { dataGridPageSizes } from '@/utils/rawData';
 
 const DATA_GRID_PAGINATION_EVENT = 'data-grid-pagination-change';
 const DATA_GRID_PAGE_PARAM = 'page';
 const DATA_GRID_PAGE_SIZE_PARAM = 'page_size';
-const DATA_GRID_PAGE_SIZES = new Set([5, 10, 25, 50, 100]);
 
 const subscribeToDataGridPagination = (listener: () => void) => {
 	window.addEventListener('popstate', listener);
@@ -29,7 +29,7 @@ export const parseDataGridPagination = (search: string, defaultPageSize = 10): G
 
 	return {
 		page: Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage - 1 : 0,
-		pageSize: DATA_GRID_PAGE_SIZES.has(parsedPageSize) ? parsedPageSize : defaultPageSize,
+		pageSize: dataGridPageSizes.has(parsedPageSize) ? parsedPageSize : defaultPageSize,
 	};
 };
 
@@ -41,28 +41,25 @@ export const useDataGridPagination = (
 		getDataGridPaginationSnapshot,
 		getDataGridPaginationServerSnapshot,
 	);
-	const paginationModel = useMemo(() => parseDataGridPagination(search, defaultPageSize), [defaultPageSize, search]);
+	const paginationModel = parseDataGridPagination(search, defaultPageSize);
 
-	const setPaginationModel = useCallback<Dispatch<SetStateAction<GridPaginationModel>>>(
-		(value) => {
-			const currentPaginationModel = parseDataGridPagination(window.location.search, defaultPageSize);
-			const nextPaginationModel = typeof value === 'function' ? value(currentPaginationModel) : value;
+	const setPaginationModel: Dispatch<SetStateAction<GridPaginationModel>> = (value) => {
+		const currentPaginationModel = parseDataGridPagination(window.location.search, defaultPageSize);
+		const nextPaginationModel = typeof value === 'function' ? value(currentPaginationModel) : value;
 
-			if (
-				nextPaginationModel.page === currentPaginationModel.page &&
-				nextPaginationModel.pageSize === currentPaginationModel.pageSize
-			) {
-				return;
-			}
+		if (
+			nextPaginationModel.page === currentPaginationModel.page &&
+			nextPaginationModel.pageSize === currentPaginationModel.pageSize
+		) {
+			return;
+		}
 
-			const url = new URL(window.location.href);
-			url.searchParams.set(DATA_GRID_PAGE_PARAM, String(nextPaginationModel.page + 1));
-			url.searchParams.set(DATA_GRID_PAGE_SIZE_PARAM, String(nextPaginationModel.pageSize));
-			window.history.replaceState(window.history.state, '', url);
-			window.dispatchEvent(new Event(DATA_GRID_PAGINATION_EVENT));
-		},
-		[defaultPageSize],
-	);
+		const url = new URL(window.location.href);
+		url.searchParams.set(DATA_GRID_PAGE_PARAM, String(nextPaginationModel.page + 1));
+		url.searchParams.set(DATA_GRID_PAGE_SIZE_PARAM, String(nextPaginationModel.pageSize));
+		window.history.replaceState(window.history.state, '', url);
+		window.dispatchEvent(new Event(DATA_GRID_PAGINATION_EVENT));
+	};
 
 	return [paginationModel, setPaginationModel];
 };

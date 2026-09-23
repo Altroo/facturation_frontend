@@ -1,4 +1,4 @@
-import React from 'react';
+import { type ReactNode } from 'react';
 import { render, screen, cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import type { AppSession } from '@/types/_initTypes';
@@ -257,7 +257,7 @@ jest.mock('@/components/pages/dashboard/shared/company-documents-list/companyDoc
 		children,
 		title,
 	}: {
-		children: (props: { company_id: number; role: string }) => React.ReactNode;
+		children: (props: { company_id: number; role: string }) => ReactNode;
 		title: string;
 	}) => (
 		<div data-testid="company-documents-wrapper">
@@ -302,7 +302,7 @@ jest.mock('@mui/x-date-pickers/DatePicker', () => ({
 
 jest.mock('@mui/x-date-pickers/LocalizationProvider', () => ({
 	__esModule: true,
-	LocalizationProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+	LocalizationProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
 
 jest.mock('@mui/x-date-pickers/AdapterDateFns', () => ({
@@ -314,7 +314,11 @@ jest.mock('@mui/x-date-pickers/AdapterDateFns', () => ({
 jest.mock('@/utils/hooks', () => ({
 	useAppSelector: jest.fn(),
 	useAppDispatch: jest.fn(),
-	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
+	useLanguage: () => ({
+		language: 'fr' as const,
+		setLanguage: jest.fn(),
+		t: jest.requireActual('@/translations').translations.fr,
+	}),
 }));
 
 jest.mock('@/store/selectors', () => ({

@@ -1,20 +1,12 @@
 'use client';
 
-import React from 'react';
-import type { SessionProps } from '@/types/_initTypes';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { Box, Stack } from '@mui/material';
 import { Protected } from '@/components/layouts/protected/protected';
 import { useLanguage } from '@/utils/hooks';
-
-interface Props<TFormikProps> extends SessionProps {
-	id?: number;
-	entityName: 'entreprise' | 'utilisateur';
-	FormikComponent: React.FC<TFormikProps>;
-	extraFormikProps?: Omit<TFormikProps, 'token' | 'id'>;
-}
+import type { CompanyUsersWrapperFormProps as Props } from '@/types/companyTypes';
 
 const CompanyUsersWrapperForm = <TFormikProps extends { id?: number }>(props: Props<TFormikProps>) => {
 	const { t } = useLanguage();

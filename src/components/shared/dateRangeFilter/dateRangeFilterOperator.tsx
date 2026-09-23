@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState, type FC } from 'react';
 import { Box } from '@mui/material';
 import { GridFilterInputValueProps, GridFilterOperator } from '@mui/x-data-grid';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -9,13 +9,9 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { fr } from 'date-fns/locale';
 import { formatLocalDate } from '@/utils/helpers';
 import { useLanguage } from '@/utils/hooks';
+import type { DateRangeValue } from '@/types/uiTypes';
 
-interface DateRangeValue {
-	from?: string;
-	to?: string;
-}
-
-const DateRangeFilterInput: React.FC<GridFilterInputValueProps> = (props) => {
+const DateRangeFilterInput: FC<GridFilterInputValueProps> = (props) => {
 	const { item, applyValue } = props;
 	const { t } = useLanguage();
 	const value = (item.value as DateRangeValue) || {};
@@ -26,13 +22,13 @@ const DateRangeFilterInput: React.FC<GridFilterInputValueProps> = (props) => {
 	const handleFromChange = (date: Date | null) => {
 		setFromDate(date);
 		let effectiveToDate = toDate;
-		
+
 		// If new from date is after to date, adjust to date
 		if (date && toDate && date > toDate) {
 			effectiveToDate = date;
 			setToDate(date);
 		}
-		
+
 		const newValue: DateRangeValue = {
 			from: date ? formatLocalDate(date) : undefined,
 			to: effectiveToDate ? formatLocalDate(effectiveToDate) : formatLocalDate(new Date()),
@@ -85,7 +81,9 @@ const DateRangeFilterInput: React.FC<GridFilterInputValueProps> = (props) => {
 	);
 };
 
-export const createDateRangeFilterOperator = <T extends Record<string, unknown>>(filterLabel?: string): GridFilterOperator<T>[] => [
+export const createDateRangeFilterOperator = <T extends Record<string, unknown>>(
+	filterLabel?: string,
+): GridFilterOperator<T>[] => [
 	{
 		label: filterLabel ?? 'entre',
 		value: 'between',

@@ -1,51 +1,20 @@
 'use client';
 
-import React from 'react';
+import { type ComponentType, type FC, type ChangeEvent, useRef } from 'react';
 import { Box, Button, FormControl, IconButton, MenuItem, Select, Stack, TextField, Typography } from '@mui/material';
 import { Add as AddIcon, Close as CloseIcon } from '@mui/icons-material';
 import type { GridColDef } from '@mui/x-data-grid';
 import { GridLogicOperator } from '@mui/x-data-grid';
 import { useLanguage } from '@/utils/hooks';
 import type { TranslationDictionary } from '@/types/languageTypes';
-
-export interface DateRangeFilterValue {
-	from?: string;
-	to?: string;
-}
-
-export type CustomFilterValue = string | DateRangeFilterValue;
-
-export interface CustomFilterItem {
-	id: string;
-	field: string;
-	operator: string;
-	value: CustomFilterValue;
-}
-
-export interface CustomFilterModel {
-	items: CustomFilterItem[];
-	logicOperator: GridLogicOperator;
-}
-
-interface CustomFilterPanelProps {
-	columns: GridColDef[];
-	filterModel: CustomFilterModel;
-	onChange: (model: CustomFilterModel) => void;
-}
-
-interface FilterValueInputProps {
-	item: CustomFilterItem;
-	applyValue: (item: CustomFilterItem) => void;
-}
-
-interface OperatorInfo {
-	value: string;
-	label: string;
-	InputComponent?: React.ComponentType<FilterValueInputProps>;
-}
-
-/** Operators that don't require a value input */
-const VALUE_LESS_OPERATORS = new Set(['isEmpty', 'isNotEmpty']);
+import { valueLessFilterOperators } from '@/utils/rawData';
+import type {
+	CustomFilterValue,
+	CustomFilterItem,
+	CustomFilterPanelProps,
+	FilterValueInputProps,
+	OperatorInfo,
+} from '@/types/uiTypes';
 
 // Default text operators (translated)
 const getDefaultTextOperators = (t: TranslationDictionary): OperatorInfo[] => [
@@ -59,7 +28,7 @@ const getDefaultTextOperators = (t: TranslationDictionary): OperatorInfo[] => [
 
 /** Check if a filter item has a meaningful value */
 export function filterHasValue(item: CustomFilterItem): boolean {
-	if (VALUE_LESS_OPERATORS.has(item.operator)) return true;
+	if (valueLessFilterOperators.has(item.operator)) return true;
 	if (typeof item.value === 'string') return item.value.trim() !== '';
 	if (typeof item.value === 'object' && item.value !== null) {
 		const range = item.value;
@@ -69,13 +38,13 @@ export function filterHasValue(item: CustomFilterItem): boolean {
 }
 
 // Simple text input for text-based filters
-const TextFilterInput: React.FC<FilterValueInputProps> = ({ item, applyValue }) => {
+const TextFilterInput: FC<FilterValueInputProps> = ({ item, applyValue }) => {
 	const { t } = useLanguage();
-	const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+	const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
 		applyValue({ ...item, value: event.target.value });
 	};
 
-	if (VALUE_LESS_OPERATORS.has(item.operator)) {
+	if (valueLessFilterOperators.has(item.operator)) {
 		return null;
 	}
 
@@ -98,18 +67,18 @@ function extractOperators(col: GridColDef, t: TranslationDictionary): OperatorIn
 		return col.filterOperators.map((op) => ({
 			value: op.value,
 			label: op.label ?? op.value,
-			InputComponent: op.InputComponent as React.ComponentType<FilterValueInputProps> | undefined,
+			InputComponent: op.InputComponent as ComponentType<FilterValueInputProps> | undefined,
 		}));
 	}
 	return getDefaultTextOperators(t);
 }
 
-const CustomFilterPanel: React.FC<CustomFilterPanelProps> = ({ columns, filterModel, onChange }) => {
+const CustomFilterPanel: FC<CustomFilterPanelProps> = ({ columns, filterModel, onChange }) => {
 	const { t } = useLanguage();
 	const filterableColumns = columns.filter((col) => col.field !== 'actions' && col.filterable !== false);
 
 	// Use a ref to track the filter counter for generating IDs
-	const filterCounterRef = React.useRef(0);
+	const filterCounterRef = useRef(0);
 
 	const handleAddFilter = () => {
 		const firstColumn = filterableColumns[0];
@@ -176,8 +145,8 @@ const CustomFilterPanel: React.FC<CustomFilterPanelProps> = ({ columns, filterMo
 
 	const handleOperatorChange = (id: string, operator: string) => {
 		const item = filterModel.items.find((i) => i.id === id);
-		const wasValueless = item ? VALUE_LESS_OPERATORS.has(item.operator) : false;
-		const isValueless = VALUE_LESS_OPERATORS.has(operator);
+		const wasValueless = item ? valueLessFilterOperators.has(item.operator) : false;
+		const isValueless = valueLessFilterOperators.has(operator);
 
 		if (wasValueless !== isValueless) {
 			handleItemChange(id, { operator, value: '' });

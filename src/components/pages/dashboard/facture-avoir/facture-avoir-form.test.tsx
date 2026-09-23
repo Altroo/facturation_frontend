@@ -1,4 +1,4 @@
-import React from 'react';
+import { type ComponentType, type ReactNode } from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { translations as mockTranslations } from '@/translations';
@@ -44,7 +44,7 @@ jest.mock('@/components/pages/dashboard/shared/company-documents-form/companyDoc
 		company_id: number;
 		id?: number;
 		documentConfig: { addTitle: string; editTitle: string };
-		FormComponent: React.ComponentType<FormComponentProps>;
+		FormComponent: ComponentType<FormComponentProps>;
 	}) => (
 		<section data-testid="company-document-form-wrapper">
 			<h1>{id ? documentConfig.editTitle : documentConfig.addTitle}</h1>
@@ -128,7 +128,7 @@ jest.mock('@mui/x-date-pickers/DatePicker', () => ({
 }));
 
 jest.mock('@mui/x-date-pickers/LocalizationProvider', () => ({
-	LocalizationProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+	LocalizationProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
 
 jest.mock('@/store/services/article', () => ({

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { isValidElement, useMemo, useState } from 'react';
+import { runWithCleanup } from '@/utils/runWithCleanup';
+import { isValidElement, useState, type FC } from 'react';
 import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -76,12 +77,15 @@ import { useGetUserCompaniesQuery } from '@/store/services/company';
 import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import { extractApiErrorMessage, formatDate, formatLocalDate, formatNumberWithSpaces } from '@/utils/helpers';
 import {
+	acceptedDocumentTypes,
+	documentFields,
 	getTranslatedLogistiqueMacroSteps,
 	logistiqueCurrencyItemsList,
 	logistiqueLaunchStatusItemsList,
 	logistiqueLegacyStatusStepIndex,
+	logistiqueManagerRoles,
 	logistiquePaymentMethodItemsList,
-	logistiqueProformaStatusItemsList,
+	logistiqueProformaDecisionItems,
 } from '@/utils/rawData';
 import { textInputTheme } from '@/utils/themes';
 import {
@@ -109,7 +113,7 @@ import {
 	LOGISTIQUE_LIST,
 	STOCK_RECEIPTS,
 } from '@/utils/routes';
-import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
+import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import type {
 	LogistiqueDocumentField,
 	LogistiqueEmailDeliveryStatus,
@@ -122,37 +126,13 @@ import type {
 } from '@/types/logistiqueTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import { useLogistiqueEmailPolling } from './use-logistique-email-polling';
-
-interface Props extends SessionProps {
-	company_id: number;
-	id: number;
-}
-
-type InfoRowProps = {
-	icon: React.ReactNode;
-	label: string;
-	value: string | number | null | undefined | React.ReactNode;
-};
-
-type DetailCardProps = {
-	title: string;
-	icon: React.ReactNode;
-	children: React.ReactNode;
-};
+import type {
+	LogistiqueViewProps as Props,
+	LogistiqueViewInfoRowProps as InfoRowProps,
+	LogistiqueViewDetailCardProps as DetailCardProps,
+} from '@/types/logistiqueTypes';
 
 const inputTheme = textInputTheme();
-const managerRoles = new Set(['Caissier', 'Commercial', 'Logistique']);
-const documentFields: LogistiqueDocumentField[] = [
-	'titre_importation_file',
-	'proforma_fournisseur_file',
-	'justificatifs_file',
-	'swift_file',
-	'documents_originaux_file',
-];
-const acceptedDocumentTypes = '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png';
-const proformaDecisionItems = logistiqueProformaStatusItemsList.filter(
-	(status): status is Exclude<LogistiqueProformaStatus, 'En attente'> => status !== 'En attente',
-);
 const getProformaReviewAction = (
 	status: Exclude<LogistiqueProformaStatus, 'En attente'>,
 ): LogistiqueSupplierProformaReviewAction => {
@@ -190,7 +170,7 @@ const formatDateOnly = (value: string | null | undefined) => {
 	}).format(new Date(year, month - 1, day));
 };
 
-const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
+const InfoRow: FC<InfoRowProps> = ({ icon, label, value }) => {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 	const displayValue =
@@ -238,7 +218,7 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 	);
 };
 
-const DetailCard: React.FC<DetailCardProps> = ({ title, icon, children }) => (
+const DetailCard: FC<DetailCardProps> = ({ title, icon, children }) => (
 	<Card elevation={2} sx={{ borderRadius: 2 }}>
 		<CardContent sx={{ p: 3 }}>
 			<Stack direction="row" spacing={2} sx={{ alignItems: 'center', mb: 2 }}>
@@ -253,7 +233,7 @@ const DetailCard: React.FC<DetailCardProps> = ({ title, icon, children }) => (
 	</Card>
 );
 
-const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
+const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 	const token = useInitAccessToken(session);
 	const router = useRouter();
 	const theme = useTheme();
@@ -263,20 +243,17 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const currentUserId = useAppSelector(getInitStateToken).user.pk;
 	const { data: companiesData, isLoading: isCompaniesLoading } = useGetUserCompaniesQuery(undefined, { skip: !token });
 	const companies = companiesData ?? companiesState;
-	const company = useMemo(() => companies?.find((item) => item.id === company_id), [companies, company_id]);
+	const company = companies?.find((item) => item.id === company_id);
 	const role = company?.role ?? '';
 	const canRead = Boolean(company);
-	const canManage = managerRoles.has(role);
+	const canManage = logistiqueManagerRoles.has(role);
 	const isAccountingUser = role === 'Comptable';
 	const canChangeGlobalStatus = company?.can_change_document_status === true;
 	const canDelete = role === 'Caissier';
 
 	const { data: order, isLoading, error, refetch } = useGetLogistiqueQuery({ id }, { skip: !token });
 	useLogistiqueEmailPolling(order, Boolean(token), refetch);
-	const axiosError = useMemo(
-		() => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),
-		[error],
-	);
+	const axiosError = error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined;
 	const [deleteLogistique] = useDeleteLogistiqueMutation();
 	const [patchGlobalStatus, { isLoading: isChangingGlobalStatus }] = usePatchLogistiqueStatutMutation();
 	const [patchWorkflowStatus, { isLoading: isChangingWorkflowStatus }] = usePatchLogistiqueWorkflowStatusMutation();
@@ -342,17 +319,14 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const [rejectNote, setRejectNote] = useState('');
 	const [processRemark, setProcessRemark] = useState('');
 	const [processFile, setProcessFile] = useState<File | null>(null);
-	const documentLabels = useMemo<Record<LogistiqueDocumentField, string>>(
-		() => ({
-			titre_importation_file: t.logistique.fieldTitreImportationFile,
-			proforma_fournisseur_file: t.logistique.fieldProformaFournisseurFile,
-			justificatifs_file: t.logistique.fieldJustificatifsFile,
-			swift_file: t.logistique.fieldSwiftFile,
-			documents_originaux_file: t.logistique.fieldDocumentsOriginauxFile,
-		}),
-		[t],
-	);
-	const workflowSteps = useMemo(() => getTranslatedLogistiqueMacroSteps(t), [t]);
+	const documentLabels = {
+		titre_importation_file: t.logistique.fieldTitreImportationFile,
+		proforma_fournisseur_file: t.logistique.fieldProformaFournisseurFile,
+		justificatifs_file: t.logistique.fieldJustificatifsFile,
+		swift_file: t.logistique.fieldSwiftFile,
+		documents_originaux_file: t.logistique.fieldDocumentsOriginauxFile,
+	} as Record<LogistiqueDocumentField, string>;
+	const workflowSteps = getTranslatedLogistiqueMacroSteps(t);
 	const activeWorkflowIndex = !order?.is_launch_step_complete
 		? 0
 		: !order.is_proforma_step_complete
@@ -395,29 +369,19 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 		paymentData.banque_paiement.trim() &&
 		paymentData.methode_paiement,
 	);
-	const targetQuantity = useMemo(
-		() => order?.lignes?.reduce((total, line) => total + Number(line.quantity || 0), 0) ?? 0,
-		[order?.lignes],
-	);
-	const sourceOrderDates = useMemo(
-		() =>
-			(order?.proformas_detail ?? [])
-				.map((proforma) => formatDateOnly(proforma.date_facture))
-				.filter((date) => date !== '-')
-				.join(', ') || '-',
-		[order?.proformas_detail],
-	);
-	const targetPriceLines = useMemo(
-		() =>
-			order?.lignes?.map((line) => (
-				<Typography key={line.id} variant="body2" sx={{ overflowWrap: 'anywhere' }}>
-					{line.article_reference || line.designation || `#${line.article}`}: {formatNumberWithSpaces(line.quantity, 3)}{' '}
-					× {formatMoney(line.prix_achat, line.devise_prix_achat)} ={' '}
-					{formatMoney(line.total_achat, line.devise_prix_achat)}
-				</Typography>
-			)) ?? [],
-		[order?.lignes],
-	);
+	const targetQuantity = order?.lignes?.reduce((total, line) => total + Number(line.quantity || 0), 0) ?? 0;
+	const sourceOrderDates =
+		(order?.proformas_detail ?? [])
+			.map((proforma) => formatDateOnly(proforma.date_facture))
+			.filter((date) => date !== '-')
+			.join(', ') || '-';
+	const targetPriceLines =
+		order?.lignes?.map((line) => (
+			<Typography key={line.id} variant="body2" sx={{ overflowWrap: 'anywhere' }}>
+				{line.article_reference || line.designation || `#${line.article}`}: {formatNumberWithSpaces(line.quantity, 3)} ×{' '}
+				{formatMoney(line.prix_achat, line.devise_prix_achat)} = {formatMoney(line.total_achat, line.devise_prix_achat)}
+			</Typography>
+		)) ?? [];
 	const hasRequiredProformaData = Boolean(
 		supplierProformaData.numero_proforma_fournisseur.trim() &&
 		supplierProformaData.date_proforma_fournisseur &&
@@ -471,15 +435,20 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	};
 
 	const handleDelete = async () => {
-		try {
-			await deleteLogistique({ id }).unwrap();
-			onSuccess(t.logistique.deleteSuccess);
-			router.push(LOGISTIQUE_LIST);
-		} catch (err) {
-			onError(extractApiErrorMessage(err, t.logistique.deleteError));
-		} finally {
-			setShowDeleteModal(false);
-		}
+		await runWithCleanup(
+			async () => {
+				try {
+					await deleteLogistique({ id }).unwrap();
+					onSuccess(t.logistique.deleteSuccess);
+					router.push(LOGISTIQUE_LIST);
+				} catch (err) {
+					onError(extractApiErrorMessage(err, t.logistique.deleteError));
+				}
+			},
+			() => {
+				setShowDeleteModal(false);
+			},
+		);
 	};
 
 	const handleGlobalStatusChange = async () => {
@@ -2155,7 +2124,7 @@ const LogistiqueViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 								<CustomDropDownSelect
 									id="decision_proforma"
 									label={t.logistique.fieldProformaDecision}
-									items={proformaDecisionItems}
+									items={logistiqueProformaDecisionItems}
 									value={proformaDecision}
 									onChange={(event) =>
 										setProformaDecision(event.target.value as Exclude<LogistiqueProformaStatus, 'En attente'>)

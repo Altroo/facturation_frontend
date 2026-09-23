@@ -1,4 +1,4 @@
-import React from 'react';
+import { type ReactNode } from 'react';
 import { render, screen, cleanup, fireEvent, act, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import type { AppSession } from '@/types/_initTypes';
@@ -27,7 +27,11 @@ const mockOnError = jest.fn();
 jest.mock('@/utils/hooks', () => ({
 	useToast: () => ({ onSuccess: mockOnSuccess, onError: mockOnError }),
 	useAppSelector: jest.fn(() => []),
-	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
+	useLanguage: () => ({
+		language: 'fr' as const,
+		setLanguage: jest.fn(),
+		t: jest.requireActual('@/translations').translations.fr,
+	}),
 }));
 
 // Mock RTK Query hooks
@@ -99,9 +103,7 @@ jest.mock('@/store/services/company', () => ({
 
 // Mock CompanyDocumentsWrapperList
 jest.mock('@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList', () => {
-	// eslint-disable-next-line @typescript-eslint/no-require-imports
-	const React = require('react');
-	type ChildrenCb = (opts: { company_id: number; role: string }) => React.ReactNode;
+	type ChildrenCb = (opts: { company_id: number; role: string }) => ReactNode;
 	return {
 		__esModule: true,
 		default: (props: { children: ChildrenCb; title: string; session?: unknown }) => (
@@ -124,12 +126,12 @@ jest.mock('@/components/shared/paginatedDataGrid/paginatedDataGrid', () => ({
 		columns: Array<{
 			field: string;
 			headerName: string;
-			renderCell?: (params: { value: unknown; row: Record<string, unknown>; field: string }) => React.ReactNode;
+			renderCell?: (params: { value: unknown; row: Record<string, unknown>; field: string }) => ReactNode;
 		}>;
 		data?: { results?: Array<Record<string, unknown>> };
 		isLoading?: boolean;
 		onCustomFilterParamsChange?: (params: Record<string, string>) => void;
-		toolbarActions?: React.ReactNode;
+		toolbarActions?: ReactNode;
 	}) => {
 		const results = data?.results || [];
 		return (
@@ -214,7 +216,7 @@ jest.mock('@/components/shared/chipSelectFilter/chipSelectFilterBar', () => ({
 
 jest.mock('@/components/htmlElements/tooltip/darkTooltip/darkTooltip', () => ({
 	__esModule: true,
-	default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+	default: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
 
 jest.mock('@/components/shared/dropdownFilter/dropdownFilter', () => ({

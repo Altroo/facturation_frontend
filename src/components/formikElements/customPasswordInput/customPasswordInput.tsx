@@ -1,31 +1,13 @@
 'use client';
 
-import React, { ForwardedRef, forwardRef, useState } from 'react';
+import { useState } from 'react';
 import { ThemeProvider, TextField, InputAdornment, IconButton } from '@mui/material';
-import type { Theme } from '@mui/material/styles';
 import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
 import { useLanguage } from '@/utils/hooks';
+import type { CustomPasswordInputProps as Props } from '@/types/uiTypes';
 
-type Props = {
-	id: string;
-	value: string;
-	onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-	theme: Theme;
-	onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
-	cssClass?: string;
-	helperText?: string;
-	error?: boolean;
-	placeholder?: string;
-	label?: string;
-	fullWidth?: boolean;
-	size?: 'small' | 'medium';
-	disabled?: boolean;
-	startIcon?: React.ReactNode;
-	onClick?: () => void;
-};
-
-const CustomPasswordInput = forwardRef<HTMLInputElement, Props>((props: Props, ref: ForwardedRef<HTMLInputElement>) => {
-	const { cssClass, theme, startIcon, ...restOfProps } = props;
+const CustomPasswordInput = (props: Props) => {
+	const { cssClass, theme, startIcon, ref, ...restOfProps } = props;
 	const [showpassword, setshowpassword] = useState<boolean>(false);
 	const { t } = useLanguage();
 
@@ -36,7 +18,7 @@ const CustomPasswordInput = forwardRef<HTMLInputElement, Props>((props: Props, r
 	return (
 		<ThemeProvider theme={theme}>
 			<TextField
-				ref={ref}
+				inputRef={ref}
 				{...restOfProps}
 				type={showpassword ? 'text' : 'password'}
 				id={props.id}
@@ -73,7 +55,7 @@ const CustomPasswordInput = forwardRef<HTMLInputElement, Props>((props: Props, r
 			/>
 		</ThemeProvider>
 	);
-});
+};
 
 CustomPasswordInput.displayName = 'CustomPasswordInput';
 

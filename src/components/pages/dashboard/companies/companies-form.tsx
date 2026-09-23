@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
-import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
+import { runWithCleanup } from '@/utils/runWithCleanup';
+import { type FC, type MouseEvent, useState } from 'react';
+import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import { useAddCompanyMutation, useEditCompanyMutation, useGetCompanyQuery } from '@/store/services/company';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import {
@@ -60,7 +61,12 @@ import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import { getGroupesState, getProfilState } from '@/store/selectors';
 import { useGetUsersListQuery } from '@/store/services/account';
 import type { DropDownType } from '@/types/accountTypes';
-import type { CompanyFormValuesType, ManagedByType } from '@/types/companyTypes';
+import type {
+	CompaniesFormFormikContentProps as FormikContentProps,
+	CompaniesFormProps as Props,
+	CompanyFormValuesType,
+	ManagedByType,
+} from '@/types/companyTypes';
 import type { UserClass } from '@/models/classes';
 import ManagedByTableSection from '@/components/shared/addManagedByTable/addManagedByTable';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
@@ -68,14 +74,7 @@ import CompanyUsersWrapperForm from '@/components/pages/dashboard/shared/compani
 
 const inputTheme = textInputTheme();
 
-type FormikContentProps = {
-	token: string | undefined;
-	first_name: string | null;
-	last_name: string | null;
-	id?: number;
-};
-
-const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
+const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 	const { token, first_name, last_name, id } = props;
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
@@ -98,16 +97,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	// enforce the type of the users data
 	const usersData = rawUsersData as Array<Partial<UserClass>> | undefined;
 	const error = isEditMode ? dataError || updateError : addError;
-	const axiosError = useMemo(
-		() => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),
-		[error],
-	);
+	const axiosError = error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined;
 	const { id: userID } = useAppSelector(getProfilState);
 	const groupes = useAppSelector(getGroupesState);
 	const [isPending, setIsPending] = useState(false);
 	const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 	const router = useRouter();
-	const computedManagedBy = useMemo(() => {
+	const computedManagedBy = (() => {
 		let admins: Array<ManagedByType> = [];
 
 		if (isEditMode && rawData?.admins && Array.isArray(rawData.admins)) {
@@ -134,7 +130,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			can_validate_factures: u.can_validate_factures ?? false,
 			can_change_document_status: u.can_change_document_status ?? false,
 		}));
-	}, [isEditMode, rawData, groupes.length, userID, first_name, last_name]);
+	})();
 
 	const [selectedUser, setSelectedUser] = useState<DropDownType | null>(null);
 	const [selectedRole, setSelectedRole] = useState<string>('');
@@ -174,39 +170,42 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			setIsPending(true);
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const { globalError, ...payload } = data;
-			try {
-				if (isEditMode) {
-					await updateData({ data: payload, id: id }).unwrap();
-					onSuccess(t.companies.updateSuccess);
-				} else {
-					await addData({ data: payload }).unwrap();
-					onSuccess(t.companies.addSuccess);
-				}
-				if (!isEditMode) {
-					router.replace(COMPANIES_LIST);
-				}
-			} catch (e) {
-				if (isEditMode) {
-					onError(t.companies.updateError);
-				} else {
-					onError(t.companies.addError);
-				}
-				setFormikAutoErrors({ e, setFieldError });
-			} finally {
-				setIsPending(false);
-			}
+			await runWithCleanup(
+				async () => {
+					try {
+						if (isEditMode) {
+							await updateData({ data: payload, id: id }).unwrap();
+							onSuccess(t.companies.updateSuccess);
+						} else {
+							await addData({ data: payload }).unwrap();
+							onSuccess(t.companies.addSuccess);
+						}
+						if (!isEditMode) {
+							router.replace(COMPANIES_LIST);
+						}
+					} catch (e) {
+						if (isEditMode) {
+							onError(t.companies.updateError);
+						} else {
+							onError(t.companies.addError);
+						}
+						setFormikAutoErrors({ e, setFieldError });
+					}
+				},
+				() => {
+					setIsPending(false);
+				},
+			);
 		},
 	});
 
-	const adminUsers: Array<ManagedByType> = useMemo(() => {
-		return formik.values.managed_by.map((entry) => ({
-			id: entry.pk,
-			first_name: entry.first_name || '',
-			last_name: entry.last_name || '',
-			role: entry.role || '',
-			can_validate_factures: entry.can_validate_factures ?? false,
-		}));
-	}, [formik.values.managed_by]);
+	const adminUsers: Array<ManagedByType> = formik.values.managed_by.map((entry) => ({
+		id: entry.pk,
+		first_name: entry.first_name || '',
+		last_name: entry.last_name || '',
+		role: entry.role || '',
+		can_validate_factures: entry.can_validate_factures ?? false,
+	}));
 
 	const managedIds = formik.values.managed_by.map((entry) => entry.pk);
 	const availableUsers: DropDownType[] = Array.isArray(usersData)
@@ -227,19 +226,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			const userId = parseInt(selectedUser.value);
 			const userData = usersData?.find((u) => u.id === userId);
 			if (userData?.id && userData.first_name && userData.last_name) {
-				formik
-					.setFieldValue('managed_by', [
-						...formik.values.managed_by,
-						{
-							pk: userData.id,
-							role: selectedRole,
-							first_name: userData.first_name,
-							last_name: userData.last_name,
-							can_validate_factures: false,
-							can_change_document_status: false,
-						},
-					])
-					.then();
+				void formik.setFieldValue('managed_by', [
+					...formik.values.managed_by,
+					{
+						pk: userData.id,
+						role: selectedRole,
+						first_name: userData.first_name,
+						last_name: userData.last_name,
+						can_validate_factures: false,
+						can_change_document_status: false,
+					},
+				]);
 				setSelectedUser(null);
 				setSelectedRole('');
 			}
@@ -247,37 +244,34 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	};
 
 	// Collect validation errors from Formik
-	const fieldLabels = useMemo<Record<string, string>>(
-		() => ({
-			raison_sociale: t.companies.fieldRaisonSociale,
-			email: t.companies.fieldEmail,
-			nbr_employe: t.companies.fieldNbrEmploye,
-			civilite_responsable: t.companies.fieldCivilite,
-			nom_responsable: t.companies.fieldNomResponsable,
-			gsm_responsable: t.companies.fieldGsmResponsable,
-			adresse: t.companies.fieldAdresse,
-			site_web: t.companies.fieldSiteWeb,
-			telephone: t.companies.fieldTelephone,
-			fax: t.companies.fieldFax,
-			numero_du_compte: t.companies.fieldNumeroCompte,
-			ICE: t.companies.fieldICE,
-			registre_de_commerce: t.companies.fieldRegistreCommerce,
-			identifiant_fiscal: t.companies.fieldIdentifiantFiscal,
-			tax_professionnelle: t.companies.fieldTaxeProfessionnelle,
-			CNSS: t.companies.fieldCNSS,
-			logo: t.companies.logoLabel,
-			logo_cropped: t.companies.logoLabel,
-			cachet: t.companies.stampLabel,
-			cachet_cropped: t.companies.stampLabel,
-			managed_by: t.companies.managersSection,
-			uses_foreign_currency: t.companies.foreignCurrencyLabel,
-			stock_management_enabled: t.companies.stockManagementLabel,
-			globalError: t.common.genericError,
-		}),
-		[t],
-	);
+	const fieldLabels = {
+		raison_sociale: t.companies.fieldRaisonSociale,
+		email: t.companies.fieldEmail,
+		nbr_employe: t.companies.fieldNbrEmploye,
+		civilite_responsable: t.companies.fieldCivilite,
+		nom_responsable: t.companies.fieldNomResponsable,
+		gsm_responsable: t.companies.fieldGsmResponsable,
+		adresse: t.companies.fieldAdresse,
+		site_web: t.companies.fieldSiteWeb,
+		telephone: t.companies.fieldTelephone,
+		fax: t.companies.fieldFax,
+		numero_du_compte: t.companies.fieldNumeroCompte,
+		ICE: t.companies.fieldICE,
+		registre_de_commerce: t.companies.fieldRegistreCommerce,
+		identifiant_fiscal: t.companies.fieldIdentifiantFiscal,
+		tax_professionnelle: t.companies.fieldTaxeProfessionnelle,
+		CNSS: t.companies.fieldCNSS,
+		logo: t.companies.logoLabel,
+		logo_cropped: t.companies.logoLabel,
+		cachet: t.companies.stampLabel,
+		cachet_cropped: t.companies.stampLabel,
+		managed_by: t.companies.managersSection,
+		uses_foreign_currency: t.companies.foreignCurrencyLabel,
+		stock_management_enabled: t.companies.stockManagementLabel,
+		globalError: t.common.genericError,
+	} as Record<string, string>;
 
-	const validationErrors = useMemo(() => {
+	const validationErrors = (() => {
 		const errors: Record<string, string> = {};
 		if (hasAttemptedSubmit) {
 			Object.entries(formik.errors).forEach(([key, value]) => {
@@ -287,7 +281,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			});
 		}
 		return errors;
-	}, [formik.errors, hasAttemptedSubmit]);
+	})();
 
 	const hasValidationErrors = Object.keys(validationErrors).length > 0;
 
@@ -384,8 +378,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											<CustomSquareImageUploading
 												image={formik.values.logo}
 												croppedImage={formik.values.logo_cropped}
-												onChange={(img) => formik.setFieldValue('logo', img)}
-												onCrop={(cropped) => formik.setFieldValue('logo_cropped', cropped)}
+												onChange={(img) => void formik.setFieldValue('logo', img)}
+												onCrop={(cropped) => void formik.setFieldValue('logo_cropped', cropped)}
 											/>
 										</Box>
 									</Box>
@@ -403,8 +397,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											<CustomSquareImageUploading
 												image={formik.values.cachet}
 												croppedImage={formik.values.cachet_cropped}
-												onChange={(img) => formik.setFieldValue('cachet', img)}
-												onCrop={(cropped) => formik.setFieldValue('cachet_cropped', cropped)}
+												onChange={(img) => void formik.setFieldValue('cachet', img)}
+												onCrop={(cropped) => void formik.setFieldValue('cachet_cropped', cropped)}
 											/>
 										</Box>
 									</Box>
@@ -472,7 +466,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										onBlur={formik.handleBlur('nbr_employe')}
 										error={formik.touched.nbr_employe && Boolean(formik.errors.nbr_employe)}
 										helperText={formik.touched.nbr_employe ? formik.errors.nbr_employe : ''}
-										onChange={(e) => formik.setFieldValue('nbr_employe', e.target.value)}
+										onChange={(e) => void formik.setFieldValue('nbr_employe', e.target.value)}
 										theme={customDropdownTheme()}
 										startIcon={<GroupsIcon fontSize="small" />}
 									/>
@@ -537,7 +531,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										label={t.companies.fieldCivilite}
 										items={civiliteItemsList}
 										value={formik.values.civilite_responsable}
-										onChange={(e) => formik.setFieldValue('civilite_responsable', e.target.value)}
+										onChange={(e) => void formik.setFieldValue('civilite_responsable', e.target.value)}
 										theme={customDropdownTheme()}
 										startIcon={<PersonIcon fontSize="small" />}
 									/>
@@ -765,7 +759,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									control={
 										<Switch
 											checked={formik.values.uses_foreign_currency}
-											onChange={(e) => formik.setFieldValue('uses_foreign_currency', e.target.checked)}
+											onChange={(e) => void formik.setFieldValue('uses_foreign_currency', e.target.checked)}
 											color="primary"
 										/>
 									}
@@ -775,7 +769,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									control={
 										<Switch
 											checked={formik.values.stock_management_enabled}
-											onChange={(e) => formik.setFieldValue('stock_management_enabled', e.target.checked)}
+											onChange={(e) => void formik.setFieldValue('stock_management_enabled', e.target.checked)}
 											disabled={rawData?.stock_management_enabled === true}
 											color="primary"
 										/>
@@ -804,25 +798,25 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									const updated = formik.values.managed_by.map((entry, i) =>
 										i === index ? { ...entry, role: newRole } : entry,
 									);
-									formik.setFieldValue('managed_by', updated).then();
+									void formik.setFieldValue('managed_by', updated);
 								}}
 								onInvoiceValidationChange={(index, checked) => {
 									const updated = formik.values.managed_by.map((entry, i) =>
 										i === index ? { ...entry, can_validate_factures: checked } : entry,
 									);
-									formik.setFieldValue('managed_by', updated).then();
+									void formik.setFieldValue('managed_by', updated);
 								}}
 								onDocumentStatusChangePermissionChange={(index, checked) => {
 									const updated = formik.values.managed_by.map((entry, i) =>
 										i === index ? { ...entry, can_change_document_status: checked } : entry,
 									);
-									formik.setFieldValue('managed_by', updated).then();
+									void formik.setFieldValue('managed_by', updated);
 								}}
 								showInvoiceValidationPermission
 								showDocumentStatusChangePermission
 								onDelete={(index) => {
 									const filtered = formik.values.managed_by.filter((_, i) => i !== index);
-									formik.setFieldValue('managed_by', filtered).then();
+									void formik.setFieldValue('managed_by', filtered);
 								}}
 								addSectionProps={{
 									title: t.shared.addUser,
@@ -853,7 +847,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								type="submit"
 								loading={isPending}
 								startIcon={isEditMode ? <EditIcon /> : <AddIcon />}
-								onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+								onClick={(e: MouseEvent<HTMLButtonElement>) => {
 									setHasAttemptedSubmit(true);
 									if (!formik.isValid) {
 										e.preventDefault();
@@ -872,11 +866,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	);
 };
 
-interface Props extends SessionProps {
-	id?: number;
-}
-
-const CompaniesForm: React.FC<Props> = ({ session, id }) => (
+const CompaniesForm: FC<Props> = ({ session, id }) => (
 	<CompanyUsersWrapperForm
 		session={session}
 		id={id}

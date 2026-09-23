@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import { runWithCleanup } from '@/utils/runWithCleanup';
+import { useState, type FC } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, Chip, Divider, Typography } from '@mui/material';
 import {
@@ -10,9 +11,9 @@ import {
 	Delete as DeleteIcon,
 	Edit as EditIcon,
 	ErrorOutlined as ErrorOutlinedIcon,
-		LocalShipping as LocalShippingIcon,
-		Payment as PaymentIcon,
-		RequestQuote as RequestQuoteIcon,
+	LocalShipping as LocalShippingIcon,
+	Payment as PaymentIcon,
+	RequestQuote as RequestQuoteIcon,
 	Visibility as VisibilityIcon,
 	Warehouse as WarehouseIcon,
 } from '@mui/icons-material';
@@ -21,9 +22,11 @@ import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/com
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
 import DashboardStatCard from '@/components/shared/dashboardStatCard/dashboardStatCard';
-import ChipSelectFilterBar, { type ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
+import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
+import type { ChipFilterConfig } from '@/types/uiTypes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
-import MobileActionsMenu, { type ActionItem } from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
+import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
+import type { ActionItem } from '@/types/uiTypes';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
@@ -41,17 +44,12 @@ import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import {
 	logistiqueGlobalStatusItemsList as logisticsStatuses,
 	logistiqueImportTitleStatusItemsList as importTitleStatuses,
+	logistiqueManagerRoles,
 	logistiquePaymentStatusItemsList as paymentStatuses,
 } from '@/utils/rawData';
 import type { SessionProps } from '@/types/_initTypes';
 import type { LogistiqueListResponse, LogistiqueOrder, LogistiquePaymentStatus } from '@/types/logistiqueTypes';
-
-interface FormikContentProps extends SessionProps {
-	company_id: number;
-	role: string;
-}
-
-const managerRoles = new Set(['Caissier', 'Commercial', 'Logistique']);
+import type { LogistiqueListFormikContentProps as FormikContentProps } from '@/types/logistiqueTypes';
 
 const statusColor = (status: string) => {
 	if (status === 'Clôturé') return 'success' as const;
@@ -78,13 +76,13 @@ const numericValue = (value: string | number | null | undefined) => {
 	return Number.isFinite(parsed) ? parsed : 0;
 };
 
-const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role }) => {
+const FormikContent: FC<FormikContentProps> = ({ session, company_id, role }) => {
 	const { t } = useLanguage();
 	const { onSuccess, onError } = useToast();
 	const router = useRouter();
 	const token = useInitAccessToken(session);
 	const currentUserId = useAppSelector(getInitStateToken).user.pk;
-	const canManage = managerRoles.has(role);
+	const canManage = logistiqueManagerRoles.has(role);
 	const canDelete = role === 'Caissier';
 
 	const [paginationModel, setPaginationModel] = useDataGridPagination();
@@ -97,10 +95,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
 	const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
 
-	const mergedFilterParams = useMemo(
-		() => ({ ...chipFilterParams, ...customFilterParams }),
-		[chipFilterParams, customFilterParams],
-	);
+	const mergedFilterParams = { ...chipFilterParams, ...customFilterParams };
 
 	const { data, isLoading, refetch } = useGetLogistiqueListQuery(
 		{
@@ -114,90 +109,81 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 		{ skip: !token },
 	);
 	const listData = data as LogistiqueListResponse | undefined;
-	const supplierFilterOptions = useMemo(
-		() =>
-			(listData?.stats.fournisseurs ?? []).map((item) => ({
-				value: item.fournisseur,
-				label: item.fournisseur,
+	const supplierFilterOptions = (listData?.stats.fournisseurs ?? []).map((item) => ({
+		value: item.fournisseur,
+		label: item.fournisseur,
+	}));
+	const statusFilterOptions = logisticsStatuses.map((value) => ({ value, label: value, color: statusColor(value) }));
+	const paymentFilterOptions = paymentStatuses.map((value) => ({ value, label: value, color: paymentColor(value) }));
+	const importTitleFilterOptions = importTitleStatuses.map((value) => ({ value, label: value }));
+	const chipFilters: ChipFilterConfig[] = [
+		{
+			key: 'fournisseur',
+			label: t.logistique.colFournisseur,
+			paramName: 'fournisseur',
+			options: (listData?.stats.fournisseurs ?? []).map((item) => ({
+				id: item.fournisseur,
+				nom: item.fournisseur,
 			})),
-		[listData],
-	);
-	const statusFilterOptions = useMemo(
-		() => logisticsStatuses.map((value) => ({ value, label: value, color: statusColor(value) })),
-		[],
-	);
-	const paymentFilterOptions = useMemo(
-		() => paymentStatuses.map((value) => ({ value, label: value, color: paymentColor(value) })),
-		[],
-	);
-	const importTitleFilterOptions = useMemo(() => importTitleStatuses.map((value) => ({ value, label: value })), []);
-	const chipFilters: ChipFilterConfig[] = useMemo(
-		() => [
-			{
-				key: 'fournisseur',
-				label: t.logistique.colFournisseur,
-				paramName: 'fournisseur',
-				options: (listData?.stats.fournisseurs ?? []).map((item) => ({
-					id: item.fournisseur,
-					nom: item.fournisseur,
-				})),
-			},
-			{
-				key: 'statut',
-				label: t.logistique.colStatut,
-				paramName: 'statut_global',
-				options: logisticsStatuses.map((value) => ({ id: value, nom: value })),
-			},
-			{
-				key: 'paiement',
-				label: t.logistique.colPaiement,
-				paramName: 'statut_paiement',
-				options: paymentStatuses.map((value) => ({ id: value, nom: value })),
-			},
-			{
-				key: 'titre_importation',
-				label: t.logistique.fieldStatutTI,
-				paramName: 'statut_titre_importation',
-				options: importTitleStatuses.map((value) => ({ id: value, nom: value })),
-			},
-		],
-		[
-			listData,
-			t.logistique.colFournisseur,
-			t.logistique.colPaiement,
-			t.logistique.colStatut,
-			t.logistique.fieldStatutTI,
-		],
-	);
+		},
+		{
+			key: 'statut',
+			label: t.logistique.colStatut,
+			paramName: 'statut_global',
+			options: logisticsStatuses.map((value) => ({ id: value, nom: value })),
+		},
+		{
+			key: 'paiement',
+			label: t.logistique.colPaiement,
+			paramName: 'statut_paiement',
+			options: paymentStatuses.map((value) => ({ id: value, nom: value })),
+		},
+		{
+			key: 'titre_importation',
+			label: t.logistique.fieldStatutTI,
+			paramName: 'statut_titre_importation',
+			options: importTitleStatuses.map((value) => ({ id: value, nom: value })),
+		},
+	];
 
 	const [deleteLogistique] = useDeleteLogistiqueMutation();
 	const [bulkDeleteLogistique] = useBulkDeleteLogistiqueMutation();
 
 	const deleteHandler = async () => {
 		if (!selectedId) return;
-		try {
-			await deleteLogistique({ id: selectedId }).unwrap();
-			onSuccess(t.logistique.deleteSuccess);
-			refetch();
-		} catch (err) {
-			onError(extractApiErrorMessage(err, t.logistique.deleteError));
-		} finally {
-			setShowDeleteModal(false);
-			setSelectedId(null);
-		}
+		await runWithCleanup(
+			async () => {
+				try {
+					await deleteLogistique({ id: selectedId }).unwrap();
+					onSuccess(t.logistique.deleteSuccess);
+					refetch();
+				} catch (err) {
+					onError(extractApiErrorMessage(err, t.logistique.deleteError));
+				}
+			},
+			() => {
+				setShowDeleteModal(false);
+				setSelectedId(null);
+			},
+		);
 	};
 
 	const bulkDeleteHandler = async () => {
-		try {
-			await bulkDeleteLogistique({ ids: selectedIds }).unwrap();
-			onSuccess(t.logistique.bulkDeleteSuccess(selectedIds.length));
-			refetch();
-		} catch (err) {
-			onError(extractApiErrorMessage(err, t.logistique.bulkDeleteError));
-		} finally {
-			setSelectedIds([]);
-			setShowBulkDeleteModal(false);
-		}
+		await runWithCleanup(
+			async () => {
+				try {
+					await bulkDeleteLogistique({ ids: selectedIds }).unwrap();
+					onSuccess(t.logistique.bulkDeleteSuccess(selectedIds.length));
+					refetch();
+				} catch (err) {
+					onError(extractApiErrorMessage(err, t.logistique.bulkDeleteError));
+				}
+			},
+			() => {
+				setSelectedIds([]);
+				setShowBulkDeleteModal(false);
+			},
+		);
 	};
 
 	const columns: GridColDef[] = [
@@ -391,8 +377,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 					},
 				];
 				const canEditRow =
-					canManage ||
-					(params.row.responsable === currentUserId && params.row.statut_paiement === 'Non demandé');
+					canManage || (params.row.responsable === currentUserId && params.row.statut_paiement === 'Non demandé');
 				if (canEditRow && params.row.statut_global !== 'Annulé') {
 					actions.push({
 						label: t.common.edit,
@@ -418,16 +403,12 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 	];
 
 	const stats = listData?.stats;
-	const supplierKpis = useMemo(
-		() =>
-			(stats?.kpi_fournisseurs ?? []).map((supplier, index) => ({
-				id: `supplier-${index}-${supplier.fournisseur || 'unknown'}`,
-				name: supplier.fournisseur || '-',
-				total_commandes: supplier.total_commandes,
-				cout_total: supplier.cout_total,
-			})),
-		[stats],
-	);
+	const supplierKpis = (stats?.kpi_fournisseurs ?? []).map((supplier, index) => ({
+		id: `supplier-${index}-${supplier.fournisseur || 'unknown'}`,
+		name: supplier.fournisseur || '-',
+		total_commandes: supplier.total_commandes,
+		cout_total: supplier.cout_total,
+	}));
 	const maxSupplierCost = Math.max(...supplierKpis.map((supplier) => numericValue(supplier.cout_total)), 1);
 	const maxSupplierOrders = Math.max(...supplierKpis.map((supplier) => supplier.total_commandes), 1);
 
@@ -752,7 +733,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 	);
 };
 
-const LogistiqueListClient: React.FC<SessionProps> = ({ session }) => {
+const LogistiqueListClient: FC<SessionProps> = ({ session }) => {
 	const { t } = useLanguage();
 	return (
 		<CompanyDocumentsWrapperList session={session} title={t.logistique.listTitle}>

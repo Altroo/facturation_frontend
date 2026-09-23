@@ -8,11 +8,7 @@ export const metadata: Metadata = {
 	title: "Détails de l'Article",
 	description: "Consulter les détails d'un article",
 };
-
-type PageProps = {
-	params: Promise<{ id: string }>;
-	searchParams: Promise<{ company_id: string }>;
-};
+import type { CompanyScopedDetailRouteProps as PageProps } from '@/types/routeTypes';
 
 const ArticlesViewPage = async (props: PageProps) => {
 	const session = await auth();

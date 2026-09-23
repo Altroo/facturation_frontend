@@ -1,5 +1,4 @@
 import { cookies } from 'next/headers';
-import React from 'react';
 import EnterCodeClient from '@/components/pages/auth/reset-password/enterCode';
 import { redirect } from 'next/navigation';
 import { AUTH_RESET_PASSWORD, DASHBOARD } from '@/utils/routes';

@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
-import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
+import { runWithCleanup } from '@/utils/runWithCleanup';
+import { type ChangeEvent, type FC, type MouseEvent, useState } from 'react';
+import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import {
 	Alert,
@@ -55,11 +56,15 @@ import {
 	useGetArticleQuery,
 	useGetCodeReferenceQuery,
 } from '@/store/services/article';
-
 import { formatNumberWithSpaces, getLabelForKey, parseNumber, setFormikAutoErrors } from '@/utils/helpers';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
-import type { ArticleSchemaType, TypeArticleType } from '@/types/articleTypes';
+import type {
+	ArticleSchemaType,
+	ArticlesFormFormikContentProps as FormikContentProps,
+	ArticlesFormProps as Props,
+	TypeArticleType,
+} from '@/types/articleTypes';
 import {
 	useAddCategorieMutation,
 	useAddEmplacementMutation,
@@ -88,13 +93,7 @@ import { calculateNectarPrixTTC, isNectarRaisonSociale } from '@/utils/nectar';
 
 const inputTheme = textInputTheme();
 
-type FormikContentProps = {
-	token?: string;
-	company_id: number;
-	id?: number;
-};
-
-const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
+const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 	const { token, company_id, id } = props;
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
@@ -189,27 +188,32 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						devise_prix_achat: payload.devise_prix_vente ?? 'MAD',
 					}
 				: payload;
-			try {
-				if (isEditMode) {
-					await updateArticle({ data: submissionPayload, id: id! }).unwrap();
-					onSuccess(t.articles.updateSuccess);
-				} else {
-					await addArticle({ data: submissionPayload }).unwrap();
-					onSuccess(t.articles.addSuccess);
-				}
-				if (!isEditMode) {
-					router.replace(ARTICLES_LIST);
-				}
-			} catch (e) {
-				if (!isEditMode) {
-					onError(t.articles.addError);
-				} else {
-					onError(t.articles.updateError);
-				}
-				setFormikAutoErrors({ e, setFieldError });
-			} finally {
-				setIsPending(false);
-			}
+			await runWithCleanup(
+				async () => {
+					try {
+						if (isEditMode) {
+							await updateArticle({ data: submissionPayload, id: id! }).unwrap();
+							onSuccess(t.articles.updateSuccess);
+						} else {
+							await addArticle({ data: submissionPayload }).unwrap();
+							onSuccess(t.articles.addSuccess);
+						}
+						if (!isEditMode) {
+							router.replace(ARTICLES_LIST);
+						}
+					} catch (e) {
+						if (!isEditMode) {
+							onError(t.articles.addError);
+						} else {
+							onError(t.articles.updateError);
+						}
+						setFormikAutoErrors({ e, setFieldError });
+					}
+				},
+				() => {
+					setIsPending(false);
+				},
+			);
 		},
 	});
 
@@ -221,92 +225,73 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const prixTTCDevise = formik.values.devise_prix_vente ?? 'MAD';
 
 	// Stable categoryItems
-	const categorieItems: DropDownType[] = useMemo(
-		() =>
-			(categoriesData ?? []).map((c) => ({
-				value: String(c.id),
-				code: c.nom,
-			})),
-		[categoriesData],
-	);
+	const categorieItems: DropDownType[] = (categoriesData ?? []).map((c) => ({
+		value: String(c.id),
+		code: c.nom,
+	}));
 
 	// Derive selectedCategorie without local state or effects
-	const selectedCategorie = useMemo<DropDownType | null>(() => {
+	const selectedCategorie = (() => {
 		const v = formik.values.categorie;
 		if (!v || categorieItems.length === 0) return null;
 		return categorieItems.find((c) => c.value === String(v)) ?? null;
-	}, [formik.values.categorie, categorieItems]);
+	})() as DropDownType | null;
 
 	// Emplacements
-	const emplacementItems: DropDownType[] = useMemo(
-		() =>
-			(emplacementsData ?? []).map((e) => ({
-				value: String(e.id),
-				code: e.nom,
-			})),
-		[emplacementsData],
-	);
+	const emplacementItems: DropDownType[] = (emplacementsData ?? []).map((e) => ({
+		value: String(e.id),
+		code: e.nom,
+	}));
 
-	const selectedEmplacement = useMemo<DropDownType | null>(() => {
+	const selectedEmplacement = (() => {
 		const v = formik.values.emplacement;
 		if (!v || emplacementItems.length === 0) return null;
 		return emplacementItems.find((e) => e.value === String(v)) ?? null;
-	}, [formik.values.emplacement, emplacementItems]);
+	})() as DropDownType | null;
 
 	// Unités
-	const uniteItems: DropDownType[] = useMemo(
-		() =>
-			(unitesData ?? []).map((u) => ({
-				value: String(u.id),
-				code: u.nom,
-			})),
-		[unitesData],
-	);
+	const uniteItems: DropDownType[] = (unitesData ?? []).map((u) => ({
+		value: String(u.id),
+		code: u.nom,
+	}));
 
-	const selectedUnite = useMemo<DropDownType | null>(() => {
+	const selectedUnite = (() => {
 		const v = formik.values.unite;
 		if (!v || uniteItems.length === 0) return null;
 		return uniteItems.find((u) => u.value === String(v)) ?? null;
-	}, [formik.values.unite, uniteItems]);
+	})() as DropDownType | null;
 
 	// Marques
-	const marqueItems: DropDownType[] = useMemo(
-		() =>
-			(marquesData ?? []).map((m) => ({
-				value: String(m.id),
-				code: m.nom,
-			})),
-		[marquesData],
-	);
+	const marqueItems: DropDownType[] = (marquesData ?? []).map((m) => ({
+		value: String(m.id),
+		code: m.nom,
+	}));
 
-	const selectedMarque = useMemo<DropDownType | null>(() => {
+	const selectedMarque = (() => {
 		const v = formik.values.marque;
 		if (!v || marqueItems.length === 0) return null;
 		return marqueItems.find((m) => m.value === String(v)) ?? null;
-	}, [formik.values.marque, marqueItems]);
+	})() as DropDownType | null;
 
 	// Collect validation errors from Formik
-	const fieldLabels = useMemo<Record<string, string>>(
-		() => ({
-			reference: t.articles.colReference,
-			designation: t.articles.colDesignation,
-			prix_achat: isNectarCompany ? t.articles.colPrixTTC : t.articles.colPrixAchat,
-			prix_vente: prixHTLabel,
-			tva: t.articles.fieldTva,
-			stock_minimum: 'Stock minimum',
-			categorie: t.articles.filterCategorie,
-			emplacement: t.articles.filterEmplacement,
-			unite: t.articles.filterUnite,
-			marque: t.articles.filterMarque,
-			remarque: t.articles.fieldRemarque,
-			photo: t.articles.fieldPhoto,
-			photo_cropped: t.articles.fieldPhotoCropped,
-			globalError: t.articles.fieldPhotoCropped,
-		}),
-		[t, isNectarCompany, prixHTLabel],
-	);
+	const fieldLabels = {
+		reference: t.articles.colReference,
+		designation: t.articles.colDesignation,
+		prix_achat: isNectarCompany ? t.articles.colPrixTTC : t.articles.colPrixAchat,
+		prix_vente: prixHTLabel,
+		tva: t.articles.fieldTva,
+		stock_minimum: 'Stock minimum',
+		categorie: t.articles.filterCategorie,
+		emplacement: t.articles.filterEmplacement,
+		unite: t.articles.filterUnite,
+		marque: t.articles.filterMarque,
+		remarque: t.articles.fieldRemarque,
+		photo: t.articles.fieldPhoto,
+		photo_cropped: t.articles.fieldPhotoCropped,
+		globalError: t.articles.fieldPhotoCropped,
+	} as Record<string, string>;
 
-	const validationErrors = useMemo(() => {
+	const validationErrors = (() => {
 		const errors: Record<string, string> = {};
 		if (hasAttemptedSubmit) {
 			Object.entries(formik.errors).forEach(([key, value]) => {
@@ -316,7 +301,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			});
 		}
 		return errors;
-	}, [formik.errors, hasAttemptedSubmit]);
+	})();
 
 	const hasValidationErrors = Object.keys(validationErrors).length > 0;
 
@@ -403,8 +388,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomSquareImageUploading
 										image={formik.values.photo}
 										croppedImage={formik.values.photo_cropped}
-										onChange={(img) => formik.setFieldValue('photo', img)}
-										onCrop={(cropped) => formik.setFieldValue('photo_cropped', cropped)}
+										onChange={(img) => void formik.setFieldValue('photo', img)}
+										onCrop={(cropped) => void formik.setFieldValue('photo_cropped', cropped)}
 									/>
 								</Box>
 							</CardContent>
@@ -436,7 +421,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									exclusive
 									onChange={(_, val) => {
 										if (val) {
-											formik.setFieldValue('type_article', val);
+											void formik.setFieldValue('type_article', val);
 											formik.setErrors({});
 										}
 									}}
@@ -505,9 +490,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											type="text"
 											label="Stock minimum"
 											value={formik.values.stock_minimum ?? 0}
-											onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+											onChange={(e: ChangeEvent<HTMLInputElement>) => {
 												const parsed = parseNumber(e.target.value);
-												if (parsed !== null && parsed >= 0) formik.setFieldValue('stock_minimum', parsed);
+												if (parsed !== null && parsed >= 0) void formik.setFieldValue('stock_minimum', parsed);
 											}}
 											onBlur={formik.handleBlur('stock_minimum')}
 											error={formik.touched.stock_minimum && Boolean(formik.errors.stock_minimum)}
@@ -560,11 +545,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												type="text"
 												label={t.articles.colPrixAchat}
 												value={formik.values.prix_achat ?? ''}
-												onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+												onChange={(e: ChangeEvent<HTMLInputElement>) => {
 													const raw = (e.target as HTMLInputElement).value;
 													const parsed = parseNumber(raw);
 													if (parsed !== null && parsed < 0) return;
-													formik.setFieldValue('prix_achat', parsed === null ? raw : parsed);
+													void formik.setFieldValue('prix_achat', parsed === null ? raw : parsed);
 												}}
 												onBlur={formik.handleBlur('prix_achat')}
 												error={formik.touched.prix_achat && Boolean(formik.errors.prix_achat)}
@@ -581,7 +566,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												label={t.common.devise}
 												items={['MAD', 'EUR', 'USD']}
 												value={formik.values.devise_prix_achat ?? 'MAD'}
-												onChange={(e) => formik.setFieldValue('devise_prix_achat', e.target.value)}
+												onChange={(e) => void formik.setFieldValue('devise_prix_achat', e.target.value)}
 												theme={customDropdownTheme()}
 											/>
 										</Stack>
@@ -598,11 +583,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											type="text"
 											label={`${prixHTLabel} *`}
 											value={formik.values.prix_vente ?? ''}
-											onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+											onChange={(e: ChangeEvent<HTMLInputElement>) => {
 												const raw = (e.target as HTMLInputElement).value;
 												const parsed = parseNumber(raw);
 												if (parsed !== null && parsed < 0) return;
-												formik.setFieldValue('prix_vente', parsed === null ? raw : parsed);
+												void formik.setFieldValue('prix_vente', parsed === null ? raw : parsed);
 											}}
 											onBlur={formik.handleBlur('prix_vente')}
 											error={formik.touched.prix_vente && Boolean(formik.errors.prix_vente)}
@@ -620,7 +605,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												label={t.common.devise}
 												items={['MAD', 'EUR', 'USD']}
 												value={formik.values.devise_prix_vente ?? 'MAD'}
-												onChange={(e) => formik.setFieldValue('devise_prix_vente', e.target.value)}
+												onChange={(e) => void formik.setFieldValue('devise_prix_vente', e.target.value)}
 												theme={customDropdownTheme()}
 											/>
 										)}
@@ -644,11 +629,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										type="text"
 										label={t.articles.fieldTva}
 										value={String(formik.values.tva) ?? ''}
-										onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+										onChange={(e: ChangeEvent<HTMLInputElement>) => {
 											const raw = (e.target as HTMLInputElement).value;
 											const parsed = parseNumber(raw);
 											if (parsed !== null && parsed < 0) return;
-											formik.setFieldValue('tva', parsed === null ? raw : parsed);
+											void formik.setFieldValue('tva', parsed === null ? raw : parsed);
 										}}
 										onBlur={formik.handleBlur('tva')}
 										error={formik.touched.tva && Boolean(formik.errors.tva)}
@@ -699,7 +684,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										value={selectedCategorie}
 										fullWidth
 										onChange={(_, newVal) => {
-											formik.setFieldValue('categorie', newVal ? Number(newVal.value) : null);
+											void formik.setFieldValue('categorie', newVal ? Number(newVal.value) : null);
 										}}
 										onBlur={formik.handleBlur('categorie')}
 										error={formik.touched.categorie && Boolean(formik.errors.categorie)}
@@ -717,10 +702,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												}
 												deleteEntity={({ id: entityId }) => deleteCategory({ id: entityId })}
 												onAddSuccess={(newId) => {
-													formik.setFieldValue('categorie', newId);
+													void formik.setFieldValue('categorie', newId);
 												}}
 												onDeleteSuccess={() => {
-													formik.setFieldValue('categorie', null);
+													void formik.setFieldValue('categorie', null);
 												}}
 											/>
 										}
@@ -735,7 +720,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										value={selectedEmplacement}
 										fullWidth
 										onChange={(_, newVal) => {
-											formik.setFieldValue('emplacement', newVal ? Number(newVal.value) : null);
+											void formik.setFieldValue('emplacement', newVal ? Number(newVal.value) : null);
 										}}
 										onBlur={formik.handleBlur('emplacement')}
 										error={formik.touched.emplacement && Boolean(formik.errors.emplacement)}
@@ -753,10 +738,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												}
 												deleteEntity={({ id: entityId }) => deleteEmplacement({ id: entityId })}
 												onAddSuccess={(newId) => {
-													formik.setFieldValue('emplacement', newId);
+													void formik.setFieldValue('emplacement', newId);
 												}}
 												onDeleteSuccess={() => {
-													formik.setFieldValue('emplacement', null);
+													void formik.setFieldValue('emplacement', null);
 												}}
 											/>
 										}
@@ -771,7 +756,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										value={selectedUnite}
 										fullWidth
 										onChange={(_, newVal) => {
-											formik.setFieldValue('unite', newVal ? Number(newVal.value) : null);
+											void formik.setFieldValue('unite', newVal ? Number(newVal.value) : null);
 										}}
 										onBlur={formik.handleBlur('unite')}
 										error={formik.touched.unite && Boolean(formik.errors.unite)}
@@ -789,10 +774,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												}
 												deleteEntity={({ id: entityId }) => deleteUnite({ id: entityId })}
 												onAddSuccess={(newId) => {
-													formik.setFieldValue('unite', newId);
+													void formik.setFieldValue('unite', newId);
 												}}
 												onDeleteSuccess={() => {
-													formik.setFieldValue('unite', null);
+													void formik.setFieldValue('unite', null);
 												}}
 											/>
 										}
@@ -807,7 +792,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										value={selectedMarque}
 										fullWidth
 										onChange={(_, newVal) => {
-											formik.setFieldValue('marque', newVal ? Number(newVal.value) : null);
+											void formik.setFieldValue('marque', newVal ? Number(newVal.value) : null);
 										}}
 										onBlur={formik.handleBlur('marque')}
 										error={formik.touched.marque && Boolean(formik.errors.marque)}
@@ -825,10 +810,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												}
 												deleteEntity={({ id: entityId }) => deleteMarque({ id: entityId })}
 												onAddSuccess={(newId) => {
-													formik.setFieldValue('marque', newId);
+													void formik.setFieldValue('marque', newId);
 												}}
 												onDeleteSuccess={() => {
-													formik.setFieldValue('marque', null);
+													void formik.setFieldValue('marque', null);
 												}}
 											/>
 										}
@@ -884,7 +869,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								type="submit"
 								loading={isPending}
 								startIcon={isEditMode ? <EditIcon /> : <AddIcon />}
-								onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+								onClick={(e: MouseEvent<HTMLButtonElement>) => {
 									setHasAttemptedSubmit(true);
 									if (!formik.isValid) {
 										e.preventDefault();
@@ -903,12 +888,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	);
 };
 
-interface Props extends SessionProps {
-	company_id: number;
-	id?: number;
-}
-
-const ArticlesForm: React.FC<Props> = (props) => (
+const ArticlesForm: FC<Props> = (props) => (
 	<ClientArticleWrapperForm {...props} entityName="article" FormikComponent={FormikContent} />
 );
 

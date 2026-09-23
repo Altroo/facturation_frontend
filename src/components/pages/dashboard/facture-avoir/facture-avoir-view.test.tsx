@@ -1,4 +1,4 @@
-import React from 'react';
+import { type ReactNode } from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { translations as mockTranslations } from '@/translations';
@@ -64,8 +64,8 @@ jest.mock('@/components/pages/dashboard/shared/company-documents-view/companyDoc
 	}: {
 		title: string;
 		canEdit: boolean;
-		headerActions: React.ReactNode;
-		extraDocumentRows: Array<{ label: string; getValue: (data: Record<string, unknown>) => React.ReactNode }>;
+		headerActions: ReactNode;
+		extraDocumentRows: Array<{ label: string; getValue: (data: Record<string, unknown>) => ReactNode }>;
 		query: { data: Record<string, unknown> };
 	}) => (
 		<section>
@@ -89,7 +89,15 @@ jest.mock('@/components/shared/pdfLanguageModal/pdfLanguageModal', () => ({
 
 jest.mock('@/components/htmlElements/modals/actionModal/actionModals', () => ({
 	__esModule: true,
-	default: ({ title, body, actions }: { title: string; body: string; actions: Array<{ text: string; onClick: () => void }> }) => (
+	default: ({
+		title,
+		body,
+		actions,
+	}: {
+		title: string;
+		body: string;
+		actions: Array<{ text: string; onClick: () => void }>;
+	}) => (
 		<div role="dialog" aria-label={title}>
 			<p>{body}</p>
 			{actions.map((action) => (

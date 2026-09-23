@@ -8,10 +8,7 @@ export const metadata: Metadata = {
 	title: 'Nouvel Article',
 	description: 'Créer un nouvel article',
 };
-
-type PageProps = {
-	searchParams: Promise<{ company_id: string }>;
-};
+import type { CompanyScopedNewRouteProps as PageProps } from '@/types/routeTypes';
 
 const ArticleNewCompanyIDPage = async (props: PageProps) => {
 	const session = await auth();

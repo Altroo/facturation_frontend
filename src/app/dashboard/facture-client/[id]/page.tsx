@@ -6,13 +6,9 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
 	title: 'Détails de la Facture Client',
-	description: 'Consulter les détails d\'une facture client',
+	description: "Consulter les détails d'une facture client",
 };
-
-type PageProps = {
-	params: Promise<{ id: string }>;
-	searchParams: Promise<{ company_id: string }>;
-};
+import type { CompanyScopedDetailRouteProps as PageProps } from '@/types/routeTypes';
 
 const FactureClientViewPage = async (props: PageProps) => {
 	const session = await auth();

@@ -1,4 +1,4 @@
-import React from 'react';
+import { type ChangeEvent, type ReactNode, type FC, createElement, isValidElement, type ReactElement } from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import GlobalRemiseModal from './globalRemiseModal';
@@ -8,11 +8,11 @@ type TextInputProps = {
 	type?: string;
 	label?: string;
 	value?: string;
-	onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+	onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
 	fullWidth?: boolean;
 	size?: string;
 	theme?: unknown;
-	endIcon?: React.ReactNode;
+	endIcon?: ReactNode;
 };
 
 type DropDownItem = { value: string; label: string };
@@ -20,34 +20,31 @@ type DropDownProps = {
 	id?: string;
 	items: DropDownItem[];
 	value?: string;
-	onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+	onChange?: (e: ChangeEvent<HTMLSelectElement>) => void;
 	label?: string;
 	theme?: unknown;
 };
 
 jest.mock('@/components/formikElements/customTextInput/customTextInput', () => {
-	// eslint-disable-next-line @typescript-eslint/no-require-imports
-	const React = require('react') as typeof import('react');
-
-	const MockTextInput: React.FC<TextInputProps> = (props: TextInputProps) => {
+	const MockTextInput: FC<TextInputProps> = (props: TextInputProps) => {
 		const id = props.id ?? 'mock-text';
-		return React.createElement(
+		return createElement(
 			'div',
 			{ 'data-testid': `mock-text-${id}` },
-			React.createElement('label', { htmlFor: id }, props.label ?? ''),
-			React.createElement('input', {
+			createElement('label', { htmlFor: id }, props.label ?? ''),
+			createElement('input', {
 				id,
 				'data-testid': id,
 				type: props.type ?? 'text',
 				value: props.value ?? '',
-				onChange: (e: React.ChangeEvent<HTMLInputElement>) => props.onChange?.(e),
+				onChange: (e: ChangeEvent<HTMLInputElement>) => props.onChange?.(e),
 			}),
-			React.createElement(
+			createElement(
 				'span',
 				{ 'data-testid': `${id}-endicon` },
 				(() => {
-					if (React.isValidElement(props.endIcon)) {
-						const el = props.endIcon as React.ReactElement<{ children?: React.ReactNode }>;
+					if (isValidElement(props.endIcon)) {
+						const el = props.endIcon as ReactElement<{ children?: ReactNode }>;
 						return el.props.children ?? '';
 					}
 					return '';
@@ -60,25 +57,22 @@ jest.mock('@/components/formikElements/customTextInput/customTextInput', () => {
 });
 
 jest.mock('@/components/formikElements/customDropDownSelect/customDropDownSelect', () => {
-	// eslint-disable-next-line @typescript-eslint/no-require-imports
-	const React = require('react') as typeof import('react');
-
-	const MockDropDown: React.FC<DropDownProps> = (props: DropDownProps) => {
+	const MockDropDown: FC<DropDownProps> = (props: DropDownProps) => {
 		const id = props.id ?? 'mock-select';
-		return React.createElement(
+		return createElement(
 			'div',
 			{ 'data-testid': `mock-select-${id}` },
-			React.createElement('label', { htmlFor: id }, props.label ?? ''),
-			React.createElement(
+			createElement('label', { htmlFor: id }, props.label ?? ''),
+			createElement(
 				'select',
 				{
 					id,
 					'data-testid': id,
 					value: props.value ?? '',
-					onChange: (e: React.ChangeEvent<HTMLSelectElement>) => props.onChange?.(e),
+					onChange: (e: ChangeEvent<HTMLSelectElement>) => props.onChange?.(e),
 				},
 				(props.items ?? []).map((it: DropDownItem) =>
-					React.createElement('option', { key: it.value, value: it.value }, it.label),
+					createElement('option', { key: it.value, value: it.value }, it.label),
 				),
 			),
 		);
@@ -233,9 +227,7 @@ describe('GlobalRemiseModal', () => {
 		const onApply = jest.fn();
 		const onClose = jest.fn();
 
-		render(
-			<GlobalRemiseModal open={true} onClose={onClose} currentType="Fixe" currentValue={100} onApply={onApply} />,
-		);
+		render(<GlobalRemiseModal open={true} onClose={onClose} currentType="Fixe" currentValue={100} onApply={onApply} />);
 
 		// Input should be visible with type Fixe
 		const input = await screen.findByTestId('remise_value');

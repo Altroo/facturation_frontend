@@ -1,4 +1,4 @@
-import React from 'react';
+import { type ComponentType, type ReactElement } from 'react';
 import { render, screen, cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import BonDeLivraisonForm from './bon-de-livraison-form';
@@ -49,13 +49,16 @@ jest.mock('@/utils/hooks', () => ({
 		onSuccess: jest.fn(),
 		onError: jest.fn(),
 	}),
-	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
+	useLanguage: () => ({
+		language: 'fr' as const,
+		setLanguage: jest.fn(),
+		t: jest.requireActual('@/translations').translations.fr,
+	}),
 }));
 
 jest.mock('@/store/selectors', () => ({
 	__esModule: true,
 	getUserCompaniesState: jest.fn(),
-
 }));
 
 jest.mock('@/contexts/InitContext', () => ({
@@ -84,19 +87,30 @@ jest.mock('@/store/services/bonDeLivraison', () => ({
 // Mock the shared form content component
 jest.mock('@/components/pages/dashboard/shared/company-documents-form/companyDocumentFormContent', () => ({
 	__esModule: true,
-	default: (props: FormContentProps & {
-		addData?: (params: { data: Record<string, unknown> }) => { unwrap: () => Promise<unknown> };
-		updateData?: (params: { data: Record<string, unknown>; id: number }) => { unwrap: () => Promise<unknown> };
-		patchStatut?: (params: { id: number; data: { statut: string } }) => { unwrap: () => Promise<unknown> };
-	}) => (
+	default: (
+		props: FormContentProps & {
+			addData?: (params: { data: Record<string, unknown> }) => { unwrap: () => Promise<unknown> };
+			updateData?: (params: { data: Record<string, unknown>; id: number }) => { unwrap: () => Promise<unknown> };
+			patchStatut?: (params: { id: number; data: { statut: string } }) => { unwrap: () => Promise<unknown> };
+		},
+	) => (
 		<div data-testid="company-document-form-content">
 			<span data-testid="form-company-id">{props.company_id}</span>
 			<span data-testid="form-is-edit-mode">{String(props.isEditMode)}</span>
 			<span data-testid="form-id">{props.id ?? 'undefined'}</span>
 			<span data-testid="form-token">{props.token ?? 'undefined'}</span>
-			<button data-testid="call-add" onClick={() => props.addData?.({ data: { test: true } })?.unwrap()}>Add</button>
-			<button data-testid="call-update" onClick={() => props.updateData?.({ data: { test: true }, id: 1 })?.unwrap()}>Update</button>
-			<button data-testid="call-patch" onClick={() => props.patchStatut?.({ id: 1, data: { statut: 'Validé' } })?.unwrap()}>Patch</button>
+			<button data-testid="call-add" onClick={() => props.addData?.({ data: { test: true } })?.unwrap()}>
+				Add
+			</button>
+			<button data-testid="call-update" onClick={() => props.updateData?.({ data: { test: true }, id: 1 })?.unwrap()}>
+				Update
+			</button>
+			<button
+				data-testid="call-patch"
+				onClick={() => props.patchStatut?.({ id: 1, data: { statut: 'Validé' } })?.unwrap()}
+			>
+				Patch
+			</button>
 		</div>
 	),
 }));
@@ -109,7 +123,7 @@ jest.mock('@/components/pages/dashboard/shared/company-documents-form/companyDoc
 		company_id,
 		id,
 	}: {
-		FormComponent: React.ComponentType<FormContentProps>;
+		FormComponent: ComponentType<FormContentProps>;
 		company_id: number;
 		id?: number;
 		session: AppSession;
@@ -142,7 +156,7 @@ const mockSession: AppSession = {
 	},
 };
 
-const renderWithProviders = (ui: React.ReactElement) => {
+const renderWithProviders = (ui: ReactElement) => {
 	return render(<Provider store={mockStore}>{ui}</Provider>);
 };
 

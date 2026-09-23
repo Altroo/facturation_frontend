@@ -1,8 +1,8 @@
-import React from 'react';
+import { type ReactNode, type FC, type RefObject } from 'react';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { useDocumentLinesColumns, type UseDocumentLinesColumnsParams } from './useDocumentLinesColumns';
-import type { DeviFactureLineFormValues } from '@/types/companyDocumentsTypes';
+import { useDocumentLinesColumns } from './useDocumentLinesColumns';
+import type { DeviFactureLineFormValues, UseDocumentLinesColumnsParams } from '@/types/companyDocumentsTypes';
 import type { ArticleClass } from '@/models/classes';
 
 // ── Mock dependencies ──────────────────────────────────────────────
@@ -63,7 +63,7 @@ jest.mock('@/components/formikElements/customDropDownSelect/customDropDownSelect
 }));
 jest.mock('@/components/htmlElements/tooltip/darkTooltip/darkTooltip', () => ({
 	__esModule: true,
-	default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+	default: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
 jest.mock('./companyDocumentFormContent', () => ({
 	generateRowId: (article: number | string, idx: number) => `${article}_${idx}`,
@@ -98,7 +98,7 @@ const makeArticle = (overrides: Partial<ArticleClass> = {}): Partial<ArticleClas
 });
 
 /** Render hook columns via a DataGrid-like cell renderer test helper */
-const HookRenderer: React.FC<{
+const HookRenderer: FC<{
 	params: UseDocumentLinesColumnsParams;
 	columnField: string;
 	row: Record<string, unknown>;
@@ -124,7 +124,7 @@ const buildParams = (overrides: Partial<UseDocumentLinesColumnsParams> = {}): Us
 	validationErrors: {},
 	role: undefined,
 	devise: 'MAD',
-	handleLineChangeRef: { current: jest.fn() } as unknown as React.RefObject<
+	handleLineChangeRef: { current: jest.fn() } as unknown as RefObject<
 		(index: number, field: keyof DeviFactureLineFormValues, value: string | number) => void
 	>,
 	handleDeleteLine: jest.fn(),

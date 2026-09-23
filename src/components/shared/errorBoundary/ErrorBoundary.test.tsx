@@ -1,9 +1,9 @@
-import React from 'react';
+import { type FC, useState } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ErrorBoundary } from './ErrorBoundary';
 
 // Component that throws an error for testing
-const ThrowError: React.FC<{ shouldThrow: boolean }> = ({ shouldThrow }) => {
+const ThrowError: FC<{ shouldThrow: boolean }> = ({ shouldThrow }) => {
 	if (shouldThrow) {
 		throw new Error('Test error message');
 	}
@@ -55,8 +55,8 @@ describe('ErrorBoundary', () => {
 	});
 
 	it('resets error state when retry button is clicked', () => {
-		const TestComponent: React.FC = () => {
-			const [shouldThrow, setShouldThrow] = React.useState(true);
+		const TestComponent: FC = () => {
+			const [shouldThrow, setShouldThrow] = useState(true);
 
 			return (
 				<ErrorBoundary>

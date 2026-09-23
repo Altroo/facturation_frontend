@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import { runWithCleanup, runWithErrorHandler } from '@/utils/runWithCleanup';
+import { type ChangeEvent, type FC, type MouseEvent, useState } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import { Alert, Box, Divider, Stack, Typography } from '@mui/material';
 import {
@@ -14,7 +15,6 @@ import {
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import { monthlyObjectivesSchema } from '@/utils/formValidationSchemas';
-
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
@@ -23,7 +23,6 @@ import CustomTextInput from '@/components/formikElements/customTextInput/customT
 import FormattedNumberInput from '@/components/formikElements/formattedNumberInput/formattedNumberInput';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
-
 import { useInitAccessToken } from '@/contexts/InitContext';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
@@ -35,27 +34,14 @@ import {
 } from '@/store/services/dashboard';
 import { getLabelForKey, parseNumber, setFormikAutoErrors } from '@/utils/helpers';
 import { textInputTheme } from '@/utils/themes';
+import type {
+	MonthlyObjectivesFormValues,
+	MonthlyObjectivesViewFormikContentProps as FormikContentProps,
+} from '@/types/dashboardTypes';
 
 const inputTheme = textInputTheme();
 
-// Form values type
-type MonthlyObjectivesFormValues = {
-	objectif_ca: string | number;
-	objectif_ca_eur?: string | number | null;
-	objectif_ca_usd?: string | number | null;
-	objectif_factures: number;
-	objectif_conversion: string | number;
-	globalError: string;
-};
-
-// Props for the FormikContent component
-type FormikContentProps = {
-	companyId: number;
-	token?: string;
-	usesForeignCurrency: boolean;
-};
-
-const FormikContent: React.FC<FormikContentProps> = ({ companyId, token, usesForeignCurrency }) => {
+const FormikContent: FC<FormikContentProps> = ({ companyId, token, usesForeignCurrency }) => {
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
 	const {
@@ -71,10 +57,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, token, usesFor
 	const objectivesAxiosError = objectivesError as ResponseDataInterface<ApiErrorResponseType> | undefined;
 	const loadError = objectivesAxiosError?.status === 404 ? undefined : objectivesError;
 	const error = loadError || (isEditMode ? updateError : addError);
-	const axiosError = useMemo(
-		() => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),
-		[error],
-	);
+	const axiosError = error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined;
 
 	const [isPending, setIsPending] = useState(false);
 	const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
@@ -97,50 +80,55 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, token, usesFor
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const { globalError, ...payload } = data;
 
-			try {
-				const submitData = {
-					company: companyId,
-					objectif_ca: payload.objectif_ca.toString(),
-					...(usesForeignCurrency && {
-						objectif_ca_eur: payload.objectif_ca_eur?.toString() || null,
-						objectif_ca_usd: payload.objectif_ca_usd?.toString() || null,
-					}),
-					objectif_factures: payload.objectif_factures,
-					objectif_conversion: payload.objectif_conversion.toString(),
-				};
+			await runWithCleanup(
+				async () => {
+					await runWithErrorHandler(
+						async () => {
+							const submitData = {
+								company: companyId,
+								objectif_ca: payload.objectif_ca.toString(),
+								...(usesForeignCurrency && {
+									objectif_ca_eur: payload.objectif_ca_eur?.toString() || null,
+									objectif_ca_usd: payload.objectif_ca_usd?.toString() || null,
+								}),
+								objectif_factures: payload.objectif_factures,
+								objectif_conversion: payload.objectif_conversion.toString(),
+							};
 
-				if (isEditMode && existingObjectives) {
-					await updateData({ id: existingObjectives.id, data: submitData }).unwrap();
-					onSuccess(t.monthlyObjectives.updateSuccess);
-				} else {
-					await addData(submitData).unwrap();
-					onSuccess(t.monthlyObjectives.createSuccess);
-				}
-			} catch (e) {
-				if (isEditMode) {
-					onError(t.monthlyObjectives.updateError);
-				} else {
-					onError(t.monthlyObjectives.createError);
-				}
-				setFormikAutoErrors({ e, setFieldError });
-			} finally {
-				setIsPending(false);
-			}
+							if (isEditMode && existingObjectives) {
+								await updateData({ id: existingObjectives.id, data: submitData }).unwrap();
+								onSuccess(t.monthlyObjectives.updateSuccess);
+							} else {
+								await addData(submitData).unwrap();
+								onSuccess(t.monthlyObjectives.createSuccess);
+							}
+						},
+						(e) => {
+							if (isEditMode) {
+								onError(t.monthlyObjectives.updateError);
+							} else {
+								onError(t.monthlyObjectives.createError);
+							}
+							setFormikAutoErrors({ e, setFieldError });
+						},
+					);
+				},
+				() => {
+					setIsPending(false);
+				},
+			);
 		},
 	});
 
 	// Collect validation errors from Formik
-	const fieldLabels = useMemo<Record<string, string>>(
-		() => ({
-			objectif_ca: t.monthlyObjectives.fieldCA,
-			objectif_factures: t.monthlyObjectives.fieldFactures,
-			objectif_conversion: t.monthlyObjectives.fieldConversion,
-			globalError: t.monthlyObjectives.fieldGlobalError,
-		}),
-		[t],
-	);
+	const fieldLabels = {
+		objectif_ca: t.monthlyObjectives.fieldCA,
+		objectif_factures: t.monthlyObjectives.fieldFactures,
+		objectif_conversion: t.monthlyObjectives.fieldConversion,
+		globalError: t.monthlyObjectives.fieldGlobalError,
+	} as Record<string, string>;
 
-	const validationErrors = useMemo(() => {
+	const validationErrors = (() => {
 		const errors: Record<string, string> = {};
 		if (hasAttemptedSubmit) {
 			Object.entries(formik.errors).forEach(([key, value]) => {
@@ -150,7 +138,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, token, usesFor
 			});
 		}
 		return errors;
-	}, [formik.errors, hasAttemptedSubmit]);
+	})();
 
 	const hasValidationErrors = Object.keys(validationErrors).length > 0;
 
@@ -214,11 +202,11 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, token, usesFor
 								type="text"
 								label={t.monthlyObjectives.fieldCALabel}
 								value={formik.values.objectif_ca}
-								onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+								onChange={(e: ChangeEvent<HTMLInputElement>) => {
 									const raw = (e.target as HTMLInputElement).value;
 									const parsed = parseNumber(raw);
 									if (parsed !== null && parsed < 0) return;
-									formik.setFieldValue('objectif_ca', parsed === null ? raw : parsed);
+									void formik.setFieldValue('objectif_ca', parsed === null ? raw : parsed);
 								}}
 								onBlur={formik.handleBlur('objectif_ca')}
 								error={formik.touched.objectif_ca && Boolean(formik.errors.objectif_ca)}
@@ -237,11 +225,14 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, token, usesFor
 										type="text"
 										label={t.monthlyObjectives.fieldCAEurLabel}
 										value={formik.values.objectif_ca_eur ?? ''}
-										onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+										onChange={(e: ChangeEvent<HTMLInputElement>) => {
 											const raw = (e.target as HTMLInputElement).value;
 											const parsed = parseNumber(raw);
 											if (parsed !== null && parsed < 0) return;
-											formik.setFieldValue('objectif_ca_eur', parsed === null ? (raw === '' ? null : raw) : parsed);
+											void formik.setFieldValue(
+												'objectif_ca_eur',
+												parsed === null ? (raw === '' ? null : raw) : parsed,
+											);
 										}}
 										onBlur={formik.handleBlur('objectif_ca_eur')}
 										error={formik.touched.objectif_ca_eur && Boolean(formik.errors.objectif_ca_eur)}
@@ -262,11 +253,14 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, token, usesFor
 										type="text"
 										label={t.monthlyObjectives.fieldCAUsdLabel}
 										value={formik.values.objectif_ca_usd ?? ''}
-										onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+										onChange={(e: ChangeEvent<HTMLInputElement>) => {
 											const raw = (e.target as HTMLInputElement).value;
 											const parsed = parseNumber(raw);
 											if (parsed !== null && parsed < 0) return;
-											formik.setFieldValue('objectif_ca_usd', parsed === null ? (raw === '' ? null : raw) : parsed);
+											void formik.setFieldValue(
+												'objectif_ca_usd',
+												parsed === null ? (raw === '' ? null : raw) : parsed,
+											);
 										}}
 										onBlur={formik.handleBlur('objectif_ca_usd')}
 										error={formik.touched.objectif_ca_usd && Boolean(formik.errors.objectif_ca_usd)}
@@ -289,11 +283,11 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, token, usesFor
 								type="number"
 								label={t.monthlyObjectives.fieldFacturesLabel}
 								value={String(formik.values.objectif_factures) ?? ''}
-								onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+								onChange={(e: ChangeEvent<HTMLInputElement>) => {
 									const raw = (e.target as HTMLInputElement).value;
 									const parsed = parseNumber(raw);
 									if (parsed !== null && parsed < 0) return;
-									formik.setFieldValue('objectif_factures', parsed === null ? raw : parsed);
+									void formik.setFieldValue('objectif_factures', parsed === null ? raw : parsed);
 								}}
 								onBlur={formik.handleBlur('objectif_factures')}
 								error={formik.touched.objectif_factures && Boolean(formik.errors.objectif_factures)}
@@ -309,11 +303,11 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, token, usesFor
 								type="number"
 								label={t.monthlyObjectives.fieldConversionLabel}
 								value={String(formik.values.objectif_conversion) ?? ''}
-								onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+								onChange={(e: ChangeEvent<HTMLInputElement>) => {
 									const raw = (e.target as HTMLInputElement).value;
 									const parsed = parseNumber(raw);
 									if (parsed !== null && parsed < 0) return;
-									formik.setFieldValue('objectif_conversion', parsed === null ? raw : parsed);
+									void formik.setFieldValue('objectif_conversion', parsed === null ? raw : parsed);
 								}}
 								onBlur={formik.handleBlur('objectif_conversion')}
 								error={formik.touched.objectif_conversion && Boolean(formik.errors.objectif_conversion)}
@@ -338,7 +332,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, token, usesFor
 								type="submit"
 								loading={isPending}
 								startIcon={isEditMode ? <EditIcon /> : <AddIcon />}
-								onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+								onClick={(e: MouseEvent<HTMLButtonElement>) => {
 									setHasAttemptedSubmit(true);
 									if (!formik.isValid) {
 										e.preventDefault();
@@ -357,7 +351,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ companyId, token, usesFor
 	);
 };
 
-const MonthlyObjectivesView: React.FC<SessionProps> = ({ session }) => {
+const MonthlyObjectivesView: FC<SessionProps> = ({ session }) => {
 	const { t } = useLanguage();
 	const token = useInitAccessToken(session);
 	const profil = useAppSelector(getProfilState);
@@ -372,13 +366,7 @@ const MonthlyObjectivesView: React.FC<SessionProps> = ({ session }) => {
 			{({ company_id }) => {
 				const company = companiesData?.find((c) => c.id === company_id);
 				const usesForeignCurrency = company?.uses_foreign_currency ?? false;
-				return (
-					<FormikContent
-						companyId={company_id}
-						token={token}
-						usesForeignCurrency={usesForeignCurrency}
-					/>
-				);
+				return <FormikContent companyId={company_id} token={token} usesForeignCurrency={usesForeignCurrency} />;
 			}}
 		</CompanyDocumentsWrapperList>
 	);

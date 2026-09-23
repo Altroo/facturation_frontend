@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import { type FC } from 'react';
 import { Box } from '@mui/material';
 import {
 	AccountBalanceWallet as AccountBalanceWalletIcon,
@@ -12,23 +12,9 @@ import {
 import DashboardStatCard from '@/components/shared/dashboardStatCard/dashboardStatCard';
 import { formatNumberWithSpaces } from '@/utils/helpers';
 import { useLanguage } from '@/utils/hooks';
+import type { TotalsCardProps } from '@/types/companyDocumentsTypes';
 
-interface TotalsCardProps {
-	totals: {
-		totalHT: number;
-		totalPrixAchat: number;
-		totalPrixAchatDevise?: string | null;
-		totalTVA: number;
-		totalTTC: number;
-		totalTTCApresRemise: number;
-	};
-	devise?: string;
-	isMobile?: boolean;
-	isLoading?: boolean;
-	showDiscountTotal?: boolean;
-}
-
-const FactureDevisTotalsCard: React.FC<TotalsCardProps> = ({
+const FactureDevisTotalsCard: FC<TotalsCardProps> = ({
 	totals,
 	devise = 'MAD',
 	isMobile = false,

@@ -1,4 +1,4 @@
-import React from 'react';
+import { type ReactNode } from 'react';
 import { render, screen, cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import type { AppSession } from '@/types/_initTypes';
@@ -69,7 +69,7 @@ jest.mock('@/components/pages/dashboard/shared/company-documents-list/companyDoc
 		children,
 		title,
 	}: {
-		children: (props: { company_id: number; role: string }) => React.ReactNode;
+		children: (props: { company_id: number; role: string }) => ReactNode;
 		title: string;
 	}) => (
 		<div data-testid="company-wrapper">

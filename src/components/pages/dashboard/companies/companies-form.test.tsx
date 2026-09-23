@@ -1,9 +1,11 @@
-import React from 'react';
-import { render, screen, cleanup } from '@testing-library/react';
+import { type ReactElement, type ReactNode } from 'react';
+import { cleanup, render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import type { AppSession } from '@/types/_initTypes';
+// Import after mocks
+import CompaniesForm from './companies-form';
 
 // Minimal mock store
 const mockStore = configureStore({
@@ -11,8 +13,7 @@ const mockStore = configureStore({
 		_init: () => ({}),
 		account: () => ({}),
 	},
-	middleware: (getDefaultMiddleware) =>
-		getDefaultMiddleware({ serializableCheck: false }),
+	middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false }),
 });
 
 // Mock next/navigation
@@ -34,7 +35,11 @@ jest.mock('@/utils/hooks', () => ({
 	__esModule: true,
 	useAppSelector: jest.fn(() => []),
 	useToast: () => ({ onSuccess: jest.fn(), onError: jest.fn() }),
-	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
+	useLanguage: () => ({
+		language: 'fr' as const,
+		setLanguage: jest.fn(),
+		t: jest.requireActual('@/translations').translations.fr,
+	}),
 }));
 
 jest.mock('@/store/selectors', () => ({
@@ -55,8 +60,7 @@ const mockEditCompanyMutation = jest.fn();
 
 jest.mock('@/store/services/company', () => ({
 	__esModule: true,
-	useGetCompanyQuery: (params: { id: number }, options: { skip: boolean }) =>
-		mockUseGetCompanyQuery(params, options),
+	useGetCompanyQuery: (params: { id: number }, options: { skip: boolean }) => mockUseGetCompanyQuery(params, options),
 	useAddCompanyMutation: () => [mockAddCompanyMutation, { isLoading: false, error: undefined }],
 	useEditCompanyMutation: () => [mockEditCompanyMutation, { isLoading: false, error: undefined }],
 }));
@@ -73,7 +77,7 @@ jest.mock('@/store/services/account', () => ({
 // Mock NavigationBar
 jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 	__esModule: true,
-	default: ({ children, title }: { children: React.ReactNode; title: string }) => (
+	default: ({ children, title }: { children: ReactNode; title: string }) => (
 		<div data-testid="navigation-bar">
 			<h1 data-testid="nav-title">{title}</h1>
 			{children}
@@ -83,10 +87,10 @@ jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 
 // Mock Protected
 jest.mock('@/components/layouts/protected/protected', () => ({
-	Protected: ({ children }: { children: React.ReactNode }) => <div data-testid="protected">{children}</div>,
+	Protected: ({ children }: { children: ReactNode }) => <div data-testid="protected">{children}</div>,
 }));
 
-// Mock form sub-components
+// Mock form subcomponents
 jest.mock('@/components/formikElements/customTextInput/customTextInput', () => ({
 	__esModule: true,
 	default: ({ id, label }: { id: string; label: string }) => (
@@ -145,7 +149,10 @@ jest.mock('@/utils/helpers', () => ({
 }));
 
 jest.mock('@/utils/rawData', () => ({
-	civiliteItemsList: [{ value: 'M.', label: 'M.' }, { value: 'Mme', label: 'Mme' }],
+	civiliteItemsList: [
+		{ value: 'M.', label: 'M.' },
+		{ value: 'Mme', label: 'Mme' },
+	],
 	nbrEmployeItemsList: [{ value: '1 à 5', label: '1 à 5' }],
 }));
 
@@ -160,9 +167,6 @@ jest.mock('zod-formik-adapter', () => ({
 jest.mock('@/utils/routes', () => ({
 	COMPANIES_LIST: '/dashboard/companies',
 }));
-
-// Import after mocks
-import CompaniesForm from './companies-form';
 
 const mockSession: AppSession = {
 	accessToken: 'mock-token',
@@ -182,7 +186,7 @@ const mockSession: AppSession = {
 	},
 };
 
-const renderWithProviders = (ui: React.ReactElement) => {
+const renderWithProviders = (ui: ReactElement) => {
 	return render(<Provider store={mockStore}>{ui}</Provider>);
 };
 
@@ -480,9 +484,7 @@ describe('CompaniesForm', () => {
 				useGetUsersListQuery: jest.Mock;
 			};
 			accountService.useGetUsersListQuery.mockReturnValue({
-				data: [
-					{ id: 1, email: 'direct@test.com', first_name: 'Direct', last_name: 'User' },
-				],
+				data: [{ id: 1, email: 'direct@test.com', first_name: 'Direct', last_name: 'User' }],
 				isLoading: false,
 			});
 			renderWithProviders(<CompaniesForm session={mockSession} />);
@@ -499,7 +501,7 @@ describe('CompaniesForm', () => {
 			};
 			const mockMutate = jest.fn();
 			companyService.useAddCompanyMutation = () => [mockMutate, { isLoading: true, error: undefined }];
-			
+
 			renderWithProviders(<CompaniesForm session={mockSession} />);
 			expect(screen.getByTestId('api-loader')).toBeInTheDocument();
 		});
@@ -510,13 +512,13 @@ describe('CompaniesForm', () => {
 			};
 			const mockMutate = jest.fn();
 			companyService.useEditCompanyMutation = () => [mockMutate, { isLoading: true, error: undefined }];
-			
+
 			mockUseGetCompanyQuery.mockReturnValue({
 				data: { id: 99, raison_sociale: 'Test' },
 				isLoading: false,
 				error: undefined,
 			});
-			
+
 			renderWithProviders(<CompaniesForm session={mockSession} id={99} />);
 			expect(screen.getByTestId('api-loader')).toBeInTheDocument();
 		});

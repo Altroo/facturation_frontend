@@ -1,4 +1,4 @@
-import React from 'react';
+import { type ReactNode } from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { translations as mockTranslations } from '@/translations';
@@ -56,7 +56,13 @@ jest.mock('@/store/services/factureAvoir', () => ({
 
 jest.mock('@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList', () => ({
 	__esModule: true,
-	default: ({ title, children }: { title: string; children: (value: { company_id: number; role: string }) => React.ReactNode }) => (
+	default: ({
+		title,
+		children,
+	}: {
+		title: string;
+		children: (value: { company_id: number; role: string }) => ReactNode;
+	}) => (
 		<section>
 			<h1>{title}</h1>
 			{children({ company_id: 1, role: 'Caissier' })}

@@ -1,7 +1,9 @@
-import React from 'react';
 import { render, cleanup, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { ToastContext, type ToastContextType } from '@/contexts/toastContext';
+import { ToastContext } from '@/contexts/toastContext';
+import { LanguageContext } from '@/contexts/languageContext';
+import type { ToastContextType } from '@/types/uiTypes';
+import { translations } from '@/translations';
 import SessionExpiredListener from './sessionExpiredListener';
 
 afterEach(() => {
@@ -70,6 +72,36 @@ describe('SessionExpiredListener', () => {
 		});
 
 		expect(toast.onError).toHaveBeenCalledTimes(3);
+	});
+
+	it('keeps one listener and uses the latest toast and language', () => {
+		const addListener = jest.spyOn(window, 'addEventListener');
+		const removeListener = jest.spyOn(window, 'removeEventListener');
+		const firstToast: ToastContextType = { onSuccess: jest.fn(), onError: jest.fn() };
+		const nextToast: ToastContextType = { onSuccess: jest.fn(), onError: jest.fn() };
+		const withProviders = (toast: ToastContextType, language: 'fr' | 'en') => (
+			<LanguageContext.Provider value={{ language, setLanguage: jest.fn(), t: translations[language] }}>
+				<ToastContext.Provider value={toast}>
+					<SessionExpiredListener />
+				</ToastContext.Provider>
+			</LanguageContext.Provider>
+		);
+
+		try {
+			const { rerender, unmount } = render(withProviders(firstToast, 'fr'));
+			rerender(withProviders(nextToast, 'en'));
+
+			act(() => window.dispatchEvent(new Event('session-expired')));
+			expect(firstToast.onError).not.toHaveBeenCalled();
+			expect(nextToast.onError).toHaveBeenCalledWith(translations.en.shared.sessionExpired);
+			expect(addListener.mock.calls.filter(([event]) => event === 'session-expired')).toHaveLength(1);
+
+			unmount();
+			expect(removeListener.mock.calls.filter(([event]) => event === 'session-expired')).toHaveLength(1);
+		} finally {
+			addListener.mockRestore();
+			removeListener.mockRestore();
+		}
 	});
 
 	it('does not crash when toast context is undefined', () => {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState, type JSX, type ChangeEvent, type MouseEvent } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import {
@@ -100,13 +100,24 @@ import type {
 import type { ValidateArticleLinesErrorType } from '@/types/devisTypes';
 import { useDocumentLinesColumns } from './useDocumentLinesColumns';
 import DocumentFormModals from './DocumentFormModals';
-import type { SelectedArticlePopupValues } from '@/components/shared/addArticleModal/addArticleModal';
+import type { SelectedArticlePopupValues } from '@/types/articleTypes';
 import EntityCrudControls from '@/components/shared/entityCrudControls/entityCrudControls';
 import { isNectarRaisonSociale } from '@/utils/nectar';
+import type { SharedDocumentFormContentProps } from '@/types/companyDocumentsTypes';
 
 const inputFieldTheme = textInputTheme();
 
 const SCROLL_TO_LINES_KEY = 'scrollToLinesOnNextMount';
+
+const runWithCleanup = async (action: () => Promise<void>, onError: (error: unknown) => void, cleanup: () => void) => {
+	try {
+		await action();
+	} catch (error) {
+		onError(error);
+	} finally {
+		cleanup();
+	}
+};
 
 const normalizeDevise = (value: unknown): string | null => {
 	if (typeof value !== 'string') return null;
@@ -158,38 +169,10 @@ const getNumeroFromData = <TDocument extends DocumentListClass>(
 };
 
 // Props for the shared component
-export interface SharedDocumentFormContentProps<TDocument extends DocumentListClass = DocumentListClass> {
-	token?: string;
-	company_id: number;
-	id?: number;
-	isEditMode: boolean;
-	config: DocumentFormConfig<TDocument>;
-	role?: string;
-	// Data from API
-	rawData?: DocumentFormData;
-	isDataLoading: boolean;
-	dataError?: unknown;
-	rawNumData?: DocumentNumResponse;
-	isNumLoading: boolean;
-	refetchNum?: () => Promise<unknown>;
-	// Mutation functions
-	addData: (params: { data: DocumentFormSchema }) => { unwrap: () => Promise<{ id?: number }> };
-	isAddLoading: boolean;
-	addError?: unknown;
-	updateData: (params: { data: DocumentFormSchema; id: number }) => { unwrap: () => Promise<unknown> };
-	isUpdateLoading: boolean;
-	updateError?: unknown;
-	patchStatut: (params: { id: number; data: { statut: TypeFactureLivraisonDevisStatus } }) => {
-		unwrap: () => Promise<unknown>;
-	};
-	isPatchLoading: boolean;
-	patchError?: unknown;
-	extraSections?: React.ReactNode;
-}
 
 const CompanyDocumentFormContent = <TDocument extends DocumentListClass = DocumentListClass>(
 	props: SharedDocumentFormContentProps<TDocument>,
-): React.JSX.Element => {
+): JSX.Element => {
 	const {
 		token,
 		company_id,
@@ -218,10 +201,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
 	const companies = useAppSelector(getUserCompaniesState);
-	const selectedCompany = useMemo(
-		() => companies?.find((company) => company.id === company_id),
-		[companies, company_id],
-	);
+	const selectedCompany = companies?.find((company) => company.id === company_id);
 	const canChangeDocumentStatus = Boolean(selectedCompany?.can_change_document_status);
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -250,10 +230,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 
 	// Error handling
 	const error = isEditMode ? dataError || updateError || patchError : addError;
-	const axiosError = useMemo(
-		() => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),
-		[error],
-	);
+	const axiosError = error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined;
 	const [isPending, setIsPending] = useState(false);
 	const hideYearPart = !isEditMode && isNectarCompany;
 
@@ -379,72 +356,74 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const { globalError, ...payload } = data;
 
-			try {
-				if (isEditMode) {
-					// Convert ligne values to proper numbers for backend (only in edit mode)
-					const normalizedLignes = (payload.lignes ?? []).map((ligne) => ({
-						...ligne,
-						prix_achat: parseNumber(ligne.prix_achat ?? ''),
-						prix_vente: parseNumber(ligne.prix_vente ?? ''),
-						quantity: parseNumber(ligne.quantity ?? '') ?? 1,
-						remise_type: isNectarCompany ? '' : ligne.remise_type,
-						remise: isNectarCompany ? 0 : (parseNumber(ligne.remise ?? '') ?? 0),
-					}));
+			await runWithCleanup(
+				async () => {
+					if (isEditMode) {
+						// Convert ligne values to proper numbers for backend (only in edit mode)
+						const normalizedLignes = (payload.lignes ?? []).map((ligne) => ({
+							...ligne,
+							prix_achat: parseNumber(ligne.prix_achat ?? ''),
+							prix_vente: parseNumber(ligne.prix_vente ?? ''),
+							quantity: parseNumber(ligne.quantity ?? '') ?? 1,
+							remise_type: isNectarCompany ? '' : ligne.remise_type,
+							remise: isNectarCompany ? 0 : (parseNumber(ligne.remise ?? '') ?? 0),
+						}));
 
-					// Normalize global remise
-					const normalizedRemise = parseNumber(payload.remise ?? '');
+						// Normalize global remise
+						const normalizedRemise = parseNumber(payload.remise ?? '');
 
-					const submissionData = {
-						...payload,
-						lignes: normalizedLignes,
-						remarque: isNectarCompany ? null : payload.remarque,
-						remise_type: isNectarCompany ? '' : payload.remise_type,
-						remise: isNectarCompany ? 0 : normalizedRemise,
-						...(config.documentType === 'devis'
-							? { numero_devis: `${data.numero_part}/${data.year_part}` }
-							: config.documentType === 'facture-client' || config.documentType === 'facture-pro-forma'
-								? { numero_facture: `${data.numero_part}/${data.year_part}` }
-								: { numero_bon_livraison: `${data.numero_part}/${data.year_part}` }),
-					} as DocumentFormSchema;
-					await updateData({ data: submissionData, id: id! }).unwrap();
-					onSuccess(config.labels.updateSuccessMessage);
-				} else {
-					// In add mode, exclude lignes and remise fields as they're not part of initial creation
-					// eslint-disable-next-line @typescript-eslint/no-unused-vars
-					const { lignes, remise, remise_type, ...payloadWithoutLines } = payload;
-					const submissionData = {
-						...payloadWithoutLines,
-						remarque: isNectarCompany ? null : payloadWithoutLines.remarque,
-						...(config.documentType === 'devis'
-							? { numero_devis: `${data.numero_part}/${data.year_part}` }
-							: config.documentType === 'facture-client' || config.documentType === 'facture-pro-forma'
-								? { numero_facture: `${data.numero_part}/${data.year_part}` }
-								: { numero_bon_livraison: `${data.numero_part}/${data.year_part}` }),
-					} as DocumentFormSchema;
-					const response = await addData({ data: submissionData }).unwrap();
-					onSuccess(config.labels.addSuccessMessage);
-					if (response.id) {
-						sessionStorage.setItem(SCROLL_TO_LINES_KEY, 'true');
-						router.replace(config.routes.editRoute(response.id!, company_id));
+						const submissionData = {
+							...payload,
+							lignes: normalizedLignes,
+							remarque: isNectarCompany ? null : payload.remarque,
+							remise_type: isNectarCompany ? '' : payload.remise_type,
+							remise: isNectarCompany ? 0 : normalizedRemise,
+							...(config.documentType === 'devis'
+								? { numero_devis: `${data.numero_part}/${data.year_part}` }
+								: config.documentType === 'facture-client' || config.documentType === 'facture-pro-forma'
+									? { numero_facture: `${data.numero_part}/${data.year_part}` }
+									: { numero_bon_livraison: `${data.numero_part}/${data.year_part}` }),
+						} as DocumentFormSchema;
+						await updateData({ data: submissionData, id: id! }).unwrap();
+						onSuccess(config.labels.updateSuccessMessage);
+					} else {
+						// In add mode, exclude lignes and remise fields as they're not part of initial creation
+						// eslint-disable-next-line @typescript-eslint/no-unused-vars
+						const { lignes, remise, remise_type, ...payloadWithoutLines } = payload;
+						const submissionData = {
+							...payloadWithoutLines,
+							remarque: isNectarCompany ? null : payloadWithoutLines.remarque,
+							...(config.documentType === 'devis'
+								? { numero_devis: `${data.numero_part}/${data.year_part}` }
+								: config.documentType === 'facture-client' || config.documentType === 'facture-pro-forma'
+									? { numero_facture: `${data.numero_part}/${data.year_part}` }
+									: { numero_bon_livraison: `${data.numero_part}/${data.year_part}` }),
+						} as DocumentFormSchema;
+						const response = await addData({ data: submissionData }).unwrap();
+						onSuccess(config.labels.addSuccessMessage);
+						if (response.id) {
+							sessionStorage.setItem(SCROLL_TO_LINES_KEY, 'true');
+							router.replace(config.routes.editRoute(response.id!, company_id));
+						}
 					}
-				}
-			} catch (e) {
-				setFormikAutoErrors({ e, setFieldError });
-				onError(isEditMode ? config.labels.updateErrorMessage : config.labels.addErrorMessage);
-			} finally {
-				setIsPending(false);
-			}
+				},
+				(e) => {
+					setFormikAutoErrors({ e, setFieldError });
+					onError(isEditMode ? config.labels.updateErrorMessage : config.labels.addErrorMessage);
+				},
+				() => setIsPending(false),
+			);
 		},
 	});
 
-	const lineArticleIds = useMemo(() => {
+	const lineArticleIds = (() => {
 		const ids = new Set<number>();
 		formik.values.lignes?.forEach((line) => {
 			const articleId = Number(line.article);
 			if (Number.isFinite(articleId)) ids.add(articleId);
 		});
 		return Array.from(ids);
-	}, [formik.values.lignes]);
+	})();
 
 	const { data: rawLineArticlesData, isLoading: isArticlesLoading } = useGetArticlesListQuery(
 		{ company_id, with_pagination: false, ids: lineArticleIds.join(',') },
@@ -453,32 +432,31 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	const lineArticlesData = rawLineArticlesData as Array<Partial<ArticleClass>> | undefined;
 	const isAllArticlesLoading = isArticlesLoading;
 
-	const articlesMap = useMemo(() => {
+	const articlesMap = (() => {
 		const m = new Map<number, Partial<ArticleClass>>();
 		(lineArticlesData || []).forEach((a) => {
 			if (a?.id != null) m.set(a.id, a);
 		});
 		return m;
-	}, [lineArticlesData]);
+	})();
 
-	const getArticleById = useCallback(
-		(articleRef: number | string | Partial<ArticleClass> | undefined): Partial<ArticleClass> | undefined => {
-			if (articleRef == null) return undefined;
-			let idNum: number | undefined;
-			if (typeof articleRef === 'number') {
-				idNum = articleRef;
-			} else if (typeof articleRef === 'string') {
-				const parsed = Number(articleRef);
-				idNum = Number.isFinite(parsed) ? parsed : undefined;
-			} else {
-				const maybeId = (articleRef as Partial<ArticleClass>).id;
-				idNum = maybeId != null ? Number(maybeId) : undefined;
-			}
-			if (idNum == null || !Number.isFinite(idNum)) return undefined;
-			return articlesMap.get(Number(idNum));
-		},
-		[articlesMap],
-	);
+	const getArticleById = (
+		articleRef: number | string | Partial<ArticleClass> | undefined,
+	): Partial<ArticleClass> | undefined => {
+		if (articleRef == null) return undefined;
+		let idNum: number | undefined;
+		if (typeof articleRef === 'number') {
+			idNum = articleRef;
+		} else if (typeof articleRef === 'string') {
+			const parsed = Number(articleRef);
+			idNum = Number.isFinite(parsed) ? parsed : undefined;
+		} else {
+			const maybeId = (articleRef as Partial<ArticleClass>).id;
+			idNum = maybeId != null ? Number(maybeId) : undefined;
+		}
+		if (idNum == null || !Number.isFinite(idNum)) return undefined;
+		return articlesMap.get(Number(idNum));
+	};
 
 	// Update numero_part and year_part when rawNumData changes (after refetch)
 	useEffect(() => {
@@ -486,18 +464,17 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			prevRawNumDataRef.current = rawNumData;
 			const newNum = getNumeroFromData(isEditMode, rawData, rawNumData, config);
 			const [newNumberPart = '', newYearPart = ''] = newNum.split('/');
-			formik.setFieldValue('numero_part', newNumberPart);
-			formik.setFieldValue('year_part', newYearPart);
+			void formik.setFieldValue('numero_part', newNumberPart);
+			void formik.setFieldValue('year_part', newYearPart);
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [rawNumData, isEditMode, rawData, config]);
+	}, [rawNumData, isEditMode, rawData, config, formik]);
 
-	const getLines = useCallback((): DeviFactureLineFormValues[] => {
+	const getLines = (): DeviFactureLineFormValues[] => {
 		return Array.isArray(formik.values.lignes) ? (formik.values.lignes as DeviFactureLineFormValues[]) : [];
-	}, [formik.values.lignes]);
+	};
 
 	// Client items for dropdown
-	const clientItems = useMemo(() => {
+	const clientItems = (() => {
 		if (!clientsData) return [];
 		return clientsData.map((client) => {
 			const label =
@@ -506,34 +483,28 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 					: client.raison_sociale || '';
 			return { code: label, value: String(client.id), archived: !!client.archived };
 		}) as Array<DropDownType>;
-	}, [clientsData]);
+	})();
 
 	// Mode paiement items
-	const modePaiementItems: DropDownType[] = useMemo(
-		() => (modePaiementData ?? []).map((c) => ({ value: String(c.id), code: c.nom })),
-		[modePaiementData],
-	);
+	const modePaiementItems: DropDownType[] = (modePaiementData ?? []).map((c) => ({ value: String(c.id), code: c.nom }));
 
-	const selectedModePaiement = useMemo<DropDownType | null>(() => {
+	const selectedModePaiement = (() => {
 		const v = formik.values.mode_paiement;
 		if (!v || modePaiementItems.length === 0) return null;
 		return modePaiementItems.find((c) => c.value === String(v)) ?? null;
-	}, [formik.values.mode_paiement, modePaiementItems]);
+	})() as DropDownType | null;
 
 	// Livre par items
-	const livreParItems: DropDownType[] = useMemo(
-		() => (livreParData ?? []).map((c) => ({ value: String(c.id), code: c.nom })),
-		[livreParData],
-	);
+	const livreParItems: DropDownType[] = (livreParData ?? []).map((c) => ({ value: String(c.id), code: c.nom }));
 
 	const livreParValue = (formik.values as { livre_par?: number | null }).livre_par;
-	const selectedLivrePar = useMemo<DropDownType | null>(() => {
+	const selectedLivrePar = (() => {
 		if (!livreParValue || livreParItems.length === 0) return null;
 		return livreParItems.find((c) => c.value === String(livreParValue)) ?? null;
-	}, [livreParValue, livreParItems]);
+	})() as DropDownType | null;
 
 	// Calculate total HT before global remise
-	const calculateTotalHTBeforeGlobal = useCallback((): number => {
+	const calculateTotalHTBeforeGlobal = (): number => {
 		let total = 0;
 		const lignes = getLines();
 		lignes.forEach((ligne) => {
@@ -552,10 +523,10 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			if (Number.isFinite(discountedHT)) total += discountedHT;
 		});
 		return total;
-	}, [getLines]);
+	};
 
 	// Calculate totals
-	const totals = useMemo(() => {
+	const totals = (() => {
 		if (isAllArticlesLoading) {
 			return {
 				totalHT: 0,
@@ -626,164 +597,158 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			totalTVAAfterRemise: Math.max(0, Number.isFinite(finalTotalTVA) ? finalTotalTVA : 0),
 			totalTTCApresRemise: Math.max(0, Number.isFinite(finalTotalTTC) ? finalTotalTTC : 0),
 		};
-	}, [isAllArticlesLoading, getLines, formik.values.remise, formik.values.remise_type, getArticleById]);
+	})();
 
 	// Handle line changes with validation
-	const handleLineChange = useCallback(
-		(index: number, field: keyof DeviFactureLineFormValues, value: string | number) => {
-			const lignes = getLines();
-			const ligne = lignes[index];
-			if (!ligne) return;
+	const handleLineChange = (index: number, field: keyof DeviFactureLineFormValues, value: string | number) => {
+		const lignes = getLines();
+		const ligne = lignes[index];
+		if (!ligne) return;
 
-			setValidationErrors((prevErrors) => {
-				const newErrors = { ...prevErrors };
-				const errorKey = `ligne_${index}_${String(field)}`;
-				const remiseErrorKey = `ligne_${index}_remise`;
+		setValidationErrors((prevErrors) => {
+			const newErrors = { ...prevErrors };
+			const errorKey = `ligne_${index}_${String(field)}`;
+			const remiseErrorKey = `ligne_${index}_remise`;
 
-				if (field === 'remise_type') {
-					delete newErrors[remiseErrorKey];
-					if (value && (parseNumber(ligne.remise ?? '') ?? 0) > 0) {
-						const newRemiseType = value as 'Pourcentage' | 'Fixe' | '';
-						const prixVente = parseNumber(ligne.prix_vente ?? '') ?? 0;
-						const quantity = parseNumber(ligne.quantity ?? '') ?? 1;
-						const baseAmount = prixVente * (isFinite(quantity) ? quantity : 1);
-						const remiseError = ValidatePricesHelper.validateRemise(
-							parseNumber(ligne.remise ?? '') ?? NaN,
-							newRemiseType,
-							baseAmount,
-						);
-						if (remiseError) newErrors[remiseErrorKey] = remiseError;
-					}
-				} else if (field === 'prix_vente') {
-					const pv = parseNumber(value);
-					const prixAchat = parseNumber(ligne.prix_achat ?? '') ?? 0;
-					const numValue = pv === null ? NaN : pv;
-					const error = ValidatePricesHelper.validatePrixVente(numValue, prixAchat);
-					if (error) newErrors[errorKey] = error;
-					else delete newErrors[errorKey];
-					if ((parseNumber(ligne.remise ?? '') ?? 0) > 0 && ligne.remise_type) {
-						const quantity = parseNumber(ligne.quantity ?? '') ?? 1;
-						const baseAmount = (pv === null ? 0 : pv) * (isFinite(quantity) ? quantity : 1);
-						const remiseError = ValidatePricesHelper.validateRemise(
-							parseNumber(ligne.remise ?? '') ?? NaN,
-							ligne.remise_type,
-							baseAmount,
-						);
-						if (remiseError) newErrors[remiseErrorKey] = remiseError;
-						else delete newErrors[remiseErrorKey];
-					}
-				} else if (field === 'quantity') {
-					if ((parseNumber(ligne.remise ?? '') ?? 0) > 0 && ligne.remise_type) {
-						const q = parseNumber(value);
-						const prixVente = parseNumber(ligne.prix_vente ?? '') ?? 0;
-						const quantity = q === null ? NaN : q;
-						const baseAmount = prixVente * (isFinite(quantity) ? quantity : 1);
-						const remiseError = ValidatePricesHelper.validateRemise(
-							parseNumber(ligne.remise ?? '') ?? NaN,
-							ligne.remise_type,
-							baseAmount,
-						);
-						if (remiseError) newErrors[remiseErrorKey] = remiseError;
-						else delete newErrors[remiseErrorKey];
-					}
-				} else if (field === 'remise') {
-					const r = parseNumber(value);
+			if (field === 'remise_type') {
+				delete newErrors[remiseErrorKey];
+				if (value && (parseNumber(ligne.remise ?? '') ?? 0) > 0) {
+					const newRemiseType = value as 'Pourcentage' | 'Fixe' | '';
 					const prixVente = parseNumber(ligne.prix_vente ?? '') ?? 0;
 					const quantity = parseNumber(ligne.quantity ?? '') ?? 1;
 					const baseAmount = prixVente * (isFinite(quantity) ? quantity : 1);
-					const error = ValidatePricesHelper.validateRemise(r ?? NaN, ligne.remise_type, baseAmount);
-					if (error) newErrors[errorKey] = error;
-					else delete newErrors[errorKey];
-				} else {
-					delete newErrors[errorKey];
+					const remiseError = ValidatePricesHelper.validateRemise(
+						parseNumber(ligne.remise ?? '') ?? NaN,
+						newRemiseType,
+						baseAmount,
+					);
+					if (remiseError) newErrors[remiseErrorKey] = remiseError;
 				}
-				return newErrors;
-			});
+			} else if (field === 'prix_vente') {
+				const pv = parseNumber(value);
+				const prixAchat = parseNumber(ligne.prix_achat ?? '') ?? 0;
+				const numValue = pv === null ? NaN : pv;
+				const error = ValidatePricesHelper.validatePrixVente(numValue, prixAchat);
+				if (error) newErrors[errorKey] = error;
+				else delete newErrors[errorKey];
+				if ((parseNumber(ligne.remise ?? '') ?? 0) > 0 && ligne.remise_type) {
+					const quantity = parseNumber(ligne.quantity ?? '') ?? 1;
+					const baseAmount = (pv === null ? 0 : pv) * (isFinite(quantity) ? quantity : 1);
+					const remiseError = ValidatePricesHelper.validateRemise(
+						parseNumber(ligne.remise ?? '') ?? NaN,
+						ligne.remise_type,
+						baseAmount,
+					);
+					if (remiseError) newErrors[remiseErrorKey] = remiseError;
+					else delete newErrors[remiseErrorKey];
+				}
+			} else if (field === 'quantity') {
+				if ((parseNumber(ligne.remise ?? '') ?? 0) > 0 && ligne.remise_type) {
+					const q = parseNumber(value);
+					const prixVente = parseNumber(ligne.prix_vente ?? '') ?? 0;
+					const quantity = q === null ? NaN : q;
+					const baseAmount = prixVente * (isFinite(quantity) ? quantity : 1);
+					const remiseError = ValidatePricesHelper.validateRemise(
+						parseNumber(ligne.remise ?? '') ?? NaN,
+						ligne.remise_type,
+						baseAmount,
+					);
+					if (remiseError) newErrors[remiseErrorKey] = remiseError;
+					else delete newErrors[remiseErrorKey];
+				}
+			} else if (field === 'remise') {
+				const r = parseNumber(value);
+				const prixVente = parseNumber(ligne.prix_vente ?? '') ?? 0;
+				const quantity = parseNumber(ligne.quantity ?? '') ?? 1;
+				const baseAmount = prixVente * (isFinite(quantity) ? quantity : 1);
+				const error = ValidatePricesHelper.validateRemise(r ?? NaN, ligne.remise_type, baseAmount);
+				if (error) newErrors[errorKey] = error;
+				else delete newErrors[errorKey];
+			} else {
+				delete newErrors[errorKey];
+			}
+			return newErrors;
+		});
 
-			const updatedLines = [...lignes];
-			updatedLines[index] = { ...updatedLines[index], [field]: value };
-			if (field === 'remise_type' && !value) updatedLines[index].remise = 0;
-			formik.setFieldValue('lignes', updatedLines);
-		},
-		[getLines, formik],
-	);
+		const updatedLines = [...lignes];
+		updatedLines[index] = { ...updatedLines[index], [field]: value };
+		if (field === 'remise_type' && !value) updatedLines[index].remise = 0;
+		void formik.setFieldValue('lignes', updatedLines);
+	};
 
 	// Handle adding/updating articles from popup selections
-	const handleAddArticles = useCallback(
-		(selectedArticlesData: SelectedArticlePopupValues[]) => {
-			const currentLines = getLines();
-			const updatedLines = [...currentLines];
-			const lineIndexByArticleId = new Map<number, number>();
+	const handleAddArticles = (selectedArticlesData: SelectedArticlePopupValues[]) => {
+		const currentLines = getLines();
+		const updatedLines = [...currentLines];
+		const lineIndexByArticleId = new Map<number, number>();
 
-			currentLines.forEach((line, index) => {
-				if (!lineIndexByArticleId.has(line.article)) {
-					lineIndexByArticleId.set(line.article, index);
-				}
-			});
+		currentLines.forEach((line, index) => {
+			if (!lineIndexByArticleId.has(line.article)) {
+				lineIndexByArticleId.set(line.article, index);
+			}
+		});
 
-			selectedArticlesData.forEach((selection) => {
-				const article = getArticleById(selection.articleId) ?? selection.articleData;
-				if (!article) return;
+		selectedArticlesData.forEach((selection) => {
+			const article = getArticleById(selection.articleId) ?? selection.articleData;
+			if (!article) return;
 
-				const parsedQuantity = parseNumber(selection.quantity) ?? 1;
-				const normalizedQuantity = parsedQuantity < 0.01 ? 1 : parsedQuantity;
-				const normalizedRemiseType = (selection.remise_type || '') as '' | 'Pourcentage' | 'Fixe';
-				const parsedRemise = parseNumber(selection.remise) ?? 0;
-				const normalizedRemise = parsedRemise < 0 ? 0 : parsedRemise;
-				const lineRemiseType = isNectarCompany ? '' : normalizedRemiseType;
-				const lineRemise = isNectarCompany ? 0 : normalizedRemise;
+			const parsedQuantity = parseNumber(selection.quantity) ?? 1;
+			const normalizedQuantity = parsedQuantity < 0.01 ? 1 : parsedQuantity;
+			const normalizedRemiseType = (selection.remise_type || '') as '' | 'Pourcentage' | 'Fixe';
+			const parsedRemise = parseNumber(selection.remise) ?? 0;
+			const normalizedRemise = parsedRemise < 0 ? 0 : parsedRemise;
+			const lineRemiseType = isNectarCompany ? '' : normalizedRemiseType;
+			const lineRemise = isNectarCompany ? 0 : normalizedRemise;
 
-				const existingIndex = lineIndexByArticleId.get(selection.articleId);
-				if (existingIndex !== undefined) {
-					updatedLines[existingIndex] = {
-						...updatedLines[existingIndex],
-						quantity: normalizedQuantity,
-						remise_type: lineRemiseType,
-						remise: lineRemiseType ? lineRemise : 0,
-					};
-					return;
-				}
-
-				updatedLines.push({
-					article: selection.articleId,
-					reference: (article.reference as string) || '',
-					designation: article.designation || '',
-					prix_achat: article.prix_achat || 0,
-					devise_prix_achat: article.devise_prix_achat || 'MAD',
-					prix_vente: article.prix_vente || 0,
-					devise_prix_vente: article.devise_prix_vente || article.devise_prix_achat || 'MAD',
+			const existingIndex = lineIndexByArticleId.get(selection.articleId);
+			if (existingIndex !== undefined) {
+				updatedLines[existingIndex] = {
+					...updatedLines[existingIndex],
 					quantity: normalizedQuantity,
 					remise_type: lineRemiseType,
 					remise: lineRemiseType ? lineRemise : 0,
-				} as DeviFactureLineFormValues);
-			});
+				};
+				return;
+			}
 
-			formik.setFieldValue('lignes', updatedLines);
+			updatedLines.push({
+				article: selection.articleId,
+				reference: (article.reference as string) || '',
+				designation: article.designation || '',
+				prix_achat: article.prix_achat || 0,
+				devise_prix_achat: article.devise_prix_achat || 'MAD',
+				prix_vente: article.prix_vente || 0,
+				devise_prix_vente: article.devise_prix_vente || article.devise_prix_achat || 'MAD',
+				quantity: normalizedQuantity,
+				remise_type: lineRemiseType,
+				remise: lineRemiseType ? lineRemise : 0,
+			} as DeviFactureLineFormValues);
+		});
 
-			// Clear lignes_empty validation error when articles are added
-			setValidationErrors((prev) => {
-				// eslint-disable-next-line @typescript-eslint/no-unused-vars
-				const { lignes_empty, ...rest } = prev;
-				return rest;
-			});
+		void formik.setFieldValue('lignes', updatedLines);
 
-			setShowAddArticleModal(false);
-			setSelectedArticles(new Set());
-		},
-		[getArticleById, getLines, formik, isNectarCompany],
-	);
+		// Clear lignes_empty validation error when articles are added
+		setValidationErrors((prev) => {
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			const { lignes_empty, ...rest } = prev;
+			return rest;
+		});
+
+		setShowAddArticleModal(false);
+		setSelectedArticles(new Set());
+	};
 
 	// Handle delete line
-	const handleDeleteLine = useCallback((index: number) => {
+	const handleDeleteLine = (index: number) => {
 		setDeleteLineIndex(index);
 		setShowDeleteConfirm(true);
-	}, []);
+	};
 
-	const confirmDeleteLine = useCallback(() => {
+	const confirmDeleteLine = () => {
 		if (deleteLineIndex === null) return;
 		const currentLines = getLines();
 		const updatedLines = currentLines.filter((_, i) => i !== deleteLineIndex);
-		formik.setFieldValue('lignes', updatedLines);
+		void formik.setFieldValue('lignes', updatedLines);
 		setValidationErrors((prevErrors) => {
 			const newErrors: ValidateArticleLinesErrorType = {};
 			Object.entries(prevErrors).forEach(([key, value]) => {
@@ -802,12 +767,12 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		});
 		setShowDeleteConfirm(false);
 		setDeleteLineIndex(null);
-	}, [deleteLineIndex, getLines, formik]);
+	};
 
 	const handleLineChangeRef = useRef(handleLineChange);
 	useEffect(() => {
 		handleLineChangeRef.current = handleLineChange;
-	}, [handleLineChange]);
+	});
 
 	// Sync formik.errors.lignes with validationErrors state for red border highlighting
 	useEffect(() => {
@@ -841,9 +806,9 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		isNectarCompany,
 	});
 
-	const existingArticleIds = useMemo(() => new Set(getLines().map((l) => l.article)), [getLines]);
+	const existingArticleIds = new Set(getLines().map((l) => l.article));
 
-	const existingArticleLineValues = useMemo(() => {
+	const existingArticleLineValues = (() => {
 		const lineValues: Record<
 			number,
 			{ quantity: string | number; remise_type: '' | 'Pourcentage' | 'Fixe'; remise: string | number }
@@ -857,7 +822,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			};
 		});
 		return lineValues;
-	}, [getLines]);
+	})();
 
 	const handleStatutChange = async (newValue: string) => {
 		if (!canChangeDocumentStatus) return;
@@ -870,39 +835,36 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		}
 	};
 
-	const handleApplyGlobalRemise = useCallback(
-		(type: 'Pourcentage' | 'Fixe' | '', value: number) => {
-			if (!type || value === 0) {
-				formik.setFieldValue('remise_type', '');
-				formik.setFieldValue('remise', 0);
-				setValidationErrors((prev) => {
-					const n = { ...prev };
-					delete n['global_remise'];
-					return n;
-				});
-				setShowGlobalRemiseModal(false);
-				return;
-			}
-			const totalHTBeforeGlobal = calculateTotalHTBeforeGlobal();
-			const validationError = ValidatePricesHelper.validateGlobalRemise(value, type, totalHTBeforeGlobal);
-			if (validationError) {
-				setValidationErrors((prev) => ({ ...prev, global_remise: validationError }));
-				onError(validationError);
-			} else {
-				setValidationErrors((prev) => {
-					const n = { ...prev };
-					delete n['global_remise'];
-					return n;
-				});
-				formik.setFieldValue('remise_type', type);
-				formik.setFieldValue('remise', value);
-				setShowGlobalRemiseModal(false);
-			}
-		},
-		[formik, calculateTotalHTBeforeGlobal, onError],
-	);
+	const handleApplyGlobalRemise = (type: 'Pourcentage' | 'Fixe' | '', value: number) => {
+		if (!type || value === 0) {
+			void formik.setFieldValue('remise_type', '');
+			void formik.setFieldValue('remise', 0);
+			setValidationErrors((prev) => {
+				const n = { ...prev };
+				delete n['global_remise'];
+				return n;
+			});
+			setShowGlobalRemiseModal(false);
+			return;
+		}
+		const totalHTBeforeGlobal = calculateTotalHTBeforeGlobal();
+		const validationError = ValidatePricesHelper.validateGlobalRemise(value, type, totalHTBeforeGlobal);
+		if (validationError) {
+			setValidationErrors((prev) => ({ ...prev, global_remise: validationError }));
+			onError(validationError);
+		} else {
+			setValidationErrors((prev) => {
+				const n = { ...prev };
+				delete n['global_remise'];
+				return n;
+			});
+			void formik.setFieldValue('remise_type', type);
+			void formik.setFieldValue('remise', value);
+			setShowGlobalRemiseModal(false);
+		}
+	};
 
-	const dataGridRows = useMemo(() => {
+	const dataGridRows = (() => {
 		const lignes = getLines();
 		return lignes.map((ligne, index) => {
 			const article = getArticleById(ligne.article);
@@ -918,7 +880,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 				archived: article?.archived ?? false,
 			};
 		});
-	}, [getLines, getArticleById]);
+	})();
 
 	// Get date value based on document type
 	const getDateValue = (): string => {
@@ -942,43 +904,40 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		return (formik.values as FactureFormSchema).numero_bon_commande_client || '';
 	};
 
-	const fieldLabels = useMemo<Record<string, string>>(
-		() => ({
-			numero_part: t.documentForm.fieldNumeroLabel,
-			year_part: t.documentForm.fieldAnneeLabel,
-			client: t.documentForm.fieldClientLabel,
-			date_devis: t.documentForm.fieldDateLabel,
-			date_facture: t.documentForm.fieldDateLabel,
-			date_bon_livraison: t.documentForm.fieldDateLabel,
-			date_echeance: t.documentForm.fieldDateEcheanceLabel,
-			numero_demande_prix_client: t.documentForm.fieldDemandePrixLabel,
-			numero_bon_commande_client: t.documentForm.fieldBonCommandeLabel,
-			termes_paiement: t.documentForm.fieldTermesPaiementLabel,
-			fournisseur: t.logistique.fieldFournisseur,
-			fournisseur_email: t.logistique.fieldSupplierEmail,
-			mode_paiement: t.documentForm.fieldModePaiementLabel,
-			livre_par: t.documentForm.fieldLivreurLabel,
-			remarque: t.documentForm.fieldRemarqueLabel,
-			remise_type: t.documentForm.fieldTypeRemiseLabel,
-			remise: t.documentForm.fieldRemiseLabel,
-			globalError: t.documentForm.fieldGlobalErrorLabel,
-			global_remise: t.documentForm.remiseGlobaleSection,
-			lignes: t.documentForm.fieldLignesLabel,
-			lignes_empty: t.documentForm.fieldArticlesLabel,
-			// line fields
-			prix_vente: isNectarCompany ? t.documentForm.colPrixUnitaire : t.documentForm.fieldPrixVenteLabel,
-			prix_achat: t.documentForm.fieldPrixAchatLabel,
-			quantity: t.documentForm.fieldQuantiteLabel,
-			designation: t.documentForm.fieldDesignationLabel,
-			reference: t.documentForm.fieldReferenceLabel,
-			marque: t.documentForm.fieldMarqueLabel,
-			categorie: t.documentForm.fieldCategorieLabel,
-			remise_field: t.documentForm.fieldRemiseLabel, // generic fallback for remise field naming
-		}),
-		[t, isNectarCompany],
-	);
+	const fieldLabels = {
+		numero_part: t.documentForm.fieldNumeroLabel,
+		year_part: t.documentForm.fieldAnneeLabel,
+		client: t.documentForm.fieldClientLabel,
+		date_devis: t.documentForm.fieldDateLabel,
+		date_facture: t.documentForm.fieldDateLabel,
+		date_bon_livraison: t.documentForm.fieldDateLabel,
+		date_echeance: t.documentForm.fieldDateEcheanceLabel,
+		numero_demande_prix_client: t.documentForm.fieldDemandePrixLabel,
+		numero_bon_commande_client: t.documentForm.fieldBonCommandeLabel,
+		termes_paiement: t.documentForm.fieldTermesPaiementLabel,
+		fournisseur: t.logistique.fieldFournisseur,
+		fournisseur_email: t.logistique.fieldSupplierEmail,
+		mode_paiement: t.documentForm.fieldModePaiementLabel,
+		livre_par: t.documentForm.fieldLivreurLabel,
+		remarque: t.documentForm.fieldRemarqueLabel,
+		remise_type: t.documentForm.fieldTypeRemiseLabel,
+		remise: t.documentForm.fieldRemiseLabel,
+		globalError: t.documentForm.fieldGlobalErrorLabel,
+		global_remise: t.documentForm.remiseGlobaleSection,
+		lignes: t.documentForm.fieldLignesLabel,
+		lignes_empty: t.documentForm.fieldArticlesLabel,
+		// line fields
+		prix_vente: isNectarCompany ? t.documentForm.colPrixUnitaire : t.documentForm.fieldPrixVenteLabel,
+		prix_achat: t.documentForm.fieldPrixAchatLabel,
+		quantity: t.documentForm.fieldQuantiteLabel,
+		designation: t.documentForm.fieldDesignationLabel,
+		reference: t.documentForm.fieldReferenceLabel,
+		marque: t.documentForm.fieldMarqueLabel,
+		categorie: t.documentForm.fieldCategorieLabel,
+		remise_field: t.documentForm.fieldRemiseLabel, // generic fallback for remise field naming
+	} as Record<string, string>;
 
-	const combinedValidationEntries = useMemo(() => {
+	const combinedValidationEntries = (() => {
 		const entriesMap = new Map<string, string>();
 		// First add custom validation errors
 		Object.entries(validationErrors).forEach(([k, v]) => entriesMap.set(k, String(v)));
@@ -1006,7 +965,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 			// Skip non-string, non-lignes entries to avoid [object object] issues
 		});
 		return Array.from(entriesMap.entries());
-	}, [validationErrors, formik.errors]);
+	})();
 
 	const hasValidationErrors = combinedValidationEntries.length > 0;
 	const hasLineValidationErrors = Object.keys(validationErrors).length > 0;
@@ -1015,12 +974,16 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	const showValidationAlert = hasValidationErrors && (formik.submitCount > 0 || hasLineValidationErrors);
 
 	// scroll to top when submit attempted and there are errors
+	const notifyValidationError = useEffectEvent(() => {
+		onError(t.common.correctErrors);
+	});
+
 	useEffect(() => {
 		if (formik.submitCount > 0 && hasValidationErrors) {
-			onError(t.common.correctErrors);
+			notifyValidationError();
 			topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 		}
-	}, [formik.submitCount, hasValidationErrors, onError, t]);
+	}, [formik.submitCount, hasValidationErrors]);
 
 	// Core loading: blocks the entire form.  Only wait for the document
 	// detail (edit) or numero generation (add) plus active mutations.
@@ -1152,9 +1115,9 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 													type="text"
 													label={t.documentForm.fieldNumero}
 													value={formik.values.numero_part}
-													onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+													onChange={(e: ChangeEvent<HTMLInputElement>) => {
 														if (/^[A-Za-z0-9]*$/.test(e.target.value)) {
-															formik.setFieldValue('numero_part', e.target.value.toUpperCase());
+															void formik.setFieldValue('numero_part', e.target.value.toUpperCase());
 														}
 													}}
 													onBlur={formik.handleBlur('numero_part')}
@@ -1180,8 +1143,9 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 															type="text"
 															label={t.documentForm.fieldAnnee}
 															value={formik.values.year_part}
-															onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-																if (/^\d{0,2}$/.test(e.target.value)) formik.setFieldValue('year_part', e.target.value);
+															onChange={(e: ChangeEvent<HTMLInputElement>) => {
+																if (/^\d{0,2}$/.test(e.target.value))
+																	void formik.setFieldValue('year_part', e.target.value);
 															}}
 															onBlur={formik.handleBlur('year_part')}
 															error={formik.touched.year_part && Boolean(formik.errors.year_part)}
@@ -1228,7 +1192,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 											label={config.labels.dateLabel}
 											value={getDateValue() ? new Date(getDateValue()) : null}
 											onChange={(date) =>
-												formik.setFieldValue(config.fields.dateField, date ? formatLocalDate(date) : '')
+												void formik.setFieldValue(config.fields.dateField, date ? formatLocalDate(date) : '')
 											}
 											format="dd/MM/yyyy"
 											slotProps={{
@@ -1251,7 +1215,9 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 											<DatePicker
 												label={t.documentForm.fieldDateEcheanceLabel}
 												value={getDueDateValue() ? new Date(getDueDateValue() as string) : null}
-												onChange={(date) => formik.setFieldValue('date_echeance', date ? formatLocalDate(date) : null)}
+												onChange={(date) =>
+													void formik.setFieldValue('date_echeance', date ? formatLocalDate(date) : null)
+												}
 												format="dd/MM/yyyy"
 												slotProps={{
 													textField: {
@@ -1400,7 +1366,9 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 											onBlur={formik.handleBlur('client')}
 											error={formik.touched.client && Boolean(formik.errors.client)}
 											helperText={formik.touched.client ? formik.errors.client : ''}
-											onChange={(_, newValue) => formik.setFieldValue('client', newValue ? Number(newValue.value) : 0)}
+											onChange={(_, newValue) =>
+												void formik.setFieldValue('client', newValue ? Number(newValue.value) : 0)
+											}
 											startIcon={<PersonIcon fontSize="small" color="action" />}
 											endIcon={
 												<Button size="small" variant="outlined" onClick={() => router.push(CLIENTS_ADD(company_id))}>
@@ -1446,7 +1414,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 													{ value: 'USD', code: t.documentForm.deviseUSD },
 												]}
 												value={formik.values.devise ?? 'MAD'}
-												onChange={(e) => formik.setFieldValue('devise', e.target.value)}
+												onChange={(e) => void formik.setFieldValue('devise', e.target.value)}
 												theme={customDropdownTheme()}
 												startIcon={<AttachMoneyIcon fontSize="small" color="action" />}
 												disabled={getLines().length > 0}
@@ -1492,7 +1460,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 											value={selectedModePaiement}
 											fullWidth
 											onChange={(_, newVal) =>
-												formik.setFieldValue('mode_paiement', newVal ? Number(newVal.value) : null)
+												void formik.setFieldValue('mode_paiement', newVal ? Number(newVal.value) : null)
 											}
 											onBlur={formik.handleBlur('mode_paiement')}
 											error={formik.touched.mode_paiement && Boolean(formik.errors.mode_paiement)}
@@ -1509,8 +1477,8 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 														editModePaiement({ id: entityId, data: { ...data, company: company_id } })
 													}
 													deleteEntity={({ id: entityId }) => deleteModePaiement({ id: entityId })}
-													onAddSuccess={(newId) => formik.setFieldValue('mode_paiement', newId)}
-													onDeleteSuccess={() => formik.setFieldValue('mode_paiement', null)}
+													onAddSuccess={(newId) => void formik.setFieldValue('mode_paiement', newId)}
+													onDeleteSuccess={() => void formik.setFieldValue('mode_paiement', null)}
 												/>
 											}
 										/>
@@ -1548,7 +1516,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 												value={selectedLivrePar}
 												fullWidth
 												onChange={(_, newVal) =>
-													formik.setFieldValue('livre_par', newVal ? Number(newVal.value) : null)
+													void formik.setFieldValue('livre_par', newVal ? Number(newVal.value) : null)
 												}
 												onBlur={formik.handleBlur('livre_par')}
 												error={
@@ -1572,8 +1540,8 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 															editLivrePar({ id: entityId, data: { ...data, company: company_id } })
 														}
 														deleteEntity={({ id: entityId }) => deleteLivrePar({ id: entityId })}
-														onAddSuccess={(newId) => formik.setFieldValue('livre_par', newId)}
-														onDeleteSuccess={() => formik.setFieldValue('livre_par', null)}
+														onAddSuccess={(newId) => void formik.setFieldValue('livre_par', newId)}
+														onDeleteSuccess={() => void formik.setFieldValue('livre_par', null)}
 													/>
 												}
 											/>
@@ -1645,8 +1613,8 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 												color="error"
 												startIcon={<DeleteIcon />}
 												onClick={() => {
-													formik.setFieldValue('remise_type', '');
-													formik.setFieldValue('remise', 0);
+													void formik.setFieldValue('remise_type', '');
+													void formik.setFieldValue('remise', 0);
 													const n = { ...validationErrors };
 													delete n['global_remise'];
 													setValidationErrors(n);
@@ -1725,7 +1693,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 									type="submit"
 									loading={isPending}
 									startIcon={isEditMode ? <EditIcon /> : <AddIcon />}
-									onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+									onClick={(e: MouseEvent<HTMLButtonElement>) => {
 										if (showValidationAlert) {
 											e.preventDefault();
 											onError(t.common.correctErrors);

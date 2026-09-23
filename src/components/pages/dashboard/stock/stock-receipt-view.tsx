@@ -1,6 +1,7 @@
 'use client';
 
-import React, { isValidElement, useMemo, useState } from 'react';
+import { runWithCleanup } from '@/utils/runWithCleanup';
+import { isValidElement, useState, type FC } from 'react';
 import { useRouter } from 'next/navigation';
 import {
 	Box,
@@ -40,18 +41,17 @@ import {
 	useValidateStockReceiptMutation,
 } from '@/store/services/stock';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
-import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
+import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import type { StockReceiptLine } from '@/types/stockTypes';
 import { extractApiErrorMessage, formatDate, formatNumberWithSpaces } from '@/utils/helpers';
 import { useAppSelector, useToast } from '@/utils/hooks';
+import type {
+	StockReceiptViewInfoRowProps as InfoRowProps,
+	StockReceiptViewProps,
+	PendingAction,
+} from '@/types/stockTypes';
 
-type InfoRowProps = {
-	icon: React.ReactNode;
-	label: string;
-	value: React.ReactNode | string | number | null | undefined;
-};
-
-const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
+const InfoRow: FC<InfoRowProps> = ({ icon, label, value }) => {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 	const displayValue = isValidElement(value) ? value : value && value.toString().length > 0 ? value : '—';
@@ -59,11 +59,7 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 	return (
 		<Stack direction="row" spacing={2} sx={{ alignItems: 'flex-start', py: 1.5, flexWrap: 'wrap' }}>
 			<Box sx={{ color: 'primary.main', display: 'flex', alignItems: 'center', minWidth: 40 }}>{icon}</Box>
-			<Stack
-				direction="row"
-				spacing={isMobile ? 0 : 2}
-				sx={{ alignItems: 'center', flex: 1, flexWrap: 'wrap' }}
-			>
+			<Stack direction="row" spacing={isMobile ? 0 : 2} sx={{ alignItems: 'center', flex: 1, flexWrap: 'wrap' }}>
 				<Typography
 					sx={{
 						fontWeight: 600,
@@ -86,10 +82,7 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 	);
 };
 
-type StockReceiptViewProps = SessionProps & { company_id: number; id: number };
-type PendingAction = 'validate' | 'cancel' | null;
-
-const StockReceiptView: React.FC<StockReceiptViewProps> = ({ session, company_id, id }) => {
+const StockReceiptView: FC<StockReceiptViewProps> = ({ session, company_id, id }) => {
 	const token = useInitAccessToken(session);
 	const router = useRouter();
 	const theme = useTheme();
@@ -98,56 +91,60 @@ const StockReceiptView: React.FC<StockReceiptViewProps> = ({ session, company_id
 	const companies = useAppSelector(getUserCompaniesState);
 	const canReceive = companies?.find((company) => company.id === company_id)?.role === 'Logistique';
 	const { data: receipt, isLoading, error } = useGetStockReceiptQuery({ company_id, id }, { skip: !token });
-	const axiosError = useMemo(
-		() => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),
-		[error],
-	);
+	const axiosError = error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined;
 	const [validateReceipt, validateState] = useValidateStockReceiptMutation();
 	const [cancelReceipt, cancelState] = useCancelStockReceiptMutation();
 	const [pendingAction, setPendingAction] = useState<PendingAction>(null);
 
-	const columns = useMemo<GridColDef<StockReceiptLine>[]>(
-		() => [
-			{ field: 'article_reference', headerName: 'Référence', minWidth: 150, flex: 0.8 },
-			{ field: 'article_designation', headerName: 'Désignation', minWidth: 240, flex: 1.5 },
-			{ field: 'emplacement_name', headerName: 'Emplacement', minWidth: 190, flex: 1 },
-			{
-				field: 'quantity',
-				headerName: 'Quantité reçue',
-				type: 'number',
-				minWidth: 150,
-				flex: 0.8,
-				valueGetter: (value: string | number | null | undefined) => Number(value ?? 0),
-				renderCell: (params) => (
-					<Typography color="primary" sx={{ fontWeight: 600 }}>
-						{formatNumberWithSpaces(params.row.quantity, 3)}
-					</Typography>
-				),
-			},
-		],
-		[],
-	);
+	const columns = [
+		{ field: 'article_reference', headerName: 'Référence', minWidth: 150, flex: 0.8 },
+		{ field: 'article_designation', headerName: 'Désignation', minWidth: 240, flex: 1.5 },
+		{ field: 'emplacement_name', headerName: 'Emplacement', minWidth: 190, flex: 1 },
+		{
+			field: 'quantity',
+			headerName: 'Quantité reçue',
+			type: 'number',
+			minWidth: 150,
+			flex: 0.8,
+			valueGetter: (value: string | number | null | undefined) => Number(value ?? 0),
+			renderCell: (params) => (
+				<Typography color="primary" sx={{ fontWeight: 600 }}>
+					{formatNumberWithSpaces(params.row.quantity, 3)}
+				</Typography>
+			),
+		},
+	] as GridColDef<StockReceiptLine>[];
 
 	const handleValidate = async () => {
-		try {
-			await validateReceipt({ company_id, id }).unwrap();
-			onSuccess('Réception validée et ajoutée au stock.');
-		} catch (mutationError) {
-			onError(extractApiErrorMessage(mutationError, 'Impossible de valider la réception.'));
-		} finally {
-			setPendingAction(null);
-		}
+		await runWithCleanup(
+			async () => {
+				try {
+					await validateReceipt({ company_id, id }).unwrap();
+					onSuccess('Réception validée et ajoutée au stock.');
+				} catch (mutationError) {
+					onError(extractApiErrorMessage(mutationError, 'Impossible de valider la réception.'));
+				}
+			},
+			() => {
+				setPendingAction(null);
+			},
+		);
 	};
 
 	const handleCancel = async () => {
-		try {
-			await cancelReceipt({ company_id, id }).unwrap();
-			onSuccess('Réception annulée.');
-		} catch (mutationError) {
-			onError(extractApiErrorMessage(mutationError, "Impossible d'annuler la réception."));
-		} finally {
-			setPendingAction(null);
-		}
+		await runWithCleanup(
+			async () => {
+				try {
+					await cancelReceipt({ company_id, id }).unwrap();
+					onSuccess('Réception annulée.');
+				} catch (mutationError) {
+					onError(extractApiErrorMessage(mutationError, "Impossible d'annuler la réception."));
+				}
+			},
+			() => {
+				setPendingAction(null);
+			},
+		);
 	};
 
 	const statusLabel =
@@ -297,15 +294,15 @@ const StockReceiptView: React.FC<StockReceiptViewProps> = ({ session, company_id
 										</Typography>
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
-										<DataGrid
-											rows={receipt.lines}
-											columns={columns}
-											disableRowSelectionOnClick
-											showToolbar={true}
-											slotProps={{ toolbar: { showQuickFilter: true, quickFilterProps: { debounceMs: 500 } } }}
-											localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
-											pagination
-											pageSizeOptions={[5, 10, 25, 50, 100]}
+									<DataGrid
+										rows={receipt.lines}
+										columns={columns}
+										disableRowSelectionOnClick
+										showToolbar={true}
+										slotProps={{ toolbar: { showQuickFilter: true, quickFilterProps: { debounceMs: 500 } } }}
+										localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
+										pagination
+										pageSizeOptions={[5, 10, 25, 50, 100]}
 										initialState={{ pagination: { paginationModel: { page: 0, pageSize: 10 } } }}
 									/>
 								</CardContent>

@@ -1,65 +1,17 @@
 'use client';
 
-import React, { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { Badge, Box, Button, CircularProgress, Stack, ThemeProvider, Typography } from '@mui/material';
 import { FilterList as FilterListIcon, ViewColumn as ViewColumnIcon } from '@mui/icons-material';
-import type { GridColDef, GridFilterModel, GridRowId, GridRowSelectionModel } from '@mui/x-data-grid';
+import type { GridFilterModel, GridRowId, GridRowSelectionModel } from '@mui/x-data-grid';
 import { ColumnsPanelTrigger, DataGrid, GridLogicOperator, GridSlotProps, ToolbarButton } from '@mui/x-data-grid';
 import { frFR } from '@mui/x-data-grid/locales';
 import { getDefaultTheme } from '@/utils/themes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { useLanguage } from '@/utils/hooks';
-import CustomFilterPanel, {
-	CustomFilterItem,
-	CustomFilterModel,
-	CustomFilterValue,
-	DateRangeFilterValue,
-	filterHasValue,
-} from '@/components/shared/filterPanel/customFilterPanel';
-
-type PaginatedDataGridProps<T> = {
-	queryHook?: (params: { page: number; pageSize: number; search: string; [key: string]: string | number }) => {
-		data?: { count: number; results: T[] };
-		isLoading: boolean;
-	};
-	data?: { count: number; results: T[] };
-	isLoading?: boolean;
-	columns: GridColDef[];
-	paginationModel: { page: number; pageSize: number };
-	setPaginationModel: Dispatch<SetStateAction<{ page: number; pageSize: number }>>;
-	searchTerm: string;
-	setSearchTerm: Dispatch<SetStateAction<string>>;
-	filterModel?: GridFilterModel;
-	onFilterModelChange?: (model: GridFilterModel) => void;
-	/** Callback emitting backend-ready filter params whenever custom filters change */
-	onCustomFilterParamsChange?: (params: Record<string, string>) => void;
-	toolbar?: {
-		quickFilter?: boolean;
-		debounceMs?: number;
-	};
-	/** Extra toolbar action buttons (CSV import, etc.) shown alongside filter/column buttons */
-	toolbarActions?: React.ReactNode;
-	/** Enable checkbox row selection */
-	checkboxSelection?: boolean;
-	/** Callback fired with the list of selected row IDs (as numbers) whenever selection changes */
-	onSelectionChange?: (ids: number[]) => void;
-	/** Currently selected IDs – used to compute controlled row selection and banner visibility */
-	selectedIds?: number[];
-	/** Total matching count shown in the ‘select all matching’ banner */
-	totalMatchingCount?: number;
-	/** Called when the user clicks ‘Select all N matching’ */
-	onSelectAllMatchingClick?: () => void;
-	/** Whether the select-all-matching fetch is in progress */
-	selectAllMatchingLoading?: boolean;
-	/** Whether all matching items across all pages are currently selected */
-	isAllMatchingSelected?: boolean;
-	/** Called when the user clears the all-matching selection */
-	onClearAllMatchingSelected?: () => void;
-	/** Maximum content width for the grid wrapper. Defaults to full-width; pass a number/string to cap a compact grid. */
-	gridMaxWidth?: number | string | false;
-	/** Removes page-level spacing when the grid is rendered inside a view card. */
-	embedded?: boolean;
-};
+import CustomFilterPanel, { filterHasValue } from '@/components/shared/filterPanel/customFilterPanel';
+import type { CustomFilterItem, CustomFilterModel, CustomFilterValue, DateRangeFilterValue } from '@/types/uiTypes';
+import type { PaginatedDataGridProps } from '@/types/uiTypes';
 
 /** Type guard for DateRangeFilterValue */
 export function isDateRangeValue(value: CustomFilterValue): value is DateRangeFilterValue {
@@ -133,6 +85,21 @@ export function mapOperatorToParam(field: string, operator: string, value: Custo
 	return params;
 }
 
+const extractCustomFilterParams = (items: CustomFilterItem[]): Record<string, string> => {
+	const params: Record<string, string> = {};
+	items.forEach((item) => {
+		if (!filterHasValue(item)) return;
+		const { field, operator, value } = item;
+		if (isDateRangeValue(value)) {
+			if (value.from) params[`${field}_after`] = value.from;
+			if (value.to) params[`${field}_before`] = value.to;
+			return;
+		}
+		Object.assign(params, mapOperatorToParam(field, operator, value));
+	});
+	return params;
+};
+
 const PaginatedDataGrid = <T,>({
 	queryHook,
 	data: externalData,
@@ -174,60 +141,36 @@ const PaginatedDataGrid = <T,>({
 	const [showCustomFilterPanel, setShowCustomFilterPanel] = useState(false);
 
 	// Wrapped setter that auto-hides panel when all filters are cleared
-	const setCustomFilters = useCallback(
-		(value: CustomFilterModel | ((prev: CustomFilterModel) => CustomFilterModel)) => {
-			setCustomFiltersInternal((prev) => {
-				const next = typeof value === 'function' ? value(prev) : value;
-				// Auto-hide panel when transitioning from filters to no filters
-				if (prev.items.length > 0 && next.items.length === 0) {
-					setShowCustomFilterPanel(false);
-				}
-				return next;
-			});
-		},
-		[],
-	);
-
-	// Extract custom filter parameters for backend API
-	const extractCustomFilterParams = useCallback((): Record<string, string> => {
-		const params: Record<string, string> = {};
-
-		customFilters.items.forEach((item) => {
-			// Skip if no value for operators that require one
-			if (!filterHasValue(item)) return;
-
-			const field = item.field;
-			const operator = item.operator;
-			const value = item.value;
-
-			// Handle date range filters specially
-			if (isDateRangeValue(value)) {
-				if (value.from) params[`${field}_after`] = value.from;
-				if (value.to) params[`${field}_before`] = value.to;
-				return;
+	const setCustomFilters = (value: CustomFilterModel | ((prev: CustomFilterModel) => CustomFilterModel)) => {
+		setCustomFiltersInternal((prev) => {
+			const next = typeof value === 'function' ? value(prev) : value;
+			// Auto-hide panel when transitioning from filters to no filters
+			if (prev.items.length > 0 && next.items.length === 0) {
+				setShowCustomFilterPanel(false);
 			}
-
-			Object.assign(params, mapOperatorToParam(field, operator, value));
+			return next;
 		});
-
-		return params;
-	}, [customFilters]);
+	};
 
 	// Notify parent when custom filter params change & reset pagination
 	const prevParamsRef = useRef<string>('');
+
+	const notifyCustomFilterChange = useEffectEvent((params: Record<string, string>, paramsKey: string) => {
+		onCustomFilterParamsChange?.(params);
+		if (paramsKey !== '{}') {
+			setPaginationModel((prev) => (prev.page !== 0 ? { ...prev, page: 0 } : prev));
+		}
+	});
+
 	useEffect(() => {
-		const params = extractCustomFilterParams();
+		const params = extractCustomFilterParams(customFilters.items);
 		const paramsKey = JSON.stringify(params);
 
 		if (paramsKey !== prevParamsRef.current) {
 			prevParamsRef.current = paramsKey;
-			onCustomFilterParamsChange?.(params);
-			// Reset to first page when filters change (skip initial empty state)
-			if (paramsKey !== '{}') {
-				setPaginationModel((prev) => (prev.page !== 0 ? { ...prev, page: 0 } : prev));
-			}
+			notifyCustomFilterChange(params, paramsKey);
 		}
-	}, [extractCustomFilterParams, onCustomFilterParamsChange, setPaginationModel]);
+	}, [customFilters.items]);
 
 	// Count of active (non-empty) filters
 	const activeFilterCount = customFilters.items.filter(filterHasValue).length;
@@ -237,18 +180,18 @@ const PaginatedDataGrid = <T,>({
 		page: paginationModel.page + 1,
 		pageSize: paginationModel.pageSize,
 		search: searchTerm,
-		...extractCustomFilterParams(),
+		...extractCustomFilterParams(customFilters.items),
 	});
 
 	const data = queryResult?.data ?? externalData;
 	const isLoading = queryResult?.isLoading ?? externalIsLoading ?? false;
 
-	const rows = useMemo(() => data?.results ?? [], [data?.results]);
+	const rows = data?.results ?? [];
 
 	// Derive a fully-controlled row selection model from the parent's selectedIds, restricted to
 	// rows visible on the current page.
 	// Using a stable empty-set object avoids referential churn on re-renders.
-	const computedRowSelectionModel = useMemo((): GridRowSelectionModel => {
+	const computedRowSelectionModel = ((): GridRowSelectionModel => {
 		if (!checkboxSelection || selectedIds == null) {
 			return { type: 'include', ids: new Set<GridRowId>() };
 		}
@@ -262,7 +205,7 @@ const PaginatedDataGrid = <T,>({
 			type: 'include',
 			ids: new Set(selectedIds.filter((id) => pageIdSet.has(id as GridRowId)).map((id) => id as GridRowId)),
 		};
-	}, [checkboxSelection, selectedIds, rows]);
+	})();
 
 	// Is every row on the current page included in the parent's selected IDs?
 	const isCurrentPageFullySelected =
@@ -482,9 +425,7 @@ const PaginatedDataGrid = <T,>({
 										position: { xs: 'sticky', md: 'static' },
 										left: 0,
 										zIndex: 1,
-									width: embedded
-										? 'auto'
-										: { xs: 'calc(100vw - 16px)', sm: 'calc(100vw - 32px)', md: 'auto' },
+										width: embedded ? 'auto' : { xs: 'calc(100vw - 16px)', sm: 'calc(100vw - 32px)', md: 'auto' },
 										bgcolor: 'background.paper',
 									},
 									'& .MuiDataGrid-cell': { display: 'flex', alignItems: 'center' },

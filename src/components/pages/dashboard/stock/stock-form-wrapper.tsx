@@ -1,29 +1,16 @@
 'use client';
 
-import React from 'react';
+import { type FC } from 'react';
 import { Box, Stack } from '@mui/material';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import NoPermission from '@/components/shared/noPermission/noPermission';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import { getUserCompaniesState } from '@/store/selectors';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
-import type { SessionProps } from '@/types/_initTypes';
 import { useAppSelector } from '@/utils/hooks';
+import type { StockFormWrapperProps } from '@/types/stockTypes';
 
-type StockFormWrapperProps = SessionProps & {
-	company_id: number;
-	title: string;
-	allowedRoles: string[];
-	children: (token?: string) => React.ReactNode;
-};
-
-const StockFormWrapper: React.FC<StockFormWrapperProps> = ({
-	session,
-	company_id,
-	title,
-	allowedRoles,
-	children,
-}) => {
+const StockFormWrapper: FC<StockFormWrapperProps> = ({ session, company_id, title, allowedRoles, children }) => {
 	const token = useInitAccessToken(session);
 	const companies = useAppSelector(getUserCompaniesState);
 	const company = companies?.find((item) => item.id === company_id);

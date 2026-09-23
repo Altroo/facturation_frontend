@@ -1,4 +1,6 @@
 import type { UserClass } from '@/models/classes';
+import type { SessionProps } from '@/types/_initTypes';
+import type { ReactNode } from 'react';
 
 export type UserCompaniesType = {
 	membership_id: number;
@@ -25,3 +27,22 @@ export type UsersFormValuesType = {
 	companies: Array<UserCompaniesType>;
 	globalError: string;
 };
+
+export type UsersFormFormikContentProps = {
+	token: string | undefined;
+	id?: number;
+};
+
+export interface UsersFormProps extends SessionProps {
+	id?: number;
+}
+
+export interface UsersViewInfoRowProps {
+	icon: ReactNode;
+	label: string;
+	value: string | number | null | undefined | ReactNode;
+}
+
+export interface UsersViewProps extends SessionProps {
+	id: number;
+}

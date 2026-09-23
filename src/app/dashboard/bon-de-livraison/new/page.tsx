@@ -8,10 +8,7 @@ export const metadata: Metadata = {
 	title: 'Nouveau Bon de Livraison',
 	description: 'Créer un nouveau bon de livraison',
 };
-
-type PageProps = {
-	searchParams: Promise<{ company_id: string }>;
-};
+import type { CompanyScopedNewRouteProps as PageProps } from '@/types/routeTypes';
 
 const BonDeLivraisonNewPage = async (props: PageProps) => {
 	const session = await auth();

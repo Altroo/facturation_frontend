@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { mockSession } from './stock-test-helpers';
 import StockInventoryForm from './stock-inventory-form';

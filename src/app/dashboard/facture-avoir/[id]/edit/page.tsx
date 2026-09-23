@@ -8,11 +8,7 @@ export const metadata: Metadata = {
 	title: "Modifier facture d'avoir",
 	description: "Modifier une facture d'avoir existante",
 };
-
-type PageProps = {
-	params: Promise<{ id: string }>;
-	searchParams: Promise<{ company_id: string }>;
-};
+import type { CompanyScopedDetailRouteProps as PageProps } from '@/types/routeTypes';
 
 const FactureAvoirEditPage = async (props: PageProps) => {
 	const session = await auth();

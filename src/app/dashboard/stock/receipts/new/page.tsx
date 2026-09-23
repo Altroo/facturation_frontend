@@ -8,8 +8,7 @@ export const metadata: Metadata = {
 	title: 'Nouvelle réception de stock',
 	description: 'Réceptionner un stock entrant',
 };
-
-type PageProps = { searchParams: Promise<{ company_id?: string }> };
+import type { OptionalCompanyRouteProps as PageProps } from '@/types/routeTypes';
 
 const StockReceiptNewPage = async (props: PageProps) => {
 	const session = await auth();

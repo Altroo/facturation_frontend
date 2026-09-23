@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useMemo, useState } from 'react';
+import { useState, type ReactNode, type JSX, type MouseEvent } from 'react';
 import {
 	Box,
 	Button,
@@ -22,7 +22,7 @@ import {
 	SwapHoriz as SwapHorizIcon,
 	Visibility as VisibilityIcon,
 } from '@mui/icons-material';
-import { GridColDef, GridFilterModel, GridRenderCellParams } from '@mui/x-data-grid';
+import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
@@ -38,18 +38,17 @@ import { CLIENTS_VIEW } from '@/utils/routes';
 import { fetchPdfBlob } from '@/utils/apiHelpers';
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
 import { useGetClientsListQuery } from '@/store/services/client';
-import type {
-	DocumentBulkDeleteMutationResult,
-	DocumentConvertMutationResult,
-	DocumentDeleteMutationResult,
-	DocumentListClass,
-	DocumentListConfig,
-	DocumentListQueryResult,
-	PaginationModel,
-	ConvertAction,
-	PrintAction,
-} from '@/types/companyDocumentsTypes';
+import type { DocumentListClass, ConvertAction, PrintAction } from '@/types/companyDocumentsTypes';
 import type { ClientClass, DeviClass, FactureAvoirClass, FactureClass } from '@/models/classes';
+import type { DocumentListContentProps } from '@/types/companyDocumentsTypes';
+
+const runWithCleanup = async (action: () => Promise<void>, cleanup: () => void) => {
+	try {
+		await action();
+	} finally {
+		cleanup();
+	}
+};
 
 export const getStatutColor = (
 	statut: string,
@@ -108,21 +107,6 @@ export const createStatutFilterOptions = (t: import('@/types/languageTypes').Tra
 	{ value: 'Expiré', label: t.rawData.documentStatuses.expired, color: 'warning' as const },
 ];
 
-/** @deprecated Use createStatutFilterOptions(t) inside a component */
-export const statutFilterOptions = createStatutFilterOptions({
-	rawData: {
-		documentStatuses: {
-			draft: 'Brouillon',
-			sent: 'Envoyé',
-			accepted: 'Accepté',
-			refused: 'Refusé',
-			cancelled: 'Annulé',
-			expired: 'Expiré',
-			invoiced: 'Facturé',
-		},
-	},
-} as import('@/types/languageTypes').TranslationDictionary);
-
 const getClientDisplayName = (client: Partial<ClientClass>) => {
 	const isPhysicalPerson = client.client_type === 'PP' || client.client_type === 'Personne physique';
 	if (isPhysicalPerson) {
@@ -131,45 +115,9 @@ const getClientDisplayName = (client: Partial<ClientClass>) => {
 	return client.raison_sociale || `${client.nom ?? ''} ${client.prenom ?? ''}`.trim() || client.code_client || '';
 };
 
-export interface DocumentListContentProps<TDocument extends DocumentListClass> {
-	/** Company ID */
-	companyId: number;
-	/** User role */
-	role: string;
-	/** Router instance */
-	router: ReturnType<typeof import('next/navigation').useRouter>;
-	/** Configuration for the list */
-	config: DocumentListConfig<TDocument>;
-	/** Query result from RTK Query hook */
-	queryResult: DocumentListQueryResult<TDocument>;
-	/** Delete mutation function */
-	deleteMutation: DocumentDeleteMutationResult;
-	/** Optional single-request bulk delete mutation */
-	bulkDeleteMutation?: DocumentBulkDeleteMutationResult;
-	/** Convert mutations - key is action key, value is mutation result */
-	convertMutations?: Record<string, DocumentConvertMutationResult>;
-	/** Pagination model state */
-	paginationModel: PaginationModel;
-	/** Set pagination model state */
-	setPaginationModel: React.Dispatch<React.SetStateAction<PaginationModel>>;
-	/** Search term state */
-	searchTerm: string;
-	/** Set search term state */
-	setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
-	/** Filter model state */
-	filterModel?: GridFilterModel;
-	/** Filter model change handler */
-	onFilterModelChange?: (model: GridFilterModel) => void;
-	/** Callback emitting backend-ready custom filter params */
-	onCustomFilterParamsChange?: (params: Record<string, string>) => void;
-	/** Optional chip filter bar rendered between the action buttons and the data grid */
-	chipFilterBar?: React.ReactNode;
-	accessToken?: string;
-}
-
 function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 	props: DocumentListContentProps<TDocument>,
-): React.JSX.Element {
+): JSX.Element {
 	const {
 		companyId,
 		role,
@@ -198,21 +146,18 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 		{ company_id: companyId, with_pagination: false, archived: false },
 		{ skip: !accessToken },
 	);
-	const clientsData = useMemo(() => {
+	const clientsData = (() => {
 		if (!rawClientsData) return [];
 		return Array.isArray(rawClientsData) ? rawClientsData : rawClientsData.results;
-	}, [rawClientsData]);
+	})();
 	const { deleteRecord } = deleteMutation;
 	const allowDelete = config.allowDelete ?? true;
-	const getCompletedConvertLabel = useCallback(
-		(action: ConvertAction, row: DocumentListClass) => {
-			if (typeof action.completedLabel === 'function') {
-				return action.completedLabel(row);
-			}
-			return action.completedLabel ?? t.common.convert;
-		},
-		[t],
-	);
+	const getCompletedConvertLabel = (action: ConvertAction, row: DocumentListClass) => {
+		if (typeof action.completedLabel === 'function') {
+			return action.completedLabel(row);
+		}
+		return action.completedLabel ?? t.common.convert;
+	};
 
 	// Modal states
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -229,28 +174,31 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 	const [selectedIds, setSelectedIds] = useState<number[]>([]);
 	const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
 
-	const deleteHandler = useCallback(async () => {
-		try {
-			await deleteRecord({ id: selectedId! }).unwrap();
-			onSuccess(config.labels.deleteSuccessMessage);
-			refetch();
-		} catch (err) {
-			onError(extractApiErrorMessage(err, config.labels.deleteErrorMessage));
-		} finally {
-			setShowDeleteModal(false);
-		}
-	}, [selectedId, deleteRecord, onSuccess, onError, refetch, config.labels]);
+	const deleteHandler = async () => {
+		await runWithCleanup(
+			async () => {
+				try {
+					await deleteRecord({ id: selectedId! }).unwrap();
+					onSuccess(config.labels.deleteSuccessMessage);
+					refetch();
+				} catch (err) {
+					onError(extractApiErrorMessage(err, config.labels.deleteErrorMessage));
+				}
+			},
+			() => setShowDeleteModal(false),
+		);
+	};
 
-	const showDeleteModalCall = useCallback((id: number) => {
+	const showDeleteModalCall = (id: number) => {
 		setSelectedId(id);
 		setShowDeleteModal(true);
-	}, []);
+	};
 
-	const handleSelectionChange = useCallback((ids: number[]) => {
+	const handleSelectionChange = (ids: number[]) => {
 		setSelectedIds(ids);
-	}, []);
+	};
 
-	const bulkDeleteHandler = useCallback(async () => {
+	const bulkDeleteHandler = async () => {
 		if (bulkDeleteMutation) {
 			try {
 				await bulkDeleteMutation.bulkDeleteRecords({ ids: selectedIds }).unwrap();
@@ -271,136 +219,129 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 		setSelectedIds([]);
 		setShowBulkDeleteModal(false);
 		refetch();
-	}, [selectedIds, bulkDeleteMutation, deleteRecord, onSuccess, onError, refetch, config.labels, t]);
+	};
 
-	const handleConvertAction = useCallback(
-		async (actionKey: string) => {
-			if (!convertMutations) return;
-			const mutation = convertMutations[actionKey];
-			const action = config.convertActions?.find((a) => a.key === actionKey);
-			if (!mutation || !action || !selectedId) return;
+	const handleConvertAction = async (actionKey: string) => {
+		if (!convertMutations) return;
+		const mutation = convertMutations[actionKey];
+		const action = config.convertActions?.find((a) => a.key === actionKey);
+		if (!mutation || !action || !selectedId) return;
 
-			try {
-				const response = await mutation.convertMutation({ id: selectedId }).unwrap();
-				onSuccess(t.documentList.convertSuccess(config.labels.documentTypeName));
-				router.push(action.redirectRoute(response.id, companyId));
-			} catch {
-				onError(t.documentList.convertError(config.labels.documentTypeName));
-			} finally {
-				setActiveConvertAction(null);
-			}
-		},
-		[convertMutations, config, selectedId, onSuccess, router, companyId, onError, t],
-	);
+		await runWithCleanup(
+			async () => {
+				try {
+					const response = await mutation.convertMutation({ id: selectedId }).unwrap();
+					onSuccess(t.documentList.convertSuccess(config.labels.documentTypeName));
+					router.push(action.redirectRoute(response.id, companyId));
+				} catch {
+					onError(t.documentList.convertError(config.labels.documentTypeName));
+				}
+			},
+			() => setActiveConvertAction(null),
+		);
+	};
 
-	const showConvertModalCall = useCallback((e: React.MouseEvent<HTMLButtonElement, MouseEvent>, id: number) => {
+	const showConvertModalCall = (e: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>, id: number) => {
 		setAnchorEl(e.currentTarget);
 		setMenuItemId(id);
-	}, []);
+	};
 
-	const handleMenuItemClick = useCallback(
-		(actionKey: string) => {
-			if (menuItemId) {
-				setSelectedId(menuItemId);
-				setActiveConvertAction(actionKey);
-			}
-			setAnchorEl(null);
-		},
-		[menuItemId],
-	);
+	const handleMenuItemClick = (actionKey: string) => {
+		if (menuItemId) {
+			setSelectedId(menuItemId);
+			setActiveConvertAction(actionKey);
+		}
+		setAnchorEl(null);
+	};
 
-	const showPrintMenuCall = useCallback((e: React.MouseEvent<HTMLButtonElement, MouseEvent>, id: number) => {
+	const showPrintMenuCall = (e: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>, id: number) => {
 		setPrintAnchorEl(e.currentTarget);
 		setPrintMenuItemId(id);
-	}, []);
+	};
 
-	const handlePrintMenuItemClick = useCallback((action: PrintAction) => {
+	const handlePrintMenuItemClick = (action: PrintAction) => {
 		setPrintAnchorEl(null);
 		setSelectedPrintAction(action);
 		setShowLanguageModal(true);
-	}, []);
+	};
 
-	const handleLanguageSelect = useCallback(
-		async (language: 'fr' | 'en') => {
-			setShowLanguageModal(false);
+	const handleLanguageSelect = async (language: 'fr' | 'en') => {
+		setShowLanguageModal(false);
 
-			if (!selectedPrintAction || printMenuItemId === null) {
-				return;
-			}
+		if (!selectedPrintAction || printMenuItemId === null) {
+			return;
+		}
 
-			if (!accessToken) {
-				onError(t.documentList.authError);
-				return;
-			}
+		if (!accessToken) {
+			onError(t.documentList.authError);
+			return;
+		}
 
-			try {
-				const url = selectedPrintAction.urlGenerator(printMenuItemId, companyId, language);
-				const blob = await fetchPdfBlob(url, accessToken);
-				const blobUrl = window.URL.createObjectURL(blob);
-				window.open(blobUrl, '_blank');
+		await runWithCleanup(
+			async () => {
+				try {
+					const url = selectedPrintAction.urlGenerator(printMenuItemId, companyId, language);
+					const blob = await fetchPdfBlob(url, accessToken);
+					const blobUrl = window.URL.createObjectURL(blob);
+					window.open(blobUrl, '_blank');
 
-				setTimeout(() => {
-					window.URL.revokeObjectURL(blobUrl);
-				}, 60_000);
-			} catch {
-				onError(t.errors.documentOpenError);
-			} finally {
+					setTimeout(() => {
+						window.URL.revokeObjectURL(blobUrl);
+					}, 60_000);
+				} catch {
+					onError(t.errors.documentOpenError);
+				}
+			},
+			() => {
 				setSelectedPrintAction(null);
 				setPrintMenuItemId(null);
-			}
-		},
-		[selectedPrintAction, printMenuItemId, accessToken, companyId, onError, t],
-	);
+			},
+		);
+	};
 
-	const handleLanguageModalClose = useCallback(() => {
+	const handleLanguageModalClose = () => {
 		setShowLanguageModal(false);
 		setSelectedPrintAction(null);
 		setPrintMenuItemId(null);
-	}, []);
+	};
 
-	const handlePrintMenuClose = useCallback(() => {
+	const handlePrintMenuClose = () => {
 		setPrintAnchorEl(null);
 		setPrintMenuItemId(null);
-	}, []);
+	};
 
-	const deleteModalActions = useMemo(
-		() => [
-			{
-				text: t.common.cancel,
-				active: false,
-				onClick: () => setShowDeleteModal(false),
-				icon: <CloseIcon />,
-				color: '#6B6B6B',
-			},
-			{ text: t.common.delete, active: true, onClick: deleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
-		],
-		[deleteHandler, t],
-	);
+	const deleteModalActions = [
+		{
+			text: t.common.cancel,
+			active: false,
+			onClick: () => setShowDeleteModal(false),
+			icon: <CloseIcon />,
+			color: '#6B6B6B',
+		},
+		{ text: t.common.delete, active: true, onClick: deleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
+	];
 
-	const bulkDeleteModalActions = useMemo(
-		() => [
-			{
-				text: t.common.cancel,
-				active: false,
-				onClick: () => setShowBulkDeleteModal(false),
-				icon: <CloseIcon />,
-				color: '#6B6B6B',
-			},
-			{
-				text: t.documentList.bulkDeleteBtn(selectedIds.length),
-				active: true,
-				onClick: bulkDeleteHandler,
-				icon: <DeleteIcon />,
-				color: '#D32F2F',
-			},
-		],
-		[bulkDeleteHandler, selectedIds.length, t],
-	);
+	const bulkDeleteModalActions = [
+		{
+			text: t.common.cancel,
+			active: false,
+			onClick: () => setShowBulkDeleteModal(false),
+			icon: <CloseIcon />,
+			color: '#6B6B6B',
+		},
+		{
+			text: t.documentList.bulkDeleteBtn(selectedIds.length),
+			active: true,
+			onClick: bulkDeleteHandler,
+			icon: <DeleteIcon />,
+			color: '#D32F2F',
+		},
+	];
 
-	const convertModalActionsMap = useMemo(() => {
+	const convertModalActionsMap = (() => {
 		const map: Record<
 			string,
-			{ actions: Array<{ text: string; active: boolean; onClick: () => void; icon: React.ReactNode; color: string }> }
+			{ actions: Array<{ text: string; active: boolean; onClick: () => void; icon: ReactNode; color: string }> }
 		> = {};
 		config.convertActions?.forEach((action) => {
 			map[action.key] = {
@@ -423,14 +364,14 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 			};
 		});
 		return map;
-	}, [config.convertActions, handleConvertAction, t]);
+	})();
 
-	const isAnyConvertLoading = useMemo(() => {
+	const isAnyConvertLoading = (() => {
 		if (!convertMutations) return false;
 		return Object.values(convertMutations).some((m) => m.isLoading);
-	}, [convertMutations]);
+	})();
 
-	const clientFilterOptions = useMemo(() => {
+	const clientFilterOptions = (() => {
 		const objectMap = new Map<string, string>();
 		clientsData.forEach((client) => {
 			const label = getClientDisplayName(client);
@@ -450,11 +391,11 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 			value: name,
 			label: name,
 		}));
-	}, [clientsData, data?.results]);
+	})();
 
-	const localStatutFilterOptions = useMemo(() => createStatutFilterOptions(t), [t]);
+	const localStatutFilterOptions = createStatutFilterOptions(t);
 
-	const columns: GridColDef[] = useMemo(() => {
+	const columns: GridColDef[] = (() => {
 		const baseColumns: GridColDef[] = [
 			{
 				field: config.columns.numeroField as string,
@@ -630,12 +571,9 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 							actions.push({
 								label: completedAction ? getCompletedConvertLabel(completedAction, row) : t.common.convert,
 								icon: isCurrentItemLoading ? <CircularProgress size={20} /> : <SwapHorizIcon />,
-								onClick: (e?: React.MouseEvent<HTMLElement>) => {
+								onClick: (e?: MouseEvent<HTMLElement>) => {
 									if (!isCurrentItemLoading && !isConvertCompleted && e) {
-										showConvertModalCall(
-											e as React.MouseEvent<HTMLButtonElement>,
-											(params.row as DocumentListClass).id,
-										);
+										showConvertModalCall(e as MouseEvent<HTMLButtonElement>, (params.row as DocumentListClass).id);
 									}
 								},
 								color: isConvertCompleted ? ('default' as const) : ('success' as const),
@@ -655,9 +593,9 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 						actions.push({
 							label: t.common.display,
 							icon: <PrintIcon />,
-							onClick: (e?: React.MouseEvent<HTMLElement>) => {
+							onClick: (e?: MouseEvent<HTMLElement>) => {
 								if (e) {
-									showPrintMenuCall(e as React.MouseEvent<HTMLButtonElement>, (params.row as DocumentListClass).id);
+									showPrintMenuCall(e as MouseEvent<HTMLButtonElement>, (params.row as DocumentListClass).id);
 								}
 							},
 							color: 'info' as const,
@@ -671,34 +609,16 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 
 		const extraColumns = config.getExtraColumns?.({ router, companyId }) ?? [];
 		return [...baseColumns.slice(0, -1), ...extraColumns, baseColumns[baseColumns.length - 1]];
-	}, [
-		config,
-		allowDelete,
-		clientFilterOptions,
-		localStatutFilterOptions,
-		router,
-		companyId,
-		role,
-		showDeleteModalCall,
-		showConvertModalCall,
-		showPrintMenuCall,
-		isAnyConvertLoading,
-		selectedId,
-		getCompletedConvertLabel,
-		t,
-	]);
-	const modalsConfig = useMemo(
-		() => ({
-			delete: {
-				title: config.labels.deleteConfirmTitle,
-				body: config.labels.deleteConfirmBody,
-				actions: deleteModalActions,
-				titleIcon: <DeleteIcon />,
-				titleIconColor: '#D32F2F',
-			},
-		}),
-		[config.labels, deleteModalActions],
-	);
+	})();
+	const modalsConfig = {
+		delete: {
+			title: config.labels.deleteConfirmTitle,
+			body: config.labels.deleteConfirmBody,
+			actions: deleteModalActions,
+			titleIcon: <DeleteIcon />,
+			titleIconColor: '#D32F2F',
+		},
+	};
 
 	return (
 		<>
@@ -818,7 +738,11 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 					const label = isCompleted && currentRow ? getCompletedConvertLabel(action, currentRow) : action.label;
 
 					items.push(
-						<MenuItem key={action.key} disabled={isDisabled || isCompleted} onClick={() => handleMenuItemClick(action.key)}>
+						<MenuItem
+							key={action.key}
+							disabled={isDisabled || isCompleted}
+							onClick={() => handleMenuItemClick(action.key)}
+						>
 							<ListItemIcon>{action.icon}</ListItemIcon>
 							<ListItemText>{label}</ListItemText>
 						</MenuItem>,

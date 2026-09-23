@@ -1,34 +1,25 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { type FC, type SyntheticEvent, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, Container, Paper, Stack, Tab, Tabs, Typography } from '@mui/material';
 import { Business as BusinessIcon } from '@mui/icons-material';
-
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
-
 import { useInitAccessToken } from '@/contexts/InitContext';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 import { COMPANIES_ADD } from '@/utils/routes';
 import { useLanguage } from '@/utils/hooks';
+import { emptyCompanies } from '@/utils/rawData';
+import type { CompanyDocumentsListProps, CompanyLike } from '@/types/companyDocumentsTypes';
 
-import type { SessionProps } from '@/types/_initTypes';
-
-type CompanyLike = {
-	id: number;
-	raison_sociale: string;
-	role: string;
-};
-
-export type CompanyDocumentsListProps = SessionProps & {
-	title: string;
-	requestedCompanyId?: number;
-	children: (args: { company_id: number; role: string; raison_sociale: string }) => React.ReactNode;
-};
-
-const CompanyDocumentsWrapperList: React.FC<CompanyDocumentsListProps> = ({ session, title, requestedCompanyId, children }) => {
+const CompanyDocumentsWrapperList: FC<CompanyDocumentsListProps> = ({
+	session,
+	title,
+	requestedCompanyId,
+	children,
+}) => {
 	const token = useInitAccessToken(session);
 	const router = useRouter();
 	const { t } = useLanguage();
@@ -43,15 +34,15 @@ const CompanyDocumentsWrapperList: React.FC<CompanyDocumentsListProps> = ({ sess
 		return 0;
 	});
 
-	const companies = useMemo(() => (companiesData ?? []) as CompanyLike[], [companiesData]);
+	const companies = (companiesData ?? emptyCompanies) as CompanyLike[];
 
 	// Compute valid index - automatically clamps to valid range
 	// This is our source of truth for the actual selected index
-	const validIndex = useMemo(() => {
+	const validIndex = (() => {
 		if (companies.length === 0) return 0;
 		if (selectedIndex >= companies.length) return 0;
 		return selectedIndex;
-	}, [companies.length, selectedIndex]);
+	})();
 
 	// Sync localStorage (external system) when validIndex changes
 	const prevValidIndexRef = useRef(validIndex);
@@ -73,9 +64,9 @@ const CompanyDocumentsWrapperList: React.FC<CompanyDocumentsListProps> = ({ sess
 		localStorage.setItem('selectedCompanyIndex', String(requestedIndex));
 	}, [companies, requestedCompanyId, validIndex]);
 
-	const selectedCompany = useMemo(() => companies?.[validIndex] ?? null, [companies, validIndex]);
+	const selectedCompany = companies?.[validIndex] ?? null;
 
-	const handleChange = (_: React.SyntheticEvent, newValue: number) => {
+	const handleChange = (_: SyntheticEvent, newValue: number) => {
 		setSelectedIndex(newValue);
 		// Save to localStorage
 		if (typeof window !== 'undefined') {

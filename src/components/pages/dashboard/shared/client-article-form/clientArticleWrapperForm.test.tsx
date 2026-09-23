@@ -1,4 +1,4 @@
-import React from 'react';
+import { type ReactNode, type FC } from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { useAppSelector } from '@/utils/hooks';
@@ -12,12 +12,16 @@ jest.mock('@/contexts/InitContext', () => ({
 
 jest.mock('@/utils/hooks', () => ({
 	useAppSelector: jest.fn(),
-	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
+	useLanguage: () => ({
+		language: 'fr' as const,
+		setLanguage: jest.fn(),
+		t: jest.requireActual('@/translations').translations.fr,
+	}),
 }));
 
 jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 	__esModule: true,
-	default: ({ children, title }: { children: React.ReactNode; title?: string }) => (
+	default: ({ children, title }: { children: ReactNode; title?: string }) => (
 		<div data-testid="nav">
 			<h1>{title}</h1>
 			{children}
@@ -61,7 +65,7 @@ describe('ClientArticleFormWrapper', () => {
 		(useAppSelector as jest.Mock).mockImplementation(() => companies);
 
 		const FormikCalled = jest.fn() as jest.Mock<void, [FormikComponentProps]>;
-		const FormikComponent: React.FC<FormikComponentProps> = (props) => {
+		const FormikComponent: FC<FormikComponentProps> = (props) => {
 			FormikCalled(props);
 			return <div data-testid="mock-form">FORM</div>;
 		};
@@ -92,7 +96,7 @@ describe('ClientArticleFormWrapper', () => {
 		const companies = [{ id: 100, role: 'Lecture' }];
 		(useAppSelector as jest.Mock).mockImplementation(() => companies);
 
-		const FormikComponent: React.FC<FormikComponentProps> = () => <div data-testid="should-not-render">NO</div>;
+		const FormikComponent: FC<FormikComponentProps> = () => <div data-testid="should-not-render">NO</div>;
 
 		render(
 			<ClientArticleWrapperForm

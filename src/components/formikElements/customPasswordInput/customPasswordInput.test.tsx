@@ -1,3 +1,4 @@
+import { createRef } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import CustomPasswordInput from './customPasswordInput';
 import { createTheme } from '@mui/material/styles';
@@ -6,6 +7,14 @@ import '@testing-library/jest-dom';
 const theme = createTheme();
 
 describe('CustomPasswordInput', () => {
+	it('passes its ref to the password input', () => {
+		const ref = createRef<HTMLInputElement>();
+		render(
+			<CustomPasswordInput ref={ref} id="password-input" value="" label="Password" onChange={() => {}} theme={theme} />,
+		);
+		expect(ref.current).toBe(screen.getByLabelText('Password'));
+	});
+
 	it('renders with label and placeholder', () => {
 		render(
 			<CustomPasswordInput

@@ -1,21 +1,12 @@
 import { auth } from '@/auth';
 import { NextResponse } from 'next/server';
-
-const PUBLIC_PATHS = [
-	'/login',
-	'/reset-password',
-	'/reset-password/enter-code',
-	'/reset-password/set-password',
-	'/reset-password/set-password-complete',
-	'/sso/start',
-	'/sso/callback',
-];
+import { publicPaths } from '@/utils/rawData';
 
 export default auth((req) => {
 	const pathname = req.nextUrl.pathname;
 
 	// allow public paths without redirect
-	if (PUBLIC_PATHS.includes(pathname)) {
+	if (publicPaths.includes(pathname)) {
 		return NextResponse.next();
 	}
 	// settings doesn't have root page

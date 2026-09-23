@@ -6,13 +6,9 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
 	title: 'Détails du Client',
-	description: 'Consulter les détails d\'un client',
+	description: "Consulter les détails d'un client",
 };
-
-type PageProps = {
-	params: Promise<{ id: string }>;
-	searchParams: Promise<{ company_id: string }>;
-};
+import type { CompanyScopedDetailRouteProps as PageProps } from '@/types/routeTypes';
 
 const ClientsViewPage = async (props: PageProps) => {
 	const session = await auth();

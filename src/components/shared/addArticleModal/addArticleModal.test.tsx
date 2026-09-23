@@ -1,4 +1,4 @@
-import React from 'react';
+import { type FC } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import type { CurrencyType } from '@/types/articleTypes';
@@ -44,10 +44,10 @@ let capturedOnRowSelectionModelChange: MockGridProps['onRowSelectionModelChange'
 jest.mock('@mui/x-data-grid', () => {
 	// eslint-disable-next-line @typescript-eslint/no-require-imports
 	const ReactModule = require('react');
-	const MockDataGrid: React.FC<MockGridProps> = (props) => {
+	const MockDataGrid: FC<MockGridProps> = (props) => {
 		// Capture the callback for manual triggering
 		capturedOnRowSelectionModelChange = props.onRowSelectionModelChange;
-		
+
 		const rows = props.rows ?? [];
 		return ReactModule.createElement(
 			'div',

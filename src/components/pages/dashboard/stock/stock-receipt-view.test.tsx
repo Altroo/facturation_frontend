@@ -1,4 +1,3 @@
-import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { mockSession, mockValidateReceipt, setMockCompanyRole } from './stock-test-helpers';
 import StockReceiptView from './stock-receipt-view';

@@ -1,7 +1,6 @@
-import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import PaginatedDataGrid, { mapOperatorToParam, isDateRangeValue } from './paginatedDataGrid';
-import type { CustomFilterValue } from '@/components/shared/filterPanel/customFilterPanel';
+import type { CustomFilterValue } from '@/types/uiTypes';
 import '@testing-library/jest-dom';
 import type { GridColDef } from '@mui/x-data-grid';
 import { createTheme } from '@mui/material/styles';

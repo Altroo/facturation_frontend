@@ -1,4 +1,4 @@
-import React from 'react';
+import { type FC, type ReactNode } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -6,9 +6,7 @@ import LinesGrid from './linesGrid';
 import type { GridColDef } from '@mui/x-data-grid';
 
 const theme = createTheme();
-const Wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-	<ThemeProvider theme={theme}>{children}</ThemeProvider>
-);
+const Wrapper: FC<{ children: ReactNode }> = ({ children }) => <ThemeProvider theme={theme}>{children}</ThemeProvider>;
 
 describe('LinesGrid', () => {
 	const columns: GridColDef[] = [
@@ -129,9 +127,7 @@ describe('LinesGrid', () => {
 		);
 
 		// Same rows and columns - should not rerender (memo comparison)
-		rerender(
-			<LinesGrid rows={rows} columns={columns} onAddClick={handleAdd} isLoading={false} title="Test" />,
-		);
+		rerender(<LinesGrid rows={rows} columns={columns} onAddClick={handleAdd} isLoading={false} title="Test" />);
 		expect(screen.getByText('Test')).toBeInTheDocument();
 
 		// Different rows - should trigger rerender
@@ -151,25 +147,17 @@ describe('LinesGrid', () => {
 			},
 		];
 
-		rerender(
-			<LinesGrid rows={newRows} columns={columns} onAddClick={handleAdd} isLoading={false} title="Test" />,
-		);
+		rerender(<LinesGrid rows={newRows} columns={columns} onAddClick={handleAdd} isLoading={false} title="Test" />);
 		expect(screen.getByText('Test')).toBeInTheDocument();
 
 		// Different columns - should trigger rerender
-		const newColumns: GridColDef[] = [
-			{ field: 'designation', headerName: 'Name', width: 200 },
-		];
+		const newColumns: GridColDef[] = [{ field: 'designation', headerName: 'Name', width: 200 }];
 
-		rerender(
-			<LinesGrid rows={newRows} columns={newColumns} onAddClick={handleAdd} isLoading={false} title="Test" />,
-		);
+		rerender(<LinesGrid rows={newRows} columns={newColumns} onAddClick={handleAdd} isLoading={false} title="Test" />);
 		expect(screen.getByText('Name')).toBeInTheDocument();
 
 		// Change isLoading - should trigger rerender
-		rerender(
-			<LinesGrid rows={newRows} columns={newColumns} onAddClick={handleAdd} isLoading={true} title="Test" />,
-		);
+		rerender(<LinesGrid rows={newRows} columns={newColumns} onAddClick={handleAdd} isLoading={true} title="Test" />);
 		expect(screen.getByRole('button', { name: /Ajouter article/i })).toBeDisabled();
 	});
 
@@ -183,11 +171,9 @@ describe('LinesGrid', () => {
 
 		expect(screen.getByText('Items')).toBeInTheDocument();
 
-		// Rerender with fewer rows  
+		// Rerender with fewer rows
 		const fewerRows = [rows[0]];
-		rerender(
-			<LinesGrid rows={fewerRows} columns={columns} onAddClick={handleAdd} isLoading={false} title="Items" />,
-		);
+		rerender(<LinesGrid rows={fewerRows} columns={columns} onAddClick={handleAdd} isLoading={false} title="Items" />);
 
 		expect(screen.getByText('Items')).toBeInTheDocument();
 	});
@@ -201,10 +187,7 @@ describe('LinesGrid', () => {
 		);
 
 		// Rerender with modified row value
-		const modifiedRows = [
-			{ ...rows[0], quantity: 99 },
-			rows[1],
-		];
+		const modifiedRows = [{ ...rows[0], quantity: 99 }, rows[1]];
 
 		rerender(
 			<LinesGrid rows={modifiedRows} columns={columns} onAddClick={handleAdd} isLoading={false} title="Products" />,

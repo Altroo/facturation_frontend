@@ -1,20 +1,11 @@
 'use client';
 
 import type { ErrorInfo, ReactNode } from 'react';
-import React, { Component } from 'react';
+import { Component, type ContextType } from 'react';
 import { Box, Button, Paper, Typography } from '@mui/material';
 import ErrorOutlinedIcon from '@mui/icons-material/ErrorOutlined';
 import { LanguageContext } from '@/contexts/languageContext';
-
-interface ErrorBoundaryProps {
-	children: ReactNode;
-	fallback?: ReactNode;
-}
-
-interface ErrorBoundaryState {
-	hasError: boolean;
-	error: Error | null;
-}
+import type { ErrorBoundaryProps, ErrorBoundaryState } from '@/types/uiTypes';
 
 /**
  * Error Boundary component to catch JavaScript errors anywhere in the child
@@ -22,7 +13,7 @@ interface ErrorBoundaryState {
  */
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 	static contextType = LanguageContext;
-	declare context: React.ContextType<typeof LanguageContext>;
+	declare context: ContextType<typeof LanguageContext>;
 
 	constructor(props: ErrorBoundaryProps) {
 		super(props);

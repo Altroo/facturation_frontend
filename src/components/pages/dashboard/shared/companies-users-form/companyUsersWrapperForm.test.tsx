@@ -1,4 +1,4 @@
-import React from 'react';
+import { type ReactNode, type FC } from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import CompanyUsersWrapperForm from './companyUsersWrapperForm';
@@ -11,7 +11,7 @@ jest.mock('@/contexts/InitContext', () => ({
 
 jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 	__esModule: true,
-	default: ({ children, title }: { children: React.ReactNode; title?: string }) => (
+	default: ({ children, title }: { children: ReactNode; title?: string }) => (
 		<div data-testid="nav">
 			<h1>{title}</h1>
 			{children}
@@ -21,7 +21,7 @@ jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 
 jest.mock('@/components/layouts/protected/protected', () => ({
 	__esModule: true,
-	Protected: ({ children }: { children: React.ReactNode }) => <div data-testid="protected">{children}</div>,
+	Protected: ({ children }: { children: ReactNode }) => <div data-testid="protected">{children}</div>,
 }));
 
 describe('CompanyUsersForm', () => {
@@ -55,7 +55,7 @@ describe('CompanyUsersForm', () => {
 	it('renders FormikComponent in edit mode and passes token, id and extra props', () => {
 		(useInitAccessToken as jest.Mock).mockReturnValue('token-123');
 		const FormikCalled = jest.fn() as jest.Mock<void, [FormikComponentProps]>;
-		const FormikComponent: React.FC<FormikComponentProps> = (props) => {
+		const FormikComponent: FC<FormikComponentProps> = (props) => {
 			FormikCalled(props);
 			return <div data-testid="mock-form">FORM</div>;
 		};
@@ -85,7 +85,7 @@ describe('CompanyUsersForm', () => {
 	it('renders FormikComponent in add mode and passes token and extra props with undefined id', () => {
 		(useInitAccessToken as jest.Mock).mockReturnValue('token-xyz');
 		const FormikCalled = jest.fn() as jest.Mock<void, [FormikComponentProps]>;
-		const FormikComponent: React.FC<FormikComponentProps> = (props) => {
+		const FormikComponent: FC<FormikComponentProps> = (props) => {
 			FormikCalled(props);
 			return <div data-testid="mock-form-add">FORM-ADD</div>;
 		};
@@ -111,5 +111,3 @@ describe('CompanyUsersForm', () => {
 		expect(calledProps.name).toBe('NewCo');
 	});
 });
-
-

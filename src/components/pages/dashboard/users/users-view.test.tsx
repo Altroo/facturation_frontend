@@ -1,4 +1,4 @@
-import React from 'react';
+import { type ReactNode, type ReactElement } from 'react';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import UsersViewClient from './users-view';
 import { Provider } from 'react-redux';
@@ -29,7 +29,7 @@ jest.mock('@/utils/helpers', () => {
 
 jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 	__esModule: true,
-	default: ({ children }: { children?: React.ReactNode }) => <div data-testid="navigation-bar">{children}</div>,
+	default: ({ children }: { children?: ReactNode }) => <div data-testid="navigation-bar">{children}</div>,
 }));
 
 // 🧩 Mock hooks module
@@ -59,7 +59,7 @@ const makeTestStore = () =>
 		middleware: (getDefaultMiddleware) => getDefaultMiddleware({ thunk: true, serializableCheck: false }),
 	});
 
-const renderWithProviders = (ui: React.ReactElement) => render(<Provider store={makeTestStore()}>{ui}</Provider>);
+const renderWithProviders = (ui: ReactElement) => render(<Provider store={makeTestStore()}>{ui}</Provider>);
 
 // Mock session
 const mockSession: AppSession = {

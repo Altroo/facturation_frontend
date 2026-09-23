@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { runWithCleanup, runWithErrorHandler } from '@/utils/runWithCleanup';
+import { type ChangeEvent, type FC, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Alert, Box, Button, Chip, CircularProgress, IconButton, Typography } from '@mui/material';
 import {
@@ -30,7 +31,7 @@ import {
 } from '@/store/services/article';
 import { ARTICLES_ADD, ARTICLES_EDIT, ARTICLES_VIEW } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
-import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
+import type { PaginationResponseType } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
@@ -50,17 +51,15 @@ import {
 	useGetUniteListQuery,
 } from '@/store/services/parameter';
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
-import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
+import type { ChipFilterConfig } from '@/types/uiTypes';
 import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 import { calculateNectarPrixTTC, isNectarRaisonSociale } from '@/utils/nectar';
+import type {
+	ArticlesListFormikContentProps as FormikContentProps,
+	ArticlesListProps as Props,
+} from '@/types/articleTypes';
 
-interface FormikContentProps extends SessionProps {
-	company_id: number;
-	archived: boolean;
-	role: string;
-}
-
-const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
+const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 	const { session, company_id, archived, role } = props;
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
@@ -100,25 +99,19 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const { data: unites } = useGetUniteListQuery({ company_id }, { skip: !token });
 	const { data: marques } = useGetMarqueListQuery({ company_id }, { skip: !token });
 
-	const chipFilters: ChipFilterConfig[] = React.useMemo(
-		() => [
-			{ key: 'categorie', label: t.articles.filterCategorie, paramName: 'categorie_ids', options: categories ?? [] },
-			{
-				key: 'emplacement',
-				label: t.articles.filterEmplacement,
-				paramName: 'emplacement_ids',
-				options: emplacements ?? [],
-			},
-			{ key: 'unite', label: t.articles.filterUnite, paramName: 'unite_ids', options: unites ?? [] },
-			{ key: 'marque', label: t.articles.filterMarque, paramName: 'marque_ids', options: marques ?? [] },
-		],
-		[categories, emplacements, unites, marques, t.articles],
-	);
+	const chipFilters: ChipFilterConfig[] = [
+		{ key: 'categorie', label: t.articles.filterCategorie, paramName: 'categorie_ids', options: categories ?? [] },
+		{
+			key: 'emplacement',
+			label: t.articles.filterEmplacement,
+			paramName: 'emplacement_ids',
+			options: emplacements ?? [],
+		},
+		{ key: 'unite', label: t.articles.filterUnite, paramName: 'unite_ids', options: unites ?? [] },
+		{ key: 'marque', label: t.articles.filterMarque, paramName: 'marque_ids', options: marques ?? [] },
+	];
 
-	const mergedFilterParams = React.useMemo(
-		() => ({ ...chipFilterParams, ...customFilterParams }),
-		[chipFilterParams, customFilterParams],
-	);
+	const mergedFilterParams = { ...chipFilterParams, ...customFilterParams };
 
 	useEffect(() => {
 		setImportErrors([]);
@@ -153,24 +146,29 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const [fetchAllArticleIds, { isLoading: isLoadingAllIds }] = useLazyGetArticlesListQuery();
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
-	const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+	const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
 		setImportErrors([]);
-		try {
-			const result = await importArticles({ file, company_id }).unwrap();
-			if (result.created > 0) {
-				onSuccess(t.articles.importSuccess(result.created));
-				refetch();
-			}
-			if (result.errors.length > 0) {
-				setImportErrors(result.errors);
-			}
-		} catch {
-			onError(t.articles.importError);
-		} finally {
-			e.target.value = '';
-		}
+		await runWithCleanup(
+			async () => {
+				try {
+					const result = await importArticles({ file, company_id }).unwrap();
+					if (result.created > 0) {
+						onSuccess(t.articles.importSuccess(result.created));
+						refetch();
+					}
+					if (result.errors.length > 0) {
+						setImportErrors(result.errors);
+					}
+				} catch {
+					onError(t.articles.importError);
+				}
+			},
+			() => {
+				e.target.value = '';
+			},
+		);
 	};
 
 	const handleSendCSVEmail = async () => {
@@ -183,18 +181,23 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	};
 
 	const deleteHandler = async () => {
-		try {
-			await deleteRecord({ id: selectedId! }).unwrap();
-			onSuccess(t.articles.deleteSuccess);
-			refetch();
-		} catch (err) {
-			onError(extractApiErrorMessage(err, t.articles.deleteError));
-		} finally {
-			setShowDeleteModal(false);
-			// Remove only the deleted item from selection (preserve remaining bulk selection)
-			// Do NOT clear isAllMatchingSelected — user stays in 'all matching' mode minus this one item
-			setSelectedIds((prev) => prev.filter((id) => id !== selectedId));
-		}
+		await runWithCleanup(
+			async () => {
+				try {
+					await deleteRecord({ id: selectedId! }).unwrap();
+					onSuccess(t.articles.deleteSuccess);
+					refetch();
+				} catch (err) {
+					onError(extractApiErrorMessage(err, t.articles.deleteError));
+				}
+			},
+			() => {
+				setShowDeleteModal(false);
+				// Remove only the deleted item from selection (preserve remaining bulk selection)
+				// Do NOT clear isAllMatchingSelected — user stays in 'all matching' mode minus this one item
+				setSelectedIds((prev) => prev.filter((id) => id !== selectedId));
+			},
+		);
 	};
 
 	const deleteModalActions = [
@@ -215,30 +218,35 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const archiveHandler = async () => {
 		if (!archiveTarget) return;
-		try {
-			await patchArchive({
-				id: archiveTarget,
-				data: { archived: !archived },
-			}).unwrap();
-			if (archived) {
-				onSuccess(t.articles.unarchiveSuccess);
-			} else {
-				onSuccess(t.articles.archiveSuccess);
-			}
-			refetch();
-		} catch {
-			if (archived) {
-				onError(t.articles.unarchiveError);
-			} else {
-				onError(t.articles.archiveError);
-			}
-		} finally {
-			setShowArchiveModal(false);
-			setArchiveTarget(null);
-			// Remove only the archived item from selection (preserve remaining bulk selection)
-			// Do NOT clear isAllMatchingSelected — user stays in 'all matching' mode minus this one item
-			setSelectedIds((prev) => prev.filter((id) => id !== archiveTarget));
-		}
+		await runWithCleanup(
+			async () => {
+				try {
+					await patchArchive({
+						id: archiveTarget,
+						data: { archived: !archived },
+					}).unwrap();
+					if (archived) {
+						onSuccess(t.articles.unarchiveSuccess);
+					} else {
+						onSuccess(t.articles.archiveSuccess);
+					}
+					refetch();
+				} catch {
+					if (archived) {
+						onError(t.articles.unarchiveError);
+					} else {
+						onError(t.articles.archiveError);
+					}
+				}
+			},
+			() => {
+				setShowArchiveModal(false);
+				setArchiveTarget(null);
+				// Remove only the archived item from selection (preserve remaining bulk selection)
+				// Do NOT clear isAllMatchingSelected — user stays in 'all matching' mode minus this one item
+				setSelectedIds((prev) => prev.filter((id) => id !== archiveTarget));
+			},
+		);
 	};
 
 	const archiveModalActions = [
@@ -266,12 +274,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		setShowArchiveModal(true);
 	};
 
-	const handleSelectionChange = useCallback((ids: number[]) => {
+	const handleSelectionChange = (ids: number[]) => {
 		setSelectedIds(ids);
 		setIsAllMatchingSelected(false);
-	}, []);
+	};
 
-	const handleSelectAllMatching = useCallback(async () => {
+	const handleSelectAllMatching = async () => {
 		try {
 			const result = await fetchAllArticleIds({
 				company_id,
@@ -285,25 +293,30 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		} catch {
 			onError(t.shared.selectionError);
 		}
-	}, [company_id, archived, mergedFilterParams, fetchAllArticleIds, onError, t]);
+	};
 
-	const handleClearAllMatching = useCallback(() => {
+	const handleClearAllMatching = () => {
 		setIsAllMatchingSelected(false);
 		setSelectedIds([]);
-	}, []);
+	};
 
 	const bulkDeleteHandler = async () => {
-		try {
-			await bulkDeleteArticles({ ids: selectedIds }).unwrap();
-			onSuccess(t.articles.bulkDeleteSuccess(selectedIds.length));
-		} catch (err) {
-			onError(extractApiErrorMessage(err, t.articles.bulkDeleteError));
-		} finally {
-			setSelectedIds([]);
-			setIsAllMatchingSelected(false);
-			setShowBulkDeleteModal(false);
-			refetch();
-		}
+		await runWithCleanup(
+			async () => {
+				try {
+					await bulkDeleteArticles({ ids: selectedIds }).unwrap();
+					onSuccess(t.articles.bulkDeleteSuccess(selectedIds.length));
+				} catch (err) {
+					onError(extractApiErrorMessage(err, t.articles.bulkDeleteError));
+				}
+			},
+			() => {
+				setSelectedIds([]);
+				setIsAllMatchingSelected(false);
+				setShowBulkDeleteModal(false);
+				refetch();
+			},
+		);
 	};
 
 	const bulkDeleteModalActions = [
@@ -325,21 +338,29 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const bulkArchiveHandler = async () => {
 		const archiving = bulkArchiveAction === 'archive';
-		try {
-			await bulkArchiveArticles({ ids: selectedIds, archived: archiving }).unwrap();
-			onSuccess(
-				archiving
-					? t.articles.bulkArchiveSuccess(selectedIds.length)
-					: t.articles.bulkUnarchiveSuccess(selectedIds.length),
-			);
-		} catch {
-			onError(archiving ? t.articles.bulkArchiveError : t.articles.bulkUnarchiveError);
-		} finally {
-			setSelectedIds([]);
-			setIsAllMatchingSelected(false);
-			setShowBulkArchiveModal(false);
-			refetch();
-		}
+		await runWithCleanup(
+			async () => {
+				await runWithErrorHandler(
+					async () => {
+						await bulkArchiveArticles({ ids: selectedIds, archived: archiving }).unwrap();
+						onSuccess(
+							archiving
+								? t.articles.bulkArchiveSuccess(selectedIds.length)
+								: t.articles.bulkUnarchiveSuccess(selectedIds.length),
+						);
+					},
+					() => {
+						onError(archiving ? t.articles.bulkArchiveError : t.articles.bulkUnarchiveError);
+					},
+				);
+			},
+			() => {
+				setSelectedIds([]);
+				setIsAllMatchingSelected(false);
+				setShowBulkArchiveModal(false);
+				refetch();
+			},
+		);
 	};
 
 	const bulkArchiveModalActions = [
@@ -479,12 +500,16 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 							<Chip
 								size="small"
 								label={params.row.type_article === 'Service' ? '—' : formatNumberWithSpaces(params.value, 3)}
-								color={params.row.stock_state === 'minimum' || params.row.stock_state === 'a_approvisionner' ? 'warning' : 'success'}
+								color={
+									params.row.stock_state === 'minimum' || params.row.stock_state === 'a_approvisionner'
+										? 'warning'
+										: 'success'
+								}
 								variant="outlined"
 							/>
 						),
 					},
-			  ]
+				]
 			: []),
 		{
 			field: 'prix_achat',
@@ -824,11 +849,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	);
 };
 
-interface Props extends SessionProps {
-	archived: boolean;
-}
-
-const ArticlesListClient: React.FC<Props> = ({ session, archived }) => {
+const ArticlesListClient: FC<Props> = ({ session, archived }) => {
 	const { t } = useLanguage();
 	return (
 		<CompanyDocumentsWrapperList session={session} title={archived ? t.articles.archivedTitle : t.articles.listTitle}>

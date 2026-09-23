@@ -1,13 +1,12 @@
-import React from 'react';
+import { type ReactNode } from 'react';
 import { render, screen, cleanup, fireEvent, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
-
 import CompanyDocumentsWrapperView from './companyDocumentsWrapperView';
 import type { CompanyDocumentsViewProps, CompanyDocumentData } from '@/types/companyDocumentsTypes';
 
 jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 	__esModule: true,
-	default: ({ children }: { children?: React.ReactNode }) => <div data-testid="nav">{children}</div>,
+	default: ({ children }: { children?: ReactNode }) => <div data-testid="nav">{children}</div>,
 }));
 
 jest.mock('@/components/formikElements/apiLoading/apiProgress/apiProgress', () => ({
@@ -22,7 +21,7 @@ jest.mock('@/components/shared/factureDevistotalCard/factureDevisTotalsCard', ()
 
 jest.mock('@/components/htmlElements/tooltip/darkTooltip/darkTooltip', () => ({
 	__esModule: true,
-	default: ({ children }: { children?: React.ReactNode }) => <div data-testid="tooltip">{children}</div>,
+	default: ({ children }: { children?: ReactNode }) => <div data-testid="tooltip">{children}</div>,
 }));
 
 jest.mock('next/image', () => ({
@@ -105,7 +104,6 @@ jest.mock('next/navigation', () => ({
 	__esModule: true,
 	useRouter: () => ({ push: pushMock, back: backMock, refresh: refreshMock }),
 }));
-
 import { useAppSelector } from '@/utils/hooks';
 import { useGetArticlesListQuery } from '@/store/services/article';
 

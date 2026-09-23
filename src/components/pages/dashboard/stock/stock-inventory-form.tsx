@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import { runWithCleanup } from '@/utils/runWithCleanup';
+import { useState, type FC, type MouseEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import {
 	Alert,
@@ -42,22 +43,18 @@ import { useCreateInventoryMutation, useValidateInventoryMutation } from '@/stor
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import type { ArticleClass } from '@/models/classes';
 import type { DropDownType } from '@/types/accountTypes';
-import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
+import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import type { StockInventoryFormValues } from '@/types/stockTypes';
 import { getLabelForKey, parseNumber, setFormikAutoErrors } from '@/utils/helpers';
 import { stockInventorySchema } from '@/utils/formValidationSchemas';
 import { useToast } from '@/utils/hooks';
 import { STOCK_INVENTORY_VIEW } from '@/utils/routes';
 import { textInputTheme } from '@/utils/themes';
+import type { StockInventoryFormContentProps, StockInventoryFormProps } from '@/types/stockTypes';
 
 const inputTheme = textInputTheme();
 
-type StockInventoryFormContentProps = {
-	token?: string;
-	company_id: number;
-};
-
-const StockInventoryFormContent: React.FC<StockInventoryFormContentProps> = ({ token, company_id }) => {
+const StockInventoryFormContent: FC<StockInventoryFormContentProps> = ({ token, company_id }) => {
 	const router = useRouter();
 	const { onSuccess, onError } = useToast();
 	const theme = useTheme();
@@ -81,32 +78,21 @@ const StockInventoryFormContent: React.FC<StockInventoryFormContentProps> = ({ t
 		data: emplacements = [],
 		isLoading: emplacementsLoading,
 		error: emplacementsError,
-	} = useGetEmplacementListQuery(
-		{ company_id },
-		{ skip: !token || company?.stock_management_enabled !== true },
-	);
+	} = useGetEmplacementListQuery({ company_id }, { skip: !token || company?.stock_management_enabled !== true });
 	const [createInventory, { isLoading: createLoading, error: createError }] = useCreateInventoryMutation();
 	const [validateInventory, { isLoading: validateLoading, error: validateError }] = useValidateInventoryMutation();
 
-	const articles = useMemo(
-		() =>
-			((Array.isArray(articlesRaw) ? articlesRaw : articlesRaw?.results) ?? []).filter(
-				(item: Partial<ArticleClass>) => item.type_article === 'Produit',
-			),
-		[articlesRaw],
+	const articles = ((Array.isArray(articlesRaw) ? articlesRaw : articlesRaw?.results) ?? []).filter(
+		(item: Partial<ArticleClass>) => item.type_article === 'Produit',
 	);
-	const articleItems = useMemo<DropDownType[]>(
-		() =>
-			articles.map((article: Partial<ArticleClass>) => ({
-				value: String(article.id),
-				code: `${article.reference} — ${article.designation}`,
-			})),
-		[articles],
-	);
-	const emplacementItems = useMemo<DropDownType[]>(
-		() => emplacements.map((location) => ({ value: String(location.id), code: location.nom })),
-		[emplacements],
-	);
+	const articleItems = articles.map((article: Partial<ArticleClass>) => ({
+		value: String(article.id),
+		code: `${article.reference} — ${article.designation}`,
+	})) as DropDownType[];
+	const emplacementItems = emplacements.map((location) => ({
+		value: String(location.id),
+		code: location.nom,
+	})) as DropDownType[];
 
 	const formik = useFormik<StockInventoryFormValues>({
 		initialValues: {
@@ -123,56 +109,56 @@ const StockInventoryFormContent: React.FC<StockInventoryFormContentProps> = ({ t
 			setHasAttemptedSubmit(true);
 			setIsPending(true);
 			let createdId: number | null = null;
-			try {
-				const inventory = await createInventory({
-					company_id,
-					emplacement: Number(values.emplacement),
-					reference: values.reference,
-					note: values.note,
-					lines: [{ article: Number(values.article), counted_quantity: Number(values.counted_quantity) }],
-				}).unwrap();
-				createdId = inventory.id;
-				await validateInventory({ company_id, id: inventory.id }).unwrap();
-				onSuccess('Inventaire validé et stock ajusté.');
-				router.replace(STOCK_INVENTORY_VIEW(inventory.id, company_id));
-			} catch (error) {
-				if (createdId !== null) {
-					onError("L'inventaire a été conservé en brouillon et peut être validé depuis la liste.");
-					router.replace(STOCK_INVENTORY_VIEW(createdId, company_id));
-					return;
-				}
-				onError("Impossible de créer l'inventaire.");
-				setFormikAutoErrors({ e: error, setFieldError });
-			} finally {
-				setIsPending(false);
-			}
+			await runWithCleanup(
+				async () => {
+					try {
+						const inventory = await createInventory({
+							company_id,
+							emplacement: Number(values.emplacement),
+							reference: values.reference,
+							note: values.note,
+							lines: [{ article: Number(values.article), counted_quantity: Number(values.counted_quantity) }],
+						}).unwrap();
+						createdId = inventory.id;
+						await validateInventory({ company_id, id: inventory.id }).unwrap();
+						onSuccess('Inventaire validé et stock ajusté.');
+						router.replace(STOCK_INVENTORY_VIEW(inventory.id, company_id));
+					} catch (error) {
+						if (createdId !== null) {
+							onError("L'inventaire a été conservé en brouillon et peut être validé depuis la liste.");
+							router.replace(STOCK_INVENTORY_VIEW(createdId, company_id));
+							return;
+						}
+						onError("Impossible de créer l'inventaire.");
+						setFormikAutoErrors({ e: error, setFieldError });
+					}
+				},
+				() => {
+					setIsPending(false);
+				},
+			);
 		},
 	});
 
 	const selectedArticle = articleItems.find((item) => item.value === String(formik.values.article)) ?? null;
-	const selectedEmplacement =
-		emplacementItems.find((item) => item.value === String(formik.values.emplacement)) ?? null;
-	const fieldLabels = useMemo(
-		() => ({
-			article: 'Article',
-			emplacement: 'Emplacement',
-			counted_quantity: 'Quantité comptée',
-			reference: 'Référence',
-			note: 'Note',
-		}),
-		[],
-	);
-	const validationErrors = useMemo(() => {
+	const selectedEmplacement = emplacementItems.find((item) => item.value === String(formik.values.emplacement)) ?? null;
+	const fieldLabels = {
+		article: 'Article',
+		emplacement: 'Emplacement',
+		counted_quantity: 'Quantité comptée',
+		reference: 'Référence',
+		note: 'Note',
+	};
+	const validationErrors = (() => {
 		if (!hasAttemptedSubmit) return {};
 		return Object.fromEntries(
-			Object.entries(formik.errors).filter(
-				([key, value]) => key !== 'globalError' && typeof value === 'string',
-			),
+			Object.entries(formik.errors).filter(([key, value]) => key !== 'globalError' && typeof value === 'string'),
 		) as Record<string, string>;
-	}, [formik.errors, hasAttemptedSubmit]);
+	})();
 	const error = companyError || articlesError || emplacementsError || createError || validateError;
 	const axiosError = error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined;
-	const isLoading = companyLoading || articlesLoading || emplacementsLoading || createLoading || validateLoading || isPending;
+	const isLoading =
+		companyLoading || articlesLoading || emplacementsLoading || createLoading || validateLoading || isPending;
 	const shouldShowError = (axiosError?.status ?? 0) > 400 && !isLoading;
 
 	return (
@@ -291,10 +277,7 @@ const StockInventoryFormContent: React.FC<StockInventoryFormContentProps> = ({ t
 										onChange={(event) => {
 											const parsed = parseNumber(event.target.value);
 											if (parsed !== null && parsed < 0) return;
-											void formik.setFieldValue(
-												'counted_quantity',
-												parsed === null ? event.target.value : parsed,
-											);
+											void formik.setFieldValue('counted_quantity', parsed === null ? event.target.value : parsed);
 										}}
 										onBlur={formik.handleBlur('counted_quantity')}
 										error={formik.touched.counted_quantity && Boolean(formik.errors.counted_quantity)}
@@ -345,7 +328,7 @@ const StockInventoryFormContent: React.FC<StockInventoryFormContentProps> = ({ t
 								type="submit"
 								loading={isPending}
 								startIcon={<AddIcon />}
-								onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+								onClick={(event: MouseEvent<HTMLButtonElement>) => {
 									setHasAttemptedSubmit(true);
 									if (!formik.isValid) {
 										event.preventDefault();
@@ -364,9 +347,7 @@ const StockInventoryFormContent: React.FC<StockInventoryFormContentProps> = ({ t
 	);
 };
 
-type StockInventoryFormProps = SessionProps & { company_id: number };
-
-const StockInventoryForm: React.FC<StockInventoryFormProps> = ({ session, company_id }) => (
+const StockInventoryForm: FC<StockInventoryFormProps> = ({ session, company_id }) => (
 	<StockFormWrapper session={session} company_id={company_id} title="Nouvel inventaire" allowedRoles={['Caissier']}>
 		{(token) => <StockInventoryFormContent token={token} company_id={company_id} />}
 	</StockFormWrapper>

@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
+import { runWithCleanup } from '@/utils/runWithCleanup';
+import { useEffect, useRef, useState, type MouseEvent, type SyntheticEvent } from 'react';
 import { styled, ThemeProvider } from '@mui/material/styles';
-import MuiAppBar, { type AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
+import MuiAppBar from '@mui/material/AppBar';
 import {
 	Badge,
 	Box,
@@ -104,6 +105,7 @@ import {
 } from '@/store/services/notification';
 import { setUnreadCount } from '@/store/slices/notificationSlice';
 import type { NotificationType } from '@/types/facturationTypes';
+import type { AppBarProps, NavigationBarProps as Props } from '@/types/uiTypes';
 
 const getNavigationMenu = (isStaff: boolean, t: TranslationDictionary) => {
 	return {
@@ -136,7 +138,13 @@ const getNavigationMenu = (isStaff: boolean, t: TranslationDictionary) => {
 		factures_proformat: {
 			title: t.navigation.facturesProforma,
 			icon: <ReceiptLongOutlinedIcon />,
-			items: [{ title: t.navigation.facturesProformaList, label: t.navigation.facturesProformaList, path: FACTURE_PRO_FORMA_LIST }],
+			items: [
+				{
+					title: t.navigation.facturesProformaList,
+					label: t.navigation.facturesProformaList,
+					path: FACTURE_PRO_FORMA_LIST,
+				},
+			],
 		},
 		factures: {
 			title: t.navigation.facturesClient,
@@ -149,23 +157,37 @@ const getNavigationMenu = (isStaff: boolean, t: TranslationDictionary) => {
 		facturesAvoir: {
 			title: t.navigation.facturesAvoir,
 			icon: <CreditScoreOutlinedIcon />,
-			items: [{ title: t.navigation.facturesAvoirList, label: t.navigation.facturesAvoirList, path: FACTURE_AVOIR_LIST }],
+			items: [
+				{ title: t.navigation.facturesAvoirList, label: t.navigation.facturesAvoirList, path: FACTURE_AVOIR_LIST },
+			],
 		},
 		bonsLivraison: {
 			title: t.navigation.bonsLivraison,
 			icon: <LocalShippingIcon />,
 			items: [
 				{ title: t.navigation.bonsLivraisonList, label: t.navigation.bonsLivraisonList, path: BON_DE_LIVRAISON_LIST },
-				{ title: t.navigation.bonsLivraisonUninvoiced, label: t.navigation.bonsLivraisonUninvoiced, path: BON_DE_LIVRAISON_UNINVOICED },
+				{
+					title: t.navigation.bonsLivraisonUninvoiced,
+					label: t.navigation.bonsLivraisonUninvoiced,
+					path: BON_DE_LIVRAISON_UNINVOICED,
+				},
 			],
 		},
 		logistique: {
 			title: t.navigation.logistique,
 			icon: <WarehouseIcon />,
 			items: [
-				{ title: t.navigation.logistiqueDashboard, label: t.navigation.logistiqueDashboard, path: LOGISTIQUE_DASHBOARD },
+				{
+					title: t.navigation.logistiqueDashboard,
+					label: t.navigation.logistiqueDashboard,
+					path: LOGISTIQUE_DASHBOARD,
+				},
 				{ title: t.navigation.logistiqueList, label: t.navigation.logistiqueList, path: LOGISTIQUE_LIST },
-				{ title: t.navigation.logistiqueSuppliers, label: t.navigation.logistiqueSuppliers, path: LOGISTIQUE_SUPPLIERS },
+				{
+					title: t.navigation.logistiqueSuppliers,
+					label: t.navigation.logistiqueSuppliers,
+					path: LOGISTIQUE_SUPPLIERS,
+				},
 			],
 		},
 		stock: {
@@ -207,7 +229,11 @@ const getNavigationMenu = (isStaff: boolean, t: TranslationDictionary) => {
 			items: [
 				{ title: t.navigation.myProfile, label: t.navigation.myProfile, path: DASHBOARD_EDIT_PROFILE },
 				{ title: t.navigation.changePassword, label: t.navigation.changePassword, path: DASHBOARD_PASSWORD },
-				{ title: t.navigation.notifications, label: t.navigation.notificationPreferences, path: DASHBOARD_NOTIFICATIONS },
+				{
+					title: t.navigation.notifications,
+					label: t.navigation.notificationPreferences,
+					path: DASHBOARD_NOTIFICATIONS,
+				},
 				...(isStaff
 					? [
 							{
@@ -246,10 +272,6 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
 	},
 }));
 
-interface AppBarProps extends MuiAppBarProps {
-	open?: boolean;
-}
-
 const AppBar = styled(MuiAppBar, {
 	shouldForwardProp: (prop) => prop !== 'open',
 })<AppBarProps>(({ theme }) => ({
@@ -274,11 +296,6 @@ const AppBar = styled(MuiAppBar, {
 	],
 }));
 
-type Props = {
-	title: string;
-	children: React.ReactNode;
-};
-
 const NavigationBar = (props: Props) => {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -287,7 +304,7 @@ const NavigationBar = (props: Props) => {
 	const { avatar_cropped, first_name, last_name, gender, is_staff } = useAppSelector(getProfilState);
 	const { t, language, setLanguage } = useLanguage();
 	const router = useRouter();
-	const navigationMenu = useMemo(() => getNavigationMenu(is_staff, t), [is_staff, t]);
+	const navigationMenu = getNavigationMenu(is_staff, t);
 	const dispatch = useAppDispatch();
 	const moreVertRef = useRef<HTMLButtonElement>(null);
 	const [mobileMenuAnchor, setMobileMenuAnchor] = useState<HTMLElement | null>(null);
@@ -322,7 +339,7 @@ const NavigationBar = (props: Props) => {
 		}
 	}, [unreadCountData, dispatch]);
 
-	const refreshFirstNotificationsPage = useCallback(async () => {
+	const refreshFirstNotificationsPage = async () => {
 		try {
 			const result = await fetchNotifications({ page: 1 }, false).unwrap();
 			setAllNotifications(result.results);
@@ -331,9 +348,9 @@ const NavigationBar = (props: Props) => {
 		} catch {
 			// Keep the current list if the refresh fails.
 		}
-	}, [fetchNotifications]);
+	};
 
-	const handleNotifOpen = (e: React.MouseEvent<HTMLElement>) => {
+	const handleNotifOpen = (e: MouseEvent<HTMLElement>) => {
 		setNotifAnchor(e.currentTarget);
 		void refreshFirstNotificationsPage();
 	};
@@ -358,18 +375,19 @@ const NavigationBar = (props: Props) => {
 		}
 	};
 
-	const handleLoadMore = useCallback(async () => {
+	const handleLoadMore = async () => {
 		const nextPage = notifPage + 1;
 		setLoadingMore(true);
-		try {
-			const result = await fetchNotifications({ page: nextPage }).unwrap();
-			setAllNotifications((prev) => [...prev, ...result.results]);
-			setHasMore(result.next !== null);
-			setNotifPage(nextPage);
-		} finally {
-			setLoadingMore(false);
-		}
-	}, [notifPage, fetchNotifications]);
+		await runWithCleanup(
+			async () => {
+				const result = await fetchNotifications({ page: nextPage }).unwrap();
+				setAllNotifications((prev) => [...prev, ...result.results]);
+				setHasMore(result.next !== null);
+				setNotifPage(nextPage);
+			},
+			() => setLoadingMore(false),
+		);
+	};
 
 	useEffect(() => {
 		if (
@@ -403,7 +421,7 @@ const NavigationBar = (props: Props) => {
 	const [userExpanded, setUserExpanded] = useState<string | false>(false);
 
 	// Derive default expanded panel from pathname + navigationMenu
-	const defaultExpanded: string | false = useMemo(() => {
+	const defaultExpanded: string | false = (() => {
 		const exactMatch = Object.entries(navigationMenu).find(([, section]) =>
 			section.items.some((item) => {
 				const normalizedPath = item.path.replace(/^https?:\/\/[^/]+/, '');
@@ -446,7 +464,7 @@ const NavigationBar = (props: Props) => {
 		});
 
 		return bestMatch ? `panel-${bestMatch}` : false;
-	}, [pathname, navigationMenu]);
+	})();
 
 	// Final expanded value: user override wins, else default
 	const expanded = userExpanded !== false ? userExpanded : defaultExpanded;
@@ -459,120 +477,162 @@ const NavigationBar = (props: Props) => {
 		}
 	};
 
-	const handleChange = (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
+	const handleChange = (panel: string) => (_event: SyntheticEvent, isExpanded: boolean) => {
 		setUserExpanded(isExpanded ? panel : false);
 	};
 
 	const loading = status === 'loading';
 
 	return (
-        <ThemeProvider theme={navigationBarTheme()}>
-            <Box sx={{ display: 'flex' }}>
+		<ThemeProvider theme={navigationBarTheme()}>
+			<Box sx={{ display: 'flex' }}>
 				<AppBar position="fixed" open={open}>
 					<Toolbar sx={{ px: { xs: 2, sm: 3 } }}>
 						<Stack
-                            direction="row"
-                            sx={{
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                width: "100%",
-								minWidth: 0
-                            }}>
-							<Stack direction="row" spacing={1} sx={{
-                                alignItems: "center",
+							direction="row"
+							sx={{
+								justifyContent: 'space-between',
+								alignItems: 'center',
+								width: '100%',
 								minWidth: 0,
-								flex: 1,
-								overflow: 'hidden'
-                            }}>
+							}}
+						>
+							<Stack
+								direction="row"
+								spacing={1}
+								sx={{
+									alignItems: 'center',
+									minWidth: 0,
+									flex: 1,
+									overflow: 'hidden',
+								}}
+							>
 								{isMobile && (
-									<IconButton color="inherit" aria-label={t.common.toggleDrawer} onClick={handleDrawerToggle} size="small" sx={{ flexShrink: 0 }}>
+									<IconButton
+										color="inherit"
+										aria-label={t.common.toggleDrawer}
+										onClick={handleDrawerToggle}
+										size="small"
+										sx={{ flexShrink: 0 }}
+									>
 										<MenuIcon />
 									</IconButton>
 								)}
-								<Typography variant="h6" noWrap component="div" sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+								<Typography
+									variant="h6"
+									noWrap
+									component="div"
+									sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}
+								>
 									{props.title}
 								</Typography>
 							</Stack>
-						<Stack direction="row" spacing={1} sx={{
-                            alignItems: "center",
-							flexShrink: 0
-                        }}>
-							{!loading && session && (
-								<>
-									<Desktop>
-										<IconButton color="inherit" onClick={handleNotifOpen}>
-											<Badge badgeContent={unreadCount} color="primary" max={99}>
-												<NotificationsIcon />
-											</Badge>
-										</IconButton>
-										<LanguageSwitcher />
-										{is_staff && (
-											<Button
-												variant="text"
-												color="inherit"
-												href={BACKEND_SITE_ADMIN}
-												target="_blank"
-												rel="noopener"
-												endIcon={<DomainIcon />}
-											>
-												{t.navigation.administration}
-											</Button>
-										)}
-										<Button variant="text" color="inherit" endIcon={<LogoutIcon />} onClick={logOutHandler}>
-											{t.navigation.logout}
-										</Button>
-									</Desktop>
-									<TabletAndMobile>
-										<IconButton
-											ref={moreVertRef}
-											color="inherit"
-											aria-label={t.common.moreActions}
-											onClick={(e) => setMobileMenuAnchor(e.currentTarget)}
-										>
-											<MoreVertIcon />
-										</IconButton>
-										<Menu
-											anchorEl={mobileMenuAnchor}
-											open={Boolean(mobileMenuAnchor)}
-											onClose={() => setMobileMenuAnchor(null)}
-											anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-											transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-										>
-											<MenuItem
-												onClick={() => {
-													setMobileMenuAnchor(null);
-													if (moreVertRef.current) {
-														setNotifAnchor(moreVertRef.current);
-														void refreshFirstNotificationsPage();
-													}
-												}}
-											>
-											<MenuListItemIcon>
+							<Stack
+								direction="row"
+								spacing={1}
+								sx={{
+									alignItems: 'center',
+									flexShrink: 0,
+								}}
+							>
+								{!loading && session && (
+									<>
+										<Desktop>
+											<IconButton color="inherit" onClick={handleNotifOpen}>
 												<Badge badgeContent={unreadCount} color="primary" max={99}>
-													<NotificationsIcon fontSize="small" />
+													<NotificationsIcon />
 												</Badge>
-											</MenuListItemIcon>
-											<MenuListItemText>{t.navigation.notifications}</MenuListItemText>
-										</MenuItem>
-										<MenuItem onClick={() => { setLanguage(language === 'fr' ? 'en' : 'fr'); setMobileMenuAnchor(null); }}>
-											<MenuListItemIcon><LanguageFlag language={language === 'fr' ? 'en' : 'fr'} /></MenuListItemIcon>
-												<MenuListItemText>{language === 'fr' ? 'English' : 'Français'}</MenuListItemText>
-											</MenuItem>
+											</IconButton>
+											<LanguageSwitcher />
 											{is_staff && (
-												<MenuItem component="a" href={BACKEND_SITE_ADMIN} target="_blank" rel="noopener" onClick={() => setMobileMenuAnchor(null)}>
-													<MenuListItemIcon><DomainIcon fontSize="small" /></MenuListItemIcon>
-													<MenuListItemText>{t.navigation.administration}</MenuListItemText>
-												</MenuItem>
+												<Button
+													variant="text"
+													color="inherit"
+													href={BACKEND_SITE_ADMIN}
+													target="_blank"
+													rel="noopener"
+													endIcon={<DomainIcon />}
+												>
+													{t.navigation.administration}
+												</Button>
 											)}
-											<MenuItem onClick={() => { setMobileMenuAnchor(null); void logOutHandler(); }}>
-												<MenuListItemIcon><LogoutIcon fontSize="small" /></MenuListItemIcon>
-												<MenuListItemText>{t.navigation.logout}</MenuListItemText>
-											</MenuItem>
-										</Menu>
-									</TabletAndMobile>
-								</>
-							)}
-						</Stack>
+											<Button variant="text" color="inherit" endIcon={<LogoutIcon />} onClick={logOutHandler}>
+												{t.navigation.logout}
+											</Button>
+										</Desktop>
+										<TabletAndMobile>
+											<IconButton
+												ref={moreVertRef}
+												color="inherit"
+												aria-label={t.common.moreActions}
+												onClick={(e) => setMobileMenuAnchor(e.currentTarget)}
+											>
+												<MoreVertIcon />
+											</IconButton>
+											<Menu
+												anchorEl={mobileMenuAnchor}
+												open={Boolean(mobileMenuAnchor)}
+												onClose={() => setMobileMenuAnchor(null)}
+												anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+												transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+											>
+												<MenuItem
+													onClick={() => {
+														setMobileMenuAnchor(null);
+														if (moreVertRef.current) {
+															setNotifAnchor(moreVertRef.current);
+															void refreshFirstNotificationsPage();
+														}
+													}}
+												>
+													<MenuListItemIcon>
+														<Badge badgeContent={unreadCount} color="primary" max={99}>
+															<NotificationsIcon fontSize="small" />
+														</Badge>
+													</MenuListItemIcon>
+													<MenuListItemText>{t.navigation.notifications}</MenuListItemText>
+												</MenuItem>
+												<MenuItem
+													onClick={() => {
+														setLanguage(language === 'fr' ? 'en' : 'fr');
+														setMobileMenuAnchor(null);
+													}}
+												>
+													<MenuListItemIcon>
+														<LanguageFlag language={language === 'fr' ? 'en' : 'fr'} />
+													</MenuListItemIcon>
+													<MenuListItemText>{language === 'fr' ? 'English' : 'Français'}</MenuListItemText>
+												</MenuItem>
+												{is_staff && (
+													<MenuItem
+														component="a"
+														href={BACKEND_SITE_ADMIN}
+														target="_blank"
+														rel="noopener"
+														onClick={() => setMobileMenuAnchor(null)}
+													>
+														<MenuListItemIcon>
+															<DomainIcon fontSize="small" />
+														</MenuListItemIcon>
+														<MenuListItemText>{t.navigation.administration}</MenuListItemText>
+													</MenuItem>
+												)}
+												<MenuItem
+													onClick={() => {
+														setMobileMenuAnchor(null);
+														void logOutHandler();
+													}}
+												>
+													<MenuListItemIcon>
+														<LogoutIcon fontSize="small" />
+													</MenuListItemIcon>
+													<MenuListItemText>{t.navigation.logout}</MenuListItemText>
+												</MenuItem>
+											</Menu>
+										</TabletAndMobile>
+									</>
+								)}
+							</Stack>
 						</Stack>
 					</Toolbar>
 				</AppBar>
@@ -626,7 +686,11 @@ const NavigationBar = (props: Props) => {
 						{/* Text block next to avatar */}
 						<Box sx={{ display: 'flex', flexDirection: 'column' }}>
 							<Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-								{gender === 'Homme' ? t.navigation.welcomeMale : gender === 'Femme' ? t.navigation.welcomeFemale : t.navigation.welcomeNeutral}
+								{gender === 'Homme'
+									? t.navigation.welcomeMale
+									: gender === 'Femme'
+										? t.navigation.welcomeFemale
+										: t.navigation.welcomeNeutral}
 							</Typography>
 							<Typography variant="body2" sx={{ color: 'text.secondary' }}>
 								{first_name} {last_name}
@@ -718,7 +782,7 @@ const NavigationBar = (props: Props) => {
 				</Drawer>
 				<Main open={open}>{props.children}</Main>
 			</Box>
-            <Popover
+			<Popover
 				open={Boolean(notifAnchor)}
 				anchorEl={notifAnchor}
 				onClose={handleNotifClose}
@@ -727,16 +791,20 @@ const NavigationBar = (props: Props) => {
 				slotProps={{ paper: { sx: { width: 360, maxHeight: 420 } } }}
 			>
 				<Stack
-                    direction="row"
-                    sx={{
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        px: 2,
-                        py: 1.5
-                    }}>
-					<Typography variant="subtitle1" sx={{
-                        fontWeight: 700
-                    }}>
+					direction="row"
+					sx={{
+						justifyContent: 'space-between',
+						alignItems: 'center',
+						px: 2,
+						py: 1.5,
+					}}
+				>
+					<Typography
+						variant="subtitle1"
+						sx={{
+							fontWeight: 700,
+						}}
+					>
 						{t.navigation.notifications}
 					</Typography>
 					{unreadCount > 0 && (
@@ -769,27 +837,33 @@ const NavigationBar = (props: Props) => {
 									}}
 								>
 									<Box sx={{ minWidth: 0, flex: 1 }}>
-										<Typography variant="body2" noWrap sx={{
-                                            fontWeight: n.is_read ? 400 : 600
-                                        }}>
+										<Typography
+											variant="body2"
+											noWrap
+											sx={{
+												fontWeight: n.is_read ? 400 : 600,
+											}}
+										>
 											{n.title}
 										</Typography>
 										<Typography
-                                            variant="caption"
-                                            sx={{
-                                                color: "text.secondary",
-                                                display: 'block',
-                                                lineHeight: 1.4
-                                            }}>
+											variant="caption"
+											sx={{
+												color: 'text.secondary',
+												display: 'block',
+												lineHeight: 1.4,
+											}}
+										>
 											{n.message}
 										</Typography>
 										<Typography
-                                            variant="caption"
-                                            sx={{
-                                                color: "text.disabled",
-                                                display: 'block',
-                                                mt: 0.5
-                                            }}>
+											variant="caption"
+											sx={{
+												color: 'text.disabled',
+												display: 'block',
+												mt: 0.5,
+											}}
+										>
 											{new Date(n.date_created).toLocaleDateString()}
 										</Typography>
 									</Box>
@@ -805,17 +879,20 @@ const NavigationBar = (props: Props) => {
 						</>
 					) : (
 						<Box sx={{ p: 3, textAlign: 'center' }}>
-							<Typography variant="body2" sx={{
-                                color: "text.secondary"
-                            }}>
+							<Typography
+								variant="body2"
+								sx={{
+									color: 'text.secondary',
+								}}
+							>
 								{t.navigation.noNotifications}
 							</Typography>
 						</Box>
 					)}
 				</Box>
 			</Popover>
-        </ThemeProvider>
-    );
+		</ThemeProvider>
+	);
 };
 
 export default NavigationBar;

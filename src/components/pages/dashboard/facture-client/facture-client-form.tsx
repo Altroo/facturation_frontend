@@ -1,25 +1,26 @@
 'use client';
 
-import React from 'react';
+import { type FC } from 'react';
 import type { TranslationDictionary } from '@/types/languageTypes';
-import type { SessionProps } from '@/types/_initTypes';
 import CompanyDocumentsWrapperForm from '@/components/pages/dashboard/shared/company-documents-form/companyDocumentsWrapperForm';
 import CompanyDocumentFormContent from '@/components/pages/dashboard/shared/company-documents-form/companyDocumentFormContent';
-import { factureClientProformaSchema, factureClientProformaAddSchema } from '@/utils/formValidationSchemas';
-import { FACTURE_CLIENT_LIST, FACTURE_CLIENT_EDIT } from '@/utils/routes';
+import { factureClientProformaAddSchema, factureClientProformaSchema } from '@/utils/formValidationSchemas';
+import { FACTURE_CLIENT_EDIT, FACTURE_CLIENT_LIST } from '@/utils/routes';
 import {
-	useGetFactureClientQuery,
 	useAddFactureClientMutation,
 	useEditFactureClientMutation,
-	usePatchStatutMutation,
+	useGetFactureClientQuery,
 	useGetNumFactureClientQuery,
+	usePatchStatutMutation,
 } from '@/store/services/factureClient';
 import type {
 	DocumentFormConfig,
+	DocumentFormSchema,
+	FactureClientFormFormikContentProps as FormikContentProps,
+	FactureClientFormProps as Props,
 	FactureDocumentData,
 	FactureNumResponse,
-	DocumentFormSchema,
-} from '@/types/companyDocumentsTypes';
+} from '@/types/companyDocumentsTypes'; // Configuration for facture client form
 import type { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
 import type { FactureClass } from '@/models/classes';
 import { useLanguage } from '@/utils/hooks';
@@ -55,17 +56,10 @@ const createFactureClientFormConfig = (t: TranslationDictionary): DocumentFormCo
 		addSchema: factureClientProformaAddSchema,
 	},
 });
-type FormikContentProps = {
-	token?: string;
-	company_id: number;
-	id?: number;
-	isEditMode: boolean;
-	role?: string;
-};
 
-const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, isEditMode, role }) => {
+const FormikContent: FC<FormikContentProps> = ({ token, company_id, id, isEditMode, role }) => {
 	const { t } = useLanguage();
-	const factureClientFormConfig = React.useMemo(() => createFactureClientFormConfig(t), [t]);
+	const factureClientFormConfig = createFactureClientFormConfig(t);
 	// Queries
 	const {
 		data: rawData,
@@ -73,9 +67,16 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 		error: dataError,
 	} = useGetFactureClientQuery({ id: id! }, { skip: !token || !isEditMode });
 
-	const { data: rawNumData, isLoading: isNumLoading, refetch: refetchNum } = useGetNumFactureClientQuery({ company_id }, {
-		skip: !token || isEditMode,
-	});
+	const {
+		data: rawNumData,
+		isLoading: isNumLoading,
+		refetch: refetchNum,
+	} = useGetNumFactureClientQuery(
+		{ company_id },
+		{
+			skip: !token || isEditMode,
+		},
+	);
 
 	// Mutations
 	const [addDataMutation, { isLoading: isAddLoading, error: addError }] = useAddFactureClientMutation();
@@ -132,12 +133,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 	);
 };
 
-interface Props extends SessionProps {
-	company_id: number;
-	id?: number;
-}
-
-const FactureClientForm: React.FC<Props> = ({ session, company_id, id }) => {
+const FactureClientForm: FC<Props> = ({ session, company_id, id }) => {
 	const { t } = useLanguage();
 	return (
 		<CompanyDocumentsWrapperForm

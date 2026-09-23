@@ -1,6 +1,6 @@
 ﻿'use client';
-
-import React, { isValidElement, useMemo, useState } from 'react';
+import { runWithCleanup } from '@/utils/runWithCleanup';
+import { type FC, isValidElement, useState } from 'react';
 import { Box, Button, Card, CardContent, Divider, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import {
 	ArrowBack as ArrowBackIcon,
@@ -28,7 +28,7 @@ import { ARTICLES_EDIT, ARTICLES_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import { useDeleteArticleMutation, useGetArticleQuery } from '@/store/services/article';
 import { useInitAccessToken } from '@/contexts/InitContext';
-import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
+import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
@@ -37,17 +37,12 @@ import { getUserCompaniesState } from '@/store/selectors';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import { extractApiErrorMessage, formatDate, formatNumberWithSpaces } from '@/utils/helpers';
 import { calculateNectarPrixTTC, isNectarRaisonSociale } from '@/utils/nectar';
+import type { ArticlesViewInfoRowProps as InfoRowProps, ArticlesViewProps as Props } from '@/types/articleTypes';
 
-interface InfoRowProps {
-	icon: React.ReactNode;
-	label: string;
-	value: string | number | null | undefined | React.ReactNode;
-}
-
-const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
+const InfoRow: FC<InfoRowProps> = ({ icon, label, value }) => {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-	const displayValue = React.isValidElement(value) ? value : value && value.toString().length > 1 ? value : '-';
+	const displayValue = isValidElement(value) ? value : value && value.toString().length > 1 ? value : '-';
 
 	return (
 		<Stack
@@ -102,12 +97,7 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 	);
 };
 
-interface Props extends SessionProps {
-	company_id: number;
-	id: number;
-}
-
-const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
+const ArticlesViewClient: FC<Props> = ({ session, company_id, id }) => {
 	const token = useInitAccessToken(session);
 	const companies = useAppSelector(getUserCompaniesState);
 	const router = useRouter();
@@ -115,13 +105,8 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
 	const { data: client, isLoading, error } = useGetArticleQuery({ id }, { skip: !token });
-	const axiosError = useMemo(
-		() => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),
-		[error],
-	);
-	const company = useMemo(() => {
-		return companies?.find((comp) => comp.id === company_id);
-	}, [companies, company_id]);
+	const axiosError = error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined;
+	const company = companies?.find((comp) => comp.id === company_id);
 	const isNectarCompany = isNectarRaisonSociale(company?.raison_sociale);
 
 	const [deleteRecord] = useDeleteArticleMutation();
@@ -140,15 +125,20 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 			: null;
 
 	const handleDelete = async () => {
-		try {
-			await deleteRecord({ id }).unwrap();
-			onSuccess(t.articles.deleteSuccess);
-			router.push(ARTICLES_LIST);
-		} catch (err) {
-			onError(extractApiErrorMessage(err, t.articles.deleteError));
-		} finally {
-			setShowDeleteModal(false);
-		}
+		await runWithCleanup(
+			async () => {
+				try {
+					await deleteRecord({ id }).unwrap();
+					onSuccess(t.articles.deleteSuccess);
+					router.push(ARTICLES_LIST);
+				} catch (err) {
+					onError(extractApiErrorMessage(err, t.articles.deleteError));
+				}
+			},
+			() => {
+				setShowDeleteModal(false);
+			},
+		);
 	};
 
 	const deleteModalActions = [
@@ -433,18 +423,40 @@ const ArticlesViewClient: React.FC<Props> = ({ session, company_id, id }) => {
 									<CardContent sx={{ p: 3 }}>
 										<Stack direction="row" spacing={2} sx={{ alignItems: 'center', mb: 2 }}>
 											<Inventory2Icon color="primary" />
-											<Typography variant="h6" sx={{ fontWeight: 700 }}>Stock</Typography>
+											<Typography variant="h6" sx={{ fontWeight: 700 }}>
+												Stock
+											</Typography>
 										</Stack>
 										<Divider />
-										<InfoRow icon={<Inventory2Icon />} label="Physique" value={formatNumberWithSpaces(client.physical_quantity, 3)} />
+										<InfoRow
+											icon={<Inventory2Icon />}
+											label="Physique"
+											value={formatNumberWithSpaces(client.physical_quantity, 3)}
+										/>
 										<Divider />
-										<InfoRow icon={<Inventory2Icon />} label="Réservé" value={formatNumberWithSpaces(client.reserved_quantity, 3)} />
+										<InfoRow
+											icon={<Inventory2Icon />}
+											label="Réservé"
+											value={formatNumberWithSpaces(client.reserved_quantity, 3)}
+										/>
 										<Divider />
-										<InfoRow icon={<Inventory2Icon />} label="Disponible" value={formatNumberWithSpaces(client.available_quantity, 3)} />
+										<InfoRow
+											icon={<Inventory2Icon />}
+											label="Disponible"
+											value={formatNumberWithSpaces(client.available_quantity, 3)}
+										/>
 										<Divider />
-										<InfoRow icon={<LocalShippingIcon />} label="Entrant" value={formatNumberWithSpaces(client.incoming_quantity, 3)} />
+										<InfoRow
+											icon={<LocalShippingIcon />}
+											label="Entrant"
+											value={formatNumberWithSpaces(client.incoming_quantity, 3)}
+										/>
 										<Divider />
-										<InfoRow icon={<WarningIcon />} label="Stock minimum" value={formatNumberWithSpaces(client.stock_minimum, 3)} />
+										<InfoRow
+											icon={<WarningIcon />}
+											label="Stock minimum"
+											value={formatNumberWithSpaces(client.stock_minimum, 3)}
+										/>
 									</CardContent>
 								</Card>
 							)}

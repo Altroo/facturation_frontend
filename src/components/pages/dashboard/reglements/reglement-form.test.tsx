@@ -1,4 +1,4 @@
-import React from 'react';
+import { type ReactNode, type ChangeEventHandler, type ReactElement } from 'react';
 import { render, screen, cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
@@ -39,7 +39,11 @@ jest.mock('@/utils/hooks', () => ({
 		onSuccess: jest.fn(),
 		onError: jest.fn(),
 	}),
-	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
+	useLanguage: () => ({
+		language: 'fr' as const,
+		setLanguage: jest.fn(),
+		t: jest.requireActual('@/translations').translations.fr,
+	}),
 }));
 
 jest.mock('@/store/selectors', () => ({
@@ -102,7 +106,7 @@ jest.mock('@/store/services/client', () => ({
 // Mock NavigationBar
 jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 	__esModule: true,
-	default: ({ children, title }: { children: React.ReactNode; title: string }) => (
+	default: ({ children, title }: { children: ReactNode; title: string }) => (
 		<div data-testid="navigation-bar">
 			<h1 data-testid="nav-title">{title}</h1>
 			{children}
@@ -126,7 +130,7 @@ jest.mock('@/components/formikElements/customTextInput/customTextInput', () => (
 	default: ({ id, label, value, ...rest }: { id: string; label: string; value: string; [_key: string]: unknown }) => (
 		<div data-testid={`input-${id}`}>
 			<label>{label}</label>
-			<input id={id} value={value ?? ''} onChange={rest.onChange as React.ChangeEventHandler} readOnly={!rest.onChange} />
+			<input id={id} value={value ?? ''} onChange={rest.onChange as ChangeEventHandler} readOnly={!rest.onChange} />
 		</div>
 	),
 }));
@@ -187,7 +191,9 @@ jest.mock('zod-formik-adapter', () => ({
 jest.mock('@/utils/routes', () => ({
 	REGLEMENTS_LIST: '/dashboard/reglements',
 	REGLEMENTS_ADD: jest.fn((id: number) => `/dashboard/reglements/add?company_id=${id}`),
-	REGLEMENTS_EDIT: jest.fn((id: number, companyId: number) => `/dashboard/reglements/${id}/edit?company_id=${companyId}`),
+	REGLEMENTS_EDIT: jest.fn(
+		(id: number, companyId: number) => `/dashboard/reglements/${id}/edit?company_id=${companyId}`,
+	),
 	FACTURE_CLIENT_ADD: jest.fn((id: number) => `/dashboard/facture-client/add?company_id=${id}`),
 }));
 
@@ -212,7 +218,7 @@ const mockSession: AppSession = {
 	},
 };
 
-const renderWithProviders = (ui: React.ReactElement) => {
+const renderWithProviders = (ui: ReactElement) => {
 	return render(<Provider store={mockStore}>{ui}</Provider>);
 };
 
@@ -454,7 +460,9 @@ describe('ReglementForm', () => {
 			renderWithProviders(<ReglementForm session={mockSession} company_id={1} />);
 			expect(screen.getByTestId('api-loader')).toBeInTheDocument();
 			factureService.useGetFactureClientForPaymentQuery.mockReturnValue({
-				data: [{ id: 100, numero_facture: 'FC-100', client_name: 'Client Test', remaining_amount: '500.00', devise: 'MAD' }],
+				data: [
+					{ id: 100, numero_facture: 'FC-100', client_name: 'Client Test', remaining_amount: '500.00', devise: 'MAD' },
+				],
 				isLoading: false,
 			});
 		});
@@ -496,7 +504,9 @@ describe('ReglementForm', () => {
 			renderWithProviders(<ReglementForm session={mockSession} company_id={1} />);
 			expect(screen.getByTestId('navigation-bar')).toBeInTheDocument();
 			factureService.useGetFactureClientForPaymentQuery.mockReturnValue({
-				data: [{ id: 100, numero_facture: 'FC-100', client_name: 'Client Test', remaining_amount: '500.00', devise: 'MAD' }],
+				data: [
+					{ id: 100, numero_facture: 'FC-100', client_name: 'Client Test', remaining_amount: '500.00', devise: 'MAD' },
+				],
 				isLoading: false,
 			});
 		});
@@ -562,7 +572,10 @@ describe('ReglementForm', () => {
 			const paramService = jest.requireMock('@/store/services/parameter') as {
 				useGetModePaiementListQuery: jest.Mock;
 			};
-			paramService.useGetModePaiementListQuery.mockReturnValue({ data: [{ id: 99, nom: 'Other Mode' }], isLoading: false });
+			paramService.useGetModePaiementListQuery.mockReturnValue({
+				data: [{ id: 99, nom: 'Other Mode' }],
+				isLoading: false,
+			});
 			mockUseGetReglementQuery.mockReturnValue({
 				data: {
 					id: 400,

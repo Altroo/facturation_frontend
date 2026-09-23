@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import { type FC } from 'react';
 import {
 	Box,
 	CardContent,
@@ -25,27 +25,9 @@ import { customDropdownTheme } from '@/utils/themes';
 import { useLanguage } from '@/utils/hooks';
 import type { ManagedByType } from '@/types/companyTypes';
 import type { UserCompaniesType } from '@/types/usersTypes';
+import type { ManagedByTableSectionProps } from '@/types/companyTypes';
 
-type ManagedByTableSectionProps = {
-	title: string;
-	icon: React.ReactNode;
-	emptyIcon: React.ReactNode;
-	emptyMessage: string;
-	headers: string[];
-	data: (ManagedByType | UserCompaniesType)[];
-	isUserTable: boolean;
-	currentUserId?: number;
-	roleOptions: { value: string; code: string }[];
-	onRoleChange: (index: number, newRole: string) => void;
-	onInvoiceValidationChange?: (index: number, checked: boolean) => void;
-	onDocumentStatusChangePermissionChange?: (index: number, checked: boolean) => void;
-	onDelete: (index: number) => void;
-	addSectionProps: React.ComponentProps<typeof AddManagedBySection>;
-	showInvoiceValidationPermission?: boolean;
-	showDocumentStatusChangePermission?: boolean;
-};
-
-const ManagedByTableSection: React.FC<ManagedByTableSectionProps> = ({
+const ManagedByTableSection: FC<ManagedByTableSectionProps> = ({
 	title,
 	icon,
 	emptyIcon,

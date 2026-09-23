@@ -1,25 +1,26 @@
 'use client';
 
-import React from 'react';
+import { type FC } from 'react';
 import type { TranslationDictionary } from '@/types/languageTypes';
-import type { SessionProps } from '@/types/_initTypes';
 import CompanyDocumentsWrapperForm from '@/components/pages/dashboard/shared/company-documents-form/companyDocumentsWrapperForm';
 import CompanyDocumentFormContent from '@/components/pages/dashboard/shared/company-documents-form/companyDocumentFormContent';
 import { deviAddSchema, deviSchema } from '@/utils/formValidationSchemas';
-import { DEVIS_LIST, DEVIS_EDIT } from '@/utils/routes';
+import { DEVIS_EDIT, DEVIS_LIST } from '@/utils/routes';
 import {
 	useAddDeviMutation,
 	useEditDeviMutation,
 	useGetDeviQuery,
-	usePatchStatutMutation,
 	useGetNumDevisQuery,
+	usePatchStatutMutation,
 } from '@/store/services/devi';
 import type {
-	DocumentFormConfig,
 	DevisDocumentData,
+	DevisFormFormikContentProps as FormikContentProps,
+	DevisFormProps as Props,
 	DevisNumResponse,
+	DocumentFormConfig,
 	DocumentFormSchema,
-} from '@/types/companyDocumentsTypes';
+} from '@/types/companyDocumentsTypes'; // Configuration for devis form
 import type { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
 import type { DeviClass } from '@/models/classes';
 import { useLanguage } from '@/utils/hooks';
@@ -54,17 +55,10 @@ const createDevisFormConfig = (t: TranslationDictionary): DocumentFormConfig<Dev
 		addSchema: deviAddSchema,
 	},
 });
-type FormikContentProps = {
-	token?: string;
-	company_id: number;
-	id?: number;
-	isEditMode: boolean;
-	role?: string;
-};
 
-const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, isEditMode, role }) => {
+const FormikContent: FC<FormikContentProps> = ({ token, company_id, id, isEditMode, role }) => {
 	const { t } = useLanguage();
-	const devisFormConfig = React.useMemo(() => createDevisFormConfig(t), [t]);
+	const devisFormConfig = createDevisFormConfig(t);
 	// Queries
 	const {
 		data: rawData,
@@ -72,9 +66,16 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 		error: dataError,
 	} = useGetDeviQuery({ id: id! }, { skip: !token || !isEditMode });
 
-	const { data: rawNumData, isLoading: isNumLoading, refetch: refetchNum } = useGetNumDevisQuery({ company_id }, {
-		skip: !token || isEditMode,
-	});
+	const {
+		data: rawNumData,
+		isLoading: isNumLoading,
+		refetch: refetchNum,
+	} = useGetNumDevisQuery(
+		{ company_id },
+		{
+			skip: !token || isEditMode,
+		},
+	);
 
 	// Mutations
 	const [addDataMutation, { isLoading: isAddLoading, error: addError }] = useAddDeviMutation();
@@ -121,12 +122,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 	);
 };
 
-interface Props extends SessionProps {
-	company_id: number;
-	id?: number;
-}
-
-const DevisForm: React.FC<Props> = ({ session, company_id, id }) => {
+const DevisForm: FC<Props> = ({ session, company_id, id }) => {
 	const { t } = useLanguage();
 	return (
 		<CompanyDocumentsWrapperForm

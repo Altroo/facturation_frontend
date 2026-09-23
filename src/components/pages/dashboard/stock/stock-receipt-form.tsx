@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import { runWithCleanup } from '@/utils/runWithCleanup';
+import { useState, type FC, type MouseEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import {
 	Alert,
@@ -41,7 +42,7 @@ import { useGetEmplacementListQuery } from '@/store/services/parameter';
 import { useCreateStockReceiptMutation, useValidateStockReceiptMutation } from '@/store/services/stock';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import type { DropDownType } from '@/types/accountTypes';
-import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
+import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import type { LogistiqueListResponse } from '@/types/logistiqueTypes';
 import type { StockReceiptFormValues } from '@/types/stockTypes';
 import { formatNumberWithSpaces, getLabelForKey, parseNumber, setFormikAutoErrors } from '@/utils/helpers';
@@ -49,15 +50,11 @@ import { stockReceiptSchema } from '@/utils/formValidationSchemas';
 import { useToast } from '@/utils/hooks';
 import { STOCK_RECEIPT_VIEW } from '@/utils/routes';
 import { textInputTheme } from '@/utils/themes';
+import type { StockReceiptFormContentProps, StockReceiptFormProps } from '@/types/stockTypes';
 
 const inputTheme = textInputTheme();
 
-type StockReceiptFormContentProps = {
-	token?: string;
-	company_id: number;
-};
-
-const StockReceiptFormContent: React.FC<StockReceiptFormContentProps> = ({ token, company_id }) => {
+const StockReceiptFormContent: FC<StockReceiptFormContentProps> = ({ token, company_id }) => {
 	const router = useRouter();
 	const { onSuccess, onError } = useToast();
 	const theme = useTheme();
@@ -85,7 +82,7 @@ const StockReceiptFormContent: React.FC<StockReceiptFormContentProps> = ({ token
 	const [createReceipt, { isLoading: createLoading, error: createError }] = useCreateStockReceiptMutation();
 	const [validateReceipt, { isLoading: validateLoading, error: validateError }] = useValidateStockReceiptMutation();
 
-	const eligibleOrders = useMemo(() => {
+	const eligibleOrders = (() => {
 		const orders = (ordersRaw as LogistiqueListResponse | undefined)?.results ?? [];
 		return orders.filter(
 			(order) =>
@@ -93,19 +90,15 @@ const StockReceiptFormContent: React.FC<StockReceiptFormContentProps> = ({ token
 				order.statut_global !== 'Annulé' &&
 				!['Réception locale', 'Livraison client', 'Clôture', 'Annulé'].includes(order.statut),
 		);
-	}, [ordersRaw]);
-	const orderItems = useMemo<DropDownType[]>(
-		() =>
-			eligibleOrders.map((order) => ({
-				value: String(order.id),
-				code: `${order.numero_commande} — ${order.fournisseur}`,
-			})),
-		[eligibleOrders],
-	);
-	const emplacementItems = useMemo<DropDownType[]>(
-		() => emplacements.map((location) => ({ value: String(location.id), code: location.nom })),
-		[emplacements],
-	);
+	})();
+	const orderItems = eligibleOrders.map((order) => ({
+		value: String(order.id),
+		code: `${order.numero_commande} — ${order.fournisseur}`,
+	})) as DropDownType[];
+	const emplacementItems = emplacements.map((location) => ({
+		value: String(location.id),
+		code: location.nom,
+	})) as DropDownType[];
 
 	const formik = useFormik<StockReceiptFormValues>({
 		initialValues: {
@@ -125,36 +118,41 @@ const StockReceiptFormContent: React.FC<StockReceiptFormContentProps> = ({ token
 			setHasAttemptedSubmit(true);
 			setIsPending(true);
 			let createdId: number | null = null;
-			try {
-				const receipt = await createReceipt({
-					company_id,
-					logistics_order: Number(values.logistics_order),
-					reference: values.reference,
-					note: values.note,
-					lines: [
-						{
-							logistics_line: selectedLine.id,
-							article: selectedLine.article,
-							emplacement: Number(values.emplacement),
-							quantity: Number(values.quantity),
-						},
-					],
-				}).unwrap();
-				createdId = receipt.id;
-				await validateReceipt({ company_id, id: receipt.id }).unwrap();
-				onSuccess('Réception validée et ajoutée au stock.');
-				router.replace(STOCK_RECEIPT_VIEW(receipt.id, company_id));
-			} catch (error) {
-				if (createdId !== null) {
-					onError('La réception a été conservée en brouillon et peut être validée depuis la liste.');
-					router.replace(STOCK_RECEIPT_VIEW(createdId, company_id));
-					return;
-				}
-				onError('Impossible de créer la réception.');
-				setFormikAutoErrors({ e: error, setFieldError });
-			} finally {
-				setIsPending(false);
-			}
+			await runWithCleanup(
+				async () => {
+					try {
+						const receipt = await createReceipt({
+							company_id,
+							logistics_order: Number(values.logistics_order),
+							reference: values.reference,
+							note: values.note,
+							lines: [
+								{
+									logistics_line: selectedLine.id,
+									article: selectedLine.article,
+									emplacement: Number(values.emplacement),
+									quantity: Number(values.quantity),
+								},
+							],
+						}).unwrap();
+						createdId = receipt.id;
+						await validateReceipt({ company_id, id: receipt.id }).unwrap();
+						onSuccess('Réception validée et ajoutée au stock.');
+						router.replace(STOCK_RECEIPT_VIEW(receipt.id, company_id));
+					} catch (error) {
+						if (createdId !== null) {
+							onError('La réception a été conservée en brouillon et peut être validée depuis la liste.');
+							router.replace(STOCK_RECEIPT_VIEW(createdId, company_id));
+							return;
+						}
+						onError('Impossible de créer la réception.');
+						setFormikAutoErrors({ e: error, setFieldError });
+					}
+				},
+				() => {
+					setIsPending(false);
+				},
+			);
 		},
 	});
 
@@ -166,7 +164,7 @@ const StockReceiptFormContent: React.FC<StockReceiptFormContentProps> = ({ token
 		{ id: formik.values.logistics_order ?? 0 },
 		{ skip: !token || !formik.values.logistics_order },
 	);
-	const { incomingLines, lineItems } = useMemo(() => {
+	const { incomingLines, lineItems } = (() => {
 		const lines = (selectedOrder?.lignes ?? []).filter(
 			(line) => line.incoming_active && Number(line.remaining_quantity) > 0,
 		);
@@ -177,28 +175,25 @@ const StockReceiptFormContent: React.FC<StockReceiptFormContentProps> = ({ token
 				code: `${line.article_reference} — ${line.designation} — restant ${formatNumberWithSpaces(line.remaining_quantity, 3)}`,
 			})),
 		};
-	}, [selectedOrder]);
+	})();
 	const selectedLine = incomingLines.find((line) => line.id === formik.values.logistics_line);
 	const selectedOrderItem = orderItems.find((item) => item.value === String(formik.values.logistics_order)) ?? null;
 	const selectedLineItem = lineItems.find((item) => item.value === String(formik.values.logistics_line)) ?? null;
 	const selectedEmplacement = emplacementItems.find((item) => item.value === String(formik.values.emplacement)) ?? null;
-	const fieldLabels = useMemo(
-		() => ({
-			logistics_order: 'Dossier logistique',
-			logistics_line: 'Article entrant',
-			emplacement: 'Emplacement',
-			quantity: 'Quantité reçue',
-			reference: 'Référence',
-			note: 'Note',
-		}),
-		[],
-	);
-	const validationErrors = useMemo(() => {
+	const fieldLabels = {
+		logistics_order: 'Dossier logistique',
+		logistics_line: 'Article entrant',
+		emplacement: 'Emplacement',
+		quantity: 'Quantité reçue',
+		reference: 'Référence',
+		note: 'Note',
+	};
+	const validationErrors = (() => {
 		if (!hasAttemptedSubmit) return {};
 		return Object.fromEntries(
 			Object.entries(formik.errors).filter(([key, value]) => key !== 'globalError' && typeof value === 'string'),
 		) as Record<string, string>;
-	}, [formik.errors, hasAttemptedSubmit]);
+	})();
 	const error = companyError || ordersError || emplacementsError || selectedOrderError || createError || validateError;
 	const axiosError = error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined;
 	const isLoading =
@@ -325,7 +320,9 @@ const StockReceiptFormContent: React.FC<StockReceiptFormContentProps> = ({ token
 										label="Emplacement"
 										items={emplacementItems}
 										value={selectedEmplacement}
-										onChange={(_, value) => formik.setFieldValue('emplacement', value ? Number(value.value) : null)}
+										onChange={(_, value) =>
+											void formik.setFieldValue('emplacement', value ? Number(value.value) : null)
+										}
 										onBlur={formik.handleBlur('emplacement')}
 										error={formik.touched.emplacement && Boolean(formik.errors.emplacement)}
 										helperText={formik.touched.emplacement ? formik.errors.emplacement : ''}
@@ -403,7 +400,7 @@ const StockReceiptFormContent: React.FC<StockReceiptFormContentProps> = ({ token
 								type="submit"
 								loading={isPending}
 								startIcon={<AddIcon />}
-								onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+								onClick={(event: MouseEvent<HTMLButtonElement>) => {
 									setHasAttemptedSubmit(true);
 									if (!formik.isValid) {
 										event.preventDefault();
@@ -422,9 +419,7 @@ const StockReceiptFormContent: React.FC<StockReceiptFormContentProps> = ({ token
 	);
 };
 
-type StockReceiptFormProps = SessionProps & { company_id: number };
-
-const StockReceiptForm: React.FC<StockReceiptFormProps> = ({ session, company_id }) => (
+const StockReceiptForm: FC<StockReceiptFormProps> = ({ session, company_id }) => (
 	<StockFormWrapper
 		session={session}
 		company_id={company_id}

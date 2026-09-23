@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 import { renderToStaticMarkup } from 'react-dom/server';
-import React from 'react';
+import { createElement, type ReactElement } from 'react';
 
 type Session = { user: { pk: number; email: string } } | null;
 
@@ -19,9 +19,7 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/components/pages/dashboard/facture-avoir/facture-avoir-form', () => ({
 	__esModule: true,
 	default: (props: { id?: number; company_id?: number }) => {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const React = require('react');
-		return React.createElement('div', null, `FACTURE_AVOIR_EDIT:${props.id}:${props.company_id}`);
+		return createElement('div', null, `FACTURE_AVOIR_EDIT:${props.id}:${props.company_id}`);
 	},
 }));
 
@@ -71,6 +69,6 @@ describe('FactureAvoirEditPage server component', () => {
 		const Page = require('./page').default as (props: typeof validProps) => Promise<unknown>;
 
 		const result = await Page(validProps);
-		expect(renderToStaticMarkup(result as React.ReactElement)).toContain('FACTURE_AVOIR_EDIT:14:6');
+		expect(renderToStaticMarkup(result as ReactElement)).toContain('FACTURE_AVOIR_EDIT:14:6');
 	});
 });

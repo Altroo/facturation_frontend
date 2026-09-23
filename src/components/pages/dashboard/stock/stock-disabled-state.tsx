@@ -1,10 +1,10 @@
 'use client';
 
-import React from 'react';
+import { type FC } from 'react';
 import { Alert, AlertTitle, Box, Typography } from '@mui/material';
 import { Inventory2Outlined as Inventory2OutlinedIcon } from '@mui/icons-material';
 
-const StockDisabledState: React.FC = () => (
+const StockDisabledState: FC = () => (
 	<Box
 		sx={{
 			display: 'flex',

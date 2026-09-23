@@ -8,10 +8,7 @@ export const metadata: Metadata = {
 	title: 'Modifier Utilisateur',
 	description: 'Modifier un utilisateur existant',
 };
-
-type UsersEditPageProps = {
-	params: Promise<{ id: number }>;
-};
+import type { IdNumberRouteProps as UsersEditPageProps } from '@/types/routeTypes';
 
 const UsersEditPage = async (props: UsersEditPageProps) => {
 	const session = await auth();
@@ -25,7 +22,7 @@ const UsersEditPage = async (props: UsersEditPageProps) => {
 		redirect(USERS_LIST);
 	}
 
-	return <UsersForm session={session} id={id} />;
+	return <UsersForm session={session} id={Number(id)} />;
 };
 
 export default UsersEditPage;

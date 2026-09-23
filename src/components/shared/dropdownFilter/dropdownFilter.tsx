@@ -1,20 +1,9 @@
-import React from 'react';
+import { type FC } from 'react';
 import { Select, MenuItem, Chip, SelectChangeEvent } from '@mui/material';
 import { GridFilterInputValueProps, GridFilterItem, GridFilterOperator } from '@mui/x-data-grid';
+import type { DropdownFilterOption, DropdownFilterProps } from '@/types/uiTypes';
 
-export interface DropdownFilterOption {
-	value: string;
-	label: string;
-	color?: 'default' | 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success';
-}
-
-interface DropdownFilterProps extends GridFilterInputValueProps {
-	options: DropdownFilterOption[];
-	placeholder?: string;
-	showChips?: boolean;
-}
-
-const DropdownFilter: React.FC<DropdownFilterProps> = (props) => {
+const DropdownFilter: FC<DropdownFilterProps> = (props) => {
 	const { item, applyValue, options, placeholder = 'Tous', showChips = false } = props;
 
 	const handleFilterChange = (event: SelectChangeEvent) => {

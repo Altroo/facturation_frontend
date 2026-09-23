@@ -1,19 +1,10 @@
 'use client';
 
-import React from 'react';
+import { type FC } from 'react';
 import { Box, Card, CardContent, Skeleton, Stack, Typography } from '@mui/material';
+import type { DashboardStatCardProps } from '@/types/dashboardTypes';
 
-interface DashboardStatCardProps {
-	icon: React.ReactNode;
-	label: string;
-	value: string;
-	color: string;
-	valueColor?: string;
-	isLoading?: boolean;
-	testId?: string;
-}
-
-const DashboardStatCard: React.FC<DashboardStatCardProps> = ({
+const DashboardStatCard: FC<DashboardStatCardProps> = ({
 	icon,
 	label,
 	value,

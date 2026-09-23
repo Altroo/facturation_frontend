@@ -1,4 +1,4 @@
-import React from 'react';
+import { type ReactNode } from 'react';
 import '@testing-library/jest-dom';
 import type { AppSession } from '@/types/_initTypes';
 
@@ -121,7 +121,7 @@ const mockValidateInventory = jest.fn(() => ({ unwrap: () => Promise.resolve(moc
 
 function mockCompanyDocumentsWrapper(props: {
 	title: string;
-	children: (context: { company_id: number; role: string }) => React.ReactNode;
+	children: (context: { company_id: number; role: string }) => ReactNode;
 }) {
 	return (
 		<section data-testid="company-list-wrapper">
@@ -131,7 +131,7 @@ function mockCompanyDocumentsWrapper(props: {
 	);
 }
 
-function mockNavigationBar(props: { title: string; children?: React.ReactNode }) {
+function mockNavigationBar(props: { title: string; children?: ReactNode }) {
 	return (
 		<section data-testid="navigation-bar">
 			<h1>{props.title}</h1>
@@ -143,7 +143,7 @@ function mockNavigationBar(props: { title: string; children?: React.ReactNode })
 function mockStockFormWrapper(props: {
 	title: string;
 	allowedRoles: string[];
-	children: (token?: string) => React.ReactNode;
+	children: (token?: string) => ReactNode;
 }) {
 	return (
 		<section data-testid="stock-form-wrapper" data-allowed-roles={props.allowedRoles.join(',')}>
@@ -157,7 +157,7 @@ function mockPaginatedDataGrid(props: {
 	columns: Array<{
 		field: string;
 		headerName?: string;
-		renderCell?: (params: { row: Record<string, unknown>; value: unknown }) => React.ReactNode;
+		renderCell?: (params: { row: Record<string, unknown>; value: unknown }) => ReactNode;
 	}>;
 	data?: { results?: Array<Record<string, unknown>> };
 	embedded?: boolean;
@@ -191,18 +191,14 @@ function mockDataGrid(props: {
 	columns: Array<{
 		field: string;
 		headerName?: string;
-		renderCell?: (params: { row: Record<string, unknown>; value: unknown }) => React.ReactNode;
+		renderCell?: (params: { row: Record<string, unknown>; value: unknown }) => ReactNode;
 	}>;
 	rows: Array<Record<string, unknown>>;
 	showToolbar?: boolean;
 }) {
 	return (
 		<div data-testid="mui-data-grid">
-			{props.showToolbar && (
-				<div>
-					Colonnes Filtres Exporter Recherche Pagination
-				</div>
-			)}
+			{props.showToolbar && <div>Colonnes Filtres Exporter Recherche Pagination</div>}
 			{props.columns.map((column) => (
 				<span key={column.field}>{column.headerName}</span>
 			))}
@@ -364,7 +360,7 @@ jest.mock('@/components/shared/dashboardStatCard/dashboardStatCard', () => ({
 
 jest.mock('@/components/htmlElements/tooltip/darkTooltip/darkTooltip', () => ({
 	__esModule: true,
-	default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+	default: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
 
 jest.mock('@/components/formikElements/apiLoading/apiProgress/apiProgress', () => ({

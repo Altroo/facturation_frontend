@@ -2,14 +2,22 @@ import type { ZodType } from 'zod';
 import type {
 	DeviFactureLineFormValues,
 	DeviLineSchemaType,
-	TypeRemiseType,
 	TypeFactureLivraisonDevisStatus,
+	TypeRemiseType,
+	ValidateArticleLinesErrorType,
 } from '@/types/devisTypes';
-import type { SessionProps } from '@/types/_initTypes';
-import type { BonDeLivraisonClass, DeviClass, FactureAvoirClass, FactureClass, ReglementClass } from '@/models/classes';
-import type { PaginationResponseType } from '@/types/_initTypes';
-import type { GridColDef } from '@mui/x-data-grid';
-import React from 'react';
+import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
+import type {
+	ArticleClass,
+	BonDeLivraisonClass,
+	DeviClass,
+	FactureAvoirClass,
+	FactureClass,
+	ReglementClass,
+} from '@/models/classes';
+import type { GridColDef, GridFilterModel } from '@mui/x-data-grid';
+import type { ComponentType, Dispatch, ReactNode, RefObject, SetStateAction } from 'react';
+import type { SelectedArticlePopupValues } from '@/types/articleTypes';
 
 export type DocumentType = 'devis' | 'facture-client' | 'facture-pro-forma' | 'bon-de-livraison' | 'facture-avoir';
 
@@ -66,6 +74,39 @@ export type CompanyDocumentData = TotalsFields &
 		date_echeance?: string | null;
 	};
 
+export type BonDeLivraisonData = CompanyDocumentData & {
+	numero_bon_livraison?: string | number | null;
+	date_bon_livraison?: string | null;
+	numero_bon_commande_client?: string | number | null;
+};
+
+export type DevisData = CompanyDocumentData & {
+	numero_devis?: string | number | null;
+	date_devis?: string | null;
+	numero_demande_prix_client?: string | number | null;
+};
+
+export type FactureClientData = CompanyDocumentData & {
+	numero_facture?: string | number | null;
+	date_facture?: string | null;
+	numero_bon_commande_client?: string | number | null;
+};
+
+export type FactureProFormaData = FactureClientData & {
+	fournisseur?: string | null;
+	fournisseur_email?: string | null;
+};
+
+export type FactureAvoirData = CompanyDocumentData & {
+	numero_avoir?: string | number | null;
+	date_avoir?: string | null;
+	facture_origine?: number | null;
+	facture_origine_numero?: string | null;
+	facture_origine_date?: string | null;
+	motif_avoir_label?: string | null;
+	numero_bon_commande_client?: string | number | null;
+};
+
 export type Totals = {
 	totalHT: number;
 	totalPrixAchat: number;
@@ -107,14 +148,14 @@ export interface CompanyDocumentsViewProps<TData extends CompanyDocumentData> ex
 	query: QueryResult<TData>;
 
 	// optional extra action buttons rendered beside the back/edit buttons
-	headerActions?: React.ReactNode;
+	headerActions?: ReactNode;
 	canEdit?: boolean;
 	extraDocumentRows?: Array<{
-		icon: React.ReactNode;
+		icon: ReactNode;
 		label: string;
-		getValue: (data: TData | undefined) => string | number | null | undefined | React.ReactNode;
+		getValue: (data: TData | undefined) => string | number | null | undefined | ReactNode;
 	}>;
-	extraSections?: React.ReactNode;
+	extraSections?: ReactNode;
 }
 
 /** Base interface for document data (common fields between devis and facture) */
@@ -321,7 +362,7 @@ export interface ConvertAction {
 	/** Label shown in menu */
 	label: string;
 	/** Icon component */
-	icon: React.ReactNode;
+	icon: ReactNode;
 	/** Modal title */
 	modalTitle: string;
 	/** Modal body message */
@@ -343,7 +384,7 @@ export interface PrintAction {
 	/** Label shown in menu */
 	label: string;
 	/** Icon component */
-	icon: React.ReactNode;
+	icon: ReactNode;
 	/** Icon color */
 	iconColor?: string;
 	/** URL generator for the PDF - now includes language parameter */
@@ -488,4 +529,337 @@ export interface ClientHistoryResponseType {
 	factures: FactureClass[];
 	avoirs: FactureAvoirClass[];
 	reglements: ReglementClass[];
+}
+
+export type BonDeLivraisonFormFormikContentProps = {
+	token?: string;
+	company_id: number;
+	id?: number;
+	isEditMode: boolean;
+	role?: string;
+};
+
+export interface BonDeLivraisonFormProps extends SessionProps {
+	company_id: number;
+	id?: number;
+}
+
+export interface BonDeLivraisonListFormikContentProps extends SessionProps {
+	company_id: number;
+	role: string;
+}
+
+export interface BonDeLivraisonUninvoicedListFormikContentProps extends SessionProps {
+	company_id: number;
+	role: string;
+}
+
+export interface BonDeLivraisonViewProps extends SessionProps {
+	company_id: number;
+	id: number;
+}
+
+export type DevisFormFormikContentProps = {
+	token?: string;
+	company_id: number;
+	id?: number;
+	isEditMode: boolean;
+	role?: string;
+};
+
+export interface DevisFormProps extends SessionProps {
+	company_id: number;
+	id?: number;
+}
+
+export interface DevisListFormikContentProps extends SessionProps {
+	company_id: number;
+	role: string;
+}
+
+export interface DevisViewProps extends SessionProps {
+	company_id: number;
+	id: number;
+}
+
+export type FactureAvoirMotif = 'retour_marchandise' | 'erreur_facturation' | 'remise' | 'annulation' | 'autre';
+
+export type FactureAvoirFormValues = {
+	numero_part: string;
+	year_part: string;
+	date_avoir: string;
+	facture_origine: number | null;
+	client: number | null;
+	mode_paiement: number | null;
+	motif_avoir: FactureAvoirMotif | '';
+	numero_bon_commande_client: string;
+	remarque: string;
+	fournisseur: string;
+	fournisseur_email: string;
+	statut: TypeFactureLivraisonDevisStatus;
+	remise_type: TypeRemiseType;
+	remise: number;
+	devise: string;
+	lignes: DeviFactureLineFormValues[];
+};
+
+export type FactureAvoirFormFormikContentProps = {
+	token?: string;
+	company_id: number;
+	id?: number;
+	isEditMode: boolean;
+	role?: string;
+};
+
+export interface FactureAvoirFormProps extends SessionProps {
+	company_id: number;
+	id?: number;
+}
+
+export interface FactureAvoirListFormikContentProps extends SessionProps {
+	company_id: number;
+	role: string;
+}
+
+export type FactureAvoirListProps = SessionProps;
+
+export interface FactureAvoirViewProps extends SessionProps {
+	company_id: number;
+	id: number;
+}
+
+export type FactureClientFormFormikContentProps = {
+	token?: string;
+	company_id: number;
+	id?: number;
+	isEditMode: boolean;
+	role?: string;
+};
+
+export interface FactureClientFormProps extends SessionProps {
+	company_id: number;
+	id?: number;
+}
+
+export interface FactureClientListFormikContentProps extends SessionProps {
+	company_id: number;
+	role: string;
+}
+
+export interface FactureClientUnpaidListFormikContentProps extends SessionProps {
+	company_id: number;
+	role: string;
+}
+
+export interface FactureClientViewProps extends SessionProps {
+	company_id: number;
+	id: number;
+}
+
+export type InvoicePaymentsSectionProps = {
+	companyId: number;
+	factureClientId: number;
+	token?: string;
+	canManagePayments: boolean;
+};
+
+export type FactureProFormaFormFormikContentProps = {
+	token?: string;
+	company_id: number;
+	id?: number;
+	isEditMode: boolean;
+	role?: string;
+};
+
+export interface FactureProFormaFormProps extends SessionProps {
+	company_id: number;
+	id?: number;
+}
+
+export interface FactureProFormaListFormikContentProps extends SessionProps {
+	company_id: number;
+	role: string;
+}
+
+export interface FactureProFormaViewProps extends SessionProps {
+	company_id: number;
+	id: number;
+}
+
+export interface DocumentFormModalsProps<TDocument extends DocumentListClass = DocumentListClass> {
+	isEditMode: boolean;
+	config: DocumentFormConfig<TDocument>;
+	companyId: number;
+	// Add Article modal
+	showAddArticleModal: boolean;
+	setShowAddArticleModal: (v: boolean) => void;
+	selectedArticles: Set<number>;
+	setSelectedArticles: (v: Set<number>) => void;
+	handleAddArticles: (selectedArticlesData: SelectedArticlePopupValues[]) => void;
+	existingArticleIds: Set<number>;
+	existingArticleLineValues?: Record<
+		number,
+		{ quantity: string | number; remise_type: TypeRemiseType; remise: string | number }
+	>;
+	documentDevise: string;
+	// Global Remise modal
+	showGlobalRemiseModal: boolean;
+	setShowGlobalRemiseModal: (v: boolean) => void;
+	currentRemiseType: string;
+	currentRemiseValue: number;
+	handleApplyGlobalRemise: (type: 'Pourcentage' | 'Fixe' | '', value: number) => void;
+	disableRemise?: boolean;
+	// Delete Confirm modal
+	showDeleteConfirm: boolean;
+	setShowDeleteConfirm: (v: boolean) => void;
+	confirmDeleteLine: () => void;
+}
+
+export interface SharedDocumentFormContentProps<TDocument extends DocumentListClass = DocumentListClass> {
+	token?: string;
+	company_id: number;
+	id?: number;
+	isEditMode: boolean;
+	config: DocumentFormConfig<TDocument>;
+	role?: string;
+	// Data from API
+	rawData?: DocumentFormData;
+	isDataLoading: boolean;
+	dataError?: unknown;
+	rawNumData?: DocumentNumResponse;
+	isNumLoading: boolean;
+	refetchNum?: () => Promise<unknown>;
+	// Mutation functions
+	addData: (params: { data: DocumentFormSchema }) => { unwrap: () => Promise<{ id?: number }> };
+	isAddLoading: boolean;
+	addError?: unknown;
+	updateData: (params: { data: DocumentFormSchema; id: number }) => { unwrap: () => Promise<unknown> };
+	isUpdateLoading: boolean;
+	updateError?: unknown;
+	patchStatut: (params: { id: number; data: { statut: TypeFactureLivraisonDevisStatus } }) => {
+		unwrap: () => Promise<unknown>;
+	};
+	isPatchLoading: boolean;
+	patchError?: unknown;
+	extraSections?: ReactNode;
+}
+
+export interface DocumentConfig {
+	addTitle: string;
+	editTitle: string;
+}
+
+export interface CompanyDocumentsWrapperFormProps extends SessionProps {
+	company_id: number;
+	id?: number;
+	documentConfig: DocumentConfig;
+	FormComponent: ComponentType<{
+		company_id: number;
+		token?: string;
+		id?: number;
+		isEditMode: boolean;
+		role?: string;
+	}>;
+}
+
+export interface UseDocumentLinesColumnsParams {
+	getLines: () => DeviFactureLineFormValues[];
+	validationErrors: ValidateArticleLinesErrorType;
+	role?: string;
+	devise: string;
+	handleLineChangeRef: RefObject<
+		(index: number, field: keyof DeviFactureLineFormValues, value: string | number) => void
+	>;
+	handleDeleteLine: (index: number) => void;
+	getArticleById: (
+		articleRef: number | string | Partial<ArticleClass> | undefined,
+	) => Partial<ArticleClass> | undefined;
+	isNectarCompany?: boolean;
+}
+
+export interface DocumentListContentProps<TDocument extends DocumentListClass> {
+	/** Company ID */
+	companyId: number;
+	/** User role */
+	role: string;
+	/** Router instance */
+	router: ReturnType<typeof import('next/navigation').useRouter>;
+	/** Configuration for the list */
+	config: DocumentListConfig<TDocument>;
+	/** Query result from RTK Query hook */
+	queryResult: DocumentListQueryResult<TDocument>;
+	/** Delete mutation function */
+	deleteMutation: DocumentDeleteMutationResult;
+	/** Optional single-request bulk delete mutation */
+	bulkDeleteMutation?: DocumentBulkDeleteMutationResult;
+	/** Convert mutations - key is action key, value is mutation result */
+	convertMutations?: Record<string, DocumentConvertMutationResult>;
+	/** Pagination model state */
+	paginationModel: PaginationModel;
+	/** Set pagination model state */
+	setPaginationModel: Dispatch<SetStateAction<PaginationModel>>;
+	/** Search term state */
+	searchTerm: string;
+	/** Set search term state */
+	setSearchTerm: Dispatch<SetStateAction<string>>;
+	/** Filter model state */
+	filterModel?: GridFilterModel;
+	/** Filter model change handler */
+	onFilterModelChange?: (model: GridFilterModel) => void;
+	/** Callback emitting backend-ready custom filter params */
+	onCustomFilterParamsChange?: (params: Record<string, string>) => void;
+	/** Optional chip filter bar rendered between the action buttons and the data grid */
+	chipFilterBar?: ReactNode;
+	accessToken?: string;
+}
+
+export type CompanyLike = {
+	id: number;
+	raison_sociale: string;
+	role: string;
+};
+
+export type CompanyDocumentsListProps = SessionProps & {
+	title: string;
+	requestedCompanyId?: number;
+	children: (args: { company_id: number; role: string; raison_sociale: string }) => ReactNode;
+};
+
+export interface CompanyDocumentsWrapperViewInfoRowProps {
+	icon: ReactNode;
+	label: string;
+	value: string | number | null | undefined | ReactNode;
+}
+
+export type DocumentErrorStateProps = {
+	title: string;
+	message: string;
+	helpText: string;
+	backLabel: string;
+	retryLabel: string;
+	onBack: () => void;
+	onRetry: () => void;
+};
+
+export interface TotalsCardProps {
+	totals: {
+		totalHT: number;
+		totalPrixAchat: number;
+		totalPrixAchatDevise?: string | null;
+		totalTVA: number;
+		totalTTC: number;
+		totalTTCApresRemise: number;
+	};
+	devise?: string;
+	isMobile?: boolean;
+	isLoading?: boolean;
+	showDiscountTotal?: boolean;
+}
+
+export interface LinesGridProps {
+	rows: Array<DeviFactureLineFormValues>;
+	title: string;
+	columns: GridColDef[];
+	onAddClick: () => void;
+	isLoading: boolean;
 }

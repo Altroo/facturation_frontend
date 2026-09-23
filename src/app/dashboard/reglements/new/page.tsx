@@ -8,10 +8,7 @@ export const metadata: Metadata = {
 	title: 'Nouveau Règlement',
 	description: 'Créer un nouveau règlement',
 };
-
-type PageProps = {
-	searchParams: Promise<{ company_id: string; facture_client_id?: string }>;
-};
+import type { ReglementNewRouteProps as PageProps } from '@/types/routeTypes';
 
 const ReglementNewPage = async (props: PageProps) => {
 	const session = await auth();

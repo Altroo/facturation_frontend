@@ -1,4 +1,4 @@
-import React from 'react';
+import { type ReactNode, type ReactElement } from 'react';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
@@ -23,12 +23,16 @@ jest.mock('@/utils/hooks', () => ({
 	__esModule: true,
 	useToast: () => ({ onSuccess: mockOnSuccess, onError: mockOnError }),
 	useAppSelector: jest.fn(() => null),
-	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
+	useLanguage: () => ({
+		language: 'fr' as const,
+		setLanguage: jest.fn(),
+		t: jest.requireActual('@/translations').translations.fr,
+	}),
 }));
 
 jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 	__esModule: true,
-	default: ({ children, title }: { children: React.ReactNode; title: string }) => (
+	default: ({ children, title }: { children: ReactNode; title: string }) => (
 		<div data-testid="navigation-bar">
 			<h1 data-testid="nav-title">{title}</h1>
 			{children}
@@ -81,10 +85,9 @@ jest.mock('@/styles/dashboard/settings/settings.module.sass', () => ({
 	main: 'main',
 	fixMobile: 'fixMobile',
 }));
-
 import NotificationsClient from './notifications';
 
-const renderWithProviders = (ui: React.ReactElement) => render(<Provider store={mockStore}>{ui}</Provider>);
+const renderWithProviders = (ui: ReactElement) => render(<Provider store={mockStore}>{ui}</Provider>);
 
 describe('NotificationsClient', () => {
 	beforeEach(() => {

@@ -8,11 +8,7 @@ export const metadata: Metadata = {
 	title: "Détails de l'inventaire",
 	description: 'Consulter un inventaire de stock',
 };
-
-type PageProps = {
-	params: Promise<{ id: string }>;
-	searchParams: Promise<{ company_id?: string }>;
-};
+import type { StockDetailRouteProps as PageProps } from '@/types/routeTypes';
 
 const StockInventoryViewPage = async (props: PageProps) => {
 	const session = await auth();

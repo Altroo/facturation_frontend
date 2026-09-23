@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import type { TranslationDictionary } from '@/types/languageTypes';
 import { useRouter } from 'next/navigation';
 import { Box, Card, CardContent, Chip, Divider, Stack, Typography } from '@mui/material';
@@ -36,9 +36,10 @@ import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/use
 import type { DocumentListConfig, FactureClientListResponseType } from '@/types/companyDocumentsTypes';
 import { formatNumberWithSpaces } from '@/utils/helpers';
 import { useGetModePaiementListQuery } from '@/store/services/parameter';
-import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
+import type { ChipFilterConfig } from '@/types/uiTypes';
 import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 import { useLanguage } from '@/utils/hooks';
+import type { FactureClientListFormikContentProps as FormikContentProps } from '@/types/companyDocumentsTypes';
 
 const createFactureClientListConfig = (t: TranslationDictionary): DocumentListConfig<FactureClass> => ({
 	documentType: 'facture-client',
@@ -140,11 +141,7 @@ const createFactureClientListConfig = (t: TranslationDictionary): DocumentListCo
 			renderCell: (params) => {
 				const value = String(params.value ?? t.facturesClient.paymentStatusUnpaid);
 				const color =
-					value === 'Payée'
-						? 'success'
-						: value === 'Partiellement payée'
-							? 'warning'
-							: ('default' as const);
+					value === 'Payée' ? 'success' : value === 'Partiellement payée' ? 'warning' : ('default' as const);
 				return <Chip label={value} color={color} variant="outlined" size="small" />;
 			},
 		},
@@ -164,16 +161,12 @@ const createFactureClientListConfig = (t: TranslationDictionary): DocumentListCo
 		},
 	],
 });
-interface FormikContentProps extends SessionProps {
-	company_id: number;
-	role: string;
-}
 
-const FormikContent: React.FC<FormikContentProps> = (props) => {
+const FormikContent: FC<FormikContentProps> = (props) => {
 	const { session, company_id, role } = props;
 	const router = useRouter();
 	const { t } = useLanguage();
-	const factureClientListConfig = React.useMemo(() => createFactureClientListConfig(t), [t]);
+	const factureClientListConfig = createFactureClientListConfig(t);
 	const token = useInitAccessToken(session);
 
 	const { data: companyData } = useGetCompanyQuery({ id: company_id }, { skip: !token });
@@ -188,25 +181,19 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 
 	const { data: modePaiement } = useGetModePaiementListQuery({ company_id }, { skip: !token });
 
-	const chipFilters: ChipFilterConfig[] = React.useMemo(
-		() => [
-			{
-				key: 'mode_paiement',
-				label: t.facturesClient.filterModePaiement,
-				paramName: 'mode_paiement_ids',
-				options: modePaiement ?? [],
-			},
-		],
-		[modePaiement, t],
-	);
+	const chipFilters: ChipFilterConfig[] = [
+		{
+			key: 'mode_paiement',
+			label: t.facturesClient.filterModePaiement,
+			paramName: 'mode_paiement_ids',
+			options: modePaiement ?? [],
+		},
+	];
 
-	const mergedFilterParams = React.useMemo(
-		() => ({ ...chipFilterParams, ...customFilterParams }),
-		[chipFilterParams, customFilterParams],
-	);
+	const mergedFilterParams = { ...chipFilterParams, ...customFilterParams };
 
 	// Reset to MAD when company changes or doesn't use foreign currency
-	React.useEffect(() => {
+	useEffect(() => {
 		if (!usesForeignCurrency) {
 			setSelectedDevise('MAD');
 		}
@@ -388,7 +375,7 @@ const FormikContent: React.FC<FormikContentProps> = (props) => {
 	);
 };
 
-const FactureClientListClient: React.FC<SessionProps> = ({ session }) => {
+const FactureClientListClient: FC<SessionProps> = ({ session }) => {
 	const { t } = useLanguage();
 	return (
 		<CompanyDocumentsWrapperList session={session} title={t.facturesClient.listTitle}>

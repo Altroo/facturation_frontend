@@ -1,4 +1,4 @@
-import React from 'react';
+import { type ReactNode } from 'react';
 import { cleanup, render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import MonthlyObjectivesView from './monthly-objectives-view';
@@ -48,7 +48,7 @@ jest.mock('@/components/pages/dashboard/shared/company-documents-list/companyDoc
 		children,
 		title,
 	}: {
-		children: (props: { company_id: number; role: string }) => React.ReactNode;
+		children: (props: { company_id: number; role: string }) => ReactNode;
 		title: string;
 	}) => (
 		<div data-testid="company-wrapper">
@@ -151,14 +151,8 @@ describe('MonthlyObjectivesView', () => {
 			isLoading: false,
 			error: undefined,
 		});
-		mockUseCreateObjectives.mockReturnValue([
-			mockCreateObjectives,
-			{ isLoading: false, error: undefined },
-		]);
-		mockUseUpdateObjectives.mockReturnValue([
-			mockUpdateObjectives,
-			{ isLoading: false, error: undefined },
-		]);
+		mockUseCreateObjectives.mockReturnValue([mockCreateObjectives, { isLoading: false, error: undefined }]);
+		mockUseUpdateObjectives.mockReturnValue([mockUpdateObjectives, { isLoading: false, error: undefined }]);
 	});
 
 	afterEach(cleanup);
@@ -249,10 +243,7 @@ describe('MonthlyObjectivesView', () => {
 			isLoading: false,
 			error: { status: 404, data: { detail: 'Not found' } },
 		});
-		mockUseCreateObjectives.mockReturnValue([
-			mockCreateObjectives,
-			{ isLoading: true, error: undefined },
-		]);
+		mockUseCreateObjectives.mockReturnValue([mockCreateObjectives, { isLoading: true, error: undefined }]);
 
 		render(<MonthlyObjectivesView session={mockSession} />);
 
@@ -260,10 +251,7 @@ describe('MonthlyObjectivesView', () => {
 	});
 
 	it('renders the loader while updating objectives', () => {
-		mockUseUpdateObjectives.mockReturnValue([
-			mockUpdateObjectives,
-			{ isLoading: true, error: undefined },
-		]);
+		mockUseUpdateObjectives.mockReturnValue([mockUpdateObjectives, { isLoading: true, error: undefined }]);
 
 		render(<MonthlyObjectivesView session={mockSession} />);
 

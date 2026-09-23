@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 import { renderToStaticMarkup } from 'react-dom/server';
-import React from 'react';
+import { createElement, type ReactElement } from 'react';
 
 type SessionUser = { pk: number; email: string };
 type Session = { user: SessionUser } | null;
@@ -24,9 +24,7 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/components/pages/dashboard/reglements/reglement-form', () => ({
 	__esModule: true,
 	default: (props: { session?: Session; company_id?: number; facture_client_id?: number }) => {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const React = require('react');
-		return React.createElement(
+		return createElement(
 			'div',
 			null,
 			`REGLEMENT_FORM_MARKER:${JSON.stringify(props?.session ?? null)}:COMPANY=${props?.company_id}:FACTURE=${props?.facture_client_id ?? 'undefined'}`,
@@ -55,7 +53,9 @@ describe('ReglementNewPage server component', () => {
 	it('redirects to AUTH_LOGIN when no session', async () => {
 		mockAuth.mockResolvedValueOnce(null);
 
-		let Page: (props: { searchParams: Promise<{ company_id: string; facture_client_id?: string }> }) => Promise<unknown>;
+		let Page: (props: {
+			searchParams: Promise<{ company_id: string; facture_client_id?: string }>;
+		}) => Promise<unknown>;
 		jest.isolateModules(() => {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
 			const mod = require('./page');
@@ -72,7 +72,9 @@ describe('ReglementNewPage server component', () => {
 		const sessionValue: Session = { user: { pk: 77, email: 'test@site.com' } };
 		mockAuth.mockResolvedValueOnce(sessionValue);
 
-		let Page: (props: { searchParams: Promise<{ company_id: string; facture_client_id?: string }> }) => Promise<unknown>;
+		let Page: (props: {
+			searchParams: Promise<{ company_id: string; facture_client_id?: string }>;
+		}) => Promise<unknown>;
 		jest.isolateModules(() => {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
 			const mod = require('./page');
@@ -89,7 +91,9 @@ describe('ReglementNewPage server component', () => {
 		const sessionValue: Session = { user: { pk: 77, email: 'test@site.com' } };
 		mockAuth.mockResolvedValueOnce(sessionValue);
 
-		let Page: (props: { searchParams: Promise<{ company_id: string; facture_client_id?: string }> }) => Promise<unknown>;
+		let Page: (props: {
+			searchParams: Promise<{ company_id: string; facture_client_id?: string }>;
+		}) => Promise<unknown>;
 		jest.isolateModules(() => {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
 			const mod = require('./page');
@@ -106,7 +110,9 @@ describe('ReglementNewPage server component', () => {
 		const sessionValue: Session = { user: { pk: 77, email: 'reglement@site.com' } };
 		mockAuth.mockResolvedValueOnce(sessionValue);
 
-		let Page: (props: { searchParams: Promise<{ company_id: string; facture_client_id?: string }> }) => Promise<unknown>;
+		let Page: (props: {
+			searchParams: Promise<{ company_id: string; facture_client_id?: string }>;
+		}) => Promise<unknown>;
 		jest.isolateModules(() => {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
 			const mod = require('./page');
@@ -116,7 +122,7 @@ describe('ReglementNewPage server component', () => {
 		const result = await Page!({
 			searchParams: Promise.resolve({ company_id: '456' }),
 		});
-		const html = renderToStaticMarkup(result as unknown as React.ReactElement);
+		const html = renderToStaticMarkup(result as unknown as ReactElement);
 		const decoded = html.replace(/&quot;/g, '"');
 
 		expect(decoded).toContain('"pk":77');
@@ -129,7 +135,9 @@ describe('ReglementNewPage server component', () => {
 		const sessionValue: Session = { user: { pk: 77, email: 'reglement@site.com' } };
 		mockAuth.mockResolvedValueOnce(sessionValue);
 
-		let Page: (props: { searchParams: Promise<{ company_id: string; facture_client_id?: string }> }) => Promise<unknown>;
+		let Page: (props: {
+			searchParams: Promise<{ company_id: string; facture_client_id?: string }>;
+		}) => Promise<unknown>;
 		jest.isolateModules(() => {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
 			const mod = require('./page');
@@ -139,7 +147,7 @@ describe('ReglementNewPage server component', () => {
 		const result = await Page!({
 			searchParams: Promise.resolve({ company_id: '456', facture_client_id: '789' }),
 		});
-		const html = renderToStaticMarkup(result as unknown as React.ReactElement);
+		const html = renderToStaticMarkup(result as unknown as ReactElement);
 		const decoded = html.replace(/&quot;/g, '"');
 
 		expect(decoded).toContain('"pk":77');

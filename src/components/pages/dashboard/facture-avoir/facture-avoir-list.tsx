@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { type FC, useEffect, useState } from 'react';
 import type { TranslationDictionary } from '@/types/languageTypes';
 import { useRouter } from 'next/navigation';
 import { Box, Card, CardContent, Stack, Typography } from '@mui/material';
@@ -20,12 +20,16 @@ import {
 	FACTURE_AVOIR_VIEW,
 	FACTURE_CLIENT_VIEW,
 } from '@/utils/routes';
-import type { SessionProps } from '@/types/_initTypes';
 import type { FactureAvoirClass } from '@/models/classes';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import CompanyDocumentsListContent from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsListContent';
 import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
-import type { DocumentListConfig, FactureAvoirListResponseType } from '@/types/companyDocumentsTypes';
+import type {
+	DocumentListConfig,
+	FactureAvoirListFormikContentProps as FormikContentProps,
+	FactureAvoirListProps as Props,
+	FactureAvoirListResponseType,
+} from '@/types/companyDocumentsTypes';
 import { formatNumberWithSpaces } from '@/utils/helpers';
 import CurrencyToggle from '@/components/shared/currencyToggle/currencyToggle';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
@@ -119,16 +123,11 @@ const createFactureAvoirListConfig = (t: TranslationDictionary): DocumentListCon
 	],
 });
 
-interface FormikContentProps extends SessionProps {
-	company_id: number;
-	role: string;
-}
-
-const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role }) => {
+const FormikContent: FC<FormikContentProps> = ({ session, company_id, role }) => {
 	const router = useRouter();
 	const { t } = useLanguage();
 	const token = useInitAccessToken(session);
-	const factureAvoirListConfig = React.useMemo(() => createFactureAvoirListConfig(t), [t]);
+	const factureAvoirListConfig = createFactureAvoirListConfig(t);
 	const { data: companyData } = useGetCompanyQuery({ id: company_id }, { skip: !token });
 	const usesForeignCurrency = companyData?.uses_foreign_currency === true;
 	const [paginationModel, setPaginationModel] = useDataGridPagination();
@@ -137,11 +136,15 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 	const [selectedDevise, setSelectedDevise] = useState<'MAD' | 'EUR' | 'USD'>('MAD');
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
 
-	React.useEffect(() => {
+	useEffect(() => {
 		if (!usesForeignCurrency) setSelectedDevise('MAD');
 	}, [usesForeignCurrency]);
 
-	const { data: rawData, isLoading, refetch } = useGetFactureAvoirListQuery(
+	const {
+		data: rawData,
+		isLoading,
+		refetch,
+	} = useGetFactureAvoirListQuery(
 		{
 			company_id,
 			with_pagination: true,
@@ -226,9 +229,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ session, company_id, role
 	);
 };
 
-type Props = SessionProps;
-
-const FactureAvoirListClient: React.FC<Props> = ({ session }) => {
+const FactureAvoirListClient: FC<Props> = ({ session }) => {
 	const { t } = useLanguage();
 	return (
 		<CompanyDocumentsWrapperList session={session} title={t.facturesAvoir.listTitle}>

@@ -1,5 +1,11 @@
 export type Language = 'fr' | 'en';
 
+export type LanguageContextType = {
+	language: Language;
+	setLanguage: (lang: Language) => void;
+	t: TranslationDictionary;
+};
+
 export type TranslationDictionary = {
 	common: {
 		yes: string;

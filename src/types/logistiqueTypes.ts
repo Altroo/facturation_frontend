@@ -1,4 +1,13 @@
-import type { PaginationResponseType } from '@/types/_initTypes';
+import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
+import type { ReactNode } from 'react';
+
+export type LogistiqueChartCardProps = {
+	title: string;
+	children: ReactNode;
+	height?: number;
+	wide?: boolean;
+	infoTooltip?: string;
+};
 
 export type LogistiqueStatut =
 	| 'Brouillon'
@@ -406,4 +415,71 @@ export type LogistiqueFormValues = {
 	documents_originaux_file: File | null;
 	documents_originaux_requis: boolean;
 	statut_documents_originaux: LogistiqueOriginalDocumentStatus;
+};
+
+export type LogistiqueDashboardDashboardContentProps = SessionProps & {
+	company_id: number;
+};
+
+export type LogistiqueDocumentItem = {
+	field: LogistiqueDocumentField;
+	label: string;
+	file?: File | null;
+	currentUrl?: string | null;
+};
+
+export type LogistiqueDocumentsFormCardProps = {
+	items: LogistiqueDocumentItem[];
+	selectedField: LogistiqueDocumentField;
+	onSelectedFieldChangeAction: (field: LogistiqueDocumentField) => void;
+	onFileChangeAction: (field: LogistiqueDocumentField, file: File | null) => void;
+	onClearFileAction: (field: LogistiqueDocumentField) => void;
+	isLoading?: boolean;
+	accept?: string;
+};
+
+export type LogistiqueDocumentsViewCardProps = {
+	items: LogistiqueDocumentItem[];
+	isLoading?: boolean;
+};
+
+export type AttachmentRowProps = {
+	icon: ReactNode;
+	title: string;
+	subtitle: string;
+	actions: ReactNode;
+	status?: string;
+};
+
+export interface LogistiqueFormProps extends SessionProps {
+	company_id: number;
+	id?: number;
+}
+
+export type LogistiqueFormFormCardProps = {
+	title: string;
+	icon: ReactNode;
+	children: ReactNode;
+};
+
+export interface LogistiqueListFormikContentProps extends SessionProps {
+	company_id: number;
+	role: string;
+}
+
+export interface LogistiqueViewProps extends SessionProps {
+	company_id: number;
+	id: number;
+}
+
+export type LogistiqueViewInfoRowProps = {
+	icon: ReactNode;
+	label: string;
+	value: string | number | null | undefined | ReactNode;
+};
+
+export type LogistiqueViewDetailCardProps = {
+	title: string;
+	icon: ReactNode;
+	children: ReactNode;
 };

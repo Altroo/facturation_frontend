@@ -1,3 +1,4 @@
+import { createRef } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import CustomTextInput from './customTextInput';
 import { createTheme } from '@mui/material/styles';
@@ -6,6 +7,12 @@ import '@testing-library/jest-dom';
 const theme = createTheme();
 
 describe('CustomTextInput', () => {
+	it('passes its ref to the input element', () => {
+		const ref = createRef<HTMLInputElement>();
+		render(<CustomTextInput ref={ref} id="custom-input" type="text" value="" onChange={() => {}} theme={theme} />);
+		expect(ref.current).toBe(screen.getByRole('textbox'));
+	});
+
 	it('renders with label and placeholder', () => {
 		render(
 			<CustomTextInput

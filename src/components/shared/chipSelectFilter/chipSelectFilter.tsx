@@ -1,54 +1,22 @@
 'use client';
 
-import React, { useCallback, useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Autocomplete, Box, Chip, TextField, Typography } from '@mui/material';
-import type { Theme } from '@mui/material/styles';
 import { ThemeProvider } from '@mui/material/styles';
 import { chipSelectFilterTheme } from '@/utils/themes';
 import { useLanguage } from '@/utils/hooks';
+import type { ChipSelectFilterProps } from '@/types/uiTypes';
 
-export interface ChipSelectOption {
-	id: number | string;
-	nom: string;
-}
+const defaultTheme = chipSelectFilterTheme();
 
-export interface ChipSelectFilterProps {
-	label: string;
-	options: ChipSelectOption[];
-	selectedIds: Array<number | string>;
-	onChange: (ids: Array<number | string>) => void;
-	placeholder?: string;
-	theme?: Theme;
-}
-
-const ChipSelectFilter: React.FC<ChipSelectFilterProps> = ({
-	label,
-	options,
-	selectedIds,
-	onChange,
-	placeholder,
-	theme,
-}) => {
+const ChipSelectFilter = ({ label, options, selectedIds, onChange, placeholder, theme }: ChipSelectFilterProps) => {
 	const [inputValue, setInputValue] = useState('');
 	const { t } = useLanguage();
 
-	const appliedTheme = useMemo(() => theme ?? chipSelectFilterTheme(), [theme]);
-
-	const selectedOptions = useMemo(() => options.filter((opt) => selectedIds.includes(opt.id)), [options, selectedIds]);
-
-	const handleChange = useCallback(
-		(_event: React.SyntheticEvent, newValue: ChipSelectOption[]) => {
-			onChange(newValue.map((opt) => opt.id));
-		},
-		[onChange],
-	);
-
-	const handleInputChange = useCallback((_event: React.SyntheticEvent, newInputValue: string) => {
-		setInputValue(newInputValue);
-	}, []);
+	const selectedOptions = options.filter((opt) => selectedIds.includes(opt.id));
 
 	return (
-		<ThemeProvider theme={appliedTheme}>
+		<ThemeProvider theme={theme ?? defaultTheme}>
 			<Box sx={{ width: '100%' }}>
 				<Typography
 					variant="caption"
@@ -67,9 +35,9 @@ const ChipSelectFilter: React.FC<ChipSelectFilterProps> = ({
 					size="small"
 					options={options}
 					value={selectedOptions}
-					onChange={handleChange}
+					onChange={(_event, newValue) => onChange(newValue.map((opt) => opt.id))}
 					inputValue={inputValue}
-					onInputChange={handleInputChange}
+					onInputChange={(_event, newInputValue) => setInputValue(newInputValue)}
 					getOptionLabel={(option) => option.nom}
 					isOptionEqualToValue={(option, value) => option.id === value.id}
 					renderValue={(selected, getTagProps) =>

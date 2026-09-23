@@ -1,25 +1,26 @@
 'use client';
 
-import React from 'react';
+import { type FC } from 'react';
 import type { TranslationDictionary } from '@/types/languageTypes';
-import type { SessionProps } from '@/types/_initTypes';
 import CompanyDocumentsWrapperForm from '@/components/pages/dashboard/shared/company-documents-form/companyDocumentsWrapperForm';
 import CompanyDocumentFormContent from '@/components/pages/dashboard/shared/company-documents-form/companyDocumentFormContent';
-import { factureProformaSchema, factureProformaAddSchema } from '@/utils/formValidationSchemas';
-import { FACTURE_PRO_FORMA_LIST, FACTURE_PRO_FORMA_EDIT } from '@/utils/routes';
+import { factureProformaAddSchema, factureProformaSchema } from '@/utils/formValidationSchemas';
+import { FACTURE_PRO_FORMA_EDIT, FACTURE_PRO_FORMA_LIST } from '@/utils/routes';
 import {
 	useAddFactureProFormaMutation,
 	useEditFactureProFormaMutation,
 	useGetFactureProFormaQuery,
-	usePatchStatutMutation,
 	useGetNumFactureProFormaQuery,
+	usePatchStatutMutation,
 } from '@/store/services/factureProForma';
 import type {
 	DocumentFormConfig,
+	DocumentFormSchema,
 	FactureDocumentData,
 	FactureNumResponse,
-	DocumentFormSchema,
-} from '@/types/companyDocumentsTypes';
+	FactureProFormaFormFormikContentProps as FormikContentProps,
+	FactureProFormaFormProps as Props,
+} from '@/types/companyDocumentsTypes'; // Configuration for facture pro forma form
 import type { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
 import type { FactureClass } from '@/models/classes';
 import { useAppDispatch, useLanguage } from '@/utils/hooks';
@@ -55,18 +56,11 @@ const createFactureProFormaFormConfig = (t: TranslationDictionary): DocumentForm
 		addSchema: factureProformaAddSchema,
 	},
 });
-type FormikContentProps = {
-	token?: string;
-	company_id: number;
-	id?: number;
-	isEditMode: boolean;
-	role?: string;
-};
 
-const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, isEditMode, role }) => {
+const FormikContent: FC<FormikContentProps> = ({ token, company_id, id, isEditMode, role }) => {
 	const { t } = useLanguage();
 	const dispatch = useAppDispatch();
-	const factureProFormaFormConfig = React.useMemo(() => createFactureProFormaFormConfig(t), [t]);
+	const factureProFormaFormConfig = createFactureProFormaFormConfig(t);
 	// Queries
 	const {
 		data: rawData,
@@ -134,12 +128,7 @@ const FormikContent: React.FC<FormikContentProps> = ({ token, company_id, id, is
 	);
 };
 
-interface Props extends SessionProps {
-	company_id: number;
-	id?: number;
-}
-
-const FactureProFormaForm: React.FC<Props> = ({ session, company_id, id }) => {
+const FactureProFormaForm: FC<Props> = ({ session, company_id, id }) => {
 	const { t } = useLanguage();
 	return (
 		<CompanyDocumentsWrapperForm

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import { type FC } from 'react';
 import { Card, CardContent, Chip, Stack, Typography } from '@mui/material';
 import BusinessIcon from '@mui/icons-material/Business';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
@@ -12,7 +12,7 @@ import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '
 import { formatDate } from '@/utils/helpers';
 import { useLanguage } from '@/utils/hooks';
 
-const SupplierListContent: React.FC<SessionProps & { company_id: number }> = ({ session, company_id }) => {
+const SupplierListContent: FC<SessionProps & { company_id: number }> = ({ session, company_id }) => {
 	const token = useInitAccessToken(session);
 	const { data = [], isLoading, error } = useGetLogistiqueSuppliersQuery({ company_id }, { skip: !token });
 	const apiError = error as ResponseDataInterface<ApiErrorResponseType> | undefined;
@@ -57,7 +57,7 @@ const SupplierListContent: React.FC<SessionProps & { company_id: number }> = ({ 
 	);
 };
 
-const LogistiqueSuppliers: React.FC<SessionProps> = ({ session }) => {
+const LogistiqueSuppliers: FC<SessionProps> = ({ session }) => {
 	const { t } = useLanguage();
 	return (
 		<CompanyDocumentsWrapperList session={session} title={t.navigation.logistiqueSuppliers}>

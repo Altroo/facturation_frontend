@@ -6,12 +6,9 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
 	title: 'Détails de la Société',
-	description: 'Consulter les détails d\'une société',
+	description: "Consulter les détails d'une société",
 };
-
-type PageProps = {
-	params: Promise<{ id: number }>;
-};
+import type { IdNumberRouteProps as PageProps } from '@/types/routeTypes';
 
 const CompaniesViewPage = async (props: PageProps) => {
 	const session = await auth();
@@ -25,7 +22,7 @@ const CompaniesViewPage = async (props: PageProps) => {
 		redirect(COMPANIES_LIST);
 	}
 
-	return <CompaniesViewClient session={session} id={id} />;
+	return <CompaniesViewClient session={session} id={Number(id)} />;
 };
 
 export default CompaniesViewPage;

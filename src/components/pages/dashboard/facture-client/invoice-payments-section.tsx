@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import { type FC } from 'react';
 import { useRouter } from 'next/navigation';
 import {
 	Button,
@@ -23,15 +23,9 @@ import { useGetReglementsListQuery } from '@/store/services/reglement';
 import { useLanguage } from '@/utils/hooks';
 import { formatDate, formatNumberWithSpaces } from '@/utils/helpers';
 import type { ReglementClass } from '@/models/classes';
+import type { InvoicePaymentsSectionProps } from '@/types/companyDocumentsTypes';
 
-type InvoicePaymentsSectionProps = {
-	companyId: number;
-	factureClientId: number;
-	token?: string;
-	canManagePayments: boolean;
-};
-
-const InvoicePaymentsSection: React.FC<InvoicePaymentsSectionProps> = ({
+const InvoicePaymentsSection: FC<InvoicePaymentsSectionProps> = ({
 	companyId,
 	factureClientId,
 	token,

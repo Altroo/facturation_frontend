@@ -1,6 +1,6 @@
-import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import NotFound from './not-found';
 
 const mockPush = jest.fn();
 const mockBack = jest.fn();
@@ -18,8 +18,6 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/utils/routes', () => ({
 	DASHBOARD: '/dashboard',
 }));
-
-import NotFound from './not-found';
 
 describe('NotFound (404 page)', () => {
 	beforeEach(() => {

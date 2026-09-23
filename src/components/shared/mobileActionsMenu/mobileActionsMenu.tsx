@@ -1,49 +1,36 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState, type MouseEvent, type FC } from 'react';
 import { IconButton, Menu, MenuItem, ListItemIcon, ListItemText, useTheme, useMediaQuery, Box } from '@mui/material';
 import { MoreVert as MoreVertIcon } from '@mui/icons-material';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import { useLanguage } from '@/utils/hooks';
+import type { ActionItem, MobileActionsMenuProps } from '@/types/uiTypes';
 
-export type ActionItem = {
-	label: string;
-	icon: React.ReactNode;
-	onClick: (event?: React.MouseEvent<HTMLElement>) => void;
-	color?: 'inherit' | 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning';
-	show?: boolean;
-	disabled?: boolean;
-};
-
-type MobileActionsMenuProps = {
-	actions: ActionItem[];
-	desktopGap?: number;
-};
-
-const MobileActionsMenu: React.FC<MobileActionsMenuProps> = ({ actions, desktopGap = 1 }) => {
+const MobileActionsMenu: FC<MobileActionsMenuProps> = ({ actions, desktopGap = 1 }) => {
 	const theme = useTheme();
 	const { t } = useLanguage();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const open = Boolean(anchorEl);
 
-	const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+	const handleClick = (event: MouseEvent<HTMLElement>) => {
 		event.stopPropagation();
 		setAnchorEl(event.currentTarget);
 	};
 
-	const handleClose = (event?: React.MouseEvent) => {
+	const handleClose = (event?: MouseEvent) => {
 		if (event) {
 			event.stopPropagation();
 		}
 		setAnchorEl(null);
 	};
 
-	const handleMenuItemClick = (event: React.MouseEvent, action: ActionItem) => {
+	const handleMenuItemClick = (event: MouseEvent, action: ActionItem) => {
 		event.stopPropagation();
 		if (action.disabled) return;
 		handleClose();
-		action.onClick(event as React.MouseEvent<HTMLElement>);
+		action.onClick(event as MouseEvent<HTMLElement>);
 	};
 
 	// Filter actions based on show property (default to true if not specified)

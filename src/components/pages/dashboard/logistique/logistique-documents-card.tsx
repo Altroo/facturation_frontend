@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import { type ChangeEvent, type DragEvent, type FC, useRef, useState } from 'react';
 import {
 	Box,
 	Button,
@@ -28,37 +28,12 @@ import {
 	UploadFile as UploadFileIcon,
 } from '@mui/icons-material';
 import { useLanguage } from '@/utils/hooks';
-import type { LogistiqueDocumentField } from '@/types/logistiqueTypes';
-
-export type LogistiqueDocumentItem = {
-	field: LogistiqueDocumentField;
-	label: string;
-	file?: File | null;
-	currentUrl?: string | null;
-};
-
-type LogistiqueDocumentsFormCardProps = {
-	items: LogistiqueDocumentItem[];
-	selectedField: LogistiqueDocumentField;
-	onSelectedFieldChangeAction: (field: LogistiqueDocumentField) => void;
-	onFileChangeAction: (field: LogistiqueDocumentField, file: File | null) => void;
-	onClearFileAction: (field: LogistiqueDocumentField) => void;
-	isLoading?: boolean;
-	accept?: string;
-};
-
-type LogistiqueDocumentsViewCardProps = {
-	items: LogistiqueDocumentItem[];
-	isLoading?: boolean;
-};
-
-type AttachmentRowProps = {
-	icon: React.ReactNode;
-	title: string;
-	subtitle: string;
-	actions: React.ReactNode;
-	status?: string;
-};
+import type {
+	AttachmentRowProps,
+	LogistiqueDocumentField,
+	LogistiqueDocumentsFormCardProps,
+	LogistiqueDocumentsViewCardProps,
+} from '@/types/logistiqueTypes';
 
 const fileInputSx = {
 	clip: 'rect(0 0 0 0)',
@@ -97,7 +72,7 @@ const getFileIcon = (filename: string, mimeType?: string) => {
 	return <InsertDriveFileIcon fontSize="small" />;
 };
 
-const AttachmentRow: React.FC<AttachmentRowProps> = ({ icon, title, subtitle, actions, status }) => (
+const AttachmentRow: FC<AttachmentRowProps> = ({ icon, title, subtitle, actions, status }) => (
 	<Box
 		sx={(theme) => ({
 			display: 'flex',
@@ -147,7 +122,7 @@ const AttachmentRow: React.FC<AttachmentRowProps> = ({ icon, title, subtitle, ac
 	</Box>
 );
 
-const Header: React.FC<{ count: number }> = ({ count }) => {
+const Header: FC<{ count: number }> = ({ count }) => {
 	const { t } = useLanguage();
 	const countLabel = `${count} ${count > 1 ? t.logistique.attachmentFiles : t.logistique.attachmentFile}`;
 
@@ -189,7 +164,7 @@ const Header: React.FC<{ count: number }> = ({ count }) => {
 	);
 };
 
-export const LogistiqueDocumentsFormCard: React.FC<LogistiqueDocumentsFormCardProps> = ({
+export const LogistiqueDocumentsFormCard: FC<LogistiqueDocumentsFormCardProps> = ({
 	items,
 	selectedField,
 	onSelectedFieldChangeAction,
@@ -210,12 +185,12 @@ export const LogistiqueDocumentsFormCard: React.FC<LogistiqueDocumentsFormCardPr
 		onFileChangeAction(selectedItem.field, files[0]);
 	};
 
-	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+	const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
 		handleFiles(Array.from(event.target.files ?? []));
 		event.target.value = '';
 	};
 
-	const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+	const handleDrop = (event: DragEvent<HTMLDivElement>) => {
 		event.preventDefault();
 		setIsDragging(false);
 		handleFiles(Array.from(event.dataTransfer.files ?? []));
@@ -396,10 +371,7 @@ export const LogistiqueDocumentsFormCard: React.FC<LogistiqueDocumentsFormCardPr
 	);
 };
 
-export const LogistiqueDocumentsViewCard: React.FC<LogistiqueDocumentsViewCardProps> = ({
-	items,
-	isLoading = false,
-}) => {
+export const LogistiqueDocumentsViewCard: FC<LogistiqueDocumentsViewCardProps> = ({ items, isLoading = false }) => {
 	const { t } = useLanguage();
 	const attachments = items.filter((item) => item.currentUrl);
 

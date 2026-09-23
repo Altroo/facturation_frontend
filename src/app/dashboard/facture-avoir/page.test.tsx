@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 import { renderToStaticMarkup } from 'react-dom/server';
-import React from 'react';
+import { createElement, type ReactElement } from 'react';
 
 type Session = { user: { pk: number; email: string } } | null;
 
@@ -19,9 +19,7 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/components/pages/dashboard/facture-avoir/facture-avoir-list', () => ({
 	__esModule: true,
 	default: (props: { session?: Session }) => {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const React = require('react');
-		return React.createElement('div', null, `FACTURE_AVOIR_LIST:${JSON.stringify(props.session)}`);
+		return createElement('div', null, `FACTURE_AVOIR_LIST:${JSON.stringify(props.session)}`);
 	},
 }));
 
@@ -54,7 +52,7 @@ describe('FactureAvoirListPage server component', () => {
 		const Page = require('./page').default as () => Promise<unknown>;
 
 		const result = await Page();
-		const html = renderToStaticMarkup(result as React.ReactElement).replace(/&quot;/g, '"');
+		const html = renderToStaticMarkup(result as ReactElement).replace(/&quot;/g, '"');
 		expect(html).toContain('FACTURE_AVOIR_LIST');
 		expect(html).toContain('"email":"user@example.com"');
 		expect(mockRedirect).not.toHaveBeenCalled();

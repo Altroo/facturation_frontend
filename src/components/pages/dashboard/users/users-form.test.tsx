@@ -1,4 +1,4 @@
-import React from 'react';
+import { type ReactNode, type ReactElement } from 'react';
 import { render, screen, cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
@@ -11,8 +11,7 @@ const mockStore = configureStore({
 		_init: () => ({}),
 		account: () => ({}),
 	},
-	middleware: (getDefaultMiddleware) =>
-		getDefaultMiddleware({ serializableCheck: false }),
+	middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false }),
 });
 
 // Mock next/navigation
@@ -34,7 +33,11 @@ jest.mock('@/utils/hooks', () => ({
 	__esModule: true,
 	useAppSelector: jest.fn(() => []),
 	useToast: () => ({ onSuccess: jest.fn(), onError: jest.fn() }),
-	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
+	useLanguage: () => ({
+		language: 'fr' as const,
+		setLanguage: jest.fn(),
+		t: jest.requireActual('@/translations').translations.fr,
+	}),
 }));
 
 jest.mock('@/store/selectors', () => ({
@@ -55,8 +58,7 @@ const mockEditUserMutation = jest.fn();
 
 jest.mock('@/store/services/account', () => ({
 	__esModule: true,
-	useGetUserQuery: (params: { id: number }, options: { skip: boolean }) =>
-		mockUseGetUserQuery(params, options),
+	useGetUserQuery: (params: { id: number }, options: { skip: boolean }) => mockUseGetUserQuery(params, options),
 	useAddUserMutation: () => [mockAddUserMutation, { isLoading: false, error: undefined }],
 	useCheckEmailMutation: () => [mockCheckEmailMutation, { isLoading: false, error: undefined }],
 	useEditUserMutation: () => [mockEditUserMutation, { isLoading: false, error: undefined }],
@@ -74,7 +76,7 @@ jest.mock('@/store/services/company', () => ({
 // Mock NavigationBar
 jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 	__esModule: true,
-	default: ({ children, title }: { children: React.ReactNode; title: string }) => (
+	default: ({ children, title }: { children: ReactNode; title: string }) => (
 		<div data-testid="navigation-bar">
 			<h1 data-testid="nav-title">{title}</h1>
 			{children}
@@ -84,7 +86,7 @@ jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 
 // Mock Protected
 jest.mock('@/components/layouts/protected/protected', () => ({
-	Protected: ({ children }: { children: React.ReactNode }) => <div data-testid="protected">{children}</div>,
+	Protected: ({ children }: { children: ReactNode }) => <div data-testid="protected">{children}</div>,
 }));
 
 // Mock form sub-components
@@ -146,7 +148,10 @@ jest.mock('@/utils/helpers', () => ({
 }));
 
 jest.mock('@/utils/rawData', () => ({
-	genderItemsList: [{ value: 'H', label: 'Homme' }, { value: 'F', label: 'Femme' }],
+	genderItemsList: [
+		{ value: 'H', label: 'Homme' },
+		{ value: 'F', label: 'Femme' },
+	],
 }));
 
 jest.mock('@/utils/formValidationSchemas', () => ({
@@ -182,7 +187,7 @@ const mockSession: AppSession = {
 	},
 };
 
-const renderWithProviders = (ui: React.ReactElement) => {
+const renderWithProviders = (ui: ReactElement) => {
 	return render(<Provider store={mockStore}>{ui}</Provider>);
 };
 
@@ -290,9 +295,7 @@ describe('UsersForm', () => {
 			const selectors = jest.requireMock('@/store/selectors') as {
 				getGroupesState: jest.Mock;
 			};
-			selectors.getGroupesState.mockReturnValue([
-				{ id: 1, nom: 'Group A' },
-			]);
+			selectors.getGroupesState.mockReturnValue([{ id: 1, nom: 'Group A' }]);
 			const companyService = jest.requireMock('@/store/services/company') as {
 				useGetCompaniesListQuery: jest.Mock;
 			};

@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { Protected } from './protected';
@@ -7,9 +6,12 @@ import { Protected } from './protected';
 jest.mock('@/utils/hooks', () => ({
 	usePermission: jest.fn(),
 	useAppSelector: jest.fn(),
-	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
+	useLanguage: () => ({
+		language: 'fr' as const,
+		setLanguage: jest.fn(),
+		t: jest.requireActual('@/translations').translations.fr,
+	}),
 }));
-
 import { usePermission, useAppSelector } from '@/utils/hooks';
 
 describe('Protected component', () => {

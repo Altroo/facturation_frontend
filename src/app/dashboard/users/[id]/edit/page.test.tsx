@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 import { renderToStaticMarkup } from 'react-dom/server';
-import React from 'react';
+import { createElement, type ReactElement } from 'react';
 
 type SessionUser = { pk: number; email: string };
 type Session = { user: SessionUser } | null;
@@ -24,9 +24,7 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/components/pages/dashboard/users/users-form', () => ({
 	__esModule: true,
 	default: (props: { session?: Session; id?: number }) => {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const React = require('react');
-		return React.createElement(
+		return createElement(
 			'div',
 			null,
 			`USERS_FORM_MARKER:${JSON.stringify(props?.session ?? null)}:ID=${props?.id ?? ''}`,
@@ -53,14 +51,14 @@ describe('UsersEditPage server component', () => {
 	it('redirects to AUTH_LOGIN when no session', async () => {
 		mockAuth.mockResolvedValueOnce(null);
 
-		let Page: ({ params }: { params: Promise<{ id: number }> }) => Promise<unknown>;
+		let Page: ({ params }: { params: Promise<{ id: string }> }) => Promise<unknown>;
 		jest.isolateModules(() => {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
 			const mod = require('./page');
-			Page = mod.default as ({ params }: { params: Promise<{ id: number }> }) => Promise<unknown>;
+			Page = mod.default as ({ params }: { params: Promise<{ id: string }> }) => Promise<unknown>;
 		});
 
-		await Page!({ params: Promise.resolve({ id: 11 }) });
+		await Page!({ params: Promise.resolve({ id: '11' }) });
 		expect(mockRedirect).toHaveBeenCalledWith(AUTH_LOGIN);
 	});
 
@@ -68,15 +66,15 @@ describe('UsersEditPage server component', () => {
 		const sessionValue: Session = { user: { pk: 33, email: 'user@site.com' } };
 		mockAuth.mockResolvedValueOnce(sessionValue);
 
-		let Page: ({ params }: { params: Promise<{ id: number }> }) => Promise<unknown>;
+		let Page: ({ params }: { params: Promise<{ id: string }> }) => Promise<unknown>;
 		jest.isolateModules(() => {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
 			const mod = require('./page');
-			Page = mod.default as ({ params }: { params: Promise<{ id: number }> }) => Promise<unknown>;
+			Page = mod.default as ({ params }: { params: Promise<{ id: string }> }) => Promise<unknown>;
 		});
 
-		const result = await Page!({ params: Promise.resolve({ id: 77 }) });
-		const html = renderToStaticMarkup(result as unknown as React.ReactElement);
+		const result = await Page!({ params: Promise.resolve({ id: '77' }) });
+		const html = renderToStaticMarkup(result as unknown as ReactElement);
 		const decoded = html.replace(/&quot;/g, '"');
 
 		expect(decoded).toContain('"pk":33');

@@ -1,4 +1,4 @@
-import React from 'react';
+import { type SVGProps, createElement, type ImgHTMLAttributes } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import CircularAvatarInputFile from './circularAvatarInputFile';
 import '@testing-library/jest-dom';
@@ -6,20 +6,20 @@ import '@testing-library/jest-dom';
 jest.mock('@mui/icons-material/AddAPhoto', () => {
 	return {
 		__esModule: true,
-		default: (props: React.SVGProps<SVGSVGElement>) => {
+		default: (props: SVGProps<SVGSVGElement>) => {
 			// only keep safe DOM props; drop htmlColor, sx, etc.
 			const { className, 'aria-hidden': ariaHidden } = props || {};
 			const svgProps: Record<string, unknown> = { 'data-testid': 'AddAPhotoIcon' };
 			if (className) svgProps.className = className;
 			if (ariaHidden !== undefined) svgProps['aria-hidden'] = ariaHidden;
-			return React.createElement('svg', svgProps);
+			return createElement('svg', svgProps);
 		},
 	};
 });
 jest.mock('next/image', () => {
 	return {
 		__esModule: true,
-		default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => React.createElement('img', props),
+		default: (props: ImgHTMLAttributes<HTMLImageElement>) => createElement('img', props),
 	};
 });
 

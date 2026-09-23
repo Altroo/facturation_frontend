@@ -8,10 +8,7 @@ export const metadata: Metadata = {
 	title: 'Nouvelle Facture Pro Forma',
 	description: 'Créer une nouvelle facture pro forma',
 };
-
-type PageProps = {
-	searchParams: Promise<{ company_id: string }>;
-};
+import type { CompanyScopedNewRouteProps as PageProps } from '@/types/routeTypes';
 
 const FactureProFormaNewPage = async (props: PageProps) => {
 	const session = await auth();

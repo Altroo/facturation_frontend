@@ -1,6 +1,6 @@
 'use client';
 
-import React, { isValidElement, useMemo, useState } from 'react';
+import { type FC, isValidElement, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
 	Box,
@@ -41,19 +41,18 @@ import { useInitAccessToken } from '@/contexts/InitContext';
 import { getUserCompaniesState } from '@/store/selectors';
 import { useGetStockBalanceQuery, useGetStockMovementsQuery } from '@/store/services/stock';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
-import type { SessionProps } from '@/types/_initTypes';
-import type { StockMovement, StockState } from '@/types/stockTypes';
+import type {
+	StockMovement,
+	StockState,
+	StockViewInfoRowProps as InfoRowProps,
+	StockViewProps,
+} from '@/types/stockTypes';
 import { formatDate, formatNumberWithSpaces } from '@/utils/helpers';
 import { useAppSelector } from '@/utils/hooks';
 import { STOCK_ADD, STOCK_MOVEMENT_VIEW } from '@/utils/routes';
+import { stockMovementViewOptions } from '@/utils/rawData';
 
-type InfoRowProps = {
-	icon: React.ReactNode;
-	label: string;
-	value: React.ReactNode | string | number | null | undefined;
-};
-
-const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
+const InfoRow: FC<InfoRowProps> = ({ icon, label, value }) => {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 	const displayValue = isValidElement(value) ? value : value && value.toString().length > 0 ? value : '—';
@@ -61,11 +60,7 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 	return (
 		<Stack direction="row" spacing={2} sx={{ alignItems: 'flex-start', py: 1.5, flexWrap: 'wrap' }}>
 			<Box sx={{ color: 'primary.main', display: 'flex', alignItems: 'center', minWidth: 40 }}>{icon}</Box>
-			<Stack
-				direction="row"
-				spacing={isMobile ? 0 : 2}
-				sx={{ alignItems: 'center', flex: 1, flexWrap: 'wrap' }}
-			>
+			<Stack direction="row" spacing={isMobile ? 0 : 2} sx={{ alignItems: 'center', flex: 1, flexWrap: 'wrap' }}>
 				<Typography
 					sx={{
 						fontWeight: 600,
@@ -87,15 +82,6 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 		</Stack>
 	);
 };
-
-const movementOptions = [
-	{ value: 'opening', label: 'Stock initial' },
-	{ value: 'adjustment', label: 'Ajustement' },
-	{ value: 'receipt', label: 'Réception' },
-	{ value: 'delivery', label: 'Livraison' },
-	{ value: 'inventory', label: 'Inventaire' },
-	{ value: 'reversal', label: 'Annulation' },
-];
 
 const stateLabel = (state: StockState) => {
 	if (state === 'disponible') return 'Disponible';
@@ -120,9 +106,7 @@ const movementColor = (
 	return 'default';
 };
 
-type StockViewProps = SessionProps & { company_id: number; id: number };
-
-const StockView: React.FC<StockViewProps> = ({ session, company_id, id }) => {
+const StockView: FC<StockViewProps> = ({ session, company_id, id }) => {
 	const token = useInitAccessToken(session);
 	const router = useRouter();
 	const theme = useTheme();
@@ -150,91 +134,86 @@ const StockView: React.FC<StockViewProps> = ({ session, company_id, id }) => {
 		{ skip: !token || !balance },
 	);
 
-	const columns = useMemo<GridColDef[]>(
-		() => [
-			{
-				field: 'date_created',
-				headerName: 'Date',
-				minWidth: 190,
-				flex: 1.2,
-				filterOperators: createDateRangeFilterOperator('entre'),
-				renderCell: (params: GridRenderCellParams<StockMovement>) => (
-					<Typography variant="body2" noWrap>
-						{formatDate(params.row.date_created)}
-					</Typography>
-				),
-			},
-			{
-				field: 'movement_type',
-				headerName: 'Type',
-				minWidth: 150,
-				flex: 0.9,
-				filterOperators: createDropdownFilterOperators(movementOptions, 'Tous les types'),
-				renderCell: (params: GridRenderCellParams<StockMovement>) => (
-					<Chip
-						size="small"
-						variant="outlined"
-						label={params.row.movement_type_display}
-						color={movementColor(params.row.movement_type)}
-					/>
-				),
-			},
-			{
-				field: 'quantity',
-				headerName: 'Quantité',
-				type: 'number',
-				minWidth: 120,
-				flex: 0.7,
-				filterOperators: createNumericFilterOperators(),
-				valueGetter: (value: string | number | null | undefined) => Number(value ?? 0),
-				renderCell: (params: GridRenderCellParams<StockMovement>) => (
-					<Typography
-						sx={{ fontWeight: 700, color: Number(params.row.quantity) < 0 ? 'error.main' : 'success.main' }}
-					>
-						{Number(params.row.quantity) > 0 ? '+' : ''}
-						{formatNumberWithSpaces(params.row.quantity, 3)}
-					</Typography>
-				),
-			},
-			{
-				field: 'balance_after',
-				headerName: 'Stock après',
-				type: 'number',
-				minWidth: 130,
-				flex: 0.8,
-				filterOperators: createNumericFilterOperators(),
-				valueGetter: (value: string | number | null | undefined) => Number(value ?? 0),
-				renderCell: (params: GridRenderCellParams<StockMovement>) => (
-					<Typography color="primary" sx={{ fontWeight: 600 }}>
-						{formatNumberWithSpaces(params.row.balance_after, 3)}
-					</Typography>
-				),
-			},
-			{ field: 'note', headerName: 'Motif / source', minWidth: 240, flex: 1.5 },
-			{ field: 'actor_name', headerName: 'Utilisateur', minWidth: 170, flex: 1 },
-			{
-				field: 'actions',
-				headerName: 'Actions',
-				minWidth: 100,
-				flex: 0.7,
-				filterable: false,
-				sortable: false,
-				renderCell: (params: GridRenderCellParams<StockMovement>) => (
-					<MobileActionsMenu
-						actions={[
-							{
-								label: 'Voir le mouvement',
-								icon: <VisibilityIcon />,
-								onClick: () => router.push(STOCK_MOVEMENT_VIEW(params.row.id, company_id)),
-								color: 'info',
-							},
-						]}
-					/>
-				),
-			},
-		],
-		[company_id, router],
-	);
+	const columns = [
+		{
+			field: 'date_created',
+			headerName: 'Date',
+			minWidth: 190,
+			flex: 1.2,
+			filterOperators: createDateRangeFilterOperator('entre'),
+			renderCell: (params: GridRenderCellParams<StockMovement>) => (
+				<Typography variant="body2" noWrap>
+					{formatDate(params.row.date_created)}
+				</Typography>
+			),
+		},
+		{
+			field: 'movement_type',
+			headerName: 'Type',
+			minWidth: 150,
+			flex: 0.9,
+			filterOperators: createDropdownFilterOperators(stockMovementViewOptions, 'Tous les types'),
+			renderCell: (params: GridRenderCellParams<StockMovement>) => (
+				<Chip
+					size="small"
+					variant="outlined"
+					label={params.row.movement_type_display}
+					color={movementColor(params.row.movement_type)}
+				/>
+			),
+		},
+		{
+			field: 'quantity',
+			headerName: 'Quantité',
+			type: 'number',
+			minWidth: 120,
+			flex: 0.7,
+			filterOperators: createNumericFilterOperators(),
+			valueGetter: (value: string | number | null | undefined) => Number(value ?? 0),
+			renderCell: (params: GridRenderCellParams<StockMovement>) => (
+				<Typography sx={{ fontWeight: 700, color: Number(params.row.quantity) < 0 ? 'error.main' : 'success.main' }}>
+					{Number(params.row.quantity) > 0 ? '+' : ''}
+					{formatNumberWithSpaces(params.row.quantity, 3)}
+				</Typography>
+			),
+		},
+		{
+			field: 'balance_after',
+			headerName: 'Stock après',
+			type: 'number',
+			minWidth: 130,
+			flex: 0.8,
+			filterOperators: createNumericFilterOperators(),
+			valueGetter: (value: string | number | null | undefined) => Number(value ?? 0),
+			renderCell: (params: GridRenderCellParams<StockMovement>) => (
+				<Typography color="primary" sx={{ fontWeight: 600 }}>
+					{formatNumberWithSpaces(params.row.balance_after, 3)}
+				</Typography>
+			),
+		},
+		{ field: 'note', headerName: 'Motif / source', minWidth: 240, flex: 1.5 },
+		{ field: 'actor_name', headerName: 'Utilisateur', minWidth: 170, flex: 1 },
+		{
+			field: 'actions',
+			headerName: 'Actions',
+			minWidth: 100,
+			flex: 0.7,
+			filterable: false,
+			sortable: false,
+			renderCell: (params: GridRenderCellParams<StockMovement>) => (
+				<MobileActionsMenu
+					actions={[
+						{
+							label: 'Voir le mouvement',
+							icon: <VisibilityIcon />,
+							onClick: () => router.push(STOCK_MOVEMENT_VIEW(params.row.id, company_id)),
+							color: 'info',
+						},
+					]}
+				/>
+			),
+		},
+	] as GridColDef[];
 
 	return (
 		<Stack direction="column" spacing={2} className={Styles.flexRootStack} sx={{ mt: '32px' }}>
@@ -280,12 +259,42 @@ const StockView: React.FC<StockViewProps> = ({ session, company_id, id }) => {
 									gap: 2,
 								}}
 							>
-								<DashboardStatCard icon={<WarehouseIcon />} label="Physique" value={formatNumberWithSpaces(balance.physical_quantity, 3)} color="#1565C0" />
-								<DashboardStatCard icon={<LockIcon />} label="Réservé" value={formatNumberWithSpaces(balance.reserved_quantity, 3)} color="#6A1B9A" />
-								<DashboardStatCard icon={<Inventory2Icon />} label="Disponible" value={formatNumberWithSpaces(balance.available_quantity, 3)} color="#2E7D32" />
-								<DashboardStatCard icon={<LocalShippingIcon />} label="Entrant" value={formatNumberWithSpaces(balance.incoming_quantity, 3)} color="#0277BD" />
-								<DashboardStatCard icon={<TrendingUpIcon />} label="Projeté" value={formatNumberWithSpaces(balance.projected_quantity, 3)} color="#00838F" />
-								<DashboardStatCard icon={<Inventory2Icon />} label="Minimum" value={formatNumberWithSpaces(balance.stock_minimum, 3)} color="#ED6C02" />
+								<DashboardStatCard
+									icon={<WarehouseIcon />}
+									label="Physique"
+									value={formatNumberWithSpaces(balance.physical_quantity, 3)}
+									color="#1565C0"
+								/>
+								<DashboardStatCard
+									icon={<LockIcon />}
+									label="Réservé"
+									value={formatNumberWithSpaces(balance.reserved_quantity, 3)}
+									color="#6A1B9A"
+								/>
+								<DashboardStatCard
+									icon={<Inventory2Icon />}
+									label="Disponible"
+									value={formatNumberWithSpaces(balance.available_quantity, 3)}
+									color="#2E7D32"
+								/>
+								<DashboardStatCard
+									icon={<LocalShippingIcon />}
+									label="Entrant"
+									value={formatNumberWithSpaces(balance.incoming_quantity, 3)}
+									color="#0277BD"
+								/>
+								<DashboardStatCard
+									icon={<TrendingUpIcon />}
+									label="Projeté"
+									value={formatNumberWithSpaces(balance.projected_quantity, 3)}
+									color="#00838F"
+								/>
+								<DashboardStatCard
+									icon={<Inventory2Icon />}
+									label="Minimum"
+									value={formatNumberWithSpaces(balance.stock_minimum, 3)}
+									color="#ED6C02"
+								/>
 							</Box>
 
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
@@ -307,10 +316,21 @@ const StockView: React.FC<StockViewProps> = ({ session, company_id, id }) => {
 										<InfoRow
 											icon={<Inventory2Icon />}
 											label="Statut"
-											value={<Chip size="small" variant="outlined" label={stateLabel(balance.stock_state)} color={stateColor(balance.stock_state)} />}
+											value={
+												<Chip
+													size="small"
+													variant="outlined"
+													label={stateLabel(balance.stock_state)}
+													color={stateColor(balance.stock_state)}
+												/>
+											}
 										/>
 										<Divider />
-										<InfoRow icon={<CalendarTodayIcon />} label="Dernière mise à jour" value={formatDate(balance.date_updated)} />
+										<InfoRow
+											icon={<CalendarTodayIcon />}
+											label="Dernière mise à jour"
+											value={formatDate(balance.date_updated)}
+										/>
 									</Stack>
 								</CardContent>
 							</Card>

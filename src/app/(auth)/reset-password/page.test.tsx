@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 import { renderToStaticMarkup } from 'react-dom/server';
-import React from 'react';
+import { createElement, type ReactElement } from 'react';
 
 // Session shapes
 type SessionUser = { pk: number; email: string };
@@ -28,9 +28,7 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/components/pages/auth/reset-password/resetPassword', () => ({
 	__esModule: true,
 	default: () => {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const React = require('react');
-		return React.createElement('div', null, 'RESET_PASSWORD_CLIENT_MARKER');
+		return createElement('div', null, 'RESET_PASSWORD_CLIENT_MARKER');
 	},
 }));
 
@@ -68,7 +66,7 @@ describe('ResetPasswordPage server component', () => {
 		const Page = mod.default as () => Promise<unknown>;
 
 		const result = await Page();
-		const html = renderToStaticMarkup(result as unknown as React.ReactElement);
+		const html = renderToStaticMarkup(result as unknown as ReactElement);
 		expect(html).toContain('RESET_PASSWORD_CLIENT_MARKER');
 		expect(mockRedirect).not.toHaveBeenCalled();
 	});

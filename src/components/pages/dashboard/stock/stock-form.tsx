@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import { runWithCleanup } from '@/utils/runWithCleanup';
+import { useState, type FC, type MouseEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import {
 	Alert,
@@ -40,28 +41,19 @@ import { useCreateStockAdjustmentMutation, useGetStockBalanceQuery } from '@/sto
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import type { ArticleClass } from '@/models/classes';
 import type { DropDownType } from '@/types/accountTypes';
-import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
+import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import type { StockAdjustmentFormValues } from '@/types/stockTypes';
 import { getLabelForKey, parseNumber, setFormikAutoErrors } from '@/utils/helpers';
 import { stockAdjustmentSchema } from '@/utils/formValidationSchemas';
 import { useToast } from '@/utils/hooks';
 import { STOCK_LIST } from '@/utils/routes';
+import { stockAdjustmentMovementItems } from '@/utils/rawData';
 import { textInputTheme } from '@/utils/themes';
+import type { StockFormContentProps, StockFormProps } from '@/types/stockTypes';
 
 const inputTheme = textInputTheme();
 
-type StockFormContentProps = {
-	token?: string;
-	company_id: number;
-	balance_id?: number;
-};
-
-const movementTypeItems: DropDownType[] = [
-	{ value: 'adjustment', code: 'Ajustement' },
-	{ value: 'opening', code: 'Stock initial' },
-];
-
-const StockFormContent: React.FC<StockFormContentProps> = ({ token, company_id, balance_id }) => {
+const StockFormContent: FC<StockFormContentProps> = ({ token, company_id, balance_id }) => {
 	const router = useRouter();
 	const { onSuccess, onError } = useToast();
 	const theme = useTheme();
@@ -94,25 +86,17 @@ const StockFormContent: React.FC<StockFormContentProps> = ({ token, company_id, 
 	const [createAdjustment, { isLoading: adjustmentLoading, error: adjustmentError }] =
 		useCreateStockAdjustmentMutation();
 
-	const articles = useMemo(
-		() =>
-			((Array.isArray(articlesRaw) ? articlesRaw : articlesRaw?.results) ?? []).filter(
-				(item: Partial<ArticleClass>) => item.type_article === 'Produit',
-			),
-		[articlesRaw],
+	const articles = ((Array.isArray(articlesRaw) ? articlesRaw : articlesRaw?.results) ?? []).filter(
+		(item: Partial<ArticleClass>) => item.type_article === 'Produit',
 	);
-	const articleItems = useMemo<DropDownType[]>(
-		() =>
-			articles.map((article: Partial<ArticleClass>) => ({
-				value: String(article.id),
-				code: `${article.reference} — ${article.designation}`,
-			})),
-		[articles],
-	);
-	const emplacementItems = useMemo<DropDownType[]>(
-		() => emplacements.map((location) => ({ value: String(location.id), code: location.nom })),
-		[emplacements],
-	);
+	const articleItems = articles.map((article: Partial<ArticleClass>) => ({
+		value: String(article.id),
+		code: `${article.reference} — ${article.designation}`,
+	})) as DropDownType[];
+	const emplacementItems = emplacements.map((location) => ({
+		value: String(location.id),
+		code: location.nom,
+	})) as DropDownType[];
 
 	const formik = useFormik<StockAdjustmentFormValues>({
 		initialValues: {
@@ -129,46 +113,49 @@ const StockFormContent: React.FC<StockFormContentProps> = ({ token, company_id, 
 		onSubmit: async (values, { setFieldError }) => {
 			setHasAttemptedSubmit(true);
 			setIsPending(true);
-			try {
-				await createAdjustment({
-					company_id,
-					article: Number(values.article),
-					emplacement: Number(values.emplacement),
-					quantity: Number(values.quantity),
-					movement_type: values.movement_type,
-					reason: values.reason,
-				}).unwrap();
-				onSuccess('Mouvement de stock enregistré.');
-				router.replace(`${STOCK_LIST}?company_id=${company_id}`);
-			} catch (error) {
-				onError("Impossible d'enregistrer le mouvement.");
-				setFormikAutoErrors({ e: error, setFieldError });
-			} finally {
-				setIsPending(false);
-			}
+			await runWithCleanup(
+				async () => {
+					try {
+						await createAdjustment({
+							company_id,
+							article: Number(values.article),
+							emplacement: Number(values.emplacement),
+							quantity: Number(values.quantity),
+							movement_type: values.movement_type,
+							reason: values.reason,
+						}).unwrap();
+						onSuccess('Mouvement de stock enregistré.');
+						router.replace(`${STOCK_LIST}?company_id=${company_id}`);
+					} catch (error) {
+						onError("Impossible d'enregistrer le mouvement.");
+						setFormikAutoErrors({ e: error, setFieldError });
+					}
+				},
+				() => {
+					setIsPending(false);
+				},
+			);
 		},
 	});
 
 	const selectedMovementType =
-		movementTypeItems.find((item) => item.value === formik.values.movement_type) ?? movementTypeItems[0];
+		stockAdjustmentMovementItems.find((item) => item.value === formik.values.movement_type) ??
+		stockAdjustmentMovementItems[0];
 	const selectedArticle = articleItems.find((item) => item.value === String(formik.values.article)) ?? null;
 	const selectedEmplacement = emplacementItems.find((item) => item.value === String(formik.values.emplacement)) ?? null;
-	const fieldLabels = useMemo(
-		() => ({
-			movement_type: 'Type de mouvement',
-			article: 'Article',
-			emplacement: 'Emplacement',
-			quantity: 'Quantité signée',
-			reason: 'Motif',
-		}),
-		[],
-	);
-	const validationErrors = useMemo(() => {
+	const fieldLabels = {
+		movement_type: 'Type de mouvement',
+		article: 'Article',
+		emplacement: 'Emplacement',
+		quantity: 'Quantité signée',
+		reason: 'Motif',
+	};
+	const validationErrors = (() => {
 		if (!hasAttemptedSubmit) return {};
 		return Object.fromEntries(
 			Object.entries(formik.errors).filter(([key, value]) => key !== 'globalError' && typeof value === 'string'),
 		) as Record<string, string>;
-	}, [formik.errors, hasAttemptedSubmit]);
+	})();
 	const error = companyError || balanceError || articlesError || emplacementsError || adjustmentError;
 	const axiosError = error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined;
 	const isLoading =
@@ -231,7 +218,7 @@ const StockFormContent: React.FC<StockFormContentProps> = ({ token, company_id, 
 									<CustomAutoCompleteSelect
 										id="movement_type"
 										label="Type de mouvement"
-										items={movementTypeItems}
+										items={stockAdjustmentMovementItems}
 										value={selectedMovementType}
 										onChange={(_, value) => void formik.setFieldValue('movement_type', value?.value ?? '')}
 										onBlur={formik.handleBlur('movement_type')}
@@ -334,7 +321,7 @@ const StockFormContent: React.FC<StockFormContentProps> = ({ token, company_id, 
 								type="submit"
 								loading={isPending}
 								startIcon={<AddIcon />}
-								onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+								onClick={(event: MouseEvent<HTMLButtonElement>) => {
 									setHasAttemptedSubmit(true);
 									if (!formik.isValid) {
 										event.preventDefault();
@@ -353,12 +340,7 @@ const StockFormContent: React.FC<StockFormContentProps> = ({ token, company_id, 
 	);
 };
 
-type StockFormProps = SessionProps & {
-	company_id: number;
-	balance_id?: number;
-};
-
-const StockForm: React.FC<StockFormProps> = ({ session, company_id, balance_id }) => (
+const StockForm: FC<StockFormProps> = ({ session, company_id, balance_id }) => (
 	<StockFormWrapper session={session} company_id={company_id} title="Ajustement de stock" allowedRoles={['Caissier']}>
 		{(token) => <StockFormContent token={token} company_id={company_id} balance_id={balance_id} />}
 	</StockFormWrapper>

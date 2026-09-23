@@ -8,10 +8,7 @@ export const metadata: Metadata = {
 	title: "Détails de l'Utilisateur",
 	description: "Consulter les détails d'un utilisateur",
 };
-
-type UsersViewPageProps = {
-	params: Promise<{ id: number }>;
-};
+import type { IdNumberRouteProps as UsersViewPageProps } from '@/types/routeTypes';
 
 const UsersViewPage = async (props: UsersViewPageProps) => {
 	const session = await auth();
@@ -25,7 +22,7 @@ const UsersViewPage = async (props: UsersViewPageProps) => {
 		redirect(USERS_LIST);
 	}
 
-	return <UsersViewClient session={session} id={id} />;
+	return <UsersViewClient session={session} id={Number(id)} />;
 };
 
 export default UsersViewPage;

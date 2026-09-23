@@ -48,4 +48,20 @@ describe('logistics email delivery polling', () => {
 		act(() => jest.advanceTimersByTime(5000));
 		expect(refetch).toHaveBeenCalledTimes(1);
 	});
+
+	it('uses the latest refetch without restarting the polling interval', () => {
+		const firstRefetch = jest.fn();
+		const latestRefetch = jest.fn();
+		const order = deliveryState('En attente');
+		const { rerender } = renderHook(({ refetch }) => useLogistiqueEmailPolling(order, true, refetch), {
+			initialProps: { refetch: firstRefetch },
+		});
+
+		act(() => jest.advanceTimersByTime(1000));
+		rerender({ refetch: latestRefetch });
+		act(() => jest.advanceTimersByTime(1500));
+
+		expect(firstRefetch).not.toHaveBeenCalled();
+		expect(latestRefetch).toHaveBeenCalledTimes(1);
+	});
 });

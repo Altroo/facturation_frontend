@@ -4,7 +4,7 @@ import EnterCodeClient from './enterCode';
 import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
 import { store } from '@/store/store';
-import React from 'react';
+import { type ReactNode } from 'react';
 
 // Dynamic mock for search params
 let searchParamsMock = new URLSearchParams();
@@ -28,13 +28,17 @@ jest.mock('next/navigation', () => ({
 }));
 
 jest.mock('@/utils/clientHelpers', () => ({
-	Desktop: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
-	TabletAndMobile: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
+	Desktop: ({ children }: { children?: ReactNode }) => <>{children}</>,
+	TabletAndMobile: ({ children }: { children?: ReactNode }) => <>{children}</>,
 }));
 
 jest.mock('@/utils/hooks', () => ({
 	useToast: () => ({ onSuccess: mockOnSuccess, onError: mockOnError }),
-	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
+	useLanguage: () => ({
+		language: 'fr' as const,
+		setLanguage: jest.fn(),
+		t: jest.requireActual('@/translations').translations.fr,
+	}),
 }));
 
 jest.mock('@/store/services/account', () => {
@@ -91,11 +95,9 @@ describe('EnterCodeClient', () => {
 		expect(screen.getAllByText('Renvoyer le code').length).toBeGreaterThanOrEqual(1);
 	});
 
-	it(
-		'typing digits moves focus and updates combined code then submits successfully',
-		async () => {
-			await act(async () => {
-				render(
+	it('typing digits moves focus and updates combined code then submits successfully', async () => {
+		await act(async () => {
+			render(
 				<Provider store={store}>
 					<EnterCodeClient email={testEmail} />
 				</Provider>,

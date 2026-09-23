@@ -1,3 +1,4 @@
+import { createElement } from 'react';
 import { jest } from '@jest/globals';
 
 type SessionUser = { pk: number; email: string };
@@ -19,9 +20,7 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/components/pages/dashboard/settings/password', () => ({
 	__esModule: true,
 	default: (props: { session?: Session }) => {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const React = require('react');
-		return React.createElement('div', null, `PASSWORD_CLIENT_MARKER:${JSON.stringify(props?.session ?? null)}`);
+		return createElement('div', null, `PASSWORD_CLIENT_MARKER:${JSON.stringify(props?.session ?? null)}`);
 	},
 }));
 

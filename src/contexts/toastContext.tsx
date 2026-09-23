@@ -1,18 +1,14 @@
 'use client';
 
-import React, { createContext, useState } from 'react';
+import { createContext, useState, type FC, type ReactNode } from 'react';
 import type { AlertColor } from '@mui/material';
 import Portal from '@/contexts/portal';
 import CustomToast from '@/components/portals/customToast/customToast';
-
-export type ToastContextType = {
-	onSuccess: (msg: string) => void;
-	onError: (msg: string) => void;
-};
+import type { ToastContextType } from '@/types/uiTypes';
 
 export const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
-export const ToastContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ToastContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
 	const [show, setShow] = useState<boolean>(false);
 	const [type, setType] = useState<AlertColor>('success');
 	const [message, setMessage] = useState<string>('');

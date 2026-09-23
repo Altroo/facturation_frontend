@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 import { renderToStaticMarkup } from 'react-dom/server';
-import React from 'react';
+import { createElement, type ReactElement } from 'react';
 
 // types
 type SessionUser = { pk: number; email: string };
@@ -35,9 +35,7 @@ jest.mock('next/headers', () => ({
 jest.mock('@/components/pages/auth/reset-password/setPasswordComplete', () => ({
 	__esModule: true,
 	default: () => {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const React = require('react');
-		return React.createElement('div', null, 'SET_PASSWORD_COMPLETE_MARKER');
+		return createElement('div', null, 'SET_PASSWORD_COMPLETE_MARKER');
 	},
 }));
 
@@ -46,9 +44,7 @@ jest.mock('@/components/pages/auth/reset-password/setPasswordComplete', () => ({
 jest.mock('./clearCookiesClient', () => ({
 	__esModule: true,
 	default: () => {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const React = require('react');
-		return React.createElement('div', null, 'CLEAR_COOKIES_CLIENT_MARKER');
+		return createElement('div', null, 'CLEAR_COOKIES_CLIENT_MARKER');
 	},
 }));
 
@@ -115,7 +111,7 @@ describe('SetPasswordCompletePage server component', () => {
 		});
 
 		const result = await Page!();
-		const html = renderToStaticMarkup(result as unknown as React.ReactElement);
+		const html = renderToStaticMarkup(result as unknown as ReactElement);
 
 		expect(html).toContain('CLEAR_COOKIES_CLIENT_MARKER');
 		expect(html).toContain('SET_PASSWORD_COMPLETE_MARKER');

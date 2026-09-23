@@ -1,28 +1,15 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import { runWithCleanup } from '@/utils/runWithCleanup';
+import { type FC, useState } from 'react';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Stack } from '@mui/material';
 import { Close as CloseIcon, Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
-import type { Theme } from '@mui/material/styles';
-import type { DropDownType } from '@/types/accountTypes';
 import type { ApiErrorResponseType } from '@/types/_initTypes';
 import AddEntityModal from '@/components/shared/addEntityModal/addEntityModal';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import { useLanguage } from '@/utils/hooks';
-
-type EntityCrudControlsProps = {
-	label: string;
-	icon: React.ReactNode;
-	inputTheme: Theme;
-	selectedItem: DropDownType | null;
-	addEntity: (args: { data: { nom: string } }) => Promise<unknown> & { unwrap?: () => Promise<unknown> };
-	editEntity: (args: { id: number; data: { nom: string } }) => Promise<unknown> & { unwrap?: () => Promise<unknown> };
-	deleteEntity: (args: { id: number }) => Promise<unknown> & { unwrap?: () => Promise<unknown> };
-	onAddSuccess: (id: number) => void;
-	onDeleteSuccess?: () => void;
-	disabled?: boolean;
-};
+import type { EntityCrudControlsProps } from '@/types/uiTypes';
 
 const getMutationErrorMessage = (error: unknown, fallback: string): string => {
 	const payload =
@@ -41,7 +28,7 @@ const getMutationErrorMessage = (error: unknown, fallback: string): string => {
 	return fallback;
 };
 
-const EntityCrudControls: React.FC<EntityCrudControlsProps> = ({
+const EntityCrudControls: FC<EntityCrudControlsProps> = ({
 	label,
 	icon,
 	inputTheme,
@@ -61,11 +48,11 @@ const EntityCrudControls: React.FC<EntityCrudControlsProps> = ({
 	const [deleteOpen, setDeleteOpen] = useState(false);
 	const [actionLoading, setActionLoading] = useState(false);
 
-	const selectedId = useMemo(() => {
+	const selectedId = (() => {
 		if (!selectedItem?.value) return null;
 		const parsed = Number(selectedItem.value);
 		return Number.isFinite(parsed) ? parsed : null;
-	}, [selectedItem]);
+	})();
 
 	const handleEditOpen = () => {
 		if (!selectedItem?.code) return;
@@ -77,36 +64,42 @@ const EntityCrudControls: React.FC<EntityCrudControlsProps> = ({
 	const handleEditSubmit = async () => {
 		if (!selectedId || !editName.trim()) return;
 		setActionLoading(true);
-		try {
-			const request = editEntity({ id: selectedId, data: { nom: editName.trim() } });
-			if (typeof request.unwrap === 'function') {
-				await request.unwrap();
-			} else {
-				await request;
-			}
-			setEditOpen(false);
-		} catch (error) {
-			setEditError(getMutationErrorMessage(error, t.addEntityModal.addError(label)));
-		} finally {
-			setActionLoading(false);
-		}
+		await runWithCleanup(
+			async () => {
+				try {
+					const request = editEntity({ id: selectedId, data: { nom: editName.trim() } });
+					if (typeof request.unwrap === 'function') {
+						await request.unwrap();
+					} else {
+						await request;
+					}
+					setEditOpen(false);
+				} catch (error) {
+					setEditError(getMutationErrorMessage(error, t.addEntityModal.addError(label)));
+				}
+			},
+			() => {
+				setActionLoading(false);
+			},
+		);
 	};
 
 	const handleDeleteConfirm = async () => {
 		if (!selectedId) return;
 		setActionLoading(true);
-		try {
-			const request = deleteEntity({ id: selectedId });
-			if (typeof request.unwrap === 'function') {
-				await request.unwrap();
-			} else {
-				await request;
-			}
-			setDeleteOpen(false);
-			onDeleteSuccess?.();
-		} finally {
-			setActionLoading(false);
-		}
+		await runWithCleanup(
+			async () => {
+				const request = deleteEntity({ id: selectedId });
+				if (typeof request.unwrap === 'function') {
+					await request.unwrap();
+				} else {
+					await request;
+				}
+				setDeleteOpen(false);
+				onDeleteSuccess?.();
+			},
+			() => setActionLoading(false),
+		);
 	};
 
 	return (

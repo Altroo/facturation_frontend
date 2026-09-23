@@ -17,6 +17,7 @@ import {
 	TVA_INPUT_INVALID,
 } from '@/utils/formValidationErrorMessages';
 import type { ClientSchemaType } from '@/types/clientTypes';
+import { pmRequired, ppRequired } from '@/utils/rawData';
 
 const base64ImageField = z.url().or(z.string().startsWith('data:image/')).nullable().optional();
 
@@ -230,9 +231,6 @@ export const userSchema = z.object({
 	avatar_cropped: base64ImageField,
 	globalError: optionalTextField(1, 500),
 });
-
-export const pmRequired = ['raison_sociale', 'ville', 'ICE', 'delai_de_paiement'] as const;
-export const ppRequired = ['nom', 'prenom', 'adresse', 'ville', 'delai_de_paiement'] as const;
 
 export const clientSchema = z
 	.object({

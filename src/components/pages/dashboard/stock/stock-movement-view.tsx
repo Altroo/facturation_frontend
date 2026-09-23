@@ -1,6 +1,6 @@
 'use client';
 
-import React, { isValidElement } from 'react';
+import { type FC, isValidElement } from 'react';
 import { useRouter } from 'next/navigation';
 import {
 	Box,
@@ -28,18 +28,15 @@ import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import { useGetStockMovementQuery } from '@/store/services/stock';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
-import type { SessionProps } from '@/types/_initTypes';
-import type { StockMovement } from '@/types/stockTypes';
+import type {
+	StockMovement,
+	StockMovementViewInfoRowProps as InfoRowProps,
+	StockMovementViewProps,
+} from '@/types/stockTypes';
 import { formatDate, formatNumberWithSpaces } from '@/utils/helpers';
 import { STOCK_VIEW } from '@/utils/routes';
 
-type InfoRowProps = {
-	icon: React.ReactNode;
-	label: string;
-	value: React.ReactNode | string | number | null | undefined;
-};
-
-const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
+const InfoRow: FC<InfoRowProps> = ({ icon, label, value }) => {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 	const displayValue = isValidElement(value) ? value : value && value.toString().length > 0 ? value : '—';
@@ -47,11 +44,7 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 	return (
 		<Stack direction="row" spacing={2} sx={{ alignItems: 'flex-start', py: 1.5, flexWrap: 'wrap' }}>
 			<Box sx={{ color: 'primary.main', display: 'flex', alignItems: 'center', minWidth: 40 }}>{icon}</Box>
-			<Stack
-				direction="row"
-				spacing={isMobile ? 0 : 2}
-				sx={{ alignItems: 'center', flex: 1, flexWrap: 'wrap' }}
-			>
+			<Stack direction="row" spacing={isMobile ? 0 : 2} sx={{ alignItems: 'center', flex: 1, flexWrap: 'wrap' }}>
 				<Typography
 					sx={{
 						fontWeight: 600,
@@ -85,9 +78,7 @@ const movementColor = (
 	return 'default';
 };
 
-type StockMovementViewProps = SessionProps & { company_id: number; id: number };
-
-const StockMovementView: React.FC<StockMovementViewProps> = ({ session, company_id, id }) => {
+const StockMovementView: FC<StockMovementViewProps> = ({ session, company_id, id }) => {
 	const token = useInitAccessToken(session);
 	const router = useRouter();
 	const theme = useTheme();
@@ -152,14 +143,23 @@ const StockMovementView: React.FC<StockMovementViewProps> = ({ session, company_
 										<InfoRow
 											icon={<HistoryIcon />}
 											label="Type"
-											value={<Chip size="small" variant="outlined" label={movement.movement_type_display} color={movementColor(movement.movement_type)} />}
+											value={
+												<Chip
+													size="small"
+													variant="outlined"
+													label={movement.movement_type_display}
+													color={movementColor(movement.movement_type)}
+												/>
+											}
 										/>
 										<Divider />
 										<InfoRow
 											icon={<Inventory2Icon />}
 											label="Quantité"
 											value={
-												<Typography sx={{ fontWeight: 700, color: Number(movement.quantity) < 0 ? 'error.main' : 'success.main' }}>
+												<Typography
+													sx={{ fontWeight: 700, color: Number(movement.quantity) < 0 ? 'error.main' : 'success.main' }}
+												>
 													{Number(movement.quantity) > 0 ? '+' : ''}
 													{formatNumberWithSpaces(movement.quantity, 3)}
 												</Typography>
@@ -193,7 +193,11 @@ const StockMovementView: React.FC<StockMovementViewProps> = ({ session, company_
 										<Divider />
 										<InfoRow icon={<PersonIcon />} label="Utilisateur" value={movement.actor_name || 'Système'} />
 										<Divider />
-										<InfoRow icon={<NotesIcon />} label="Motif / source" value={movement.note || movement.source_type} />
+										<InfoRow
+											icon={<NotesIcon />}
+											label="Motif / source"
+											value={movement.note || movement.source_type}
+										/>
 									</Stack>
 								</CardContent>
 							</Card>

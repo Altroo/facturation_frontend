@@ -6,13 +6,9 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
 	title: 'Détails de la Facture Pro Forma',
-	description: 'Consulter les détails d\'une facture pro forma',
+	description: "Consulter les détails d'une facture pro forma",
 };
-
-type PageProps = {
-	params: Promise<{ id: string }>;
-	searchParams: Promise<{ company_id: string }>;
-};
+import type { CompanyScopedDetailRouteProps as PageProps } from '@/types/routeTypes';
 
 const FactureProFormaViewPage = async (props: PageProps) => {
 	const session = await auth();

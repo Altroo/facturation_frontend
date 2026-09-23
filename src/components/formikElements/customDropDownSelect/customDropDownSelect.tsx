@@ -1,6 +1,6 @@
-import React from 'react';
+import { type FC } from 'react';
 import Styles from './customDropDownSelect.module.sass';
-import Select, { type SelectChangeEvent } from '@mui/material/Select';
+import Select from '@mui/material/Select';
 import {
 	ThemeProvider,
 	MenuItem,
@@ -11,9 +11,8 @@ import {
 	FormHelperText,
 	InputAdornment,
 } from '@mui/material';
-import type { Theme } from '@mui/material/styles';
 import { CheckCircle as CheckCircleIcon } from '@mui/icons-material';
-import { DropDownType } from '@/types/accountTypes';
+import type { CustomDropDownSelectProps as Props } from '@/types/uiTypes';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -28,29 +27,14 @@ const MenuProps = {
 	},
 };
 
-type Props = {
-	id: string;
-	label: string;
-	items: Array<DropDownType> | Array<string>;
-	theme: Theme;
-	value: string | null;
-	size?: 'small' | 'medium';
-	onChange?: (event: SelectChangeEvent) => void;
-	onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
-	helperText?: string;
-	error?: boolean;
-	disabled?: boolean;
-	cssClass?: string;
-	startIcon?: React.ReactNode;
-	endIcon?: React.ReactNode;
-	children?: React.ReactNode;
-	required?: boolean;
-};
-
-const CustomDropDownSelect: React.FC<Props> = (props: Props) => {
+const CustomDropDownSelect: FC<Props> = (props: Props) => {
 	return (
-        <ThemeProvider theme={props.theme}>
-            <FormControl className={`${Styles.formControl} ${props.cssClass}`} disabled={props.disabled} required={props.required}>
+		<ThemeProvider theme={props.theme}>
+			<FormControl
+				className={`${Styles.formControl} ${props.cssClass}`}
+				disabled={props.disabled}
+				required={props.required}
+			>
 				<InputLabel id={`${props.id}-label`}>{props.label}</InputLabel>
 				<Select
 					labelId={`${props.id}-label`}
@@ -77,26 +61,27 @@ const CustomDropDownSelect: React.FC<Props> = (props: Props) => {
 						const isObject = typeof item === 'object' && item !== null && 'value' in item;
 						const value = isObject ? item?.value : item;
 						return (
-                            <MenuItem key={index} value={value} sx={{ minHeight: ITEM_HEIGHT }}>
-                                <Stack
-                                    direction="row"
-                                    sx={{
-                                        justifyContent: "space-between",
-                                        width: '100%'
-                                    }}>
+							<MenuItem key={index} value={value} sx={{ minHeight: ITEM_HEIGHT }}>
+								<Stack
+									direction="row"
+									sx={{
+										justifyContent: 'space-between',
+										width: '100%',
+									}}
+								>
 									<span>{value || 'Sélectionner une valeur'}</span>
 									{props.value === value && <CheckCircleIcon sx={{ fontSize: 20 }} color="primary" />}
 								</Stack>
-                            </MenuItem>
-                        );
+							</MenuItem>
+						);
 					})}
 				</Select>
 				{props.helperText ? (
 					<FormHelperText sx={{ color: 'rgb(229, 115, 115)' }}>{props.helperText}</FormHelperText>
 				) : null}
 			</FormControl>
-        </ThemeProvider>
-    );
+		</ThemeProvider>
+	);
 };
 
 export default CustomDropDownSelect;

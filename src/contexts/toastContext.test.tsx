@@ -1,4 +1,4 @@
-import React from 'react';
+import { type PropsWithChildren, type FC, useContext } from 'react';
 import { render, screen, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { ToastContext, ToastContextProvider } from './toastContext';
@@ -6,9 +6,7 @@ import { ToastContext, ToastContextProvider } from './toastContext';
 // Mock the Portal used by the provider to avoid DOM/portal complexity
 jest.mock('@/contexts/portal', () => ({
 	__esModule: true,
-	default: (props: React.PropsWithChildren<Record<string, unknown>>) => (
-		<div data-testid="portal">{props.children}</div>
-	),
+	default: (props: PropsWithChildren<Record<string, unknown>>) => <div data-testid="portal">{props.children}</div>,
 }));
 
 // Mock CustomToast to expose received props via attributes when `show` is true
@@ -18,8 +16,8 @@ jest.mock('@/components/portals/customToast/customToast', () => ({
 		props.show ? <div data-testid="custom-toast" data-type={props.type} data-message={props.message} /> : null,
 }));
 
-const TestConsumer: React.FC<{ action: 'success' | 'error'; message: string }> = ({ action, message }) => {
-	const ctx = React.useContext(ToastContext);
+const TestConsumer: FC<{ action: 'success' | 'error'; message: string }> = ({ action, message }) => {
+	const ctx = useContext(ToastContext);
 	return (
 		<button
 			onClick={() => {

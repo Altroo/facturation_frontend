@@ -1,6 +1,6 @@
 'use client';
 
-import React, { ForwardedRef, forwardRef, useState } from 'react';
+import { useState } from 'react';
 import Styles from './authLayout.module.sass';
 import { Box, Stack } from '@mui/material';
 import Image from 'next/image';
@@ -10,18 +10,9 @@ import ReceiptSVG from '../../../../public/assets/images/auth_illu/receipt.svg';
 import CalculatorSVG from '../../../../public/assets/images/auth_illu/calculator.svg';
 import DocumentSVG from '../../../../public/assets/images/auth_illu/document.svg';
 import { useLanguage } from '@/utils/hooks';
+import type { AuthLayoutProps as Props, svgImageType } from '@/types/uiTypes';
 
-type Props = {
-	children?: React.ReactNode;
-};
-
-export type svgImageType = {
-	src: string;
-	height: number;
-	width: number;
-};
-
-const AuthLayout = forwardRef<HTMLAnchorElement, Props>((props: Props, ref: ForwardedRef<HTMLAnchorElement>) => {
+const AuthLayout = ({ ref, children }: Props) => {
 	const { t } = useLanguage();
 	const [authIlluRandom] = useState<{ image: svgImageType; color: string }>(() => {
 		const availableAuthBgImages: Array<{ image: svgImageType; color: string }> = [
@@ -66,12 +57,12 @@ const AuthLayout = forwardRef<HTMLAnchorElement, Props>((props: Props, ref: Forw
 				{/* Right side */}
 				<Box className={Styles.rightBox}>
 					{/* Children content */}
-					{props.children}
+					{children}
 				</Box>
 			</Stack>
 		</main>
 	);
-});
+};
 AuthLayout.displayName = 'AuthLayout';
 
 export default AuthLayout;

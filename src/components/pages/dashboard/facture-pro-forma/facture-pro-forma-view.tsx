@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import { runWithCleanup } from '@/utils/runWithCleanup';
+import { type FC, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@mui/material';
 import {
@@ -9,10 +10,10 @@ import {
 	PictureAsPdf as PictureAsPdfIcon,
 } from '@mui/icons-material';
 import {
+	type DocumentPdfType,
 	FACTURE_PRO_FORMA_EDIT,
 	FACTURE_PRO_FORMA_LIST,
 	FACTURE_PRO_FORMA_PDF,
-	type DocumentPdfType,
 } from '@/utils/routes';
 import { useDeleteFactureProFormaMutation, useGetFactureProFormaQuery } from '@/store/services/factureProForma';
 import { useInitAccessToken } from '@/contexts/InitContext';
@@ -22,29 +23,15 @@ import { getUserCompaniesState } from '@/store/selectors';
 import { fetchPdfBlob } from '@/utils/apiHelpers';
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
-import type { SessionProps } from '@/types/_initTypes';
 import CompanyDocumentsWrapperView from '@/components/pages/dashboard/shared/company-documents-view/companyDocumentsWrapperView';
-import type { CompanyDocumentData } from '@/types/companyDocumentsTypes';
+import type { FactureProFormaData, FactureProFormaViewProps as Props } from '@/types/companyDocumentsTypes';
 
-type FactureProFormaData = CompanyDocumentData & {
-	numero_facture?: string | number | null;
-	date_facture?: string | null;
-	numero_bon_commande_client?: string | number | null;
-	fournisseur?: string | null;
-	fournisseur_email?: string | null;
-};
-
-interface Props extends SessionProps {
-	company_id: number;
-	id: number;
-}
-
-const FactureProFormaViewClient: React.FC<Props> = ({ session, company_id, id }) => {
+const FactureProFormaViewClient: FC<Props> = ({ session, company_id, id }) => {
 	const query = useGetFactureProFormaQuery({ id });
 	const router = useRouter();
 	const token = useInitAccessToken(session);
 	const companies = useAppSelector(getUserCompaniesState);
-	const company = useMemo(() => companies?.find((c) => c.id === company_id), [companies, company_id]);
+	const company = companies?.find((c) => c.id === company_id);
 	const [deleteRecord] = useDeleteFactureProFormaMutation();
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
@@ -53,15 +40,20 @@ const FactureProFormaViewClient: React.FC<Props> = ({ session, company_id, id })
 	const [pendingPdfType, setPendingPdfType] = useState<DocumentPdfType | null>(null);
 
 	const handleDelete = async () => {
-		try {
-			await deleteRecord({ id }).unwrap();
-			onSuccess(t.facturesProforma.deleteSuccess);
-			router.push(FACTURE_PRO_FORMA_LIST);
-		} catch (err) {
-			onError(extractApiErrorMessage(err, t.facturesProforma.deleteError));
-		} finally {
-			setShowDeleteModal(false);
-		}
+		await runWithCleanup(
+			async () => {
+				try {
+					await deleteRecord({ id }).unwrap();
+					onSuccess(t.facturesProforma.deleteSuccess);
+					router.push(FACTURE_PRO_FORMA_LIST);
+				} catch (err) {
+					onError(extractApiErrorMessage(err, t.facturesProforma.deleteError));
+				}
+			},
+			() => {
+				setShowDeleteModal(false);
+			},
+		);
 	};
 
 	const deleteModalActions = [
@@ -83,17 +75,22 @@ const FactureProFormaViewClient: React.FC<Props> = ({ session, company_id, id })
 	const handleLanguageSelect = async (language: 'fr' | 'en') => {
 		setShowLanguageModal(false);
 		if (!token || !pendingPdfType) return;
-		try {
-			const url = FACTURE_PRO_FORMA_PDF(id, company_id, pendingPdfType, language);
-			const blob = await fetchPdfBlob(url, token);
-			const blobUrl = window.URL.createObjectURL(blob);
-			window.open(blobUrl, '_blank');
-			setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60_000);
-		} catch {
-			onError(t.errors.documentOpenError);
-		} finally {
-			setPendingPdfType(null);
-		}
+		await runWithCleanup(
+			async () => {
+				try {
+					const url = FACTURE_PRO_FORMA_PDF(id, company_id, pendingPdfType, language);
+					const blob = await fetchPdfBlob(url, token);
+					const blobUrl = window.URL.createObjectURL(blob);
+					window.open(blobUrl, '_blank');
+					setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60_000);
+				} catch {
+					onError(t.errors.documentOpenError);
+				}
+			},
+			() => {
+				setPendingPdfType(null);
+			},
+		);
 	};
 
 	const isCaissier = company?.role === 'Caissier';

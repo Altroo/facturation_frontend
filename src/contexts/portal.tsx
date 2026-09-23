@@ -1,15 +1,11 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import { useEffect, type FC } from 'react';
 import { createPortal } from 'react-dom';
 import { useIsClient } from '@/utils/hooks';
+import type { PortalProps } from '@/types/uiTypes';
 
-interface PortalProps {
-	id: string;
-	children: React.ReactNode;
-}
-
-const Portal: React.FC<PortalProps> = ({ id, children }) => {
+const Portal: FC<PortalProps> = ({ id, children }) => {
 	const isClient = useIsClient();
 
 	useEffect(() => {

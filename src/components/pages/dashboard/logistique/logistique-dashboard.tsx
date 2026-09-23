@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import { type FC } from 'react';
 import {
 	Alert,
 	Box,
@@ -45,7 +45,9 @@ import { useGetLogistiqueDashboardQuery } from '@/store/services/logistique';
 import { formatNumberWithSpaces } from '@/utils/helpers';
 import { useLanguage } from '@/utils/hooks';
 import type { SessionProps } from '@/types/_initTypes';
-import type { LogistiqueStats } from '@/types/logistiqueTypes';
+import type { LogistiqueChartCardProps as ChartCardProps, LogistiqueStats } from '@/types/logistiqueTypes';
+import { logistiqueChartColors as CHART_COLORS, logistiquePieColors as PIE_COLORS } from '@/utils/rawData';
+import type { LogistiqueDashboardDashboardContentProps as DashboardContentProps } from '@/types/logistiqueTypes';
 
 ChartJS.register(
 	CategoryScale,
@@ -59,43 +61,6 @@ ChartJS.register(
 	Legend,
 	Filler,
 );
-
-type DashboardContentProps = SessionProps & {
-	company_id: number;
-};
-
-type ChartCardProps = {
-	title: string;
-	children: React.ReactNode;
-	height?: number;
-	wide?: boolean;
-	infoTooltip?: string;
-};
-
-const CHART_COLORS = {
-	primary: 'rgba(25, 118, 210, 0.82)',
-	primarySoft: 'rgba(25, 118, 210, 0.14)',
-	success: 'rgba(46, 125, 50, 0.82)',
-	successSoft: 'rgba(46, 125, 50, 0.14)',
-	warning: 'rgba(237, 108, 2, 0.82)',
-	warningSoft: 'rgba(237, 108, 2, 0.16)',
-	error: 'rgba(211, 47, 47, 0.82)',
-	info: 'rgba(2, 136, 209, 0.82)',
-	secondary: 'rgba(106, 27, 154, 0.82)',
-	neutral: 'rgba(69, 90, 100, 0.82)',
-	brown: 'rgba(93, 64, 55, 0.82)',
-};
-
-const PIE_COLORS = [
-	CHART_COLORS.primary,
-	CHART_COLORS.success,
-	CHART_COLORS.warning,
-	CHART_COLORS.error,
-	CHART_COLORS.info,
-	CHART_COLORS.secondary,
-	CHART_COLORS.neutral,
-	CHART_COLORS.brown,
-];
 
 const legendBottom = {
 	position: 'bottom',
@@ -189,7 +154,7 @@ const formatMonthLabel = (month: string) => {
 
 const hasPositiveData = (values: number[]) => values.some((value) => value > 0);
 
-const ChartCard: React.FC<ChartCardProps> = ({ title, children, height = 320, wide = false, infoTooltip }) => (
+const ChartCard: FC<ChartCardProps> = ({ title, children, height = 320, wide = false, infoTooltip }) => (
 	<Card
 		elevation={2}
 		sx={{
@@ -226,7 +191,7 @@ const ChartCard: React.FC<ChartCardProps> = ({ title, children, height = 320, wi
 	</Card>
 );
 
-const EmptyChart: React.FC<{ message?: string }> = ({ message }) => {
+const EmptyChart: FC<{ message?: string }> = ({ message }) => {
 	const { t } = useLanguage();
 
 	return (
@@ -254,7 +219,7 @@ const EmptyChart: React.FC<{ message?: string }> = ({ message }) => {
 	);
 };
 
-const MonthlyFlowChart: React.FC<{ stats: LogistiqueStats }> = ({ stats }) => {
+const MonthlyFlowChart: FC<{ stats: LogistiqueStats }> = ({ stats }) => {
 	const { t } = useLanguage();
 	const flow = stats.monthly_flow ?? [];
 	const labels = flow.map((item) => formatMonthLabel(item.month));
@@ -299,7 +264,7 @@ const MonthlyFlowChart: React.FC<{ stats: LogistiqueStats }> = ({ stats }) => {
 	);
 };
 
-const WorkflowChart: React.FC<{ stats: LogistiqueStats }> = ({ stats }) => {
+const WorkflowChart: FC<{ stats: LogistiqueStats }> = ({ stats }) => {
 	const { t } = useLanguage();
 	const workflowStats = stats.statuts_workflow ?? [];
 	const labels = workflowStats.map((item) => item.statut);
@@ -318,7 +283,7 @@ const WorkflowChart: React.FC<{ stats: LogistiqueStats }> = ({ stats }) => {
 	);
 };
 
-const PaymentChart: React.FC<{ stats: LogistiqueStats }> = ({ stats }) => {
+const PaymentChart: FC<{ stats: LogistiqueStats }> = ({ stats }) => {
 	const { t } = useLanguage();
 	const labels = stats.statuts_paiement?.map((item) => item.statut_paiement) ?? [];
 	const values = stats.statuts_paiement?.map((item) => item.total) ?? [];
@@ -336,7 +301,7 @@ const PaymentChart: React.FC<{ stats: LogistiqueStats }> = ({ stats }) => {
 	);
 };
 
-const AlertsChart: React.FC<{ stats: LogistiqueStats }> = ({ stats }) => {
+const AlertsChart: FC<{ stats: LogistiqueStats }> = ({ stats }) => {
 	const { t } = useLanguage();
 	const labels = [
 		t.logistique.delays,
@@ -378,7 +343,7 @@ const AlertsChart: React.FC<{ stats: LogistiqueStats }> = ({ stats }) => {
 	);
 };
 
-const CostBreakdownChart: React.FC<{ stats: LogistiqueStats }> = ({ stats }) => {
+const CostBreakdownChart: FC<{ stats: LogistiqueStats }> = ({ stats }) => {
 	const { t } = useLanguage();
 	const labels = [
 		t.articles.colPrixAchat,
@@ -412,7 +377,7 @@ const CostBreakdownChart: React.FC<{ stats: LogistiqueStats }> = ({ stats }) => 
 	);
 };
 
-const CostTrendChart: React.FC<{ stats: LogistiqueStats }> = ({ stats }) => {
+const CostTrendChart: FC<{ stats: LogistiqueStats }> = ({ stats }) => {
 	const { t } = useLanguage();
 	const flow = stats.monthly_flow ?? [];
 	const labels = flow.map((item) => formatMonthLabel(item.month));
@@ -439,7 +404,7 @@ const CostTrendChart: React.FC<{ stats: LogistiqueStats }> = ({ stats }) => {
 	);
 };
 
-const SupplierCostShareChart: React.FC<{ stats: LogistiqueStats }> = ({ stats }) => {
+const SupplierCostShareChart: FC<{ stats: LogistiqueStats }> = ({ stats }) => {
 	const { t } = useLanguage();
 	const suppliers = (stats.kpi_fournisseurs ?? []).map((supplier) => ({
 		name: supplier.fournisseur || '-',
@@ -461,7 +426,7 @@ const SupplierCostShareChart: React.FC<{ stats: LogistiqueStats }> = ({ stats })
 	);
 };
 
-const DashboardContent: React.FC<DashboardContentProps> = ({ session, company_id }) => {
+const DashboardContent: FC<DashboardContentProps> = ({ session, company_id }) => {
 	const { t } = useLanguage();
 	const token = useInitAccessToken(session);
 	const { data: stats, isLoading, error, refetch } = useGetLogistiqueDashboardQuery({ company_id }, { skip: !token });
@@ -589,7 +554,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ session, company_id
 	);
 };
 
-const LogistiqueDashboard: React.FC<SessionProps> = ({ session }) => {
+const LogistiqueDashboard: FC<SessionProps> = ({ session }) => {
 	const { t } = useLanguage();
 
 	return (

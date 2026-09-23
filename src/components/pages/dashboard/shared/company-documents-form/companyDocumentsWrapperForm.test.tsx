@@ -1,4 +1,4 @@
-import React from 'react';
+import { type ReactNode, type FC } from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { useAppSelector } from '@/utils/hooks';
@@ -12,12 +12,16 @@ jest.mock('@/contexts/InitContext', () => ({
 
 jest.mock('@/utils/hooks', () => ({
 	useAppSelector: jest.fn(),
-	useLanguage: () => ({ language: 'fr' as const, setLanguage: jest.fn(), t: jest.requireActual('@/translations').translations.fr }),
+	useLanguage: () => ({
+		language: 'fr' as const,
+		setLanguage: jest.fn(),
+		t: jest.requireActual('@/translations').translations.fr,
+	}),
 }));
 
 jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 	__esModule: true,
-	default: ({ children }: { children: React.ReactNode }) => <div data-testid="nav">{children}</div>,
+	default: ({ children }: { children: ReactNode }) => <div data-testid="nav">{children}</div>,
 }));
 
 describe('CompanyDocumentsParentForm', () => {
@@ -66,7 +70,7 @@ describe('CompanyDocumentsParentForm', () => {
 
 		// capture props passed to FormComponent
 		const FormComponentCalled = jest.fn() as jest.Mock<void, [FormComponentProps]>;
-		const FormComponent: React.FC<FormComponentProps> = (props) => {
+		const FormComponent: FC<FormComponentProps> = (props) => {
 			FormComponentCalled(props);
 			return <div data-testid="mock-form">FORM</div>;
 		};
@@ -94,10 +98,10 @@ describe('CompanyDocumentsParentForm', () => {
 	});
 
 	it('renders denied message when company role is not Admin and does not render FormComponent', () => {
-const companies = [{ id: 100, role: 'Lecture' }];
+		const companies = [{ id: 100, role: 'Lecture' }];
 		(useAppSelector as jest.Mock).mockImplementation(() => companies);
 
-		const FormComponent: React.FC<FormComponentProps> = () => <div data-testid="should-not-render">NO</div>;
+		const FormComponent: FC<FormComponentProps> = () => <div data-testid="should-not-render">NO</div>;
 
 		render(
 			<CompanyDocumentsParentForm
@@ -112,5 +116,3 @@ const companies = [{ id: 100, role: 'Lecture' }];
 		expect(screen.getByText(docConfig.accessDeniedMessage)).toBeInTheDocument();
 	});
 });
-
-

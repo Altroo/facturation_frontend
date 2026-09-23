@@ -1,30 +1,13 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type FC, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { Box } from '@mui/material';
 import ChipSelectFilter from './chipSelectFilter';
-import type { ChipSelectOption } from './chipSelectFilter';
+import type { ChipSelectFilterBarProps } from '@/types/uiTypes';
 
-export interface ChipFilterConfig {
-	key: string;
-	label: string;
-	paramName: string;
-	options: ChipSelectOption[];
-}
-
-interface ChipSelectFilterBarProps {
-	filters: ChipFilterConfig[];
-	onFilterChange: (params: Record<string, string>) => void;
-	columns?: number;
-}
-
-const ChipSelectFilterBar: React.FC<ChipSelectFilterBarProps> = ({
-	filters,
-	onFilterChange,
-	columns,
-}) => {
+const ChipSelectFilterBar: FC<ChipSelectFilterBarProps> = ({ filters, onFilterChange, columns }) => {
 	// Compute stable key representing current filter configuration
-	const filterKeys = useMemo(() => filters.map((f) => f.key).join(','), [filters]);
+	const filterKeys = filters.map((f) => f.key).join(',');
 
 	const [selectedMap, setSelectedMap] = useState<Record<string, Array<number | string>>>(() => {
 		const initial: Record<string, Array<number | string>> = {};
@@ -47,40 +30,31 @@ const ChipSelectFilterBar: React.FC<ChipSelectFilterBarProps> = ({
 		setSelectedMap(reset);
 	}
 
-	const buildParams = useCallback(
-		(currentMap: Record<string, Array<number | string>>): Record<string, string> => {
-			const params: Record<string, string> = {};
-			filters.forEach((f) => {
-				const ids = currentMap[f.key];
-				if (ids && ids.length > 0) {
-					params[f.paramName] = ids.join(',');
-				}
-			});
-			return params;
-		},
-		[filters],
-	);
-
 	const prevParamsRef = useRef<string>('{}');
 
+	const notifyFilterChange = useEffectEvent((params: Record<string, string>) => {
+		onFilterChange(params);
+	});
+
 	useEffect(() => {
-		const params = buildParams(selectedMap);
+		const params: Record<string, string> = {};
+		filters.forEach((filter) => {
+			const ids = selectedMap[filter.key];
+			if (ids?.length) params[filter.paramName] = ids.join(',');
+		});
 		const paramsKey = JSON.stringify(params);
 		if (paramsKey !== prevParamsRef.current) {
 			prevParamsRef.current = paramsKey;
-			onFilterChange(params);
+			notifyFilterChange(params);
 		}
-	}, [selectedMap, buildParams, onFilterChange]);
+	}, [selectedMap, filters]);
 
-	const handleChange = useCallback(
-		(key: string, ids: Array<number | string>) => {
-			setSelectedMap((prev) => ({
-				...prev,
-				[key]: ids,
-			}));
-		},
-		[],
-	);
+	const handleChange = (key: string, ids: Array<number | string>) => {
+		setSelectedMap((prev) => ({
+			...prev,
+			[key]: ids,
+		}));
+	};
 
 	if (filters.length === 0) return null;
 

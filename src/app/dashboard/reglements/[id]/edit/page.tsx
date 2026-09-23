@@ -8,11 +8,7 @@ export const metadata: Metadata = {
 	title: 'Modifier Règlement',
 	description: 'Modifier un règlement existant',
 };
-
-type PageProps = {
-	params: Promise<{ id: string }>;
-	searchParams: Promise<{ company_id: string }>;
-};
+import type { CompanyScopedDetailRouteProps as PageProps } from '@/types/routeTypes';
 
 const ReglementEditPage = async (props: PageProps) => {
 	const session = await auth();

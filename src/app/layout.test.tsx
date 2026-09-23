@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 import { renderToStaticMarkup } from 'react-dom/server';
-import React from 'react';
+import { type ReactNode, createElement, type ReactElement } from 'react';
 
 // Types
 type SessionUser = { pk: number; email: string };
@@ -15,28 +15,22 @@ jest.mock('@/auth', () => ({
 
 jest.mock('@/providers/sessionProvider', () => ({
 	__esModule: true,
-	default: (props: { session?: Session; children?: React.ReactNode }) => {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const React = require('react');
-		return React.createElement('div', null, `SESSION_PROVIDER:${JSON.stringify(props.session)}`, props.children);
+	default: (props: { session?: Session; children?: ReactNode }) => {
+		return createElement('div', null, `SESSION_PROVIDER:${JSON.stringify(props.session)}`, props.children);
 	},
 }));
 
 jest.mock('@/providers/storeProvider', () => ({
 	__esModule: true,
-	default: (props: { children?: React.ReactNode }) => {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const React = require('react');
-		return React.createElement('div', null, 'STORE_PROVIDER', props.children);
+	default: (props: { children?: ReactNode }) => {
+		return createElement('div', null, 'STORE_PROVIDER', props.children);
 	},
 }));
 
 jest.mock('@/contexts/InitContext', () => ({
 	__esModule: true,
-	InitContextProvider: (props: { children?: React.ReactNode }) => {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const React = require('react');
-		return React.createElement('div', null, 'INIT_CONTEXT', props.children);
+	InitContextProvider: (props: { children?: ReactNode }) => {
+		return createElement('div', null, 'INIT_CONTEXT', props.children);
 	},
 }));
 
@@ -44,63 +38,49 @@ jest.mock('@/contexts/InitContext', () => ({
 jest.mock('@/contexts/initEffects', () => ({
 	__esModule: true,
 	InitEffects: () => {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const React = require('react');
-		return React.createElement('div', null, 'INIT_EFFECTS');
+		return createElement('div', null, 'INIT_EFFECTS');
 	},
 }));
 
 // ✅ Mock ToastContextProvider
 jest.mock('@/contexts/toastContext', () => ({
 	__esModule: true,
-	ToastContextProvider: (props: { children?: React.ReactNode }) => {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const React = require('react');
-		return React.createElement('div', null, 'TOAST_PROVIDER', props.children);
+	ToastContextProvider: (props: { children?: ReactNode }) => {
+		return createElement('div', null, 'TOAST_PROVIDER', props.children);
 	},
 }));
 
 // ✅ Mock LanguageContextProvider
 jest.mock('@/contexts/languageContext', () => ({
 	__esModule: true,
-	LanguageContextProvider: (props: { children?: React.ReactNode }) => {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const React = require('react');
-		return React.createElement('div', null, 'LANGUAGE_PROVIDER', props.children);
+	LanguageContextProvider: (props: { children?: ReactNode }) => {
+		return createElement('div', null, 'LANGUAGE_PROVIDER', props.children);
 	},
 }));
 // Mock SessionExpiredListener
 jest.mock('@/components/shared/sessionExpiredListener/sessionExpiredListener', () => ({
 	__esModule: true,
 	default: () => {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const React = require('react');
-		return React.createElement('div', null, 'SESSION_EXPIRED_LISTENER');
+		return createElement('div', null, 'SESSION_EXPIRED_LISTENER');
 	},
 }));
 jest.mock('@/components/shared/maintenance/Maintenance', () => ({
 	__esModule: true,
 	default: () => {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const React = require('react');
-		return React.createElement('div', null, 'MAINTENANCE_GATE');
+		return createElement('div', null, 'MAINTENANCE_GATE');
 	},
 }));
-jest.mock('@mui/material-nextjs/v15-appRouter', () => ({
+jest.mock('@mui/material-nextjs/v16-appRouter', () => ({
 	__esModule: true,
-	AppRouterCacheProvider: (props: { children?: React.ReactNode }) => {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const React = require('react');
-		return React.createElement('div', null, 'MUI_CACHE', props.children);
+	AppRouterCacheProvider: (props: { children?: ReactNode }) => {
+		return createElement('div', null, 'MUI_CACHE', props.children);
 	},
 }));
 
 jest.mock('@/providers/themeProvider', () => ({
 	__esModule: true,
-	default: (props: { children?: React.ReactNode }) => {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const React = require('react');
-		return React.createElement('div', null, 'THEME_PROVIDER', props.children);
+	default: (props: { children?: ReactNode }) => {
+		return createElement('div', null, 'THEME_PROVIDER', props.children);
 	},
 }));
 
@@ -118,14 +98,14 @@ beforeEach(() => {
 
 describe('RootLayout', () => {
 	it('renders children wrapped with providers (session fetched client-side)', async () => {
-		let RootLayout: (props: { children: React.ReactNode }) => unknown;
+		let RootLayout: (props: { children: ReactNode }) => unknown;
 		jest.isolateModules(() => {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
 			const mod = require('./layout');
 			RootLayout = mod.default;
 		});
 
-		const result = await (RootLayout!({ children: <div>CHILD_CONTENT</div> }) as Promise<React.ReactElement>);
+		const result = await (RootLayout!({ children: <div>CHILD_CONTENT</div> }) as Promise<ReactElement>);
 		const html = renderToStaticMarkup(result);
 
 		expect(html).toContain('SESSION_PROVIDER');

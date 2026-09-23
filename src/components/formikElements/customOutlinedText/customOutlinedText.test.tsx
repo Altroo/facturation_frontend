@@ -1,3 +1,4 @@
+import { createRef } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import CustomOutlinedText from './customOutlinedText';
 import { createTheme } from '@mui/material/styles';
@@ -6,6 +7,12 @@ import '@testing-library/jest-dom';
 const theme = createTheme();
 
 describe('CustomOutlinedText', () => {
+	it('passes its ref to the input element', () => {
+		const ref = createRef<HTMLInputElement>();
+		render(<CustomOutlinedText ref={ref} id="test-input" type="text" value="" label="Test Label" theme={theme} />);
+		expect(ref.current).toBe(screen.getByLabelText('Test Label'));
+	});
+
 	it('renders with label and placeholder', () => {
 		render(
 			<CustomOutlinedText

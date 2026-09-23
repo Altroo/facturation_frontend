@@ -1,4 +1,4 @@
-import React from 'react';
+import { type ReactNode } from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import type { AppSession } from '@/types/_initTypes';
@@ -20,7 +20,7 @@ jest.mock('@/store/selectors', () => ({
 
 jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 	__esModule: true,
-	default: ({ title, children }: { title: string; children: React.ReactNode }) => (
+	default: ({ title, children }: { title: string; children: ReactNode }) => (
 		<section>
 			<h1>{title}</h1>
 			{children}
