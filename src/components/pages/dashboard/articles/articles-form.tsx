@@ -472,7 +472,8 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 									</Stack>
 									<CustomTextInput
 										id="designation"
-										type="text"
+										type="textarea"
+										minRows={3}
 										label={`${t.articles.colDesignation} *`}
 										value={formik.values.designation ?? ''}
 										onChange={formik.handleChange('designation')}

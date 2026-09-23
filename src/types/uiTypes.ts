@@ -170,6 +170,7 @@ export type CustomTextInputProps = {
 	required?: boolean;
 	autoComplete?: string;
 	maxLength?: number;
+	minRows?: number;
 };
 
 export type FormattedNumberInputProps = {

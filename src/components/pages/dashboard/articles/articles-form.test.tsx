@@ -150,17 +150,25 @@ jest.mock('@/components/formikElements/customTextInput/customTextInput', () => (
 	default: ({
 		id,
 		label,
+		type,
+		value,
 		onChange,
 		onBlur,
 	}: {
 		id: string;
 		label: string;
-		onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
+		type?: string;
+		value?: string;
+		onChange?: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 		onBlur?: () => void;
 	}) => (
 		<div data-testid={`input-${id}`}>
 			<label>{label}</label>
-			<input data-testid={`input-field-${id}`} onChange={onChange} onBlur={() => onBlur?.()} />
+			{type === 'textarea' ? (
+				<textarea data-testid={`input-field-${id}`} value={value} onChange={onChange} onBlur={() => onBlur?.()} />
+			) : (
+				<input data-testid={`input-field-${id}`} value={value} onChange={onChange} onBlur={() => onBlur?.()} />
+			)}
 		</div>
 	),
 }));
@@ -350,6 +358,11 @@ describe('ArticlesForm', () => {
 			renderWithProviders(<ArticlesForm session={mockSession} company_id={1} />);
 			expect(screen.getByTestId('input-reference')).toBeInTheDocument();
 			expect(screen.getByTestId('input-designation')).toBeInTheDocument();
+			expect(screen.getByTestId('input-field-designation').tagName).toBe('TEXTAREA');
+			fireEvent.change(screen.getByTestId('input-field-designation'), {
+				target: { value: 'Plan 2D\nPlan électricité' },
+			});
+			expect(screen.getByTestId('input-field-designation')).toHaveValue('Plan 2D\nPlan électricité');
 		});
 
 		it('renders submit button with add text', () => {
