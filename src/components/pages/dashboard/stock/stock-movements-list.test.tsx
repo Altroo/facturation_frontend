@@ -8,7 +8,7 @@ describe('StockMovementsListClient', () => {
 
 		expect(screen.getByRole('heading', { name: 'Mouvements de stock' })).toBeInTheDocument();
 		expect(screen.getByTestId('chip-filter-bar')).toHaveTextContent('Emplacement Type de mouvement');
-		expect(screen.getByTestId('chip-filter-bar')).toHaveAttribute('data-filter-layout', 'auto');
+		expect(screen.getByTestId('chip-filter-bar')).toHaveAttribute('data-filter-layout', 'fixed-2');
 		expect(screen.getByTestId('paginated-data-grid')).toHaveTextContent('Référence');
 		expect(screen.getByText('Réception')).toBeInTheDocument();
 		expect(screen.getByText('+2,000')).toBeInTheDocument();

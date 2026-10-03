@@ -175,7 +175,7 @@ const StockMovementsContent: FC<{ company_id: number }> = ({ company_id }) => {
 
 	return (
 		<>
-			<ChipSelectFilterBar filters={chipFilters} onFilterChange={setChipFilterParams} />
+			<ChipSelectFilterBar filters={chipFilters} onFilterChange={setChipFilterParams} columns={2} />
 			<PaginatedDataGrid
 				data={movements.data}
 				isLoading={movements.isLoading || movements.isFetching}

@@ -191,7 +191,7 @@ const StockInventoriesContent: FC<{ company_id: number; role: string }> = ({ com
 					</Button>
 				</Box>
 			)}
-			<ChipSelectFilterBar filters={chipFilters} onFilterChange={setChipFilterParams} />
+			<ChipSelectFilterBar filters={chipFilters} onFilterChange={setChipFilterParams} columns={2} />
 			<PaginatedDataGrid
 				data={inventories.data}
 				isLoading={inventories.isLoading || inventories.isFetching}

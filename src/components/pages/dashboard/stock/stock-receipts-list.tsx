@@ -222,7 +222,7 @@ const StockReceiptsContent: FC<{ company_id: number; role: string }> = ({ compan
 					</Button>
 				</Box>
 			)}
-			<ChipSelectFilterBar filters={chipFilters} onFilterChange={setChipFilterParams} />
+			<ChipSelectFilterBar filters={chipFilters} onFilterChange={setChipFilterParams} columns={2} />
 			<PaginatedDataGrid
 				data={receipts.data}
 				isLoading={receipts.isLoading || receipts.isFetching}

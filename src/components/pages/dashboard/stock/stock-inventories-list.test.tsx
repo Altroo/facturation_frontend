@@ -8,7 +8,7 @@ describe('StockInventoriesListClient', () => {
 
 		expect(screen.getByRole('heading', { name: 'Inventaires de stock' })).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: 'Nouvel inventaire' })).toBeInTheDocument();
-		expect(screen.getByTestId('chip-filter-bar')).toHaveAttribute('data-filter-layout', 'auto');
+		expect(screen.getByTestId('chip-filter-bar')).toHaveAttribute('data-filter-layout', 'fixed-2');
 		expect(screen.getByText('Brouillon')).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: 'Voir l’inventaire' })).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: 'Valider l’inventaire' })).toBeInTheDocument();
