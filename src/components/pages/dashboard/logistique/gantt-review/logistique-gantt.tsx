@@ -1,6 +1,6 @@
 'use client';
 
-import { type FC, type PointerEvent, useEffect, useRef, useState } from 'react';
+import { type FC, useState } from 'react';
 import Image from 'next/image';
 import {
 	Alert,
@@ -24,100 +24,26 @@ import {
 	TableRow,
 	TextField,
 	Typography,
-	useMediaQuery,
 } from '@mui/material';
-import { Download, RestartAlt, Close, OpenInFull } from '@mui/icons-material';
+import { Download, Close, OpenInFull, Save } from '@mui/icons-material';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import { useAppSelector } from '@/utils/hooks';
 import { getProfilState } from '@/store/selectors';
+import { useInitAccessToken } from '@/contexts/InitContext';
 import type { SessionProps } from '@/types/_initTypes';
 import content from './content.json';
-import {
-	dateAt,
-	dayOffset,
-	initialReview,
-	parseReview,
-	updateSchedule,
-	validDate,
-	type FieldDecision,
-	type ReviewState,
-	type ReviewTask,
-} from './schedule';
+import { REVIEW_DELAYS } from './review-state';
+import { useReviewState } from './use-review-state';
 
-const ROW_HEIGHT = 48;
-const HEADER_HEIGHT = 40;
-const formatDate = (iso: string) =>
-	new Date(iso).toLocaleDateString('fr-FR', { timeZone: 'UTC', day: '2-digit', month: '2-digit', year: 'numeric' });
 type Screenshot = (typeof content.stages)[number]['screenshots'][number];
 type Field = (typeof content.common)[number];
-type Drag = { index: number; mode: 'move' | 'resize'; x: number; tasks: ReviewTask[] };
-
-const ReviewContent = ({ storageKey }: { storageKey: string }) => {
-	const labelWidth = useMediaQuery('(max-width:600px)') ? 190 : 270;
-	const [review, setReview] = useState<ReviewState>(initialReview);
-	const [ready, setReady] = useState(false);
-	const [storageError, setStorageError] = useState(false);
+const ReviewContent = ({ companyId, session }: SessionProps & { companyId: number }) => {
+	const token = useInitAccessToken(session);
+	const { review, ready, loading, loadError, retry, canEdit, saving, dirty, saveError, savedAt, setDecision, save } =
+		useReviewState(companyId, !!token);
 	const [selected, setSelected] = useState(0);
-	const [dayWidth, setDayWidth] = useState(32);
 	const [screenshot, setScreenshot] = useState<Screenshot | null>(null);
-	const [resetOpen, setResetOpen] = useState(false);
-	const drag = useRef<Drag | null>(null);
-
-	useEffect(() => {
-		try {
-			const saved = localStorage.getItem(storageKey);
-			if (saved) {
-				const parsed = parseReview(JSON.parse(saved));
-				if (parsed) setReview(parsed);
-				else setStorageError(true);
-			}
-		} catch {
-			setStorageError(true);
-		}
-		setReady(true);
-	}, [storageKey]);
-
-	useEffect(() => {
-		if (!ready) return;
-		try {
-			localStorage.setItem(storageKey, JSON.stringify(review));
-		} catch {
-			setStorageError(true);
-		}
-	}, [ready, review, storageKey]);
-
-	const updateTask = (index: number, change: Partial<ReviewTask>) =>
-		setReview((previous) => ({ ...previous, tasks: updateSchedule(previous.tasks, index, change) }));
-	const startDrag = (event: PointerEvent<HTMLButtonElement>, index: number, mode: Drag['mode']) => {
-		if (event.button !== 0) return;
-		setSelected(index);
-		drag.current = { index, mode, x: event.clientX, tasks: review.tasks };
-		event.currentTarget.setPointerCapture(event.pointerId);
-	};
-	const moveDrag = (event: PointerEvent<HTMLButtonElement>) => {
-		const current = drag.current;
-		if (!current) return;
-		const delta = Math.round((event.clientX - current.x) / dayWidth);
-		const task = current.tasks[current.index];
-		const change = current.mode === 'move' ? { offset: task.offset + delta } : { duration: task.duration + delta };
-		setReview((previous) => ({ ...previous, tasks: updateSchedule(current.tasks, current.index, change) }));
-	};
-	const stopDrag = () => {
-		drag.current = null;
-	};
-	const cancelDrag = () => {
-		const current = drag.current;
-		if (current) setReview((previous) => ({ ...previous, tasks: current.tasks }));
-		stopDrag();
-	};
-	const setDecision = (key: string, change: Partial<FieldDecision>) =>
-		setReview((previous) => ({
-			...previous,
-			decisions: {
-				...previous.decisions,
-				[key]: { ...(previous.decisions[key] ?? { choice: '', note: '' }), ...change },
-			},
-		}));
+	const totalHours = REVIEW_DELAYS.reduce((sum, delay) => sum + delay.hours, 0);
 	const exportReview = () => {
 		const fields = [
 			...content.stages.flatMap((stage) =>
@@ -138,7 +64,13 @@ const ReviewContent = ({ storageKey }: { storageKey: string }) => {
 		const blob = new Blob(
 			[
 				JSON.stringify(
-					{ titre: 'Revue du module logistique', date: new Date().toISOString(), ...review, champs: fields },
+					{
+						titre: 'Revue du module logistique',
+						date: new Date().toISOString(),
+						...review,
+						champs: fields,
+						delais: REVIEW_DELAYS.map((delay, index) => ({ etape: index + 1, delai: delay.label })),
+					},
 					null,
 					2,
 				),
@@ -187,6 +119,7 @@ const ReviewContent = ({ storageKey }: { storageKey: string }) => {
 									<TextField
 										select
 										size="small"
+										disabled={!canEdit || saving}
 										label={`Décision : ${field.label}`}
 										value={review.decisions[key]?.choice ?? ''}
 										onChange={(e) => setDecision(key, { choice: e.target.value })}
@@ -205,10 +138,14 @@ const ReviewContent = ({ storageKey }: { storageKey: string }) => {
 										multiline
 										minRows={2}
 										size="small"
+										disabled={!canEdit || saving}
 										label={`Commentaire : ${field.label}`}
 										value={review.decisions[key]?.note ?? ''}
 										onChange={(e) => setDecision(key, { note: e.target.value })}
 										slotProps={{ htmlInput: { maxLength: 2000 } }}
+										helperText={
+											(review.decisions[key]?.note.length ?? 0) >= 2000 ? '2 000 caractères maximum' : undefined
+										}
 										sx={{ minWidth: 170 }}
 									/>
 								</TableCell>
@@ -220,12 +157,22 @@ const ReviewContent = ({ storageKey }: { storageKey: string }) => {
 		</TableContainer>
 	);
 
-	if (!ready) return <CircularProgress aria-label="Chargement de la revue" />;
+	const loadAlert = (
+		<Alert
+			severity="error"
+			action={
+				<Button color="inherit" disabled={loading} onClick={() => retry()}>
+					Réessayer
+				</Button>
+			}
+		>
+			Impossible de charger la revue enregistrée. Réessayez pour retrouver les décisions et commentaires.
+		</Alert>
+	);
+	if (!ready) return loadError ? loadAlert : <CircularProgress aria-label="Chargement de la revue" />;
 	const stage = content.stages[selected];
-	const task = review.tasks[selected];
-	const days = Math.max(35, review.tasks[7].offset + review.tasks[7].duration + 3);
 	return (
-		<Stack spacing={3} sx={{ pb: 4, minWidth: 0 }}>
+		<Stack spacing={3} sx={{ pb: 14, minWidth: 0 }}>
 			<Card variant="outlined">
 				<CardContent>
 					<Stack
@@ -239,266 +186,85 @@ const ReviewContent = ({ storageKey }: { storageKey: string }) => {
 								Le parcours logistique, étape par étape
 							</Typography>
 							<Typography color="text.secondary" sx={{ mt: 1 }}>
-								Sélectionnez une étape pour examiner ses prérequis, ses champs et ses captures.
+								Choisissez une étape, puis examinez ses champs et ajoutez vos décisions ou commentaires.
 							</Typography>
 						</Box>
 						<Button startIcon={<Download />} variant="outlined" onClick={exportReview} sx={{ flexShrink: 0 }}>
 							Exporter ma revue
 						</Button>
 					</Stack>
-					<Alert severity="info" sx={{ mt: 2 }}>
-						Planning illustratif à valider. Les dates et les décisions sont enregistrées dans ce navigateur, pour votre
-						compte et cette société. Elles ne modifient pas les dossiers logistiques.
-					</Alert>
-					{storageError && (
-						<Alert severity="warning" sx={{ mt: 1 }}>
-							La sauvegarde locale est indisponible ou illisible. Exportez votre revue pour conserver vos décisions.
-						</Alert>
-					)}
+					<Typography color="text.secondary" sx={{ mt: 2 }}>
+						Enregistrez vos décisions et commentaires : ils seront visibles par les membres de cette société à la
+						prochaine ouverture.
+					</Typography>
+					{loadError && <Box sx={{ mt: 2 }}>{loadAlert}</Box>}
 				</CardContent>
 			</Card>
 			<Card variant="outlined">
 				<CardContent>
-					<Stack
-						direction={{ xs: 'column', sm: 'row' }}
-						spacing={2}
-						sx={{ mb: 2, alignItems: { sm: 'center' }, flexWrap: 'wrap' }}
-					>
-						<TextField
-							type="date"
-							size="small"
-							label="Début du planning"
-							value={review.start}
-							slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: '2000-01-01', max: '2100-01-01' } }}
-							onChange={(e) => {
-								const value = e.target.value;
-								if (validDate(value) && value >= '2000-01-01' && value <= '2100-01-01')
-									setReview((previous) => ({ ...previous, start: value }));
-							}}
-						/>
-						<TextField
-							select
-							label="Échelle"
-							size="small"
-							value={dayWidth}
-							onChange={(e) => setDayWidth(Number(e.target.value))}
-							sx={{ minWidth: 130 }}
-						>
-							<MenuItem value={18}>Compacte</MenuItem>
-							<MenuItem value={32}>Normale</MenuItem>
-							<MenuItem value={48}>Détaillée</MenuItem>
-						</TextField>
-						<Button startIcon={<RestartAlt />} onClick={() => setResetOpen(true)}>
-							Réinitialiser les dates
-						</Button>
-					</Stack>
-					<Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-						Glissez une barre pour la déplacer, ou son bord droit pour changer sa durée. Au clavier : sélectionnez une
-						barre, puis utilisez les flèches gauche/droite. Une étape commence après la précédente ; les étapes
-						suivantes se décalent si nécessaire.
+					<Typography variant="h6" component="h2" gutterBottom>
+						Les 8 étapes et leurs délais
 					</Typography>
-					<Box
-						sx={{ overflowX: 'auto', border: 1, borderColor: 'divider', borderRadius: 1, typography: 'body2' }}
-						data-testid="review-gantt"
-					>
-						<Box sx={{ position: 'relative', width: labelWidth + days * dayWidth }}>
+					<Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+						Cliquez sur une étape pour voir ses champs ci-dessous. Le diagramme explique le parcours ; il ne représente
+						pas une commande réelle.
+					</Typography>
+					<Box sx={{ overflowX: 'auto' }} data-testid="review-gantt">
+						<Box sx={{ minWidth: 740 }}>
 							<Box
-								sx={{
-									display: 'flex',
-									height: HEADER_HEIGHT,
-									bgcolor: 'action.hover',
-									borderBottom: 1,
-									borderColor: 'divider',
-								}}
+								sx={{ display: 'grid', gridTemplateColumns: '260px 220px 1fr', px: 2, py: 1, bgcolor: 'action.hover' }}
 							>
-								<Box
-									sx={{
-										width: labelWidth,
-										flexShrink: 0,
-										px: 2,
-										py: 1,
-										position: 'sticky',
-										left: 0,
-										bgcolor: 'background.paper',
-										zIndex: 3,
-										fontWeight: 700,
-									}}
-								>
-									Étape
-								</Box>
-								{Array.from({ length: days }, (_, i) => (
-									<Box
-										key={i}
-										sx={{
-											width: dayWidth,
-											flexShrink: 0,
-											fontSize: 10,
-											textAlign: 'center',
-											pt: 1,
-											borderLeft: 1,
-											borderColor: 'divider',
-										}}
-										title={formatDate(dateAt(review.start, i))}
-									>
-										{i % (dayWidth === 18 ? 5 : 3) === 0
-											? dateAt(review.start, i).slice(5).split('-').reverse().join('/')
-											: ''}
-									</Box>
+								{['Étape', 'Délai', 'Enchaînement indicatif'].map((label) => (
+									<Typography key={label} variant="body2" sx={{ fontWeight: 700 }}>
+										{label}
+									</Typography>
 								))}
 							</Box>
-							<svg
-								aria-hidden="true"
-								width={days * dayWidth}
-								height={8 * ROW_HEIGHT}
-								style={{
-									position: 'absolute',
-									left: labelWidth,
-									top: HEADER_HEIGHT,
-									pointerEvents: 'none',
-									zIndex: 1,
-									overflow: 'visible',
-								}}
-							>
-								<defs>
-									<marker id="review-arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-										<path d="M0,0 L6,3 L0,6" fill="#64748b" />
-									</marker>
-								</defs>
-								{review.tasks.slice(1).map((next, i) => {
-									const x = (review.tasks[i].offset + review.tasks[i].duration) * dayWidth;
-									return (
-										<path
-											key={i}
-											d={`M ${x - 2} ${i * ROW_HEIGHT + 24} H ${x + 8} V ${(i + 1) * ROW_HEIGHT + 24} H ${next.offset * dayWidth + 1}`}
-											fill="none"
-											stroke="#64748b"
-											strokeWidth="1.5"
-											markerEnd="url(#review-arrow)"
-										/>
-									);
-								})}
-							</svg>
-							{content.stages.map((item, i) => (
-								<Box
-									key={item.n}
-									sx={{
-										display: 'flex',
-										height: ROW_HEIGHT,
-										borderBottom: 1,
-										borderColor: 'divider',
-										bgcolor: selected === i ? 'action.selected' : 'background.paper',
-									}}
-								>
+							{content.stages.map((item, index) => {
+								const delay = REVIEW_DELAYS[index];
+								const before = REVIEW_DELAYS.slice(0, index).reduce((sum, value) => sum + value.hours, 0);
+								return (
 									<ButtonBase
-										onClick={() => setSelected(i)}
-										aria-pressed={selected === i}
+										key={item.n}
+										data-testid={`gantt-step-${item.n}`}
+										onClick={() => setSelected(index)}
+										aria-pressed={selected === index}
 										sx={{
-											width: labelWidth,
-											flexShrink: 0,
-											px: 2,
-											position: 'sticky',
-											left: 0,
-											zIndex: 3,
-											bgcolor: 'background.paper',
-											justifyContent: 'flex-start',
+											width: '100%',
+											display: 'grid',
+											gridTemplateColumns: '260px 220px 1fr',
 											textAlign: 'left',
-											borderRight: 1,
+											px: 2,
+											py: 1.5,
+											minHeight: 54,
+											borderBottom: 1,
 											borderColor: 'divider',
+											bgcolor: selected === index ? 'action.selected' : 'background.paper',
+											'&.Mui-focusVisible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: -2 },
 										}}
 									>
-										<Box
-											component="span"
-											sx={{ width: 9, height: 9, mr: 1, borderRadius: '50%', bgcolor: item.color, flexShrink: 0 }}
-										/>
-										<Typography variant="body2" sx={{ fontWeight: selected === i ? 700 : 400 }}>
+										<Typography variant="body2" sx={{ fontWeight: selected === index ? 700 : 400, pr: 2 }}>
 											{item.n}. {item.title}
 										</Typography>
-									</ButtonBase>
-									<Box
-										sx={{
-											position: 'relative',
-											width: days * dayWidth,
-											backgroundImage: 'linear-gradient(to right, rgba(128,128,128,.15) 1px, transparent 1px)',
-											backgroundSize: `${dayWidth}px 100%`,
-										}}
-									>
-										<Box
-											sx={{
-												position: 'absolute',
-												left: review.tasks[i].offset * dayWidth,
-												top: 8,
-												height: 32,
-												width: review.tasks[i].duration * dayWidth,
-												display: 'flex',
-												bgcolor: item.color,
-												borderRadius: 1,
-												zIndex: 2,
-												outline: selected === i ? '2px solid' : undefined,
-												outlineColor: 'text.primary',
-												outlineOffset: 2,
-											}}
-										>
-											<ButtonBase
-												aria-label={`Déplacer l’étape ${item.n} : ${item.title}`}
-												data-testid={`gantt-bar-${item.n}`}
-												onClick={() => setSelected(i)}
-												onPointerDown={(e) => startDrag(e, i, 'move')}
-												onPointerMove={moveDrag}
-												onPointerUp={stopDrag}
-												onPointerCancel={cancelDrag}
-												onLostPointerCapture={stopDrag}
-												onKeyDown={(e) => {
-													if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-														e.preventDefault();
-														updateTask(i, { offset: review.tasks[i].offset + (e.key === 'ArrowRight' ? 1 : -1) });
-													}
-												}}
+										<Typography variant="body2" sx={{ fontWeight: 700, pr: 2 }}>
+											{delay.label}
+										</Typography>
+										<Box aria-hidden="true" sx={{ position: 'relative', height: 24, mr: 1 }}>
+											<Box
 												sx={{
-													flex: 1,
-													minWidth: 0,
-													color: 'white',
-													fontSize: 12,
-													whiteSpace: 'nowrap',
-													overflow: 'hidden',
-													px: 0.5,
-													cursor: 'grab',
-													touchAction: 'none',
-													'&.Mui-focusVisible': { outline: '3px solid #111' },
+													position: 'absolute',
+													height: 24,
+													left: `${(before / totalHours) * 100}%`,
+													width: `${(delay.hours / totalHours) * 100}%`,
+													minWidth: 4,
+													bgcolor: item.color,
+													borderRadius: 0.5,
 												}}
-												title={`${item.title} : ${formatDate(dateAt(review.start, review.tasks[i].offset))} - ${formatDate(dateAt(review.start, review.tasks[i].offset + review.tasks[i].duration - 1))}`}
-											>
-												{review.tasks[i].duration * dayWidth > 65
-													? `${review.tasks[i].duration} j`
-													: review.tasks[i].duration}
-											</ButtonBase>
-											<ButtonBase
-												aria-label={`Modifier la durée de l’étape ${item.n}`}
-												onPointerDown={(e) => startDrag(e, i, 'resize')}
-												onPointerMove={moveDrag}
-												onPointerUp={stopDrag}
-												onPointerCancel={cancelDrag}
-												onLostPointerCapture={stopDrag}
-												onKeyDown={(e) => {
-													if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-														e.preventDefault();
-														updateTask(i, { duration: review.tasks[i].duration + (e.key === 'ArrowRight' ? 1 : -1) });
-													}
-												}}
-												sx={{
-													width: 12,
-													flexShrink: 0,
-													color: 'white',
-													bgcolor: 'rgba(0,0,0,.15)',
-													cursor: 'ew-resize',
-													touchAction: 'none',
-												}}
-											>
-												⋮
-											</ButtonBase>
+											/>
 										</Box>
-									</Box>
-								</Box>
-							))}
+									</ButtonBase>
+								);
+							})}
 						</Box>
 					</Box>
 				</CardContent>
@@ -511,43 +277,11 @@ const ReviewContent = ({ storageKey }: { storageKey: string }) => {
 					<Typography sx={{ mt: 1 }} color="text.secondary">
 						{stage.role}
 					</Typography>
-					<Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ my: 3 }}>
-						<TextField
-							size="small"
-							type="date"
-							label="Début de l’étape"
-							value={dateAt(review.start, task.offset)}
-							slotProps={{
-								inputLabel: { shrink: true },
-								htmlInput: {
-									min: dateAt(
-										review.start,
-										selected ? review.tasks[selected - 1].offset + review.tasks[selected - 1].duration : 0,
-									),
-								},
-							}}
-							onChange={(e) => {
-								if (validDate(e.target.value))
-									updateTask(selected, { offset: dayOffset(review.start, e.target.value) });
-							}}
-						/>
-						<TextField
-							size="small"
-							type="number"
-							label="Durée (jours calendaires)"
-							value={task.duration}
-							slotProps={{ htmlInput: { min: 1, max: 90 } }}
-							onChange={(e) => {
-								if (e.target.value) updateTask(selected, { duration: Number(e.target.value) });
-							}}
-						/>
-						<TextField
-							size="small"
-							label="Fin de l’étape"
-							value={formatDate(dateAt(review.start, task.offset + task.duration - 1))}
-							slotProps={{ input: { readOnly: true } }}
-						/>
-					</Stack>
+					<Alert severity="info" sx={{ my: 2 }}>
+						<strong>Délai : {REVIEW_DELAYS[selected].label}.</strong>
+						{selected === 3 && ' Repère X : date d’expédition, utilisée pour lire le délai de l’étape 5.'}
+						{selected === 4 && ' X représente la date d’expédition de l’étape 4. Fin de cette étape : X + 3 jours.'}
+					</Alert>
 					<Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2 }}>
 						{[
 							['Ce que l’on fait', stage.purpose],
@@ -669,6 +403,38 @@ const ReviewContent = ({ storageKey }: { storageKey: string }) => {
 					</TableContainer>
 				</CardContent>
 			</Card>
+			<Card
+				variant="outlined"
+				sx={{ position: 'fixed', bottom: 16, right: 24, left: { xs: 16, md: 256 }, zIndex: 10, boxShadow: 2 }}
+			>
+				{saveError && (
+					<Alert severity="error">
+						Enregistrement impossible. Vos modifications sont conservées à l’écran. Cliquez sur « Enregistrer » pour
+						réessayer.
+					</Alert>
+				)}
+				<Stack
+					direction={{ xs: 'column', sm: 'row' }}
+					spacing={2}
+					sx={{ p: 2, justifyContent: 'space-between', alignItems: { sm: 'center' } }}
+				>
+					<Typography role="status" variant="body2">
+						{saving
+							? 'Enregistrement…'
+							: dirty
+								? 'Modifications non enregistrées'
+								: savedAt
+									? `Revue enregistrée le ${new Date(savedAt).toLocaleString('fr-FR')}`
+									: 'Aucune décision enregistrée pour le moment.'}
+						{!canEdit && !loadError && ' — Lecture seule'}
+					</Typography>
+					{canEdit && (
+						<Button variant="contained" startIcon={<Save />} disabled={!dirty || saving} onClick={save}>
+							Enregistrer
+						</Button>
+					)}
+				</Stack>
+			</Card>
 			<Dialog open={!!screenshot} onClose={() => setScreenshot(null)} maxWidth="lg" fullWidth>
 				<DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
 					{screenshot?.file}
@@ -692,24 +458,6 @@ const ReviewContent = ({ storageKey }: { storageKey: string }) => {
 					)}
 				</DialogContent>
 			</Dialog>
-			<Dialog open={resetOpen} onClose={() => setResetOpen(false)}>
-				<DialogTitle>Réinitialiser le planning illustratif ?</DialogTitle>
-				<DialogContent>
-					<Typography>Les décisions et commentaires sur les champs sont conservés.</Typography>
-					<Stack direction="row" spacing={2} sx={{ mt: 3 }}>
-						<Button onClick={() => setResetOpen(false)}>Annuler</Button>
-						<Button
-							variant="contained"
-							onClick={() => {
-								setReview((previous) => ({ ...initialReview(), decisions: previous.decisions }));
-								setResetOpen(false);
-							}}
-						>
-							Réinitialiser
-						</Button>
-					</Stack>
-				</DialogContent>
-			</Dialog>
 		</Stack>
 	);
 };
@@ -720,10 +468,7 @@ const LogistiqueGantt: FC<SessionProps> = ({ session }) => {
 		<CompanyDocumentsWrapperList session={session} title="Gantt logistique - Revue des champs">
 			{({ company_id }) =>
 				profile.id ? (
-					<ReviewContent
-						key={`${profile.id}-${company_id}`}
-						storageKey={`logistique-review-v1-${profile.id}-${company_id}`}
-					/>
+					<ReviewContent key={`${profile.id}-${company_id}`} companyId={company_id} session={session} />
 				) : (
 					<CircularProgress />
 				)

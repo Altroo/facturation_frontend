@@ -483,3 +483,11 @@ export type LogistiqueViewDetailCardProps = {
 	icon: ReactNode;
 	children: ReactNode;
 };
+
+export type LogisticsFieldDecision = { choice: string; note: string };
+export type LogisticsReviewChanges = Record<string, Partial<LogisticsFieldDecision>>;
+export type LogisticsFieldReview = {
+	decisions: Record<string, LogisticsFieldDecision>;
+	updated_at: string | null;
+	can_edit: boolean;
+};

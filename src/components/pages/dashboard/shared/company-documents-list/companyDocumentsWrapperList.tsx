@@ -14,6 +14,14 @@ import { useLanguage } from '@/utils/hooks';
 import { emptyCompanies } from '@/utils/rawData';
 import type { CompanyDocumentsListProps, CompanyLike } from '@/types/companyDocumentsTypes';
 
+const saveCompanyIndex = (index: number) => {
+	try {
+		localStorage.setItem('selectedCompanyIndex', String(index));
+	} catch {
+		/* Company selection remains usable without browser storage. */
+	}
+};
+
 const CompanyDocumentsWrapperList: FC<CompanyDocumentsListProps> = ({
 	session,
 	title,
@@ -27,11 +35,13 @@ const CompanyDocumentsWrapperList: FC<CompanyDocumentsListProps> = ({
 
 	// Load saved company index from localStorage
 	const [selectedIndex, setSelectedIndex] = useState(() => {
-		if (typeof window !== 'undefined') {
+		try {
 			const saved = localStorage.getItem('selectedCompanyIndex');
-			return saved !== null ? parseInt(saved, 10) : 0;
+			const index = Number(saved);
+			return Number.isInteger(index) && index >= 0 ? index : 0;
+		} catch {
+			return 0;
 		}
-		return 0;
 	});
 
 	const companies = (companiesData ?? emptyCompanies) as CompanyLike[];
@@ -51,7 +61,7 @@ const CompanyDocumentsWrapperList: FC<CompanyDocumentsListProps> = ({
 		if (prevValidIndexRef.current !== validIndex) {
 			prevValidIndexRef.current = validIndex;
 			if (typeof window !== 'undefined') {
-				localStorage.setItem('selectedCompanyIndex', String(validIndex));
+				saveCompanyIndex(validIndex);
 			}
 		}
 	}, [validIndex]);
@@ -61,7 +71,7 @@ const CompanyDocumentsWrapperList: FC<CompanyDocumentsListProps> = ({
 		const requestedIndex = companies.findIndex((company) => company.id === requestedCompanyId);
 		if (requestedIndex < 0 || requestedIndex === validIndex) return;
 		setSelectedIndex(requestedIndex);
-		localStorage.setItem('selectedCompanyIndex', String(requestedIndex));
+		saveCompanyIndex(requestedIndex);
 	}, [companies, requestedCompanyId, validIndex]);
 
 	const selectedCompany = companies?.[validIndex] ?? null;
@@ -70,7 +80,7 @@ const CompanyDocumentsWrapperList: FC<CompanyDocumentsListProps> = ({
 		setSelectedIndex(newValue);
 		// Save to localStorage
 		if (typeof window !== 'undefined') {
-			localStorage.setItem('selectedCompanyIndex', String(newValue));
+			saveCompanyIndex(newValue);
 		}
 	};
 
@@ -174,6 +184,7 @@ const CompanyDocumentsWrapperList: FC<CompanyDocumentsListProps> = ({
 							}}
 						>
 							<Tabs
+								data-company-tabs
 								value={validIndex}
 								onChange={handleChange}
 								variant="scrollable"

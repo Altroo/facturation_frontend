@@ -6,6 +6,8 @@ import { initToken } from '@/store/slices/_initSlice';
 import type { RootState } from '@/store/store';
 import type { ApiErrorResponseType } from '@/types/_initTypes';
 import type {
+	LogisticsFieldReview,
+	LogisticsReviewChanges,
 	LogistiqueCreateResponse,
 	LogistiqueFormValues,
 	LogistiqueListResponse,
@@ -24,7 +26,7 @@ import { factureProFormaApi } from '@/store/services/factureProForma';
 
 export const logistiqueApi = createApi({
 	reducerPath: 'logistiqueApi',
-	tagTypes: ['Logistique', 'Dashboard'],
+	tagTypes: ['Logistique', 'Dashboard', 'FieldReview'],
 	baseQuery: axiosBaseQuery((api) =>
 		isAuthenticatedInstance(
 			() => getInitStateToken(api.getState() as RootState),
@@ -32,6 +34,26 @@ export const logistiqueApi = createApi({
 		),
 	),
 	endpoints: (builder) => ({
+		getLogisticsFieldReview: builder.query<LogisticsFieldReview, { company_id: number }>({
+			query: ({ company_id }) => ({
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/field_review/`,
+				method: 'GET',
+				params: { company_id },
+			}),
+			providesTags: (_result, _error, { company_id }) => [{ type: 'FieldReview', id: company_id }],
+		}),
+		saveLogisticsFieldReview: builder.mutation<
+			LogisticsFieldReview,
+			{ company_id: number; decisions: LogisticsReviewChanges }
+		>({
+			query: ({ company_id, decisions }) => ({
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/field_review/`,
+				method: 'PATCH',
+				params: { company_id },
+				data: { decisions },
+			}),
+			invalidatesTags: (result, _error, { company_id }) => (result ? [{ type: 'FieldReview', id: company_id }] : []),
+		}),
 		getLogistiqueList: builder.query<
 			LogistiqueListResponse,
 			{
@@ -385,6 +407,8 @@ export const logistiqueApi = createApi({
 });
 
 export const {
+	useGetLogisticsFieldReviewQuery,
+	useSaveLogisticsFieldReviewMutation,
 	useGetLogistiqueListQuery,
 	useGetLogistiqueDashboardQuery,
 	useGetLogistiqueQuery,

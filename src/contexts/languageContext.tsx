@@ -20,15 +20,23 @@ export const LanguageContextProvider: FC<{ children: ReactNode; initialLanguage?
 	const [language, setLanguageState] = useState<Language>(initialLanguage ?? DEFAULT_LANGUAGE);
 
 	useEffect(() => {
-		const stored = localStorage.getItem(STORAGE_KEY);
-		if (stored === 'fr' || stored === 'en') {
-			document.cookie = `${STORAGE_KEY}=${stored};path=/;max-age=31536000;SameSite=Lax`;
+		try {
+			const stored = localStorage.getItem(STORAGE_KEY);
+			if (stored === 'fr' || stored === 'en') {
+				document.cookie = `${STORAGE_KEY}=${stored};path=/;max-age=31536000;SameSite=Lax`;
+			}
+		} catch {
+			/* Keep the current language when browser storage is unavailable. */
 		}
 	}, []);
 
 	const setLanguage = (lang: Language) => {
 		setLanguageState(lang);
-		localStorage.setItem(STORAGE_KEY, lang);
+		try {
+			localStorage.setItem(STORAGE_KEY, lang);
+		} catch {
+			/* The in-memory preference and cookie still work. */
+		}
 		document.cookie = `${STORAGE_KEY}=${lang};path=/;max-age=31536000;SameSite=Lax`;
 	};
 

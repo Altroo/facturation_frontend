@@ -1,5 +1,5 @@
 import { type ReactNode } from 'react';
-import { render, screen, cleanup } from '@testing-library/react';
+import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import CompanyDocumentsWrapperList from './companyDocumentsWrapperList';
 import type { CompanyDocumentsListProps } from '@/types/companyDocumentsTypes';
@@ -44,6 +44,8 @@ const defaultProps: Partial<CompanyDocumentsListProps> = {
 describe('CompanyDocumentsList', () => {
 	afterEach(() => {
 		jest.clearAllMocks();
+		jest.restoreAllMocks();
+		localStorage.clear();
 		cleanup();
 	});
 
@@ -101,4 +103,45 @@ describe('CompanyDocumentsList', () => {
 		expect(screen.getByTestId('child')).toHaveTextContent('id:1 role:Caissier');
 		expect(childFn).toHaveBeenCalledWith({ company_id: 1, role: 'Caissier', raison_sociale: 'Company One' });
 	});
+});
+
+test.each(['bad', '-1', '1.5'])('recovers invalid saved company index %s', (saved) => {
+	localStorage.setItem('selectedCompanyIndex', saved);
+	mockedUseGetUserCompaniesQuery.mockReturnValue({
+		data: [{ id: 1, raison_sociale: 'Company One', role: 'Caissier' }],
+		isLoading: false,
+	});
+	render(
+		<CompanyDocumentsWrapperList {...(defaultProps as CompanyDocumentsListProps)}>
+			{({ company_id }) => <div>Selected {company_id}</div>}
+		</CompanyDocumentsWrapperList>,
+	);
+	expect(screen.getByText('Selected 1')).toBeInTheDocument();
+	cleanup();
+	localStorage.clear();
+});
+
+test('company selection works when browser storage cannot be read or written', () => {
+	mockedUseGetUserCompaniesQuery.mockReturnValue({
+		data: [
+			{ id: 1, raison_sociale: 'Company One', role: 'Caissier' },
+			{ id: 2, raison_sociale: 'Company Two', role: 'Lecture' },
+		],
+		isLoading: false,
+	});
+	jest.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+		throw new Error('Blocked');
+	});
+	jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+		throw new Error('Blocked');
+	});
+	render(
+		<CompanyDocumentsWrapperList {...(defaultProps as CompanyDocumentsListProps)}>
+			{({ company_id }) => <div>Selected {company_id}</div>}
+		</CompanyDocumentsWrapperList>,
+	);
+	fireEvent.click(screen.getByRole('tab', { name: 'Company Two' }));
+	expect(screen.getByText('Selected 2')).toBeInTheDocument();
+	cleanup();
+	jest.restoreAllMocks();
 });
