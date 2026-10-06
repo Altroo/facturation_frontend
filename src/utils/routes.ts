@@ -81,6 +81,8 @@ export const BON_DE_LIVRAISON_EDIT = (id: number, company_id: number) =>
 	`${SITE_ROOT}dashboard/bon-de-livraison/${id}/edit/?company_id=${company_id}`;
 // Logistique
 export const LOGISTIQUE_LIST = `${SITE_ROOT}dashboard/logistique`;
+// Temporary review page; remove with logistique/gantt and gantt-review after approval.
+export const LOGISTIQUE_GANTT = `${SITE_ROOT}dashboard/logistique/gantt`;
 export const LOGISTIQUE_DASHBOARD = `${SITE_ROOT}dashboard/logistique/dashboard`;
 export const LOGISTIQUE_SUPPLIERS = `${SITE_ROOT}dashboard/logistique/fournisseurs`;
 export const LOGISTIQUE_ADD = (company_id: number) => `${SITE_ROOT}dashboard/logistique/new/?company_id=${company_id}`;

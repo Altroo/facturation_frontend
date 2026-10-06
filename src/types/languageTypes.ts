@@ -108,6 +108,7 @@ export type TranslationDictionary = {
 		bonsLivraisonUninvoiced: string;
 		logistique: string;
 		logistiqueDashboard: string;
+		logistiqueGantt: string;
 		logistiqueList: string;
 		logistiqueSuppliers: string;
 		stock: string;

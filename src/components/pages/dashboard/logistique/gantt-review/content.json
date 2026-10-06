@@ -1,0 +1,1063 @@
+{
+  "title": "Module logistique - Étapes, champs et décisions",
+  "date": "06 octobre 2026",
+  "stages": [
+    {
+      "n": 1,
+      "title": "Commande & lancement",
+      "role": "Logistique / Responsable Commande. Caissier et Commercial selon leurs droits.",
+      "purpose": "Créer le dossier à partir des proformas client, vérifier les données reprises et consigner la demande au fournisseur.",
+      "requires": "Au moins une proforma au statut Accepté, avec des lignes. Même fournisseur et même devise d’achat pour toutes les sources. Aucune source déjà rattachée à un autre dossier.",
+      "result": "La demande fournisseur enregistrée termine le lancement et active le stock entrant pour les articles concernés.",
+      "fields": [
+        {
+          "label": "Factures pro forma au statut « Accepté »",
+          "type": "Sélection multiple de documents existants",
+          "required": "O",
+          "meaning": "Choisir les commandes client qui alimentent le dossier. Articles et valeurs sont repris automatiquement.",
+          "example": "PF-DEMO-006/26"
+        },
+        {
+          "label": "Responsable Commande",
+          "type": "Sélection d’un utilisateur actif de la société",
+          "required": "O dans l’écran",
+          "meaning": "Personne qui suit le dossier et transmet le titre d’importation à la comptabilité. Préremplie avec l’utilisateur connecté ; l’API applique aussi ce défaut si omise.",
+          "example": "Responsable Démo"
+        },
+        {
+          "label": "Date prévue",
+          "type": "Date, affichage JJ/MM/AAAA",
+          "required": "O à la création",
+          "meaning": "Date cible globale du dossier. Sert au suivi du retard ; ce n’est pas une date par étape.",
+          "example": "20/11/2026"
+        },
+        {
+          "label": "Statut de l’étape",
+          "type": "Liste de valeurs",
+          "required": "C si modification",
+          "meaning": "État du lancement : À lancer, En cours, En attente proforma, Bloquée. Terminée est liée à la demande fournisseur enregistrée.",
+          "example": "En attente proforma"
+        },
+        {
+          "label": "Prochaine relance de la pro forma fournisseur",
+          "type": "Date, JJ/MM/AAAA",
+          "required": "O pour consigner la demande",
+          "meaning": "Quand relancer le fournisseur. La date ne peut pas être antérieure au jour de saisie.",
+          "example": "09/10/2026"
+        },
+        {
+          "label": "Référence dossier",
+          "type": "Texte généré",
+          "required": "A",
+          "meaning": "Identifiant créé par l’application.",
+          "example": "LOG001/26"
+        },
+        {
+          "label": "Fournisseur",
+          "type": "Texte repris de la source",
+          "required": "A",
+          "meaning": "Fournisseur porté par la proforma client. À corriger dans les données source avant la création si nécessaire.",
+          "example": "Fournisseur exemple"
+        },
+        {
+          "label": "E-mail du fournisseur",
+          "type": "Adresse e-mail reprise de la source",
+          "required": "A",
+          "meaning": "Coordonnée reprise au moment de la création ; elle n’est pas saisie dans ce formulaire.",
+          "example": "fournisseur@example.test"
+        },
+        {
+          "label": "N° commande client / Projets",
+          "type": "Référence texte reprise",
+          "required": "A",
+          "meaning": "Lien métier : numéro du bon de commande client, sinon référence de demande de prix du devis, sinon numéro de proforma.",
+          "example": "PROJET-DEMO-006"
+        },
+        {
+          "label": "Date commande client",
+          "type": "Date reprise",
+          "required": "A",
+          "meaning": "Date de la ou des proformas sélectionnées.",
+          "example": "06/10/2026"
+        },
+        {
+          "label": "Clients",
+          "type": "Client(s) existant(s), repris",
+          "required": "A",
+          "meaning": "Identifie les clients à l’origine des commandes.",
+          "example": "Client exemple"
+        },
+        {
+          "label": "Articles / Référence / Désignation",
+          "type": "Lignes reprises",
+          "required": "A",
+          "meaning": "Produits ou prestations déjà définis dans les proformas. Pas de saisie de nouvelles lignes dans la création logistique.",
+          "example": "DEMO-ART-001 / Équipement"
+        },
+        {
+          "label": "Quantités",
+          "type": "Nombre décimal, 3 décimales",
+          "required": "A",
+          "meaning": "Quantité commandée de chaque ligne source.",
+          "example": "10,000"
+        },
+        {
+          "label": "Prix d’achat / Total achat cible",
+          "type": "Montants décimaux, 2 décimales",
+          "required": "A",
+          "meaning": "Prix unitaire d’achat et somme des quantités multipliées par les prix.",
+          "example": "100,00 EUR × 10 = 1 000,00 EUR"
+        },
+        {
+          "label": "Devise",
+          "type": "Code monétaire : MAD, EUR ou USD",
+          "required": "A",
+          "meaning": "Devise d’achat commune aux lignes. Lecture seule dans le dossier.",
+          "example": "EUR"
+        },
+        {
+          "label": "Demande enregistrée le / par",
+          "type": "Date et heure / utilisateur",
+          "required": "A",
+          "meaning": "Trace de l’action qui consigne la demande de proforma fournisseur.",
+          "example": "06/10/2026, Responsable Démo"
+        }
+      ],
+      "screenshots": [
+        {
+          "file": "étape_1_page_1.png",
+          "caption": "Création : sources, responsable, date cible et aperçu des données reprises.",
+          "width": 1600,
+          "height": 1090
+        },
+        {
+          "file": "étape_1_page_2.png",
+          "caption": "Changement du statut du lancement.",
+          "width": 600,
+          "height": 272
+        },
+        {
+          "file": "étape_1_page_3.png",
+          "caption": "Enregistrement de la demande et prochaine relance.",
+          "width": 600,
+          "height": 268
+        }
+      ],
+      "notes": [
+        "Consigner la demande ne constitue pas, à lui seul, un envoi automatique d’e-mail au fournisseur.",
+        "La reprise des données évite de ressaisir le fournisseur, les clients, les articles et leurs prix."
+      ],
+      "color": "#2563eb"
+    },
+    {
+      "n": 2,
+      "title": "Proforma & conformité",
+      "role": "Logistique / gestionnaire du dossier.",
+      "purpose": "Comparer la proforma fournisseur à la commande client et décider de sa conformité.",
+      "requires": "Lancement terminé. La proforma fournisseur et ses informations doivent être disponibles.",
+      "result": "Décision Validée, fichier joint et trace de validation : ouverture de l’étape Banque & paiement.",
+      "fields": [
+        {
+          "label": "N° pro forma fournisseur",
+          "type": "Texte, 120 caractères maximum",
+          "required": "O",
+          "meaning": "Référence imprimée sur le document fournisseur. Obligatoire côté serveur, même si l’astérisque manque à l’écran.",
+          "example": "PF-FOURN-2026-001"
+        },
+        {
+          "label": "Date de la pro forma fournisseur",
+          "type": "Date, JJ/MM/AAAA",
+          "required": "O",
+          "meaning": "Date d’émission du document.",
+          "example": "07/10/2026"
+        },
+        {
+          "label": "Montant de la pro forma fournisseur",
+          "type": "Montant décimal, 2 décimales, > 0",
+          "required": "O",
+          "meaning": "Montant annoncé par le fournisseur ; il est contrôlé par rapport au coût d’achat cible.",
+          "example": "1 000,00"
+        },
+        {
+          "label": "Devise de la pro forma fournisseur",
+          "type": "Liste : MAD, EUR, USD",
+          "required": "O",
+          "meaning": "Monnaie du montant fournisseur.",
+          "example": "EUR"
+        },
+        {
+          "label": "Incoterm",
+          "type": "Texte, 50 caractères maximum",
+          "required": "O",
+          "meaning": "Terme convenu pour répartir les responsabilités de transport. Le champ est du texte libre, sans liste imposée.",
+          "example": "FCA"
+        },
+        {
+          "label": "Délai fournisseur (jours)",
+          "type": "Nombre entier ≥ 0",
+          "required": "O",
+          "meaning": "Délai annoncé par le fournisseur. Aucun calcul automatique de planning Gantt n’est fourni par ce champ.",
+          "example": "20"
+        },
+        {
+          "label": "Conditions de paiement",
+          "type": "Texte libre",
+          "required": "O",
+          "meaning": "Modalités contractuelles annoncées : acompte, solde, délai, etc.",
+          "example": "30 % à la commande, 70 % avant expédition"
+        },
+        {
+          "label": "Décision",
+          "type": "Liste : En contrôle, Correction demandée, Validée, Refusée",
+          "required": "O",
+          "meaning": "Résultat du contrôle. Une validation est refusée si un écart reste coché.",
+          "example": "Validée"
+        },
+        {
+          "label": "Écart de prix",
+          "type": "Case à cocher, oui/non",
+          "required": "F, condition de décision",
+          "meaning": "Signale une différence de prix. Décocher uniquement lorsque l’écart est résolu pour pouvoir valider.",
+          "example": "Oui"
+        },
+        {
+          "label": "Écart de quantité",
+          "type": "Case à cocher, oui/non",
+          "required": "F, condition de décision",
+          "meaning": "Signale une différence de quantité.",
+          "example": "Non"
+        },
+        {
+          "label": "Autre écart *",
+          "type": "Case à cocher, oui/non",
+          "required": "F, malgré l’astérisque",
+          "meaning": "Signale un autre problème. La case n’est pas obligatoire pour une proforma conforme.",
+          "example": "Oui : référence incorrecte"
+        },
+        {
+          "label": "Détail des écarts / motif",
+          "type": "Texte libre",
+          "required": "C",
+          "meaning": "Obligatoire pour demander une correction ou refuser. Une correction exige aussi au moins un écart coché.",
+          "example": "Le prix de la ligne 1 diffère du prix convenu."
+        },
+        {
+          "label": "Pro forma fournisseur",
+          "type": "Fichier, voir formats communs",
+          "required": "O",
+          "meaning": "Document reçu servant de preuve au contrôle. Un fichier déjà enregistré peut être conservé.",
+          "example": "proforma-fournisseur.pdf"
+        },
+        {
+          "label": "Quantité cible / Total achat / Prix unitaires cibles",
+          "type": "Nombres et montants calculés",
+          "required": "A",
+          "meaning": "Références de comparaison provenant des lignes client. La décision de conformité reste saisie par l’utilisateur.",
+          "example": "10 unités / 1 000,00 EUR"
+        },
+        {
+          "label": "Contrôle enregistré le / par ; validation le / par",
+          "type": "Date et heure / utilisateur",
+          "required": "A",
+          "meaning": "Qui a contrôlé ou validé, et quand.",
+          "example": "Responsable Démo"
+        },
+        {
+          "label": "Transport",
+          "type": "Texte libre, 100 caractères maximum",
+          "required": "F",
+          "meaning": "Mode de transport envisagé. Champ commun, réutilisé à l’expédition.",
+          "example": "Maritime"
+        },
+        {
+          "label": "Description",
+          "type": "Texte libre",
+          "required": "F",
+          "meaning": "Contexte global du dossier ou description complémentaire de la commande.",
+          "example": "Équipements pour projet exemple"
+        },
+        {
+          "label": "Marques",
+          "type": "Sélection multiple de marques de la société",
+          "required": "F",
+          "meaning": "Marques associées au dossier, initialement déduites des articles et modifiables.",
+          "example": "Marque exemple"
+        },
+        {
+          "label": "Origine marchandise",
+          "type": "Texte, 255 caractères maximum",
+          "required": "F côté serveur",
+          "meaning": "Pays ou lieu d’origine. L’écran montre un astérisque, mais le code accepte une valeur vide.",
+          "example": "Espagne"
+        },
+        {
+          "label": "Nature marchandise",
+          "type": "Texte, 255 caractères maximum",
+          "required": "F côté serveur",
+          "meaning": "Désignation globale de la marchandise. Même différence entre l’astérisque affiché et la règle serveur.",
+          "example": "Équipements"
+        },
+        {
+          "label": "Poids net (kg)",
+          "type": "Nombre décimal, 2 décimales",
+          "required": "F",
+          "meaning": "Poids sans emballage.",
+          "example": "120,00"
+        },
+        {
+          "label": "Poids brut (kg)",
+          "type": "Nombre décimal, 2 décimales",
+          "required": "F",
+          "meaning": "Poids avec emballage.",
+          "example": "135,00"
+        },
+        {
+          "label": "Volume (m³)",
+          "type": "Nombre décimal, 3 décimales",
+          "required": "F",
+          "meaning": "Volume occupé par la marchandise.",
+          "example": "2,500"
+        }
+      ],
+      "screenshots": [
+        {
+          "file": "étape_2_page_1.png",
+          "caption": "Contrôle fournisseur : données financières, délai, décision et écarts.",
+          "width": 992,
+          "height": 936
+        },
+        {
+          "file": "étape_2_page_2.png",
+          "caption": "Suite du même dialogue : motif et fichier fournisseur.",
+          "width": 992,
+          "height": 936
+        },
+        {
+          "file": "étape_2_page_3.png",
+          "caption": "Données générales du dossier : transport, description, marques, dates, origine et mesures.",
+          "width": 1312,
+          "height": 616
+        }
+      ],
+      "notes": [
+        "Les huit données fournisseur de base restent exigées pour enregistrer le contrôle, une correction ou un refus.",
+        "Le bouton Modifier contient aussi Responsable Commande, Date prévue, Date réelle et Devise : ces champs communs sont décrits aux étapes 1 et 7.",
+        "Le formulaire ne compare pas automatiquement le montant saisi à la commande pour cocher les écarts : le contrôleur doit les signaler."
+      ],
+      "color": "#0891b2"
+    },
+    {
+      "n": 3,
+      "title": "Banque & paiement",
+      "role": "Responsable Commande pour le titre et la transmission ; Comptable affecté pour l’exécution et la preuve.",
+      "purpose": "Préparer l’importation, planifier les échéances, enregistrer les paiements et leur preuve, puis suivre l’envoi au fournisseur.",
+      "requires": "Proforma fournisseur validée. Titre d’importation complet. Un Comptable actif de la société doit être disponible pour l’affectation.",
+      "result": "Paiements validés, solde nul et réception des preuves confirmée pour le passage normal vers la préparation fournisseur.",
+      "fields": [
+        {
+          "label": "N° de domiciliation",
+          "type": "Texte, 100 caractères maximum",
+          "required": "O avant transmission",
+          "meaning": "Référence du dossier domicilié auprès de la banque.",
+          "example": "TI-DEMO-001"
+        },
+        {
+          "label": "Méthode de paiement",
+          "type": "Liste : LC, Virement, Remise documentaire",
+          "required": "O avant transmission",
+          "meaning": "Mode de règlement retenu. LC désigne une lettre de crédit.",
+          "example": "Virement"
+        },
+        {
+          "label": "Avance (%)",
+          "type": "Pourcentage, 2 décimales, de 0 à 100",
+          "required": "F, visible uniquement si LC",
+          "meaning": "Pourcentage d’avance de la lettre de crédit. Effacé si le mode n’est plus LC ; ne remplace pas l’échéancier.",
+          "example": "30,00 %"
+        },
+        {
+          "label": "Banque",
+          "type": "Texte, 255 caractères maximum",
+          "required": "O avant transmission",
+          "meaning": "Banque associée au titre d’importation.",
+          "example": "Banque exemple"
+        },
+        {
+          "label": "Montant TI",
+          "type": "Montant décimal, 2 décimales, > 0",
+          "required": "O avant transmission",
+          "meaning": "Montant de référence à répartir entre les échéances.",
+          "example": "1 000,00"
+        },
+        {
+          "label": "Devise TI",
+          "type": "Liste : MAD, EUR, USD",
+          "required": "O, valeur préremplie",
+          "meaning": "Monnaie des échéances. Les montants prévus et les paiements utilisent cette devise.",
+          "example": "EUR"
+        },
+        {
+          "label": "Date TI",
+          "type": "Date, JJ/MM/AAAA",
+          "required": "O avant transmission",
+          "meaning": "Date du titre d’importation.",
+          "example": "08/10/2026"
+        },
+        {
+          "label": "Titre d’Importation",
+          "type": "Fichier, voir formats communs",
+          "required": "O avant transmission",
+          "meaning": "Titre validé à joindre dans Pièces jointes en choisissant le bon Libellé.",
+          "example": "titre-importation.pdf"
+        },
+        {
+          "label": "Statut TI / Date validation TI",
+          "type": "Statut / date calculés",
+          "required": "A",
+          "meaning": "Mis à jour au moment de la transmission à la comptabilité.",
+          "example": "Titre d’import validé - En attente de paiement"
+        },
+        {
+          "label": "Date d’échéance",
+          "type": "Date par échéance, JJ/MM/AAAA",
+          "required": "O pour chaque échéance",
+          "meaning": "Date à laquelle la tranche doit être payée.",
+          "example": "10/10/2026"
+        },
+        {
+          "label": "Pourcentage (%)",
+          "type": "Décimal de 0,01 à 100,00",
+          "required": "O pour chaque échéance",
+          "meaning": "Part du montant TI. La somme de toutes les échéances doit être exactement 100 %.",
+          "example": "30,00 puis 70,00"
+        },
+        {
+          "label": "Montant prévu / Devise d’échéance",
+          "type": "Montant et code calculés",
+          "required": "A",
+          "meaning": "Montant TI × pourcentage ; le dernier montant absorbe l’écart d’arrondi.",
+          "example": "300,00 EUR puis 700,00 EUR"
+        },
+        {
+          "label": "Comptable affecté au paiement",
+          "type": "Utilisateur calculé",
+          "required": "A",
+          "meaning": "Premier Comptable actif éligible selon l’ordre interne des utilisateurs ; aucune sélection manuelle dans le formulaire.",
+          "example": "Comptable Démo"
+        },
+        {
+          "label": "Date de paiement",
+          "type": "Date, JJ/MM/AAAA",
+          "required": "O à l’exécution",
+          "meaning": "Date réelle du règlement bancaire.",
+          "example": "10/10/2026"
+        },
+        {
+          "label": "Montant payé",
+          "type": "Montant décimal, 2 décimales, > 0",
+          "required": "O à l’exécution",
+          "meaning": "Somme réellement versée, au maximum le montant prévu de l’échéance.",
+          "example": "300,00"
+        },
+        {
+          "label": "Devise du paiement",
+          "type": "Liste : MAD, EUR, USD",
+          "required": "O à l’exécution",
+          "meaning": "Doit correspondre à la devise de l’échéance.",
+          "example": "EUR"
+        },
+        {
+          "label": "Banque du paiement",
+          "type": "Texte non vide",
+          "required": "O à l’exécution",
+          "meaning": "Banque qui a exécuté le règlement.",
+          "example": "Banque exemple"
+        },
+        {
+          "label": "Référence bancaire",
+          "type": "Texte libre",
+          "required": "F",
+          "meaning": "Référence de l’opération pour retrouver le paiement.",
+          "example": "VIR-DEMO-001"
+        },
+        {
+          "label": "Méthode de paiement, à l’exécution",
+          "type": "Liste : LC, Virement, Remise documentaire",
+          "required": "O à l’exécution",
+          "meaning": "Mode effectivement utilisé pour cette échéance.",
+          "example": "Virement"
+        },
+        {
+          "label": "Commentaire (facultatif)",
+          "type": "Texte libre",
+          "required": "F",
+          "meaning": "Précision sur le règlement.",
+          "example": "Acompte fournisseur"
+        },
+        {
+          "label": "Justificatif bancaire (SWIFT ou document LC)",
+          "type": "Fichier, voir formats communs",
+          "required": "O pour valider le paiement",
+          "meaning": "Preuve bancaire jointe après l’enregistrement de l’exécution.",
+          "example": "swift-exemple.pdf"
+        },
+        {
+          "label": "E-mail au fournisseur envoyé",
+          "type": "Case à cocher, oui/non",
+          "required": "C après validation et preuve jointe",
+          "meaning": "Déclaration manuelle du Responsable Commande. Cocher ne déclenche pas l’envoi d’un e-mail.",
+          "example": "Oui, après envoi externe"
+        },
+        {
+          "label": "Confirmer la réception de la preuve par le fournisseur",
+          "type": "Action, sans champ texte",
+          "required": "C après e-mail déclaré envoyé",
+          "meaning": "Enregistre la confirmation du fournisseur et l’auteur de cette confirmation.",
+          "example": "Clic après confirmation reçue"
+        },
+        {
+          "label": "Observations, retour pour correction",
+          "type": "Texte libre",
+          "required": "F dans le code",
+          "meaning": "Motif du blocage transmis au responsable. Recommandé pour expliquer ce qu’il doit corriger.",
+          "example": "Référence bancaire à vérifier"
+        },
+        {
+          "label": "Solde restant",
+          "type": "Montant calculé",
+          "required": "A",
+          "meaning": "Montant TI moins la somme des paiements validés, avec minimum zéro.",
+          "example": "700,00 EUR après un acompte validé de 300,00 EUR"
+        },
+        {
+          "label": "Statuts Banque / Comptable / Paiement",
+          "type": "Listes calculées par les actions",
+          "required": "A",
+          "meaning": "Suivi de la préparation, du traitement, de la validation et de la confirmation.",
+          "example": "Paiement en cours"
+        },
+        {
+          "label": "Envoi e-mail comptable / Destinataires / Traçabilité",
+          "type": "Statut, adresses, dates et utilisateurs calculés",
+          "required": "A",
+          "meaning": "Suivi de la demande à la comptabilité, distinct de la case manuelle d’envoi au fournisseur.",
+          "example": "En attente / Envoyé / Échec"
+        }
+      ],
+      "screenshots": [
+        {
+          "file": "étape_3_page_1.png",
+          "caption": "Titre d’importation ; l’option LC fait apparaître Avance (%).",
+          "width": 1312,
+          "height": 355
+        },
+        {
+          "file": "étape_3_page_2.png",
+          "caption": "Choix de la catégorie et dépôt du titre d’importation.",
+          "width": 1312,
+          "height": 388
+        },
+        {
+          "file": "étape_3_page_3.png",
+          "caption": "Création de l’échéancier : date et pourcentage par tranche.",
+          "width": 600,
+          "height": 440
+        },
+        {
+          "file": "étape_3_page_4.png",
+          "caption": "Compte Comptable : enregistrement de l’exécution.",
+          "width": 600,
+          "height": 430
+        },
+        {
+          "file": "étape_3_page_5.png",
+          "caption": "Compte Comptable : pièce bancaire nécessaire à la validation.",
+          "width": 600,
+          "height": 312
+        },
+        {
+          "file": "étape_3_page_6.png",
+          "caption": "Retour pour correction : observations.",
+          "width": 600,
+          "height": 254
+        },
+        {
+          "file": "étape_3_page_7.png",
+          "caption": "Compte Responsable Commande : envoi déclaré et confirmation fournisseur.",
+          "width": 1264,
+          "height": 185
+        }
+      ],
+      "notes": [
+        "Après transmission, les données du titre sont verrouillées. Le retour pour correction n’est accepté que si toutes les échéances sont encore à traiter ; une échéance déjà commencée doit conserver sa traçabilité.",
+        "Un paiement inférieur à l’échéance crée une nouvelle échéance pour le reste ; le montant saisi ne peut pas dépasser la tranche prévue.",
+        "Le bouton Commencer le paiement ne demande pas de champ supplémentaire. Il doit précéder l’enregistrement de l’exécution.",
+        "Le chemin normal du bouton Préparation fournisseur attend un solde nul, Paiement Validé, Banque Confirmé et la phase Envoi SWIFT / Draft LC. Les anciens dossiers ont des règles de compatibilité : le Gantt représente le chemin normal."
+      ],
+      "color": "#7c3aed"
+    },
+    {
+      "n": 4,
+      "title": "Préparation fournisseur",
+      "role": "Logistique / gestionnaire du dossier.",
+      "purpose": "Suivre la fabrication ou la préparation chez le fournisseur.",
+      "requires": "Chemin normal : circuit de paiement terminé et preuves confirmées. Le changement générique de phase contrôle la conformité et le paiement.",
+      "result": "Phase Production enregistrée ; préparation suivie avant l’expédition.",
+      "fields": [
+        {
+          "label": "Phase du dossier",
+          "type": "Liste de phases",
+          "required": "O pour changer la phase",
+          "meaning": "Choisir Production pour représenter la préparation fournisseur.",
+          "example": "Production"
+        },
+        {
+          "label": "Documents originaux requis",
+          "type": "Case à cocher, oui/non",
+          "required": "F",
+          "meaning": "Indique si le dossier nécessite des originaux papier.",
+          "example": "Oui"
+        },
+        {
+          "label": "Statut des documents originaux",
+          "type": "Liste conditionnelle",
+          "required": "C, visible si originaux requis",
+          "meaning": "Non renseigné, Demandé, Réceptionné, Retourné pour correction ou Refusé.",
+          "example": "Demandé"
+        }
+      ],
+      "screenshots": [
+        {
+          "file": "étape_4.png",
+          "caption": "Champs réellement disponibles pour la préparation fournisseur.",
+          "width": 1312,
+          "height": 298
+        }
+      ],
+      "notes": [
+        "L’écran ne contient pas de pourcentage de fabrication, de date de début de production, ni de date de fin prévue propre à cette étape.",
+        "Le Délai fournisseur (jours) est saisi dans le contrôle de proforma. Les remarques et documents peuvent compléter le suivi.",
+        "Décocher Documents originaux requis remet leur statut à vide."
+      ],
+      "color": "#d97706"
+    },
+    {
+      "n": 5,
+      "title": "Expédition & documents",
+      "role": "Logistique / gestionnaire du dossier ; fournisseur pour les informations externes.",
+      "purpose": "Suivre le départ de la marchandise et collecter les documents d’expédition.",
+      "requires": "Chemin métier : marchandise prête. Côté application, conformité et paiement requis pour les phases aval.",
+      "result": "Phase Expédition et suivi documentaire actualisés.",
+      "fields": [
+        {
+          "label": "Phase du dossier",
+          "type": "Liste de phases",
+          "required": "O pour changer la phase",
+          "meaning": "Passer le dossier à Expédition.",
+          "example": "Expédition"
+        },
+        {
+          "label": "Transport",
+          "type": "Texte libre, 100 caractères maximum",
+          "required": "F",
+          "meaning": "Mode de transport ; même champ commun que dans les données générales.",
+          "example": "Maritime"
+        },
+        {
+          "label": "Documents originaux requis / Statut",
+          "type": "Case oui/non et liste",
+          "required": "C selon le besoin documentaire",
+          "meaning": "Champs communs décrits à l’étape 4, à mettre à jour à la réception des originaux.",
+          "example": "Oui / Réceptionné"
+        },
+        {
+          "label": "Libellé, dans Pièces jointes",
+          "type": "Choix d’une catégorie prédéfinie",
+          "required": "O pour choisir la destination du fichier",
+          "meaning": "Sélectionner Documents originaux ou Justificatifs ; le choix dépend des droits et de l’étape.",
+          "example": "Documents originaux"
+        },
+        {
+          "label": "Documents originaux",
+          "type": "Fichier, voir formats communs",
+          "required": "F dans le code",
+          "meaning": "Version numérisée des documents nécessaires au dossier.",
+          "example": "documents-expedition.pdf"
+        },
+        {
+          "label": "Justificatifs",
+          "type": "Fichier, voir formats communs",
+          "required": "F",
+          "meaning": "Autre document de preuve rattaché au dossier.",
+          "example": "justificatif-transport.pdf"
+        }
+      ],
+      "screenshots": [
+        {
+          "file": "étape_5_page_1.png",
+          "caption": "Le même sélecteur de phase passe à Expédition.",
+          "width": 1312,
+          "height": 298
+        },
+        {
+          "file": "étape_5_page_2.png",
+          "caption": "Dépôt des documents et justificatifs, par catégorie.",
+          "width": 1312,
+          "height": 358
+        }
+      ],
+      "notes": [
+        "Il n’existe pas de champs dédiés au transporteur, au numéro de suivi, au BL/AWB, au conteneur, à la date de départ ou à l’arrivée estimée.",
+        "Un seul fichier courant est stocké par catégorie. Malgré le bouton Choisir des fichiers, seul le premier fichier sélectionné est utilisé.",
+        "Les informations d’origine, poids et volume restent accessibles dans le formulaire général."
+      ],
+      "color": "#ea580c"
+    },
+    {
+      "n": 6,
+      "title": "Transit & douane",
+      "role": "Logistique / gestionnaire du dossier ; transitaire pour les données externes.",
+      "purpose": "Suivre l’acheminement puis le dédouanement et renseigner les charges correspondantes.",
+      "requires": "Chemin métier : expédition réalisée et documents disponibles. Le code vérifie surtout la conformité et le paiement avant les phases aval.",
+      "result": "Phase Transit puis Dédouanement ; frais renseignés pour le coût global.",
+      "fields": [
+        {
+          "label": "Phase du dossier",
+          "type": "Liste de phases",
+          "required": "O pour changer la phase",
+          "meaning": "Sélectionner Transit, puis Dédouanement selon l’avancement réel.",
+          "example": "Dédouanement"
+        },
+        {
+          "label": "Transport, dans Coûts logistiques",
+          "type": "Montant décimal, 2 décimales",
+          "required": "F, valeur initiale 0",
+          "meaning": "Coût du transport international. À distinguer du champ texte Transport.",
+          "example": "350,00 EUR"
+        },
+        {
+          "label": "Frais transit",
+          "type": "Montant décimal, 2 décimales",
+          "required": "F, valeur initiale 0",
+          "meaning": "Frais de transit, manutention ou prestations du transitaire selon votre convention.",
+          "example": "150,00 EUR"
+        },
+        {
+          "label": "Douane",
+          "type": "Montant décimal, 2 décimales",
+          "required": "F, valeur initiale 0",
+          "meaning": "Montant des charges douanières retenues dans le dossier.",
+          "example": "200,00 EUR"
+        },
+        {
+          "label": "TVA",
+          "type": "Montant décimal, 2 décimales",
+          "required": "F, valeur initiale 0",
+          "meaning": "Montant de TVA dans les coûts ; ce champ attend une somme, pas un taux en pourcentage.",
+          "example": "240,00 EUR"
+        },
+        {
+          "label": "Justificatifs / Documents originaux",
+          "type": "Fichiers, catégories communes",
+          "required": "F dans le code",
+          "meaning": "Pièces appuyant les montants et formalités ; voir étape 5.",
+          "example": "justificatifs-douane.pdf"
+        }
+      ],
+      "screenshots": [
+        {
+          "file": "étape_6_page_1.png",
+          "caption": "Phase du dossier positionnée sur Dédouanement.",
+          "width": 1312,
+          "height": 298
+        },
+        {
+          "file": "étape_6_page_2.png",
+          "caption": "Montants des coûts de transit, douane, TVA et autres charges.",
+          "width": 1312,
+          "height": 295
+        }
+      ],
+      "notes": [
+        "Les coûts sont affichés et additionnés dans la devise du dossier. Aucun taux de change propre à chaque coût n’est saisi ici.",
+        "Pas de champs dédiés au nom du transitaire, à une référence de déclaration douanière, à la date d’arrivée ou à la date de mainlevée.",
+        "Le besoin de documents originaux déclenche un suivi et des alertes, mais n’est pas un blocage documentaire systématique de chaque transition."
+      ],
+      "color": "#0d9488"
+    },
+    {
+      "n": 7,
+      "title": "Réception & livraison",
+      "role": "Logistique pour la réception de stock ; gestionnaire pour la phase et les dates.",
+      "purpose": "Constater l’arrivée locale, enregistrer les quantités reçues puis suivre la livraison client.",
+      "requires": "Pour le stock : gestion de stock activée, lancement terminé, dossier actif avec articles entrants restant à recevoir. Pour les phases aval : contrôles logistiques de conformité et paiement.",
+      "result": "Réception validée : stock physique augmenté. Quand toutes les lignes sont reçues, phase Réception locale et Date réelle mises à jour. Livraison client conduit au statut global À clôturer.",
+      "fields": [
+        {
+          "label": "Phase du dossier",
+          "type": "Liste de phases",
+          "required": "O pour changer la phase",
+          "meaning": "Réception locale puis Livraison client. Le formulaire garde le titre de carte 4. Préparation fournisseur.",
+          "example": "Livraison client"
+        },
+        {
+          "label": "Date réelle",
+          "type": "Date, JJ/MM/AAAA",
+          "required": "F en modification ; A à réception complète",
+          "meaning": "Date globale du dossier. La réception complète de stock la renseigne au jour de validation ; elle ne distingue pas réception locale et livraison client.",
+          "example": "20/11/2026"
+        },
+        {
+          "label": "Dossier logistique, dans Réceptions de stock",
+          "type": "Sélection d’un dossier entrant",
+          "required": "O pour la réception",
+          "meaning": "Dossier auquel rattacher la quantité reçue.",
+          "example": "LOG005/26"
+        },
+        {
+          "label": "Article entrant",
+          "type": "Sélection d’une ligne logistique",
+          "required": "O pour la réception",
+          "meaning": "Article encore attendu sur le dossier ; le libellé montre la quantité restante.",
+          "example": "DEMO-ART-001, restant 10,000"
+        },
+        {
+          "label": "Emplacement",
+          "type": "Sélection d’un emplacement de la société",
+          "required": "O pour la réception",
+          "meaning": "Lieu où ajouter le stock reçu ; peut être prérempli si un emplacement attendu existe.",
+          "example": "Dépôt principal"
+        },
+        {
+          "label": "Quantité reçue",
+          "type": "Nombre décimal, 3 décimales, > 0",
+          "required": "O pour la réception",
+          "meaning": "Quantité effectivement reçue, au maximum le restant attendu. Les réceptions partielles sont possibles.",
+          "example": "5,000 sur 10,000 attendues"
+        },
+        {
+          "label": "Référence, dans Réceptions de stock",
+          "type": "Texte, 255 caractères maximum",
+          "required": "F",
+          "meaning": "Référence de réception ou de bon fournisseur.",
+          "example": "REC-DEMO-001"
+        },
+        {
+          "label": "Note, dans Réceptions de stock",
+          "type": "Texte, 1 000 caractères maximum",
+          "required": "F",
+          "meaning": "Commentaire sur la réception.",
+          "example": "Réception partielle, solde attendu"
+        },
+        {
+          "label": "Reçu / Restant / Emplacement attendu",
+          "type": "Quantités et emplacement calculés",
+          "required": "A",
+          "meaning": "Suivi des lignes dans le dossier logistique.",
+          "example": "5 reçus / 5 restants"
+        }
+      ],
+      "screenshots": [
+        {
+          "file": "étape_7_page_1.png",
+          "caption": "Suivi de la phase Réception locale ou Livraison client.",
+          "width": 1312,
+          "height": 298
+        },
+        {
+          "file": "étape_7_page_2.png",
+          "caption": "Date réelle dans les informations générales.",
+          "width": 1312,
+          "height": 616
+        },
+        {
+          "file": "étape_7_page_3.png",
+          "caption": "Autre page : Stock > Réceptions > Nouvelle réception, avec tous les champs.",
+          "width": 1600,
+          "height": 1000
+        }
+      ],
+      "notes": [
+        "Changer seulement la phase du dossier ne crée pas une entrée physique de stock : utiliser la réception et sa validation.",
+        "La page de création visible traite une ligne par réception. Enregistrer et valider crée d’abord un brouillon ; si la validation échoue, le brouillon est conservé.",
+        "Le dossier logistique ne comporte pas de signature client, de contact réceptionnaire ni de preuve de livraison dédiée. Le module Bons de livraison est un circuit distinct."
+      ],
+      "color": "#16a34a"
+    },
+    {
+      "n": 8,
+      "title": "Clôture & coût réel",
+      "role": "Logistique / gestionnaire du dossier.",
+      "purpose": "Vérifier les coûts finaux et terminer le suivi opérationnel.",
+      "requires": "Chemin métier proposé : réception et livraison terminées, coûts et pièces revus. Dans le code, le changement de phase exige la conformité et le paiement ; il n’impose pas une liste complète de pièces ou de coûts de clôture.",
+      "result": "Phase Clôture ; statut global calculé Clôturé ; coût total actualisé.",
+      "fields": [
+        {
+          "label": "Phase du dossier",
+          "type": "Liste de phases",
+          "required": "O pour clôturer",
+          "meaning": "Choisir Clôture puis Mettre à jour.",
+          "example": "Clôture"
+        },
+        {
+          "label": "Coût d’achat",
+          "type": "Montant calculé, 2 décimales",
+          "required": "A",
+          "meaning": "Somme des quantités des lignes multipliées par leur prix d’achat.",
+          "example": "1 000,00 EUR"
+        },
+        {
+          "label": "Transport / Frais transit / Douane / TVA",
+          "type": "Montants décimaux, 2 décimales",
+          "required": "F dans le code",
+          "meaning": "Reprendre et vérifier les montants décrits à l’étape 6.",
+          "example": "350 + 150 + 200 + 240"
+        },
+        {
+          "label": "Livraison locale",
+          "type": "Montant décimal, 2 décimales",
+          "required": "F, valeur initiale 0",
+          "meaning": "Coût de l’acheminement local jusqu’à la destination retenue.",
+          "example": "80,00 EUR"
+        },
+        {
+          "label": "Autres frais",
+          "type": "Montant décimal, 2 décimales",
+          "required": "F, valeur initiale 0",
+          "meaning": "Charges complémentaires non couvertes par les autres catégories.",
+          "example": "30,00 EUR"
+        },
+        {
+          "label": "Coût total",
+          "type": "Montant calculé, 2 décimales",
+          "required": "A",
+          "meaning": "Achat + transport + transit + douane + TVA + livraison locale + autres frais.",
+          "example": "2 050,00 EUR"
+        },
+        {
+          "label": "Statut global calculé",
+          "type": "Statut automatique",
+          "required": "A",
+          "meaning": "Devient Clôturé lorsque la phase est Clôture.",
+          "example": "Clôturé"
+        }
+      ],
+      "screenshots": [
+        {
+          "file": "étape_8_page_1.png",
+          "caption": "Clôture dans le sélecteur de phase commun.",
+          "width": 1312,
+          "height": 298
+        },
+        {
+          "file": "étape_8_page_2.png",
+          "caption": "Coûts logistiques à vérifier avant la clôture.",
+          "width": 1312,
+          "height": 295
+        }
+      ],
+      "notes": [
+        "Aucun champ propre au visa de clôture, à la date de clôture métier, à un budget initial ou à un écart budget/réel n’est visible.",
+        "Les coûts sont des valeurs saisies et additionnées ; aucun rapprochement automatique avec toutes les factures réelles n’est démontré par ce formulaire.",
+        "Une suppression de champ calculé affecte surtout l’affichage ; supprimer un champ obligatoire demande aussi de revoir les règles de passage."
+      ],
+      "color": "#334155"
+    }
+  ],
+  "common": [
+    {
+      "label": "Remarque",
+      "type": "Texte libre",
+      "required": "O pour ajouter une remarque",
+      "meaning": "Message de suivi enregistré dans la phase actuelle du dossier.",
+      "example": "Le fournisseur confirme le départ demain."
+    },
+    {
+      "label": "Joindre un fichier, avec une remarque",
+      "type": "Fichier, formats communs",
+      "required": "F",
+      "meaning": "Pièce de preuve associée à cette remarque.",
+      "example": "confirmation-fournisseur.pdf"
+    },
+    {
+      "label": "Phase / Auteur / Date de la remarque",
+      "type": "Statut, utilisateur, date et heure",
+      "required": "A",
+      "meaning": "Contexte enregistré automatiquement avec la remarque.",
+      "example": "Expédition / Responsable Démo / 06/10/2026"
+    },
+    {
+      "label": "Historique",
+      "type": "Journal automatique",
+      "required": "A",
+      "meaning": "Actions effectuées, valeurs avant/après et auteur.",
+      "example": "Changement de statut"
+    },
+    {
+      "label": "Statut global calculé",
+      "type": "Liste calculée",
+      "required": "A",
+      "meaning": "Synthèse : À lancer, En cours, En attente externe, Bloqué, En retard, À clôturer, Clôturé, etc. Il est distinct de la phase détaillée.",
+      "example": "En attente externe"
+    },
+    {
+      "label": "Annuler le dossier / Rouvrir",
+      "type": "Actions selon permission",
+      "required": "C",
+      "meaning": "Annulation via une action dédiée ; seule une annulation peut être rouverte par cette action. Ne correspond pas à la clôture normale.",
+      "example": "Annulé puis Rouvert"
+    }
+  ],
+  "decisions": [
+    [
+      "Obligatoire ou simplement utile ?",
+      "Origine marchandise, Nature marchandise et Autre écart affichent un astérisque sans exigence correspondante générale. À l’inverse, N° pro forma fournisseur est exigé côté serveur sans astérisque.",
+      "Harmoniser les libellés après décision sur les règles métier."
+    ],
+    [
+      "Acompte et lancement de production",
+      "Le chemin normal du bouton de préparation attend le paiement intégral et les preuves confirmées.",
+      "Décider si la fabrication doit pouvoir démarrer après un acompte, avec le solde avant expédition."
+    ],
+    [
+      "Dates par étape",
+      "Une date prévue et une date réelle globales ; aucun planning détaillé des huit étapes dans le module.",
+      "Ajouter, si utile, dates prévue/réelle de départ, arrivée, dédouanement, réception et livraison."
+    ],
+    [
+      "Transport et douane",
+      "Transport est un texte libre. Pas de transporteur, tracking, BL/AWB, conteneur, transitaire ou référence de déclaration dédiés.",
+      "Choisir les identifiants nécessaires à la recherche et au suivi."
+    ],
+    [
+      "Documents multiples",
+      "Un fichier courant par catégorie ; le sélecteur ne conserve que le premier fichier sélectionné.",
+      "Décider si plusieurs originaux, justificatifs et versions doivent coexister."
+    ],
+    [
+      "Réception et livraison",
+      "Date réelle est partagée et remplie à la réception complète de stock.",
+      "Séparer date de réception locale et date de livraison client si leur suivi doit être distinct."
+    ],
+    [
+      "Coûts et devises",
+      "TVA est un montant ; les coûts sont additionnés dans la devise du dossier.",
+      "Décider des règles de conversion, du taux de change, du budget et du rapprochement avec les factures."
+    ],
+    [
+      "Blocages de clôture",
+      "Le code n’exige pas une checklist complète des documents, coûts et preuves de livraison.",
+      "Définir le minimum obligatoire avant Clôture et le rôle autorisé à valider."
+    ],
+    [
+      "Affectation comptable",
+      "Affectation automatique au premier Comptable actif éligible, sans liste de choix.",
+      "Conserver cette règle ou ajouter un choix de comptable et une réaffectation."
+    ],
+    [
+      "Suivi des e-mails",
+      "La case E-mail au fournisseur envoyé est une déclaration manuelle, distincte de la demande automatique à la comptabilité.",
+      "Conserver un suivi manuel explicite ou demander un véritable envoi depuis l’application."
+    ]
+  ]
+}

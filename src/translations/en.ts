@@ -102,6 +102,7 @@ export const en: TranslationDictionary = {
 		bonsLivraisonUninvoiced: 'Uninvoiced delivery notes',
 		logistique: 'Logistics',
 		logistiqueDashboard: 'Logistics dashboard',
+		logistiqueGantt: 'Logistics Gantt (review)',
 		logistiqueList: 'Logistics tracking',
 		logistiqueSuppliers: 'Supplier list',
 		stock: 'Stock',
