@@ -8,6 +8,7 @@ import type { ApiErrorResponseType } from '@/types/_initTypes';
 import type {
 	LogisticsFieldReview,
 	LogisticsReviewChanges,
+	LogisticsProposalChanges,
 	LogistiqueCreateResponse,
 	LogistiqueFormValues,
 	LogistiqueListResponse,
@@ -44,13 +45,13 @@ export const logistiqueApi = createApi({
 		}),
 		saveLogisticsFieldReview: builder.mutation<
 			LogisticsFieldReview,
-			{ company_id: number; decisions: LogisticsReviewChanges }
+			{ company_id: number; decisions?: LogisticsReviewChanges; proposed_fields?: LogisticsProposalChanges }
 		>({
-			query: ({ company_id, decisions }) => ({
+			query: ({ company_id, decisions, proposed_fields }) => ({
 				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/field_review/`,
 				method: 'PATCH',
 				params: { company_id },
-				data: { decisions },
+				data: { decisions, proposed_fields },
 			}),
 			invalidatesTags: (result, _error, { company_id }) => (result ? [{ type: 'FieldReview', id: company_id }] : []),
 		}),

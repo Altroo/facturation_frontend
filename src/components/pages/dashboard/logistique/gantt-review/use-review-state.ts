@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { useGetLogisticsFieldReviewQuery, useSaveLogisticsFieldReviewMutation } from '@/store/services/logistique';
-import type { LogisticsFieldDecision, LogisticsFieldReview, LogisticsReviewChanges } from '@/types/logistiqueTypes';
+import type {
+	LogisticsFieldDecision,
+	LogisticsFieldReview,
+	LogisticsReviewChanges,
+	LogisticsProposedField,
+	LogisticsProposalChanges,
+} from '@/types/logistiqueTypes';
 
 export const useReviewState = (companyId: number, enabled: boolean) => {
 	const query = useGetLogisticsFieldReviewQuery(
@@ -14,7 +20,11 @@ export const useReviewState = (companyId: number, enabled: boolean) => {
 	const [saveMutation, { isLoading: saving }] = useSaveLogisticsFieldReviewMutation();
 	const [saved, setSaved] = useState<LogisticsFieldReview>();
 	const [changes, setChanges] = useState<LogisticsReviewChanges>({});
+	const [proposalChanges, setProposalChanges] = useState<LogisticsProposalChanges>({});
+	const [proposalOriginals, setProposalOriginals] = useState<Record<string, LogisticsProposedField>>({});
+	const [validationError, setValidationError] = useState(false);
 	const [saveError, setSaveError] = useState(false);
+	const [removedProposal, setRemovedProposal] = useState<string>();
 	const inFlight = useRef(false);
 	const server =
 		saved && (!query.currentData?.updated_at || saved.updated_at! >= query.currentData.updated_at)
@@ -24,7 +34,14 @@ export const useReviewState = (companyId: number, enabled: boolean) => {
 	for (const [key, change] of Object.entries(changes)) {
 		decisions[key] = { ...(decisions[key] ?? { choice: '', note: '' }), ...change };
 	}
-	const dirty = Object.keys(changes).length > 0;
+	const proposedFields = { ...server?.proposed_fields };
+	for (const [key, change] of Object.entries(proposalChanges)) {
+		if (change === null) delete proposedFields[key];
+		else
+			proposedFields[key] = { ...(proposedFields[key] ?? proposalOriginals[key]), ...change } as LogisticsProposedField;
+	}
+	const unnamedProposals = Object.entries(proposedFields).filter(([, field]) => !field.name?.trim());
+	const dirty = Object.keys(changes).length > 0 || Object.keys(proposalChanges).length > 0;
 	const canEdit = !!query.currentData?.can_edit && !query.isError;
 	const refetch = query.refetch;
 	useEffect(() => {
@@ -72,22 +89,61 @@ export const useReviewState = (companyId: number, enabled: boolean) => {
 		if (inFlight.current || !canEdit) return;
 		setChanges((previous) => ({ ...previous, [key]: { ...previous[key], ...change } }));
 	};
+	const addProposal = (stage: string) => {
+		if (inFlight.current || !canEdit) return;
+		const id = crypto.randomUUID();
+		setProposalChanges((previous) => ({ ...previous, [id]: { stage, name: '', description: '' } }));
+	};
+	const setProposal = (key: string, change: Partial<LogisticsProposedField>) => {
+		if (inFlight.current || !canEdit) return;
+		setProposalOriginals((previous) => ({ ...previous, [key]: previous[key] ?? proposedFields[key] }));
+		setProposalChanges((previous) => ({ ...previous, [key]: { ...previous[key], ...change } }));
+	};
+	const removeProposal = (key: string) => {
+		if (inFlight.current || !canEdit) return;
+		setProposalChanges((previous) => ({ ...previous, [key]: null }));
+		if (removedProposal === key) setRemovedProposal(undefined);
+	};
+	const restoreProposal = () => {
+		if (inFlight.current || !canEdit || !removedProposal) return;
+		const field = proposedFields[removedProposal];
+		if (!field) return;
+		const id = crypto.randomUUID();
+		setProposalChanges((previous) => {
+			const next = { ...previous, [id]: field, [removedProposal]: null };
+			return next;
+		});
+		setRemovedProposal(undefined);
+	};
 	const save = async () => {
 		if (inFlight.current || !dirty || !canEdit) return;
+		setValidationError(unnamedProposals.length > 0);
+		if (unnamedProposals.length > 0) return;
 		inFlight.current = true;
 		setSaveError(false);
+		setRemovedProposal(undefined);
 		try {
-			const result = await saveMutation({ company_id: companyId, decisions: changes }).unwrap();
+			const result = await saveMutation({
+				company_id: companyId,
+				...(Object.keys(changes).length ? { decisions: changes } : {}),
+				...(Object.keys(proposalChanges).length ? { proposed_fields: proposalChanges } : {}),
+			}).unwrap();
 			setSaved(result);
 			setChanges({});
-		} catch {
-			setSaveError(true);
+			setProposalChanges({});
+			setProposalOriginals({});
+		} catch (error) {
+			const removed = (error as { data?: { details?: { removed_proposal?: unknown } } } | null)?.data?.details
+				?.removed_proposal;
+			if (typeof removed === 'string' && proposedFields[removed]) setRemovedProposal(removed);
+			else setSaveError(true);
 		} finally {
 			inFlight.current = false;
 		}
 	};
 	return {
-		review: { decisions },
+		review: { decisions, proposed_fields: proposedFields },
+		invalidProposalStages: validationError ? [...new Set(unnamedProposals.map(([, field]) => field.stage))] : [],
 		ready: !!server,
 		loading: query.isFetching,
 		loadError: query.isError,
@@ -96,8 +152,16 @@ export const useReviewState = (companyId: number, enabled: boolean) => {
 		saving,
 		dirty,
 		saveError,
+		removedProposal:
+			removedProposal && proposedFields[removedProposal]
+				? { id: removedProposal, name: proposedFields[removedProposal].name }
+				: undefined,
+		restoreProposal,
 		savedAt: server?.updated_at,
 		setDecision,
+		addProposal,
+		setProposal,
+		removeProposal,
 		save,
 	};
 };

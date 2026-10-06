@@ -486,8 +486,11 @@ export type LogistiqueViewDetailCardProps = {
 
 export type LogisticsFieldDecision = { choice: string; note: string };
 export type LogisticsReviewChanges = Record<string, Partial<LogisticsFieldDecision>>;
+export type LogisticsProposedField = { stage: string; name: string; description: string };
+export type LogisticsProposalChanges = Record<string, Partial<LogisticsProposedField> | null>;
 export type LogisticsFieldReview = {
 	decisions: Record<string, LogisticsFieldDecision>;
+	proposed_fields: Record<string, LogisticsProposedField>;
 	updated_at: string | null;
 	can_edit: boolean;
 };

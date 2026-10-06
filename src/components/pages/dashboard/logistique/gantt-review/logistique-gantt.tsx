@@ -35,6 +35,7 @@ import content from './content.json';
 import { REVIEW_DELAYS } from './review-state';
 import { useReviewState } from './use-review-state';
 import ReviewTimeline from './review-timeline';
+import ProposedFields from './proposed-fields';
 
 type Screenshot = (typeof content.stages)[number]['screenshots'][number];
 type Field = (typeof content.common)[number];
@@ -47,8 +48,26 @@ const requirementBadges = {
 
 const ReviewContent = ({ companyId, session }: SessionProps & { companyId: number }) => {
 	const token = useInitAccessToken(session);
-	const { review, ready, loading, loadError, retry, canEdit, saving, dirty, saveError, savedAt, setDecision, save } =
-		useReviewState(companyId, !!token);
+	const {
+		review,
+		ready,
+		loading,
+		loadError,
+		retry,
+		canEdit,
+		saving,
+		dirty,
+		saveError,
+		savedAt,
+		setDecision,
+		addProposal,
+		setProposal,
+		removeProposal,
+		removedProposal,
+		restoreProposal,
+		invalidProposalStages,
+		save,
+	} = useReviewState(companyId, !!token);
 	const [selected, setSelected] = useState(0);
 	const [screenshot, setScreenshot] = useState<Screenshot | null>(null);
 	const exportReview = () => {
@@ -207,7 +226,7 @@ const ReviewContent = ({ companyId, session }: SessionProps & { companyId: numbe
 								Le parcours logistique, étape par étape
 							</Typography>
 							<Typography color="text.secondary" sx={{ mt: 1 }}>
-								Choisissez une étape, puis examinez ses champs et ajoutez vos décisions ou commentaires.
+								Choisissez une étape, examinez ses champs et proposez ceux qui manquent.
 							</Typography>
 						</Box>
 						<Button startIcon={<Download />} variant="outlined" onClick={exportReview} sx={{ flexShrink: 0 }}>
@@ -215,8 +234,8 @@ const ReviewContent = ({ companyId, session }: SessionProps & { companyId: numbe
 						</Button>
 					</Stack>
 					<Typography color="text.secondary" sx={{ mt: 2 }}>
-						Enregistrez vos décisions et commentaires : ils seront visibles par les membres de cette société à la
-						prochaine ouverture.
+						Enregistrez vos décisions, commentaires et nouveaux champs : ils seront visibles par les membres de cette
+						société à la prochaine ouverture.
 					</Typography>
 					{loadError && <Box sx={{ mt: 2 }}>{loadAlert}</Box>}
 				</CardContent>
@@ -263,6 +282,15 @@ const ReviewContent = ({ companyId, session }: SessionProps & { companyId: numbe
 							</Box>
 						))}
 					</Box>
+					<ProposedFields
+						stage={String(stage.n)}
+						fields={review.proposed_fields}
+						disabled={!canEdit || saving}
+						invalid={invalidProposalStages.includes(String(stage.n))}
+						onAdd={addProposal}
+						onChange={setProposal}
+						onRemove={removeProposal}
+					/>
 					<Typography component="h3" variant="h6" sx={{ mt: 3 }}>
 						Champs à examiner
 					</Typography>
@@ -318,6 +346,15 @@ const ReviewContent = ({ companyId, session }: SessionProps & { companyId: numbe
 					<Typography variant="h6" component="h2">
 						Informations utilisées à plusieurs étapes
 					</Typography>
+					<ProposedFields
+						stage="common"
+						fields={review.proposed_fields}
+						disabled={!canEdit || saving}
+						invalid={invalidProposalStages.includes('common')}
+						onAdd={addProposal}
+						onChange={setProposal}
+						onRemove={removeProposal}
+					/>
 					{fieldTable(content.common, 'common')}
 					<Button
 						sx={{ mt: 2 }}
@@ -370,6 +407,41 @@ const ReviewContent = ({ companyId, session }: SessionProps & { companyId: numbe
 				variant="outlined"
 				sx={{ position: 'fixed', bottom: 16, right: 24, left: { xs: 16, md: 256 }, zIndex: 10, boxShadow: 2 }}
 			>
+				{invalidProposalStages.length > 0 && (
+					<Alert
+						severity="warning"
+						action={
+							<Button
+								color="inherit"
+								onClick={() => {
+									const target = invalidProposalStages[0];
+									if (target !== 'common') setSelected(Number(target) - 1);
+									requestAnimationFrame(() =>
+										document.getElementById(`proposals-${target}`)?.scrollIntoView({ behavior: 'smooth' }),
+									);
+								}}
+							>
+								Voir le champ
+							</Button>
+						}
+					>
+						Donnez un nom à chaque nouveau champ avant d’enregistrer.
+					</Alert>
+				)}
+				{removedProposal && (
+					<Alert severity="warning">
+						La proposition « {removedProposal.name} » a été retirée par un autre utilisateur. Votre texte est conservé.
+						Choisissez une option, puis enregistrez.
+						<Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+							<Button color="inherit" disabled={!canEdit || saving} onClick={restoreProposal}>
+								La proposer à nouveau
+							</Button>
+							<Button color="inherit" disabled={!canEdit || saving} onClick={() => removeProposal(removedProposal.id)}>
+								Retirer ma proposition
+							</Button>
+						</Stack>
+					</Alert>
+				)}
 				{saveError && (
 					<Alert severity="error">
 						Enregistrement impossible. Vos modifications sont conservées à l’écran. Cliquez sur « Enregistrer » pour
