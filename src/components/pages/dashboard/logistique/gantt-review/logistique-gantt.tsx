@@ -34,16 +34,23 @@ import type { SessionProps } from '@/types/_initTypes';
 import content from './content.json';
 import { REVIEW_DELAYS } from './review-state';
 import { useReviewState } from './use-review-state';
+import ReviewTimeline from './review-timeline';
 
 type Screenshot = (typeof content.stages)[number]['screenshots'][number];
 type Field = (typeof content.common)[number];
+const requirementBadges = {
+	O: { label: 'Obligatoire', background: '#fee2e2', color: '#991b1b' },
+	C: { label: 'Conditionnel', background: '#fef3c7', color: '#92400e' },
+	F: { label: 'Facultatif', background: '#dbeafe', color: '#1e40af' },
+	A: { label: 'Automatique', background: '#f1f5f9', color: '#475569' },
+};
+
 const ReviewContent = ({ companyId, session }: SessionProps & { companyId: number }) => {
 	const token = useInitAccessToken(session);
 	const { review, ready, loading, loadError, retry, canEdit, saving, dirty, saveError, savedAt, setDecision, save } =
 		useReviewState(companyId, !!token);
 	const [selected, setSelected] = useState(0);
 	const [screenshot, setScreenshot] = useState<Screenshot | null>(null);
-	const totalHours = REVIEW_DELAYS.reduce((sum, delay) => sum + delay.hours, 0);
 	const exportReview = () => {
 		const fields = [
 			...content.stages.flatMap((stage) =>
@@ -100,14 +107,28 @@ const ReviewContent = ({ companyId, session }: SessionProps & { companyId: numbe
 				<TableBody>
 					{fields.map((field, index) => {
 						const key = `${prefix}-${index}`;
+						const requirement = requirementBadges[field.required[0] as keyof typeof requirementBadges];
+						const details = field.required
+							.slice(1)
+							.replace(/^[, ]+/, '')
+							.replace(/\bA\b/g, 'automatique');
 						return (
 							<TableRow key={key} sx={{ '& td': { verticalAlign: 'top', py: 2 } }}>
 								<TableCell sx={{ width: '19%', fontWeight: 600 }}>{field.label}</TableCell>
 								<TableCell sx={{ width: '19%' }}>
 									{field.type}
-									<Typography variant="body2" color="primary" sx={{ mt: 1, fontWeight: 600 }}>
-										{field.required}
-									</Typography>
+									<Box sx={{ mt: 1 }}>
+										<Chip
+											size="small"
+											label={requirement.label}
+											sx={{ bgcolor: requirement.background, color: requirement.color, fontWeight: 700 }}
+										/>
+										{details && (
+											<Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+												{details.charAt(0).toUpperCase() + details.slice(1)}
+											</Typography>
+										)}
+									</Box>
 								</TableCell>
 								<TableCell sx={{ width: '30%' }}>
 									{field.meaning}
@@ -206,67 +227,13 @@ const ReviewContent = ({ companyId, session }: SessionProps & { companyId: numbe
 						Les 8 étapes et leurs délais
 					</Typography>
 					<Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-						Cliquez sur une étape pour voir ses champs ci-dessous. Le diagramme explique le parcours ; il ne représente
-						pas une commande réelle.
+						1 carreau = 1 jour. X = date d’expédition, repère de l’étape 4. Cliquez sur une étape pour examiner ses
+						champs.
 					</Typography>
-					<Box sx={{ overflowX: 'auto' }} data-testid="review-gantt">
-						<Box sx={{ minWidth: 740 }}>
-							<Box
-								sx={{ display: 'grid', gridTemplateColumns: '260px 220px 1fr', px: 2, py: 1, bgcolor: 'action.hover' }}
-							>
-								{['Étape', 'Délai', 'Enchaînement indicatif'].map((label) => (
-									<Typography key={label} variant="body2" sx={{ fontWeight: 700 }}>
-										{label}
-									</Typography>
-								))}
-							</Box>
-							{content.stages.map((item, index) => {
-								const delay = REVIEW_DELAYS[index];
-								const before = REVIEW_DELAYS.slice(0, index).reduce((sum, value) => sum + value.hours, 0);
-								return (
-									<ButtonBase
-										key={item.n}
-										data-testid={`gantt-step-${item.n}`}
-										onClick={() => setSelected(index)}
-										aria-pressed={selected === index}
-										sx={{
-											width: '100%',
-											display: 'grid',
-											gridTemplateColumns: '260px 220px 1fr',
-											textAlign: 'left',
-											px: 2,
-											py: 1.5,
-											minHeight: 54,
-											borderBottom: 1,
-											borderColor: 'divider',
-											bgcolor: selected === index ? 'action.selected' : 'background.paper',
-											'&.Mui-focusVisible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: -2 },
-										}}
-									>
-										<Typography variant="body2" sx={{ fontWeight: selected === index ? 700 : 400, pr: 2 }}>
-											{item.n}. {item.title}
-										</Typography>
-										<Typography variant="body2" sx={{ fontWeight: 700, pr: 2 }}>
-											{delay.label}
-										</Typography>
-										<Box aria-hidden="true" sx={{ position: 'relative', height: 24, mr: 1 }}>
-											<Box
-												sx={{
-													position: 'absolute',
-													height: 24,
-													left: `${(before / totalHours) * 100}%`,
-													width: `${(delay.hours / totalHours) * 100}%`,
-													minWidth: 4,
-													bgcolor: item.color,
-													borderRadius: 0.5,
-												}}
-											/>
-										</Box>
-									</ButtonBase>
-								);
-							})}
-						</Box>
-					</Box>
+					<ReviewTimeline selected={selected} onSelect={setSelected} />
+					<Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+						Le signe // sépare les deux repères : la date d’expédition X n’est pas calculée à partir du lancement.
+					</Typography>
 				</CardContent>
 			</Card>
 			<Card variant="outlined">
@@ -298,10 +265,6 @@ const ReviewContent = ({ companyId, session }: SessionProps & { companyId: numbe
 					</Box>
 					<Typography component="h3" variant="h6" sx={{ mt: 3 }}>
 						Champs à examiner
-					</Typography>
-					<Typography variant="body2" color="text.secondary">
-						O : obligatoire · C : conditionnel · F : facultatif · A : automatique. Les précisions indiquent quand chaque
-						règle s’applique.
 					</Typography>
 					{fieldTable(stage.fields, String(stage.n))}
 					<Box component="ul" sx={{ pl: 2.5 }}>
