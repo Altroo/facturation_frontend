@@ -97,7 +97,7 @@ const ReviewContent = ({ companyId, session }: SessionProps & { companyId: numbe
 			<Table size="small" sx={{ minWidth: 950 }} aria-label={`Champs ${prefix}`}>
 				<TableHead>
 					<TableRow>
-						{['Champ', 'Type et exigence', 'Signification et exemple', 'Décision', 'Commentaire'].map((label) => (
+						{['Champ', 'Valeur attendue', 'À quoi sert ce champ ?', 'Décision', 'Commentaire'].map((label) => (
 							<TableCell key={label} sx={{ fontWeight: 700, bgcolor: 'action.hover' }}>
 								{label}
 							</TableCell>
@@ -252,7 +252,7 @@ const ReviewContent = ({ companyId, session }: SessionProps & { companyId: numbe
 					<Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2 }}>
 						{[
 							['Ce que l’on fait', stage.purpose],
-							['Prérequis', stage.requires],
+							['Avant de commencer', stage.requires],
 							['Résultat attendu', stage.result],
 						].map(([title, text]) => (
 							<Box key={title} sx={{ bgcolor: 'action.hover', p: 2, borderRadius: 1 }}>
@@ -316,7 +316,7 @@ const ReviewContent = ({ companyId, session }: SessionProps & { companyId: numbe
 			<Card variant="outlined">
 				<CardContent>
 					<Typography variant="h6" component="h2">
-						Champs communs et valeurs reprises
+						Informations utilisées à plusieurs étapes
 					</Typography>
 					{fieldTable(content.common, 'common')}
 					<Button
@@ -325,7 +325,7 @@ const ReviewContent = ({ companyId, session }: SessionProps & { companyId: numbe
 						onClick={() =>
 							setScreenshot({
 								file: 'annexe_remarques.png',
-								caption: 'Remarques et pièces jointes transversales du dossier.',
+								caption: 'Remarques et documents ajoutés au fil de la commande.',
 								width: 1312,
 								height: 248,
 							})
@@ -338,7 +338,7 @@ const ReviewContent = ({ companyId, session }: SessionProps & { companyId: numbe
 			<Card variant="outlined">
 				<CardContent>
 					<Typography variant="h6" component="h2">
-						Les arbitrages à préparer
+						Les choix à confirmer
 					</Typography>
 					<TableContainer>
 						<Table sx={{ minWidth: 650 }}>
