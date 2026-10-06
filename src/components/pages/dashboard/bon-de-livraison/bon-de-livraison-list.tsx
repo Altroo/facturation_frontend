@@ -98,7 +98,7 @@ const FormikContent: FC<FormikContentProps> = (props) => {
 	const bonDeLivraisonListConfig = createBonDeLivraisonListConfig(t);
 	const token = useInitAccessToken(session);
 
-	const [paginationModel, setPaginationModel] = useDataGridPagination();
+	const [paginationModel, setPaginationModel, sorting] = useDataGridPagination();
 	const [searchTerm, setSearchTerm] = useState<string>('');
 	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [], logicOperator: GridLogicOperator.And });
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
@@ -129,6 +129,7 @@ const FormikContent: FC<FormikContentProps> = (props) => {
 			with_pagination: true,
 			page: paginationModel.page + 1,
 			pageSize: paginationModel.pageSize,
+			ordering: sorting.ordering,
 			search: searchTerm,
 			...mergedFilterParams,
 		},
@@ -152,6 +153,7 @@ const FormikContent: FC<FormikContentProps> = (props) => {
 				bulkDeleteMutation={{ bulkDeleteRecords }}
 				paginationModel={paginationModel}
 				setPaginationModel={setPaginationModel}
+				sorting={sorting}
 				searchTerm={searchTerm}
 				setSearchTerm={setSearchTerm}
 				filterModel={filterModel}

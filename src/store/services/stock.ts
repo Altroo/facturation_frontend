@@ -35,16 +35,27 @@ export const stockApi = createApi({
 				company_id: number;
 				page?: number;
 				pageSize?: number;
+				ordering?: string;
 				search?: string;
 				low_only?: boolean;
 				article_id?: number;
 				filters?: StockListFilters;
 			}
 		>({
-			query: ({ company_id, page = 1, pageSize = 25, search, low_only, article_id, filters = {} }) => ({
+			query: ({ company_id, page = 1, pageSize = 25, ordering, search, low_only, article_id, filters = {} }) => ({
 				url: `${process.env.NEXT_PUBLIC_STOCK_ROOT || '/stock'}/balances/`,
 				method: 'GET',
-				params: { company_id, page, page_size: pageSize, search, low_only, article_id, pagination: true, ...filters },
+				params: {
+					company_id,
+					page,
+					page_size: pageSize,
+					ordering,
+					search,
+					low_only,
+					article_id,
+					pagination: true,
+					...filters,
+				},
 			}),
 			providesTags: ['StockBalance'],
 		}),
@@ -62,15 +73,16 @@ export const stockApi = createApi({
 				company_id: number;
 				page?: number;
 				pageSize?: number;
+				ordering?: string;
 				search?: string;
 				article_id?: number;
 				filters?: StockListFilters;
 			}
 		>({
-			query: ({ company_id, page = 1, pageSize = 25, search, article_id, filters = {} }) => ({
+			query: ({ company_id, page = 1, pageSize = 25, ordering, search, article_id, filters = {} }) => ({
 				url: `${process.env.NEXT_PUBLIC_STOCK_ROOT || '/stock'}/movements/`,
 				method: 'GET',
-				params: { company_id, page, page_size: pageSize, search, article_id, ...filters },
+				params: { company_id, page, page_size: pageSize, ordering, search, article_id, ...filters },
 			}),
 			providesTags: ['StockMovement'],
 		}),
@@ -93,7 +105,11 @@ export const stockApi = createApi({
 				reason: string;
 			}
 		>({
-			query: (data) => ({ url: `${process.env.NEXT_PUBLIC_STOCK_ROOT || '/stock'}/adjustments/`, method: 'POST', data }),
+			query: (data) => ({
+				url: `${process.env.NEXT_PUBLIC_STOCK_ROOT || '/stock'}/adjustments/`,
+				method: 'POST',
+				data,
+			}),
 			invalidatesTags: ['StockBalance', 'StockMovement'],
 			async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
 				try {
@@ -106,12 +122,19 @@ export const stockApi = createApi({
 		}),
 		getStockReceipts: builder.query<
 			StockReceiptResponse,
-			{ company_id: number; page?: number; pageSize?: number; search?: string; filters?: StockListFilters }
+			{
+				company_id: number;
+				page?: number;
+				pageSize?: number;
+				ordering?: string;
+				search?: string;
+				filters?: StockListFilters;
+			}
 		>({
-			query: ({ company_id, page = 1, pageSize = 25, search, filters = {} }) => ({
+			query: ({ company_id, page = 1, pageSize = 25, ordering, search, filters = {} }) => ({
 				url: `${process.env.NEXT_PUBLIC_STOCK_ROOT || '/stock'}/receipts/`,
 				method: 'GET',
-				params: { company_id, page, page_size: pageSize, search, ...filters },
+				params: { company_id, page, page_size: pageSize, ordering, search, ...filters },
 			}),
 			providesTags: ['StockReceipt'],
 		}),
@@ -182,12 +205,19 @@ export const stockApi = createApi({
 		}),
 		getInventories: builder.query<
 			InventoryResponse,
-			{ company_id: number; page?: number; pageSize?: number; search?: string; filters?: StockListFilters }
+			{
+				company_id: number;
+				page?: number;
+				pageSize?: number;
+				ordering?: string;
+				search?: string;
+				filters?: StockListFilters;
+			}
 		>({
-			query: ({ company_id, page = 1, pageSize = 25, search, filters = {} }) => ({
+			query: ({ company_id, page = 1, pageSize = 25, ordering, search, filters = {} }) => ({
 				url: `${process.env.NEXT_PUBLIC_STOCK_ROOT || '/stock'}/inventories/`,
 				method: 'GET',
-				params: { company_id, page, page_size: pageSize, search, ...filters },
+				params: { company_id, page, page_size: pageSize, ordering, search, ...filters },
 			}),
 			providesTags: ['Inventory'],
 		}),
@@ -209,7 +239,11 @@ export const stockApi = createApi({
 				lines: Array<{ article: number; counted_quantity: number }>;
 			}
 		>({
-			query: (data) => ({ url: `${process.env.NEXT_PUBLIC_STOCK_ROOT || '/stock'}/inventories/`, method: 'POST', data }),
+			query: (data) => ({
+				url: `${process.env.NEXT_PUBLIC_STOCK_ROOT || '/stock'}/inventories/`,
+				method: 'POST',
+				data,
+			}),
 			invalidatesTags: ['Inventory'],
 		}),
 		validateInventory: builder.mutation<InventorySession, { company_id: number; id: number }>({

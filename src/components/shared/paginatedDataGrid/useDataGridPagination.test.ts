@@ -36,3 +36,30 @@ describe('useDataGridPagination', () => {
 		expect(result.current[0]).toEqual({ page: 5, pageSize: 100 });
 	});
 });
+
+describe('server ordering', () => {
+	it('toggles ascending/descending and resets only the page, preserving filters and size', () => {
+		window.history.replaceState({}, '', '/dashboard/clients?company_id=7&page=4&page_size=25&archived=false#grid');
+		const { result } = renderHook(() => useDataGridPagination());
+		act(() => result.current[2].onSortModelChange([{ field: 'raison_sociale', sort: 'asc' }]));
+		expect(result.current[0]).toEqual({ page: 0, pageSize: 25 });
+		expect(result.current[2].ordering).toBe('raison_sociale');
+		act(() => result.current[1]({ page: 1, pageSize: 25 }));
+		expect(result.current[2].sortModel).toEqual([{ field: 'raison_sociale', sort: 'asc' }]);
+		act(() => result.current[2].onSortModelChange([{ field: 'raison_sociale', sort: 'desc' }]));
+		expect(result.current[2].ordering).toBe('-raison_sociale');
+		expect(result.current[0].page).toBe(0);
+		expect(window.location.search).toContain('archived=false');
+		expect(window.location.hash).toBe('#grid');
+		act(() => result.current[2].onSortModelChange([]));
+		expect(result.current[2].ordering).toBe('');
+	});
+});
+
+it('preserves the sort model identity when only the page changes', () => {
+	window.history.replaceState({}, '', '/dashboard/list?ordering=name');
+	const { result } = renderHook(() => useDataGridPagination());
+	const sortModel = result.current[2].sortModel;
+	act(() => result.current[1]({ page: 2, pageSize: 10 }));
+	expect(result.current[2].sortModel).toBe(sortModel);
+});

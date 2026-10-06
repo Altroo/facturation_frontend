@@ -115,7 +115,7 @@ const StockView: FC<StockViewProps> = ({ session, company_id, id }) => {
 	const role = companies?.find((company) => company.id === company_id)?.role;
 	const canAdjust = role === 'Caissier';
 	const { data: balance, isLoading, isError } = useGetStockBalanceQuery({ company_id, id }, { skip: !token });
-	const [paginationModel, setPaginationModel] = useDataGridPagination();
+	const [paginationModel, setPaginationModel, sorting] = useDataGridPagination();
 	const [searchTerm, setSearchTerm] = useState('');
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
 	const [filterModel, setFilterModel] = useState<GridFilterModel>({
@@ -128,6 +128,7 @@ const StockView: FC<StockViewProps> = ({ session, company_id, id }) => {
 			article_id: balance?.article,
 			page: paginationModel.page + 1,
 			pageSize: paginationModel.pageSize,
+			ordering: sorting.ordering,
 			search: searchTerm,
 			filters: customFilterParams,
 		},
@@ -350,6 +351,7 @@ const StockView: FC<StockViewProps> = ({ session, company_id, id }) => {
 										columns={columns}
 										paginationModel={paginationModel}
 										setPaginationModel={setPaginationModel}
+										sorting={sorting}
 										searchTerm={searchTerm}
 										setSearchTerm={setSearchTerm}
 										filterModel={filterModel}

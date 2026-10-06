@@ -129,6 +129,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 		convertMutations,
 		paginationModel,
 		setPaginationModel,
+		sorting,
 		searchTerm,
 		setSearchTerm,
 		filterModel,
@@ -674,6 +675,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 				columns={columns}
 				paginationModel={paginationModel}
 				setPaginationModel={setPaginationModel}
+				sorting={sorting}
 				searchTerm={searchTerm}
 				setSearchTerm={setSearchTerm}
 				filterModel={filterModel}

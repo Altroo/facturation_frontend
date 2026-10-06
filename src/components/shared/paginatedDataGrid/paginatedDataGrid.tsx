@@ -107,6 +107,7 @@ const PaginatedDataGrid = <T,>({
 	columns,
 	paginationModel,
 	setPaginationModel,
+	sorting,
 	searchTerm,
 	setSearchTerm,
 	filterModel: externalFilterModel,
@@ -180,6 +181,7 @@ const PaginatedDataGrid = <T,>({
 		page: paginationModel.page + 1,
 		pageSize: paginationModel.pageSize,
 		search: searchTerm,
+		...(sorting?.ordering ? { ordering: sorting.ordering } : {}),
 		...extractCustomFilterParams(customFilters.items),
 	});
 
@@ -389,8 +391,12 @@ const PaginatedDataGrid = <T,>({
 								rows={rows}
 								columns={columns}
 								loading={isLoading}
-								rowCount={data?.count ?? 0}
+								rowCount={data?.count ?? -1}
 								paginationMode="server"
+								sortingMode={sorting ? 'server' : 'client'}
+								sortingOrder={['asc', 'desc']}
+								sortModel={sorting?.sortModel}
+								onSortModelChange={sorting?.onSortModelChange}
 								paginationModel={paginationModel}
 								onPaginationModelChange={setPaginationModel}
 								pageSizeOptions={[5, 10, 25, 50, 100]}

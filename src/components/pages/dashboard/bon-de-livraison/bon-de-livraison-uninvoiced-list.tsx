@@ -53,7 +53,7 @@ const FormikContent: FC<FormikContentProps> = (props) => {
 	const bonDeLivraisonUninvoicedListConfig = createBonDeLivraisonUninvoicedListConfig(t);
 	const token = useInitAccessToken(session);
 
-	const [paginationModel, setPaginationModel] = useDataGridPagination();
+	const [paginationModel, setPaginationModel, sorting] = useDataGridPagination();
 	const [searchTerm, setSearchTerm] = useState<string>('');
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
 
@@ -67,6 +67,7 @@ const FormikContent: FC<FormikContentProps> = (props) => {
 			with_pagination: true,
 			page: paginationModel.page + 1,
 			pageSize: paginationModel.pageSize,
+			ordering: sorting.ordering,
 			search: searchTerm,
 			...customFilterParams,
 		},
@@ -87,6 +88,7 @@ const FormikContent: FC<FormikContentProps> = (props) => {
 			deleteMutation={{ deleteRecord }}
 			paginationModel={paginationModel}
 			setPaginationModel={setPaginationModel}
+			sorting={sorting}
 			searchTerm={searchTerm}
 			setSearchTerm={setSearchTerm}
 			onCustomFilterParamsChange={setCustomFilterParams}

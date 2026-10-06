@@ -42,7 +42,7 @@ const CompaniesListClient: FC<SessionProps> = ({ session }: SessionProps) => {
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
 	const token = useInitAccessToken(session);
-	const [paginationModel, setPaginationModel] = useDataGridPagination();
+	const [paginationModel, setPaginationModel, sorting] = useDataGridPagination();
 	const [searchTerm, setSearchTerm] = useState<string>('');
 	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
 	const [showSuspendModal, setShowSuspendModal] = useState<boolean>(false);
@@ -64,6 +64,7 @@ const CompaniesListClient: FC<SessionProps> = ({ session }: SessionProps) => {
 			with_pagination: true,
 			page: paginationModel.page + 1,
 			pageSize: paginationModel.pageSize,
+			ordering: sorting.ordering,
 			search: searchTerm,
 			...customFilterParams,
 		},
@@ -423,6 +424,7 @@ const CompaniesListClient: FC<SessionProps> = ({ session }: SessionProps) => {
 							columns={columns}
 							paginationModel={paginationModel}
 							setPaginationModel={setPaginationModel}
+							sorting={sorting}
 							searchTerm={searchTerm}
 							setSearchTerm={setSearchTerm}
 							filterModel={filterModel}

@@ -1,3 +1,4 @@
+import type { DataGridSorting } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
 import type {
 	CSSProperties,
 	ChangeEvent,
@@ -466,6 +467,7 @@ export type MobileActionsMenuProps = {
 };
 
 export type PaginatedDataGridProps<T> = {
+	sorting?: DataGridSorting;
 	queryHook?: (params: { page: number; pageSize: number; search: string; [key: string]: string | number }) => {
 		data?: { count: number; results: T[] };
 		isLoading: boolean;

@@ -1,3 +1,4 @@
+import type { DataGridSorting } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
 import type { ZodType } from 'zod';
 import type {
 	DeviFactureLineFormValues,
@@ -796,6 +797,7 @@ export interface DocumentListContentProps<TDocument extends DocumentListClass> {
 	convertMutations?: Record<string, DocumentConvertMutationResult>;
 	/** Pagination model state */
 	paginationModel: PaginationModel;
+	sorting?: DataGridSorting;
 	/** Set pagination model state */
 	setPaginationModel: Dispatch<SetStateAction<PaginationModel>>;
 	/** Search term state */
