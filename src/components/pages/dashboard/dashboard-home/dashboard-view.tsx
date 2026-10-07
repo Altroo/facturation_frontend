@@ -34,12 +34,11 @@ import {
 	Title,
 	Tooltip,
 } from 'chart.js';
-import { Bar, Doughnut, Line, Pie } from 'react-chartjs-2';
+import { Bar, Doughnut, Line } from 'react-chartjs-2';
 import {
 	useGetClientMultidimensionalProfileQuery,
 	useGetCollectionRateQuery,
 	useGetDiscountImpactAnalysisQuery,
-	useGetInvoiceStatusDistributionQuery,
 	useGetKPICardsWithTrendsQuery,
 	useGetMonthlyDocumentVolumeQuery,
 	useGetMonthlyGlobalPerformanceQuery,
@@ -52,7 +51,6 @@ import {
 	useGetProductMarginVolumeQuery,
 	useGetProductPriceVolumeAnalysisQuery,
 	useGetQuoteConversionRateQuery,
-	useGetRevenueByDocumentTypeQuery,
 	useGetSectionMicroTrendsQuery,
 	useGetTopClientsByRevenueQuery,
 	useGetTopProductsByQuantityQuery,
@@ -80,6 +78,8 @@ import type {
 	ChartProps,
 	DashboardViewDashboardContentProps as DashboardContentProps,
 } from '@/types/dashboardTypes';
+
+import { ReceivablesByClientChart, UninvoicedDeliveriesChart } from './decision-charts';
 
 // Register Chart.js components
 ChartJS.register(
@@ -309,30 +309,6 @@ const MonthlyRevenueChart: FC<ChartProps> = ({ dateParams, company_id, devise })
 	};
 
 	return <Line data={chartData} options={{ responsive: true, maintainAspectRatio: false }} />;
-};
-
-const RevenueByTypeChart: FC<ChartProps> = ({ dateParams, company_id }) => {
-	const { t } = useLanguage();
-	const { data, isLoading, error } = useGetRevenueByDocumentTypeQuery({ ...dateParams, company_id });
-
-	if (isLoading) return <LoadingChart />;
-	if (error || !data || data.length === 0) return <EmptyChart message={t.dashboard.noRepartition} />;
-
-	// Check if all amounts are zero
-	const hasData = data.some((d) => d.amount > 0);
-	if (!hasData) return <EmptyChart message={t.dashboard.noRepartition} />;
-
-	const chartData = {
-		labels: data.map((d) => d.type),
-		datasets: [
-			{
-				data: data.map((d) => d.amount),
-				backgroundColor: PIE_COLORS.slice(0, data.length),
-			},
-		],
-	};
-
-	return <Pie data={chartData} options={commonChartOptions} />;
 };
 
 const PaymentStatusChart: FC<ChartProps> = ({ dateParams, company_id }) => {
@@ -579,27 +555,6 @@ const ProductPriceVolumeChart: FC<ChartProps> = ({ dateParams, company_id, devis
 };
 
 // Operational Indicators Charts
-const InvoiceStatusChart: FC<ChartProps> = ({ dateParams, company_id }) => {
-	const { t } = useLanguage();
-	const { data, isLoading, error } = useGetInvoiceStatusDistributionQuery({ ...dateParams, company_id });
-
-	if (isLoading) return <LoadingChart />;
-	if (error || !data || data.length === 0) return <EmptyChart message={t.dashboard.noFactureFound} />;
-
-	const chartData = {
-		labels: data.map((d) => d.status),
-		datasets: [
-			{
-				label: t.dashboard.collected,
-				data: data.map((d) => d.count),
-				backgroundColor: PIE_COLORS.slice(0, data.length),
-			},
-		],
-	};
-
-	return <Bar data={chartData} options={commonChartOptions} />;
-};
-
 const DocumentVolumeChart: FC<ChartProps> = ({ dateParams, company_id }) => {
 	const { t } = useLanguage();
 	const { data, isLoading, error } = useGetMonthlyDocumentVolumeQuery({ ...dateParams, company_id });
@@ -1407,7 +1362,7 @@ const DashboardContent: FC<DashboardContentProps> = ({ company_id }) => {
 				<Box
 					sx={{
 						display: 'grid',
-						gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr' },
+						gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(2, minmax(0, 1fr))' },
 						gap: { xs: 2, md: 3 },
 					}}
 				>
@@ -1422,11 +1377,12 @@ const DashboardContent: FC<DashboardContentProps> = ({ company_id }) => {
 					</Box>
 					<Box>
 						<ChartCard
-							title={t.dashboard.chartRepartitionCA}
-							description={t.dashboard.chartRepartitionCADesc}
-							infoTooltip={t.dashboard.tooltipRepartitionCA}
+							title={t.dashboard.chartReceivables}
+							height={400}
+							description={t.dashboard.chartReceivablesDesc}
+							infoTooltip={t.dashboard.tooltipReceivables}
 						>
-							<RevenueByTypeChart dateParams={dateParams} company_id={company_id} devise={selectedDevise} />
+							<ReceivablesByClientChart dateParams={dateParams} company_id={company_id} devise={selectedDevise} />
 						</ChartCard>
 					</Box>
 					<Box>
@@ -1455,7 +1411,7 @@ const DashboardContent: FC<DashboardContentProps> = ({ company_id }) => {
 				<Box
 					sx={{
 						display: 'grid',
-						gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr' },
+						gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(2, minmax(0, 1fr))' },
 						gap: { xs: 2, md: 3 },
 					}}
 				>
@@ -1503,17 +1459,17 @@ const DashboardContent: FC<DashboardContentProps> = ({ company_id }) => {
 				<Box
 					sx={{
 						display: 'grid',
-						gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr' },
+						gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(2, minmax(0, 1fr))' },
 						gap: { xs: 2, md: 3 },
 					}}
 				>
 					<Box>
 						<ChartCard
-							title={t.dashboard.chartRepartitionFactures}
-							description={t.dashboard.chartRepartitionFacturesDesc}
-							infoTooltip={t.dashboard.tooltipRepartitionFactures}
+							title={t.dashboard.chartUninvoicedDeliveries}
+							description={t.dashboard.chartUninvoicedDeliveriesDesc}
+							infoTooltip={t.dashboard.tooltipUninvoicedDeliveries}
 						>
-							<InvoiceStatusChart dateParams={dateParams} company_id={company_id} devise={selectedDevise} />
+							<UninvoicedDeliveriesChart dateParams={dateParams} company_id={company_id} devise={selectedDevise} />
 						</ChartCard>
 					</Box>
 					<Box>
@@ -1533,7 +1489,7 @@ const DashboardContent: FC<DashboardContentProps> = ({ company_id }) => {
 				<Box
 					sx={{
 						display: 'grid',
-						gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr' },
+						gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(2, minmax(0, 1fr))' },
 						gap: { xs: 2, md: 3 },
 					}}
 				>
@@ -1572,7 +1528,7 @@ const DashboardContent: FC<DashboardContentProps> = ({ company_id }) => {
 				<Box
 					sx={{
 						display: 'grid',
-						gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr' },
+						gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(2, minmax(0, 1fr))' },
 						gap: { xs: 2, md: 3 },
 					}}
 				>
@@ -1593,7 +1549,7 @@ const DashboardContent: FC<DashboardContentProps> = ({ company_id }) => {
 				<Box
 					sx={{
 						display: 'grid',
-						gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr' },
+						gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(2, minmax(0, 1fr))' },
 						gap: { xs: 2, md: 3 },
 					}}
 				>
@@ -1623,7 +1579,7 @@ const DashboardContent: FC<DashboardContentProps> = ({ company_id }) => {
 				<Box
 					sx={{
 						display: 'grid',
-						gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr' },
+						gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(2, minmax(0, 1fr))' },
 						gap: { xs: 2, md: 3 },
 					}}
 				>

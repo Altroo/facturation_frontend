@@ -4,14 +4,14 @@ import '@testing-library/jest-dom';
 import type { AppSession } from '@/types/_initTypes';
 import type {
 	MonthlyRevenueData,
-	RevenueByTypeData,
+	ReceivablesByClientData,
 	PaymentStatusData,
 	CollectionRateData,
 	TopClientData,
 	TopProductData,
 	QuoteConversionData,
 	ProductPriceVolumeData,
-	InvoiceStatusData,
+	UninvoicedDeliveriesData,
 	MonthlyDocumentVolumeData,
 	PaymentTimelineData,
 	OverdueReceivablesData,
@@ -28,6 +28,7 @@ import type {
 // Define hook return type for proper typing
 interface QueryResult<T> {
 	data: T | undefined;
+	currentData?: T;
 	isLoading: boolean;
 	error: unknown;
 	refetch: () => void;
@@ -40,11 +41,25 @@ const mockMonthlyRevenueData: MonthlyRevenueData[] = [
 	{ month: '2025-03', revenue: 150000 },
 ];
 
-const mockRevenueByTypeData: RevenueByTypeData[] = [
-	{ type: 'Factures', amount: 500000 },
-	{ type: 'Devis', amount: 200000 },
-	{ type: 'Bons de livraison', amount: 100000 },
-];
+const mockReceivablesByClientData: ReceivablesByClientData = {
+	as_of: '2026-10-06',
+	currency: 'MAD',
+	total_amount: 10000,
+	overdue_amount: 6000,
+	client_count: 1,
+	invoice_count: 3,
+	clients: [
+		{
+			client_id: 1,
+			client_name: 'Client A',
+			amount: 10000,
+			overdue: 6000,
+			not_due: 3000,
+			no_due_date: 1000,
+			invoice_count: 3,
+		},
+	],
+};
 
 const mockPaymentStatusData: PaymentStatusData[] = [
 	{ status: 'Payée', count: 50 },
@@ -79,10 +94,18 @@ const mockProductPriceVolumeData: ProductPriceVolumeData[] = [
 	{ article_id: 2, designation: 'Produit B', average_price: 200, total_quantity: 300 },
 ];
 
-const mockInvoiceStatusData: InvoiceStatusData[] = [
-	{ status: 'Validée', count: 40 },
-	{ status: 'Brouillon', count: 10 },
-];
+const mockUninvoicedDeliveriesData: UninvoicedDeliveriesData = {
+	as_of: '2026-10-06',
+	currency: 'MAD',
+	total_amount: 5000,
+	total_count: 2,
+	buckets: [
+		{ key: '0_7', amount: 1000, count: 1 },
+		{ key: '8_30', amount: 0, count: 0 },
+		{ key: '31_60', amount: 4000, count: 1 },
+		{ key: 'over_60', amount: 0, count: 0 },
+	],
+};
 
 const mockDocumentVolumeData: MonthlyDocumentVolumeData[] = [
 	{ month: '2025-01', devis: 20, factures: 15, bdl: 10 },
@@ -171,7 +194,7 @@ function createMockQueryResult<T>(state: MockQueryState, data: T): QueryResult<T
 			return { data: [] as unknown as T, isLoading: false, error: undefined, refetch: jest.fn() };
 		case 'success':
 		default:
-			return { data, isLoading: false, error: undefined, refetch: jest.fn() };
+			return { data, currentData: data, isLoading: false, error: undefined, refetch: jest.fn() };
 	}
 }
 
@@ -180,8 +203,8 @@ jest.mock('@/store/services/dashboard', () => ({
 	__esModule: true,
 	useGetMonthlyRevenueEvolutionQuery: () =>
 		createMockQueryResult(mockQueryStates['monthlyRevenue'] || 'success', mockMonthlyRevenueData),
-	useGetRevenueByDocumentTypeQuery: () =>
-		createMockQueryResult(mockQueryStates['revenueByType'] || 'success', mockRevenueByTypeData),
+	useGetReceivablesByClientQuery: () =>
+		createMockQueryResult(mockQueryStates['receivables'] || 'success', mockReceivablesByClientData),
 	useGetPaymentStatusOverviewQuery: () =>
 		createMockQueryResult(mockQueryStates['paymentStatus'] || 'success', mockPaymentStatusData),
 	useGetCollectionRateQuery: () =>
@@ -194,8 +217,8 @@ jest.mock('@/store/services/dashboard', () => ({
 		createMockQueryResult(mockQueryStates['quoteConversion'] || 'success', mockQuoteConversionData),
 	useGetProductPriceVolumeAnalysisQuery: () =>
 		createMockQueryResult(mockQueryStates['productPriceVolume'] || 'success', mockProductPriceVolumeData),
-	useGetInvoiceStatusDistributionQuery: () =>
-		createMockQueryResult(mockQueryStates['invoiceStatus'] || 'success', mockInvoiceStatusData),
+	useGetUninvoicedDeliveriesQuery: () =>
+		createMockQueryResult(mockQueryStates['uninvoicedDeliveries'] || 'success', mockUninvoicedDeliveriesData),
 	useGetMonthlyDocumentVolumeQuery: () =>
 		createMockQueryResult(mockQueryStates['documentVolume'] || 'success', mockDocumentVolumeData),
 	useGetPaymentTimelineQuery: () =>
@@ -393,7 +416,7 @@ describe('DashboardClient', () => {
 		it('renders chart cards with titles', () => {
 			render(<DashboardClient session={mockSession} />);
 			expect(screen.getByText('Évolution du CA Mensuel')).toBeInTheDocument();
-			expect(screen.getByText('Répartition du CA par Type')).toBeInTheDocument();
+			expect(screen.getByText('Reste à encaisser par client')).toBeInTheDocument();
 			expect(screen.getByText('État des Paiements')).toBeInTheDocument();
 			expect(screen.getByText('Taux de Recouvrement')).toBeInTheDocument();
 		});
@@ -406,10 +429,11 @@ describe('DashboardClient', () => {
 			expect(lineCharts.length).toBeGreaterThan(0);
 		});
 
-		it('renders PieChart components', () => {
+		it('replaces document-type percentages with actionable charts', () => {
 			render(<DashboardClient session={mockSession} />);
-			const pieCharts = screen.getAllByTestId('pie-chart');
-			expect(pieCharts.length).toBeGreaterThan(0);
+			expect(screen.queryByTestId('pie-chart')).not.toBeInTheDocument();
+			expect(screen.getByText('Livraisons en attente de facture')).toBeInTheDocument();
+			expect(screen.getByText(/Total à encaisser dans la sélection/)).toBeInTheDocument();
 		});
 
 		it('renders BarChart components', () => {
@@ -489,9 +513,9 @@ describe('DashboardClient', () => {
 		});
 
 		it('shows empty message when invoice status is empty', () => {
-			mockQueryStates['invoiceStatus'] = 'empty';
+			mockQueryStates['uninvoicedDeliveries'] = 'empty';
 			render(<DashboardClient session={mockSession} />);
-			expect(screen.getByText('Aucune facture trouvée')).toBeInTheDocument();
+			expect(screen.getByText('Aucun bon de livraison accepté à facturer dans la sélection.')).toBeInTheDocument();
 		});
 
 		it('shows empty message when overdue receivables is empty', () => {
@@ -565,13 +589,13 @@ describe('Chart Components Empty Data Edge Cases', () => {
 	it('handles all queries returning empty data simultaneously', () => {
 		mockQueryStates = {
 			monthlyRevenue: 'empty',
-			revenueByType: 'empty',
+			receivables: 'empty',
 			paymentStatus: 'empty',
 			topClients: 'empty',
 			topProducts: 'empty',
 			quoteConversion: 'empty',
 			productPriceVolume: 'empty',
-			invoiceStatus: 'empty',
+			uninvoicedDeliveries: 'empty',
 			documentVolume: 'empty',
 			paymentTimeline: 'empty',
 			overdueReceivables: 'empty',
@@ -595,7 +619,7 @@ describe('Chart Components Empty Data Edge Cases', () => {
 	it('handles mixed loading/error/success states', () => {
 		mockQueryStates = {
 			monthlyRevenue: 'loading',
-			revenueByType: 'error',
+			receivables: 'error',
 			kpiCards: 'success',
 		};
 
@@ -679,7 +703,7 @@ describe('Chart Components Empty Data Edge Cases', () => {
 	it('handles all queries in error state simultaneously', () => {
 		mockQueryStates = {
 			monthlyRevenue: 'error',
-			revenueByType: 'error',
+			receivables: 'error',
 			paymentStatus: 'error',
 			topClients: 'error',
 			topProducts: 'error',

@@ -1141,6 +1141,31 @@ export type TranslationDictionary = {
 		save: string;
 	};
 	dashboard: {
+		chartReceivables: string;
+		chartReceivablesDesc: string;
+		chartUninvoicedDeliveries: string;
+		chartUninvoicedDeliveriesDesc: string;
+		tooltipReceivables: string;
+		tooltipUninvoicedDeliveries: string;
+		noReceivables: string;
+		noUninvoicedDeliveries: string;
+		chartLoadError: string;
+		overdueBalance: string;
+		notDueBalance: string;
+		undatedBalance: string;
+		allClientsBalance: string;
+		chartAmountTTC: (currency: string) => string;
+		uninvoicedBalance: string;
+		age0To7: string;
+		age8To30: string;
+		age31To60: string;
+		ageOver60: string;
+		deliveryAge: string;
+		currentDocumentScope: (date: string) => string;
+		visibleDebtors: (visible: number, total: number) => string;
+		outstandingInvoiceCount: (count: number) => string;
+		uninvoicedDeliveryCount: (count: number) => string;
+
 		sectionKpi: string;
 		sectionObjectifs: string;
 		sectionFinancier: string;

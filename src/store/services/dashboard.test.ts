@@ -46,9 +46,7 @@ jest.mock('@/store/slices/_initSlice', () => ({
 	initToken: jest.fn(),
 }));
 
-const mockDashboardBaseQuery = (
-	axiosBaseQueryModule as typeof axiosBaseQueryModule & { __mockFn: jest.Mock }
-).__mockFn;
+const mockDashboardBaseQuery = (axiosBaseQueryModule as typeof axiosBaseQueryModule & { __mockFn: jest.Mock }).__mockFn;
 
 describe('dashboardApi', () => {
 	it('should be defined', () => {
@@ -208,12 +206,22 @@ describe('dashboardApi', () => {
 		});
 
 		it('should have correct DiscountImpactData structure', () => {
-			const data: DiscountImpactData = { document_id: 1, document_type: 'facture', total_amount: 1000, discount_amount: 100 };
+			const data: DiscountImpactData = {
+				document_id: 1,
+				document_type: 'facture',
+				total_amount: 1000,
+				discount_amount: 100,
+			};
 			expect(data.discount_amount).toBe(100);
 		});
 
 		it('should have correct ProductMarginVolumeData structure', () => {
-			const data: ProductMarginVolumeData = { article_id: 1, designation: 'A', average_margin: 25.5, total_quantity: 100 };
+			const data: ProductMarginVolumeData = {
+				article_id: 1,
+				designation: 'A',
+				average_margin: 25.5,
+				total_quantity: 100,
+			};
 			expect(data.average_margin).toBe(25.5);
 		});
 
@@ -301,6 +309,8 @@ describe('dashboardApi', () => {
 
 	describe('endpoint query functions', () => {
 		const queryEndpoints = [
+			'getReceivablesByClient',
+			'getUninvoicedDeliveries',
 			'getMonthlyRevenueEvolution',
 			'getRevenueByDocumentType',
 			'getPaymentStatusOverview',
@@ -323,10 +333,7 @@ describe('dashboardApi', () => {
 			'getSectionMicroTrends',
 		] as const;
 
-		const mutationEndpoints = [
-			'createMonthlyObjectivesSettings',
-			'updateMonthlyObjectivesSettings',
-		] as const;
+		const mutationEndpoints = ['createMonthlyObjectivesSettings', 'updateMonthlyObjectivesSettings'] as const;
 
 		const settingsQueryEndpoints = ['getMonthlyObjectivesSettingsByCompany'] as const;
 
@@ -377,6 +384,8 @@ describe('dashboardApi', () => {
 		});
 
 		const dateQueryEndpoints = [
+			['getReceivablesByClient', '/dashboard/financial/receivables-by-client/'],
+			['getUninvoicedDeliveries', '/dashboard/operational/uninvoiced-deliveries/'],
 			['getMonthlyRevenueEvolution', '/dashboard/financial/monthly-revenue/'],
 			['getRevenueByDocumentType', '/dashboard/financial/revenue-by-type/'],
 			['getPaymentStatusOverview', '/dashboard/financial/payment-status/'],
@@ -463,6 +472,5 @@ describe('dashboardApi', () => {
 			expect((lastCall[0] as Record<string, unknown>).url).toBe('/dashboard/objectives/1/');
 			expect((lastCall[0] as Record<string, unknown>).method).toBe('PUT');
 		});
-
 	});
 });

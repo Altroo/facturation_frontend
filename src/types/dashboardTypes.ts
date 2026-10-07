@@ -259,3 +259,29 @@ export interface DashboardStatCardProps {
 	isLoading?: boolean;
 	testId?: string;
 }
+
+export interface ReceivablesByClientData {
+	as_of: string;
+	currency: 'MAD' | 'EUR' | 'USD';
+	total_amount: number;
+	overdue_amount: number;
+	client_count: number;
+	invoice_count: number;
+	clients: {
+		client_id: number;
+		client_name: string;
+		amount: number;
+		overdue: number;
+		not_due: number;
+		no_due_date: number;
+		invoice_count: number;
+	}[];
+}
+
+export interface UninvoicedDeliveriesData {
+	as_of: string;
+	currency: 'MAD' | 'EUR' | 'USD';
+	total_amount: number;
+	total_count: number;
+	buckets: { key: '0_7' | '8_30' | '31_60' | 'over_60'; amount: number; count: number }[];
+}

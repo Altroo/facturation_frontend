@@ -5,6 +5,8 @@ import { getInitStateToken } from '@/store/selectors';
 import type { RootState } from '@/store/store';
 import { initToken } from '@/store/slices/_initSlice';
 import type {
+	ReceivablesByClientData,
+	UninvoicedDeliveriesData,
 	ClientMultidimensionalData,
 	CollectionRateData,
 	DateFilterParams,
@@ -42,7 +44,7 @@ export const buildDateQueryString = (params?: DateFilterParams): string => {
 	if (params.project) searchParams.append('project', params.project);
 	const queryString = searchParams.toString();
 	return queryString ? `?${queryString}` : '';
-}
+};
 
 export const dashboardApi = createApi({
 	reducerPath: 'dashboardApi',
@@ -54,6 +56,20 @@ export const dashboardApi = createApi({
 		),
 	),
 	endpoints: (builder) => ({
+		getReceivablesByClient: builder.query<ReceivablesByClientData, DateFilterParams>({
+			query: (params) => ({
+				url: `/dashboard/financial/receivables-by-client/${buildDateQueryString(params)}`,
+				method: 'GET',
+			}),
+			providesTags: ['Dashboard'],
+		}),
+		getUninvoicedDeliveries: builder.query<UninvoicedDeliveriesData, DateFilterParams>({
+			query: (params) => ({
+				url: `/dashboard/operational/uninvoiced-deliveries/${buildDateQueryString(params)}`,
+				method: 'GET',
+			}),
+			providesTags: ['Dashboard'],
+		}),
 		// Financial Overview
 		getMonthlyRevenueEvolution: builder.query<MonthlyRevenueData[], DateFilterParams | void>({
 			query: (params) => ({
@@ -226,7 +242,10 @@ export const dashboardApi = createApi({
 			}),
 			invalidatesTags: ['MonthlyObjectivesSettings', 'Dashboard'],
 		}),
-		updateMonthlyObjectivesSettings: builder.mutation<MonthlyObjectivesSettings, { id: number; data: MonthlyObjectivesSettingsInput }>({
+		updateMonthlyObjectivesSettings: builder.mutation<
+			MonthlyObjectivesSettings,
+			{ id: number; data: MonthlyObjectivesSettingsInput }
+		>({
 			query: ({ id, data }) => ({
 				url: `/dashboard/objectives/${id}/`,
 				method: 'PUT',
@@ -238,6 +257,8 @@ export const dashboardApi = createApi({
 });
 
 export const {
+	useGetReceivablesByClientQuery,
+	useGetUninvoicedDeliveriesQuery,
 	useGetMonthlyRevenueEvolutionQuery,
 	useGetRevenueByDocumentTypeQuery,
 	useGetPaymentStatusOverviewQuery,
