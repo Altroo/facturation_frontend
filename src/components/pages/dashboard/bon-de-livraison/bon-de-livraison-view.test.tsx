@@ -167,6 +167,9 @@ describe('BonDeLivraisonViewClient UI and navigation', () => {
 		expect(screen.getByText('Numéro du bon de livraison')).toBeInTheDocument();
 		expect(screen.getByText('BL-001')).toBeInTheDocument();
 
+		expect(screen.getAllByRole('button', { name: 'PDF' })).toHaveLength(1);
+		expect(screen.queryByRole('button', { name: /PDF.*remise/i })).not.toBeInTheDocument();
+
 		// Totals header present
 		expect(screen.getByText('TOTAL TTC')).toBeInTheDocument();
 		expect(screen.getByText("TOTAL PRIX D'ACHAT")).toBeInTheDocument();

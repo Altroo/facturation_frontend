@@ -9,12 +9,7 @@ import {
 	Delete as DeleteIcon,
 	PictureAsPdf as PictureAsPdfIcon,
 } from '@mui/icons-material';
-import {
-	BON_DE_LIVRAISON_EDIT,
-	BON_DE_LIVRAISON_LIST,
-	BON_DE_LIVRAISON_PDF,
-	type DocumentPdfType,
-} from '@/utils/routes';
+import { BON_DE_LIVRAISON_EDIT, BON_DE_LIVRAISON_LIST, BON_DE_LIVRAISON_PDF } from '@/utils/routes';
 import { useDeleteBonDeLivraisonMutation, useGetBonDeLivraisonQuery } from '@/store/services/bonDeLivraison';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
@@ -37,7 +32,6 @@ const BonDeLivraisonViewClient: FC<Props> = ({ session, company_id, id }) => {
 	const { t } = useLanguage();
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
 	const [showLanguageModal, setShowLanguageModal] = useState(false);
-	const [pendingPdfType, setPendingPdfType] = useState<DocumentPdfType | null>(null);
 
 	const handleDelete = async () => {
 		await runWithCleanup(
@@ -67,30 +61,18 @@ const BonDeLivraisonViewClient: FC<Props> = ({ session, company_id, id }) => {
 		{ text: t.common.delete, active: true, onClick: handleDelete, icon: <DeleteIcon />, color: '#D32F2F' },
 	];
 
-	const openPdf = (type: DocumentPdfType) => {
-		setPendingPdfType(type);
-		setShowLanguageModal(true);
-	};
-
 	const handleLanguageSelect = async (language: 'fr' | 'en') => {
 		setShowLanguageModal(false);
-		if (!token || !pendingPdfType) return;
-		await runWithCleanup(
-			async () => {
-				try {
-					const url = BON_DE_LIVRAISON_PDF(id, company_id, pendingPdfType, language);
-					const blob = await fetchPdfBlob(url, token);
-					const blobUrl = window.URL.createObjectURL(blob);
-					window.open(blobUrl, '_blank');
-					setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60_000);
-				} catch {
-					onError(t.errors.documentOpenError);
-				}
-			},
-			() => {
-				setPendingPdfType(null);
-			},
-		);
+		if (!token) return;
+		try {
+			const url = BON_DE_LIVRAISON_PDF(id, company_id, 'normal', language);
+			const blob = await fetchPdfBlob(url, token);
+			const blobUrl = window.URL.createObjectURL(blob);
+			window.open(blobUrl, '_blank');
+			setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60_000);
+		} catch {
+			onError(t.errors.documentOpenError);
+		}
 	};
 
 	const isCaissier = company?.role === 'Caissier';
@@ -100,43 +82,15 @@ const BonDeLivraisonViewClient: FC<Props> = ({ session, company_id, id }) => {
 	const headerActions = (
 		<>
 			{canPrint && (
-				<>
-					<Button
-						variant="outlined"
-						color="error"
-						size="small"
-						startIcon={<PictureAsPdfIcon />}
-						onClick={() => openPdf('avec_remise')}
-					>
-						{t.common.pdfWithDiscount}
-					</Button>
-					<Button
-						variant="outlined"
-						size="small"
-						startIcon={<PictureAsPdfIcon />}
-						onClick={() => openPdf('sans_remise')}
-					>
-						{t.common.pdfWithoutDiscount}
-					</Button>
-					<Button
-						variant="outlined"
-						color="warning"
-						size="small"
-						startIcon={<PictureAsPdfIcon />}
-						onClick={() => openPdf('avec_unite_sans_remise')}
-					>
-						{t.common.pdfWithUnitWithoutDiscount}
-					</Button>
-					<Button
-						variant="outlined"
-						color="warning"
-						size="small"
-						startIcon={<PictureAsPdfIcon />}
-						onClick={() => openPdf('avec_unite_avec_remise')}
-					>
-						{t.common.pdfWithUnitWithDiscount}
-					</Button>
-				</>
+				<Button
+					variant="outlined"
+					color="error"
+					size="small"
+					startIcon={<PictureAsPdfIcon />}
+					onClick={() => setShowLanguageModal(true)}
+				>
+					{t.common.pdf}
+				</Button>
 			)}
 			{isCaissier && (
 				<Button
@@ -178,7 +132,6 @@ const BonDeLivraisonViewClient: FC<Props> = ({ session, company_id, id }) => {
 					onSelectLanguage={handleLanguageSelect}
 					onClose={() => {
 						setShowLanguageModal(false);
-						setPendingPdfType(null);
 					}}
 				/>
 			)}

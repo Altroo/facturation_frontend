@@ -436,41 +436,14 @@ describe('BonDeLivraisonListClient', () => {
 	describe('PrintActions configuration', () => {
 		beforeEach(() => {
 			capturedConfig = null;
+		});
+
+		it('offers one delivery-note PDF for the selected company', () => {
 			render(<BonDeLivraisonListClient session={mockSession} />);
-		});
-
-		it('passes printActions to CompanyDocumentsListContent', () => {
-			expect(capturedConfig).not.toBeNull();
-			expect(capturedConfig?.printActions).toBeDefined();
-			expect(capturedConfig?.printActions?.length).toBe(4);
-		});
-
-		it('generates correct avec_remise PDF URL', () => {
-			const action = capturedConfig?.printActions?.find((a) => a.key === 'avec_remise');
-			expect(action).toBeDefined();
-			const url = action?.urlGenerator(1, 2);
-			expect(url).toContain('type=avec_remise');
-		});
-
-		it('generates correct sans_remise PDF URL', () => {
-			const action = capturedConfig?.printActions?.find((a) => a.key === 'sans_remise');
-			expect(action).toBeDefined();
-			const url = action?.urlGenerator(1, 2);
-			expect(url).toContain('type=sans_remise');
-		});
-
-		it('generates correct avec_unite_sans_remise PDF URL', () => {
-			const action = capturedConfig?.printActions?.find((a) => a.key === 'avec_unite_sans_remise');
-			expect(action).toBeDefined();
-			const url = action?.urlGenerator(1, 2);
-			expect(url).toContain('type=avec_unite_sans_remise');
-		});
-
-		it('generates correct avec_unite_avec_remise PDF URL', () => {
-			const action = capturedConfig?.printActions?.find((a) => a.key === 'avec_unite_avec_remise');
-			expect(action).toBeDefined();
-			const url = action?.urlGenerator(1, 2);
-			expect(url).toContain('type=avec_unite_avec_remise');
+			expect(capturedConfig?.printActions).toHaveLength(1);
+			const action = capturedConfig?.printActions?.[0];
+			expect(action?.label).toBe('PDF');
+			expect(action?.urlGenerator(1, 2)).toContain('company_id=2&type=normal');
 		});
 	});
 

@@ -57,36 +57,12 @@ const createBonDeLivraisonListConfig = (t: TranslationDictionary): DocumentListC
 	},
 	printActions: [
 		{
-			key: 'avec_remise',
-			label: t.common.pdfWithDiscount,
+			key: 'normal',
+			label: t.common.pdf,
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#1976d2',
 			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') =>
-				BON_DE_LIVRAISON_PDF(id, companyId, 'avec_remise', language),
-		},
-		{
-			key: 'sans_remise',
-			label: t.common.pdfWithoutDiscount,
-			icon: <PrintIcon fontSize="small" />,
-			iconColor: '#2e7d32',
-			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') =>
-				BON_DE_LIVRAISON_PDF(id, companyId, 'sans_remise', language),
-		},
-		{
-			key: 'avec_unite_sans_remise',
-			label: t.common.pdfWithUnitWithoutDiscount,
-			icon: <PrintIcon fontSize="small" />,
-			iconColor: '#7b1fa2',
-			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') =>
-				BON_DE_LIVRAISON_PDF(id, companyId, 'avec_unite_sans_remise', language),
-		},
-		{
-			key: 'avec_unite_avec_remise',
-			label: t.common.pdfWithUnitWithDiscount,
-			icon: <PrintIcon fontSize="small" />,
-			iconColor: '#ed6c02',
-			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') =>
-				BON_DE_LIVRAISON_PDF(id, companyId, 'avec_unite_avec_remise', language),
+				BON_DE_LIVRAISON_PDF(id, companyId, 'normal', language),
 		},
 	],
 });
