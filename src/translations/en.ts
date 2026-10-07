@@ -1,6 +1,28 @@
 import type { TranslationDictionary } from '@/types/languageTypes';
 
 export const en: TranslationDictionary = {
+	aiAssistant: {
+		translate: 'Translate',
+		fixGrammar: 'Fix grammar',
+		professionalize: 'Make professional',
+		translateToFrench: 'French',
+		translateToEnglish: 'English',
+		chooseLanguage: 'Choose the language into which you want to translate the text.',
+		previewTitle: 'AI assistant suggestion',
+		original: 'Original text',
+		suggestion: 'Suggestion',
+		useSuggestion: 'Use suggestion',
+		tryAgain: 'Try again',
+		cancel: 'Cancel',
+		emptyText: 'Enter text before using the assistant.',
+		requestError: 'The AI assistant could not process this text.',
+		alreadyCorrect: 'The text is already correct.',
+		alreadyProfessional: 'The text is already professionally written.',
+
+		fieldChanged: 'This field has changed. Retry to use its current text.',
+		suggestionTooLong: 'This suggestion exceeds the maximum length for this field.',
+		textTooLong: 'The assistant accepts up to 5,000 characters at a time.',
+	},
 	common: {
 		yes: 'Yes',
 		no: 'No',
@@ -175,6 +197,7 @@ export const en: TranslationDictionary = {
 		chooseLanguage: 'Choose the language in which you want to generate the PDF document.',
 		french: 'Français',
 		english: 'English',
+		dutch: 'Dutch',
 	},
 	rawData: {
 		genders: {
@@ -1054,6 +1077,8 @@ export const en: TranslationDictionary = {
 		bulkSuspendBtn: (n: number) => `Suspend (${n})`,
 		foreignCurrencyLabel: 'Use foreign currency',
 		foreignCurrencyHelper: 'Enable to use a foreign currency for this company',
+		inventoryManagementLabel: 'Enable inventory for this company',
+		inventoryManagementHelper: 'Allows stock counting and adjustments. Stock management must be enabled.',
 		stockManagementLabel: 'Enable stock management',
 		stockManagementHelper:
 			'Initializes company stock and enables reservations, receipts, and deliveries. Activation is permanent.',
@@ -1523,6 +1548,12 @@ export const en: TranslationDictionary = {
 		colMarque: 'Brand',
 		colCategorie: 'Category',
 		colUnite: 'Unit',
+		colStock: 'Stock',
+		stockAvailableShort: 'avail.',
+		stockAvailable: 'Available',
+		stockPhysical: 'Physical',
+		stockReserved: 'Reserved',
+		stockAvailableHelp: 'Available stock: physical stock minus reserved quantities.',
 		colEmplacement: 'Location',
 		colPrixAchat: 'Purchase price',
 		colPrixVente: 'Selling price',

@@ -94,12 +94,14 @@ export const LOGISTIQUE_EDIT = (id: number, company_id: number) =>
 export const STOCK_LIST = `${SITE_ROOT}dashboard/stock`;
 export const STOCK_ADD = (company_id: number, balance_id?: number) =>
 	`${SITE_ROOT}dashboard/stock/new/?company_id=${company_id}${balance_id ? `&balance_id=${balance_id}` : ''}`;
-export const STOCK_VIEW = (id: number, company_id: number) => `${SITE_ROOT}dashboard/stock/${id}/?company_id=${company_id}`;
+export const STOCK_VIEW = (id: number, company_id: number) =>
+	`${SITE_ROOT}dashboard/stock/${id}/?company_id=${company_id}`;
 export const STOCK_MOVEMENTS = `${SITE_ROOT}dashboard/stock/movements`;
 export const STOCK_MOVEMENT_VIEW = (id: number, company_id: number) =>
 	`${SITE_ROOT}dashboard/stock/movements/${id}/?company_id=${company_id}`;
 export const STOCK_RECEIPTS = `${SITE_ROOT}dashboard/stock/receipts`;
-export const STOCK_RECEIPTS_ADD = (company_id: number) => `${SITE_ROOT}dashboard/stock/receipts/new/?company_id=${company_id}`;
+export const STOCK_RECEIPTS_ADD = (company_id: number) =>
+	`${SITE_ROOT}dashboard/stock/receipts/new/?company_id=${company_id}`;
 export const STOCK_RECEIPT_VIEW = (id: number, company_id: number) =>
 	`${SITE_ROOT}dashboard/stock/receipts/${id}/?company_id=${company_id}`;
 export const STOCK_INVENTORIES = `${SITE_ROOT}dashboard/stock/inventories`;
@@ -128,19 +130,43 @@ export type LegacyDocumentPdfType = DocumentPdfType | 'avec_unite';
 export type BonDeLivraisonPdfType = DocumentPdfType | 'normal' | 'quantity_only' | 'avec_unite';
 
 // PDF Routes (authentication is sent via Authorization header by the caller)
-export const DEVIS_PDF = (id: number, company_id: number, type: LegacyDocumentPdfType, language: 'fr' | 'en' = 'fr') =>
-	`${process.env.NEXT_PUBLIC_ROOT_API_URL}/devi/pdf/${language}/${id}/?company_id=${company_id}&type=${type}`;
+export const DEVIS_PDF = (
+	id: number,
+	company_id: number,
+	type: LegacyDocumentPdfType,
+	language: 'fr' | 'en' | 'nl' = 'fr',
+) => `${process.env.NEXT_PUBLIC_ROOT_API_URL}/devi/pdf/${language}/${id}/?company_id=${company_id}&type=${type}`;
 
-export const FACTURE_CLIENT_PDF = (id: number, company_id: number, type: LegacyDocumentPdfType, language: 'fr' | 'en' = 'fr') =>
+export const FACTURE_CLIENT_PDF = (
+	id: number,
+	company_id: number,
+	type: LegacyDocumentPdfType,
+	language: 'fr' | 'en' | 'nl' = 'fr',
+) =>
 	`${process.env.NEXT_PUBLIC_ROOT_API_URL}/facture_client/pdf/${language}/${id}/?company_id=${company_id}&type=${type}`;
-export const FACTURE_AVOIR_PDF = (id: number, company_id: number, type: LegacyDocumentPdfType, language: 'fr' | 'en' = 'fr') =>
+export const FACTURE_AVOIR_PDF = (
+	id: number,
+	company_id: number,
+	type: LegacyDocumentPdfType,
+	language: 'fr' | 'en' | 'nl' = 'fr',
+) =>
 	`${process.env.NEXT_PUBLIC_ROOT_API_URL}/facture_avoir/pdf/${language}/${id}/?company_id=${company_id}&type=${type}`;
 
-export const FACTURE_PRO_FORMA_PDF = (id: number, company_id: number, type: LegacyDocumentPdfType, language: 'fr' | 'en' = 'fr') =>
+export const FACTURE_PRO_FORMA_PDF = (
+	id: number,
+	company_id: number,
+	type: LegacyDocumentPdfType,
+	language: 'fr' | 'en' | 'nl' = 'fr',
+) =>
 	`${process.env.NEXT_PUBLIC_ROOT_API_URL}/facture_proforma/pdf/${language}/${id}/?company_id=${company_id}&type=${type}`;
 
-export const BON_DE_LIVRAISON_PDF = (id: number, company_id: number, type: BonDeLivraisonPdfType, language: 'fr' | 'en' = 'fr') =>
+export const BON_DE_LIVRAISON_PDF = (
+	id: number,
+	company_id: number,
+	type: BonDeLivraisonPdfType,
+	language: 'fr' | 'en' | 'nl' = 'fr',
+) =>
 	`${process.env.NEXT_PUBLIC_ROOT_API_URL}/bon_de_livraison/pdf/${language}/${id}/?company_id=${company_id}&type=${type}`;
 
-export const REGLEMENT_PDF = (id: number, company_id: number, language: 'fr' | 'en' = 'fr') =>
+export const REGLEMENT_PDF = (id: number, company_id: number, language: 'fr' | 'en' | 'nl' = 'fr') =>
 	`${process.env.NEXT_PUBLIC_ROOT_API_URL}/reglement/pdf/${language}/${id}/?company_id=${company_id}`;

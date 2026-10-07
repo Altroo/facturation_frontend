@@ -147,6 +147,8 @@ export type CustomSquareImageUploadingProps = {
 };
 
 export type CustomTextInputProps = {
+	ai?: boolean;
+	aiContext?: string;
 	ref?: Ref<HTMLInputElement>;
 	type: HTMLInputTypeAttribute;
 	id: string;
@@ -512,6 +514,6 @@ export type PaginatedDataGridProps<T> = {
 };
 
 export interface PdfLanguageModalProps {
-	onSelectLanguage: (language: 'fr' | 'en') => void;
+	onSelectLanguage: (language: 'fr' | 'en' | 'nl') => void;
 	onClose: () => void;
 }

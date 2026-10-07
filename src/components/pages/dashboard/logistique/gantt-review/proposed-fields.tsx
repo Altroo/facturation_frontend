@@ -1,3 +1,4 @@
+import AiAssistantControl from '@/components/shared/aiAssistantControl/aiAssistantControl';
 import { Add, DeleteOutlined } from '@mui/icons-material';
 import { Box, Button, Stack, TextField, Typography } from '@mui/material';
 import type { LogisticsProposedField } from '@/types/logistiqueTypes';
@@ -67,6 +68,13 @@ const ProposedFields = ({ stage, fields, disabled, invalid, onAdd, onChange, onR
 							}
 							placeholder="Ex. : Mode de livraison"
 						/>
+						<AiAssistantControl
+							value={field.name}
+							onApply={(value) => onChange(id, { name: value })}
+							disabled={disabled}
+							context="logistics_review"
+							maxLength={200}
+						/>
 						<TextField
 							label="Décrivez ce que vous souhaitez"
 							value={field.description}
@@ -79,6 +87,13 @@ const ProposedFields = ({ stage, fields, disabled, invalid, onAdd, onChange, onR
 							slotProps={{ htmlInput: { maxLength: 2000 } }}
 							placeholder="Ex. : Choisir un seul mode de livraison : par bateau, par avion ou par camion. Ce choix doit être obligatoire."
 							helperText="Avec vos mots : choisir une seule réponse, cocher plusieurs réponses, sélectionner une date, joindre un document… Précisez les choix possibles et si la réponse est obligatoire. 2 000 caractères maximum."
+						/>
+						<AiAssistantControl
+							value={field.description}
+							onApply={(value) => onChange(id, { description: value })}
+							disabled={disabled}
+							context="logistics_review"
+							maxLength={2000}
 						/>
 						<Button
 							color="error"

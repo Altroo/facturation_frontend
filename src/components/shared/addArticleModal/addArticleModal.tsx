@@ -2,7 +2,7 @@
 
 import { useState, type FC, type ChangeEvent } from 'react';
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Typography } from '@mui/material';
-import { Add as AddIcon } from '@mui/icons-material';
+import { Add as AddIcon, InfoOutlined as InfoIcon } from '@mui/icons-material';
 import type { ArticleClass } from '@/models/classes';
 import {
 	DataGrid,
@@ -41,7 +41,7 @@ const AddArticleModal: FC<AddArticleModalProps> = ({
 	documentDevise,
 	disableRemise = false,
 }) => {
-	const { t } = useLanguage();
+	const { t, language } = useLanguage();
 	const [articlePopupValues, setArticlePopupValues] = useState<Record<number, ArticlePopupValues>>({});
 	const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10 });
 	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [], quickFilterValues: [] });
@@ -230,18 +230,50 @@ const AddArticleModal: FC<AddArticleModalProps> = ({
 			},
 		},
 		{
-			field: 'emplacement_name',
-			headerName: t.addArticleModal.colEmplacement,
-			flex: 1.2,
-			minWidth: 120,
-			renderCell: (params: GridRenderCellParams) => {
-				const value = String(params.value ?? '');
+			field: 'available_quantity',
+			headerName: t.addArticleModal.colStock,
+			description: t.addArticleModal.stockAvailableHelp,
+			type: 'number' as const,
+			minWidth: 115,
+			flex: 0.8,
+			filterable: false,
+			renderCell: (params: GridRenderCellParams<Partial<ArticleClass>>) => {
+				if (!params.row.stock_management_enabled || params.row.type_article !== 'Produit') return '—';
+				const available = Number(params.row.available_quantity ?? 0);
+				const physical = Number(params.row.physical_quantity ?? 0);
+				const reserved = Number(params.row.reserved_quantity ?? 0);
+				const formatStock = (value: number) =>
+					new Intl.NumberFormat(language === 'en' ? 'en-GB' : 'fr-FR', { maximumFractionDigits: 3 }).format(value);
 				return (
-					<DarkTooltip title={value}>
-						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-							<Typography variant="body2" noWrap sx={{ textAlign: 'left', width: '100%' }}>
-								{value}
+					<DarkTooltip
+						title={
+							<Box sx={{ py: 0.5 }}>
+								<div>
+									{t.addArticleModal.stockPhysical} : {formatStock(physical)}
+								</div>
+								<div>
+									{t.addArticleModal.stockReserved} : {formatStock(reserved)}
+								</div>
+								<Box sx={{ fontWeight: 700, mt: 0.5 }}>
+									{t.addArticleModal.stockAvailable} : {formatStock(available)}
+								</Box>
+							</Box>
+						}
+					>
+						<Box
+							tabIndex={params.hasFocus ? 0 : -1}
+							aria-label={`${t.addArticleModal.stockAvailable} : ${formatStock(available)}`}
+							sx={{ height: '100%', display: 'flex', alignItems: 'center', gap: 0.5, cursor: 'help' }}
+						>
+							<Typography
+								variant="body2"
+								noWrap
+								sx={{ fontWeight: 600 }}
+								color={available > 0 ? 'success.main' : available < 0 ? 'error.main' : 'text.secondary'}
+							>
+								{formatStock(available)} {t.addArticleModal.stockAvailableShort}
 							</Typography>
+							<InfoIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
 						</Box>
 					</DarkTooltip>
 				);

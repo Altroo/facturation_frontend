@@ -28,6 +28,7 @@ import { reglementApi } from '@/store/services/reglement';
 import { logistiqueApi } from '@/store/services/logistique';
 import { dashboardApi } from '@/store/services/dashboard';
 import { notificationApi } from '@/store/services/notification';
+import { aiAssistantApi } from '@/store/services/aiAssistant';
 import { stockApi } from '@/store/services/stock';
 import notificationReducer from '@/store/slices/notificationSlice';
 
@@ -61,6 +62,7 @@ const rootReducer = combineReducers({
 	[dashboardApi.reducerPath]: dashboardApi.reducer,
 	[notificationApi.reducerPath]: notificationApi.reducer,
 	[stockApi.reducerPath]: stockApi.reducer,
+	[aiAssistantApi.reducerPath]: aiAssistantApi.reducer,
 });
 
 export interface SagaStore extends Store {
@@ -82,11 +84,7 @@ export const makeStore = (): SagaStore => {
 					// RTK Query uses some non-serializable values in its internal actions
 					ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
 					// Ignore RTK Query cache metadata paths
-					ignoredPaths: [
-						'meta.arg',
-						'meta.baseQueryMeta',
-						'payload.timestamp',
-					],
+					ignoredPaths: ['meta.arg', 'meta.baseQueryMeta', 'payload.timestamp'],
 				},
 				thunk: true,
 			})
@@ -116,6 +114,7 @@ export const makeStore = (): SagaStore => {
 					dashboardApi.middleware,
 					notificationApi.middleware,
 					stockApi.middleware,
+					aiAssistantApi.middleware,
 				),
 		devTools: process.env.NODE_ENV !== 'production',
 	}) as SagaStore;

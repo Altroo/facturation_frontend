@@ -1,4 +1,5 @@
 'use client';
+import AiAssistantControl from '@/components/shared/aiAssistantControl/aiAssistantControl';
 
 import { type FC, useState } from 'react';
 import Image from 'next/image';
@@ -187,6 +188,14 @@ const ReviewContent = ({ companyId, session }: SessionProps & { companyId: numbe
 											(review.decisions[key]?.note.length ?? 0) >= 2000 ? '2 000 caractères maximum' : undefined
 										}
 										sx={{ minWidth: 170 }}
+									/>
+									<AiAssistantControl
+										value={review.decisions[key]?.note ?? ''}
+										onApply={(note) => setDecision(key, { note })}
+										disabled={!canEdit || saving}
+										context="logistics_review"
+										maxLength={2000}
+										compact
 									/>
 								</TableCell>
 							</TableRow>

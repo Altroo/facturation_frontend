@@ -268,7 +268,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 		setShowLanguageModal(true);
 	};
 
-	const handleLanguageSelect = async (language: 'fr' | 'en') => {
+	const handleLanguageSelect = async (language: 'fr' | 'en' | 'nl') => {
 		setShowLanguageModal(false);
 
 		if (!printReglementId) {

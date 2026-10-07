@@ -69,7 +69,7 @@ const FactureAvoirViewClient: FC<Props> = ({ session, company_id, id }) => {
 		setShowLanguageModal(true);
 	};
 
-	const handleLanguageSelect = async (language: 'fr' | 'en') => {
+	const handleLanguageSelect = async (language: 'fr' | 'en' | 'nl') => {
 		setShowLanguageModal(false);
 		if (!token || !pendingPdfType) return;
 		await runWithCleanup(

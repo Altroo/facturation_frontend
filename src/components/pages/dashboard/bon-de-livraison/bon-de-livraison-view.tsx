@@ -61,7 +61,7 @@ const BonDeLivraisonViewClient: FC<Props> = ({ session, company_id, id }) => {
 		{ text: t.common.delete, active: true, onClick: handleDelete, icon: <DeleteIcon />, color: '#D32F2F' },
 	];
 
-	const handleLanguageSelect = async (language: 'fr' | 'en') => {
+	const handleLanguageSelect = async (language: 'fr' | 'en' | 'nl') => {
 		setShowLanguageModal(false);
 		if (!token) return;
 		try {

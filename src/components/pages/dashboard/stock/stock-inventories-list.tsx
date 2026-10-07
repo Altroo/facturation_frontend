@@ -2,7 +2,7 @@
 
 import { useState, type FC } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Box, Button, Chip, Typography } from '@mui/material';
+import { Alert, Box, Button, Chip, Typography } from '@mui/material';
 import { Add as AddIcon, CheckCircle as CheckCircleIcon, Visibility as VisibilityIcon } from '@mui/icons-material';
 import type { GridColDef, GridFilterModel, GridRenderCellParams } from '@mui/x-data-grid';
 import { GridLogicOperator } from '@mui/x-data-grid';
@@ -15,6 +15,7 @@ import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDa
 import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
+import { useGetCompanyQuery } from '@/store/services/company';
 import { useGetEmplacementListQuery } from '@/store/services/parameter';
 import { useGetInventoriesQuery, useValidateInventoryMutation } from '@/store/services/stock';
 import type { SessionProps } from '@/types/_initTypes';
@@ -36,7 +37,9 @@ const inventoryStatusColor = (status: InventorySession['status']): 'default' | '
 const StockInventoriesContent: FC<{ company_id: number; role: string }> = ({ company_id, role }) => {
 	const router = useRouter();
 	const { onSuccess, onError } = useToast();
-	const canAdjust = role === 'Caissier';
+	const { data: company } = useGetCompanyQuery({ id: company_id });
+	const inventoryEnabled = company?.stock_management_enabled === true && company?.inventory_management_enabled === true;
+	const canAdjust = role === 'Caissier' && inventoryEnabled;
 	const [paginationModel, setPaginationModel, sorting] = useDataGridPagination();
 	const [searchTerm, setSearchTerm] = useState('');
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
@@ -172,6 +175,11 @@ const StockInventoriesContent: FC<{ company_id: number; role: string }> = ({ com
 
 	return (
 		<>
+			{company && !inventoryEnabled && (
+				<Alert severity="info" sx={{ m: 2 }}>
+					L’inventaire est désactivé pour cette société. Les inventaires précédents restent consultables.
+				</Alert>
+			)}
 			{canAdjust && (
 				<Box
 					sx={{

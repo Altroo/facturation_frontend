@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { mockSession, setMockListRole } from './stock-test-helpers';
+import { mockSession, setMockListRole, setMockInventoryEnabled } from './stock-test-helpers';
 import StockInventoriesListClient from './stock-inventories-list';
 
 describe('StockInventoriesListClient', () => {
@@ -18,6 +18,14 @@ describe('StockInventoriesListClient', () => {
 		setMockListRole('Lecture');
 		render(<StockInventoriesListClient session={mockSession} />);
 
+		expect(screen.queryByRole('button', { name: 'Nouvel inventaire' })).not.toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: 'Valider l’inventaire' })).not.toBeInTheDocument();
+	});
+	it('keeps inventory history readable while hiding actions when disabled', () => {
+		setMockInventoryEnabled(false);
+		render(<StockInventoriesListClient session={mockSession} />);
+		expect(screen.getByText(/Les inventaires précédents restent consultables/)).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'Voir l’inventaire' })).toBeInTheDocument();
 		expect(screen.queryByRole('button', { name: 'Nouvel inventaire' })).not.toBeInTheDocument();
 		expect(screen.queryByRole('button', { name: 'Valider l’inventaire' })).not.toBeInTheDocument();
 	});

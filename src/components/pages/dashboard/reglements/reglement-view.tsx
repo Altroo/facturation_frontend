@@ -155,7 +155,7 @@ const ReglementViewClient: FC<Props> = ({ session, company_id, id }) => {
 		},
 	];
 
-	const handleLanguageSelect = async (language: 'fr' | 'en') => {
+	const handleLanguageSelect = async (language: 'fr' | 'en' | 'nl') => {
 		setShowLanguageModal(false);
 		if (!token) {
 			onError(t.errors.authRequired);

@@ -72,13 +72,16 @@ const StockInventoryFormContent: FC<StockInventoryFormContentProps> = ({ token, 
 		error: articlesError,
 	} = useGetArticlesListQuery(
 		{ company_id, with_pagination: false, archived: false },
-		{ skip: !token || company?.stock_management_enabled !== true },
+		{ skip: !token || company?.stock_management_enabled !== true || company?.inventory_management_enabled !== true },
 	);
 	const {
 		data: emplacements = [],
 		isLoading: emplacementsLoading,
 		error: emplacementsError,
-	} = useGetEmplacementListQuery({ company_id }, { skip: !token || company?.stock_management_enabled !== true });
+	} = useGetEmplacementListQuery(
+		{ company_id },
+		{ skip: !token || company?.stock_management_enabled !== true || company?.inventory_management_enabled !== true },
+	);
 	const [createInventory, { isLoading: createLoading, error: createError }] = useCreateInventoryMutation();
 	const [validateInventory, { isLoading: validateLoading, error: validateError }] = useValidateInventoryMutation();
 
@@ -197,6 +200,10 @@ const StockInventoryFormContent: FC<StockInventoryFormContentProps> = ({ token, 
 			{formik.errors.globalError && <span className={Styles.errorMessage}>{formik.errors.globalError}</span>}
 			{company && !company.stock_management_enabled ? (
 				<StockDisabledState />
+			) : company && !company.inventory_management_enabled ? (
+				<Alert severity="info">
+					L’inventaire est désactivé pour cette société. Activez-le dans les paramètres de la société.
+				</Alert>
 			) : isLoading ? (
 				<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
 			) : shouldShowError ? (

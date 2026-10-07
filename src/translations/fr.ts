@@ -1,6 +1,28 @@
 import type { TranslationDictionary } from '@/types/languageTypes';
 
 export const fr: TranslationDictionary = {
+	aiAssistant: {
+		translate: 'Traduire',
+		fixGrammar: 'Corriger la grammaire',
+		professionalize: 'Rendre professionnel',
+		translateToFrench: 'Français',
+		translateToEnglish: 'Anglais',
+		chooseLanguage: 'Choisissez la langue dans laquelle vous souhaitez traduire le texte.',
+		previewTitle: "Suggestion de l'assistant IA",
+		original: 'Texte original',
+		suggestion: 'Suggestion',
+		useSuggestion: 'Utiliser la suggestion',
+		tryAgain: 'Réessayer',
+		cancel: 'Annuler',
+		emptyText: 'Saisissez un texte avant d’utiliser l’assistant.',
+		requestError: 'L’assistant IA n’a pas pu traiter ce texte.',
+		alreadyCorrect: 'Le texte est déjà correct.',
+		alreadyProfessional: 'Le texte est déjà rédigé de manière professionnelle.',
+
+		fieldChanged: 'Le champ a changé depuis cette demande. Relancez l’assistant pour utiliser le texte actuel.',
+		suggestionTooLong: 'Cette suggestion dépasse la longueur autorisée pour ce champ.',
+		textTooLong: 'L’assistant accepte au maximum 5 000 caractères à la fois.',
+	},
 	common: {
 		yes: 'Oui',
 		no: 'Non',
@@ -176,6 +198,7 @@ export const fr: TranslationDictionary = {
 		chooseLanguage: 'Choisissez la langue dans laquelle vous souhaitez générer le document PDF.',
 		french: 'Français',
 		english: 'English',
+		dutch: 'Néerlandais',
 	},
 	rawData: {
 		genders: {
@@ -1061,6 +1084,9 @@ export const fr: TranslationDictionary = {
 		bulkSuspendBtn: (n: number) => `Suspendre (${n})`,
 		foreignCurrencyLabel: 'Utiliser une devise étrangère',
 		foreignCurrencyHelper: 'Activer pour utiliser une devise étrangère pour cette entreprise',
+		inventoryManagementLabel: 'Activer l’inventaire pour cette société',
+		inventoryManagementHelper:
+			'Permet de compter les articles et de corriger le stock. La gestion de stock doit être activée.',
 		stockManagementLabel: 'Activer la gestion de stock',
 		stockManagementHelper:
 			"Initialise le stock de l'entreprise et active les réservations, entrées et sorties. L'activation est définitive.",
@@ -1536,6 +1562,12 @@ export const fr: TranslationDictionary = {
 		colMarque: 'Marque',
 		colCategorie: 'Catégorie',
 		colUnite: 'Unité',
+		colStock: 'Stock',
+		stockAvailableShort: 'dispo.',
+		stockAvailable: 'Disponible',
+		stockPhysical: 'Physique',
+		stockReserved: 'Réservé',
+		stockAvailableHelp: 'Stock disponible : stock physique moins les quantités réservées.',
 		colEmplacement: 'Emplacement',
 		colPrixAchat: "Prix d'achat",
 		colPrixVente: 'Prix de vente',

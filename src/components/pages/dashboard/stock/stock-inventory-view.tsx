@@ -30,6 +30,7 @@ import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiP
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import { getUserCompaniesState } from '@/store/selectors';
+import { useGetCompanyQuery } from '@/store/services/company';
 import { useGetInventoryQuery, useValidateInventoryMutation } from '@/store/services/stock';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import type {
@@ -78,7 +79,11 @@ const StockInventoryView: FC<StockInventoryViewProps> = ({ session, company_id, 
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 	const { onSuccess, onError } = useToast();
 	const companies = useAppSelector(getUserCompaniesState);
-	const canAdjust = companies?.find((company) => company.id === company_id)?.role === 'Caissier';
+	const { data: company } = useGetCompanyQuery({ id: company_id }, { skip: !token });
+	const canAdjust =
+		companies?.find((company) => company.id === company_id)?.role === 'Caissier' &&
+		company?.stock_management_enabled === true &&
+		company?.inventory_management_enabled === true;
 	const { data: inventory, isLoading, isError } = useGetInventoryQuery({ company_id, id }, { skip: !token });
 	const [validateInventory, validateState] = useValidateInventoryMutation();
 	const columns = [

@@ -266,7 +266,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 		setShowLanguageModal(true);
 	};
 
-	const handleLanguageSelect = async (language: 'fr' | 'en') => {
+	const handleLanguageSelect = async (language: 'fr' | 'en' | 'nl') => {
 		setShowLanguageModal(false);
 
 		if (!selectedPrintAction || printMenuItemId === null) {

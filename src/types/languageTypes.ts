@@ -7,6 +7,28 @@ export type LanguageContextType = {
 };
 
 export type TranslationDictionary = {
+	aiAssistant: {
+		translate: string;
+		fixGrammar: string;
+		professionalize: string;
+		translateToFrench: string;
+		translateToEnglish: string;
+		chooseLanguage: string;
+		previewTitle: string;
+		original: string;
+		suggestion: string;
+		useSuggestion: string;
+		tryAgain: string;
+		cancel: string;
+		emptyText: string;
+		requestError: string;
+		alreadyCorrect: string;
+		alreadyProfessional: string;
+
+		fieldChanged: string;
+		suggestionTooLong: string;
+		textTooLong: string;
+	};
 	common: {
 		yes: string;
 		no: string;
@@ -181,6 +203,7 @@ export type TranslationDictionary = {
 		chooseLanguage: string;
 		french: string;
 		english: string;
+		dutch: string;
 	};
 	rawData: {
 		genders: {
@@ -1046,6 +1069,8 @@ export type TranslationDictionary = {
 		foreignCurrencyLabel: string;
 		foreignCurrencyHelper: string;
 		stockManagementLabel: string;
+		inventoryManagementLabel: string;
+		inventoryManagementHelper: string;
 		stockManagementHelper: string;
 		fetchIdsError: string;
 		allEmployeeCounts: string;
@@ -1490,6 +1515,12 @@ export type TranslationDictionary = {
 		colCategorie: string;
 		colUnite: string;
 		colEmplacement: string;
+		colStock: string;
+		stockAvailableHelp: string;
+		stockAvailableShort: string;
+		stockAvailable: string;
+		stockPhysical: string;
+		stockReserved: string;
 		colPrixAchat: string;
 		colPrixVente: string;
 		colQuantite: string;

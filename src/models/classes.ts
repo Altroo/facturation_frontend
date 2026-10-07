@@ -28,6 +28,7 @@ export class GroupClass {
 
 export class CompanyClass {
 	public stock_management_enabled = false;
+	public inventory_management_enabled = false;
 
 	constructor(
 		public readonly id: number,

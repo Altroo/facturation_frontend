@@ -1,11 +1,25 @@
-import { InputAdornment, ThemeProvider } from '@mui/material';
+'use client';
+
+import { type ChangeEvent } from 'react';
+import AiAssistantControl from '@/components/shared/aiAssistantControl/aiAssistantControl';
+import { isAiTextField } from '@/utils/aiTextFields';
+import { Box, InputAdornment, ThemeProvider } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import type { CustomTextInputProps as Props } from '@/types/uiTypes';
 
 const CustomTextInput = (props: Props) => {
-	const { cssClass, theme, startIcon, endIcon, maxLength, ref, ...restOfProps } = props;
+	const { cssClass, theme, startIcon, endIcon, maxLength, ref, ai, aiContext, ...restOfProps } = props;
 
-	return (
+	const fieldName = props.name || props.id;
+	const showAssistant =
+		ai !== false &&
+		isAiTextField(fieldName, props.type) &&
+		!props.disabled &&
+		typeof props.slotProps?.input !== 'function' &&
+		!props.slotProps?.input?.readOnly &&
+		typeof props.slotProps?.htmlInput !== 'function' &&
+		!(props.slotProps?.htmlInput && 'readOnly' in props.slotProps.htmlInput && props.slotProps.htmlInput.readOnly);
+	const field = (
 		<ThemeProvider theme={theme}>
 			<TextField
 				{...restOfProps}
@@ -44,6 +58,24 @@ const CustomTextInput = (props: Props) => {
 				}}
 			/>
 		</ThemeProvider>
+	);
+	if (!showAssistant) return field;
+	return (
+		<Box sx={{ width: props.fullWidth ? '100%' : undefined }}>
+			{field}
+			<AiAssistantControl
+				value={props.value ?? ''}
+				context={aiContext || 'form'}
+				maxLength={maxLength}
+				disabled={props.disabled}
+				onApply={(value) => {
+					props.onChange({
+						target: { name: fieldName, id: props.id, value },
+						currentTarget: { name: fieldName, id: props.id, value },
+					} as ChangeEvent<HTMLInputElement>);
+				}}
+			/>
+		</Box>
 	);
 };
 

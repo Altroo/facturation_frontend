@@ -8,6 +8,10 @@ const mockOnSuccess = jest.fn();
 const mockOnError = jest.fn();
 let mockListRole = 'Caissier';
 let mockCompanyRole = 'Caissier';
+let mockInventoryEnabled = true;
+export const setMockInventoryEnabled = (enabled: boolean) => {
+	mockInventoryEnabled = enabled;
+};
 
 const mockBalance = {
 	id: 4,
@@ -399,7 +403,10 @@ jest.mock('@/utils/hooks', () => ({
 }));
 
 jest.mock('@/store/services/company', () => ({
-	useGetCompanyQuery: () => ({ data: { id: 1, stock_management_enabled: true }, isLoading: false }),
+	useGetCompanyQuery: () => ({
+		data: { id: 1, stock_management_enabled: true, inventory_management_enabled: mockInventoryEnabled },
+		isLoading: false,
+	}),
 }));
 
 jest.mock('@/store/services/parameter', () => ({
@@ -509,6 +516,7 @@ export const setMockCompanyRole = (role: string) => {
 };
 
 beforeEach(() => {
+	mockInventoryEnabled = true;
 	jest.clearAllMocks();
 	mockListRole = 'Caissier';
 	mockCompanyRole = 'Caissier';

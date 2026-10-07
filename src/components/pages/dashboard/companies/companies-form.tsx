@@ -13,6 +13,11 @@ import {
 	CardContent,
 	Divider,
 	FormControlLabel,
+	FormControl,
+	FormLabel,
+	FormHelperText,
+	Radio,
+	RadioGroup,
 	Stack,
 	Switch,
 	Typography,
@@ -160,6 +165,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 			managed_by: computedManagedBy,
 			uses_foreign_currency: rawData?.uses_foreign_currency ?? false,
 			stock_management_enabled: rawData?.stock_management_enabled ?? false,
+			inventory_management_enabled: rawData?.inventory_management_enabled ?? false,
 			globalError: '',
 		},
 		enableReinitialize: true,
@@ -268,6 +274,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 		managed_by: t.companies.managersSection,
 		uses_foreign_currency: t.companies.foreignCurrencyLabel,
 		stock_management_enabled: t.companies.stockManagementLabel,
+		inventory_management_enabled: t.companies.inventoryManagementLabel,
 		globalError: t.common.genericError,
 	} as Record<string, string>;
 
@@ -769,7 +776,10 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 									control={
 										<Switch
 											checked={formik.values.stock_management_enabled}
-											onChange={(e) => void formik.setFieldValue('stock_management_enabled', e.target.checked)}
+											onChange={(e) => {
+												void formik.setFieldValue('stock_management_enabled', e.target.checked);
+												if (!e.target.checked) void formik.setFieldValue('inventory_management_enabled', false);
+											}}
 											disabled={rawData?.stock_management_enabled === true}
 											color="primary"
 										/>
@@ -779,6 +789,22 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 								<Typography variant="caption" color="text.secondary">
 									{t.companies.stockManagementHelper}
 								</Typography>
+								<FormControl sx={{ display: 'flex', mt: 3 }} disabled={!formik.values.stock_management_enabled}>
+									<FormLabel id="inventory-activation-label">{t.companies.inventoryManagementLabel}</FormLabel>
+									<RadioGroup
+										row
+										aria-labelledby="inventory-activation-label"
+										name="inventory_management_enabled"
+										value={String(formik.values.inventory_management_enabled)}
+										onChange={(e) =>
+											void formik.setFieldValue('inventory_management_enabled', e.target.value === 'true')
+										}
+									>
+										<FormControlLabel value="true" control={<Radio />} label={t.common.yes} />
+										<FormControlLabel value="false" control={<Radio />} label={t.common.no} />
+									</RadioGroup>
+									<FormHelperText>{t.companies.inventoryManagementHelper}</FormHelperText>
+								</FormControl>
 							</CardContent>
 						</Card>
 

@@ -389,7 +389,7 @@ export interface PrintAction {
 	/** Icon color */
 	iconColor?: string;
 	/** URL generator for the PDF - now includes language parameter */
-	urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') => string;
+	urlGenerator: (id: number, companyId: number, language: 'fr' | 'en' | 'nl') => string;
 }
 
 /** Labels configuration for document list */

@@ -61,7 +61,7 @@ const createBonDeLivraisonListConfig = (t: TranslationDictionary): DocumentListC
 			label: t.common.pdf,
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#1976d2',
-			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') =>
+			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en' | 'nl') =>
 				BON_DE_LIVRAISON_PDF(id, companyId, 'normal', language),
 		},
 	],

@@ -204,6 +204,7 @@ export const companySchema = z.object({
 	cachet_cropped: base64ImageField,
 	uses_foreign_currency: z.boolean().default(false),
 	stock_management_enabled: z.boolean().default(false),
+	inventory_management_enabled: z.boolean().default(false),
 	globalError: optionalTextField(1, 500),
 });
 

@@ -92,7 +92,7 @@ const createDevisListConfig = (t: TranslationDictionary): DocumentListConfig<Dev
 			label: t.common.pdfWithDiscount,
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#1976d2',
-			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') =>
+			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en' | 'nl') =>
 				DEVIS_PDF(id, companyId, 'avec_remise', language),
 		},
 		{
@@ -100,7 +100,7 @@ const createDevisListConfig = (t: TranslationDictionary): DocumentListConfig<Dev
 			label: t.common.pdfWithoutDiscount,
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#2e7d32',
-			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') =>
+			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en' | 'nl') =>
 				DEVIS_PDF(id, companyId, 'sans_remise', language),
 		},
 		{
@@ -108,7 +108,7 @@ const createDevisListConfig = (t: TranslationDictionary): DocumentListConfig<Dev
 			label: t.common.pdfWithUnitWithoutDiscount,
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#7b1fa2',
-			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') =>
+			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en' | 'nl') =>
 				DEVIS_PDF(id, companyId, 'avec_unite_sans_remise', language),
 		},
 		{
@@ -116,7 +116,7 @@ const createDevisListConfig = (t: TranslationDictionary): DocumentListConfig<Dev
 			label: t.common.pdfWithUnitWithDiscount,
 			icon: <PrintIcon fontSize="small" />,
 			iconColor: '#ed6c02',
-			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en') =>
+			urlGenerator: (id: number, companyId: number, language: 'fr' | 'en' | 'nl') =>
 				DEVIS_PDF(id, companyId, 'avec_unite_avec_remise', language),
 		},
 	],
