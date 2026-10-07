@@ -480,7 +480,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 										onBlur={formik.handleBlur('designation')}
 										error={formik.touched.designation && Boolean(formik.errors.designation)}
 										helperText={formik.touched.designation ? formik.errors.designation : ''}
-										fullWidth={false}
+										fullWidth
 										size="small"
 										theme={inputTheme}
 										startIcon={<DescriptionIcon fontSize="small" />}
