@@ -672,7 +672,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 							<Button
 								variant="outlined"
 								startIcon={<ArrowBackIcon />}
-								onClick={() => router.back()}
+								onClick={() => router.push(`${LOGISTIQUE_LIST}?company_id=${company_id}`)}
 								sx={{ width: isMobile ? '100%' : 'auto' }}
 							>
 								{t.logistique.backToList}
@@ -688,7 +688,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 												variant="contained"
 												size="small"
 												startIcon={<InventoryIcon />}
-												onClick={() => router.push(`${STOCK_RECEIPTS}&company_id=${company_id}`)}
+												onClick={() => router.push(`${STOCK_RECEIPTS}?company_id=${company_id}`)}
 											>
 												Réceptionner le stock
 											</Button>

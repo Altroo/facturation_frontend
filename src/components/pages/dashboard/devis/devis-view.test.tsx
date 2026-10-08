@@ -194,7 +194,8 @@ describe('DevisViewClient UI and navigation', () => {
 
 		renderWithProviders(<DevisViewClient {...defaultProps} />);
 		fireEvent.click(screen.getByText('Liste des devis', { selector: 'button' }));
-		expect(mockBack).toHaveBeenCalled();
+		expect(mockPush).toHaveBeenCalledWith('/dashboard/devis?company_id=1');
+		expect(mockBack).not.toHaveBeenCalled();
 	});
 
 	it('shows and navigates with "Modifier" button when role is Caissier', () => {

@@ -41,6 +41,16 @@ describe('logistiqueApi endpoints', () => {
 	const formData = () => new FormData();
 	const endpointCalls: Array<[string, () => Promise<unknown>]> = [
 		[
+			'getLogisticsFieldReview',
+			async () =>
+				storeRef.store.dispatch(logistiqueApi.endpoints.getLogisticsFieldReview.initiate({ company_id: 1 })).unwrap(),
+		],
+		[
+			'saveLogisticsFieldReview',
+			async () =>
+				storeRef.store.dispatch(logistiqueApi.endpoints.saveLogisticsFieldReview.initiate({ company_id: 1 })).unwrap(),
+		],
+		[
 			'getLogistiqueList',
 			async () =>
 				storeRef.store.dispatch(logistiqueApi.endpoints.getLogistiqueList.initiate({ company_id: 1 })).unwrap(),

@@ -1,10 +1,11 @@
 'use client';
 
-import { type FC, type SyntheticEvent, useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { type FC, type SyntheticEvent, Suspense, useEffect, useRef, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Box, Button, Container, Paper, Stack, Tab, Tabs, Typography } from '@mui/material';
 import { Business as BusinessIcon } from '@mui/icons-material';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
+import { publishChatAICompany } from '@/components/chat-ai/company-context';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { useInitAccessToken } from '@/contexts/InitContext';
@@ -22,7 +23,7 @@ const saveCompanyIndex = (index: number) => {
 	}
 };
 
-const CompanyDocumentsWrapperList: FC<CompanyDocumentsListProps> = ({
+const CompanyDocumentsListContent: FC<CompanyDocumentsListProps> = ({
 	session,
 	title,
 	requestedCompanyId,
@@ -30,6 +31,8 @@ const CompanyDocumentsWrapperList: FC<CompanyDocumentsListProps> = ({
 }) => {
 	const token = useInitAccessToken(session);
 	const router = useRouter();
+	const pathname = usePathname();
+	const searchParams = useSearchParams();
 	const { t } = useLanguage();
 	const { data: companiesData, isLoading } = useGetUserCompaniesQuery(undefined, { skip: !token });
 
@@ -45,11 +48,23 @@ const CompanyDocumentsWrapperList: FC<CompanyDocumentsListProps> = ({
 	});
 
 	const companies = (companiesData ?? emptyCompanies) as CompanyLike[];
+	const queryValue = searchParams.get('company_id');
+	const queryId = queryValue && /^[1-9]\d*$/.test(queryValue) ? Number(queryValue) : null;
+	const explicitId =
+		Number.isSafeInteger(requestedCompanyId) && (requestedCompanyId ?? 0) > 0 ? requestedCompanyId! : null;
+	const hintId = explicitId ?? (Number.isSafeInteger(queryId) ? queryId : null);
+	const hintKey = `${pathname}:${hintId ?? ''}`;
+	const [appliedHint, setAppliedHint] = useState<string | null>(null);
+	const requestedIndex = hintId ? companies.findIndex((company) => company.id === hintId) : -1;
+
+	// Resolve a fresh route hint before rendering children or publishing company scope.
+	// Once consumed, it must not force the tab back after a manual company change.
 
 	// Compute valid index - automatically clamps to valid range
 	// This is our source of truth for the actual selected index
 	const validIndex = (() => {
 		if (companies.length === 0) return 0;
+		if (appliedHint !== hintKey && requestedIndex >= 0) return requestedIndex;
 		if (selectedIndex >= companies.length) return 0;
 		return selectedIndex;
 	})();
@@ -67,21 +82,31 @@ const CompanyDocumentsWrapperList: FC<CompanyDocumentsListProps> = ({
 	}, [validIndex]);
 
 	useEffect(() => {
-		if (!requestedCompanyId) return;
-		const requestedIndex = companies.findIndex((company) => company.id === requestedCompanyId);
-		if (requestedIndex < 0 || requestedIndex === validIndex) return;
-		setSelectedIndex(requestedIndex);
-		saveCompanyIndex(requestedIndex);
-	}, [companies, requestedCompanyId, validIndex]);
+		if (isLoading || !companies.length || appliedHint === hintKey) return;
+		setAppliedHint(hintKey);
+		if (requestedIndex >= 0) {
+			setSelectedIndex(requestedIndex);
+			saveCompanyIndex(requestedIndex);
+		}
+	}, [isLoading, companies.length, appliedHint, hintKey, requestedIndex]);
 
 	const selectedCompany = companies?.[validIndex] ?? null;
+	useEffect(() => {
+		if (token && !isLoading) publishChatAICompany(selectedCompany?.id ?? null);
+		// Root authentication owns clearing this store. An outgoing page must not
+		// erase scope already published by the next page, or discard its conversation.
+	}, [token, isLoading, selectedCompany?.id]);
 
 	const handleChange = (_: SyntheticEvent, newValue: number) => {
+		const nextCompany = companies[newValue];
+		if (!Number.isInteger(newValue) || !nextCompany) return;
+		setAppliedHint(hintKey);
 		setSelectedIndex(newValue);
-		// Save to localStorage
-		if (typeof window !== 'undefined') {
-			saveCompanyIndex(newValue);
-		}
+		saveCompanyIndex(newValue);
+		publishChatAICompany(nextCompany.id);
+		const url = new URL(window.location.href);
+		url.searchParams.set('company_id', String(nextCompany.id));
+		window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
 	};
 
 	if (isLoading) {
@@ -235,5 +260,11 @@ const CompanyDocumentsWrapperList: FC<CompanyDocumentsListProps> = ({
 		</Stack>
 	);
 };
+
+const CompanyDocumentsWrapperList: FC<CompanyDocumentsListProps> = (props) => (
+	<Suspense fallback={<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />}>
+		<CompanyDocumentsListContent {...props} />
+	</Suspense>
+);
 
 export default CompanyDocumentsWrapperList;

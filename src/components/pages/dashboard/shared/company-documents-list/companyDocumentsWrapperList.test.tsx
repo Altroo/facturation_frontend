@@ -3,6 +3,7 @@ import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import CompanyDocumentsWrapperList from './companyDocumentsWrapperList';
 import type { CompanyDocumentsListProps } from '@/types/companyDocumentsTypes';
+import { getChatAICompany, publishChatAICompany, subscribeChatAICompany } from '@/components/chat-ai/company-context';
 
 jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 	__esModule: true,
@@ -29,6 +30,8 @@ const pushMock = jest.fn();
 jest.mock('next/navigation', () => ({
 	__esModule: true,
 	useRouter: () => ({ push: pushMock }),
+	usePathname: () => window.location.pathname,
+	useSearchParams: () => new URLSearchParams(window.location.search),
 }));
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 
@@ -41,14 +44,34 @@ const defaultProps: Partial<CompanyDocumentsListProps> = {
 	title: 'Documents',
 };
 
-describe('CompanyDocumentsList', () => {
-	afterEach(() => {
-		jest.clearAllMocks();
-		jest.restoreAllMocks();
-		localStorage.clear();
-		cleanup();
-	});
+const companies = [
+	{ id: 1, raison_sociale: 'Company One', role: 'Caissier' },
+	{ id: 2, raison_sociale: 'Company Two', role: 'Lecture' },
+];
+let published: Array<number | null>;
+let unsubscribe: () => void;
+beforeEach(() => {
+	window.history.replaceState(null, '', '/dashboard/devis');
+	publishChatAICompany(null);
+	published = [];
+	unsubscribe = subscribeChatAICompany(() => published.push(getChatAICompany()));
+});
+afterEach(() => {
+	unsubscribe();
+	cleanup();
+	jest.clearAllMocks();
+	jest.restoreAllMocks();
+	localStorage.clear();
+	publishChatAICompany(null);
+});
 
+const selectedCompanyView = (requestedCompanyId?: number) => (
+	<CompanyDocumentsWrapperList {...(defaultProps as CompanyDocumentsListProps)} requestedCompanyId={requestedCompanyId}>
+		{({ company_id }) => <div>Selected {company_id}</div>}
+	</CompanyDocumentsWrapperList>
+);
+
+describe('CompanyDocumentsList', () => {
 	test('shows ApiProgress while loading', () => {
 		mockedUseGetUserCompaniesQuery.mockReturnValue({ data: undefined, isLoading: true });
 
@@ -144,4 +167,88 @@ test('company selection works when browser storage cannot be read or written', (
 	expect(screen.getByText('Selected 2')).toBeInTheDocument();
 	cleanup();
 	jest.restoreAllMocks();
+});
+
+test('URL company B is used before children or assistant see the saved company A', () => {
+	window.history.replaceState(null, '', '/dashboard/devis?company_id=2');
+	localStorage.setItem('selectedCompanyIndex', '0');
+	mockedUseGetUserCompaniesQuery.mockReturnValue({ data: companies, isLoading: false });
+	const child = jest.fn(({ company_id }: { company_id: number }) => <div>Selected {company_id}</div>);
+	render(
+		<CompanyDocumentsWrapperList {...(defaultProps as CompanyDocumentsListProps)}>{child}</CompanyDocumentsWrapperList>,
+	);
+	expect(screen.getByText('Selected 2')).toBeInTheDocument();
+	expect(child.mock.calls.every(([props]) => props.company_id === 2)).toBe(true);
+	expect(published).toEqual([2]);
+	expect(localStorage.getItem('selectedCompanyIndex')).toBe('1');
+});
+
+test('switching B to A persists across rerenders and updates URL and assistant together', () => {
+	window.history.replaceState(null, '', '/dashboard/devis?company_id=2&search=Atlas#documents');
+	mockedUseGetUserCompaniesQuery.mockReturnValue({ data: companies, isLoading: false });
+	const { rerender } = render(selectedCompanyView());
+	fireEvent.click(screen.getByRole('tab', { name: 'Company One' }));
+	expect(screen.getByText('Selected 1')).toBeInTheDocument();
+	expect(getChatAICompany()).toBe(1);
+	expect(window.location.search).toBe('?company_id=1&search=Atlas');
+	expect(window.location.hash).toBe('#documents');
+	rerender(selectedCompanyView());
+	expect(screen.getByText('Selected 1')).toBeInTheDocument();
+	expect(published).toEqual([2, 1]);
+	expect(localStorage.getItem('selectedCompanyIndex')).toBe('0');
+});
+
+test.each(['0', '-1', 'bad', '1.5', '1e0', '9007199254740992', '999'])(
+	'ignores invalid or unauthorized URL company %s',
+	(hint) => {
+		window.history.replaceState(null, '', `/dashboard/devis?company_id=${hint}`);
+		localStorage.setItem('selectedCompanyIndex', '1');
+		mockedUseGetUserCompaniesQuery.mockReturnValue({ data: companies, isLoading: false });
+		render(selectedCompanyView());
+		expect(screen.getByText('Selected 2')).toBeInTheDocument();
+		expect(published).toEqual([2]);
+	},
+);
+
+test('explicit company hint takes precedence once, without pinning later manual tabs', () => {
+	window.history.replaceState(null, '', '/dashboard/devis?company_id=2');
+	mockedUseGetUserCompaniesQuery.mockReturnValue({ data: companies, isLoading: false });
+	const { rerender } = render(selectedCompanyView(1));
+	expect(screen.getByText('Selected 1')).toBeInTheDocument();
+	expect(getChatAICompany()).toBe(1);
+	fireEvent.click(screen.getByRole('tab', { name: 'Company Two' }));
+	rerender(selectedCompanyView(1));
+	expect(screen.getByText('Selected 2')).toBeInTheDocument();
+	expect(getChatAICompany()).toBe(2);
+	expect(published).toEqual([1, 2]);
+});
+
+test('a subsequent route company hint changes the selected company', () => {
+	window.history.replaceState(null, '', '/dashboard/devis?company_id=2');
+	mockedUseGetUserCompaniesQuery.mockReturnValue({ data: companies, isLoading: false });
+	const { rerender } = render(selectedCompanyView());
+	window.history.replaceState(null, '', '/dashboard/devis?company_id=1');
+	rerender(selectedCompanyView());
+	expect(screen.getByText('Selected 1')).toBeInTheDocument();
+	expect(published).toEqual([2, 1]);
+});
+
+test('outgoing page cleanup cannot clear company published by the next page', () => {
+	mockedUseGetUserCompaniesQuery.mockReturnValue({ data: companies, isLoading: false });
+	const { unmount } = render(selectedCompanyView());
+	publishChatAICompany(2);
+	unmount();
+	expect(getChatAICompany()).toBe(2);
+	expect(published).toEqual([1, 2]);
+});
+
+test('loading a new company list preserves the current scope until an authorized result is ready', () => {
+	publishChatAICompany(2);
+	mockedUseGetUserCompaniesQuery.mockReturnValue({ data: undefined, isLoading: true });
+	const { rerender } = render(selectedCompanyView());
+	expect(getChatAICompany()).toBe(2);
+	mockedUseGetUserCompaniesQuery.mockReturnValue({ data: [companies[0]], isLoading: false });
+	rerender(selectedCompanyView());
+	expect(screen.getByText('Selected 1')).toBeInTheDocument();
+	expect(published).toEqual([2, 1]);
 });

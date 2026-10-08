@@ -190,7 +190,8 @@ describe('ClientsViewClient', () => {
 
 		renderWithProviders(<ClientsViewClient {...defaultProps} />);
 		fireEvent.click(screen.getByText('Liste des clients', { selector: 'button' }));
-		expect(mockBack).toHaveBeenCalled();
+		expect(mockPush).toHaveBeenCalledWith('/dashboard/clients?company_id=1');
+		expect(mockBack).not.toHaveBeenCalled();
 	});
 
 	it('shows and navigates with "Modifier" button when role is Caissier', () => {

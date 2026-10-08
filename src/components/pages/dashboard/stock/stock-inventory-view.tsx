@@ -2,6 +2,7 @@
 
 import { type FC, isValidElement } from 'react';
 import { useRouter } from 'next/navigation';
+import { STOCK_INVENTORIES } from '@/utils/routes';
 import {
 	Box,
 	Button,
@@ -164,7 +165,7 @@ const StockInventoryView: FC<StockInventoryViewProps> = ({ session, company_id, 
 						<Button
 							variant="outlined"
 							startIcon={<ArrowBackIcon />}
-							onClick={() => router.back()}
+							onClick={() => router.push(`${STOCK_INVENTORIES}?company_id=${company_id}`)}
 							sx={{ width: isMobile ? '100%' : 'auto' }}
 						>
 							Inventaires de stock

@@ -3,6 +3,13 @@ import { render, screen, cleanup, fireEvent, within } from '@testing-library/rea
 import '@testing-library/jest-dom';
 import CompanyDocumentsWrapperView from './companyDocumentsWrapperView';
 import type { CompanyDocumentsViewProps, CompanyDocumentData } from '@/types/companyDocumentsTypes';
+import {
+	DEVIS_LIST,
+	FACTURE_CLIENT_LIST,
+	FACTURE_PRO_FORMA_LIST,
+	FACTURE_AVOIR_LIST,
+	BON_DE_LIVRAISON_LIST,
+} from '@/utils/routes';
 
 jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 	__esModule: true,
@@ -188,7 +195,8 @@ describe('CompanyDocumentsView', () => {
 		fireEvent.click(alertQueries.getByRole('button', { name: /Back/i }));
 		fireEvent.click(alertQueries.getByRole('button', { name: /Réessayer/i }));
 
-		expect(backMock).toHaveBeenCalledTimes(1);
+		expect(pushMock).toHaveBeenCalledWith(`${DEVIS_LIST}?company_id=1`);
+		expect(backMock).not.toHaveBeenCalled();
 		expect(refreshMock).toHaveBeenCalled();
 	});
 
@@ -245,20 +253,26 @@ describe('CompanyDocumentsView', () => {
 		expect(screen.queryByRole('button', { name: /Modifier/i })).not.toBeInTheDocument();
 	});
 
-	test('clicking back button returns to the previous page', () => {
-		mockedUseAppSelector.mockReturnValue([{ id: 1, role: 'Caissier' }]);
+	test.each([
+		['devis', DEVIS_LIST],
+		['facture-client', FACTURE_CLIENT_LIST],
+		['facture-pro-forma', FACTURE_PRO_FORMA_LIST],
+		['facture-avoir', FACTURE_AVOIR_LIST],
+		['bon-de-livraison', BON_DE_LIVRAISON_LIST],
+	] as const)('Back opens the %s list for the document company, regardless of previous page', (type, listRoute) => {
+		mockedUseAppSelector.mockReturnValue([{ id: 2, role: 'Caissier' }]);
 		mockedUseGetArticlesListQuery.mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<
 			typeof useGetArticlesListQuery
 		>);
-
 		const props = buildProps({
+			type,
+			company_id: 2,
 			query: { isLoading: false, error: undefined, data: { statut: 'Brouillon', lignes: [] } },
 		});
-
 		render(<CompanyDocumentsWrapperView<TestDoc> {...props} />);
-
 		fireEvent.click(screen.getByRole('button', { name: 'Back' }));
-		expect(backMock).toHaveBeenCalledTimes(1);
+		expect(pushMock).toHaveBeenCalledWith(`${listRoute}?company_id=2`);
+		expect(backMock).not.toHaveBeenCalled();
 	});
 
 	test('shows Modifier button for Commercial role', () => {

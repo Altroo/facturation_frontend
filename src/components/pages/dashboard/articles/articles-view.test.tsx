@@ -154,7 +154,8 @@ describe('ArticlesViewClient navigation and permissions', () => {
 
 		renderWithProviders(<ArticlesViewClient {...defaultProps} />);
 		fireEvent.click(screen.getByText('Liste des articles', { selector: 'button' }));
-		expect(mockBack).toHaveBeenCalled();
+		expect(mockPush).toHaveBeenCalledWith('/dashboard/articles?company_id=1');
+		expect(mockBack).not.toHaveBeenCalled();
 	});
 
 	it('shows and navigates with "Modifier" button when role is Caissier', () => {

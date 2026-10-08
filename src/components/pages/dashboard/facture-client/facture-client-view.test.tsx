@@ -214,7 +214,8 @@ describe('FactureClientViewClient UI and navigation', () => {
 
 		renderWithProviders(<FactureClientViewClient {...defaultProps} />);
 		fireEvent.click(screen.getByText('Liste des factures clients', { selector: 'button' }));
-		expect(mockBack).toHaveBeenCalled();
+		expect(mockPush).toHaveBeenCalledWith('/dashboard/facture-client?company_id=1');
+		expect(mockBack).not.toHaveBeenCalled();
 	});
 
 	it('shows and navigates with "Modifier" button when company role is Caissier', () => {

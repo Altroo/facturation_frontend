@@ -3,6 +3,7 @@
 import { runWithCleanup } from '@/utils/runWithCleanup';
 import { isValidElement, useState, type FC } from 'react';
 import { useRouter } from 'next/navigation';
+import { STOCK_RECEIPTS } from '@/utils/routes';
 import {
 	Box,
 	Button,
@@ -165,7 +166,7 @@ const StockReceiptView: FC<StockReceiptViewProps> = ({ session, company_id, id }
 						<Button
 							variant="outlined"
 							startIcon={<ArrowBackIcon />}
-							onClick={() => router.back()}
+							onClick={() => router.push(`${STOCK_RECEIPTS}?company_id=${company_id}`)}
 							sx={{ width: isMobile ? '100%' : 'auto' }}
 						>
 							Retour aux réceptions

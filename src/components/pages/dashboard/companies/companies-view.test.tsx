@@ -156,7 +156,8 @@ describe('CompaniesViewClient', () => {
 
 		renderWithProviders(<CompaniesViewClient {...defaultProps} />);
 		fireEvent.click(screen.getByText('Liste des entreprises', { selector: 'button' }));
-		expect(mockBack).toHaveBeenCalled();
+		expect(mockPush).toHaveBeenCalledWith('/dashboard/companies');
+		expect(mockBack).not.toHaveBeenCalled();
 	});
 
 	it('shows and navigates with "Modifier" button when not loading and no error', () => {

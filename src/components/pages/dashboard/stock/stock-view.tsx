@@ -49,7 +49,7 @@ import type {
 } from '@/types/stockTypes';
 import { formatDate, formatNumberWithSpaces } from '@/utils/helpers';
 import { useAppSelector } from '@/utils/hooks';
-import { STOCK_ADD, STOCK_MOVEMENT_VIEW } from '@/utils/routes';
+import { STOCK_LIST, STOCK_ADD, STOCK_MOVEMENT_VIEW } from '@/utils/routes';
 import { stockMovementViewOptions } from '@/utils/rawData';
 
 const InfoRow: FC<InfoRowProps> = ({ icon, label, value }) => {
@@ -228,7 +228,7 @@ const StockView: FC<StockViewProps> = ({ session, company_id, id }) => {
 						<Button
 							variant="outlined"
 							startIcon={<ArrowBackIcon />}
-							onClick={() => router.back()}
+							onClick={() => router.push(`${STOCK_LIST}?company_id=${company_id}`)}
 							sx={{ width: isMobile ? '100%' : 'auto' }}
 						>
 							État du stock

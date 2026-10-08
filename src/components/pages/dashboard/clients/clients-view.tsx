@@ -434,7 +434,7 @@ const ClientsViewClient: FC<Props> = ({ session, company_id, id }) => {
 						<Button
 							variant="outlined"
 							startIcon={<ArrowBackIcon />}
-							onClick={() => router.back()}
+							onClick={() => router.push(`${CLIENTS_LIST}?company_id=${company_id}`)}
 							sx={{ width: isMobile ? '100%' : 'auto' }}
 						>
 							{t.clients.backToList}

@@ -196,7 +196,8 @@ describe('BonDeLivraisonViewClient UI and navigation', () => {
 
 		renderWithProviders(<BonDeLivraisonViewClient {...defaultProps} />);
 		fireEvent.click(screen.getByText('Liste des bons de livraison', { selector: 'button' }));
-		expect(mockBack).toHaveBeenCalled();
+		expect(mockPush).toHaveBeenCalledWith('/dashboard/bon-de-livraison?company_id=1');
+		expect(mockBack).not.toHaveBeenCalled();
 	});
 
 	it('shows and navigates with "Modifier" button when role is Caissier', () => {

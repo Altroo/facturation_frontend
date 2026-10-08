@@ -47,6 +47,13 @@ import { getUserCompaniesState } from '@/store/selectors';
 import { useGetArticlesListQuery } from '@/store/services/article';
 import { extractApiErrorMessage, formatDate, formatNumberWithSpaces } from '@/utils/helpers';
 import { isNectarRaisonSociale } from '@/utils/nectar';
+import {
+	DEVIS_LIST,
+	FACTURE_CLIENT_LIST,
+	FACTURE_PRO_FORMA_LIST,
+	FACTURE_AVOIR_LIST,
+	BON_DE_LIVRAISON_LIST,
+} from '@/utils/routes';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import type { ArticleClass } from '@/models/classes';
 import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
@@ -56,8 +63,17 @@ import type {
 	CompanyDocumentsViewProps,
 	CompanyDocumentsWrapperViewInfoRowProps as InfoRowProps,
 	DocumentErrorStateProps,
+	DocumentType,
 	Totals,
 } from '@/types/companyDocumentsTypes';
+
+const documentListRoutes: Record<DocumentType, string> = {
+	devis: DEVIS_LIST,
+	'facture-client': FACTURE_CLIENT_LIST,
+	'facture-pro-forma': FACTURE_PRO_FORMA_LIST,
+	'facture-avoir': FACTURE_AVOIR_LIST,
+	'bon-de-livraison': BON_DE_LIVRAISON_LIST,
+};
 
 const InfoRow: FC<InfoRowProps> = ({ icon, label, value }) => {
 	const theme = useTheme();
@@ -351,6 +367,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 	const token = useInitAccessToken(session);
 	const companies = useAppSelector(getUserCompaniesState);
 	const router = useRouter();
+	const listRoute = `${documentListRoutes[type]}?company_id=${company_id}`;
 	const { t } = useLanguage();
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -743,7 +760,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 						<Button
 							variant="outlined"
 							startIcon={<ArrowBackIcon />}
-							onClick={() => router.back()}
+							onClick={() => router.push(listRoute)}
 							sx={{ width: isMobile ? '100%' : 'auto' }}
 						>
 							{backLabel}
@@ -780,7 +797,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 							helpText={t.common.documentErrorHelp}
 							backLabel={backLabel}
 							retryLabel={t.common.retry}
-							onBack={() => router.back()}
+							onBack={() => router.push(listRoute)}
 							onRetry={() => router.refresh()}
 						/>
 					) : (

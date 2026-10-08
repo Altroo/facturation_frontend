@@ -34,7 +34,7 @@ import type {
 	StockMovementViewProps,
 } from '@/types/stockTypes';
 import { formatDate, formatNumberWithSpaces } from '@/utils/helpers';
-import { STOCK_VIEW } from '@/utils/routes';
+import { STOCK_MOVEMENTS, STOCK_VIEW } from '@/utils/routes';
 
 const InfoRow: FC<InfoRowProps> = ({ icon, label, value }) => {
 	const theme = useTheme();
@@ -97,7 +97,7 @@ const StockMovementView: FC<StockMovementViewProps> = ({ session, company_id, id
 						<Button
 							variant="outlined"
 							startIcon={<ArrowBackIcon />}
-							onClick={() => router.back()}
+							onClick={() => router.push(`${STOCK_MOVEMENTS}?company_id=${company_id}`)}
 							sx={{ width: isMobile ? '100%' : 'auto' }}
 						>
 							Mouvements de stock

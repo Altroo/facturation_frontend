@@ -202,7 +202,8 @@ describe('ProFormaViewClient UI and navigation', () => {
 
 		renderWithProviders(<FactureProFormaViewClient {...defaultProps} />);
 		fireEvent.click(screen.getByText('Liste des factures pro-forma', { selector: 'button' }));
-		expect(mockBack).toHaveBeenCalled();
+		expect(mockPush).toHaveBeenCalledWith('/dashboard/facture-pro-forma?company_id=1');
+		expect(mockBack).not.toHaveBeenCalled();
 	});
 
 	it('shows and navigates with "Modifier" button when role is Admin', () => {

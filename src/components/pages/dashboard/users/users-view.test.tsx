@@ -184,7 +184,8 @@ describe('UsersViewClient navigation and permissions', () => {
 
 		renderWithProviders(<UsersViewClient {...defaultProps} />);
 		fireEvent.click(screen.getByText('Liste des utilisateurs', { selector: 'button' }));
-		expect(mockBack).toHaveBeenCalled();
+		expect(mockPush).toHaveBeenCalledWith('/dashboard/users');
+		expect(mockBack).not.toHaveBeenCalled();
 	});
 
 	it('shows and navigates with "Modifier" button when role is Admin', () => {

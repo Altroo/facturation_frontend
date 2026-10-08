@@ -213,7 +213,8 @@ describe('ReglementViewClient', () => {
 		const backButton = screen.getByText('Liste des règlements', { selector: 'button' });
 		expect(backButton).toBeInTheDocument();
 		fireEvent.click(backButton);
-		expect(mockBack).toHaveBeenCalled();
+		expect(mockPush).toHaveBeenCalledWith('/dashboard/reglements?company_id=1');
+		expect(mockBack).not.toHaveBeenCalled();
 	});
 
 	it('shows "Modifier" button when role is Caissier and statut is Valide', () => {
