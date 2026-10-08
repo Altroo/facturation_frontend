@@ -1,3 +1,5 @@
+export type ChatShortcut = { command: string; title: string; help: string; example: string };
+
 export type NavigationTarget = {
 	application: 'facturation';
 	resource: string;
@@ -107,6 +109,7 @@ export type ChatCapabilities = {
 		can_create: boolean;
 		can_print: boolean;
 		suggestions: string[];
+		shortcuts?: ChatShortcut[];
 	}[];
 	languages: string[];
 };

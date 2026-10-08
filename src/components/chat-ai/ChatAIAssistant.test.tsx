@@ -159,6 +159,7 @@ const capabilities: ChatCapabilities = {
 		can_create: true,
 		can_print: true,
 		suggestions: [],
+		shortcuts: [{ command: '/voir', title: 'Rechercher un document', help: 'Décrivez le client ou le produit.', example: '/voir devis client Atlas' }],
 	})),
 	languages: ['fr', 'en'],
 };
@@ -194,7 +195,7 @@ beforeEach(() => {
 	jest.mocked(useAppDispatch).mockReturnValue(mockDispatch);
 	jest.mocked(chatRequest).mockImplementation(async (path, _token, init) => {
 		if (handlers[path]) return handlers[path](init);
-		if (path === 'capabilities/') return jsonResponse(capabilities);
+		if (path.startsWith('capabilities/')) return jsonResponse(capabilities);
 		if (path === 'conversations/') return jsonResponse({ id: `conversation-${++conversationCount}` });
 		throw new Error(`Unexpected request: ${path}`);
 	});

@@ -133,6 +133,10 @@ const errorText: Record<string, string> = {
 	CONTEXT_EXPIRED: 'Le contexte a expiré ou vos autorisations ont changé. Démarrez une nouvelle conversation.',
 	NOT_AUTHENTICATED: 'Votre session a expiré.',
 	BUSY: 'L’assistant est occupé. Réessayez dans un instant.',
+	INVALID_MODEL_OUTPUT:
+		'Je n’ai pas pu interpréter cette demande. Précisez votre recherche ou utilisez /aide pour choisir un module.',
+	INCOMPLETE_RESPONSE: 'La réponse est incomplète. Vous pouvez réessayer ou utiliser /aide pour choisir un module.',
+	MODEL_TIMEOUT: 'La réponse a pris trop de temps. Réessayez avec une recherche plus précise.',
 	SENSITIVE_INPUT: 'Retirez les mots de passe ou secrets avant d’envoyer ce message.',
 	INVALID_ARGUMENTS: 'Précisez votre demande, le numéro ou la période.',
 	MULTIPLE_MATCHES: 'Plusieurs résultats correspondent. Précisez votre recherche.',
@@ -699,7 +703,12 @@ const ChatAIWorkspace = ({
 						flexShrink: 1,
 					}}
 				>
-					<ChatAIShortcuts draft={draft} permissions={company} choose={setDraft} />
+					<ChatAIShortcuts
+						draft={draft}
+						shortcuts={company.shortcuts || []}
+						language={interfaceLanguage}
+						choose={setDraft}
+					/>
 				</Box>
 			)}
 			<Box className={styles.composer} sx={{ flexShrink: 0 }}>
@@ -740,6 +749,7 @@ const ChatAIWorkspace = ({
 };
 
 export const ChatAIAssistant = () => {
+	const { language } = useLanguage();
 	const token = useAppSelector(getAccessToken);
 	const profile = useAppSelector(getProfilState);
 	const pathname = usePathname();
@@ -772,14 +782,14 @@ export const ChatAIAssistant = () => {
 			return;
 		}
 		const controller = new AbortController();
-		void chatRequest('capabilities/', token, { signal: controller.signal })
+		void chatRequest(`capabilities/?language=${language}`, token, { signal: controller.signal })
 			.then((response) => response.json())
 			.then((value) => {
 				if (!controller.signal.aborted) setCapabilities(value);
 			})
 			.catch(() => {});
 		return () => controller.abort();
-	}, [token, profile.id]);
+	}, [token, profile.id, language]);
 	useEffect(() => {
 		const clear = () => {
 			setCapabilities(null);
