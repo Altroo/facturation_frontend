@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { Portal } from '@mui/material';
 import userEvent from '@testing-library/user-event';
 import NavigationBar from './navigationBar';
 import '@testing-library/jest-dom';
@@ -227,6 +228,51 @@ describe('NavigationBar additional behaviors', () => {
 
 		// after clicking, the articles details should reveal "Liste des articles"
 		expect(screen.getByText('Liste des articles')).toBeInTheDocument();
+	});
+
+	it('does not hide the assistant or lock scrolling when resizing desktop to mobile', async () => {
+		const content = (
+			<Provider store={store}>
+				<NavigationBar title="Dashboard"><div>Content</div></NavigationBar>
+				<Portal><div role="dialog" aria-label="Assistant test">Conversation</div></Portal>
+			</Provider>
+		);
+		const { rerender } = render(content);
+		expect(screen.getByRole('dialog', { name: 'Assistant test' })).toBeVisible();
+		mockIsMobile = true;
+		rerender(<Provider store={store}>
+			<NavigationBar title="Dashboard mobile"><div>Content</div></NavigationBar>
+			<Portal><div role="dialog" aria-label="Assistant test">Conversation</div></Portal>
+		</Provider>);
+		expect(screen.getByRole('dialog', { name: 'Assistant test' })).toBeVisible();
+		expect(document.querySelector('.MuiDrawer-modal')).toBeNull();
+		expect(document.body.style.overflow).not.toBe('hidden');
+		// A deliberately opened native modal must still hide background content,
+		// then restore it after normal close; never bypass ModalManager's guard.
+		await userEvent.click(screen.getByLabelText('Basculer le tiroir de navigation'));
+		expect(screen.queryByRole('dialog', { name: 'Assistant test' })).not.toBeInTheDocument();
+		await userEvent.keyboard('{Escape}');
+		await waitFor(() => expect(screen.getByRole('dialog', { name: 'Assistant test' })).toBeVisible());
+		expect(document.body.style.overflow).not.toBe('hidden');
+	});
+
+	it('does not carry an open mobile drawer across a desktop round trip', async () => {
+		mockIsMobile = true;
+		const view = (title: string) => <Provider store={store}>
+			<NavigationBar title={title}><div>Content</div></NavigationBar>
+			<Portal><div role="dialog" aria-label="Assistant test">Conversation</div></Portal>
+		</Provider>;
+		const { rerender } = render(view('Mobile'));
+		await userEvent.click(screen.getByLabelText('Basculer le tiroir de navigation'));
+		expect(screen.queryByRole('dialog', { name: 'Assistant test' })).not.toBeInTheDocument();
+		mockIsMobile = false;
+		rerender(view('Desktop'));
+		expect(screen.getByRole('dialog', { name: 'Assistant test' })).toBeVisible();
+		mockIsMobile = true;
+		rerender(view('Mobile again'));
+		expect(screen.getByRole('dialog', { name: 'Assistant test' })).toBeVisible();
+		expect(document.querySelector('.MuiDrawer-modal')).toBeNull();
+		expect(document.body.style.overflow).not.toBe('hidden');
 	});
 
 	it('drawer toggle button only appears on mobile, not on desktop', async () => {

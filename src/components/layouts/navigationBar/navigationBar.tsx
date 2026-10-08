@@ -301,7 +301,9 @@ const AppBar = styled(MuiAppBar, {
 const NavigationBar = (props: Props) => {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-	const [open, setOpen] = useState(!isMobile);
+	// Desktop visibility must never open a temporary mobile modal for one render.
+	const [mobileOpen, setMobileOpen] = useState(false);
+	const open = !isMobile || mobileOpen;
 	const { data: session, status } = useSession();
 	const { avatar_cropped, first_name, last_name, gender, is_staff } = useAppSelector(getProfilState);
 	const { t, language, setLanguage } = useLanguage();
@@ -312,7 +314,7 @@ const NavigationBar = (props: Props) => {
 	const [mobileMenuAnchor, setMobileMenuAnchor] = useState<HTMLElement | null>(null);
 
 	useEffect(() => {
-		setOpen(!isMobile);
+		if (!isMobile) setMobileOpen(false);
 	}, [isMobile]);
 
 	// Notification state
@@ -413,7 +415,7 @@ const NavigationBar = (props: Props) => {
 
 	const handleDrawerToggle = () => {
 		if (isMobile) {
-			setOpen(!open);
+			setMobileOpen((current) => !current);
 		}
 	};
 
