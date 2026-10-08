@@ -61,3 +61,29 @@ next-env.d.ts
 .docs/*
 .github
 .github/*
+
+# Runtime credentials stay local; only reviewed templates are versioned.
+.env*
+*.env
+!/.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+/credentials*.json
+/secrets*.json
+
+# Authenticated browser state and raw verification artifacts may contain private data.
+/.auth/
+/playwright/.auth/
+/.playwright-mcp/
+/playwright-report/
+/test-results/
+/browser-reports/
+/browser-artifacts/
+/test-artifacts/
+/screenshots/
+/storage-state*.json
+/storageState*.json
+/auth-state*.json
+*.har
