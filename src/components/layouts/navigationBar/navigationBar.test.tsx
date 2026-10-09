@@ -136,17 +136,17 @@ describe('NavigationBar additional behaviors', () => {
 		mockPathname = new URL(DASHBOARD_CHANGELOG, 'http://localhost').pathname;
 		render(
 			<Provider store={store}>
-				<NavigationBar title="Changelog">
+				<NavigationBar title={translations.fr.navigation.changelog}>
 					<div />
 				</NavigationBar>
 			</Provider>,
 		);
 		const settings = screen.getByRole('button', { name: 'Paramètres' });
-		const link = screen.getByRole('link', { name: 'Changelog' });
+		const link = screen.getByRole('link', { name: translations.fr.navigation.changelog });
 		expect(settings.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 		expect(link).toHaveAttribute('aria-current', 'page');
 		expect(link.getAttribute('href')).toContain('/dashboard/changelog');
-		expect(screen.queryByRole('button', { name: 'Changelog' })).not.toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: translations.fr.navigation.changelog })).not.toBeInTheDocument();
 		expect(settings).toHaveAttribute('aria-expanded', 'false');
 	});
 

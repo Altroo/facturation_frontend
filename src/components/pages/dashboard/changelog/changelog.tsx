@@ -1,4 +1,5 @@
 'use client';
+import { useEffect } from 'react';
 import Styles from '@/styles/dashboard/changelog/changelog.module.sass';
 
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
@@ -9,6 +10,9 @@ import { getAccessToken } from '@/store/selectors';
 
 const Changelog = () => {
 	const { t, language } = useLanguage();
+	useEffect(() => {
+		document.title = t.navigation.changelog;
+	}, [t.navigation.changelog]);
 	const accessToken = useAppSelector(getAccessToken);
 	const {
 		data,

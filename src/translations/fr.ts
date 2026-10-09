@@ -118,7 +118,7 @@ export const fr: TranslationDictionary = {
 		refreshPage: 'Actualiser la page',
 	},
 	navigation: {
-		changelog: 'Changelog',
+		changelog: 'Nouveautés',
 		dashboard: 'Tableau de bord',
 		viewDashboard: 'Consulter le tableau de bord',
 		articles: 'Articles',
