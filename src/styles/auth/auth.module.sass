@@ -13,6 +13,13 @@
   justify-content: center
   align-items: center
 
+  // Keep browser-filled credentials on the auth surface, including MUI dark autofill.
+  :global(input:-webkit-autofill)
+    -webkit-box-shadow: 0 0 0 1000px var(--app-bg) inset !important
+    box-shadow: 0 0 0 1000px var(--app-bg) inset !important
+    -webkit-text-fill-color: var(--app-text) !important
+    caret-color: var(--app-text)
+
   // fluid variant - full width from start (set-password-complete only)
   &--fluid
     width: 100%
