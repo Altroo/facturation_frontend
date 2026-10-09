@@ -33,7 +33,14 @@ const DashboardStatCard: FC<DashboardStatCardProps> = ({
 	>
 		<CardContent sx={{ pl: 2.5 }}>
 			<Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', mb: 1 }}>
-				<Box sx={{ color, display: 'flex' }}>{icon}</Box>
+				<Box
+					sx={(theme) => ({
+						color: theme.palette.mode === 'dark' ? 'color-mix(in srgb, ' + color + ' 65%, white)' : color,
+						display: 'flex',
+					})}
+				>
+					{icon}
+				</Box>
 				<Typography
 					variant="caption"
 					sx={{

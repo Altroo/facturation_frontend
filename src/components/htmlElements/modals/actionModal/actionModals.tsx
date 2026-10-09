@@ -1,3 +1,6 @@
+'use client';
+
+import { useColorMode } from '@/providers/themeProvider';
 import { type FC } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Stack, Avatar } from '@mui/material';
 import type { ActionModalsProps as Props } from '@/types/uiTypes';
@@ -14,6 +17,7 @@ const ActionModals: FC<Props> = ({
 	maxWidth,
 	fullWidth,
 }) => {
+	const { mode } = useColorMode();
 	const handleClose = () => {
 		if (onClose) {
 			onClose();
@@ -58,9 +62,15 @@ const ActionModals: FC<Props> = ({
 			</DialogContent>
 			<DialogActions className={actionsStyle?.join(' ') ?? undefined} sx={{ padding: 2 }}>
 				{actions.map((action, index) => {
-					const bg = action.active ? (action.color ?? '#0D070B') : '#FFFFFF';
-					const textColor = action.active ? '#FFFFFF' : (action.color ?? '#0D070B');
-					const hoverBg = action.active ? (action.color ?? '#0D070B') : '#F5F5F5';
+					const solid = action.color ?? 'var(--app-solid, #0D070B)';
+					const bg = action.active ? solid : 'var(--app-surface, #FFFFFF)';
+					const outlineColor = action.color
+						? mode === 'dark'
+							? 'color-mix(in srgb, ' + action.color + ' 65%, white)'
+							: action.color
+						: 'var(--app-text, #0D070B)';
+					const textColor = action.active ? (action.color ? '#FFFFFF' : 'var(--app-on-solid, #FFFFFF)') : outlineColor;
+					const hoverBg = action.active ? solid : 'var(--app-button-hover-bg, #F5F5F5)';
 
 					return (
 						<Button
@@ -73,14 +83,14 @@ const ActionModals: FC<Props> = ({
 							sx={{
 								backgroundColor: bg,
 								color: textColor,
-								borderColor: action.active ? (action.color ?? '#0D070B') : undefined,
+								borderColor: action.active ? solid : undefined,
 								textTransform: 'none',
 								'&:hover': {
 									backgroundColor: hoverBg,
 								},
 								// ensure good contrast for outlined state
 								'&.MuiButton-outlined': {
-									borderColor: action.color ?? '#0D070B',
+									borderColor: outlineColor,
 								},
 							}}
 						>

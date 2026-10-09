@@ -1,5 +1,6 @@
 import { type FC } from 'react';
-import { ThemeProvider, Button } from '@mui/material';
+import { Button } from '@mui/material';
+import { ThemeProvider } from '@/providers/scopedThemeProvider';
 import Styles from './primaryLoadingButton.module.sass';
 import { getDefaultTheme } from '@/utils/themes';
 import type { PrimaryLoadingButtonProps as Props } from '@/types/uiTypes';

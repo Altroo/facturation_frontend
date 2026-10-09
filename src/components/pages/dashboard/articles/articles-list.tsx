@@ -428,7 +428,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 									width: 40,
 									height: 40,
 									borderRadius: 1,
-									backgroundColor: '#E0E0E0',
+									backgroundColor: 'var(--app-hover, #E0E0E0)',
 									display: 'flex',
 									alignItems: 'center',
 									justifyContent: 'center',

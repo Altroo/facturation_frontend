@@ -323,7 +323,7 @@ const ReviewContent = ({ companyId, session }: SessionProps & { companyId: numbe
 								<ButtonBase
 									onClick={() => setScreenshot(shot)}
 									aria-label={`Agrandir ${shot.file}`}
-									sx={{ display: 'block', width: '100%', bgcolor: '#f8fafc' }}
+									sx={{ display: 'block', width: '100%', bgcolor: 'var(--app-inset, #f8fafc)' }}
 								>
 									<Image
 										src={`/logistique-review/${encodeURIComponent(shot.file)}`}

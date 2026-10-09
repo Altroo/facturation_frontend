@@ -1,7 +1,7 @@
 'use client';
 
 import { Box, Button, CircularProgress, Stack, Typography } from '@mui/material';
-import { Bar } from 'react-chartjs-2';
+import { Bar } from '@/components/shared/themedCharts/themedCharts';
 import { useGetReceivablesByClientQuery, useGetUninvoicedDeliveriesQuery } from '@/store/services/dashboard';
 import type { ChartProps } from '@/types/dashboardTypes';
 import { useLanguage } from '@/utils/hooks';

@@ -732,7 +732,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 
 											{isEditMode && (
 												<>
-													<Card elevation={3} sx={{ borderRadius: 2, bgcolor: 'primary.50' }}>
+													<Card elevation={3} sx={{ borderRadius: 2, bgcolor: 'var(--app-info-bg, #E3F2FD)' }}>
 														<CardContent sx={{ p: 3 }}>
 															<Box
 																sx={{

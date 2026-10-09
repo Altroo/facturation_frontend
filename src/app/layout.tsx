@@ -15,6 +15,8 @@ import SessionExpiredListener from '@/components/shared/sessionExpiredListener/s
 import Maintenance from '@/components/shared/maintenance/Maintenance';
 import { LanguageContextProvider } from '@/contexts/languageContext';
 import { cookies } from 'next/headers';
+import { AuthThemeToggle } from '@/components/shared/themeToggle/themeToggle';
+import { resolveColorMode } from '@/utils/colorMode';
 
 export const metadata: Metadata = {
 	title: 'E.B.H - Facturation',
@@ -68,8 +70,9 @@ export const viewport: Viewport = {
 const RootLayout: FC<EntryPointProps> = async (props) => {
 	const cookieStore = await cookies();
 	const lang = cookieStore.get('app-language')?.value === 'en' ? 'en' : 'fr';
+	const theme = resolveColorMode(cookieStore.get('app-theme')?.value);
 	return (
-		<html lang={lang} data-scroll-behavior="smooth">
+		<html lang={lang} data-theme={theme} data-scroll-behavior="smooth">
 			<body>
 				<a href="#main-content" className="skip-to-content">
 					Aller au contenu principal
@@ -79,8 +82,9 @@ const RootLayout: FC<EntryPointProps> = async (props) => {
 						<InitContextProvider>
 							<InitEffects />
 							<AppRouterCacheProvider>
-								<ThemeProvider>
+								<ThemeProvider initialTheme={theme}>
 									<LanguageContextProvider initialLanguage={lang}>
+										<AuthThemeToggle />
 										<ErrorBoundary>
 											<ToastContextProvider>
 												<SessionExpiredListener />

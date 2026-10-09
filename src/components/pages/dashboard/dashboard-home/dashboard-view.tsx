@@ -34,7 +34,7 @@ import {
 	Title,
 	Tooltip,
 } from 'chart.js';
-import { Bar, Doughnut, Line } from 'react-chartjs-2';
+import { Bar, Doughnut, Line } from '@/components/shared/themedCharts/themedCharts';
 import {
 	useGetClientMultidimensionalProfileQuery,
 	useGetCollectionRateQuery,
@@ -174,10 +174,10 @@ const EmptyChart: FC<EmptyChartProps> = ({ message }) => {
 				justifyContent: 'center',
 				alignItems: 'center',
 				height: '100%',
-				backgroundColor: 'grey.50',
+				backgroundColor: 'var(--app-inset, #fafafa)',
 				borderRadius: 2,
 				border: '1px dashed',
-				borderColor: 'grey.300',
+				borderColor: 'var(--app-strong-border, #e0e0e0)',
 			}}
 		>
 			<Typography

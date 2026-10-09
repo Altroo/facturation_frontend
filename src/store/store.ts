@@ -29,6 +29,7 @@ import { logistiqueApi } from '@/store/services/logistique';
 import { dashboardApi } from '@/store/services/dashboard';
 import { notificationApi } from '@/store/services/notification';
 import { aiAssistantApi } from '@/store/services/aiAssistant';
+import { changelogApi } from '@/store/services/changelog';
 import { stockApi } from '@/store/services/stock';
 import notificationReducer from '@/store/slices/notificationSlice';
 
@@ -63,6 +64,7 @@ const rootReducer = combineReducers({
 	[notificationApi.reducerPath]: notificationApi.reducer,
 	[stockApi.reducerPath]: stockApi.reducer,
 	[aiAssistantApi.reducerPath]: aiAssistantApi.reducer,
+	[changelogApi.reducerPath]: changelogApi.reducer,
 });
 
 export interface SagaStore extends Store {
@@ -115,6 +117,7 @@ export const makeStore = (): SagaStore => {
 					notificationApi.middleware,
 					stockApi.middleware,
 					aiAssistantApi.middleware,
+					changelogApi.middleware,
 				),
 		devTools: process.env.NODE_ENV !== 'production',
 	}) as SagaStore;

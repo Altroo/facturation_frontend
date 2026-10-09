@@ -24,7 +24,7 @@ const NoPermission = () => {
 					width: '100%',
 					textAlign: 'center',
 					borderRadius: 3,
-					background: 'linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%)',
+					background: 'var(--app-empty-bg)',
 				}}
 			>
 				{/* Icon container */}

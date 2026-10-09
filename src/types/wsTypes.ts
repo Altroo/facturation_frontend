@@ -1,4 +1,9 @@
-import { WSMaintenanceAction, WSNotificationAction, WSUserAvatarAction, WSReconnectedAction } from '@/store/actions/wsActions';
+import {
+	WSMaintenanceAction,
+	WSNotificationAction,
+	WSUserAvatarAction,
+	WSReconnectedAction,
+} from '@/store/actions/wsActions';
 
 export type WSAction =
 	| ReturnType<typeof WSUserAvatarAction>
@@ -11,6 +16,7 @@ type WSMessage = {
 	pk?: number;
 	avatar?: string;
 	maintenance?: boolean;
+	version?: string;
 	id?: number;
 	title?: string;
 	message?: string;
@@ -28,4 +34,5 @@ export type WSEnvelope = {
 
 export interface WSMaintenanceBootstrap {
 	maintenance: boolean;
+	version?: string;
 }

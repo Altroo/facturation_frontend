@@ -2,7 +2,7 @@
 
 import { type Key, type HTMLAttributes, type FC } from 'react';
 import TextField from '@mui/material/TextField';
-import { ThemeProvider } from '@mui/material/styles';
+import { ThemeProvider } from '@/providers/scopedThemeProvider';
 import type { DropDownType } from '@/types/accountTypes';
 import { Autocomplete, InputAdornment, Box, Typography } from '@mui/material';
 import { useLanguage } from '@/utils/hooks';

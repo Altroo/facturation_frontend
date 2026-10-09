@@ -1,7 +1,8 @@
 'use client';
 
 import Styles from './primaryAnchorButton.module.sass';
-import { ThemeProvider, Button } from '@mui/material';
+import { Button } from '@mui/material';
+import { ThemeProvider } from '@/providers/scopedThemeProvider';
 import Link from 'next/link';
 import { getDefaultTheme } from '@/utils/themes';
 import type { PrimaryAnchorButtonProps as Props } from '@/types/uiTypes';

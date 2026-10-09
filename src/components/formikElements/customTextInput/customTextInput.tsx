@@ -3,7 +3,8 @@
 import { type ChangeEvent } from 'react';
 import AiAssistantControl from '@/components/shared/aiAssistantControl/aiAssistantControl';
 import { isAiTextField } from '@/utils/aiTextFields';
-import { Box, InputAdornment, ThemeProvider } from '@mui/material';
+import { Box, InputAdornment } from '@mui/material';
+import { ThemeProvider } from '@/providers/scopedThemeProvider';
 import TextField from '@mui/material/TextField';
 import type { CustomTextInputProps as Props } from '@/types/uiTypes';
 

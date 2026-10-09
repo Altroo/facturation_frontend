@@ -1,16 +1,8 @@
 import { type FC } from 'react';
 import Styles from './customDropDownSelect.module.sass';
 import Select from '@mui/material/Select';
-import {
-	ThemeProvider,
-	MenuItem,
-	FormControl,
-	InputLabel,
-	OutlinedInput,
-	Stack,
-	FormHelperText,
-	InputAdornment,
-} from '@mui/material';
+import { MenuItem, FormControl, InputLabel, OutlinedInput, Stack, FormHelperText, InputAdornment } from '@mui/material';
+import { ThemeProvider } from '@/providers/scopedThemeProvider';
 import { CheckCircle as CheckCircleIcon } from '@mui/icons-material';
 import type { CustomDropDownSelectProps as Props } from '@/types/uiTypes';
 

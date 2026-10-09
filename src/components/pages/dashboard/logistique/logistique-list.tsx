@@ -538,7 +538,7 @@ const FormikContent: FC<FormikContentProps> = ({ session, company_id, role }) =>
 													borderRadius: '50%',
 													display: 'grid',
 													placeItems: 'center',
-													bgcolor: index === 0 ? 'primary.main' : 'grey.100',
+													bgcolor: index === 0 ? 'primary.main' : 'var(--app-inset-hover, #f5f5f5)',
 													color: index === 0 ? 'primary.contrastText' : 'text.primary',
 													fontWeight: 800,
 													flexShrink: 0,
@@ -575,7 +575,14 @@ const FormikContent: FC<FormikContentProps> = ({ session, company_id, role }) =>
 														{formatMoney(supplier.cout_total)} · {costPercent}% {t.logistique.supplierKpiRelativeToMax}
 													</Typography>
 												</Box>
-												<Box sx={{ height: 9, borderRadius: 999, bgcolor: 'grey.100', overflow: 'hidden' }}>
+												<Box
+													sx={{
+														height: 9,
+														borderRadius: 999,
+														bgcolor: 'var(--app-inset-hover, #f5f5f5)',
+														overflow: 'hidden',
+													}}
+												>
 													<Box
 														sx={{
 															width: `${costPercent}%`,
@@ -606,7 +613,14 @@ const FormikContent: FC<FormikContentProps> = ({ session, company_id, role }) =>
 														{supplier.total_commandes} · {orderPercent}% {t.logistique.supplierKpiRelativeToMax}
 													</Typography>
 												</Box>
-												<Box sx={{ height: 9, borderRadius: 999, bgcolor: 'grey.100', overflow: 'hidden' }}>
+												<Box
+													sx={{
+														height: 9,
+														borderRadius: 999,
+														bgcolor: 'var(--app-inset-hover, #f5f5f5)',
+														overflow: 'hidden',
+													}}
+												>
 													<Box
 														sx={{
 															width: `${orderPercent}%`,

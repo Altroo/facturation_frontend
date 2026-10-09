@@ -7,6 +7,13 @@ import { Provider } from 'react-redux';
 import { store } from '@/store/store';
 import { type ReactNode } from 'react';
 import { translations } from '@/translations';
+import { DASHBOARD_CHANGELOG } from '@/utils/routes';
+
+jest.mock('@/utils/routes', () => ({
+	...jest.requireActual('@/utils/routes'),
+	SITE_ROOT: 'http://localhost/',
+	DASHBOARD_CHANGELOG: 'http://localhost/dashboard/changelog',
+}));
 
 jest.mock('@/utils/clientHelpers', () => ({
 	Desktop: ({ children }: { children?: ReactNode }) => <>{children}</>,
@@ -124,6 +131,25 @@ describe('NavigationBar additional behaviors', () => {
 		mockIsMobile = false;
 	});
 
+	it.each([false, true])('links directly to Changelog after Settings for staff=%s', (isStaff) => {
+		mockProfile.is_staff = isStaff;
+		mockPathname = new URL(DASHBOARD_CHANGELOG, 'http://localhost').pathname;
+		render(
+			<Provider store={store}>
+				<NavigationBar title="Changelog">
+					<div />
+				</NavigationBar>
+			</Provider>,
+		);
+		const settings = screen.getByRole('button', { name: 'Paramètres' });
+		const link = screen.getByRole('link', { name: 'Changelog' });
+		expect(settings.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+		expect(link).toHaveAttribute('aria-current', 'page');
+		expect(link.getAttribute('href')).toContain('/dashboard/changelog');
+		expect(screen.queryByRole('button', { name: 'Changelog' })).not.toBeInTheDocument();
+		expect(settings).toHaveAttribute('aria-expanded', 'false');
+	});
+
 	it('calls cookiesDeleter and signOut when logout clicked', async () => {
 		render(
 			<Provider store={store}>
@@ -233,17 +259,31 @@ describe('NavigationBar additional behaviors', () => {
 	it('does not hide the assistant or lock scrolling when resizing desktop to mobile', async () => {
 		const content = (
 			<Provider store={store}>
-				<NavigationBar title="Dashboard"><div>Content</div></NavigationBar>
-				<Portal><div role="dialog" aria-label="Assistant test">Conversation</div></Portal>
+				<NavigationBar title="Dashboard">
+					<div>Content</div>
+				</NavigationBar>
+				<Portal>
+					<div role="dialog" aria-label="Assistant test">
+						Conversation
+					</div>
+				</Portal>
 			</Provider>
 		);
 		const { rerender } = render(content);
 		expect(screen.getByRole('dialog', { name: 'Assistant test' })).toBeVisible();
 		mockIsMobile = true;
-		rerender(<Provider store={store}>
-			<NavigationBar title="Dashboard mobile"><div>Content</div></NavigationBar>
-			<Portal><div role="dialog" aria-label="Assistant test">Conversation</div></Portal>
-		</Provider>);
+		rerender(
+			<Provider store={store}>
+				<NavigationBar title="Dashboard mobile">
+					<div>Content</div>
+				</NavigationBar>
+				<Portal>
+					<div role="dialog" aria-label="Assistant test">
+						Conversation
+					</div>
+				</Portal>
+			</Provider>,
+		);
 		expect(screen.getByRole('dialog', { name: 'Assistant test' })).toBeVisible();
 		expect(document.querySelector('.MuiDrawer-modal')).toBeNull();
 		expect(document.body.style.overflow).not.toBe('hidden');
@@ -258,10 +298,18 @@ describe('NavigationBar additional behaviors', () => {
 
 	it('does not carry an open mobile drawer across a desktop round trip', async () => {
 		mockIsMobile = true;
-		const view = (title: string) => <Provider store={store}>
-			<NavigationBar title={title}><div>Content</div></NavigationBar>
-			<Portal><div role="dialog" aria-label="Assistant test">Conversation</div></Portal>
-		</Provider>;
+		const view = (title: string) => (
+			<Provider store={store}>
+				<NavigationBar title={title}>
+					<div>Content</div>
+				</NavigationBar>
+				<Portal>
+					<div role="dialog" aria-label="Assistant test">
+						Conversation
+					</div>
+				</Portal>
+			</Provider>
+		);
 		const { rerender } = render(view('Mobile'));
 		await userEvent.click(screen.getByLabelText('Basculer le tiroir de navigation'));
 		expect(screen.queryByRole('dialog', { name: 'Assistant test' })).not.toBeInTheDocument();
@@ -424,7 +472,7 @@ describe('NavigationBar additional behaviors', () => {
 			</Provider>,
 		);
 
-		await user.click(screen.getAllByRole('button')[0]);
+		await user.click(screen.getByRole('button', { name: /notifications/i }));
 		expect(mockFetchNotifications).toHaveBeenCalledWith({ page: 1 }, false);
 		await screen.findByRole('button', { name: /facture pro-forma P001\/26/i });
 

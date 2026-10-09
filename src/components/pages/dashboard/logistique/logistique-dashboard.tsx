@@ -27,7 +27,7 @@ import {
 	Tooltip as ChartTooltip,
 	type ChartOptions,
 } from 'chart.js';
-import { Bar, Doughnut, Line } from 'react-chartjs-2';
+import { Bar, Doughnut, Line } from '@/components/shared/themedCharts/themedCharts';
 import {
 	AssignmentTurnedIn as AssignmentTurnedInIcon,
 	BarChart as BarChartIcon,
@@ -203,9 +203,9 @@ const EmptyChart: FC<{ message?: string }> = ({ message }) => {
 				justifyContent: 'center',
 				alignItems: 'center',
 				border: '1px dashed',
-				borderColor: 'grey.300',
+				borderColor: 'var(--app-strong-border, #e0e0e0)',
 				borderRadius: 2,
-				bgcolor: 'grey.50',
+				bgcolor: 'var(--app-inset, #fafafa)',
 				px: 2,
 				textAlign: 'center',
 				gap: 1,

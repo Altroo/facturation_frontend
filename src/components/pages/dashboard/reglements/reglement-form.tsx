@@ -370,7 +370,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 						<Stack spacing={3}>
 							{/* Financial info card for edit mode */}
 							{isEditMode && montantFacture !== null && (
-								<Card elevation={2} sx={{ borderRadius: 2, bgcolor: 'grey.50' }}>
+								<Card elevation={2} sx={{ borderRadius: 2, bgcolor: 'var(--app-inset, #fafafa)' }}>
 									<CardContent sx={{ p: 3 }}>
 										<Stack
 											direction="row"

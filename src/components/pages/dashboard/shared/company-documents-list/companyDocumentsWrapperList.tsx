@@ -133,7 +133,7 @@ const CompanyDocumentsListContent: FC<CompanyDocumentsListProps> = ({
 								p: 6,
 								textAlign: 'center',
 								borderRadius: 3,
-								background: 'linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%)',
+								background: 'var(--app-empty-bg)',
 							}}
 						>
 							<Box
@@ -148,7 +148,7 @@ const CompanyDocumentsListContent: FC<CompanyDocumentsListProps> = ({
 									margin: '0 auto 24px',
 								}}
 							>
-								<BusinessIcon sx={{ fontSize: 48, color: '#0D070B', opacity: 0.6 }} />
+								<BusinessIcon sx={{ fontSize: 48, color: 'var(--app-text, #0D070B)', opacity: 0.6 }} />
 							</Box>
 							<Typography
 								variant="h5"

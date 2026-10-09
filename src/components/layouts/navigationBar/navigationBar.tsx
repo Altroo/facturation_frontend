@@ -2,7 +2,9 @@
 
 import { runWithCleanup } from '@/utils/runWithCleanup';
 import { useEffect, useRef, useState, type MouseEvent, type SyntheticEvent } from 'react';
-import { styled, ThemeProvider } from '@mui/material/styles';
+import ThemeToggle from '@/components/shared/themeToggle/themeToggle';
+import { styled } from '@mui/material/styles';
+import { ThemeProvider } from '@/providers/scopedThemeProvider';
 import MuiAppBar from '@mui/material/AppBar';
 import {
 	Badge,
@@ -49,6 +51,7 @@ import {
 	Payment as PaymentIcon,
 	Domain as DomainIcon,
 	Settings as SettingsIcon,
+	History as HistoryIcon,
 	Notifications as NotificationsIcon,
 	DoneAll as DoneAllIcon,
 	CreditScoreOutlined as CreditScoreOutlinedIcon,
@@ -70,6 +73,7 @@ import {
 	COMPANIES_ADD,
 	COMPANIES_LIST,
 	DASHBOARD,
+	DASHBOARD_CHANGELOG,
 	DASHBOARD_EDIT_PROFILE,
 	DASHBOARD_NOTIFICATIONS,
 	DASHBOARD_PASSWORD,
@@ -426,6 +430,7 @@ const NavigationBar = (props: Props) => {
 
 	// Derive default expanded panel from pathname + navigationMenu
 	const defaultExpanded: string | false = (() => {
+		if (pathname === DASHBOARD_CHANGELOG.replace(/^https?:\/\/[^/]+/, '')) return false;
 		const exactMatch = Object.entries(navigationMenu).find(([, section]) =>
 			section.items.some((item) => {
 				const normalizedPath = item.path.replace(/^https?:\/\/[^/]+/, '');
@@ -539,10 +544,11 @@ const NavigationBar = (props: Props) => {
 									flexShrink: 0,
 								}}
 							>
+								<ThemeToggle />
 								{!loading && session && (
 									<>
 										<Desktop>
-											<IconButton color="inherit" onClick={handleNotifOpen}>
+											<IconButton color="inherit" aria-label={t.navigation.notifications} onClick={handleNotifOpen}>
 												<Badge badgeContent={unreadCount} color="primary" max={99}>
 													<NotificationsIcon />
 												</Badge>
@@ -766,9 +772,10 @@ const NavigationBar = (props: Props) => {
 														sx={{
 															pl: open ? 9 : 2,
 															minHeight: 48,
-															backgroundColor: normalizePath(item.path) === pathname ? '#F0F0F0' : 'transparent',
+															backgroundColor:
+																normalizePath(item.path) === pathname ? 'var(--app-selected, #F0F0F0)' : 'transparent',
 															'&.Mui-selected': {
-																backgroundColor: '#E0E0E0',
+																backgroundColor: 'var(--app-hover, #E0E0E0)',
 																fontWeight: 600,
 															},
 														}}
@@ -782,6 +789,23 @@ const NavigationBar = (props: Props) => {
 								</Accordion>
 							</Box>
 						))}
+						<ListItem disablePadding>
+							<ListItemButton
+								component={Link}
+								href={DASHBOARD_CHANGELOG}
+								selected={normalizePath(DASHBOARD_CHANGELOG) === pathname}
+								aria-current={normalizePath(DASHBOARD_CHANGELOG) === pathname ? 'page' : undefined}
+								onClick={() => {
+									if (isMobile) setMobileOpen(false);
+								}}
+								sx={{ minHeight: 48, px: 2.5 }}
+							>
+								<ListItemIcon sx={{ minWidth: 0, mr: 3, justifyContent: 'center' }}>
+									<HistoryIcon />
+								</ListItemIcon>
+								<ListItemText primary={t.navigation.changelog} />
+							</ListItemButton>
+						</ListItem>
 					</List>
 				</Drawer>
 				<Main open={open}>{props.children}</Main>

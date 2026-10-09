@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Autocomplete, Box, Chip, TextField, Typography } from '@mui/material';
-import { ThemeProvider } from '@mui/material/styles';
+import { ThemeProvider } from '@/providers/scopedThemeProvider';
 import { chipSelectFilterTheme } from '@/utils/themes';
 import { useLanguage } from '@/utils/hooks';
 import type { ChipSelectFilterProps } from '@/types/uiTypes';

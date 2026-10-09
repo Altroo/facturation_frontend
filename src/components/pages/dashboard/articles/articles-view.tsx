@@ -276,7 +276,7 @@ const ArticlesViewClient: FC<Props> = ({ session, company_id, id }) => {
 													width: isMobile ? 200 : 300,
 													height: isMobile ? 200 : 300,
 													borderRadius: 2,
-													backgroundColor: '#E0E0E0',
+													backgroundColor: 'var(--app-hover, #E0E0E0)',
 													display: 'flex',
 													alignItems: 'center',
 													justifyContent: 'center',

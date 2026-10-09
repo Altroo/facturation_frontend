@@ -1,6 +1,7 @@
 import { type FC } from 'react';
 import Styles from './primaryButton.module.sass';
-import { ThemeProvider, Button } from '@mui/material';
+import { Button } from '@mui/material';
+import { ThemeProvider } from '@/providers/scopedThemeProvider';
 import { getDefaultTheme } from '@/utils/themes';
 import type { PrimaryButtonProps as Props } from '@/types/uiTypes';
 

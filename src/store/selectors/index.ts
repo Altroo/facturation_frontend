@@ -4,6 +4,8 @@ import type { CompaniesUserCompaniesType } from '@/types/companyTypes';
 import type { InitStateToken } from '@/types/_initTypes';
 
 // _Init
+export const getAppVersions = (state: RootState) => state.ws;
+
 export const getInitStateToken = (state: RootState): InitStateToken => state._init.initStateToken;
 export const getAccessToken = (state: RootState): string => state._init.initStateToken.access;
 

@@ -1,5 +1,6 @@
 import { type Ref, type FC, type SyntheticEvent } from 'react';
-import { Slide, Snackbar, Stack, ThemeProvider } from '@mui/material';
+import { Slide, Snackbar, Stack } from '@mui/material';
+import { ThemeProvider } from '@/providers/scopedThemeProvider';
 import type { SlideProps } from '@mui/material/Slide';
 import Styles from './customToast.module.sass';
 import MuiAlert, { AlertProps } from '@mui/material/Alert';

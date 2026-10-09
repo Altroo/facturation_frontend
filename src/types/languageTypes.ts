@@ -7,6 +7,23 @@ export type LanguageContextType = {
 };
 
 export type TranslationDictionary = {
+	changelog: {
+		description: string;
+		loading: string;
+		error: string;
+		empty: string;
+	};
+
+	appUpdate: {
+		title: string;
+		body: string;
+		later: string;
+		update: string;
+		updating: string;
+		version: string;
+		error: string;
+	};
+
 	aiAssistant: {
 		translate: string;
 		fixGrammar: string;
@@ -108,6 +125,7 @@ export type TranslationDictionary = {
 		refreshPage: string;
 	};
 	navigation: {
+		changelog: string;
 		dashboard: string;
 		viewDashboard: string;
 		articles: string;

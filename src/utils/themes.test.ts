@@ -193,13 +193,13 @@ describe('textInputTheme', () => {
 		const theme = textInputTheme();
 		const inputRoot = theme.components?.MuiInputBase?.styleOverrides?.root as InputBaseRoot & FieldsetStyles;
 		expect(inputRoot['& fieldset'].borderRadius).toBe('16px');
-		expect(inputRoot['& fieldset'].border).toBe('1px solid #A3A3AD');
+		expect(inputRoot['& fieldset'].border).toBe('1px solid var(--app-input-border, #A3A3AD)');
 	});
 
 	it('should use blue caret color', () => {
 		const theme = textInputTheme();
 		const inputBase = theme.components?.MuiInputBase?.styleOverrides?.input as InputBaseInput & InputStyles;
-		expect(inputBase.caretColor).toBe('#0274d7');
+		expect(inputBase.caretColor).toBe('var(--app-accent, #0274d7)');
 	});
 
 	it('should have Poppins font with correct size', () => {
@@ -212,7 +212,7 @@ describe('textInputTheme', () => {
 	it('should have focused label color', () => {
 		const theme = textInputTheme();
 		const formControl = theme.components?.MuiFormControl?.styleOverrides?.root as FormControlRoot & FormLabelStyles;
-		expect(formControl['& .MuiFormLabel-root.Mui-focused'].color).toBe('#0274d7');
+		expect(formControl['& .MuiFormLabel-root.Mui-focused'].color).toBe('var(--app-accent, #0274d7)');
 	});
 });
 
@@ -234,13 +234,13 @@ describe('navigationBarTheme', () => {
 	it('should have white background', () => {
 		const theme = navigationBarTheme();
 		const appBar = theme.components?.MuiAppBar?.styleOverrides?.root as AppBarRoot & AppBarStyles;
-		expect(appBar.backgroundColor).toBe('white');
+		expect(appBar.backgroundColor).toBe('var(--app-surface, #FFFFFF)');
 	});
 
 	it('should have dark text color', () => {
 		const theme = navigationBarTheme();
 		const appBar = theme.components?.MuiAppBar?.styleOverrides?.root as AppBarRoot & AppBarStyles;
-		expect(appBar.color).toBe('#0D070B');
+		expect(appBar.color).toBe('var(--app-text, #0D070B)');
 	});
 
 	it('should have box shadow', () => {
@@ -269,7 +269,7 @@ describe('codeTextInputTheme', () => {
 	it('should use default border color when no error', () => {
 		const theme = codeTextInputTheme(false);
 		const inputRoot = theme.components?.MuiInputBase?.styleOverrides?.root as InputBaseRoot & FieldsetStyles;
-		expect(inputRoot['& fieldset'].borderBottom).toBe('2px solid #D9D9DD');
+		expect(inputRoot['& fieldset'].borderBottom).toBe('2px solid var(--app-border, #D9D9DD)');
 	});
 
 	it('should use error border color when error is true', () => {
@@ -314,7 +314,7 @@ describe('customToastTheme', () => {
 	it('should have white background', () => {
 		const theme = customToastTheme();
 		const snackbar = theme.components?.MuiSnackbar?.styleOverrides?.root as SnackbarRoot & SnackbarStyles;
-		expect(snackbar.backgroundColor).toBe('white');
+		expect(snackbar.backgroundColor).toBe('var(--app-surface, #FFFFFF)');
 	});
 
 	it('should have rounded corners', () => {
@@ -360,7 +360,7 @@ describe('customDropdownTheme', () => {
 	it('should have blue border on paper', () => {
 		const theme = customDropdownTheme();
 		const paper = theme.components?.MuiPaper?.styleOverrides?.root as PaperRoot & PaperStyles;
-		expect(paper.border).toBe('1px solid #0274d7');
+		expect(paper.border).toBe('1px solid var(--app-accent, #0274d7)');
 	});
 
 	it('should have rounded bottom corners on paper', () => {
@@ -393,7 +393,7 @@ describe('customGridDropdownTheme', () => {
 	it('should have blue border on paper', () => {
 		const theme = customGridDropdownTheme();
 		const paper = theme.components?.MuiPaper?.styleOverrides?.root as PaperRoot & PaperStyles;
-		expect(paper.border).toBe('1px solid #0274d7');
+		expect(paper.border).toBe('1px solid var(--app-accent, #0274d7)');
 	});
 
 	it('should have rounded bottom corners', () => {
@@ -445,7 +445,7 @@ describe('Theme consistency', () => {
 	});
 
 	it('input themes should use consistent blue color', () => {
-		const blueColor = '#0274d7';
+		const blueColor = 'var(--app-accent, #0274d7)';
 		const themes = [textInputTheme(), gridInputTheme(), customDropdownTheme(), customGridDropdownTheme()];
 
 		themes.forEach((theme) => {

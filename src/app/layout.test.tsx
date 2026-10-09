@@ -91,6 +91,10 @@ jest.mock('next/headers', () => ({
 	})),
 }));
 
+jest.mock('@/components/shared/themeToggle/themeToggle', () => ({
+	AuthThemeToggle: () => null,
+}));
+
 beforeEach(() => {
 	jest.resetModules();
 	jest.clearAllMocks();

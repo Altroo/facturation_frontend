@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { ThemeProvider, TextField, InputAdornment, IconButton } from '@mui/material';
+import { TextField, InputAdornment, IconButton } from '@mui/material';
+import { ThemeProvider } from '@/providers/scopedThemeProvider';
 import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
 import { useLanguage } from '@/utils/hooks';
 import type { CustomPasswordInputProps as Props } from '@/types/uiTypes';

@@ -67,9 +67,13 @@ const ManagedByTableSection: FC<ManagedByTableSectionProps> = ({
 				</Typography>
 			</Stack>
 			<Divider sx={{ mb: 3 }} />
-			<TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'grey.200' }}>
+			<TableContainer
+				component={Paper}
+				elevation={0}
+				sx={{ border: '1px solid', borderColor: 'var(--app-soft-border, #eeeeee)' }}
+			>
 				<Table>
-					<TableHead sx={{ backgroundColor: 'grey.50' }}>
+					<TableHead sx={{ backgroundColor: 'var(--app-inset, #fafafa)' }}>
 						<TableRow>
 							{headers.map((header, i) => (
 								<TableCell key={i} sx={{ fontWeight: 700 }}>
@@ -135,7 +139,7 @@ const ManagedByTableSection: FC<ManagedByTableSectionProps> = ({
 											? `user-${(item as ManagedByType).id}-${index}`
 											: `company-${(item as UserCompaniesType).company_id}-${index}`
 									}
-									sx={{ '&:hover': { backgroundColor: 'grey.50' } }}
+									sx={{ '&:hover': { backgroundColor: 'var(--app-inset, #fafafa)' } }}
 								>
 									<TableCell>
 										{isUserTable ? (

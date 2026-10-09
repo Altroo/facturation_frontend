@@ -570,12 +570,12 @@ const CompaniesViewClient: FC<Props> = ({ session, id }) => {
 														elevation={0}
 														sx={{
 															p: 2,
-															backgroundColor: 'grey.50',
+															backgroundColor: 'var(--app-inset, #fafafa)',
 															borderRadius: 2,
 															border: '1px solid',
-															borderColor: 'grey.200',
+															borderColor: 'var(--app-soft-border, #eeeeee)',
 															'&:hover': {
-																backgroundColor: 'grey.100',
+																backgroundColor: 'var(--app-inset-hover, #f5f5f5)',
 																borderColor: 'primary.main',
 																transition: 'all 0.3s ease',
 															},
@@ -638,7 +638,7 @@ const CompaniesViewClient: FC<Props> = ({ session, id }) => {
 												elevation={0}
 												sx={{
 													p: 3,
-													backgroundColor: 'grey.50',
+													backgroundColor: 'var(--app-inset, #fafafa)',
 													borderRadius: 2,
 													textAlign: 'center',
 												}}

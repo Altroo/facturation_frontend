@@ -1,5 +1,5 @@
 import { type InputHTMLAttributes } from 'react';
-import { ThemeProvider } from '@mui/material';
+import { ThemeProvider } from '@/providers/scopedThemeProvider';
 import TextField from '@mui/material/TextField';
 import type { CustomOutlinedTextProps as Props } from '@/types/uiTypes';
 
