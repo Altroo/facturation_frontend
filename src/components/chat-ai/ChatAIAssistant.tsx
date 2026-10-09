@@ -635,18 +635,19 @@ const ChatAIWorkspace = ({
 										Que souhaitez-vous retrouver ?
 									</Typography>
 									<Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-										Un client, un produit, une période… Décrivez simplement votre recherche.
+										{interfaceLanguage === 'en'
+											? 'Select a question to send it, or describe what you need.'
+											: 'Cliquez sur une question pour l’envoyer, ou décrivez votre besoin.'}
 									</Typography>
 								</Box>
-								{['Trouver un devis par client et produit', ...company.suggestions].map((text) => (
+								{company.suggestions.map((text) => (
 									<TextButton
 										key={text}
 										buttonText={text}
 										startIcon={<ArrowForward fontSize="small" />}
 										cssClass={styles.suggestion}
-										onClick={() =>
-											setDraft(text === 'Trouver un devis par client et produit' ? '/voir devis du client ' : text)
-										}
+										disabled={busy}
+										onClick={() => void send(text)}
 									/>
 								))}
 							</>

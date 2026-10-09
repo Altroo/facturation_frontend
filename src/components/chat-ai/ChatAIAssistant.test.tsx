@@ -1165,3 +1165,44 @@ it.each(['conversation', 'company'])('clears a failed retry when changing %s', a
     expect(screen.queryByText('Old request')).not.toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 });
+
+it.each([
+	['fr', 'Affiche les factures impayées.'],
+	['en', 'Show unpaid customer invoices.'],
+] as const)('sends the complete %s suggestion immediately in the active company', async (language, question) => {
+	mockLanguage = language;
+	mockCompanyId = 2;
+	const scoped = {
+		...capabilities,
+		companies: capabilities.companies.map((company) => ({
+			...company,
+			suggestions: [company.id === 2 ? question : 'Suggestion from another company'],
+		})),
+	};
+	handlers[`capabilities/?language=${language}`] = () => jsonResponse(scoped);
+	handlers['conversations/conversation-1/messages/'] = () => jsonResponse(assistantMessage('Authorized results.'));
+	await renderAssistant();
+	expect(screen.queryByRole('button', { name: 'Suggestion from another company' })).not.toBeInTheDocument();
+	fireEvent.change(screen.getByRole('textbox', { name: 'Votre message' }), { target: { value: 'Unsent draft' } });
+	fireEvent.click(screen.getByRole('button', { name: question }));
+	await screen.findByText('Authorized results.');
+	const calls = jest.mocked(chatRequest).mock.calls;
+	const creation = calls.find(([path]) => path === 'conversations/');
+	expect(JSON.parse(creation![2]!.body as string)).toEqual({ company_id: 2 });
+	const sent = calls.filter(([path]) => path.endsWith('/messages/'));
+	expect(sent).toHaveLength(1);
+	expect(JSON.parse(sent[0][2]!.body as string)).toEqual(
+		expect.objectContaining({
+			text: question,
+			context: { interface_language: language },
+		}),
+	);
+	expect(screen.getByRole('textbox', { name: 'Votre message' })).toHaveValue('');
+	expect(screen.getByText(question)).toBeInTheDocument();
+});
+
+it('does not add hardcoded suggestions outside the selected company permissions', async () => {
+	await renderAssistant();
+	expect(screen.queryByRole('button', { name: 'Trouver un devis par client et produit' })).not.toBeInTheDocument();
+	expect(jest.mocked(chatRequest).mock.calls.filter(([path]) => path === 'conversations/')).toHaveLength(0);
+});
