@@ -168,7 +168,7 @@ const StockFormContent: FC<StockFormContentProps> = ({ token, company_id, balanc
 				<Button
 					variant="outlined"
 					startIcon={<ArrowBackIcon />}
-					onClick={() => router.back()}
+					onClick={() => router.push(`${STOCK_LIST}?company_id=${company_id}`)}
 					sx={{
 						whiteSpace: 'nowrap',
 						px: { xs: 1.5, sm: 2, md: 3 },

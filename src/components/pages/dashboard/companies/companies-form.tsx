@@ -308,7 +308,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 				<Button
 					variant="outlined"
 					startIcon={<ArrowBackIcon />}
-					onClick={() => router.back()}
+					onClick={() => router.push(COMPANIES_LIST)}
 					sx={{
 						whiteSpace: 'nowrap',
 						px: { xs: 1.5, sm: 2, md: 3 },

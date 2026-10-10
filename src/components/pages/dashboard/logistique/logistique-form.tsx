@@ -560,7 +560,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 									<Button
 										variant="outlined"
 										startIcon={<ArrowBackIcon />}
-										onClick={() => router.back()}
+										onClick={() => router.push(`${LOGISTIQUE_LIST}?company_id=${company_id}`)}
 										sx={{ width: isMobile ? '100%' : 'auto' }}
 									>
 										{t.logistique.backToList}

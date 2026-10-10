@@ -48,7 +48,7 @@ import type { StockInventoryFormValues } from '@/types/stockTypes';
 import { getLabelForKey, parseNumber, setFormikAutoErrors } from '@/utils/helpers';
 import { stockInventorySchema } from '@/utils/formValidationSchemas';
 import { useToast } from '@/utils/hooks';
-import { STOCK_INVENTORY_VIEW } from '@/utils/routes';
+import { STOCK_INVENTORY_VIEW, STOCK_INVENTORIES } from '@/utils/routes';
 import { textInputTheme } from '@/utils/themes';
 import type { StockInventoryFormContentProps, StockInventoryFormProps } from '@/types/stockTypes';
 
@@ -170,7 +170,7 @@ const StockInventoryFormContent: FC<StockInventoryFormContentProps> = ({ token, 
 				<Button
 					variant="outlined"
 					startIcon={<ArrowBackIcon />}
-					onClick={() => router.back()}
+					onClick={() => router.push(`${STOCK_INVENTORIES}?company_id=${company_id}`)}
 					sx={{
 						whiteSpace: 'nowrap',
 						px: { xs: 1.5, sm: 2, md: 3 },

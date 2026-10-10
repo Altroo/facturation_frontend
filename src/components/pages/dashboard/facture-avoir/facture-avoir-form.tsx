@@ -70,7 +70,7 @@ import type { ArticleClass, ClientClass, FactureAvoirClass, FactureClass } from 
 import type { PaginationResponseType } from '@/types/_initTypes';
 import type { DropDownType } from '@/types/accountTypes';
 import type { DeviFactureLineFormValues, TypeRemiseType, ValidateArticleLinesErrorType } from '@/types/devisTypes';
-import { FACTURE_AVOIR_EDIT, FACTURE_AVOIR_VIEW } from '@/utils/routes';
+import { FACTURE_AVOIR_EDIT, FACTURE_AVOIR_VIEW, FACTURE_AVOIR_LIST } from '@/utils/routes';
 import { extractApiErrorMessage, formatLocalDate, parseNumber } from '@/utils/helpers';
 import { customDropdownTheme, textInputTheme } from '@/utils/themes';
 import { useLanguage, useToast } from '@/utils/hooks';
@@ -489,7 +489,7 @@ const FormikContent: FC<FormikContentProps> = ({ token, company_id, id, isEditMo
 				<Button
 					variant="outlined"
 					startIcon={<ArrowBackIcon />}
-					onClick={() => router.back()}
+					onClick={() => router.push(`${FACTURE_AVOIR_LIST}?company_id=${company_id}`)}
 					sx={{
 						alignSelf: 'flex-start',
 						whiteSpace: 'nowrap',

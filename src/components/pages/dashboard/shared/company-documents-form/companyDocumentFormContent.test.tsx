@@ -38,8 +38,9 @@ jest.mock('zod-formik-adapter', () => ({
 	toFormikValidationSchema: jest.fn(() => undefined),
 }));
 const mockBack = jest.fn();
+const mockPush = jest.fn();
 jest.mock('next/navigation', () => ({
-	useRouter: jest.fn(() => ({ push: jest.fn(), back: mockBack })),
+	useRouter: jest.fn(() => ({ push: mockPush, back: mockBack })),
 }));
 jest.mock('next/image', () => ({
 	__esModule: true,
@@ -279,12 +280,13 @@ describe('CompanyDocumentFormContent', () => {
 
 	// ── Add mode (form rendering) ─────────────────────────────────
 	describe('Add mode', () => {
-		it('returns to the previous page from the back button', () => {
+		it('opens the named list with company context regardless of navigation history', () => {
 			render(<CompanyDocumentFormContent {...defaultProps} />);
 			const backButton = screen.getByText('Liste des devis');
 			expect(backButton).toBeInTheDocument();
 			fireEvent.click(backButton);
-			expect(mockBack).toHaveBeenCalledTimes(1);
+			expect(mockPush).toHaveBeenCalledWith('/dashboard/devis?company_id=1');
+			expect(mockBack).not.toHaveBeenCalled();
 		});
 
 		it('renders document info section', () => {

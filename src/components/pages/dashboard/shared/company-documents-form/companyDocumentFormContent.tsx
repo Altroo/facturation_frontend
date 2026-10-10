@@ -1019,7 +1019,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 					<Button
 						variant="outlined"
 						startIcon={<ArrowBackIcon />}
-						onClick={() => router.back()}
+						onClick={() => router.push(`${config.routes.listRoute}?company_id=${company_id}`)}
 						sx={{
 							whiteSpace: 'nowrap',
 							px: { xs: 1.5, sm: 2, md: 3 },
