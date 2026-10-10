@@ -159,7 +159,14 @@ const capabilities: ChatCapabilities = {
 		can_create: true,
 		can_print: true,
 		suggestions: [],
-		shortcuts: [{ command: '/voir', title: 'Rechercher un document', help: 'Décrivez le client ou le produit.', example: '/voir devis client Atlas' }],
+		shortcuts: [
+			{
+				command: '/voir',
+				title: 'Rechercher un document',
+				help: 'Décrivez le client ou le produit.',
+				example: '/voir devis client Atlas',
+			},
+		],
 	})),
 	languages: ['fr', 'en'],
 };
@@ -206,12 +213,14 @@ beforeEach(() => {
 const renderAssistant = async () => {
 	const result = render(themed(<ChatAIAssistant />));
 	fireEvent.click(await screen.findByRole('button', { name: 'Ask AI Assistant' }));
-	await screen.findByRole('textbox', { name: 'Votre message' });
+	await screen.findByRole('textbox', { name: mockLanguage === 'en' ? 'Your message' : 'Votre message' });
 	return result;
 };
 const sendMessage = (text: string) => {
-	fireEvent.change(screen.getByRole('textbox', { name: 'Votre message' }), { target: { value: text } });
-	fireEvent.click(screen.getByRole('button', { name: 'Envoyer' }));
+	fireEvent.change(screen.getByRole('textbox', { name: mockLanguage === 'en' ? 'Your message' : 'Votre message' }), {
+		target: { value: text },
+	});
+	fireEvent.click(screen.getByRole('button', { name: mockLanguage === 'en' ? 'Send' : 'Envoyer' }));
 };
 const historyItem = { id: 'old-conversation', title: 'Factures du client Atlas', updated_at: '2026-10-08T12:00:00Z' };
 const quoteConfirmation: ChatCard = {
@@ -246,6 +255,7 @@ it('keeps a sent reply visible when an older history response finishes later', a
 	await renderAssistant();
 	fireEvent.click(screen.getByRole('button', { name: 'Historique' }));
 	await screen.findByText('Chargement de l’historique…');
+	fireEvent.click(screen.getByRole('button', { name: 'Revenir à la conversation' }));
 	sendMessage('/voir');
 	await screen.findByText('Voici comment utiliser /voir.');
 	await act(async () => {
@@ -253,7 +263,7 @@ it('keeps a sent reply visible when an older history response finishes later', a
 	});
 	expect(screen.getByText('Voici comment utiliser /voir.')).toBeVisible();
 	expect(screen.getByRole('article', { name: 'Message de vous' })).toHaveTextContent('Vous');
-	expect(screen.getByRole('article', { name: 'Message de AI Assistant' })).toHaveTextContent('AI Assistant');
+	expect(screen.getByRole('article', { name: 'AI Assistant' })).toHaveTextContent('AI Assistant');
 	expect(screen.queryByText(/Historique de cette société/)).not.toBeInTheDocument();
 	expect(screen.queryByText('Chargement de l’historique…')).not.toBeInTheDocument();
 });
@@ -277,7 +287,7 @@ it('does not replace a new conversation with an older history detail response', 
 	});
 	expect(screen.getByText('Nouvelle réponse')).toBeVisible();
 	expect(screen.queryByText('Ancienne réponse privée')).not.toBeInTheDocument();
-	expect(screen.getByRole('textbox', { name: 'Votre message' })).toBeEnabled();
+	expect(screen.getByRole('textbox', { name: mockLanguage === 'en' ? 'Your message' : 'Votre message' })).toBeEnabled();
 });
 
 it('ignores an old record selection without clearing the newer response loading state', async () => {
@@ -316,12 +326,14 @@ it('ignores an old record selection without clearing the newer response loading 
 	});
 	expect(screen.queryByText('Ancienne sélection')).not.toBeInTheDocument();
 	expect(screen.getByRole('button', { name: 'Annuler la réponse' })).toBeVisible();
-	expect(screen.getByRole('textbox', { name: 'Votre message' })).toBeDisabled();
+	expect(
+		screen.getByRole('textbox', { name: mockLanguage === 'en' ? 'Your message' : 'Votre message' }),
+	).toBeDisabled();
 	await act(async () => {
 		latestReply.resolve(assistantMessage('Recherche actuelle'));
 	});
 	expect(screen.getByText('Recherche actuelle')).toBeVisible();
-	expect(screen.getByRole('textbox', { name: 'Votre message' })).toBeEnabled();
+	expect(screen.getByRole('textbox', { name: mockLanguage === 'en' ? 'Your message' : 'Votre message' })).toBeEnabled();
 });
 
 it('keeps cancellation effective when a canceled stream still delivers its final event', async () => {
@@ -331,7 +343,7 @@ it('keeps cancellation effective when a canceled stream still delivers its final
 	sendMessage('Recherche lente');
 	await waitFor(() => expect(consumeChatStream).toHaveBeenCalled());
 	fireEvent.click(screen.getByRole('button', { name: 'Annuler la réponse' }));
-	expect(screen.getByRole('textbox', { name: 'Votre message' })).toBeEnabled();
+	expect(screen.getByRole('textbox', { name: mockLanguage === 'en' ? 'Your message' : 'Votre message' })).toBeEnabled();
 	await act(async () => {
 		reply.resolve(assistantMessage('Réponse annulée'));
 	});
@@ -345,14 +357,14 @@ it('refreshes quote caches after a confirmed write without affecting a different
 	const { rerender } = await beginQuoteConfirmation();
 	mockCompanyId = 2;
 	rerender(themed(<ChatAIAssistant />));
-	expect(screen.getByText('Company 2')).toBeVisible();
+	await waitFor(() => expect(screen.getByText('Company 2')).toBeVisible());
 	await act(async () => {
 		confirmation.resolve(jsonResponse({ success: true }));
 	});
 	expect(mockDispatch).toHaveBeenCalledWith({ type: 'devi/invalidateTags', payload: ['Devi'] });
 	expect(screen.queryByText(/Action effectuée\. Votre identité/)).not.toBeInTheDocument();
 	expect(mockPush).not.toHaveBeenCalled();
-	expect(screen.getByText('Company 2')).toBeVisible();
+	await waitFor(() => expect(screen.getByText('Company 2')).toBeVisible());
 });
 
 it('navigates to the quote list after a current confirmed quote deletion', async () => {
@@ -404,7 +416,9 @@ it('lets the user pick an authorized company despite an invalid URL and stale ta
 	expect(screen.getByText('Choisissez une société autorisée pour commencer.')).toBeVisible();
 	fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Société' }));
 	fireEvent.click(await screen.findByRole('option', { name: 'Company 2' }));
-	expect(await screen.findByRole('textbox', { name: 'Votre message' })).toBeEnabled();
+	expect(
+		await screen.findByRole('textbox', { name: mockLanguage === 'en' ? 'Your message' : 'Votre message' }),
+	).toBeEnabled();
 	expect(screen.getByRole('combobox', { name: 'Société' })).toHaveTextContent('Company 2');
 	handlers['conversations/conversation-1/messages/'] = () => jsonResponse(assistantMessage('Réponse Company 2'));
 	sendMessage('/voir');
@@ -422,7 +436,7 @@ it.each(['-1', '1.5', '9007199254740993', '1e0'])(
 		mockCompanyId = hint;
 		publishChatAICompany(2);
 		await renderAssistant();
-		expect(screen.getByText('Company 2')).toBeVisible();
+		await waitFor(() => expect(screen.getByText('Company 2')).toBeVisible());
 		expect(screen.queryByRole('combobox', { name: 'Société' })).not.toBeInTheDocument();
 	},
 );
@@ -439,14 +453,14 @@ it('retains the detail company and its conversation when moving from a different
 	mockPathname = '/dashboard/devis/12/';
 	mockCompanyId = 2;
 	rerender(themed(<ChatAIAssistant />));
-	expect(screen.getByText('Company 2')).toBeVisible();
+	await waitFor(() => expect(screen.getByText('Company 2')).toBeVisible());
 	expect(screen.queryByText('Résultats Company 1')).not.toBeInTheDocument();
 	sendMessage('/voir devis');
 	await screen.findByText('Résultats Company 2');
 	mockPathname = '/dashboard/users/';
 	mockCompanyId = null;
 	rerender(themed(<ChatAIAssistant />));
-	expect(screen.getByText('Company 2')).toBeVisible();
+	await waitFor(() => expect(screen.getByText('Company 2')).toBeVisible());
 	expect(screen.getByText('Résultats Company 2')).toBeVisible();
 	expect(screen.queryByText('Résultats Company 1')).not.toBeInTheDocument();
 });
@@ -487,6 +501,7 @@ it('deletes the named history row while preserving the active conversation', asy
 	expect(activeRow).toHaveTextContent('Conversation actuelle');
 	expect(activeRow).toHaveTextContent(new Date(current.updated_at).toLocaleString());
 	fireEvent.click(screen.getByRole('button', { name: `Supprimer la conversation : ${historyItem.title}` }));
+	fireEvent.click(await screen.findByRole('button', { name: 'Supprimer la conversation' }));
 	await waitFor(() =>
 		expect(
 			screen.queryByRole('button', { name: `Ouvrir la conversation : ${historyItem.title}` }),
@@ -520,13 +535,16 @@ it('clears the active conversation only when its own history row is deleted', as
 	await screen.findByText('Réponse à supprimer');
 	fireEvent.click(screen.getByRole('button', { name: 'Historique' }));
 	fireEvent.click(await screen.findByRole('button', { name: `Supprimer la conversation : ${current.title}` }));
+	fireEvent.click(await screen.findByRole('button', { name: 'Supprimer la conversation' }));
 	await waitFor(() =>
 		expect(screen.queryByRole('button', { name: `Ouvrir la conversation : ${current.title}` })).not.toBeInTheDocument(),
 	);
 	expect(screen.getByRole('button', { name: `Ouvrir la conversation : ${historyItem.title}` })).toBeVisible();
 	fireEvent.click(screen.getByRole('button', { name: 'Revenir à la conversation' }));
 	expect(screen.queryByText('Réponse à supprimer')).not.toBeInTheDocument();
-	expect(screen.getByRole('textbox', { name: 'Votre message' })).toHaveValue('');
+	expect(screen.getByRole('textbox', { name: mockLanguage === 'en' ? 'Your message' : 'Votre message' })).toHaveValue(
+		'',
+	);
 });
 
 it('ignores a late history deletion result after the user starts another conversation', async () => {
@@ -542,6 +560,7 @@ it('ignores a late history deletion result after the user starts another convers
 	await screen.findByText('Ancienne réponse');
 	fireEvent.click(screen.getByRole('button', { name: 'Historique' }));
 	fireEvent.click(await screen.findByRole('button', { name: `Supprimer la conversation : ${current.title}` }));
+	fireEvent.click(await screen.findByRole('button', { name: 'Supprimer la conversation' }));
 	await waitFor(() =>
 		expect(chatRequest).toHaveBeenCalledWith(
 			'conversations/conversation-1/',
@@ -602,7 +621,7 @@ it('stops forcing stream scroll after the reader scrolls up, and resumes on a ne
 
 it('shows slash help while choosing a command and releases space once details are typed', async () => {
 	await renderAssistant();
-	const input = screen.getByRole('textbox', { name: 'Votre message' });
+	const input = screen.getByRole('textbox', { name: mockLanguage === 'en' ? 'Your message' : 'Votre message' });
 	fireEvent.change(input, { target: { value: '/' } });
 	expect(screen.getByText('Raccourcis de l’assistant')).toBeVisible();
 	fireEvent.change(input, { target: { value: '/voir' } });
@@ -793,7 +812,14 @@ const readOnlyCards: Array<{
 		resource: 'article',
 		label: 'Article',
 		path: 'articles/42/?company_id=1',
-		record: { id: 42, number: 'LOT-A', designation: 'Lot test', sale_amount: '75.50', sale_currency: 'MAD', sale_label: 'price_excl_tax' },
+		record: {
+			id: 42,
+			number: 'LOT-A',
+			designation: 'Lot test',
+			sale_amount: '75.50',
+			sale_currency: 'MAD',
+			sale_label: 'price_excl_tax',
+		},
 		expected: ['Prix H.T. : 75,50 MAD'],
 		hidden: ['Prix de vente', "Prix d'achat", 'price_excl_tax'],
 	},
@@ -1097,73 +1123,79 @@ it.each([
 	expect(container.textContent).not.toContain('date_echeance');
 });
 
-
 it.each([
-    ['confirmed_update', 'Modification effectuée. Votre identité est enregistrée dans l’historique.'],
-    ['confirmed_delete', 'Deletion completed. Your identity is recorded in the history.'],
-    ['expired', 'Cette demande de confirmation a expiré. Faites une nouvelle demande pour continuer.'],
-    ['stale', 'The record has changed since this request. Make a new request before confirming.'],
-    ['unavailable', 'Cette action n’est plus disponible. Faites une nouvelle demande pour continuer.'],
+	['confirmed_update', 'Modification effectuée. Votre identité est enregistrée dans l’historique.'],
+	['confirmed_delete', 'Deletion completed. Your identity is recorded in the history.'],
+	['expired', 'Cette demande de confirmation a expiré. Faites une nouvelle demande pour continuer.'],
+	['stale', 'The record has changed since this request. Make a new request before confirming.'],
+	['unavailable', 'Cette action n’est plus disponible. Faites une nouvelle demande pour continuer.'],
 ] as const)('renders replayed confirmation %s without another action or stale values', (status, message) => {
-    const confirm = jest.fn();
-    render(themed(<ChatAIResults
-        cards={[{type: 'confirmation_status', status, message}]}
-        navigate={jest.fn()} confirm={confirm} pdf={jest.fn()}
-    />));
-    expect(screen.getByText(message)).toBeVisible();
-    expect(screen.queryByRole('button')).not.toBeInTheDocument();
-    expect(screen.queryByText('Aucun résultat trouvé.')).not.toBeInTheDocument();
-    expect(confirm).not.toHaveBeenCalled();
+	const confirm = jest.fn();
+	render(
+		themed(
+			<ChatAIResults
+				cards={[{ type: 'confirmation_status', status, message }]}
+				navigate={jest.fn()}
+				confirm={confirm}
+				pdf={jest.fn()}
+			/>,
+		),
+	);
+	expect(screen.getByText(message)).toBeVisible();
+	expect(screen.queryByRole('button')).not.toBeInTheDocument();
+	expect(screen.queryByText('Aucun résultat trouvé.')).not.toBeInTheDocument();
+	expect(confirm).not.toHaveBeenCalled();
 });
 
-
 it.each([
-    ['/dashboard/facture-client/11/', { interface_language: 'en', invoice_id: 11 }],
-    ['/dashboard/', { interface_language: 'en' }],
+	['/dashboard/facture-client/11/', { interface_language: 'en', invoice_id: 11 }],
+	['/dashboard/', { interface_language: 'en' }],
 ])('retries the original context from %s after navigating to another invoice', async (initialPath, initialContext) => {
-    mockPathname = initialPath;
-    mockLanguage = 'en';
-    handlers['conversations/conversation-1/messages/'] = () => jsonResponse(assistantMessage('Original answer'));
-    jest.mocked(consumeChatStream).mockRejectedValueOnce(new ChatAPIError('INCOMPLETE_RESPONSE'));
-    const { rerender } = await renderAssistant();
-    sendMessage('Explain this invoice');
-    await screen.findByRole('button', { name: 'Réessayer' });
-    const requests = () => jest.mocked(chatRequest).mock.calls
-        .filter(([path]) => path === 'conversations/conversation-1/messages/')
-        .map(([, , init]) => JSON.parse(init!.body as string));
-    expect(requests()[0].context).toEqual(initialContext);
-    mockPathname = '/dashboard/facture-client/22/';
-    mockLanguage = 'fr';
-    rerender(themed(<ChatAIAssistant />));
-    fireEvent.click(screen.getByRole('button', { name: 'Réessayer' }));
-    await screen.findByText('Original answer');
-    expect(requests()).toHaveLength(2);
-    expect(requests()[1]).toEqual(requests()[0]);
-    expect(screen.getAllByRole('article', { name: 'Message de vous' })).toHaveLength(1);
-    expect(screen.queryByRole('button', { name: 'Réessayer' })).not.toBeInTheDocument();
-    handlers['conversations/conversation-1/messages/'] = () => jsonResponse(assistantMessage('Current answer'));
-    sendMessage('Explique cette facture maintenant');
-    await screen.findByText('Current answer');
-    expect(requests()[2].context).toEqual({ interface_language: 'fr', invoice_id: 22 });
-    expect(requests()[2].request_id).not.toBe(requests()[0].request_id);
+	mockPathname = initialPath;
+	mockLanguage = 'en';
+	handlers['conversations/conversation-1/messages/'] = () => jsonResponse(assistantMessage('Original answer'));
+	jest.mocked(consumeChatStream).mockRejectedValueOnce(new ChatAPIError('INCOMPLETE_RESPONSE'));
+	const { rerender } = await renderAssistant();
+	sendMessage('Explain this invoice');
+	await screen.findByRole('button', { name: mockLanguage === 'en' ? 'Retry' : 'Réessayer' });
+	const requests = () =>
+		jest
+			.mocked(chatRequest)
+			.mock.calls.filter(([path]) => path === 'conversations/conversation-1/messages/')
+			.map(([, , init]) => JSON.parse(init!.body as string));
+	expect(requests()[0].context).toEqual(initialContext);
+	mockPathname = '/dashboard/facture-client/22/';
+	mockLanguage = 'fr';
+	rerender(themed(<ChatAIAssistant />));
+	fireEvent.click(screen.getByRole('button', { name: 'Réessayer' }));
+	await screen.findByText('Original answer');
+	expect(requests()).toHaveLength(2);
+	expect(requests()[1]).toEqual(requests()[0]);
+	expect(screen.getAllByRole('article', { name: 'Message de vous' })).toHaveLength(1);
+	expect(screen.queryByRole('button', { name: 'Réessayer' })).not.toBeInTheDocument();
+	handlers['conversations/conversation-1/messages/'] = () => jsonResponse(assistantMessage('Current answer'));
+	sendMessage('Explique cette facture maintenant');
+	await screen.findByText('Current answer');
+	expect(requests()[2].context).toEqual({ interface_language: 'fr', invoice_id: 22 });
+	expect(requests()[2].request_id).not.toBe(requests()[0].request_id);
 });
 
 it.each(['conversation', 'company'])('clears a failed retry when changing %s', async (scope) => {
-    handlers['conversations/conversation-1/messages/'] = () => jsonResponse(assistantMessage('Never completed'));
-    jest.mocked(consumeChatStream).mockRejectedValueOnce(new ChatAPIError('INCOMPLETE_RESPONSE'));
-    const { rerender } = await renderAssistant();
-    sendMessage('Old request');
-    await screen.findByRole('button', { name: 'Réessayer' });
-    if (scope === 'conversation') {
-        fireEvent.click(screen.getByRole('button', { name: 'Nouvelle conversation' }));
-    } else {
-        mockCompanyId = 2;
-        rerender(themed(<ChatAIAssistant />));
-        await screen.findByText('Company 2');
-    }
-    expect(screen.queryByRole('button', { name: 'Réessayer' })).not.toBeInTheDocument();
-    expect(screen.queryByText('Old request')).not.toBeInTheDocument();
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+	handlers['conversations/conversation-1/messages/'] = () => jsonResponse(assistantMessage('Never completed'));
+	jest.mocked(consumeChatStream).mockRejectedValueOnce(new ChatAPIError('INCOMPLETE_RESPONSE'));
+	const { rerender } = await renderAssistant();
+	sendMessage('Old request');
+	await screen.findByRole('button', { name: mockLanguage === 'en' ? 'Retry' : 'Réessayer' });
+	if (scope === 'conversation') {
+		fireEvent.click(screen.getByRole('button', { name: 'Nouvelle conversation' }));
+	} else {
+		mockCompanyId = 2;
+		rerender(themed(<ChatAIAssistant />));
+		await screen.findByText('Company 2');
+	}
+	expect(screen.queryByRole('button', { name: 'Réessayer' })).not.toBeInTheDocument();
+	expect(screen.queryByText('Old request')).not.toBeInTheDocument();
+	expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 });
 
 it.each([
@@ -1183,7 +1215,9 @@ it.each([
 	handlers['conversations/conversation-1/messages/'] = () => jsonResponse(assistantMessage('Authorized results.'));
 	await renderAssistant();
 	expect(screen.queryByRole('button', { name: 'Suggestion from another company' })).not.toBeInTheDocument();
-	fireEvent.change(screen.getByRole('textbox', { name: 'Votre message' }), { target: { value: 'Unsent draft' } });
+	fireEvent.change(screen.getByRole('textbox', { name: mockLanguage === 'en' ? 'Your message' : 'Votre message' }), {
+		target: { value: 'Unsent draft' },
+	});
 	fireEvent.click(screen.getByRole('button', { name: question }));
 	await screen.findByText('Authorized results.');
 	const calls = jest.mocked(chatRequest).mock.calls;
@@ -1197,7 +1231,9 @@ it.each([
 			context: { interface_language: language },
 		}),
 	);
-	expect(screen.getByRole('textbox', { name: 'Votre message' })).toHaveValue('');
+	expect(screen.getByRole('textbox', { name: mockLanguage === 'en' ? 'Your message' : 'Votre message' })).toHaveValue(
+		'',
+	);
 	expect(screen.getByText(question)).toBeInTheDocument();
 });
 
@@ -1205,4 +1241,14 @@ it('does not add hardcoded suggestions outside the selected company permissions'
 	await renderAssistant();
 	expect(screen.queryByRole('button', { name: 'Trouver un devis par client et produit' })).not.toBeInTheDocument();
 	expect(jest.mocked(chatRequest).mock.calls.filter(([path]) => path === 'conversations/')).toHaveLength(0);
+});
+
+it('closes shortcut help and clears its draft when starting a new conversation', async () => {
+	await renderAssistant();
+	fireEvent.change(screen.getByRole('textbox', { name: 'Votre message' }), { target: { value: '/voir client Demo' } });
+	fireEvent.click(screen.getByRole('button', { name: '/ Raccourcis' }));
+	expect(screen.getByRole('listbox')).toBeInTheDocument();
+	fireEvent.click(screen.getByRole('button', { name: 'Nouvelle conversation' }));
+	expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+	expect(screen.getByRole('textbox', { name: 'Votre message' })).toHaveValue('');
 });

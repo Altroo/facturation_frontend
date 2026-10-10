@@ -17,7 +17,7 @@ import TextButton from '@/components/htmlElements/buttons/textButton/textButton'
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import DashboardStatCard from '@/components/shared/dashboardStatCard/dashboardStatCard';
 import type { ChatCard, ChatRecord, NavigationTarget } from './types';
-import styles from './chat-ai.module.sass';
+import styles from './shared/chat-ai.module.css';
 import { formatNumberWithSpaces } from '@/utils/helpers';
 import { useLanguage } from '@/utils/hooks';
 import {
@@ -276,6 +276,7 @@ export const ChatAIResults = ({ cards, navigate, confirm, pdf, select, permissio
 			setSending(false);
 		}
 	};
+	if (!cards.length) return null;
 	return (
 		<Stack spacing={1.5}>
 			{cards.map((card, index) => (

@@ -1,35 +1,21 @@
 'use client';
 
-import { useEffect, useEffectEvent, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
 	Alert,
 	Box,
 	Button,
 	CircularProgress,
-	Fab,
 	IconButton,
 	MenuItem,
 	ListItemButton,
-	Paper,
 	Portal,
 	Stack,
 	TextField,
 	Typography,
-	InputBase,
-	Avatar,
 } from '@mui/material';
-import {
-	ChatBubbleOutlined,
-	Close,
-	History,
-	Add,
-	Send,
-	Stop,
-	DeleteOutlined,
-	BusinessOutlined,
-	ArrowForward,
-} from '@mui/icons-material';
+import { DeleteOutlined, BusinessOutlined } from '@mui/icons-material';
 import { useAppSelector, useAppDispatch, useLanguage } from '@/utils/hooks';
 import { getAccessToken, getProfilState } from '@/store/selectors';
 import { chatRequest, ChatAPIError, consumeChatStream, safeNavigation, downloadInvoicePDF } from './api';
@@ -45,87 +31,13 @@ import { dashboardApi } from '@/store/services/dashboard';
 import { reglementApi } from '@/store/services/reglement';
 import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
-import styles from './chat-ai.module.sass';
-import { ChatAIShortcuts } from './ChatAIShortcuts';
+import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
+import styles from './shared/chat-ai.module.css';
+import { ChatAIInterface, ChatAIHeader, ChatAIWelcome, ChatAIMessageBox } from './shared/ChatAIInterface';
+export { ChatAIFloatingButton, ChatAIPanel } from './shared/ChatAIInterface';
+import { ChatAIComposer } from './shared/ChatAIComposer';
 import { ChatAIResults } from './ChatAIResults';
 import type { ChatCapabilities, ChatMessage, NavigationTarget, ChatCard } from './types';
-
-export const ChatAIFloatingButton = ({
-	open,
-	toggle,
-	offset = false,
-}: {
-	open: boolean;
-	toggle: () => void;
-	offset?: boolean;
-}) => (
-	<DarkTooltip title="Ask AI Assistant">
-		<Fab
-			className={styles.floating}
-			color="primary"
-			aria-label="Ask AI Assistant"
-			aria-expanded={open}
-			aria-controls="chat-ai-panel"
-			onClick={toggle}
-			sx={{
-				'--chat-ai-primary': (theme) => theme.palette.primary.main,
-				position: 'fixed',
-				width: 56,
-				height: 56,
-				right: { xs: 16, sm: 24 },
-				bottom: offset ? 96 : { xs: 'max(16px, env(safe-area-inset-bottom))', sm: 24 },
-				zIndex: (theme) => theme.zIndex.drawer + 1,
-				boxShadow: 3,
-				'&:focus-visible': { outline: '3px solid', outlineColor: 'text.primary', outlineOffset: 3 },
-				'@media (prefers-reduced-motion: reduce)': { transition: 'none' },
-			}}
-		>
-			{open ? <Close /> : <ChatBubbleOutlined />}
-		</Fab>
-	</DarkTooltip>
-);
-
-const ChatAIMessageBox = ({
-	role,
-	text,
-	children,
-}: {
-	role: ChatMessage['role'];
-	text?: string;
-	children?: ReactNode;
-}) => (
-	<Box
-		component="article"
-		className={role === 'user' ? styles.userMessage : styles.assistantMessage}
-		aria-label={role === 'user' ? 'Message de vous' : 'Message de AI Assistant'}
-		sx={{
-			alignSelf: role === 'user' ? 'flex-end' : 'stretch',
-			maxWidth: role === 'user' ? '90%' : '100%',
-			minWidth: 0,
-			bgcolor: role === 'user' ? 'action.hover' : 'background.paper',
-			border: 1,
-			borderColor: role === 'user' ? 'transparent' : 'divider',
-			p: 1.5,
-			borderRadius: 2,
-		}}
-	>
-		<Typography
-			className={styles.messageAuthor}
-			component="div"
-			variant="caption"
-			color="text.secondary"
-			sx={{ fontWeight: 600, mb: 0.75 }}
-		>
-			{role === 'user' ? 'Vous' : 'AI Assistant'}
-		</Typography>
-		{text && (
-			<Typography dir="auto" variant="body2" sx={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', lineHeight: 1.6 }}>
-				{text}
-			</Typography>
-		)}
-		{children}
-	</Box>
-);
 
 const errorText: Record<string, string> = {
 	PERMISSION_DENIED: 'Vous n’avez pas accès à ces informations.',
@@ -145,121 +57,24 @@ const errorText: Record<string, string> = {
 	CONTEXT_LIMIT: 'Cette conversation est complète. Démarrez une nouvelle conversation.',
 };
 
-export const ChatAIPanel = ({
-	children,
-	close,
-	minimized,
-	offset = false,
-}: {
-	children: React.ReactNode;
-	close: () => void;
-	minimized: boolean;
-	offset?: boolean;
-}) => {
-	const panel = useRef<HTMLDivElement>(null);
-	const [viewport, setViewport] = useState<{ height: number; top: number } | null>(null);
-	useEffect(() => {
-		const view = window.visualViewport;
-		if (!view) return;
-		const resize = () => setViewport({ height: view.height, top: view.offsetTop });
-		resize();
-		view.addEventListener('resize', resize);
-		view.addEventListener('scroll', resize);
-		return () => {
-			view.removeEventListener('resize', resize);
-			view.removeEventListener('scroll', resize);
-		};
-	}, []);
-	const onClose = useEffectEvent(close);
-	useEffect(() => {
-		if (minimized) return;
-		const previous = document.activeElement as HTMLElement | null;
-		panel.current?.focus();
-		const escape = (event: KeyboardEvent) => {
-			if (event.key === 'Escape') onClose();
-		};
-		document.addEventListener('keydown', escape);
-		return () => {
-			document.removeEventListener('keydown', escape);
-			previous?.focus();
-		};
-	}, [minimized]);
-	return (
-		<Paper
-			className={styles.panel}
-			ref={panel}
-			id="chat-ai-panel"
-			role="dialog"
-			aria-label="AI Assistant"
-			tabIndex={-1}
-			elevation={8}
-			sx={{
-				display: minimized ? 'none' : 'flex',
-				flexDirection: 'column',
-				'--chat-ai-primary': (theme) => theme.palette.primary.main,
-				position: 'fixed',
-				right: { xs: 0, sm: 24 },
-				top: { xs: viewport?.top ?? 0, sm: 'auto' },
-				bottom: { xs: 'auto', sm: offset ? 164 : 92 },
-				width: { xs: '100%', sm: 440 },
-				height: { xs: viewport?.height ?? '100dvh', sm: 630 },
-				maxHeight: { xs: '100dvh', sm: offset ? 'calc(100dvh - 180px)' : 'calc(100dvh - 112px)' },
-				borderRadius: { xs: 0, sm: 3 },
-				zIndex: (theme) => theme.zIndex.drawer + 2,
-				pt: { xs: 'env(safe-area-inset-top)', sm: 0 },
-				pb: { xs: 'env(safe-area-inset-bottom)', sm: 0 },
-				overflow: 'hidden',
-			}}
-		>
-			{children}
-		</Paper>
-	);
+const errorTextEnglish: Record<string, string> = {
+	PERMISSION_DENIED: 'You do not have permission to access this information.',
+	NOT_FOUND: 'No authorized matching result was found.',
+	CONTEXT_EXPIRED: 'The context expired or your permissions changed. Start a new conversation.',
+	NOT_AUTHENTICATED: 'Your session expired.',
+	BUSY: 'The assistant is busy. Please try again shortly.',
+	INVALID_MODEL_OUTPUT:
+		'I could not interpret that request. Make your search more specific or use /help to choose a module.',
+	INCOMPLETE_RESPONSE: 'The response is incomplete. Retry or use /help to choose a module.',
+	MODEL_TIMEOUT: 'The response took too long. Try a more specific search.',
+	TOOL_TIMEOUT: 'The operation took too long. Please try again.',
+	SENSITIVE_INPUT: 'Remove passwords or secrets before sending this message.',
+	INVALID_ARGUMENTS: 'Specify your request, the record or the period.',
+	MULTIPLE_MATCHES: 'Several results match. Make your search more specific.',
+	STALE_ACTION: 'The record changed. Request a new preview.',
+	ACTION_REJECTED: 'The application rejected this action under its business rules.',
+	CONTEXT_LIMIT: 'This conversation is full. Start a new conversation.',
 };
-
-const ChatAIHeader = ({
-	close,
-	newConversation,
-	history,
-}: {
-	close: () => void;
-	newConversation?: () => void;
-	history?: () => void;
-}) => (
-	<Box className={styles.header}>
-		<Stack direction="row" sx={{ alignItems: 'center', gap: 1 }}>
-			<Avatar className={styles.assistantAvatar} variant="rounded" sx={{ width: 36, height: 36 }}>
-				<ChatBubbleOutlined fontSize="small" />
-			</Avatar>
-			<Box sx={{ flex: 1 }}>
-				<Typography sx={{ fontWeight: 600, fontSize: 14 }}>AI Assistant</Typography>
-				<Typography variant="caption" color="text.secondary">
-					Facturation
-				</Typography>
-			</Box>
-			<DarkTooltip title="Fermer l’assistant">
-				<IconButton aria-label="Fermer" onClick={close}>
-					<Close />
-				</IconButton>
-			</DarkTooltip>
-		</Stack>
-		{newConversation && (
-			<Stack direction="row" spacing={1} sx={{ mt: 1.5 }}>
-				<TextButton
-					cssClass={styles.headerControl}
-					buttonText="Nouvelle conversation"
-					startIcon={<Add fontSize="small" />}
-					onClick={newConversation}
-				/>
-				<TextButton
-					cssClass={styles.headerControl}
-					buttonText="Historique"
-					startIcon={<History fontSize="small" />}
-					onClick={history}
-				/>
-			</Stack>
-		)}
-	</Box>
-);
 
 type ChatAIRetryRequest = {
 	text: string;
@@ -288,10 +103,12 @@ const ChatAIWorkspace = ({
 	const [conversation, setConversation] = useState<string | null>(null);
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
 	const [draft, setDraft] = useState('');
+	const [composerVersion, setComposerVersion] = useState(0);
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState('');
 	const [delta, setDelta] = useState('');
 	const [historyOpen, setHistoryOpen] = useState(false);
+	const [pendingDeletion, setPendingDeletion] = useState<string | null>(null);
 	const [historyLoading, setHistoryLoading] = useState(false);
 	const [history, setHistory] = useState<{ id: string; title?: string; updated_at: string }[]>([]);
 	const controller = useRef<AbortController | null>(null);
@@ -313,13 +130,19 @@ const ChatAIWorkspace = ({
 		currentPath.current = pathname;
 	}, [pathname]);
 	useEffect(() => {
-		if (!historyOpen && followLatest.current) bottom.current?.scrollIntoView?.({ behavior: 'auto', block: 'end' });
+		if (historyOpen) return;
+		if (!messages.length && !delta && !busy) {
+			bottom.current?.parentElement?.scrollTo?.({ top: 0 });
+		} else if (followLatest.current) {
+			bottom.current?.scrollIntoView?.({ behavior: 'auto', block: 'end' });
+		}
 	}, [messages, delta, busy, historyOpen]);
 
 	// Every new view/request invalidates older asynchronous work, including fetches
 	// whose response body finishes after abort. Server-confirmed writes are still
 	// allowed to invalidate business caches, but cannot change a newer chat view.
 	const cancelPending = () => {
+		setPendingDeletion(null);
 		requestEpoch.current += 1;
 		controller.current?.abort();
 		controller.current = null;
@@ -351,12 +174,15 @@ const ChatAIWorkspace = ({
 	const navigate = (target: NavigationTarget) => {
 		const route = safeNavigation(target, companyId);
 		if (route) router.push(route);
-		else setError('Navigation refusée.');
+		else setError(interfaceLanguage === 'en' ? 'Navigation denied.' : 'Navigation refusée.');
 	};
 	const showError = (err: unknown) => {
 		if (!active.current || (err instanceof DOMException && err.name === 'AbortError')) return;
 		setError(
-			errorText[err instanceof ChatAPIError ? err.code : ''] || 'L’assistant est indisponible. Vous pouvez réessayer.',
+			(interfaceLanguage === 'en' ? errorTextEnglish : errorText)[err instanceof ChatAPIError ? err.code : ''] ||
+				(interfaceLanguage === 'en'
+					? 'The assistant is unavailable. You can retry.'
+					: 'L’assistant est indisponible. Vous pouvez réessayer.'),
 		);
 	};
 	const confirmAction = async (card: ChatCard) => {
@@ -385,7 +211,10 @@ const ChatAIWorkspace = ({
 				{
 					id: crypto.randomUUID(),
 					role: 'assistant',
-					text: 'Action effectuée. Votre identité est enregistrée dans l’historique.',
+					text:
+						interfaceLanguage === 'en'
+							? 'Action completed. Your identity is recorded in the history.'
+							: 'Action effectuée. Votre identité est enregistrée dans l’historique.',
 				},
 			]);
 			const listRoutes: Record<string, string> = {
@@ -512,6 +341,7 @@ const ChatAIWorkspace = ({
 	};
 	const newConversation = () => {
 		cancelPending();
+		setComposerVersion((version) => version + 1);
 		followLatest.current = true;
 		setConversation(null);
 		setMessages([]);
@@ -544,7 +374,21 @@ const ChatAIWorkspace = ({
 
 	return (
 		<>
-			<ChatAIHeader close={close} newConversation={newConversation} history={loadHistory} />
+			<ChatAIHeader
+				appName="Facturation"
+				close={close}
+				newConversation={newConversation}
+				history={() => {
+					if (historyOpen) {
+						cancelPending();
+						setHistoryOpen(false);
+					} else {
+						void loadHistory();
+					}
+				}}
+				historyExpanded={historyOpen}
+				language={interfaceLanguage}
+			/>
 			{companyControl}
 			<Box
 				role="log"
@@ -555,18 +399,25 @@ const ChatAIWorkspace = ({
 					const list = event.currentTarget;
 					followLatest.current = list.scrollHeight - list.scrollTop - list.clientHeight <= 64;
 				}}
-				sx={{ flex: 1, minHeight: 0, overflowY: 'auto', p: 2 }}
+				className={styles.messages}
 			>
 				{historyOpen ? (
 					<Stack spacing={1}>
 						<Typography variant="caption">
-							Historique de cette société. Les résultats sont actualisés à la réouverture.
+							{interfaceLanguage === 'en'
+								? 'History for this company. Results are refreshed when reopened.'
+								: 'Historique de cette société. Les résultats sont actualisés à la réouverture.'}
 						</Typography>
-						{historyLoading && <Typography role="status">Chargement de l’historique…</Typography>}
+						{historyLoading && (
+							<Typography role="status">
+								{interfaceLanguage === 'en' ? 'Loading history…' : 'Chargement de l’historique…'}
+							</Typography>
+						)}
 						{error && <Alert severity="warning">{error}</Alert>}
 						<Box component="ul" sx={{ listStyle: 'none', p: 0, m: 0 }}>
 							{history.map((item) => {
-								const title = item.title?.trim() || 'Nouvelle conversation';
+								const title =
+									item.title?.trim() || (interfaceLanguage === 'en' ? 'New conversation' : 'Nouvelle conversation');
 								const selected = item.id === conversation;
 								return (
 									<Box
@@ -577,7 +428,7 @@ const ChatAIWorkspace = ({
 										<ListItemButton
 											selected={selected}
 											aria-current={selected ? 'true' : undefined}
-											aria-label={`Ouvrir la conversation : ${title}`}
+											aria-label={`${interfaceLanguage === 'en' ? 'Open conversation' : 'Ouvrir la conversation'} : ${title}`}
 											onClick={() => openHistory(item.id)}
 											sx={{ minWidth: 0, px: 1, py: 1.5 }}
 										>
@@ -596,17 +447,19 @@ const ChatAIWorkspace = ({
 												</Typography>
 												{selected && (
 													<Typography variant="caption" color="text.secondary">
-														Conversation actuelle
+														{interfaceLanguage === 'en' ? 'Current conversation' : 'Conversation actuelle'}
 													</Typography>
 												)}
 											</Box>
 										</ListItemButton>
-										<DarkTooltip title={`Supprimer la conversation : ${title}`}>
+										<DarkTooltip
+											title={`${interfaceLanguage === 'en' ? 'Delete conversation' : 'Supprimer la conversation'} : ${title}`}
+										>
 											<span>
 												<IconButton
-													aria-label={`Supprimer la conversation : ${title}`}
+													aria-label={`${interfaceLanguage === 'en' ? 'Delete conversation' : 'Supprimer la conversation'} : ${title}`}
 													disabled={historyLoading}
-													onClick={() => deleteConversation(item.id)}
+													onClick={() => setPendingDeletion(item.id)}
 												>
 													<DeleteOutlined fontSize="small" />
 												</IconButton>
@@ -617,9 +470,11 @@ const ChatAIWorkspace = ({
 							})}
 						</Box>
 
-						{!historyLoading && !history.length && <Typography>Aucune conversation.</Typography>}
+						{!historyLoading && !history.length && (
+							<Typography>{interfaceLanguage === 'en' ? 'No conversations yet.' : 'Aucune conversation.'}</Typography>
+						)}
 						<TextButton
-							buttonText="Revenir à la conversation"
+							buttonText={interfaceLanguage === 'en' ? 'Back to conversation' : 'Revenir à la conversation'}
 							onClick={() => {
 								cancelPending();
 								setHistoryOpen(false);
@@ -627,33 +482,19 @@ const ChatAIWorkspace = ({
 						/>
 					</Stack>
 				) : (
-					<Stack spacing={2}>
+					<div>
 						{!messages.length && (
-							<>
-								<Box sx={{ pt: 0.5, pb: 1 }}>
-									<Typography variant="h6" sx={{ fontSize: 18, fontWeight: 600 }}>
-										Que souhaitez-vous retrouver ?
-									</Typography>
-									<Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-										{interfaceLanguage === 'en'
-											? 'Select a question to send it, or describe what you need.'
-											: 'Cliquez sur une question pour l’envoyer, ou décrivez votre besoin.'}
-									</Typography>
-								</Box>
-								{company.suggestions.map((text) => (
-									<TextButton
-										key={text}
-										buttonText={text}
-										startIcon={<ArrowForward fontSize="small" />}
-										cssClass={styles.suggestion}
-										disabled={busy}
-										onClick={() => void send(text)}
-									/>
-								))}
-							</>
+							<ChatAIWelcome
+								language={interfaceLanguage}
+								suggestions={company.suggestions}
+								busy={busy}
+								send={(question) => {
+									void send(question);
+								}}
+							/>
 						)}
 						{messages.map((message) => (
-							<ChatAIMessageBox key={message.id} role={message.role} text={message.text}>
+							<ChatAIMessageBox key={message.id} role={message.role} text={message.text} language={interfaceLanguage}>
 								<ChatAIResults
 									cards={message.cards || []}
 									navigate={navigate}
@@ -667,12 +508,12 @@ const ChatAIWorkspace = ({
 							</ChatAIMessageBox>
 						))}
 						{(busy || delta) && (
-							<ChatAIMessageBox role="assistant" text={delta}>
+							<ChatAIMessageBox role="assistant" text={delta} language={interfaceLanguage}>
 								{busy && (
 									<Stack role="status" direction="row" sx={{ gap: 1, alignItems: 'center', mt: delta ? 1 : 0 }}>
 										<CircularProgress size={14} />
 										<Typography variant="caption" color="text.secondary">
-											En cours…
+											{interfaceLanguage === 'en' ? 'Working…' : 'En cours…'}
 										</Typography>
 									</Stack>
 								)}
@@ -683,68 +524,56 @@ const ChatAIWorkspace = ({
 								{error}
 								{retry && (
 									<Button onClick={() => send(retry.text, retry)} disabled={busy}>
-										Réessayer
+										{interfaceLanguage === 'en' ? 'Retry' : 'Réessayer'}
 									</Button>
 								)}
 							</Alert>
 						)}
-					</Stack>
+					</div>
 				)}
 				<div ref={bottom} />
 			</Box>
-			{/^\/[^\s]*$/.test(draft) && (
-				<Box
-					sx={{
-						px: 2,
-						borderTop: 1,
-						borderColor: 'divider',
-						maxHeight: '35%',
-						minHeight: 0,
-						overflowY: 'auto',
-						flexShrink: 1,
-					}}
+			{pendingDeletion && (
+				<ActionModals
+					title={interfaceLanguage === 'en' ? 'Delete this conversation?' : 'Supprimer cette conversation ?'}
+					body={
+						interfaceLanguage === 'en'
+							? 'This deletes the conversation and its messages. Business records are unaffected.'
+							: 'La conversation et ses messages seront supprimés. Les données de l’application seront conservées.'
+					}
+					onClose={() => setPendingDeletion(null)}
+					actions={[
+						{
+							text: interfaceLanguage === 'en' ? 'Cancel' : 'Annuler',
+							active: false,
+							onClick: () => setPendingDeletion(null),
+						},
+						{
+							text: interfaceLanguage === 'en' ? 'Delete conversation' : 'Supprimer la conversation',
+							active: true,
+							color: '#C62828',
+							onClick: () => {
+								void deleteConversation(pendingDeletion);
+							},
+						},
+					]}
 				>
-					<ChatAIShortcuts
-						draft={draft}
-						shortcuts={company.shortcuts || []}
-						language={interfaceLanguage}
-						choose={setDraft}
-					/>
-				</Box>
+					<Typography variant="body2">{history.find((item) => item.id === pendingDeletion)?.title}</Typography>
+				</ActionModals>
 			)}
-			<Box className={styles.composer} sx={{ flexShrink: 0 }}>
-				<Stack direction="row" className={styles.input} sx={{ gap: 1, alignItems: 'center' }}>
-					<InputBase
-						fullWidth
-						multiline
-						maxRows={4}
-						placeholder="Décrivez votre recherche…"
-						value={draft}
-						disabled={busy}
-						slotProps={{ input: { maxLength: 4000, dir: 'auto', 'aria-label': 'Votre message' } }}
-						onChange={(e) => setDraft(e.target.value)}
-						sx={{ fontSize: { xs: 16, sm: 13 }, py: 0, '& textarea': { p: 0, lineHeight: 1.5 } }}
-						onKeyDown={(e) => {
-							if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
-								e.preventDefault();
-								void send();
-							}
-						}}
-					/>
-					{busy ? (
-						<IconButton className={styles.send} aria-label="Annuler la réponse" onClick={cancelPending}>
-							<Stop fontSize="small" />
-						</IconButton>
-					) : (
-						<IconButton className={styles.send} aria-label="Envoyer" disabled={!draft.trim()} onClick={() => send()}>
-							<Send fontSize="small" />
-						</IconButton>
-					)}
-				</Stack>
-				<Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.75, fontSize: 10 }}>
-					Entrée pour envoyer · Maj + Entrée pour une nouvelle ligne · / raccourcis
-				</Typography>
-			</Box>
+			<ChatAIComposer
+				key={`${composerVersion}:${historyOpen}`}
+				draft={draft}
+				setDraft={setDraft}
+				busy={busy}
+				historyOpen={historyOpen}
+				shortcuts={company.shortcuts || []}
+				language={interfaceLanguage}
+				send={() => {
+					void send();
+				}}
+				cancel={cancelPending}
+			/>
 		</>
 	);
 };
@@ -758,6 +587,29 @@ export const ChatAIAssistant = () => {
 	const tabCompany = useSyncExternalStore(subscribeChatAICompany, getChatAICompany, () => null);
 	const [capabilities, setCapabilities] = useState<ChatCapabilities | null>(null);
 	const [open, setOpen] = useState(false);
+	const [overlayOpen, setOverlayOpen] = useState(false);
+	useEffect(() => {
+		// Native dialogs/drawers own focus and accessibility while open. Preserve
+		// the chat state, but hide its shell until those overlays are closed.
+		const update = () =>
+			setOverlayOpen(
+				Array.from(document.querySelectorAll<HTMLElement>('.MuiModal-root')).some((element) => {
+					const style = getComputedStyle(element);
+					return (
+						element.getAttribute('aria-hidden') !== 'true' && style.display !== 'none' && style.visibility !== 'hidden'
+					);
+				}),
+			);
+		update();
+		const observer = new MutationObserver(update);
+		observer.observe(document.body, {
+			childList: true,
+			subtree: true,
+			attributes: true,
+			attributeFilter: ['aria-hidden', 'class', 'style'],
+		});
+		return () => observer.disconnect();
+	}, []);
 	const [pickedCompany, setPickedCompany] = useState<number | null>(null);
 	const authorizedCompanyId = (id: number | null) =>
 		id !== null && Number.isSafeInteger(id) && id > 0 && capabilities?.companies.some((item) => item.id === id)
@@ -811,7 +663,7 @@ export const ChatAIAssistant = () => {
 						{company.name}
 					</Typography>
 					<Typography variant="caption" color="text.secondary" sx={{ ml: 'auto !important', fontSize: 10 }}>
-						Société active
+						{language === 'en' ? 'Active company' : 'Société active'}
 					</Typography>
 				</Stack>
 			) : (
@@ -819,7 +671,7 @@ export const ChatAIAssistant = () => {
 					select
 					fullWidth
 					size="small"
-					label="Société"
+					label={language === 'en' ? 'Company' : 'Société'}
 					value={company?.id || ''}
 					onChange={(event) => setPickedCompany(Number(event.target.value))}
 				>
@@ -834,8 +686,7 @@ export const ChatAIAssistant = () => {
 	);
 	return (
 		<Portal>
-			<ChatAIFloatingButton open={open} toggle={() => setOpen((value) => !value)} offset={offset} />
-			<ChatAIPanel minimized={!open} close={() => setOpen(false)} offset={offset}>
+			<ChatAIInterface open={open} onOpenChange={setOpen} suppressed={overlayOpen} offset={offset}>
 				{company ? (
 					<ChatAIWorkspace
 						key={`${profile.id}:${company.id}`}
@@ -847,14 +698,18 @@ export const ChatAIAssistant = () => {
 					/>
 				) : (
 					<>
-						<ChatAIHeader close={() => setOpen(false)} />
+						<ChatAIHeader appName="Facturation" close={() => setOpen(false)} language={language} />
 						{companyControl}
 						<Box sx={{ p: 3 }}>
-							<Typography>Choisissez une société autorisée pour commencer.</Typography>
+							<Typography>
+								{language === 'en'
+									? 'Choose an authorized company to start.'
+									: 'Choisissez une société autorisée pour commencer.'}
+							</Typography>
 						</Box>
 					</>
 				)}
-			</ChatAIPanel>
+			</ChatAIInterface>
 		</Portal>
 	);
 };
