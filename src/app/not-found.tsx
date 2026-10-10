@@ -1,7 +1,7 @@
 'use client';
 
 import { Box, Button, Paper, Stack, Typography } from '@mui/material';
-import { ArrowBack as ArrowBackIcon, Home as HomeIcon, SentimentDissatisfied as SadIcon } from '@mui/icons-material';
+import { Home as HomeIcon, SentimentDissatisfied as SadIcon } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
 import { DASHBOARD } from '@/utils/routes';
 import { useLanguage } from '@/utils/hooks';
@@ -16,10 +16,6 @@ const NotFound = () => {
 
 	const handleGoHome = () => {
 		router.push(DASHBOARD);
-	};
-
-	const handleGoBack = () => {
-		router.back();
 	};
 
 	return (
@@ -68,9 +64,6 @@ const NotFound = () => {
 						justifyContent: 'center',
 					}}
 				>
-					<Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={handleGoBack} size="large">
-						{t.notFound.backBtn}
-					</Button>
 					<Button variant="contained" startIcon={<HomeIcon />} onClick={handleGoHome} size="large">
 						{t.notFound.homeBtn}
 					</Button>
