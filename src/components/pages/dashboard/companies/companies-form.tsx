@@ -1,5 +1,6 @@
 'use client';
 
+import { listReturnUrl } from '@/utils/listReturn';
 import { runWithCleanup } from '@/utils/runWithCleanup';
 import { type FC, type MouseEvent, useState } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
@@ -308,7 +309,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 				<Button
 					variant="outlined"
 					startIcon={<ArrowBackIcon />}
-					onClick={() => router.push(COMPANIES_LIST)}
+					onClick={() => router.push(listReturnUrl(COMPANIES_LIST))}
 					sx={{
 						whiteSpace: 'nowrap',
 						px: { xs: 1.5, sm: 2, md: 3 },

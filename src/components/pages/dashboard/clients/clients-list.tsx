@@ -61,7 +61,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 	];
 	const token = useInitAccessToken(session);
 
-	const [paginationModel, setPaginationModel, sorting] = useDataGridPagination();
+	const [paginationModel, setPaginationModel, sorting] = useDataGridPagination(10, { company_id });
 	const [searchTerm, setSearchTerm] = useState<string>('');
 	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [], logicOperator: GridLogicOperator.And });
 	const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);

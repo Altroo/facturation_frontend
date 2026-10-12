@@ -1,5 +1,6 @@
 'use client';
 
+import { listReturnUrl } from '@/utils/listReturn';
 import { type FC, Fragment, isValidElement } from 'react';
 import {
 	Alert,
@@ -760,7 +761,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 						<Button
 							variant="outlined"
 							startIcon={<ArrowBackIcon />}
-							onClick={() => router.push(listRoute)}
+							onClick={() => router.push(listReturnUrl(listRoute))}
 							sx={{ width: isMobile ? '100%' : 'auto' }}
 						>
 							{backLabel}
@@ -797,7 +798,7 @@ const CompanyDocumentsWrapperView = <TData extends CompanyDocumentData>({
 							helpText={t.common.documentErrorHelp}
 							backLabel={backLabel}
 							retryLabel={t.common.retry}
-							onBack={() => router.push(listRoute)}
+							onBack={() => router.push(listReturnUrl(listRoute))}
 							onRetry={() => router.refresh()}
 						/>
 					) : (

@@ -37,7 +37,7 @@ const movementColor = (
 
 const StockMovementsContent: FC<{ company_id: number }> = ({ company_id }) => {
 	const router = useRouter();
-	const [paginationModel, setPaginationModel, sorting] = useDataGridPagination();
+	const [paginationModel, setPaginationModel, sorting] = useDataGridPagination(10, { company_id });
 	const [searchTerm, setSearchTerm] = useState('');
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
 	const [chipFilterParams, setChipFilterParams] = useState<Record<string, string>>({});

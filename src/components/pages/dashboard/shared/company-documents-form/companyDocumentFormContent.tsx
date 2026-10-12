@@ -1,5 +1,6 @@
 'use client';
 
+import { listReturnUrl } from '@/utils/listReturn';
 import { useEffect, useEffectEvent, useRef, useState, type JSX, type ChangeEvent, type MouseEvent } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
@@ -1019,7 +1020,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 					<Button
 						variant="outlined"
 						startIcon={<ArrowBackIcon />}
-						onClick={() => router.push(`${config.routes.listRoute}?company_id=${company_id}`)}
+						onClick={() => router.push(listReturnUrl(`${config.routes.listRoute}?company_id=${company_id}`))}
 						sx={{
 							whiteSpace: 'nowrap',
 							px: { xs: 1.5, sm: 2, md: 3 },

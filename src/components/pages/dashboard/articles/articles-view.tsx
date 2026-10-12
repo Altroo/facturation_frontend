@@ -1,4 +1,5 @@
 ﻿'use client';
+import { listReturnUrl } from '@/utils/listReturn';
 import { runWithCleanup } from '@/utils/runWithCleanup';
 import { type FC, isValidElement, useState } from 'react';
 import { Box, Button, Card, CardContent, Divider, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
@@ -130,7 +131,7 @@ const ArticlesViewClient: FC<Props> = ({ session, company_id, id }) => {
 				try {
 					await deleteRecord({ id }).unwrap();
 					onSuccess(t.articles.deleteSuccess);
-					router.push(ARTICLES_LIST);
+					router.push(listReturnUrl(ARTICLES_LIST));
 				} catch (err) {
 					onError(extractApiErrorMessage(err, t.articles.deleteError));
 				}
@@ -180,7 +181,7 @@ const ArticlesViewClient: FC<Props> = ({ session, company_id, id }) => {
 						<Button
 							variant="outlined"
 							startIcon={<ArrowBackIcon />}
-							onClick={() => router.push(`${ARTICLES_LIST}?company_id=${company_id}`)}
+							onClick={() => router.push(listReturnUrl(`${ARTICLES_LIST}?company_id=${company_id}`))}
 							sx={{ width: isMobile ? '100%' : 'auto' }}
 						>
 							{t.articles.backToList}

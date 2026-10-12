@@ -1,5 +1,6 @@
 'use client';
 
+import { listReturnUrl } from '@/utils/listReturn';
 import { runWithCleanup } from '@/utils/runWithCleanup';
 import { type FC, Fragment, isValidElement, useState } from 'react';
 import {
@@ -152,7 +153,7 @@ const ClientsViewClient: FC<Props> = ({ session, company_id, id }) => {
 				try {
 					await deleteRecord({ id }).unwrap();
 					onSuccess(t.clients.deleteSuccess);
-					router.push(CLIENTS_LIST);
+					router.push(listReturnUrl(CLIENTS_LIST));
 				} catch (err) {
 					onError(extractApiErrorMessage(err, t.clients.deleteError));
 				}
@@ -434,7 +435,7 @@ const ClientsViewClient: FC<Props> = ({ session, company_id, id }) => {
 						<Button
 							variant="outlined"
 							startIcon={<ArrowBackIcon />}
-							onClick={() => router.push(`${CLIENTS_LIST}?company_id=${company_id}`)}
+							onClick={() => router.push(listReturnUrl(`${CLIENTS_LIST}?company_id=${company_id}`))}
 							sx={{ width: isMobile ? '100%' : 'auto' }}
 						>
 							{t.clients.backToList}

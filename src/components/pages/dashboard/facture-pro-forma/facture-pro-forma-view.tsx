@@ -1,5 +1,6 @@
 'use client';
 
+import { listReturnUrl } from '@/utils/listReturn';
 import { runWithCleanup } from '@/utils/runWithCleanup';
 import { type FC, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -45,7 +46,7 @@ const FactureProFormaViewClient: FC<Props> = ({ session, company_id, id }) => {
 				try {
 					await deleteRecord({ id }).unwrap();
 					onSuccess(t.facturesProforma.deleteSuccess);
-					router.push(FACTURE_PRO_FORMA_LIST);
+					router.push(listReturnUrl(FACTURE_PRO_FORMA_LIST));
 				} catch (err) {
 					onError(extractApiErrorMessage(err, t.facturesProforma.deleteError));
 				}

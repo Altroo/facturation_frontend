@@ -1,5 +1,6 @@
 'use client';
 
+import { listReturnUrl } from '@/utils/listReturn';
 import { type FC, isValidElement, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -115,7 +116,7 @@ const StockView: FC<StockViewProps> = ({ session, company_id, id }) => {
 	const role = companies?.find((company) => company.id === company_id)?.role;
 	const canAdjust = role === 'Caissier';
 	const { data: balance, isLoading, isError } = useGetStockBalanceQuery({ company_id, id }, { skip: !token });
-	const [paginationModel, setPaginationModel, sorting] = useDataGridPagination();
+	const [paginationModel, setPaginationModel, sorting] = useDataGridPagination(10, { company_id });
 	const [searchTerm, setSearchTerm] = useState('');
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
 	const [filterModel, setFilterModel] = useState<GridFilterModel>({
@@ -228,7 +229,7 @@ const StockView: FC<StockViewProps> = ({ session, company_id, id }) => {
 						<Button
 							variant="outlined"
 							startIcon={<ArrowBackIcon />}
-							onClick={() => router.push(`${STOCK_LIST}?company_id=${company_id}`)}
+							onClick={() => router.push(listReturnUrl(`${STOCK_LIST}?company_id=${company_id}`))}
 							sx={{ width: isMobile ? '100%' : 'auto' }}
 						>
 							État du stock

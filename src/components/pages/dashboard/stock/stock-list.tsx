@@ -42,7 +42,7 @@ const quantityText = (value: string, color: string) => (
 
 const StockListContent: FC<{ company_id: number; role: string }> = ({ company_id, role }) => {
 	const router = useRouter();
-	const [paginationModel, setPaginationModel, sorting] = useDataGridPagination();
+	const [paginationModel, setPaginationModel, sorting] = useDataGridPagination(10, { company_id });
 	const [searchTerm, setSearchTerm] = useState('');
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
 	const [chipFilterParams, setChipFilterParams] = useState<Record<string, string>>({});

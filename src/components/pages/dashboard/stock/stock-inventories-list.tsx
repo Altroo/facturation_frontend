@@ -40,7 +40,7 @@ const StockInventoriesContent: FC<{ company_id: number; role: string }> = ({ com
 	const { data: company } = useGetCompanyQuery({ id: company_id });
 	const inventoryEnabled = company?.stock_management_enabled === true && company?.inventory_management_enabled === true;
 	const canAdjust = role === 'Caissier' && inventoryEnabled;
-	const [paginationModel, setPaginationModel, sorting] = useDataGridPagination();
+	const [paginationModel, setPaginationModel, sorting] = useDataGridPagination(10, { company_id });
 	const [searchTerm, setSearchTerm] = useState('');
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
 	const [chipFilterParams, setChipFilterParams] = useState<Record<string, string>>({});

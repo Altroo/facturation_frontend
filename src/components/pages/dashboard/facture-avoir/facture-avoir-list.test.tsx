@@ -18,6 +18,7 @@ const mockDeleteRecord = jest.fn();
 const mockBulkDeleteRecords = jest.fn();
 
 jest.mock('next/navigation', () => ({
+	useSearchParams: () => new URLSearchParams(window.location.search),
 	useRouter: () => ({
 		push: jest.fn(),
 		back: jest.fn(),

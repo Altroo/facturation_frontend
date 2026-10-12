@@ -53,7 +53,7 @@ const FormikContent: FC<FormikContentProps> = (props) => {
 	const bonDeLivraisonUninvoicedListConfig = createBonDeLivraisonUninvoicedListConfig(t);
 	const token = useInitAccessToken(session);
 
-	const [paginationModel, setPaginationModel, sorting] = useDataGridPagination();
+	const [paginationModel, setPaginationModel, sorting] = useDataGridPagination(10, { company_id });
 	const [searchTerm, setSearchTerm] = useState<string>('');
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
 

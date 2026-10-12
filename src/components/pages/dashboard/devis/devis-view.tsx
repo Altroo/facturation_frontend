@@ -1,5 +1,6 @@
 'use client';
 
+import { listReturnUrl } from '@/utils/listReturn';
 import { type FC, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@mui/material';
@@ -40,7 +41,7 @@ const DevisViewClient: FC<Props> = ({ session, company_id, id }) => {
 				try {
 					await deleteRecord({ id }).unwrap();
 					onSuccess(t.devis.deleteSuccess);
-					router.push(DEVIS_LIST);
+					router.push(listReturnUrl(DEVIS_LIST));
 				} catch (err) {
 					onError(extractApiErrorMessage(err, t.devis.deleteError));
 				}

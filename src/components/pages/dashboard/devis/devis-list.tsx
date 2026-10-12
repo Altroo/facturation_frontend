@@ -129,7 +129,7 @@ const FormikContent: FC<FormikContentProps> = (props) => {
 	const devisListConfig = createDevisListConfig(t);
 	const token = useInitAccessToken(session);
 
-	const [paginationModel, setPaginationModel, sorting] = useDataGridPagination();
+	const [paginationModel, setPaginationModel, sorting] = useDataGridPagination(10, { company_id });
 	const [searchTerm, setSearchTerm] = useState('');
 	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [], logicOperator: GridLogicOperator.And });
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});

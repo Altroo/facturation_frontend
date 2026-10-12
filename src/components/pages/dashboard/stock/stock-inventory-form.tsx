@@ -1,5 +1,6 @@
 'use client';
 
+import { listReturnUrl } from '@/utils/listReturn';
 import { runWithCleanup } from '@/utils/runWithCleanup';
 import { useState, type FC, type MouseEvent } from 'react';
 import { useRouter } from 'next/navigation';
@@ -170,7 +171,7 @@ const StockInventoryFormContent: FC<StockInventoryFormContentProps> = ({ token, 
 				<Button
 					variant="outlined"
 					startIcon={<ArrowBackIcon />}
-					onClick={() => router.push(`${STOCK_INVENTORIES}?company_id=${company_id}`)}
+					onClick={() => router.push(listReturnUrl(`${STOCK_INVENTORIES}?company_id=${company_id}`))}
 					sx={{
 						whiteSpace: 'nowrap',
 						px: { xs: 1.5, sm: 2, md: 3 },

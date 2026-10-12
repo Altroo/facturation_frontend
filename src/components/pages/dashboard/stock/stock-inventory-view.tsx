@@ -1,5 +1,6 @@
 'use client';
 
+import { listReturnUrl } from '@/utils/listReturn';
 import { type FC, isValidElement } from 'react';
 import { useRouter } from 'next/navigation';
 import { STOCK_INVENTORIES } from '@/utils/routes';
@@ -165,7 +166,7 @@ const StockInventoryView: FC<StockInventoryViewProps> = ({ session, company_id, 
 						<Button
 							variant="outlined"
 							startIcon={<ArrowBackIcon />}
-							onClick={() => router.push(`${STOCK_INVENTORIES}?company_id=${company_id}`)}
+							onClick={() => router.push(listReturnUrl(`${STOCK_INVENTORIES}?company_id=${company_id}`))}
 							sx={{ width: isMobile ? '100%' : 'auto' }}
 						>
 							Inventaires de stock

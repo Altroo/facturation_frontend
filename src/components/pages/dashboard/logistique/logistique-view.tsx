@@ -1,5 +1,6 @@
 'use client';
 
+import { listReturnUrl } from '@/utils/listReturn';
 import { runWithCleanup } from '@/utils/runWithCleanup';
 import { isValidElement, useState, type FC } from 'react';
 import NextLink from 'next/link';
@@ -440,7 +441,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 				try {
 					await deleteLogistique({ id }).unwrap();
 					onSuccess(t.logistique.deleteSuccess);
-					router.push(LOGISTIQUE_LIST);
+					router.push(listReturnUrl(LOGISTIQUE_LIST));
 				} catch (err) {
 					onError(extractApiErrorMessage(err, t.logistique.deleteError));
 				}
@@ -672,7 +673,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 							<Button
 								variant="outlined"
 								startIcon={<ArrowBackIcon />}
-								onClick={() => router.push(`${LOGISTIQUE_LIST}?company_id=${company_id}`)}
+								onClick={() => router.push(listReturnUrl(`${LOGISTIQUE_LIST}?company_id=${company_id}`))}
 								sx={{ width: isMobile ? '100%' : 'auto' }}
 							>
 								{t.logistique.backToList}

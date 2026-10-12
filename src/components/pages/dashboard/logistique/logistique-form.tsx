@@ -1,5 +1,6 @@
 'use client';
 
+import { listReturnUrl } from '@/utils/listReturn';
 import { runWithCleanup, runWithErrorHandler } from '@/utils/runWithCleanup';
 import { useState, type FC, type MouseEvent } from 'react';
 import { useRouter } from 'next/navigation';
@@ -442,7 +443,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 								const response = await addLogistique({ company_id, data: toPayload(values, false) }).unwrap();
 								onSuccess(t.logistique.addSuccess);
 								const firstOrder = response.orders[0];
-								router.push(firstOrder ? LOGISTIQUE_VIEW(firstOrder.id, company_id) : LOGISTIQUE_LIST);
+								router.push(firstOrder ? LOGISTIQUE_VIEW(firstOrder.id, company_id) : listReturnUrl(LOGISTIQUE_LIST));
 							}
 						},
 						(e) => {
@@ -560,7 +561,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 									<Button
 										variant="outlined"
 										startIcon={<ArrowBackIcon />}
-										onClick={() => router.push(`${LOGISTIQUE_LIST}?company_id=${company_id}`)}
+										onClick={() => router.push(listReturnUrl(`${LOGISTIQUE_LIST}?company_id=${company_id}`))}
 										sx={{ width: isMobile ? '100%' : 'auto' }}
 									>
 										{t.logistique.backToList}

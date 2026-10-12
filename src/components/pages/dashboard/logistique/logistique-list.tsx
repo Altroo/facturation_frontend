@@ -85,7 +85,7 @@ const FormikContent: FC<FormikContentProps> = ({ session, company_id, role }) =>
 	const canManage = logistiqueManagerRoles.has(role);
 	const canDelete = role === 'Caissier';
 
-	const [paginationModel, setPaginationModel, sorting] = useDataGridPagination();
+	const [paginationModel, setPaginationModel, sorting] = useDataGridPagination(10, { company_id });
 	const [searchTerm, setSearchTerm] = useState('');
 	const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [], logicOperator: GridLogicOperator.And });
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});

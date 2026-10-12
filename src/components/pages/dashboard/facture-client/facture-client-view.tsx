@@ -1,5 +1,6 @@
 'use client';
 
+import { listReturnUrl } from '@/utils/listReturn';
 import { runWithCleanup } from '@/utils/runWithCleanup';
 import { type FC, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -47,7 +48,7 @@ const FactureClientViewClient: FC<Props> = ({ session, company_id, id }) => {
 				try {
 					await deleteRecord({ id }).unwrap();
 					onSuccess(t.facturesClient.deleteSuccess);
-					router.push(FACTURE_CLIENT_LIST);
+					router.push(listReturnUrl(FACTURE_CLIENT_LIST));
 				} catch (err) {
 					onError(extractApiErrorMessage(err, t.facturesClient.deleteError));
 				}

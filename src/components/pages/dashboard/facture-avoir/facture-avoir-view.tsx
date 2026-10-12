@@ -1,5 +1,6 @@
 'use client';
 
+import { listReturnUrl } from '@/utils/listReturn';
 import { runWithCleanup } from '@/utils/runWithCleanup';
 import { type FC, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -53,7 +54,7 @@ const FactureAvoirViewClient: FC<Props> = ({ session, company_id, id }) => {
 				try {
 					await deleteFactureAvoir({ id }).unwrap();
 					onSuccess(t.facturesAvoir.deleteSuccess);
-					router.push(FACTURE_AVOIR_LIST);
+					router.push(listReturnUrl(FACTURE_AVOIR_LIST));
 				} catch (err) {
 					onError(extractApiErrorMessage(err, t.facturesAvoir.deleteError));
 				}

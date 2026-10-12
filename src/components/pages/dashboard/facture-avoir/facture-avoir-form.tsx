@@ -1,5 +1,6 @@
 'use client';
 
+import { listReturnUrl } from '@/utils/listReturn';
 import { runWithErrorHandler } from '@/utils/runWithCleanup';
 import { type FC, type MouseEvent, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -489,7 +490,7 @@ const FormikContent: FC<FormikContentProps> = ({ token, company_id, id, isEditMo
 				<Button
 					variant="outlined"
 					startIcon={<ArrowBackIcon />}
-					onClick={() => router.push(`${FACTURE_AVOIR_LIST}?company_id=${company_id}`)}
+					onClick={() => router.push(listReturnUrl(`${FACTURE_AVOIR_LIST}?company_id=${company_id}`))}
 					sx={{
 						alignSelf: 'flex-start',
 						whiteSpace: 'nowrap',

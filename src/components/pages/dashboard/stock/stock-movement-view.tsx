@@ -1,5 +1,6 @@
 'use client';
 
+import { listReturnUrl } from '@/utils/listReturn';
 import { type FC, isValidElement } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -97,7 +98,7 @@ const StockMovementView: FC<StockMovementViewProps> = ({ session, company_id, id
 						<Button
 							variant="outlined"
 							startIcon={<ArrowBackIcon />}
-							onClick={() => router.push(`${STOCK_MOVEMENTS}?company_id=${company_id}`)}
+							onClick={() => router.push(listReturnUrl(`${STOCK_MOVEMENTS}?company_id=${company_id}`))}
 							sx={{ width: isMobile ? '100%' : 'auto' }}
 						>
 							Mouvements de stock

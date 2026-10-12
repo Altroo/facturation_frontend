@@ -1,5 +1,6 @@
 'use client';
 
+import { listReturnUrl } from '@/utils/listReturn';
 import { runWithCleanup } from '@/utils/runWithCleanup';
 import { isValidElement, useState, type FC } from 'react';
 import {
@@ -127,7 +128,7 @@ const ReglementViewClient: FC<Props> = ({ session, company_id, id }) => {
 				try {
 					await deleteRecord({ id }).unwrap();
 					onSuccess(t.reglements.deleteSuccess);
-					router.push(REGLEMENTS_LIST);
+					router.push(listReturnUrl(REGLEMENTS_LIST));
 				} catch (err) {
 					onError(extractApiErrorMessage(err, t.reglements.deleteError));
 				}
@@ -198,7 +199,7 @@ const ReglementViewClient: FC<Props> = ({ session, company_id, id }) => {
 						<Button
 							variant="outlined"
 							startIcon={<ArrowBackIcon />}
-							onClick={() => router.push(`${REGLEMENTS_LIST}?company_id=${company_id}`)}
+							onClick={() => router.push(listReturnUrl(`${REGLEMENTS_LIST}?company_id=${company_id}`))}
 							sx={{ width: isMobile ? '100%' : 'auto' }}
 						>
 							{t.reglements.backToList}

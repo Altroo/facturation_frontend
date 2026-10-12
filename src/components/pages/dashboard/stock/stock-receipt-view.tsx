@@ -1,5 +1,6 @@
 'use client';
 
+import { listReturnUrl } from '@/utils/listReturn';
 import { runWithCleanup } from '@/utils/runWithCleanup';
 import { isValidElement, useState, type FC } from 'react';
 import { useRouter } from 'next/navigation';
@@ -166,7 +167,7 @@ const StockReceiptView: FC<StockReceiptViewProps> = ({ session, company_id, id }
 						<Button
 							variant="outlined"
 							startIcon={<ArrowBackIcon />}
-							onClick={() => router.push(`${STOCK_RECEIPTS}?company_id=${company_id}`)}
+							onClick={() => router.push(listReturnUrl(`${STOCK_RECEIPTS}?company_id=${company_id}`))}
 							sx={{ width: isMobile ? '100%' : 'auto' }}
 						>
 							Retour aux réceptions

@@ -1,5 +1,6 @@
 'use client';
 
+import { listReturnUrl } from '@/utils/listReturn';
 import { runWithCleanup } from '@/utils/runWithCleanup';
 import { type FC, isValidElement, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -143,7 +144,7 @@ const CompaniesViewClient: FC<Props> = ({ session, id }) => {
 				try {
 					await suspendRecord({ id }).unwrap();
 					onSuccess(t.companies.suspendSuccess);
-					router.push(COMPANIES_LIST);
+					router.push(listReturnUrl(COMPANIES_LIST));
 				} catch {
 					onError(t.companies.suspendError);
 				}
@@ -194,7 +195,7 @@ const CompaniesViewClient: FC<Props> = ({ session, id }) => {
 							<Button
 								variant="outlined"
 								startIcon={<ArrowBackIcon />}
-								onClick={() => router.push(COMPANIES_LIST)}
+								onClick={() => router.push(listReturnUrl(COMPANIES_LIST))}
 								sx={{ width: isMobile ? '100%' : 'auto' }}
 							>
 								{t.companies.backToList}

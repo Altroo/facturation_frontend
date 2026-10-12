@@ -6,6 +6,7 @@ import type { AppSession } from '@/types/_initTypes';
 const mockPush = jest.fn();
 const mockOpen = jest.fn();
 jest.mock('next/navigation', () => ({
+	useSearchParams: () => new URLSearchParams(window.location.search),
 	useRouter: () => ({
 		push: mockPush,
 		back: jest.fn(),

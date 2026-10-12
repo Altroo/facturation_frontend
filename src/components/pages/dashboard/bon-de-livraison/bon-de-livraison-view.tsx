@@ -1,5 +1,6 @@
 'use client';
 
+import { listReturnUrl } from '@/utils/listReturn';
 import { runWithCleanup } from '@/utils/runWithCleanup';
 import { type FC, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -39,7 +40,7 @@ const BonDeLivraisonViewClient: FC<Props> = ({ session, company_id, id }) => {
 				try {
 					await deleteRecord({ id }).unwrap();
 					onSuccess(t.bonsLivraison.deleteSuccess);
-					router.push(BON_DE_LIVRAISON_LIST);
+					router.push(listReturnUrl(BON_DE_LIVRAISON_LIST));
 				} catch (err) {
 					onError(extractApiErrorMessage(err, t.bonsLivraison.deleteError));
 				}

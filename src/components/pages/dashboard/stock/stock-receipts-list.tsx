@@ -48,7 +48,7 @@ const StockReceiptsContent: FC<{ company_id: number; role: string }> = ({ compan
 	const router = useRouter();
 	const { onSuccess, onError } = useToast();
 	const canReceive = role === 'Logistique';
-	const [paginationModel, setPaginationModel, sorting] = useDataGridPagination();
+	const [paginationModel, setPaginationModel, sorting] = useDataGridPagination(10, { company_id });
 	const [searchTerm, setSearchTerm] = useState('');
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
 	const [chipFilterParams, setChipFilterParams] = useState<Record<string, string>>({});
