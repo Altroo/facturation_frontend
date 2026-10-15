@@ -302,6 +302,7 @@ export type TranslationDictionary = {
 		colPrixVente: string;
 		colPrixHT: string;
 		colPrixTTC: string;
+		fieldPrixVenteBase: string;
 		colDateCreation: string;
 		filterCategorie: string;
 		filterEmplacement: string;

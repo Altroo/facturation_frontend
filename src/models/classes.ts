@@ -3,6 +3,7 @@ import type { TypeClientType } from '@/types/clientTypes';
 import type { TypeArticleType, CurrencyType } from '@/types/articleTypes';
 import type { TypeFactureLivraisonDevisStatus, TypeRemiseType } from '@/types/devisTypes';
 import type { ReglementStatutType } from '@/types/reglementTypes';
+import type { SalePriceBasis } from '@/utils/articlePricing';
 
 export class UserClass {
 	constructor(
@@ -93,6 +94,7 @@ export class ClientClass {
 }
 
 export class ArticleClass {
+	public prix_vente_base: SalePriceBasis = 'HT';
 	public stock_minimum = 0;
 	public readonly stock_management_enabled = false;
 	public readonly physical_quantity = 0;

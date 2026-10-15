@@ -18,6 +18,7 @@ import {
 } from '@/utils/formValidationErrorMessages';
 import type { ClientSchemaType } from '@/types/clientTypes';
 import { pmRequired, ppRequired } from '@/utils/rawData';
+import { calculateSalePriceHT } from '@/utils/articlePricing';
 
 const base64ImageField = z.url().or(z.string().startsWith('data:image/')).nullable().optional();
 
@@ -308,6 +309,7 @@ export const articleSchema = z
 		prix_achat: optionalNumberField(0).nullable(),
 		devise_prix_achat: z.enum(['MAD', 'EUR', 'USD']).default('MAD'),
 		prix_vente: optionalNumberField(0).nullable(),
+		prix_vente_base: z.enum(['HT', 'TTC']).default('HT'),
 		devise_prix_vente: z.enum(['MAD', 'EUR', 'USD']).default('MAD'),
 		tva: optionalTVANumberField(0),
 		stock_minimum: optionalNumberField(0).default(0),
@@ -323,7 +325,7 @@ export const articleSchema = z
 			const deviseAchat = (data.devise_prix_achat ?? 'MAD') as 'MAD' | 'EUR' | 'USD';
 			const deviseVente = (data.devise_prix_vente ?? 'MAD') as 'MAD' | 'EUR' | 'USD';
 			const aInMAD = a * rates[deviseAchat];
-			const vInMAD = v * rates[deviseVente];
+			const vInMAD = calculateSalePriceHT(v, data.tva ?? 0, data.prix_vente_base) * rates[deviseVente];
 			return vInMAD > aInMAD;
 		},
 		{ error: INPUT_PRICE_VENTE_ACHAT, path: ['prix_vente'] },

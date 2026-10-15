@@ -90,7 +90,8 @@ import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import ClientArticleWrapperForm from '@/components/pages/dashboard/shared/client-article-form/clientArticleWrapperForm';
 import { useGetCompanyQuery } from '@/store/services/company';
 import EntityCrudControls from '@/components/shared/entityCrudControls/entityCrudControls';
-import { calculateNectarPrixTTC, isNectarRaisonSociale } from '@/utils/nectar';
+import { isNectarRaisonSociale } from '@/utils/nectar';
+import { calculateSalePriceHT, calculateSalePriceTTC, type SalePriceBasis } from '@/utils/articlePricing';
 
 const inputTheme = textInputTheme();
 
@@ -164,7 +165,11 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 			devise_prix_achat: isNectarCompany
 				? (rawData?.devise_prix_vente ?? 'MAD')
 				: (rawData?.devise_prix_achat ?? 'MAD'),
-			prix_vente: rawData?.prix_vente ?? 0,
+			prix_vente:
+				rawData?.prix_vente_base === 'TTC'
+					? calculateSalePriceTTC(Number(rawData.prix_vente ?? 0), Number(rawData.tva ?? 20))
+					: (rawData?.prix_vente ?? 0),
+			prix_vente_base: rawData?.prix_vente_base ?? 'HT',
 			devise_prix_vente: rawData?.devise_prix_vente ?? 'MAD',
 			photo: rawData?.photo ?? '',
 			photo_cropped: rawData?.photo ?? '',
@@ -182,6 +187,12 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 			setIsPending(true);
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const { globalError, ...payload } = data;
+			// Persist the entry basis while keeping document and PDF prices in HT.
+			payload.prix_vente = calculateSalePriceHT(
+				Number(payload.prix_vente ?? 0),
+				Number(payload.tva ?? 0),
+				payload.prix_vente_base,
+			);
 			const submissionPayload = isNectarCompany
 				? {
 						...payload,
@@ -221,8 +232,18 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 	// Error handling
 	const error = isEditMode ? dataError || updateError : addError;
 	const axiosError = error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined;
-	const prixHTLabel = isNectarCompany ? t.articles.colPrixHT : t.articles.colPrixVente;
-	const prixTTC = calculateNectarPrixTTC(formik.values.prix_vente, formik.values.tva);
+	const priceBasis = formik.values.prix_vente_base ?? 'HT';
+	const prixHTLabel = isNectarCompany
+		? priceBasis === 'HT'
+			? t.articles.colPrixHT
+			: t.articles.colPrixTTC
+		: t.articles.colPrixVente;
+	const prixHT = calculateSalePriceHT(
+		Number(formik.values.prix_vente ?? 0),
+		Number(formik.values.tva ?? 0),
+		priceBasis,
+	);
+	const prixTTC = calculateSalePriceTTC(prixHT, Number(formik.values.tva ?? 0));
 	const prixTTCDevise = formik.values.devise_prix_vente ?? 'MAD';
 
 	// Stable categoryItems
@@ -612,12 +633,28 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 											/>
 										)}
 									</Stack>
+									<CustomDropDownSelect
+										id="prix_vente_base"
+										size="small"
+										label={t.articles.fieldPrixVenteBase}
+										items={['HT', 'TTC']}
+										value={priceBasis}
+										onChange={(e) => void formik.setFieldValue('prix_vente_base', e.target.value as SalePriceBasis)}
+										theme={customDropdownTheme()}
+									/>
+									{!isNectarCompany && (
+										<Typography variant="body2" color="text.secondary" role="status">
+											{t.articles.colPrixHT} : {formatNumberWithSpaces(prixHT, 2)} {prixTTCDevise}
+											{' · '}
+											{t.articles.colPrixTTC} : {formatNumberWithSpaces(prixTTC, 2)} {prixTTCDevise}
+										</Typography>
+									)}
 									{isNectarCompany && (
 										<CustomTextInput
-											id="prix_ttc"
+											id={priceBasis === 'HT' ? 'prix_ttc' : 'prix_ht'}
 											type="text"
-											label={t.articles.colPrixTTC}
-											value={`${formatNumberWithSpaces(prixTTC, 2)} ${prixTTCDevise}`}
+											label={priceBasis === 'HT' ? t.articles.colPrixTTC : t.articles.colPrixHT}
+											value={`${formatNumberWithSpaces(priceBasis === 'HT' ? prixTTC : prixHT, 2)} ${prixTTCDevise}`}
 											onChange={() => undefined}
 											fullWidth={true}
 											size="small"

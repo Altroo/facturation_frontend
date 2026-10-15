@@ -1,5 +1,5 @@
 import { type ReactNode, type ChangeEvent, type SyntheticEvent, type ReactElement } from 'react';
-import { render, screen, cleanup, fireEvent } from '@testing-library/react';
+import { render, screen, cleanup, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
@@ -178,21 +178,19 @@ jest.mock('@/components/formikElements/formattedNumberInput/formattedNumberInput
 	default: ({
 		id,
 		label,
+		value,
 		onChange,
 		onBlur,
 	}: {
 		id: string;
 		label: string;
-		onChange?: (values: { floatValue: number | undefined }) => void;
+		value?: number | string;
+		onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
 		onBlur?: () => void;
 	}) => (
 		<div data-testid={`input-${id}`}>
 			<label>{label}</label>
-			<input
-				data-testid={`input-field-${id}`}
-				onChange={(e) => onChange?.({ floatValue: parseFloat(e.target.value) || undefined })}
-				onBlur={() => onBlur?.()}
-			/>
+			<input data-testid={`input-field-${id}`} value={value} onChange={onChange} onBlur={() => onBlur?.()} />
 		</div>
 	),
 }));
@@ -226,17 +224,24 @@ jest.mock('@/components/formikElements/customDropDownSelect/customDropDownSelect
 	default: ({
 		id,
 		label,
+		value,
+		items,
 		onChange,
 	}: {
 		id: string;
 		label: string;
+		value?: string;
+		items: string[];
 		onChange?: (event: ChangeEvent<HTMLSelectElement>) => void;
 	}) => (
 		<div data-testid={`dropdown-${id}`}>
 			<label>{label}</label>
-			<select data-testid={`dropdown-field-${id}`} onChange={onChange}>
-				<option value="">-</option>
-				<option value="EUR">EUR</option>
+			<select data-testid={`dropdown-field-${id}`} value={value} onChange={onChange}>
+				{items.map((item) => (
+					<option key={item} value={item}>
+						{item}
+					</option>
+				))}
 			</select>
 		</div>
 	),
@@ -288,6 +293,7 @@ jest.mock('@/utils/themes', () => ({
 }));
 
 jest.mock('@/utils/helpers', () => ({
+	formatNumberWithSpaces: jest.requireActual('@/utils/helpers').formatNumberWithSpaces,
 	getLabelForKey: jest.fn((labels: Record<string, string>, key: string) => labels[key] || key),
 	setFormikAutoErrors: jest.fn(),
 	parseNumber: jest.fn((val: string) => {
@@ -345,6 +351,106 @@ describe('ArticlesForm', () => {
 
 	afterEach(() => {
 		cleanup();
+	});
+
+	describe('HT/TTC selling price entry', () => {
+		beforeEach(() => {
+			mockAddArticleMutation.mockReturnValue({ unwrap: () => Promise.resolve({ id: 50 }) });
+			mockEditArticleMutation.mockReturnValue({ unwrap: () => Promise.resolve({ id: 42 }) });
+			mockUseAddArticleMutation.mockReturnValue([mockAddArticleMutation, { isLoading: false, error: undefined }]);
+			mockUseEditArticleMutation.mockReturnValue([mockEditArticleMutation, { isLoading: false, error: undefined }]);
+			jest.requireMock('@/store/services/company').useGetCompanyQuery.mockReturnValue({
+				data: { raison_sociale: 'CASA DI LUSSO', uses_foreign_currency: false },
+				isFetching: false,
+			});
+		});
+
+		it('defaults to HT, previews TTC and submits the unchanged HT amount', async () => {
+			renderWithProviders(<ArticlesForm session={mockSession} company_id={1} />);
+			expect(screen.getByTestId('dropdown-field-prix_vente_base')).toHaveValue('HT');
+			fireEvent.change(screen.getByTestId('input-field-prix_vente'), { target: { value: '100' } });
+			expect(screen.getByRole('status')).toHaveTextContent('Prix H.T. : 100,00 MAD · Prix T.T.C. : 120,00 MAD');
+			fireEvent.click(screen.getByTestId('submit-button'));
+			await waitFor(() => expect(mockAddArticleMutation).toHaveBeenCalled());
+			expect(mockAddArticleMutation.mock.calls[0][0].data.prix_vente).toBe(100);
+			expect(mockAddArticleMutation.mock.calls[0][0].data.prix_vente_base).toBe('HT');
+		});
+
+		it.each([
+			[120, 20, 100],
+			[110, 10, 100],
+			[17.49, 20, 14.58],
+			[100, 0, 100],
+		])('saves %s TTC with %s%% VAT as %s HT', async (price, tva, ht) => {
+			renderWithProviders(<ArticlesForm session={mockSession} company_id={1} />);
+			fireEvent.change(screen.getByTestId('dropdown-field-prix_vente_base'), { target: { value: 'TTC' } });
+			fireEvent.change(screen.getByTestId('input-field-prix_vente'), { target: { value: String(price) } });
+			fireEvent.change(screen.getByTestId('input-field-tva'), { target: { value: String(tva) } });
+			fireEvent.click(screen.getByTestId('submit-button'));
+			await waitFor(() => expect(mockAddArticleMutation).toHaveBeenCalled());
+			expect(mockAddArticleMutation.mock.calls[0][0].data).toEqual(expect.objectContaining({ prix_vente: ht, tva }));
+			expect(mockAddArticleMutation.mock.calls[0][0].data.prix_vente_base).toBe('TTC');
+		});
+
+		it('reopens a saved article as HT and keeps its price on update', async () => {
+			mockUseGetArticleQuery.mockReturnValue({
+				data: {
+					id: 42,
+					reference: 'ART-042',
+					designation: 'Article test',
+					prix_vente: 100,
+					tva: 20,
+				},
+				isLoading: false,
+			});
+			renderWithProviders(<ArticlesForm session={mockSession} company_id={1} id={42} />);
+			expect(screen.getByTestId('dropdown-field-prix_vente_base')).toHaveValue('HT');
+			fireEvent.click(screen.getByTestId('submit-button'));
+			await waitFor(() => expect(mockEditArticleMutation).toHaveBeenCalled());
+			expect(mockEditArticleMutation.mock.calls[0][0].data.prix_vente).toBe(100);
+		});
+
+		it.each([
+			[100, 20, 120],
+			[14.58, 20, 17.5],
+			[100, 0, 100],
+		])('restores a TTC entry from %s HT at %s%% without changing its saved price', async (ht, tva, ttc) => {
+			mockUseGetArticleQuery.mockReturnValue({
+				data: {
+					id: 42,
+					reference: 'ART-042',
+					designation: 'Article test',
+					prix_vente: ht,
+					prix_vente_base: 'TTC',
+					tva,
+				},
+				isLoading: false,
+			});
+			renderWithProviders(<ArticlesForm session={mockSession} company_id={1} id={42} />);
+			expect(screen.getByTestId('dropdown-field-prix_vente_base')).toHaveValue('TTC');
+			expect(screen.getByTestId('input-field-prix_vente')).toHaveValue(String(ttc));
+			fireEvent.click(screen.getByTestId('submit-button'));
+			await waitFor(() => expect(mockEditArticleMutation).toHaveBeenCalled());
+			expect(mockEditArticleMutation.mock.calls[0][0].data).toEqual(
+				expect.objectContaining({ prix_vente: ht, prix_vente_base: 'TTC' }),
+			);
+		});
+
+		it('shows Nectar’s HT equivalent when a TTC price is entered', async () => {
+			jest.requireMock('@/store/services/company').useGetCompanyQuery.mockReturnValue({
+				data: { raison_sociale: 'IMMOBILIERE NECTAR', uses_foreign_currency: false },
+				isFetching: false,
+			});
+			renderWithProviders(<ArticlesForm session={mockSession} company_id={1} />);
+			fireEvent.change(screen.getByTestId('dropdown-field-prix_vente_base'), { target: { value: 'TTC' } });
+			fireEvent.change(screen.getByTestId('input-field-prix_vente'), { target: { value: '120' } });
+			expect(screen.getByTestId('input-field-prix_ht')).toHaveValue('100,00 MAD');
+			fireEvent.click(screen.getByTestId('submit-button'));
+			await waitFor(() => expect(mockAddArticleMutation).toHaveBeenCalled());
+			expect(mockAddArticleMutation.mock.calls[0][0].data).toEqual(
+				expect.objectContaining({ prix_vente: 100, prix_achat: 0 }),
+			);
+		});
 	});
 
 	describe('Add Mode (no id)', () => {

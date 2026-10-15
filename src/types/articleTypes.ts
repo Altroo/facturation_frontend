@@ -2,6 +2,7 @@ import type { SessionProps } from '@/types/_initTypes';
 import type { FC, ReactNode } from 'react';
 import type { ArticleClass } from '@/models/classes';
 import type { TypeRemiseType } from '@/types/devisTypes';
+import type { SalePriceBasis } from '@/utils/articlePricing';
 
 export type TypeArticleType = 'Produit' | 'Service';
 
@@ -27,6 +28,7 @@ export type ArticleSchemaType = {
 	prix_achat?: number;
 	devise_prix_achat?: CurrencyType;
 	prix_vente?: number;
+	prix_vente_base?: SalePriceBasis;
 	devise_prix_vente?: CurrencyType;
 	tva?: number;
 	stock_minimum?: number;
