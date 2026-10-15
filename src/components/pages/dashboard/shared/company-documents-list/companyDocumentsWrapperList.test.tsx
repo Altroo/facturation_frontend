@@ -3,7 +3,7 @@ import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import CompanyDocumentsWrapperList from './companyDocumentsWrapperList';
 import type { CompanyDocumentsListProps } from '@/types/companyDocumentsTypes';
-import { getChatAICompany, publishChatAICompany, subscribeChatAICompany } from '@/components/chat-ai/company-context';
+import { getChatAICompany, publishChatAICompany, subscribeChatAICompany } from '@/utils/chatAiCompany';
 
 jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 	__esModule: true,

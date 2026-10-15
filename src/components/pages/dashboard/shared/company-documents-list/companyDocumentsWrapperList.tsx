@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Box, Button, Container, Paper, Stack, Tab, Tabs, Typography } from '@mui/material';
 import { Business as BusinessIcon } from '@mui/icons-material';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import { publishChatAICompany } from '@/components/chat-ai/company-context';
+import { publishChatAICompany } from '@/utils/chatAiCompany';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { useInitAccessToken } from '@/contexts/InitContext';

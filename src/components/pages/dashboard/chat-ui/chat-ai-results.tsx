@@ -16,8 +16,8 @@ import {
 import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import DashboardStatCard from '@/components/shared/dashboardStatCard/dashboardStatCard';
-import type { ChatCard, ChatRecord, NavigationTarget } from './types';
-import styles from './shared/chat-ai.module.css';
+import type { ChatCard, ChatRecord, NavigationTarget } from '@/types/chatAiTypes';
+import styles from '@/styles/dashboard/chat-ui/chat-ui.module.sass';
 import { formatNumberWithSpaces } from '@/utils/helpers';
 import { useLanguage } from '@/utils/hooks';
 import {

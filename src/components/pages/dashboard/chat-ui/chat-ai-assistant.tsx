@@ -18,8 +18,8 @@ import {
 import { DeleteOutlined, BusinessOutlined } from '@mui/icons-material';
 import { useAppSelector, useAppDispatch, useLanguage } from '@/utils/hooks';
 import { getAccessToken, getProfilState } from '@/store/selectors';
-import { chatRequest, ChatAPIError, consumeChatStream, safeNavigation, downloadInvoicePDF } from './api';
-import { getChatAICompany, publishChatAICompany, subscribeChatAICompany } from './company-context';
+import { chatRequest, ChatAPIError, consumeChatStream, safeNavigation, downloadInvoicePDF } from '@/utils/chatAiApi';
+import { getChatAICompany, publishChatAICompany, subscribeChatAICompany } from '@/utils/chatAiCompany';
 import { factureClientApi } from '@/store/services/factureClient';
 import { deviApi } from '@/store/services/devi';
 import { factureProFormaApi } from '@/store/services/factureProForma';
@@ -32,12 +32,12 @@ import { reglementApi } from '@/store/services/reglement';
 import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
-import styles from './shared/chat-ai.module.css';
-import { ChatAIInterface, ChatAIHeader, ChatAIWelcome, ChatAIMessageBox } from './shared/ChatAIInterface';
-export { ChatAIFloatingButton, ChatAIPanel } from './shared/ChatAIInterface';
-import { ChatAIComposer } from './shared/ChatAIComposer';
-import { ChatAIResults } from './ChatAIResults';
-import type { ChatCapabilities, ChatMessage, NavigationTarget, ChatCard } from './types';
+import styles from '@/styles/dashboard/chat-ui/chat-ui.module.sass';
+import { ChatAIInterface, ChatAIHeader, ChatAIWelcome, ChatAIMessageBox } from './chat-ai-interface';
+export { ChatAIFloatingButton, ChatAIPanel } from './chat-ai-interface';
+import { ChatAIComposer } from './chat-ai-composer';
+import { ChatAIResults } from './chat-ai-results';
+import type { ChatCapabilities, ChatMessage, NavigationTarget, ChatCard } from '@/types/chatAiTypes';
 
 const errorText: Record<string, string> = {
 	PERMISSION_DENIED: 'Vous n’avez pas accès à ces informations.',

@@ -1,12 +1,12 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { ChatAIAssistant, ChatAIFloatingButton, ChatAIPanel } from './ChatAIAssistant';
-import { chatRequest, ChatAPIError, consumeChatStream } from './api';
+import { ChatAIAssistant, ChatAIFloatingButton, ChatAIPanel } from './chat-ai-assistant';
+import { chatRequest, ChatAPIError, consumeChatStream } from '@/utils/chatAiApi';
 import { useAppSelector, useAppDispatch } from '@/utils/hooks';
 import { getAccessToken } from '@/store/selectors';
-import type { ChatCapabilities, ChatCard, ChatMessage, ChatRecord, NavigationTarget } from './types';
-import { ChatAIResults } from './ChatAIResults';
-import { getChatAICompany, publishChatAICompany } from './company-context';
+import type { ChatCapabilities, ChatCard, ChatMessage, ChatRecord, NavigationTarget } from '@/types/chatAiTypes';
+import { ChatAIResults } from './chat-ai-results';
+import { getChatAICompany, publishChatAICompany } from '@/utils/chatAiCompany';
 const mockPush = jest.fn();
 const mockDispatch = jest.fn();
 let mockPathname = '/dashboard/';
@@ -19,8 +19,8 @@ jest.mock('next/navigation', () => ({
 	useRouter: () => ({ push: mockPush }),
 	useSearchParams: () => new URLSearchParams(mockCompanyId === null ? '' : `company_id=${mockCompanyId}`),
 }));
-jest.mock('./api', () => ({
-	...jest.requireActual('./api'),
+jest.mock('@/utils/chatAiApi', () => ({
+	...jest.requireActual('@/utils/chatAiApi'),
 	chatRequest: jest.fn(),
 	consumeChatStream: jest.fn(),
 }));

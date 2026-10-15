@@ -1,6 +1,6 @@
 import { type ReactNode, Suspense } from 'react';
 import AppUpdate from '@/components/shared/appUpdate/appUpdate';
-import { ChatAIAssistant } from '@/components/chat-ai/ChatAIAssistant';
+import { ChatAIAssistant } from '@/components/pages/dashboard/chat-ui/chat-ai-assistant';
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
 	return (

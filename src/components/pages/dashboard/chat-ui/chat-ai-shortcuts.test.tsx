@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { ChatAIShortcuts } from './ChatAIShortcuts';
-import type { ChatShortcut } from './types';
+import { ChatAIShortcuts } from './chat-ai-shortcuts';
+import type { ChatShortcut } from '@/types/chatAiTypes';
 
 const shortcuts: ChatShortcut[] = [
 	{ command: '/stock', title: 'Stock', help: 'Consulter le stock autorisé.', example: '/stock peinture' },

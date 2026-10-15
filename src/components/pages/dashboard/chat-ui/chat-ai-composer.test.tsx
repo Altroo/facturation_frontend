@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { ChatAIComposer } from './ChatAIComposer';
+import { ChatAIComposer } from './chat-ai-composer';
 
 const commands = [
 	{ command: '/voir', title: 'Rechercher', help: 'Décrivez votre recherche.', example: '/voir client Demo' },

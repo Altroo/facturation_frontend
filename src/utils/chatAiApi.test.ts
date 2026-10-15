@@ -1,6 +1,6 @@
 import { ReadableStream } from 'node:stream/web';
 import { TextDecoder } from 'node:util';
-import { consumeChatStream, safeNavigation, downloadInvoicePDF } from './api';
+import { consumeChatStream, safeNavigation, downloadInvoicePDF } from '@/utils/chatAiApi';
 import { getSession } from 'next-auth/react';
 import {
 	FACTURE_PRO_FORMA_LIST,
@@ -29,7 +29,16 @@ import {
 	LOGISTIQUE_LIST,
 	LOGISTIQUE_VIEW,
 } from '@/utils/routes';
-import type { NavigationTarget } from './types';
+import type { NavigationTarget } from '@/types/chatAiTypes';
+// Route fixtures use the application's same-origin deployment configuration.
+jest.mock('@/utils/routes', () => {
+	const previousPrefix = process.env.NEXT_PUBLIC_DOMAIN_URL_PREFIX;
+	process.env.NEXT_PUBLIC_DOMAIN_URL_PREFIX = '';
+	const routes = jest.requireActual('@/utils/routes');
+	if (previousPrefix === undefined) Reflect.deleteProperty(process.env, 'NEXT_PUBLIC_DOMAIN_URL_PREFIX');
+	else process.env.NEXT_PUBLIC_DOMAIN_URL_PREFIX = previousPrefix;
+	return routes;
+});
 jest.mock('@/utils/helpers', () => ({ handleUnauthorized: jest.fn() }));
 jest.mock('next-auth/react', () => ({ getSession: jest.fn() }));
 Object.assign(globalThis, { TextDecoder });

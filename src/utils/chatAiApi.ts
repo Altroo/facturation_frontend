@@ -1,6 +1,6 @@
 import { getSession } from 'next-auth/react';
 import { handleUnauthorized } from '@/utils/helpers';
-import type { NavigationTarget } from './types';
+import type { NavigationTarget } from '@/types/chatAiTypes';
 
 export class ChatAPIError extends Error {
 	constructor(public code: string) {
@@ -149,7 +149,13 @@ export const downloadInvoicePDF = async (id: number, companyId: number, token: s
 	const url = URL.createObjectURL(await response.blob());
 	const link = document.createElement('a');
 	link.href = url;
-	const documentNames: Record<string, string> = { invoice: 'Facture', quote: 'Devis', proforma: 'Facture pro forma', credit_note: 'Facture d’avoir', delivery_note: 'Bon de livraison' };
+	const documentNames: Record<string, string> = {
+		invoice: 'Facture',
+		quote: 'Devis',
+		proforma: 'Facture pro forma',
+		credit_note: 'Facture d’avoir',
+		delivery_note: 'Bon de livraison',
+	};
 	link.download = `${documentNames[resource]} ${id}.pdf`;
 	link.click();
 	window.setTimeout(() => URL.revokeObjectURL(url), 1000);

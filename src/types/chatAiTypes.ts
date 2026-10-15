@@ -1,3 +1,5 @@
+export type ChatAILanguage = 'en' | 'fr';
+
 export type ChatShortcut = { command: string; title: string; help: string; example: string };
 
 export type NavigationTarget = {
