@@ -8,17 +8,17 @@ import {
 	Button,
 	CircularProgress,
 	IconButton,
-	MenuItem,
 	ListItemButton,
+	MenuItem,
 	Portal,
 	Stack,
 	TextField,
 	Typography,
 } from '@mui/material';
-import { DeleteOutlined, BusinessOutlined } from '@mui/icons-material';
-import { useAppSelector, useAppDispatch, useLanguage } from '@/utils/hooks';
+import { BusinessOutlined, DeleteOutlined } from '@mui/icons-material';
+import { useAppDispatch, useAppSelector, useLanguage } from '@/utils/hooks';
 import { getAccessToken, getProfilState } from '@/store/selectors';
-import { chatRequest, ChatAPIError, consumeChatStream, safeNavigation, downloadInvoicePDF } from '@/utils/chatAiApi';
+import { ChatAPIError, chatRequest, consumeChatStream, downloadInvoicePDF, safeNavigation } from '@/utils/chatAiApi';
 import { getChatAICompany, publishChatAICompany, subscribeChatAICompany } from '@/utils/chatAiCompany';
 import { factureClientApi } from '@/store/services/factureClient';
 import { deviApi } from '@/store/services/devi';
@@ -33,11 +33,12 @@ import TextButton from '@/components/htmlElements/buttons/textButton/textButton'
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import styles from '@/styles/dashboard/chat-ui/chat-ui.module.sass';
-import { ChatAIInterface, ChatAIHeader, ChatAIWelcome, ChatAIMessageBox } from './chat-ai-interface';
-export { ChatAIFloatingButton, ChatAIPanel } from './chat-ai-interface';
+import { ChatAIHeader, ChatAIInterface, ChatAIMessageBox, ChatAIWelcome } from './chat-ai-interface';
 import { ChatAIComposer } from './chat-ai-composer';
 import { ChatAIResults } from './chat-ai-results';
-import type { ChatCapabilities, ChatMessage, NavigationTarget, ChatCard } from '@/types/chatAiTypes';
+import type { ChatCapabilities, ChatCard, ChatMessage, NavigationTarget } from '@/types/chatAiTypes';
+
+export { ChatAIFloatingButton, ChatAIPanel } from './chat-ai-interface';
 
 const errorText: Record<string, string> = {
 	PERMISSION_DENIED: 'Vous n’avez pas accès à ces informations.',
@@ -376,9 +377,9 @@ const ChatAIWorkspace = ({
 		<>
 			<ChatAIHeader
 				appName="Facturation"
-				close={close}
-				newConversation={newConversation}
-				history={() => {
+				closeAction={close}
+				newConversationAction={newConversation}
+				historyAction={() => {
 					if (historyOpen) {
 						cancelPending();
 						setHistoryOpen(false);
@@ -488,7 +489,7 @@ const ChatAIWorkspace = ({
 								language={interfaceLanguage}
 								suggestions={company.suggestions}
 								busy={busy}
-								send={(question) => {
+								sendAction={(question) => {
 									void send(question);
 								}}
 							/>
@@ -686,7 +687,7 @@ export const ChatAIAssistant = () => {
 	);
 	return (
 		<Portal>
-			<ChatAIInterface open={open} onOpenChange={setOpen} suppressed={overlayOpen} offset={offset}>
+			<ChatAIInterface open={open} onOpenChangeAction={setOpen} suppressed={overlayOpen} offset={offset}>
 				{company ? (
 					<ChatAIWorkspace
 						key={`${profile.id}:${company.id}`}
@@ -698,7 +699,7 @@ export const ChatAIAssistant = () => {
 					/>
 				) : (
 					<>
-						<ChatAIHeader appName="Facturation" close={() => setOpen(false)} language={language} />
+						<ChatAIHeader appName="Facturation" closeAction={() => setOpen(false)} language={language} />
 						{companyControl}
 						<Box sx={{ p: 3 }}>
 							<Typography>

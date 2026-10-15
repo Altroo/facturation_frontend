@@ -2,6 +2,7 @@ import SvgIcon, { type SvgIconProps } from '@mui/material/SvgIcon';
 import type { ReactNode } from 'react';
 
 type Props = SvgIconProps & { size?: number };
+
 // Small, local line drawings keep the reference's stroke style without another icon package.
 const LineIcon = ({ size = 24, children, ...props }: Props & { children: ReactNode }) => (
 	<SvgIcon

@@ -1,14 +1,21 @@
 'use client';
-import { ButtonBase } from '@mui/material';
 
-import { useEffect, useId, useEffectEvent, useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import { Bot, ArrowRight, Clock3, MessageSquarePlus, X } from './chat-ai-icons';
+import { ButtonBase } from '@mui/material';
+import { type CSSProperties, type ReactNode, useEffect, useEffectEvent, useId, useRef, useState } from 'react';
+import { ArrowRight, Bot, Clock3, MessageSquarePlus, X } from './chat-ai-icons';
 import styles from '@/styles/dashboard/chat-ui/chat-ui.module.sass';
 import { useDraggableLauncher } from './use-draggable-launcher';
 import type { ChatAILanguage } from '@/types/chatAiTypes';
 
-export const ChatAIFloatingButton = ({ open, toggle }: { open: boolean; toggle: () => void; offset?: boolean }) => {
-	const launcher = useDraggableLauncher(toggle);
+export const ChatAIFloatingButton = ({
+	open,
+	toggleAction,
+}: {
+	open: boolean;
+	toggleAction: () => void;
+	offset?: boolean;
+}) => {
+	const launcher = useDraggableLauncher(toggleAction);
 	const helpId = useId();
 	return (
 		<>
@@ -41,12 +48,12 @@ export const ChatAIFloatingButton = ({ open, toggle }: { open: boolean; toggle: 
 
 export const ChatAIPanel = ({
 	children,
-	close,
+	closeAction,
 	minimized,
 	offset = false,
 }: {
 	children: ReactNode;
-	close: () => void;
+	closeAction: () => void;
 	minimized: boolean;
 	offset?: boolean;
 }) => {
@@ -67,7 +74,7 @@ export const ChatAIPanel = ({
 			view.removeEventListener('scroll', resize);
 		};
 	}, []);
-	const onClose = useEffectEvent(close);
+	const onClose = useEffectEvent(closeAction);
 	useEffect(() => {
 		if (minimized) return;
 		const previous = document.activeElement as HTMLElement | null;
@@ -132,35 +139,35 @@ export const ChatAIPanel = ({
 export const ChatAIInterface = ({
 	children,
 	open,
-	onOpenChange,
+	onOpenChangeAction,
 	suppressed = false,
 	offset = false,
 }: {
 	children: ReactNode;
 	open: boolean;
-	onOpenChange: (open: boolean) => void;
+	onOpenChangeAction: (open: boolean) => void;
 	suppressed?: boolean;
 	offset?: boolean;
 }) => (
 	<div data-chat-ai-shell style={{ display: suppressed ? 'none' : 'contents' }}>
-		<ChatAIFloatingButton open={open} toggle={() => onOpenChange(!open)} offset={offset} />
-		<ChatAIPanel minimized={!open || suppressed} close={() => onOpenChange(false)} offset={offset}>
+		<ChatAIFloatingButton open={open} toggleAction={() => onOpenChangeAction(!open)} offset={offset} />
+		<ChatAIPanel minimized={!open || suppressed} closeAction={() => onOpenChangeAction(false)} offset={offset}>
 			{children}
 		</ChatAIPanel>
 	</div>
 );
 
 export const ChatAIHeader = ({
-	close,
-	newConversation,
-	history,
+	closeAction,
+	newConversationAction,
+	historyAction,
 	historyExpanded,
 	appName,
 	language = 'fr',
 }: {
-	close: () => void;
-	newConversation?: () => void;
-	history?: () => void;
+	closeAction: () => void;
+	newConversationAction?: () => void;
+	historyAction?: () => void;
 	historyExpanded?: boolean;
 	appName: string;
 	language?: ChatAILanguage;
@@ -182,18 +189,18 @@ export const ChatAIHeader = ({
 				className={styles.iconButton}
 				aria-label={language === 'en' ? 'Close' : 'Fermer'}
 				title={language === 'en' ? 'Close assistant' : 'Fermer l’assistant'}
-				onClick={close}
+				onClick={closeAction}
 			>
 				<X size={20} />
 			</ButtonBase>
 		</header>
-		{newConversation && (
+		{newConversationAction && (
 			<nav className={styles.toolbar} aria-label={language === 'en' ? 'Conversations' : 'Conversations'}>
-				<ButtonBase disableRipple type="button" onClick={newConversation}>
+				<ButtonBase disableRipple type="button" onClick={newConversationAction}>
 					<MessageSquarePlus size={17} aria-hidden="true" />
 					{language === 'en' ? 'New conversation' : 'Nouvelle conversation'}
 				</ButtonBase>
-				<ButtonBase disableRipple type="button" onClick={history} aria-expanded={historyExpanded}>
+				<ButtonBase disableRipple type="button" onClick={historyAction} aria-expanded={historyExpanded}>
 					<Clock3 size={17} aria-hidden="true" />
 					{language === 'en' ? 'History' : 'Historique'}
 				</ButtonBase>
@@ -206,12 +213,12 @@ export const ChatAIWelcome = ({
 	language,
 	suggestions,
 	busy,
-	send,
+	sendAction,
 }: {
 	language: ChatAILanguage;
 	suggestions: string[];
 	busy: boolean;
-	send: (question: string) => void;
+	sendAction: (question: string) => void;
 }) => (
 	<div className={styles.welcome}>
 		<span className={styles.botIcon}>
@@ -225,7 +232,7 @@ export const ChatAIWelcome = ({
 		</p>
 		<div className={styles.suggestions}>
 			{suggestions.slice(0, 4).map((question) => (
-				<ButtonBase disableRipple type="button" key={question} disabled={busy} onClick={() => send(question)}>
+				<ButtonBase disableRipple type="button" key={question} disabled={busy} onClick={() => sendAction(question)}>
 					<ArrowRight size={18} aria-hidden="true" />
 					{question}
 				</ButtonBase>

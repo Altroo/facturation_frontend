@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, type ReactNode, useContext, useEffect, useState } from 'react';
 import { ThemeProvider as MuiThemeProvider } from '@mui/material';
 import { getDefaultTheme } from '@/utils/themes';
 import { applyColorMode, type ColorMode } from '@/utils/colorMode';
@@ -13,7 +13,7 @@ export const useColorMode = () => useContext(ColorModeContext);
 
 const ThemeProvider = ({ children, initialTheme = 'light' }: { children: ReactNode; initialTheme?: ColorMode }) => {
 	const [mode, setMode] = useState<ColorMode>(initialTheme);
-	const theme = useMemo(() => applyColorMode(getDefaultTheme(), mode), [mode]);
+	const theme = () => applyColorMode(getDefaultTheme(), mode);
 
 	useEffect(() => {
 		document.documentElement.dataset.theme = mode;

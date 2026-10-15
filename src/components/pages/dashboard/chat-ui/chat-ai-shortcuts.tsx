@@ -1,6 +1,7 @@
 import { ButtonBase } from '@mui/material';
 import styles from '@/styles/dashboard/chat-ui/chat-ui.module.sass';
 import type { ChatShortcut } from '@/types/chatAiTypes';
+
 export const ChatAIShortcuts = ({
 	draft,
 	shortcuts,

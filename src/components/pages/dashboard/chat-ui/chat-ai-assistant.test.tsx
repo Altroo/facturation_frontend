@@ -1,12 +1,13 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { ChatAIAssistant, ChatAIFloatingButton, ChatAIPanel } from './chat-ai-assistant';
-import { chatRequest, ChatAPIError, consumeChatStream } from '@/utils/chatAiApi';
-import { useAppSelector, useAppDispatch } from '@/utils/hooks';
+import { ChatAPIError, chatRequest, consumeChatStream } from '@/utils/chatAiApi';
+import { useAppDispatch, useAppSelector } from '@/utils/hooks';
 import { getAccessToken } from '@/store/selectors';
 import type { ChatCapabilities, ChatCard, ChatMessage, ChatRecord, NavigationTarget } from '@/types/chatAiTypes';
 import { ChatAIResults } from './chat-ai-results';
 import { getChatAICompany, publishChatAICompany } from '@/utils/chatAiCompany';
+
 const mockPush = jest.fn();
 const mockDispatch = jest.fn();
 let mockPathname = '/dashboard/';
@@ -74,7 +75,7 @@ const theme = createTheme();
 const themed = (node: React.ReactNode) => <ThemeProvider theme={theme}>{node}</ThemeProvider>;
 it('renders a single accessible fixed floating button and toggles it', () => {
 	const toggle = jest.fn();
-	render(themed(<ChatAIFloatingButton open={false} toggle={toggle} />));
+	render(themed(<ChatAIFloatingButton open={false} toggleAction={toggle} />));
 	const button = screen.getByRole('button', { name: 'Ask AI Assistant' });
 	expect(button).toHaveStyle({ position: 'fixed', width: '56px', height: '56px' });
 	expect(button).toHaveAttribute('aria-expanded', 'false');
@@ -85,7 +86,7 @@ it('minimizing preserves the composer DOM, Escape closes and focus returns', () 
 	const close = jest.fn();
 	const { rerender } = render(
 		themed(
-			<ChatAIPanel close={close} minimized={false}>
+			<ChatAIPanel closeAction={close} minimized={false}>
 				<input aria-label="Draft" defaultValue="unsent" />
 			</ChatAIPanel>,
 		),
@@ -95,7 +96,7 @@ it('minimizing preserves the composer DOM, Escape closes and focus returns', () 
 	expect(close).toHaveBeenCalledTimes(1);
 	rerender(
 		themed(
-			<ChatAIPanel close={close} minimized>
+			<ChatAIPanel closeAction={close} minimized>
 				<input aria-label="Draft" defaultValue="unsent" />
 			</ChatAIPanel>,
 		),

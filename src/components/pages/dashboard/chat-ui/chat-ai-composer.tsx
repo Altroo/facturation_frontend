@@ -32,7 +32,7 @@ export const ChatAIComposer = ({
 	const [helpOpen, setHelpOpen] = useState(false);
 	const prefix = helpOpen ? '/' : draft;
 	const matches = shortcuts.filter((item) => item.command.toLowerCase().startsWith(prefix.toLowerCase()));
-	const visible = !historyOpen && !busy && (helpOpen || /^\/[^\s]*$/.test(draft)) && dismissedDraft !== draft;
+	const visible = !historyOpen && !busy && (helpOpen || /^\/\S*$/.test(draft)) && dismissedDraft !== draft;
 	const activeIndex = Math.min(selection.draft === draft ? selection.index : 0, Math.max(0, matches.length - 1));
 	const en = language === 'en';
 	const choose = (value: string) => {

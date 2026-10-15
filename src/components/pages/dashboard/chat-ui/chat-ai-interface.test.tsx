@@ -15,9 +15,9 @@ it.each([
 		<ChatAIHeader
 			appName="Facturation"
 			language={language}
-			close={close}
-			newConversation={newConversation}
-			history={history}
+			closeAction={close}
+			newConversationAction={newConversation}
+			historyAction={history}
 			historyExpanded
 		/>,
 	);
@@ -35,12 +35,12 @@ it.each([
 it('sends only displayed suggestions and prevents selection while busy', () => {
 	const send = jest.fn();
 	const suggestions = ['First', 'Second', 'Third', 'Fourth', 'Fifth'];
-	const { rerender } = render(<ChatAIWelcome language="en" suggestions={suggestions} busy={false} send={send} />);
+	const { rerender } = render(<ChatAIWelcome language="en" suggestions={suggestions} busy={false} sendAction={send} />);
 	expect(screen.getAllByRole('button')).toHaveLength(4);
 	expect(screen.queryByText('Fifth')).not.toBeInTheDocument();
 	fireEvent.click(screen.getByRole('button', { name: 'Second' }));
 	expect(send).toHaveBeenCalledWith('Second');
-	rerender(<ChatAIWelcome language="en" suggestions={suggestions} busy send={send} />);
+	rerender(<ChatAIWelcome language="en" suggestions={suggestions} busy sendAction={send} />);
 	fireEvent.click(screen.getByRole('button', { name: 'First' }));
 	expect(send).toHaveBeenCalledTimes(1);
 	expect(screen.getByRole('button', { name: 'First' })).toBeDisabled();
@@ -70,7 +70,7 @@ it('contains keyboard focus on mobile and restores the launcher after Escape', (
 	function Harness() {
 		const [open, setOpen] = useState(false);
 		return (
-			<ChatAIInterface open={open} onOpenChange={setOpen}>
+			<ChatAIInterface open={open} onOpenChangeAction={setOpen}>
 				<button>First control</button>
 				<button>Last control</button>
 			</ChatAIInterface>
