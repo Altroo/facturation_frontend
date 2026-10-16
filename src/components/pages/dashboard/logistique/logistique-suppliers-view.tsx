@@ -40,19 +40,19 @@ function InfoRow({ icon, label, value }: { icon: ReactNode; label: string; value
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 	const displayValue = value === null || value === undefined || value === '' ? '-' : value;
 	return (
-		<Stack direction="row" spacing={2} sx={{ alignItems: 'flex-start', py: 1.5, flexWrap: 'wrap' }}>
+		<Stack direction="row" spacing={2} sx={{ alignItems: 'flex-start', py: 1.5 }}>
 			<Box sx={{ color: 'primary.main', display: 'flex', alignItems: 'center', minWidth: 40 }}>{icon}</Box>
 			<Stack
-				direction="row"
-				spacing={isMobile ? 0 : 2}
-				sx={{ alignItems: 'center', flex: 1, flexWrap: 'wrap', minWidth: 0 }}
+				direction={isMobile ? 'column' : 'row'}
+				spacing={isMobile ? 0.5 : 2}
+				sx={{ alignItems: isMobile ? 'stretch' : 'center', flex: 1, minWidth: 0 }}
 			>
 				<Typography
 					sx={{ fontWeight: 600, color: 'text.secondary', minWidth: { xs: '100%', sm: 200 }, wordBreak: 'break-word' }}
 				>
 					{label}
 				</Typography>
-				<Box sx={{ flex: 1, minWidth: 0, overflowWrap: 'anywhere' }}>
+				<Box sx={{ flex: isMobile ? 'initial' : 1, minWidth: 0, overflowWrap: 'anywhere' }}>
 					{isValidElement(displayValue) ? (
 						displayValue
 					) : (
