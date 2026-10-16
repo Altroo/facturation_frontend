@@ -1,5 +1,10 @@
 import { initWebsocket } from './ws';
-import { WSMaintenanceAction, WSNotificationAction, WSReconnectedAction, WSUserAvatarAction } from '@/store/actions/wsActions';
+import {
+	WSMaintenanceAction,
+	WSNotificationAction,
+	WSReconnectedAction,
+	WSUserAvatarAction,
+} from '@/store/actions/wsActions';
 
 class MockWebSocket implements WebSocket {
 	url: string;
@@ -46,8 +51,75 @@ describe('initWebsocket', () => {
 		} else {
 			delete (global as unknown as { WebSocket?: typeof WebSocket }).WebSocket;
 		}
-		jest.useRealTimers();
 		jest.clearAllTimers();
+		jest.useRealTimers();
+	});
+
+	it('closes only its own socket and detaches its callbacks', async () => {
+		const sockets: MockWebSocket[] = [];
+		global.WebSocket = jest.fn((url: string) => {
+			const socket = new MockWebSocket(url);
+			sockets.push(socket);
+			return socket;
+		}) as unknown as typeof WebSocket;
+		const first = initWebsocket(async () => 'first-token');
+		const second = initWebsocket(async () => 'second-token');
+		await Promise.resolve();
+		try {
+			expect(sockets).toHaveLength(2);
+			first.close();
+			expect(sockets[0].readyState).toBe(sockets[0].CLOSED);
+			expect(sockets[0].onclose).toBeNull();
+			expect(sockets[0].onmessage).toBeNull();
+			expect(sockets[0].onopen).toBeNull();
+			expect(sockets[1].readyState).toBe(sockets[1].CONNECTING);
+		} finally {
+			first.close();
+			second.close();
+		}
+	});
+
+	it('clears a scheduled reconnect when the channel closes', async () => {
+		jest.useFakeTimers();
+		const socket = new MockWebSocket('ws://localhost');
+		global.WebSocket = jest.fn(() => socket) as unknown as typeof WebSocket;
+		const channel = initWebsocket(async () => 'test-token');
+		await jest.advanceTimersByTimeAsync(0);
+		socket.onclose?.call(socket, new CloseEvent('close'));
+		expect(jest.getTimerCount()).toBe(1);
+		channel.close();
+		expect(jest.getTimerCount()).toBe(0);
+		await jest.advanceTimersByTimeAsync(30000);
+		expect(global.WebSocket).toHaveBeenCalledTimes(1);
+	});
+
+	it.each(['missing', 'rejected'])('clears retries for a %s token when the channel closes', async (scenario) => {
+		jest.useFakeTimers();
+		global.WebSocket = jest.fn() as unknown as typeof WebSocket;
+		const getToken = jest.fn<Promise<string | null>, []>();
+		if (scenario === 'missing') getToken.mockResolvedValue(null);
+		else getToken.mockRejectedValue(new Error('Session unavailable'));
+		const channel = initWebsocket(getToken);
+		await jest.advanceTimersByTimeAsync(0);
+		expect(jest.getTimerCount()).toBe(1);
+		channel.close();
+		expect(jest.getTimerCount()).toBe(0);
+		await jest.advanceTimersByTimeAsync(30000);
+		expect(getToken).toHaveBeenCalledTimes(1);
+		expect(global.WebSocket).not.toHaveBeenCalled();
+	});
+
+	it('does not open a socket when a pending token resolves after cleanup', async () => {
+		let resolveToken: (value: string) => void = () => undefined;
+		const token = new Promise<string>((resolve) => {
+			resolveToken = resolve;
+		});
+		global.WebSocket = jest.fn() as unknown as typeof WebSocket;
+		const channel = initWebsocket(() => token);
+		channel.close();
+		resolveToken('late-token');
+		await Promise.resolve();
+		expect(global.WebSocket).not.toHaveBeenCalled();
 	});
 
 	it('emits WSUserAvatarAction when USER_AVATAR message is received', async () => {
@@ -363,7 +435,10 @@ describe('initWebsocket', () => {
 			channel.take((action) => resolve(action as ExpectedAction));
 
 			const trigger = () => {
-				if (createdSocket == null) { setTimeout(trigger, 0); return; }
+				if (createdSocket == null) {
+					setTimeout(trigger, 0);
+					return;
+				}
 				// First open — hasConnectedBefore is false, should NOT emit WSReconnectedAction
 				createdSocket.onopen?.call(createdSocket, new Event('open'));
 				// Send a regular message to have something to take

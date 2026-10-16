@@ -36,31 +36,42 @@ const isNotificationTypeValue = (value: unknown): value is NotificationType['not
 	);
 };
 
-let ws: WebSocket;
-
 const WS_MAX_RECONNECT_DELAY_MS = 30000;
 const WS_INITIAL_RECONNECT_DELAY_MS = 1000;
 
 export function initWebsocket(getToken: () => Promise<string | null>): EventChannel<WSAction> {
 	return eventChannel<WSAction>((emitter) => {
+		let disposed = false;
+		let ws: WebSocket | undefined;
+		let timer: ReturnType<typeof setTimeout> | undefined;
 		let reconnectDelay = WS_INITIAL_RECONNECT_DELAY_MS;
 
 		let hasConnectedBefore = false;
 
-		async function createWs() {
+		const retry = () => {
+			if (disposed || timer !== undefined) return;
+			timer = setTimeout(() => {
+				timer = undefined;
+				void createWs();
+			}, reconnectDelay);
+			reconnectDelay = Math.min(reconnectDelay * 2, WS_MAX_RECONNECT_DELAY_MS);
+		};
+
+		const createWs = async () => {
 			const wsUrl = `${process.env.NEXT_PUBLIC_ROOT_WS_URL}`;
-			if (typeof window !== 'undefined') {
+			if (disposed || typeof window === 'undefined') return;
+			try {
 				const token = await getToken();
+				if (disposed) return;
 				if (!token) {
-					// Token not available yet — retry with backoff
-					setTimeout(() => {
-						void createWs();
-					}, reconnectDelay);
-					reconnectDelay = Math.min(reconnectDelay * 2, WS_MAX_RECONNECT_DELAY_MS);
+					retry();
 					return;
 				}
-				ws = new WebSocket(`${wsUrl}?token=${token}`);
-				ws.onopen = () => {
+				const current = new WebSocket(`${wsUrl}?token=${encodeURIComponent(token)}`);
+				ws = current;
+				const isCurrent = () => !disposed && ws === current;
+				current.onopen = () => {
+					if (!isCurrent()) return;
 					// Reset delay on successful connection
 					reconnectDelay = WS_INITIAL_RECONNECT_DELAY_MS;
 					if (hasConnectedBefore) {
@@ -68,10 +79,11 @@ export function initWebsocket(getToken: () => Promise<string | null>): EventChan
 					}
 					hasConnectedBefore = true;
 				};
-				ws.onerror = () => {
+				current.onerror = () => {
 					// Errors are followed by onclose, no action needed here
 				};
-				ws.onmessage = (e: MessageEvent) => {
+				current.onmessage = (e: MessageEvent) => {
+					if (!isCurrent()) return;
 					try {
 						const parsedMessage: unknown = JSON.parse(e.data);
 						if (isWSEnvelope(parsedMessage)) {
@@ -108,22 +120,30 @@ export function initWebsocket(getToken: () => Promise<string | null>): EventChan
 						// Skip malformed message and continue listening
 					}
 				};
-				ws.onclose = () => {
-					setTimeout(() => {
-						void createWs();
-					}, reconnectDelay);
-					// Exponential backoff with cap
-					reconnectDelay = Math.min(reconnectDelay * 2, WS_MAX_RECONNECT_DELAY_MS);
+				current.onclose = () => {
+					if (!isCurrent()) return;
+					ws = undefined;
+					retry();
 				};
+			} catch {
+				retry();
 			}
-		}
+		};
 
 		void createWs();
 		return () => {
-			try {
-				ws.close();
-			} catch {
-				// ignore
+			disposed = true;
+			if (timer !== undefined) clearTimeout(timer);
+			if (ws) {
+				ws.onclose = null;
+				ws.onerror = null;
+				ws.onmessage = null;
+				ws.onopen = null;
+				try {
+					ws.close();
+				} catch {
+					// The connection may already be unavailable during unmount.
+				}
 			}
 		};
 	});

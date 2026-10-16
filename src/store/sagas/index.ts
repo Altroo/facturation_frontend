@@ -1,10 +1,9 @@
-import { all, call, fork, spawn } from 'redux-saga/effects';
+import { all, cancel, spawn, take } from 'redux-saga/effects';
+import type { SagaIterator, Task } from 'redux-saga';
 import { watchInit } from '@/store/sagas/_initSaga';
 import { watchWS } from '@/store/sagas/wsSaga';
 import { watchAccount } from '@/store/sagas/accountSaga';
 import { watchCompanies } from '@/store/sagas/companiesSaga';
-
-const sagas = [watchInit, watchAccount, watchCompanies];
 
 export const formatSagaError = (error: unknown): string => {
 	if (error instanceof Error) {
@@ -22,22 +21,13 @@ export const formatSagaError = (error: unknown): string => {
 	return String(error);
 };
 
-// spawn : whenever a watcher get crashed somehow,
-// we use spawn to respawn it back. (except it's unblocking)
-// fork : for blocking calls.
-export function* rootSaga() {
-	yield all([
-		...sagas.map((saga) =>
-			spawn(function* () {
-				while (true) {
-					try {
-						yield call(saga);
-					} catch (e) {
-						throw new Error(`Saga error in ${saga.name || 'anonymous'}: ${formatSagaError(e)}`);
-					}
-				}
-			}),
-		),
-		fork(watchWS),
-	]);
+export function* rootSaga(): SagaIterator {
+	const sagas = [watchInit, watchAccount, watchCompanies, watchWS];
+	const tasks: Task[] = yield all(sagas.map((saga) => spawn(saga)));
+	try {
+		// Keep ownership of detached watchers until the store root is canceled.
+		yield take(() => false);
+	} finally {
+		yield all(tasks.map((task) => cancel(task)));
+	}
 }

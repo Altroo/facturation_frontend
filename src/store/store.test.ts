@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals';
 import type { Middleware } from '@reduxjs/toolkit';
 import type { SagaStore, RootState, AppDispatch } from './store';
+import { rootSaga } from '@/store/sagas';
 
 // --- Mocks for reducers and RTK Query services ---
 jest.mock('@/store/slices/_initSlice', () => ({
@@ -117,6 +118,8 @@ describe('Redux Saga Store', () => {
 	});
 
 	it('attaches sagaTask after running rootSaga', () => {
+		expect(store.sagaTask).toBeUndefined();
+		store.runSaga(rootSaga);
 		expect(store.sagaTask).toBeDefined();
 		expect(typeof store.sagaTask?.isRunning).toBe('function');
 	});

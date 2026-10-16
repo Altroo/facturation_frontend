@@ -1,7 +1,6 @@
-import createSagaMiddleware, { type Task } from 'redux-saga';
+import createSagaMiddleware, { type SagaMiddleware, type Task } from 'redux-saga';
 import { combineReducers, configureStore, ThunkDispatch } from '@reduxjs/toolkit';
 import type { Store, Action } from '@reduxjs/toolkit';
-import { rootSaga } from '@/store/sagas';
 import _initReducer from '@/store/slices/_initSlice';
 import accountReducer from '@/store/slices/accountSlice';
 import companiesReducer from '@/store/slices/companiesSlice';
@@ -68,6 +67,7 @@ const rootReducer = combineReducers({
 });
 
 export interface SagaStore extends Store {
+	runSaga: SagaMiddleware['run'];
 	sagaTask?: Task;
 }
 
@@ -121,7 +121,11 @@ export const makeStore = (): SagaStore => {
 				),
 		devTools: process.env.NODE_ENV !== 'production',
 	}) as SagaStore;
-	s.sagaTask = sagaMw.run(rootSaga);
+	s.runSaga = (saga, ...args) => {
+		const task = sagaMw.run(saga, ...args);
+		s.sagaTask = task;
+		return task;
+	};
 	return s;
 };
 

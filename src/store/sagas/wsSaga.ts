@@ -42,26 +42,30 @@ export function* watchWS(): SagaIterator<void> {
 		};
 		const channel: EventChannel<WSChannelAction> = yield call(initWebsocket, getToken);
 
-		while (true) {
-			const action: WSChannelAction = yield take(channel);
-			if (action.type === Types.WS_MAINTENANCE && typeof action.maintenance === 'boolean') {
-				yield put(setWSMaintenance(action.maintenance));
-				if (action.version !== undefined) yield put(setWSServerVersion(action.version));
-			} else if (action.type === Types.WS_RECONNECTED) {
-				yield call(initMaintenanceSaga);
-			} else if (action.type === Types.WS_NOTIFICATION && action.notification) {
-				yield put(incrementUnreadCount());
-				yield put(setLatestNotification(action.notification));
-				yield put(notificationApi.util.invalidateTags(['Notification']));
-				if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-					new Notification(action.notification.title, {
-						body: action.notification.message,
-						icon: '/assets/images/facturation-logo.png',
-					});
+		try {
+			while (true) {
+				const action: WSChannelAction = yield take(channel);
+				if (action.type === Types.WS_MAINTENANCE && typeof action.maintenance === 'boolean') {
+					yield put(setWSMaintenance(action.maintenance));
+					if (action.version !== undefined) yield put(setWSServerVersion(action.version));
+				} else if (action.type === Types.WS_RECONNECTED) {
+					yield call(initMaintenanceSaga);
+				} else if (action.type === Types.WS_NOTIFICATION && action.notification) {
+					yield put(incrementUnreadCount());
+					yield put(setLatestNotification(action.notification));
+					yield put(notificationApi.util.invalidateTags(['Notification']));
+					if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+						new Notification(action.notification.title, {
+							body: action.notification.message,
+							icon: '/assets/images/facturation-logo.png',
+						});
+					}
+				} else {
+					yield put(action);
 				}
-			} else {
-				yield put(action);
 			}
+		} finally {
+			channel.close();
 		}
 	}
 }

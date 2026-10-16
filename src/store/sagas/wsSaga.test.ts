@@ -20,6 +20,42 @@ jest.mock('@/store/sagas/_initSaga', () => ({
 }));
 
 describe('watchWS saga', () => {
+	it('closes the event channel when the watcher is canceled', async () => {
+		const unsubscribe = jest.fn();
+		const channel = eventChannel<Action>(() => unsubscribe);
+		jest.mocked(getAccessToken).mockReturnValue('mock-token');
+		jest.mocked(initWebsocket).mockReturnValue(channel);
+		const task = runSaga({ getState: () => ({}) }, watchWS);
+		task.cancel();
+		await task.toPromise();
+		expect(unsubscribe).toHaveBeenCalledTimes(1);
+	});
+
+	it('closes the event channel if processing a message fails', async () => {
+		let emit: (action: Action) => void = () => undefined;
+		const unsubscribe = jest.fn();
+		const channel = eventChannel<Action>((emitter) => {
+			emit = emitter;
+			return unsubscribe;
+		});
+		jest.mocked(getAccessToken).mockReturnValue('mock-token');
+		jest.mocked(initWebsocket).mockReturnValue(channel);
+		const error = new Error('Message dispatch failed');
+		const task = runSaga(
+			{
+				getState: () => ({}),
+				dispatch: () => {
+					throw error;
+				},
+				onError: jest.fn(),
+			},
+			watchWS,
+		);
+		emit({ type: 'MOCK_ACTION' });
+		await expect(task.toPromise()).rejects.toBe(error);
+		expect(unsubscribe).toHaveBeenCalledTimes(1);
+	});
+
 	it('should initialize websocket and dispatch actions from the channel', async () => {
 		const dispatched: Action[] = [];
 		const mockToken = 'mock-token';
