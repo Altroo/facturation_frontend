@@ -153,7 +153,7 @@ export function PurchaseHistory({ events = [] }: { events?: LogistiqueEvent[] })
 														: details.valueLabel
 											}
 											value={details.newValue || 'Non renseigné'}
-											since={entry.new_value_since ?? entry.date_created}
+											since={entry.new_value_since === undefined ? entry.date_created : entry.new_value_since}
 											showDate={!!(details.oldValue || details.modification)}
 										/>
 									</Box>

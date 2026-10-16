@@ -182,3 +182,20 @@ test('future planned values do not become predicted status dates', () => {
 	expect(screen.getByText('Après').parentElement!.querySelector('time')).toHaveAttribute('datetime', recorded);
 	expect(screen.getByText('20/10/2026')).toBeInTheDocument();
 });
+
+test('an unchanged status with an unknown start does not use the event date as its start', () => {
+	render(
+		<PurchaseHistory
+			events={[
+				event({
+					old_value: 'En contrôle',
+					new_value: 'En contrôle',
+					old_value_since: null,
+					new_value_since: null,
+				}),
+			]}
+		/>,
+	);
+	expect(screen.getAllByText('Date non renseignée')).toHaveLength(2);
+	expect(screen.getByText('Après').parentElement!.querySelector('time')).toBeNull();
+});
