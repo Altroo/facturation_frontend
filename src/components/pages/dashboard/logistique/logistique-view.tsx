@@ -108,13 +108,7 @@ import {
 	useStartLogistiquePaymentMutation,
 	useValidateLogistiquePaymentMutation,
 } from '@/store/services/logistique';
-import {
-	ARTICLES_VIEW,
-	FACTURE_PRO_FORMA_VIEW,
-	LOGISTIQUE_EDIT,
-	LOGISTIQUE_LIST,
-	STOCK_RECEIPTS,
-} from '@/utils/routes';
+import { ARTICLES_VIEW, LOGISTIQUE_EDIT, LOGISTIQUE_LIST, STOCK_RECEIPTS } from '@/utils/routes';
 import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import type {
 	LogistiqueDocumentField,
@@ -785,6 +779,11 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 										valueColor="primary.main"
 									/>
 								</Box>
+
+								<Alert severity="info">
+									Ce dossier conserve le suivi utilisé lors de sa création. Ses opérations déjà enregistrées restent
+									consultables.
+								</Alert>
 
 								<DetailCard title={t.logistique.fieldGlobalStatus} icon={<InfoIcon color="primary" />}>
 									<Stack spacing={3}>
@@ -1549,63 +1548,6 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 											/>
 										</Grid>
 									</Grid>
-								</DetailCard>
-
-								<DetailCard title={t.logistique.sourceSection} icon={<RequestQuoteIcon color="primary" />}>
-									<Stack divider={<Divider flexItem />} spacing={2}>
-										{order?.proformas_detail?.length ? (
-											order.proformas_detail.map((proforma) => (
-												<Stack key={proforma.id} divider={<Divider flexItem />} spacing={0}>
-													<InfoRow
-														icon={<ReceiptLongIcon />}
-														label={t.facturesProforma.documentNumberLabel}
-														value={
-															<MuiLink
-																component={NextLink}
-																href={FACTURE_PRO_FORMA_VIEW(proforma.id, company_id)}
-																underline="hover"
-																sx={{
-																	display: 'inline-flex',
-																	alignItems: 'center',
-																	gap: 0.5,
-																	fontWeight: 700,
-																}}
-															>
-																{proforma.numero_facture}
-																<OpenInNewIcon sx={{ fontSize: 16 }} />
-															</MuiLink>
-														}
-													/>
-													<InfoRow
-														icon={<BusinessIcon />}
-														label={t.logistique.colClients}
-														value={proforma.client_name}
-													/>
-													<InfoRow
-														icon={<CalendarTodayIcon />}
-														label={t.facturesProforma.documentDateLabel}
-														value={formatDateOnly(proforma.date_facture)}
-													/>
-													<InfoRow
-														icon={<PaymentIcon />}
-														label={t.totalsCard.totalTTC}
-														value={formatMoney(proforma.total_ttc_apres_remise, proforma.devise)}
-													/>
-													{proforma.project_reference && (
-														<InfoRow
-															icon={<InventoryIcon />}
-															label={t.logistique.colProjects}
-															value={proforma.project_reference}
-														/>
-													)}
-												</Stack>
-											))
-										) : (
-											<Typography variant="body2" color="text.secondary">
-												{t.common.noData}
-											</Typography>
-										)}
-									</Stack>
 								</DetailCard>
 
 								<DetailCard title={t.logistique.linesSection} icon={<ReceiptLongIcon color="primary" />}>
@@ -2547,7 +2489,8 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 const PurchaseRoute: FC<Props> = (props) => {
 	const token = useInitAccessToken();
 	const { data: record } = useGetLogistiqueQuery({ id: props.id ?? 0 }, { skip: !token || !props.id });
-	if (!props.id || record?.workflow_version === 2) return <SupplierPurchase {...props} />;
+	if (!record || record.workflow_version === 2 || record.can_adopt_supplier_workflow)
+		return <SupplierPurchase {...props} />;
 	return <LogistiqueViewClient {...props} />;
 };
 

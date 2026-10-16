@@ -1,4 +1,5 @@
 import z from 'zod';
+import { logistiquePaymentMethodItemsList } from './rawData';
 import type {
 	PurchaseFormMode,
 	PurchaseFormValues,
@@ -75,6 +76,7 @@ const formShape = z.object({
 	echeance_id: z.string().default(''),
 	date_echeance: z.string().default(''),
 	date_paiement: z.string().default(''),
+	methode_paiement: z.string().default(''),
 	montant_paye: z.string().default(''),
 	reference_paiement: z.string().default(''),
 	commentaire_paiement: z.string().default(''),
@@ -273,6 +275,8 @@ export const getSupplierPurchaseSchema = (mode: PurchaseFormMode, context: Suppl
 		} else if (mode === 'paiement') {
 			id('echeance_id');
 			date('date_paiement', true, true);
+			if (!logistiquePaymentMethodItemsList.some((method) => method !== '' && method === values.methode_paiement))
+				issue(['methode_paiement'], 'Choisissez une méthode de paiement.');
 			numeric(values.montant_paye, ['montant_paye'], true, true);
 			if (context.maxPayment !== undefined && Number(values.montant_paye) > context.maxPayment)
 				issue(['montant_paye'], 'Le montant payé dépasse le montant restant de cette échéance.');

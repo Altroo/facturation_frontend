@@ -64,9 +64,10 @@ export type LogistiqueDocumentField =
 export type LogistiqueLine = {
 	type_article?: string;
 	id: number;
-	proforma: number;
+	proforma: number | null;
+	source_line?: number | null;
 	proforma_numero: string;
-	client: number;
+	client: number | null;
 	client_name: string | null;
 	article: number;
 	article_reference: string;
@@ -158,6 +159,7 @@ export type LogistiquePaymentInstallment = {
 export type LogistiqueOrder = {
 	created_by_user?: number | null;
 	workflow_version?: number;
+	can_adopt_supplier_workflow?: boolean;
 	condition_achat?: string;
 	date_commande_client?: string | null;
 	date_expedition_prevue?: string | null;

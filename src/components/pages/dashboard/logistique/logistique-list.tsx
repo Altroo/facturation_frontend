@@ -221,32 +221,6 @@ const FormikContent: FC<FormikContentProps> = ({ session, company_id, role }) =>
 			),
 		},
 		{
-			field: 'clients_display',
-			headerName: t.logistique.colClients,
-			flex: 1.4,
-			minWidth: 150,
-			renderCell: (params: GridRenderCellParams<LogistiqueOrder>) => (
-				<DarkTooltip title={params.value || '-'}>
-					<Typography variant="body2" noWrap>
-						{params.value || '-'}
-					</Typography>
-				</DarkTooltip>
-			),
-		},
-		{
-			field: 'projects_display',
-			headerName: t.logistique.colProjects,
-			flex: 1.1,
-			minWidth: 135,
-			renderCell: (params: GridRenderCellParams<LogistiqueOrder>) => (
-				<DarkTooltip title={params.value || '-'}>
-					<Typography variant="body2" noWrap>
-						{params.value || '-'}
-					</Typography>
-				</DarkTooltip>
-			),
-		},
-		{
 			field: 'date_prevue',
 			headerName: t.logistique.colDatePrevue,
 			flex: 1,

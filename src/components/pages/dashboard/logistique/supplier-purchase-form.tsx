@@ -74,7 +74,7 @@ import {
 } from '@/store/services/logistique';
 import { extractApiErrorMessage, formatLocalDate, setFormikAutoErrors } from '@/utils/helpers';
 import { textInputTheme } from '@/utils/themes';
-import { logistiqueManagerRoles } from '@/utils/rawData';
+import { logistiqueManagerRoles, logistiquePaymentMethodItemsList } from '@/utils/rawData';
 import { LOGISTIQUE_ADD, LOGISTIQUE_LIST, LOGISTIQUE_VIEW } from '@/utils/routes';
 import { listReturnUrl } from '@/utils/listReturn';
 import { getSupplierPurchaseSchema, PURCHASE_CONDITIONS } from '@/utils/supplierPurchaseSchemas';
@@ -143,7 +143,7 @@ export default function SupplierPurchaseForm(props: LogistiqueFormProps) {
 	const token = useInitAccessToken(props.session);
 	const query = useSearchParams();
 	const requested = query.get('etape') ?? 'dossier';
-	const mode: PurchaseFormMode = allowedModes.has(requested) ? (requested as PurchaseFormMode) : 'dossier';
+	const requestedMode: PurchaseFormMode = allowedModes.has(requested) ? (requested as PurchaseFormMode) : 'dossier';
 	const companiesState = useAppSelector(getUserCompaniesState);
 	const { data: companies, isLoading: loadingCompanies } = useGetUserCompaniesQuery(undefined, { skip: !token });
 	const {
@@ -152,6 +152,7 @@ export default function SupplierPurchaseForm(props: LogistiqueFormProps) {
 		error,
 		refetch,
 	} = useGetLogistiqueQuery({ id: props.id ?? 0 }, { skip: !token || !props.id });
+	const mode: PurchaseFormMode = order?.can_adopt_supplier_workflow ? 'dossier' : requestedMode;
 	const company = (companies ?? companiesState)?.find((entry) => entry.id === props.company_id);
 	const title = !props.id && mode === 'dossier' ? 'Nouveau dossier fournisseur' : titles[mode];
 	const currentUser = useAppSelector(getInitStateToken).user.pk;
@@ -314,6 +315,7 @@ function PurchaseFormik({
 		echeance_id: value(echeanceId),
 		date_echeance: installment?.date_echeance ?? today(),
 		date_paiement: today(),
+		methode_paiement: installment?.methode_paiement ?? '',
 		montant_paye: value(installment?.montant_prevu),
 		reference_paiement: '',
 		commentaire_paiement: '',
@@ -322,8 +324,8 @@ function PurchaseFormik({
 				article: line.article,
 				article_reference: line.article_reference,
 				designation: line.designation,
-				quantity: value(line.quantity),
-				prix_achat: value(line.prix_achat),
+				quantity: line.proforma || line.source_line || line.client ? '' : value(line.quantity),
+				prix_achat: line.proforma || line.source_line || line.client ? '' : value(line.prix_achat),
 				expected_emplacement: line.expected_emplacement,
 			})) ?? [],
 		reception_lignes: productLines.map((line) => ({
@@ -395,7 +397,10 @@ function PurchaseFormik({
 						router.replace(LOGISTIQUE_VIEW(result.orders[0].id, company_id));
 						return;
 					}
-					await purchase({ id, data: { action: 'dossier', ...data } }).unwrap();
+					await purchase({
+						id,
+						data: { action: order?.can_adopt_supplier_workflow ? 'adopter_parcours_fournisseur' : 'dossier', ...data },
+					}).unwrap();
 				} else if (mode === 'repertoire') {
 					const existing = suppliers.find((supplier) => supplier.nom.toLowerCase() === values.nom.trim().toLowerCase());
 					const data = { company_id, nom: values.nom.trim(), email: values.email_contact.trim() };
@@ -411,7 +416,7 @@ function PurchaseFormik({
 							montant_paye: values.montant_paye,
 							devise_paiement: installment!.devise,
 							banque_paiement: order!.banque,
-							methode_paiement: installment!.methode_paiement,
+							methode_paiement: values.methode_paiement,
 							reference_paiement: values.reference_paiement,
 							commentaire_paiement: values.commentaire_paiement,
 						},
@@ -1198,6 +1203,13 @@ function PurchaseFormik({
 				{mode === 'paiement' && (
 					<>
 						{date('date_paiement', 'Date du paiement effectué', true)}
+						{select(
+							'methode_paiement',
+							'Méthode de paiement',
+							logistiquePaymentMethodItemsList.filter((method) => method !== ''),
+							<Payment fontSize="small" />,
+							true,
+						)}
 						{number('montant_paye', `Montant payé (${installment?.devise})`, <Payment fontSize="small" />, 2, true)}
 						{text('reference_paiement', 'Référence bancaire', <Description fontSize="small" />)}
 						{full(text('commentaire_paiement', 'Commentaire', <Notes fontSize="small" />, false, true))}
@@ -1254,6 +1266,17 @@ function PurchaseFormik({
 			{id && (
 				<Alert severity="info">
 					Dossier {order?.numero_commande} · {order?.fournisseur}
+				</Alert>
+			)}
+			{order?.can_adopt_supplier_workflow && (
+				<Alert severity="info">
+					Confirmez le fournisseur et le responsable pour poursuivre. Les documents et l’historique du dossier seront
+					conservés. Les quantités et les prix seront renseignés ensuite depuis la proforma fournisseur.
+				</Alert>
+			)}
+			{mode === 'proforma' && order?.lignes?.some((line) => line.proforma || line.source_line || line.client) && (
+				<Alert severity="info">
+					Vérifiez les articles proposés et saisissez les quantités et les prix d’achat de la proforma fournisseur.
 				</Alert>
 			)}
 			{locked && <Alert severity="info">Ce formulaire est verrouillé. Consultez le dossier pour poursuivre.</Alert>}

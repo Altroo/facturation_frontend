@@ -52,6 +52,7 @@ const emptyValues = (): PurchaseFormValues => ({
 	echeance_id: '',
 	date_echeance: '',
 	date_paiement: '',
+	methode_paiement: '',
 	montant_paye: '',
 	reference_paiement: '',
 	commentaire_paiement: '',
@@ -138,7 +139,11 @@ const validCases: Array<[PurchaseFormMode, Partial<PurchaseFormValues>, Supplier
 	],
 	['couts', {}],
 	['demande_paiement', { echeance_id: '1', date_echeance: past }],
-	['paiement', { echeance_id: '1', date_paiement: past, montant_paye: '10' }, { maxPayment: 10 }],
+	[
+		'paiement',
+		{ echeance_id: '1', date_paiement: past, methode_paiement: 'Virement', montant_paye: '10' },
+		{ maxPayment: 10 },
+	],
 	['justificatif', { echeance_id: '1', swift_file: new File(['proof'], 'preuve.pdf', { type: 'application/pdf' }) }],
 	['remarque', { remarque: 'Réception confirmée.' }],
 	['repertoire', { nom: 'Fournisseur test' }],
@@ -174,5 +179,31 @@ it('still requires a selected article quantity when its empty value becomes unde
 		validate('proforma', { ...emptyValues(), ...changes, lignes: [{ ...changes.lignes![0], quantity: '' }] }, context),
 	).rejects.toMatchObject({
 		inner: [{ path: 'lignes.0.quantity', message: 'Ce champ est obligatoire.' }],
+	});
+});
+
+it.each(['LC', 'Virement', 'Remise documentaire'])('accepts the actual payment method %s', async (method) => {
+	await expect(
+		validate('paiement', {
+			...emptyValues(),
+			echeance_id: '1',
+			date_paiement: past,
+			montant_paye: '10',
+			methode_paiement: method,
+		}),
+	).resolves.toBeUndefined();
+});
+
+it.each(['', 'Carte bancaire'])('rejects an unavailable actual payment method %s', async (method) => {
+	await expect(
+		validate('paiement', {
+			...emptyValues(),
+			echeance_id: '1',
+			date_paiement: past,
+			montant_paye: '10',
+			methode_paiement: method,
+		}),
+	).rejects.toMatchObject({
+		inner: [{ path: 'methode_paiement', message: 'Choisissez une méthode de paiement.' }],
 	});
 });

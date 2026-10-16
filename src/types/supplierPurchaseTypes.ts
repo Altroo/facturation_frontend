@@ -83,6 +83,7 @@ export type PurchaseFormValues = {
 	echeance_id: string;
 	date_echeance: string;
 	date_paiement: string;
+	methode_paiement: string;
 	montant_paye: string;
 	reference_paiement: string;
 	commentaire_paiement: string;

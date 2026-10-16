@@ -1293,7 +1293,8 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 const PurchaseRoute: FC<Props> = (props) => {
 	const token = useInitAccessToken();
 	const { data: record } = useGetLogistiqueQuery({ id: props.id ?? 0 }, { skip: !token || !props.id });
-	if (!props.id || record?.workflow_version === 2) return <SupplierPurchase {...props} />;
+	if (!record || record.workflow_version === 2 || record.can_adopt_supplier_workflow)
+		return <SupplierPurchase {...props} />;
 	return <LogistiqueForm {...props} />;
 };
 
