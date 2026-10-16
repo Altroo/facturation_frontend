@@ -84,7 +84,6 @@ import {
 	FACTURE_AVOIR_LIST,
 	FACTURE_PRO_FORMA_LIST,
 	LOGISTIQUE_DASHBOARD,
-	LOGISTIQUE_GANTT,
 	LOGISTIQUE_LIST,
 	LOGISTIQUE_SUPPLIERS,
 	STOCK_INVENTORIES,
@@ -188,7 +187,6 @@ const getNavigationMenu = (isStaff: boolean, t: TranslationDictionary) => {
 					path: LOGISTIQUE_DASHBOARD,
 				},
 				{ title: t.navigation.logistiqueList, label: t.navigation.logistiqueList, path: LOGISTIQUE_LIST },
-				{ title: t.navigation.logistiqueGantt, label: t.navigation.logistiqueGantt, path: LOGISTIQUE_GANTT },
 				{
 					title: t.navigation.logistiqueSuppliers,
 					label: t.navigation.logistiqueSuppliers,

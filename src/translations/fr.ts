@@ -141,7 +141,6 @@ export const fr: TranslationDictionary = {
 		bonsLivraisonUninvoiced: 'BLs non facturés',
 		logistique: 'Logistique',
 		logistiqueDashboard: 'Tableau de bord logistique',
-		logistiqueGantt: 'Gantt logistique (revue)',
 		logistiqueList: 'Suivi logistique',
 		logistiqueSuppliers: 'Liste des fournisseurs',
 		stock: 'Stock',

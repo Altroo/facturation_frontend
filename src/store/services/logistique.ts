@@ -6,9 +6,6 @@ import { initToken } from '@/store/slices/_initSlice';
 import type { RootState } from '@/store/store';
 import type { ApiErrorResponseType } from '@/types/_initTypes';
 import type {
-	LogisticsFieldReview,
-	LogisticsReviewChanges,
-	LogisticsProposalChanges,
 	LogistiqueCreateResponse,
 	LogistiqueFormValues,
 	LogistiqueListResponse,
@@ -28,7 +25,7 @@ import { marqueApi } from '@/store/services/parameter';
 
 export const logistiqueApi = createApi({
 	reducerPath: 'logistiqueApi',
-	tagTypes: ['Logistique', 'Dashboard', 'FieldReview'],
+	tagTypes: ['Logistique', 'Dashboard'],
 	baseQuery: axiosBaseQuery((api) =>
 		isAuthenticatedInstance(
 			() => getInitStateToken(api.getState() as RootState),
@@ -82,26 +79,6 @@ export const logistiqueApi = createApi({
 				method: 'POST',
 				data,
 			}),
-		}),
-		getLogisticsFieldReview: builder.query<LogisticsFieldReview, { company_id: number }>({
-			query: ({ company_id }) => ({
-				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/field_review/`,
-				method: 'GET',
-				params: { company_id },
-			}),
-			providesTags: (_result, _error, { company_id }) => [{ type: 'FieldReview', id: company_id }],
-		}),
-		saveLogisticsFieldReview: builder.mutation<
-			LogisticsFieldReview,
-			{ company_id: number; decisions?: LogisticsReviewChanges; proposed_fields?: LogisticsProposalChanges }
-		>({
-			query: ({ company_id, decisions, proposed_fields }) => ({
-				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/field_review/`,
-				method: 'PATCH',
-				params: { company_id },
-				data: { decisions, proposed_fields },
-			}),
-			invalidatesTags: (result, _error, { company_id }) => (result ? [{ type: 'FieldReview', id: company_id }] : []),
 		}),
 		getLogistiqueList: builder.query<
 			LogistiqueListResponse,
@@ -473,8 +450,6 @@ export const {
 	usePurchaseActionMutation,
 	useRequestPurchasePaymentMutation,
 	useExtractImportTitleMutation,
-	useGetLogisticsFieldReviewQuery,
-	useSaveLogisticsFieldReviewMutation,
 	useGetLogistiqueListQuery,
 	useGetLogistiqueDashboardQuery,
 	useGetLogistiqueQuery,
