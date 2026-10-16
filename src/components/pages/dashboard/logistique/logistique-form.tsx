@@ -1259,7 +1259,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 
 											<Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
 												<PrimaryLoadingButton
-													buttonText={isEditMode ? t.common.update : t.common.save}
+													buttonText={t.common.save}
 													active={canSubmitCurrentForm}
 													onClick={(event: MouseEvent<HTMLButtonElement>) => {
 														setHasAttemptedSubmit(true);

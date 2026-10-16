@@ -64,7 +64,6 @@ import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
-import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import NoPermission from '@/components/shared/noPermission/noPermission';
 import DashboardStatCard from '@/components/shared/dashboardStatCard/dashboardStatCard';
 import {
@@ -688,7 +687,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 										order.statut_global !== 'Annulé' &&
 										!['Réception locale', 'Livraison client', 'Clôture', 'Annulé'].includes(order.statut) && (
 											<Button
-												variant="contained"
+												variant="outlined"
 												size="small"
 												startIcon={<InventoryIcon />}
 												onClick={() => router.push(`${STOCK_RECEIPTS}?company_id=${company_id}`)}
@@ -902,28 +901,29 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 													'& > button': { margin: '0 !important' },
 												}}
 											>
-												<PrimaryLoadingButton
-													buttonText={t.logistique.updateLaunchStatus}
-													active
-													loading={false}
+												<Button
+													variant="outlined"
 													type="button"
 													startIcon={<EditIcon />}
 													onClick={() => {
 														setLaunchStatusDraft(order?.statut_commande_lancement ?? 'À lancer');
 														setShowLaunchStatusModal(true);
 													}}
-													cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}
-													inverted
-												/>
-												<PrimaryLoadingButton
-													buttonText={t.logistique.recordProformaRequest}
-													active={!isRecordingProformaRequest}
+													sx={{ maxWidth: '100%', alignSelf: { xs: 'stretch', sm: 'flex-start' } }}
+												>
+													{t.logistique.updateLaunchStatus}
+												</Button>
+												<Button
+													variant="outlined"
+													disabled={isRecordingProformaRequest}
 													loading={isRecordingProformaRequest}
 													type="button"
 													startIcon={<RequestQuoteIcon />}
 													onClick={() => setShowProformaRequestModal(true)}
-													cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}
-												/>
+													sx={{ maxWidth: '100%', alignSelf: { xs: 'stretch', sm: 'flex-start' } }}
+												>
+													{t.logistique.recordProformaRequest}
+												</Button>
 											</Stack>
 										)}
 									</Stack>
@@ -1042,15 +1042,17 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 											order?.is_launch_step_complete &&
 											!order?.is_proforma_step_complete && (
 												<Box sx={{ alignSelf: { xs: 'stretch', sm: 'flex-start' } }}>
-													<PrimaryLoadingButton
-														buttonText={t.logistique.reviewSupplierProforma}
-														active={!isReviewingSupplierProforma}
+													<Button
+														variant="outlined"
+														disabled={isReviewingSupplierProforma}
 														loading={isReviewingSupplierProforma}
 														type="button"
 														startIcon={<DescriptionIcon />}
 														onClick={openSupplierProformaReview}
-														cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}
-													/>
+														sx={{ maxWidth: '100%', alignSelf: { xs: 'stretch', sm: 'flex-start' } }}
+													>
+														{t.logistique.reviewSupplierProforma}
+													</Button>
 												</Box>
 											)}
 									</Stack>
@@ -1290,15 +1292,15 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 											order?.is_proforma_step_complete &&
 											order?.statut_paiement === 'Non demandé' && (
 												<Box sx={{ alignSelf: { xs: 'stretch', sm: 'flex-start' } }}>
-													<PrimaryLoadingButton
-														buttonText={t.logistique.requestPayment}
-														active
-														loading={false}
+													<Button
+														variant="outlined"
 														type="button"
 														startIcon={<PaymentIcon />}
 														onClick={openPaymentRequest}
-														cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}
-													/>
+														sx={{ maxWidth: '100%', alignSelf: { xs: 'stretch', sm: 'flex-start' } }}
+													>
+														{t.logistique.requestPayment}
+													</Button>
 												</Box>
 											)}
 										{isOrderResponsible && order?.statut_paiement === 'Non demandé' && !hasCompleteImportTitle && (
@@ -1449,7 +1451,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 										)}
 										{canStartSupplierPreparation && (
 											<Button
-												variant="contained"
+												variant="outlined"
 												startIcon={<InventoryIcon />}
 												disabled={isChangingWorkflowStatus}
 												onClick={handleStartSupplierPreparation}
@@ -2284,6 +2286,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 										<Button
 											color="error"
 											variant="outlined"
+											aria-label={t.common.delete}
 											onClick={() =>
 												setPaymentSchedule((previous) => previous.filter((_, rowIndex) => rowIndex !== index))
 											}
