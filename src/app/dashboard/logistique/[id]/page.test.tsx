@@ -1,6 +1,6 @@
 import { auth } from '@/auth';
 import LogistiqueViewClient from '@/components/pages/dashboard/logistique/logistique-view';
-import { redirect } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import LogistiqueViewPage, { metadata } from './page';
 
 jest.mock('@/auth', () => ({
@@ -11,6 +11,9 @@ jest.mock('@/auth', () => ({
 jest.mock('next/navigation', () => ({
 	__esModule: true,
 	redirect: jest.fn(),
+	notFound: jest.fn(() => {
+		throw new Error('NEXT_NOT_FOUND');
+	}),
 }));
 
 jest.mock('@/components/pages/dashboard/logistique/logistique-view', () => ({
@@ -30,6 +33,7 @@ type TestSession = {
 
 const mockAuth = auth as unknown as jest.MockedFunction<() => Promise<TestSession | null>>;
 const mockRedirect = jest.mocked(redirect);
+const mockNotFound = jest.mocked(notFound);
 
 const pageProps = (id: string, companyId: string) => ({
 	params: Promise.resolve({ id }),
@@ -56,16 +60,25 @@ describe('LogistiqueViewPage server component', () => {
 		expect(mockRedirect).toHaveBeenCalledWith('/login');
 	});
 
-	it.each([
-		['invalid id', 'invalid', '12'],
-		['invalid company id', '7', 'invalid'],
-	])('redirects to the logistics list for an %s', async (_case, id, companyId) => {
-		const session = { user: { pk: 25, email: 'logistique@example.com' } };
-		mockAuth.mockResolvedValueOnce(session);
+	it.each(['gantt', 'invalid', '', '0', '-1', '1.5', '9007199254740992'])(
+		'returns not found for invalid dossier id %s',
+		async (id) => {
+			mockAuth.mockResolvedValueOnce({ user: { pk: 25, email: 'logistique@example.com' } });
 
-		await LogistiqueViewPage(pageProps(id, companyId));
+			await expect(LogistiqueViewPage(pageProps(id, '12'))).rejects.toThrow('NEXT_NOT_FOUND');
+
+			expect(mockNotFound).toHaveBeenCalledTimes(1);
+			expect(mockRedirect).not.toHaveBeenCalled();
+		},
+	);
+
+	it('redirects to the logistics list for an invalid company id', async () => {
+		mockAuth.mockResolvedValueOnce({ user: { pk: 25, email: 'logistique@example.com' } });
+
+		await LogistiqueViewPage(pageProps('7', 'invalid'));
 
 		expect(mockRedirect).toHaveBeenCalledWith('/dashboard/logistique');
+		expect(mockNotFound).not.toHaveBeenCalled();
 	});
 
 	it('renders the logistics view with numeric record and company ids', async () => {

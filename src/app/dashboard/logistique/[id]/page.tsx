@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN, LOGISTIQUE_LIST } from '@/utils/routes';
 import LogistiqueViewClient from '@/components/pages/dashboard/logistique/logistique-view';
@@ -20,7 +20,11 @@ const LogistiqueViewPage = async (props: PageProps) => {
 		redirect(AUTH_LOGIN);
 	}
 
-	if (!id || isNaN(Number(id)) || !company_id || isNaN(Number(company_id))) {
+	if (!/^\d+$/.test(id) || !Number.isSafeInteger(Number(id)) || Number(id) < 1) {
+		notFound();
+	}
+
+	if (!company_id || isNaN(Number(company_id))) {
 		redirect(LOGISTIQUE_LIST);
 	}
 
