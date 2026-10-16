@@ -80,7 +80,10 @@ it('sends the exact authorized record and resource to edit, delete, and PDF acti
 });
 
 it('allows retry after a failed confirmation and marks only a successful action as completed', async () => {
-	const confirm = jest.fn().mockRejectedValueOnce(new Error('Request failed')).mockResolvedValueOnce(undefined);
+	const confirm = jest
+		.fn()
+		.mockResolvedValueOnce({ error: 'Vous n’avez pas accès à ces informations.' })
+		.mockResolvedValueOnce({});
 	render(<ChatAIResults cards={[confirmation]} navigate={jest.fn()} confirm={confirm} />);
 	fireEvent.click(screen.getByRole('button', { name: 'Vérifier cette action' }));
 	expect(confirm).not.toHaveBeenCalled();

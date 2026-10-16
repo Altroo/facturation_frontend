@@ -44,22 +44,23 @@ it('defers this version without reloading, but shows a newer announcement', asyn
 	expect(screen.getByRole('dialog')).toBeInTheDocument();
 });
 it('reloads only after explicit confirmation and a successful availability check', async () => {
-	jest.mocked(getAppUpdateUrl).mockResolvedValue('http://localhost/dashboard/board?_app_update=1.1.0-123');
+	jest.mocked(getAppUpdateUrl).mockResolvedValue({ url: 'http://localhost/dashboard/board?_app_update=1.1.0-123' });
 	render(<AppUpdate />);
 	expect(getAppUpdateUrl).not.toHaveBeenCalled();
 	await userEvent.click(screen.getByRole('button', { name: 'Mettre à jour' }));
 	expect(reloadApp).toHaveBeenCalledWith('http://localhost/dashboard/board?_app_update=1.1.0-123');
 });
 it('shows a retryable error without reloading when the release is unavailable', async () => {
-	jest.mocked(getAppUpdateUrl).mockRejectedValue(new Error('offline'));
+	jest.mocked(getAppUpdateUrl).mockResolvedValue({ error: true });
 	render(<AppUpdate />);
 	await userEvent.click(screen.getByRole('button', { name: 'Mettre à jour' }));
 	expect(mockOnError).toHaveBeenCalledWith(expect.stringContaining('Vérifiez votre connexion'));
+	expect(screen.getByRole('alert')).toHaveTextContent('La mise à jour n’est pas encore accessible.');
 	expect(reloadApp).not.toHaveBeenCalled();
 	expect(screen.getByRole('button', { name: 'Mettre à jour' })).toBeEnabled();
 });
 it('does not reload if maintenance starts during the availability check', async () => {
-	let resolve!: (url: string) => void;
+	let resolve!: (result: { url: string }) => void;
 	jest.mocked(getAppUpdateUrl).mockReturnValue(
 		new Promise((r) => {
 			resolve = r;
@@ -70,7 +71,7 @@ it('does not reload if maintenance starts during the availability check', async 
 	expect(screen.getByRole('button', { name: 'Mise à jour…' })).toBeDisabled();
 	jest.mocked(useAppSelector).mockReturnValue({ ...state, maintenance: true });
 	rerender(<AppUpdate />);
-	await act(async () => resolve('http://localhost/'));
+	await act(async () => resolve({ url: 'http://localhost/' }));
 	expect(reloadApp).not.toHaveBeenCalled();
 	expect(mockOnError).toHaveBeenCalledWith(expect.stringContaining('La mise à jour'));
 });
@@ -83,4 +84,16 @@ it('cleans the update marker only after loading a sufficiently new bundle', () =
 	expect(window.location.search).toBe('?project=2');
 	expect(window.location.hash).toBe('#card');
 	window.history.replaceState({}, '', '/');
+});
+
+it('can retry a failed availability check and reload after success', async () => {
+	jest
+		.mocked(getAppUpdateUrl)
+		.mockResolvedValueOnce({ error: true })
+		.mockResolvedValueOnce({ url: 'http://localhost/?ready=1' });
+	render(<AppUpdate />);
+	await userEvent.click(screen.getByRole('button', { name: 'Mettre à jour' }));
+	expect(reloadApp).not.toHaveBeenCalled();
+	await userEvent.click(screen.getByRole('button', { name: 'Mettre à jour' }));
+	expect(reloadApp).toHaveBeenCalledWith('http://localhost/?ready=1');
 });

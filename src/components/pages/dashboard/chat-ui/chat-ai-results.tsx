@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Box, Chip, Divider, Paper, Stack, Typography } from '@mui/material';
+import { Alert, Box, Chip, Divider, Paper, Stack, Typography } from '@mui/material';
 import {
 	AccountBalanceWalletOutlined,
 	DeleteOutlined,
@@ -245,14 +245,14 @@ const RecordDetails = ({ resource, record }: { resource?: string; record: ChatRe
 type Props = {
 	cards: ChatCard[];
 	navigate: (target: NavigationTarget) => void;
-	confirm?: (card: ChatCard) => Promise<void>;
+	confirm?: (card: ChatCard) => Promise<{ error?: string }>;
 	pdf?: (id: number, resource?: string) => void;
 	select?: (resource: string, identifier: number, operation: 'edit' | 'delete') => void;
 	permissions?: { can_update: boolean; can_delete: boolean; can_print: boolean };
 };
 
 export const ChatAIResults = ({ cards, navigate, confirm, pdf, select, permissions }: Props) => {
-	const { t } = useLanguage();
+	const { t, language } = useLanguage();
 	const fieldLabels: Record<EditableField, string> = {
 		remarque: t.documentForm.remarqueLabel,
 		termes_paiement: t.documentForm.fieldTermesPaiementLabel,
@@ -265,13 +265,25 @@ export const ChatAIResults = ({ cards, navigate, confirm, pdf, select, permissio
 	const [confirmed, setConfirmed] = useState<Set<string>>(new Set());
 	const [pending, setPending] = useState<ChatCard | null>(null);
 	const [sending, setSending] = useState(false);
+	const [confirmationError, setConfirmationError] = useState('');
 	const perform = async () => {
 		if (!pending?.action_id || !confirm || sending || !validConfirmation(pending)) return;
 		setSending(true);
+		setConfirmationError('');
 		try {
-			await confirm(pending);
+			const result = await confirm(pending);
+			if (result.error) {
+				setConfirmationError(result.error);
+				return;
+			}
 			setConfirmed((old) => new Set(old).add(pending.action_id!));
 			setPending(null);
+		} catch {
+			setConfirmationError(
+				language === 'en'
+					? 'The confirmation could not be verified. Check the record before trying again.'
+					: 'La confirmation n’a pas pu être vérifiée. Consultez le document avant de recommencer.',
+			);
 		} finally {
 			setSending(false);
 		}
@@ -420,7 +432,10 @@ export const ChatAIResults = ({ cards, navigate, confirm, pdf, select, permissio
 								cssClass={styles.resultAction}
 								buttonText={confirmed.has(card.action_id) ? 'Action effectuée' : 'Vérifier cette action'}
 								disabled={confirmed.has(card.action_id) || !validConfirmation(card) || !confirm}
-								onClick={() => setPending(card)}
+								onClick={() => {
+									setConfirmationError('');
+									setPending(card);
+								}}
 							/>
 						</Paper>
 					)}
@@ -470,11 +485,16 @@ export const ChatAIResults = ({ cards, navigate, confirm, pdf, select, permissio
 							disabled: sending || !validConfirmation(pending),
 							color: pending.operation === 'delete' ? '#C62828' : '#0D070B',
 							onClick: () => {
-								void perform().catch(() => {});
+								void perform();
 							},
 						},
 					]}
 				>
+					{confirmationError && (
+						<Alert severity="error" sx={{ mt: 2 }}>
+							{confirmationError}
+						</Alert>
+					)}
 					{confirmationFields(pending).map((field) => (
 						<Box key={field} sx={{ mt: 1 }}>
 							<Typography variant="caption">{fieldLabels[field]}</Typography>

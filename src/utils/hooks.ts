@@ -26,10 +26,20 @@ export const useIsClient = () => {
 	);
 };
 
+const fallbackToast: ToastContextType = {
+	onSuccess: (message) => {
+		if (typeof window !== 'undefined') window.alert(message);
+	},
+	onError: (message) => {
+		if (typeof window !== 'undefined') window.alert(message);
+	},
+};
+
 export const useToast = (): ToastContextType => {
 	const ctx = useContext(ToastContext);
-	if (!ctx) throw new Error('useToast must be used within ToastProvider');
-	return ctx;
+	// The root layout supplies styled toasts. Keep feedback visible if a consumer
+	// is accidentally mounted outside that provider, without crashing the page.
+	return ctx ?? fallbackToast;
 };
 
 export const useLanguage = (): LanguageContextType => {

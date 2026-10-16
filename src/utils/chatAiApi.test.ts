@@ -1,7 +1,8 @@
 import { ReadableStream } from 'node:stream/web';
 import { TextDecoder } from 'node:util';
-import { consumeChatStream, safeNavigation, downloadInvoicePDF } from '@/utils/chatAiApi';
+import { chatRequest, consumeChatStream, safeNavigation, downloadInvoicePDF } from '@/utils/chatAiApi';
 import { getSession } from 'next-auth/react';
+import { handleUnauthorized } from '@/utils/helpers';
 import {
 	FACTURE_PRO_FORMA_LIST,
 	FACTURE_PRO_FORMA_VIEW,
@@ -87,25 +88,28 @@ describe('authenticated fetch stream parser', () => {
 	it('handles fragmented unicode data and completion', async () => {
 		const receive = jest.fn();
 		await consumeChatStream(
-			response('event: message.delta\ndata: {"text":"مرحبا"}', '\n\nevent: message.completed\ndata: {"id":"done"}\n\n'),
+			response(
+				'event: message.delta\ndata: {"text":"مرحبا"}',
+				'\n\nevent: message.completed\ndata: {"id":"done","role":"assistant","text":"Terminé"}\n\n',
+			),
 			receive,
 		);
 		expect(receive).toHaveBeenNthCalledWith(1, 'message.delta', { text: 'مرحبا' });
-		expect(receive).toHaveBeenNthCalledWith(2, 'message.completed', { id: 'done' });
+		expect(receive).toHaveBeenNthCalledWith(2, 'message.completed', { id: 'done', role: 'assistant', text: 'Terminé' });
 	});
 	it('never reports truncated output as complete', async () => {
 		await expect(
 			consumeChatStream(response('event: message.delta\ndata: {"text":"partial"}\n\n'), jest.fn()),
-		).rejects.toMatchObject({ code: 'INCOMPLETE_RESPONSE' });
+		).resolves.toEqual({ error: { code: 'INCOMPLETE_RESPONSE' } });
 	});
 	it('propagates revocation during a stream', async () => {
 		await expect(
 			consumeChatStream(response('event: error\ndata: {"code":"PERMISSION_DENIED"}\n\n'), jest.fn()),
-		).rejects.toMatchObject({ code: 'PERMISSION_DENIED' });
+		).resolves.toEqual({ error: { code: 'PERMISSION_DENIED' } });
 	});
 	it('bounds the buffered response', async () => {
-		await expect(consumeChatStream(response('x'.repeat(100001)), jest.fn())).rejects.toMatchObject({
-			code: 'INVALID_MODEL_OUTPUT',
+		await expect(consumeChatStream(response('x'.repeat(100001)), jest.fn())).resolves.toEqual({
+			error: { code: 'INVALID_MODEL_OUTPUT' },
 		});
 	});
 });
@@ -231,7 +235,9 @@ describe('authenticated PDF downloads use fixed resource endpoints', () => {
 	it.each(['__proto__', 'constructor', '../account', 'https://evil.invalid'])(
 		'rejects unsupported PDF resource %s before network access',
 		async (resource) => {
-			await expect(downloadInvoicePDF(12, 7, 'token', resource)).rejects.toMatchObject({ code: 'INVALID_ARGUMENTS' });
+			await expect(downloadInvoicePDF(12, 7, 'token', resource)).resolves.toEqual({
+				error: { code: 'INVALID_ARGUMENTS' },
+			});
 			expect(fetchMock).not.toHaveBeenCalled();
 			expect(getSession).not.toHaveBeenCalled();
 		},
@@ -239,8 +245,8 @@ describe('authenticated PDF downloads use fixed resource endpoints', () => {
 	it.each([0, -1, 1.5, Number.MAX_SAFE_INTEGER + 1])(
 		'rejects invalid PDF identifier %s before network access',
 		async (id) => {
-			await expect(downloadInvoicePDF(id, 7, 'token', 'delivery_note')).rejects.toMatchObject({
-				code: 'INVALID_ARGUMENTS',
+			await expect(downloadInvoicePDF(id, 7, 'token', 'delivery_note')).resolves.toEqual({
+				error: { code: 'INVALID_ARGUMENTS' },
 			});
 			expect(fetchMock).not.toHaveBeenCalled();
 		},
@@ -251,7 +257,7 @@ describe('authenticated PDF downloads use fixed resource endpoints', () => {
 	])('does not download denied or non-PDF responses ($status $type)', async ({ status, ok, type, code }) => {
 		const blob = jest.fn();
 		fetchMock.mockResolvedValue({ status, ok, headers: { get: () => type }, blob });
-		await expect(downloadInvoicePDF(12, 7, 'token', 'credit_note')).rejects.toMatchObject({ code });
+		await expect(downloadInvoicePDF(12, 7, 'token', 'credit_note')).resolves.toEqual({ error: { code } });
 		expect(blob).not.toHaveBeenCalled();
 		expect(createObjectURL).not.toHaveBeenCalled();
 		expect(clicked).toEqual([]);
@@ -299,4 +305,102 @@ describe('read-only module navigation', () => {
 		expect(safeNavigation({ ...destination, company_id: 8 }, 7)).toBeNull();
 		expect(safeNavigation({ ...destination, resource: 'user_edit', path: `${USERS_VIEW(12)}/edit/` }, 7)).toBeNull();
 	});
+});
+
+describe('chat transport returns explicit failures', () => {
+	const originalFetch = global.fetch;
+	const mockFetch = jest.fn();
+	beforeEach(() => {
+		jest.clearAllMocks();
+		global.fetch = mockFetch;
+	});
+	afterEach(() => {
+		global.fetch = originalFetch;
+	});
+	it.each([
+		{ status: 403, json: async () => ({}) },
+		{
+			status: 503,
+			json: async () => {
+				throw new SyntaxError('HTML response');
+			},
+		},
+		{ status: 400, json: async () => ({ error: { code: 'INVALID_ARGUMENTS' } }) },
+	])('handles HTTP $status without throwing', async (response) => {
+		mockFetch.mockResolvedValue({ ...response, ok: false });
+		await expect(chatRequest('capabilities/', 'token')).resolves.toEqual({
+			error: {
+				code:
+					response.status === 403
+						? 'PERMISSION_DENIED'
+						: response.status === 400
+							? 'INVALID_ARGUMENTS'
+							: 'APPLICATION_UNAVAILABLE',
+			},
+		});
+	});
+	it('handles network failures and intentional cancellation', async () => {
+		mockFetch.mockRejectedValue(new TypeError('Failed to fetch'));
+		await expect(chatRequest('capabilities/', 'token')).resolves.toEqual({
+			error: { code: 'APPLICATION_UNAVAILABLE' },
+		});
+		const controller = new AbortController();
+		controller.abort();
+		await expect(chatRequest('capabilities/', 'token', { signal: controller.signal })).resolves.toEqual({
+			error: { code: 'ABORTED' },
+		});
+	});
+	it('refreshes expired authentication once and returns the authorized response', async () => {
+		const authorized = { ok: true, status: 200 };
+		mockFetch.mockResolvedValueOnce({ status: 401 }).mockResolvedValueOnce(authorized);
+		jest
+			.mocked(getSession)
+			.mockResolvedValue({ accessToken: 'fresh', expires: '2099-01-01' } as Awaited<ReturnType<typeof getSession>>);
+		await expect(chatRequest('capabilities/', 'old')).resolves.toEqual({ data: authorized });
+		expect(mockFetch).toHaveBeenCalledTimes(2);
+		expect(mockFetch.mock.calls[1][1].headers.Authorization).toBe('Bearer fresh');
+		expect(handleUnauthorized).not.toHaveBeenCalled();
+	});
+	it('ends an expired session instead of retrying indefinitely', async () => {
+		mockFetch.mockResolvedValue({ status: 401 });
+		jest.mocked(getSession).mockResolvedValue(null);
+		await expect(chatRequest('capabilities/', 'old')).resolves.toEqual({ error: { code: 'NOT_AUTHENTICATED' } });
+		expect(handleUnauthorized).toHaveBeenCalledTimes(1);
+		expect(mockFetch).toHaveBeenCalledTimes(1);
+	});
+	it('handles malformed stream JSON and absent bodies', async () => {
+		await expect(consumeChatStream(response('event: message.completed\ndata: {bad}\n\n'), jest.fn())).resolves.toEqual({
+			error: { code: 'INVALID_MODEL_OUTPUT' },
+		});
+		await expect(consumeChatStream({ body: null } as Response, jest.fn())).resolves.toEqual({
+			error: { code: 'INCOMPLETE_RESPONSE' },
+		});
+	});
+	it('handles reader errors without a rejected promise', async () => {
+		const stream = new ReadableStream({
+			start(controller) {
+				controller.error(new TypeError('Disconnected'));
+			},
+		});
+		await expect(consumeChatStream({ body: stream } as unknown as Response, jest.fn())).resolves.toEqual({
+			error: { code: 'INCOMPLETE_RESPONSE' },
+		});
+	});
+});
+
+it.each(['{}', '{"text":3}', '{"id":"x","role":"assistant","text":"ok","cards":[null]}'])(
+	'handles invalid completed message %s without calling the renderer',
+	async (payload) => {
+		const receive = jest.fn();
+		await expect(
+			consumeChatStream(response(`event: message.completed\ndata: ${payload}\n\n`), receive),
+		).resolves.toEqual({ error: { code: 'INVALID_MODEL_OUTPUT' } });
+		expect(receive).not.toHaveBeenCalled();
+	},
+);
+it('handles an already locked stream', async () => {
+	const value = response();
+	const reader = value.body!.getReader();
+	await expect(consumeChatStream(value, jest.fn())).resolves.toEqual({ error: { code: 'INCOMPLETE_RESPONSE' } });
+	reader.releaseLock();
 });

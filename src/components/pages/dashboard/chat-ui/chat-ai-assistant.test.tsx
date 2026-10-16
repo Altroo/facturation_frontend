@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { ChatAIAssistant, ChatAIFloatingButton, ChatAIPanel } from './chat-ai-assistant';
-import { ChatAPIError, chatRequest, consumeChatStream } from '@/utils/chatAiApi';
+import { chatErrorCode, chatRequest, consumeChatStream } from '@/utils/chatAiApi';
 import { useAppDispatch, useAppSelector } from '@/utils/hooks';
 import { getAccessToken } from '@/store/selectors';
 import type { ChatCapabilities, ChatCard, ChatMessage, ChatRecord, NavigationTarget } from '@/types/chatAiTypes';
@@ -119,7 +119,7 @@ it('renders database text as text rather than executing HTML', () => {
 	expect(container.textContent).toContain('<img src=x onerror=alert(1)>');
 });
 it('shows the exact destructive target and only calls confirmation after a click', async () => {
-	const confirm = jest.fn().mockResolvedValue(undefined);
+	const confirm = jest.fn().mockResolvedValue({});
 	render(
 		themed(
 			<ChatAIResults
@@ -202,13 +202,18 @@ beforeEach(() => {
 		.mockImplementation((selector) => (selector === getAccessToken ? mockToken : { id: mockProfileId }));
 	jest.mocked(useAppDispatch).mockReturnValue(mockDispatch);
 	jest.mocked(chatRequest).mockImplementation(async (path, _token, init) => {
-		if (handlers[path]) return handlers[path](init);
-		if (path.startsWith('capabilities/')) return jsonResponse(capabilities);
-		if (path === 'conversations/') return jsonResponse({ id: `conversation-${++conversationCount}` });
-		throw new Error(`Unexpected request: ${path}`);
+		try {
+			if (handlers[path]) return { data: await handlers[path](init) };
+			if (path.startsWith('capabilities/')) return { data: jsonResponse(capabilities) };
+			if (path === 'conversations/') return { data: jsonResponse({ id: `conversation-${++conversationCount}` }) };
+			throw new Error(`Unexpected request: ${path}`);
+		} catch (error) {
+			return { error: { code: chatErrorCode(error) } };
+		}
 	});
 	jest.mocked(consumeChatStream).mockImplementation(async (response, receive) => {
 		receive('message.completed', await response.json());
+		return { data: true };
 	});
 });
 const renderAssistant = async () => {
@@ -633,6 +638,7 @@ it('stops forcing stream scroll after the reader scrolls up, and resumes on a ne
 	jest.mocked(consumeChatStream).mockImplementationOnce(async (_response, callback) => {
 		receive = callback;
 		await streamDone.promise;
+		return { data: true };
 	});
 	handlers['conversations/conversation-1/messages/'] = () => jsonResponse(assistantMessage('Nouvelle réponse'));
 	await renderAssistant();
@@ -815,7 +821,7 @@ it('does not invalidate caches or navigate when a delivery-note deletion is reje
 	const card: ChatCard = { ...quoteConfirmation, resource: 'delivery_note', action_id: 'delivery-denied' };
 	handlers['conversations/conversation-1/messages/'] = () => jsonResponse(assistantMessage('Vérifiez ce bon.', [card]));
 	handlers['actions/delivery-denied/confirm/'] = () => {
-		throw new ChatAPIError('PERMISSION_DENIED');
+		throw { code: 'PERMISSION_DENIED' };
 	};
 	await renderAssistant();
 	sendMessage('/supprimer bon de livraison');
@@ -1205,7 +1211,7 @@ it.each([
 	mockPathname = initialPath;
 	mockLanguage = 'en';
 	handlers['conversations/conversation-1/messages/'] = () => jsonResponse(assistantMessage('Original answer'));
-	jest.mocked(consumeChatStream).mockRejectedValueOnce(new ChatAPIError('INCOMPLETE_RESPONSE'));
+	jest.mocked(consumeChatStream).mockResolvedValueOnce({ error: { code: 'INCOMPLETE_RESPONSE' } });
 	const { rerender } = await renderAssistant();
 	sendMessage('Explain this invoice');
 	await screen.findByRole('button', { name: mockLanguage === 'en' ? 'Retry' : 'Réessayer' });
@@ -1233,7 +1239,7 @@ it.each([
 
 it.each(['conversation', 'company'])('clears a failed retry when changing %s', async (scope) => {
 	handlers['conversations/conversation-1/messages/'] = () => jsonResponse(assistantMessage('Never completed'));
-	jest.mocked(consumeChatStream).mockRejectedValueOnce(new ChatAPIError('INCOMPLETE_RESPONSE'));
+	jest.mocked(consumeChatStream).mockResolvedValueOnce({ error: { code: 'INCOMPLETE_RESPONSE' } });
 	const { rerender } = await renderAssistant();
 	sendMessage('Old request');
 	await screen.findByRole('button', { name: mockLanguage === 'en' ? 'Retry' : 'Réessayer' });
@@ -1302,4 +1308,36 @@ it('closes shortcut help and clears its draft when starting a new conversation',
 	fireEvent.click(screen.getByRole('button', { name: 'Nouvelle conversation' }));
 	expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
 	expect(screen.getByRole('textbox', { name: 'Votre message' })).toHaveValue('');
+});
+
+it.each(['fr', 'en'] as const)('offers a visible retry after initial AI failure in %s', async (language) => {
+	mockLanguage = language;
+	handlers[`capabilities/?language=${language}`] = () => {
+		throw new TypeError('offline');
+	};
+	render(themed(<ChatAIAssistant />));
+	fireEvent.click(await screen.findByRole('button', { name: 'Ask AI Assistant' }));
+	expect(await screen.findByRole('alert')).toHaveTextContent(language === 'en' ? 'unavailable' : 'indisponible');
+	expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+	handlers[`capabilities/?language=${language}`] = () => jsonResponse(capabilities);
+	fireEvent.click(screen.getByRole('button', { name: language === 'en' ? 'Retry' : 'Réessayer' }));
+	expect(
+		await screen.findByRole('textbox', { name: language === 'en' ? 'Your message' : 'Votre message' }),
+	).toBeEnabled();
+});
+it('keeps a denied confirmation open and never reports success or invalidates caches', async () => {
+	handlers['conversations/conversation-1/messages/'] = () =>
+		jsonResponse(assistantMessage('Vérifiez', [quoteConfirmation]));
+	handlers['actions/quote-delete/confirm/'] = () => {
+		throw { code: 'PERMISSION_DENIED' };
+	};
+	await renderAssistant();
+	sendMessage('Supprime le devis');
+	fireEvent.click(await screen.findByRole('button', { name: 'Vérifier cette action' }));
+	fireEvent.click(screen.getByRole('button', { name: 'Confirmer cette action' }));
+	await waitFor(() =>
+		expect(screen.getByRole('dialog', { name: /Supprimer DEV/ })).toHaveTextContent('Vous n’avez pas accès'),
+	);
+	expect(screen.queryByText(/Action effectuée/)).not.toBeInTheDocument();
+	expect(mockDispatch).not.toHaveBeenCalled();
 });

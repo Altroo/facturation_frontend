@@ -18,7 +18,14 @@ import {
 import { BusinessOutlined, DeleteOutlined } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector, useLanguage } from '@/utils/hooks';
 import { getAccessToken, getProfilState } from '@/store/selectors';
-import { ChatAPIError, chatRequest, consumeChatStream, downloadInvoicePDF, safeNavigation } from '@/utils/chatAiApi';
+import {
+	chatErrorCode,
+	chatRequest,
+	consumeChatStream,
+	downloadInvoicePDF,
+	isChatMessage,
+	safeNavigation,
+} from '@/utils/chatAiApi';
 import { getChatAICompany, publishChatAICompany, subscribeChatAICompany } from '@/utils/chatAiCompany';
 import { factureClientApi } from '@/store/services/factureClient';
 import { deviApi } from '@/store/services/devi';
@@ -49,6 +56,7 @@ const errorText: Record<string, string> = {
 	INVALID_MODEL_OUTPUT:
 		'Je n’ai pas pu interpréter cette demande. Précisez votre recherche ou utilisez /aide pour choisir un module.',
 	INCOMPLETE_RESPONSE: 'La réponse est incomplète. Vous pouvez réessayer ou utiliser /aide pour choisir un module.',
+	TOOL_TIMEOUT: 'L’opération a pris trop de temps. Vérifiez son résultat avant de recommencer.',
 	MODEL_TIMEOUT: 'La réponse a pris trop de temps. Réessayez avec une recherche plus précise.',
 	SENSITIVE_INPUT: 'Retirez les mots de passe ou secrets avant d’envoyer ce message.',
 	INVALID_ARGUMENTS: 'Précisez votre demande, le numéro ou la période.',
@@ -76,6 +84,12 @@ const errorTextEnglish: Record<string, string> = {
 	ACTION_REJECTED: 'The application rejected this action under its business rules.',
 	CONTEXT_LIMIT: 'This conversation is full. Start a new conversation.',
 };
+
+const chatErrorMessage = (error: unknown, language: 'fr' | 'en') =>
+	(language === 'en' ? errorTextEnglish : errorText)[chatErrorCode(error)] ||
+	(language === 'en'
+		? 'The assistant is unavailable. You can retry.'
+		: 'L’assistant est indisponible. Vous pouvez réessayer.');
 
 type ChatAIRetryRequest = {
 	text: string;
@@ -178,25 +192,30 @@ const ChatAIWorkspace = ({
 		else setError(interfaceLanguage === 'en' ? 'Navigation denied.' : 'Navigation refusée.');
 	};
 	const showError = (err: unknown) => {
-		if (!active.current || (err instanceof DOMException && err.name === 'AbortError')) return;
-		setError(
-			(interfaceLanguage === 'en' ? errorTextEnglish : errorText)[err instanceof ChatAPIError ? err.code : ''] ||
-				(interfaceLanguage === 'en'
-					? 'The assistant is unavailable. You can retry.'
-					: 'L’assistant est indisponible. Vous pouvez réessayer.'),
-		);
+		if (!active.current || chatErrorCode(err) === 'ABORTED') return;
+		setError(chatErrorMessage(err, interfaceLanguage));
 	};
-	const confirmAction = async (card: ChatCard) => {
+	const confirmAction = async (card: ChatCard): Promise<{ error?: string }> => {
+		setError('');
 		const epoch = requestEpoch.current;
 		const path = pathname;
 		const isCurrent = () => active.current && requestEpoch.current === epoch;
 		try {
 			// Do not abort a confirmed write: it may already have executed. Its
 			// successful result must refresh caches even after leaving this view.
-			await chatRequest(`actions/${card.action_id}/confirm/`, token, {
+			const result = await chatRequest(`actions/${card.action_id}/confirm/`, token, {
 				method: 'POST',
 				body: JSON.stringify({ confirmed: true }),
 			});
+			if (result.error) {
+				const message = ['APPLICATION_UNAVAILABLE', 'ABORTED'].includes(result.error.code)
+					? interfaceLanguage === 'en'
+						? 'The confirmation could not be verified. Check the record before trying again.'
+						: 'La confirmation n’a pas pu être vérifiée. Consultez le document avant de recommencer.'
+					: chatErrorMessage(result.error, interfaceLanguage);
+				if (isCurrent()) setError(message);
+				return { error: message };
+			}
 			dispatch(factureClientApi.util.invalidateTags(['FactureClient']));
 			dispatch(deviApi.util.invalidateTags(['Devi']));
 			dispatch(factureProFormaApi.util.invalidateTags(['FactureProForma']));
@@ -206,7 +225,7 @@ const ChatAIWorkspace = ({
 			dispatch(clientApi.util.invalidateTags(['Client']));
 			dispatch(dashboardApi.util.invalidateTags(['Dashboard']));
 			dispatch(reglementApi.util.invalidateTags(['Reglement']));
-			if (!isCurrent()) return;
+			if (!isCurrent()) return {};
 			setMessages((old) => [
 				...old.map((m) => ({ ...m, cards: m.cards?.filter((c) => c.type === 'confirmation') })),
 				{
@@ -229,10 +248,11 @@ const ChatAIWorkspace = ({
 			const list = card.resource && listRoutes[card.resource];
 			if (card.operation === 'delete' && list && currentPath.current === path)
 				router.push(`/dashboard/${list}/?company_id=${companyId}`);
+			return {};
 		} catch (err) {
-			if (!isCurrent()) return;
-			showError(err);
-			throw err;
+			const message = chatErrorMessage(err, interfaceLanguage);
+			if (isCurrent()) setError(message);
+			return { error: message };
 		}
 	};
 	const selectRecord = async (resource: string, identifier: number, operation: 'edit' | 'delete') => {
@@ -245,7 +265,15 @@ const ChatAIWorkspace = ({
 				body: JSON.stringify({ resource, identifier, operation }),
 				signal: request.signal,
 			});
-			const message = (await response.json()) as ChatMessage;
+			if (response.error) {
+				if (request.isCurrent()) showError(response.error);
+				return;
+			}
+			const message: unknown = await response.data.json();
+			if (!isChatMessage(message)) {
+				if (request.isCurrent()) showError({ code: 'INVALID_MODEL_OUTPUT' });
+				return;
+			}
 			if (request.isCurrent()) setMessages((old) => [...old, message]);
 		} catch (err) {
 			if (request.isCurrent()) showError(err);
@@ -280,7 +308,15 @@ const ChatAIWorkspace = ({
 					body: JSON.stringify({ company_id: companyId }),
 					signal,
 				});
-				id = (await response.json()).id as string;
+				if (response.error) {
+					if (isCurrent()) showError(response.error);
+					return;
+				}
+				id = (await response.data.json()).id as string;
+				if (typeof id !== 'string' || !id) {
+					if (isCurrent()) showError({ code: 'INVALID_MODEL_OUTPUT' });
+					return;
+				}
 				if (!isCurrent()) return;
 				setConversation(id);
 			}
@@ -290,7 +326,11 @@ const ChatAIWorkspace = ({
 				body: JSON.stringify({ text, request_id: requestId, context }),
 				signal,
 			});
-			await consumeChatStream(response, (event, data) => {
+			if (response.error) {
+				if (isCurrent()) showError(response.error);
+				return;
+			}
+			const stream = await consumeChatStream(response.data, (event, data) => {
 				if (!isCurrent()) return;
 				if (event === 'message.delta') setDelta((old) => old + (data as { text: string }).text);
 				if (event === 'message.completed') {
@@ -301,6 +341,7 @@ const ChatAIWorkspace = ({
 					// A validated navigation card is offered for user action; searches never redirect.
 				}
 			});
+			if (stream.error && isCurrent()) showError(stream.error);
 		} catch (err) {
 			if (isCurrent()) showError(err);
 		} finally {
@@ -313,7 +354,18 @@ const ChatAIWorkspace = ({
 		setError('');
 		try {
 			const response = await chatRequest(`conversations/?company_id=${companyId}`, token, { signal: request.signal });
-			const result = await response.json();
+			if (response.error) {
+				if (request.isCurrent()) showError(response.error);
+				return;
+			}
+			const result = await response.data.json();
+			if (
+				!Array.isArray(result) ||
+				!result.every((item) => item && typeof item.id === 'string' && typeof item.updated_at === 'string')
+			) {
+				if (request.isCurrent()) showError({ code: 'INVALID_MODEL_OUTPUT' });
+				return;
+			}
 			if (request.isCurrent()) setHistory(result);
 		} catch (err) {
 			if (request.isCurrent()) showError(err);
@@ -325,8 +377,21 @@ const ChatAIWorkspace = ({
 		const request = startRequest('history');
 		try {
 			const response = await chatRequest(`conversations/${id}/`, token, { signal: request.signal });
-			const result = await response.json();
-			if (request.isCurrent() && result.company_id === companyId) {
+			if (response.error) {
+				if (request.isCurrent()) showError(response.error);
+				return;
+			}
+			const result = await response.data.json();
+			if (
+				!result ||
+				result.company_id !== companyId ||
+				!Array.isArray(result.messages) ||
+				!result.messages.every(isChatMessage)
+			) {
+				if (request.isCurrent()) showError({ code: 'INVALID_MODEL_OUTPUT' });
+				return;
+			}
+			if (request.isCurrent()) {
 				followLatest.current = true;
 				setConversation(id);
 				setMessages(result.messages);
@@ -356,7 +421,11 @@ const ChatAIWorkspace = ({
 		const request = startRequest('history');
 		setError('');
 		try {
-			await chatRequest(`conversations/${id}/`, token, { method: 'DELETE', signal: request.signal });
+			const result = await chatRequest(`conversations/${id}/`, token, { method: 'DELETE', signal: request.signal });
+			if (result.error) {
+				if (request.isCurrent()) showError(result.error);
+				return;
+			}
 			if (!request.isCurrent()) return;
 			setHistory((old) => old.filter((item) => item.id !== id));
 			if (conversation === id) {
@@ -503,7 +572,9 @@ const ChatAIWorkspace = ({
 									select={selectRecord}
 									permissions={company}
 									pdf={(id, resource) => {
-										void downloadInvoicePDF(id, companyId, token, resource).catch(showError);
+										void downloadInvoicePDF(id, companyId, token, resource).then((result) => {
+											if (result.error) showError(result.error);
+										});
 									}}
 								/>
 							</ChatAIMessageBox>
@@ -587,6 +658,9 @@ export const ChatAIAssistant = () => {
 	const search = useSearchParams();
 	const tabCompany = useSyncExternalStore(subscribeChatAICompany, getChatAICompany, () => null);
 	const [capabilities, setCapabilities] = useState<ChatCapabilities | null>(null);
+	const [capabilitiesError, setCapabilitiesError] = useState('');
+	const [capabilitiesLoading, setCapabilitiesLoading] = useState(false);
+	const [capabilitiesAttempt, setCapabilitiesAttempt] = useState(0);
 	const [open, setOpen] = useState(false);
 	const [overlayOpen, setOverlayOpen] = useState(false);
 	const companyMenuId = useId();
@@ -639,14 +713,49 @@ export const ChatAIAssistant = () => {
 			return;
 		}
 		const controller = new AbortController();
-		void chatRequest(`capabilities/?language=${language}`, token, { signal: controller.signal })
-			.then((response) => response.json())
-			.then((value) => {
-				if (!controller.signal.aborted) setCapabilities(value);
-			})
-			.catch(() => {});
+		setCapabilitiesLoading(true);
+		const load = async () => {
+			try {
+				const result = await chatRequest(`capabilities/?language=${language}`, token, { signal: controller.signal });
+				if (controller.signal.aborted) return;
+				if (result.error) {
+					setCapabilities(null);
+					setCapabilitiesError(chatErrorMessage(result.error, language));
+					return;
+				}
+				const value = await result.data.json();
+				if (controller.signal.aborted) return;
+				if (
+					!value ||
+					!Array.isArray(value.companies) ||
+					!Array.isArray(value.languages) ||
+					!value.companies.every(
+						(item: ChatCapabilities['companies'][number]) =>
+							item &&
+							Number.isSafeInteger(item.id) &&
+							item.id > 0 &&
+							typeof item.name === 'string' &&
+							Array.isArray(item.suggestions),
+					)
+				) {
+					setCapabilities(null);
+					setCapabilitiesError(chatErrorMessage({ code: 'INVALID_MODEL_OUTPUT' }, language));
+					return;
+				}
+				setCapabilities(value);
+				setCapabilitiesError('');
+			} catch (error) {
+				if (!controller.signal.aborted) {
+					setCapabilities(null);
+					setCapabilitiesError(chatErrorMessage(error, language));
+				}
+			} finally {
+				if (!controller.signal.aborted) setCapabilitiesLoading(false);
+			}
+		};
+		void load();
 		return () => controller.abort();
-	}, [token, profile.id, language]);
+	}, [token, profile.id, language, capabilitiesAttempt]);
 	useEffect(() => {
 		const clear = () => {
 			setCapabilities(null);
@@ -657,7 +766,8 @@ export const ChatAIAssistant = () => {
 		window.addEventListener('session-expired', clear);
 		return () => window.removeEventListener('session-expired', clear);
 	}, []);
-	if (!token || !profile.id || !capabilities || !pathname.startsWith('/dashboard')) return null;
+	if (!token || !profile.id || (!capabilities && !capabilitiesError && !open) || !pathname.startsWith('/dashboard'))
+		return null;
 	const companyControl = (
 		<Box className={styles.company}>
 			{(routeCompany || activeTabCompany) && company ? (
@@ -680,7 +790,7 @@ export const ChatAIAssistant = () => {
 					onChange={(event) => setPickedCompany(Number(event.target.value))}
 					slotProps={{ select: { MenuProps: { id: companyMenuId } } }}
 				>
-					{capabilities.companies.map((item) => (
+					{capabilities?.companies.map((item) => (
 						<MenuItem key={item.id} value={item.id}>
 							{item.name}
 						</MenuItem>
@@ -692,7 +802,27 @@ export const ChatAIAssistant = () => {
 	return (
 		<Portal>
 			<ChatAIInterface open={open} onOpenChangeAction={setOpen} suppressed={overlayOpen} offset={offset}>
-				{company ? (
+				{!capabilities ? (
+					<>
+						<ChatAIHeader appName="Facturation" closeAction={() => setOpen(false)} language={language} />
+						<Stack spacing={2} sx={{ p: 3 }}>
+							{capabilitiesError && <Alert severity="error">{capabilitiesError}</Alert>}
+							<Button
+								variant="outlined"
+								disabled={capabilitiesLoading}
+								onClick={() => setCapabilitiesAttempt((attempt) => attempt + 1)}
+							>
+								{capabilitiesLoading
+									? language === 'en'
+										? 'Loading…'
+										: 'Chargement…'
+									: language === 'en'
+										? 'Retry'
+										: 'Réessayer'}
+							</Button>
+						</Stack>
+					</>
+				) : company ? (
 					<ChatAIWorkspace
 						key={`${profile.id}:${company.id}`}
 						companyId={company.id}

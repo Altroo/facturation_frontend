@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Refresh as RefreshIcon } from '@mui/icons-material';
-import { Typography } from '@mui/material';
+import { Alert, Typography } from '@mui/material';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import { getAppVersions } from '@/store/selectors';
@@ -15,6 +15,7 @@ const AppUpdate = () => {
 	const { onError } = useToast();
 	const [dismissedVersion, setDismissedVersion] = useState<string | null>(null);
 	const [updating, setUpdating] = useState(false);
+	const [updateError, setUpdateError] = useState(false);
 	const inFlight = useRef(false);
 	const latestState = useRef({ serverVersion, maintenance });
 	useEffect(() => {
@@ -38,14 +39,17 @@ const AppUpdate = () => {
 		if (!serverVersion || inFlight.current) return;
 		inFlight.current = true;
 		setUpdating(true);
+		setUpdateError(false);
 		try {
-			const url = await getAppUpdateUrl(serverVersion, window.location.href);
-			if (latestState.current.maintenance || latestState.current.serverVersion !== serverVersion) {
+			const result = await getAppUpdateUrl(serverVersion, window.location.href);
+			if (result.error || latestState.current.maintenance || latestState.current.serverVersion !== serverVersion) {
+				setUpdateError(true);
 				onError(t.appUpdate.error);
 				return;
 			}
-			reloadApp(url);
+			reloadApp(result.url);
 		} catch {
+			setUpdateError(true);
 			onError(t.appUpdate.error);
 		} finally {
 			setUpdating(false);
@@ -73,6 +77,11 @@ const AppUpdate = () => {
 				},
 			]}
 		>
+			{updateError && (
+				<Alert severity="error" sx={{ mt: 2 }}>
+					{t.appUpdate.error}
+				</Alert>
+			)}
 			<Typography variant="body2" sx={{ mt: 2, color: 'text.secondary' }}>
 				{t.appUpdate.version} {serverVersion}
 			</Typography>
