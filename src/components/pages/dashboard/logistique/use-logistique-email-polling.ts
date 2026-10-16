@@ -17,7 +17,14 @@ export const hasPendingLogistiqueEmailDelivery = (
 			!order.demande_paiement_email_relance_disponible) ||
 			order.echeancier_paiement?.some(
 				(installment) =>
-					ACTIVE_DELIVERY_STATUSES.has(installment.preuve_email_statut) && !installment.preuve_email_relance_disponible,
+					(ACTIVE_DELIVERY_STATUSES.has(installment.preuve_email_statut) &&
+						!installment.preuve_email_relance_disponible) ||
+					Boolean(
+						installment.declencheur &&
+						installment.paiement_valide_le &&
+						!installment.notification_createur_envoyee_le &&
+						!installment.notification_createur_erreur,
+					),
 			)),
 	);
 

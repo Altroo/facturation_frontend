@@ -24,6 +24,7 @@ import type {
 	LogistiqueSupplierProformaReviewAction,
 } from '@/types/logistiqueTypes';
 import { factureProFormaApi } from '@/store/services/factureProForma';
+import { marqueApi } from '@/store/services/parameter';
 
 export const logistiqueApi = createApi({
 	reducerPath: 'logistiqueApi',
@@ -35,6 +36,53 @@ export const logistiqueApi = createApi({
 		),
 	),
 	endpoints: (builder) => ({
+		saveSupplierContact: builder.mutation<unknown, { company_id: number; id?: number; nom: string; email: string }>({
+			query: ({ company_id, ...data }) => ({
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/supplier_directory/`,
+				method: 'POST',
+				params: { company_id },
+				data,
+			}),
+			async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+				try {
+					await queryFulfilled;
+					dispatch(marqueApi.util.invalidateTags(['Marque']));
+				} catch {
+					/* The form displays the API error. */
+				}
+			},
+		}),
+		purchaseAction: builder.mutation<LogistiqueOrder, { id: number; data: FormData | Record<string, unknown> }>({
+			query: ({ id, data }) => ({
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/${id}/purchase/`,
+				method: 'POST',
+				data,
+			}),
+			invalidatesTags: (result, _error, { id }) =>
+				result ? [{ type: 'Logistique', id }, { type: 'Logistique', id: 'LIST' }, 'Dashboard'] : [],
+		}),
+		requestPurchasePayment: builder.mutation<
+			LogistiqueOrder,
+			{ id: number; echeance_id: number; date_echeance: string }
+		>({
+			query: ({ id, ...data }) => ({
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/${id}/request_payment/`,
+				method: 'POST',
+				data,
+			}),
+			invalidatesTags: (result, _error, { id }) =>
+				result ? [{ type: 'Logistique', id }, { type: 'Logistique', id: 'LIST' }, 'Dashboard'] : [],
+		}),
+		extractImportTitle: builder.mutation<
+			{ fields: Record<string, string>; warnings: string[] },
+			{ id: number; data: FormData }
+		>({
+			query: ({ id, data }) => ({
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/${id}/extract_import_title/`,
+				method: 'POST',
+				data,
+			}),
+		}),
 		getLogisticsFieldReview: builder.query<LogisticsFieldReview, { company_id: number }>({
 			query: ({ company_id }) => ({
 				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/field_review/`,
@@ -136,7 +184,20 @@ export const logistiqueApi = createApi({
 		}),
 		addLogistique: builder.mutation<
 			LogistiqueCreateResponse,
-			{ company_id: number; data: Partial<LogistiqueFormValues> | FormData }
+			{
+				company_id: number;
+				data:
+					| Partial<LogistiqueFormValues>
+					| FormData
+					| {
+							fournisseur: string;
+							fournisseur_email: string;
+							responsable: number;
+							date_prevue: string | null;
+							date_commande_client: string | null;
+							marque?: number;
+					  };
+			}
 		>({
 			query: ({ company_id, data }) => ({
 				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/`,
@@ -408,6 +469,10 @@ export const logistiqueApi = createApi({
 });
 
 export const {
+	useSaveSupplierContactMutation,
+	usePurchaseActionMutation,
+	useRequestPurchasePaymentMutation,
+	useExtractImportTitleMutation,
 	useGetLogisticsFieldReviewQuery,
 	useSaveLogisticsFieldReviewMutation,
 	useGetLogistiqueListQuery,

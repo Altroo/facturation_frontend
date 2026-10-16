@@ -1,5 +1,7 @@
 'use client';
 
+import SupplierPurchase from './supplier-purchase-form';
+
 import { listReturnUrl } from '@/utils/listReturn';
 import { runWithCleanup, runWithErrorHandler } from '@/utils/runWithCleanup';
 import { useState, type FC, type MouseEvent } from 'react';
@@ -1288,4 +1290,11 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 	);
 };
 
-export default LogistiqueForm;
+const PurchaseRoute: FC<Props> = (props) => {
+	const token = useInitAccessToken();
+	const { data: record } = useGetLogistiqueQuery({ id: props.id ?? 0 }, { skip: !token || !props.id });
+	if (!props.id || record?.workflow_version === 2) return <SupplierPurchase {...props} />;
+	return <LogistiqueForm {...props} />;
+};
+
+export default PurchaseRoute;

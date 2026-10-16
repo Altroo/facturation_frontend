@@ -16,6 +16,8 @@ const CustomAutoCompleteSelect: FC<Props> = ({
 	value,
 	fullWidth,
 	onChange,
+	onInputChange,
+	serverFiltered = false,
 	disabled,
 	slotProps,
 	startIcon,
@@ -56,10 +58,13 @@ const CustomAutoCompleteSelect: FC<Props> = ({
 				getOptionLabel={(option) => (option.archived ? `${option.code} (${t.common.archived})` : option.code)}
 				getOptionKey={(option) => option.value}
 				filterOptions={(options, state) =>
-					options.filter((opt) => opt.code.toLowerCase().includes(state.inputValue.toLowerCase()))
+					serverFiltered
+						? options
+						: options.filter((opt) => opt.code.toLowerCase().includes(state.inputValue.toLowerCase()))
 				}
 				value={value}
 				onChange={onChange}
+				onInputChange={onInputChange}
 				disabled={disabled}
 				isOptionEqualToValue={(option, val) => option.value === val.value}
 				onBlur={onBlur}

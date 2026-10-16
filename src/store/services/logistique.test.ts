@@ -41,6 +41,51 @@ describe('logistiqueApi endpoints', () => {
 	const formData = () => new FormData();
 	const endpointCalls: Array<[string, () => Promise<unknown>]> = [
 		[
+			'purchaseAction',
+			async () =>
+				storeRef.store
+					.dispatch(
+						logistiqueApi.endpoints.purchaseAction.initiate({
+							id: 1,
+							data: { action: 'reception', lignes: [{ logistics_line: 2, article: 3, quantity: '2', emplacement: 4 }] },
+						}),
+					)
+					.unwrap(),
+		],
+		[
+			'requestPurchasePayment',
+			async () =>
+				storeRef.store
+					.dispatch(
+						logistiqueApi.endpoints.requestPurchasePayment.initiate({
+							id: 1,
+							echeance_id: 2,
+							date_echeance: '2026-10-16',
+						}),
+					)
+					.unwrap(),
+		],
+		[
+			'extractImportTitle',
+			async () =>
+				storeRef.store
+					.dispatch(logistiqueApi.endpoints.extractImportTitle.initiate({ id: 1, data: formData() }))
+					.unwrap(),
+		],
+		[
+			'saveSupplierContact',
+			async () =>
+				storeRef.store
+					.dispatch(
+						logistiqueApi.endpoints.saveSupplierContact.initiate({
+							company_id: 1,
+							nom: 'Fournisseur test',
+							email: 'test@example.invalid',
+						}),
+					)
+					.unwrap(),
+		],
+		[
 			'getLogisticsFieldReview',
 			async () =>
 				storeRef.store.dispatch(logistiqueApi.endpoints.getLogisticsFieldReview.initiate({ company_id: 1 })).unwrap(),

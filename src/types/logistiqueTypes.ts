@@ -62,6 +62,7 @@ export type LogistiqueDocumentField =
 	| 'documents_originaux_file';
 
 export type LogistiqueLine = {
+	type_article?: string;
 	id: number;
 	proforma: number;
 	proforma_numero: string;
@@ -119,6 +120,10 @@ export type LogistiqueProformaDetail = {
 };
 
 export type LogistiquePaymentInstallment = {
+	declencheur?: string;
+	demandee_le?: string | null;
+	notification_createur_envoyee_le?: string | null;
+	notification_createur_erreur?: string;
 	id: number;
 	date_echeance: string;
 	montant_prevu: number | string;
@@ -151,6 +156,22 @@ export type LogistiquePaymentInstallment = {
 };
 
 export type LogistiqueOrder = {
+	created_by_user?: number | null;
+	workflow_version?: number;
+	condition_achat?: string;
+	date_commande_client?: string | null;
+	date_expedition_prevue?: string | null;
+	production_confirmee_le?: string | null;
+	date_expedition_reelle?: string | null;
+	date_arrivee_maroc?: string | null;
+	documents_remis_banque_le?: string | null;
+	workflow?: {
+		prochaine_action?: string;
+		preparation_possible?: boolean;
+		raison_preparation?: string;
+		conditions?: { value: string; label: string }[];
+		paiements?: { id: number; declencheur: string; demande_possible: boolean; raison_attente: string }[];
+	};
 	id: number;
 	company: number;
 	numero_commande: string;
@@ -258,6 +279,16 @@ export type LogistiqueOrder = {
 	clients_display: string;
 	projects_display: string;
 	alerts: string[];
+	receptions?: {
+		id: number;
+		reference: string;
+		note: string;
+		status: string;
+		date_created: string;
+		date_validated: string | null;
+		created_by_name?: string | null;
+		validated_by_name?: string | null;
+	}[];
 	lignes?: LogistiqueLine[];
 	events?: LogistiqueEvent[];
 	proformas_detail?: LogistiqueProformaDetail[];

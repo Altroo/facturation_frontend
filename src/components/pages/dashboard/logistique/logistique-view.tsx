@@ -1,5 +1,7 @@
 'use client';
 
+import SupplierPurchase from './supplier-purchase';
+
 import { listReturnUrl } from '@/utils/listReturn';
 import { runWithCleanup } from '@/utils/runWithCleanup';
 import { isValidElement, useState, type FC } from 'react';
@@ -2539,4 +2541,11 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 	);
 };
 
-export default LogistiqueViewClient;
+const PurchaseRoute: FC<Props> = (props) => {
+	const token = useInitAccessToken();
+	const { data: record } = useGetLogistiqueQuery({ id: props.id ?? 0 }, { skip: !token || !props.id });
+	if (!props.id || record?.workflow_version === 2) return <SupplierPurchase {...props} />;
+	return <LogistiqueViewClient {...props} />;
+};
+
+export default PurchaseRoute;

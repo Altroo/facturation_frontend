@@ -141,6 +141,7 @@ export class CitiesClass {
 }
 
 export class MarqueClass {
+	email?: string;
 	constructor(
 		public readonly id: number,
 		public nom: string,

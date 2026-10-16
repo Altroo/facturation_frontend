@@ -227,7 +227,14 @@ export const LogistiqueDocumentsFormCard: FC<LogistiqueDocumentsFormCardProps> =
 							variant="contained"
 							startIcon={<UploadFileIcon />}
 							disabled={isLoading}
-							sx={{ minWidth: { xs: '100%', md: 180 }, whiteSpace: 'nowrap' }}
+							sx={{
+								minWidth: { xs: '100%', md: 180 },
+								flexShrink: 0,
+								px: 2,
+								py: 1,
+								whiteSpace: 'nowrap',
+								'& .MuiButton-startIcon': { ml: 0, mr: 1 },
+							}}
 						>
 							{t.logistique.chooseFiles}
 							<Box

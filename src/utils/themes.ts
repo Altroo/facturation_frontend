@@ -1,5 +1,8 @@
+import type {} from '@mui/x-date-pickers/themeAugmentation';
 import { createTheme } from '@mui/material/styles';
 import { hexToRGB } from './helpers';
+
+const fieldBorderRadius = '16px';
 
 export const CustomTheme = (primaryColor: string | undefined = undefined) => {
 	let rippleColor = '#0D070B';
@@ -19,6 +22,36 @@ export const CustomTheme = (primaryColor: string | undefined = undefined) => {
 	$wide : (min-width: 1920px)'
 	 */
 	return createTheme({
+		components: {
+			MuiPickersOutlinedInput: {
+				styleOverrides: {
+					root: { borderRadius: fieldBorderRadius },
+					notchedOutline: { borderColor: 'var(--app-input-border, #A3A3AD)' },
+				},
+			},
+			MuiPickersInputBase: {
+				styleOverrides: {
+					root: { fontFamily: 'Poppins', fontSize: '19px', minWidth: 0 },
+					sectionsContainer: { minWidth: 0 },
+					sectionContent: { caretColor: 'var(--app-accent, #0274d7)' },
+				},
+			},
+			MuiPickersTextField: {
+				styleOverrides: {
+					root: ({ theme }) => ({
+						minWidth: 0,
+						'& .MuiInputLabel-root': {
+							fontFamily: 'Poppins',
+							fontSize: '19px',
+							color: 'var(--app-label, #A3A3AD)',
+						},
+						'& .MuiInputLabel-root.Mui-focused': { color: 'var(--app-accent, #0274d7)' },
+						'& .MuiInputLabel-root.Mui-error': { color: theme.palette.error.main },
+						'& .MuiInputLabel-root.Mui-disabled': { color: theme.palette.text.disabled },
+					}),
+				},
+			},
+		},
 		palette: {
 			primary: {
 				main: rippleColor,
@@ -69,11 +102,12 @@ export const textInputTheme = (primaryColor: string | undefined = undefined) => 
 	return createTheme({
 		...defaultTheme,
 		components: {
+			...defaultTheme.components,
 			MuiInputBase: {
 				styleOverrides: {
 					root: {
 						'& fieldset': {
-							borderRadius: '16px',
+							borderRadius: fieldBorderRadius,
 							border: '1px solid var(--app-input-border, #A3A3AD)',
 						},
 						'& fieldset > legend': {
@@ -116,6 +150,7 @@ export const gridInputTheme = (primaryColor: string | undefined = undefined) => 
 	return createTheme({
 		...defaultTheme,
 		components: {
+			...defaultTheme.components,
 			MuiInputBase: {
 				styleOverrides: {
 					root: {
@@ -157,6 +192,7 @@ export const navigationBarTheme = (primaryColor: string | undefined = undefined)
 	return createTheme({
 		...defaultTheme,
 		components: {
+			...defaultTheme.components,
 			MuiAppBar: {
 				styleOverrides: {
 					root: {
@@ -201,6 +237,7 @@ export const codeTextInputTheme = (error: boolean | undefined) => {
 	return createTheme({
 		...defaultTheme,
 		components: {
+			...defaultTheme.components,
 			MuiInputBase: {
 				styleOverrides: {
 					root: {
@@ -239,6 +276,7 @@ export const customToastTheme = (primaryColor: string | undefined = undefined) =
 	return createTheme({
 		...defaultTheme,
 		components: {
+			...defaultTheme.components,
 			MuiSnackbar: {
 				styleOverrides: {
 					root: {
@@ -282,18 +320,19 @@ export const chipSelectFilterTheme = (primaryColor: string | undefined = undefin
 	return createTheme({
 		...defaultTheme,
 		components: {
+			...defaultTheme.components,
 			MuiAutocomplete: {
 				styleOverrides: {
 					root: {
 						'& .MuiOutlinedInput-root': {
 							backgroundColor: 'var(--app-surface, #FFFFFF)',
-							borderRadius: '16px',
+							borderRadius: fieldBorderRadius,
 							fontFamily: 'Poppins',
 							fontSize: '14px',
 							'& fieldset': {
 								borderColor: 'var(--app-input-border, #A3A3AD)',
 								borderWidth: '1px',
-								borderRadius: '16px',
+								borderRadius: fieldBorderRadius,
 							},
 							'&:hover fieldset': {
 								borderColor: blueColor,
@@ -308,7 +347,7 @@ export const chipSelectFilterTheme = (primaryColor: string | undefined = undefin
 						flexWrap: 'wrap',
 					},
 					paper: {
-						borderRadius: '16px',
+						borderRadius: fieldBorderRadius,
 						boxShadow: '0px 4px 16px rgba(0, 0, 0, 0.1)',
 						marginTop: '4px',
 					},
@@ -359,11 +398,12 @@ export const customDropdownTheme = (primaryColor: string | undefined = undefined
 	return createTheme({
 		...defaultTheme,
 		components: {
+			...defaultTheme.components,
 			MuiInputBase: {
 				styleOverrides: {
 					root: {
 						'& fieldset': {
-							borderRadius: '16px',
+							borderRadius: fieldBorderRadius,
 							border: '1px solid var(--app-input-border, #A3A3AD)',
 						},
 						'& fieldset > legend': {
@@ -425,6 +465,7 @@ export const customGridDropdownTheme = (primaryColor: string | undefined = undef
 	return createTheme({
 		...defaultTheme,
 		components: {
+			...defaultTheme.components,
 			MuiInputBase: {
 				styleOverrides: {
 					root: {

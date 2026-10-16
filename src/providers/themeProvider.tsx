@@ -13,7 +13,7 @@ export const useColorMode = () => useContext(ColorModeContext);
 
 const ThemeProvider = ({ children, initialTheme = 'light' }: { children: ReactNode; initialTheme?: ColorMode }) => {
 	const [mode, setMode] = useState<ColorMode>(initialTheme);
-	const theme = () => applyColorMode(getDefaultTheme(), mode);
+	const theme = applyColorMode(getDefaultTheme(), mode);
 
 	useEffect(() => {
 		document.documentElement.dataset.theme = mode;
