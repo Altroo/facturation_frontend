@@ -27,6 +27,7 @@ const documentFile = z
 	.nullable();
 
 const formShape = z.object({
+	fournisseur_record: z.string().default(''),
 	fournisseur: z.string().default(''),
 	fournisseur_email: z.string().default(''),
 	marque: z.string().default(''),

@@ -252,3 +252,20 @@ test('loading a new company list preserves the current scope until an authorized
 	expect(screen.getByText('Selected 1')).toBeInTheDocument();
 	expect(published).toEqual([2, 1]);
 });
+
+test('switching companies resets the list page while preserving page size and sorting', () => {
+	window.history.replaceState(
+		null,
+		'',
+		'/dashboard/logistique/fournisseurs?company_id=1&page=2&page_size=5&ordering=-total_dossiers',
+	);
+	mockedUseGetUserCompaniesQuery.mockReturnValue({ data: companies, isLoading: false });
+	render(selectedCompanyView());
+	fireEvent.click(screen.getByRole('tab', { name: 'Company Two' }));
+
+	const params = new URLSearchParams(window.location.search);
+	expect(params.get('company_id')).toBe('2');
+	expect(params.get('page')).toBeNull();
+	expect(params.get('page_size')).toBe('5');
+	expect(params.get('ordering')).toBe('-total_dossiers');
+});

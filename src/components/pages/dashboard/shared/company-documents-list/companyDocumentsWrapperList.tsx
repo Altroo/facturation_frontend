@@ -1,6 +1,6 @@
 'use client';
 
-import { type FC, type SyntheticEvent, Suspense, useEffect, useRef, useState } from 'react';
+import { type FC, type SyntheticEvent, startTransition, Suspense, useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Box, Button, Container, Paper, Stack, Tab, Tabs, Typography } from '@mui/material';
 import { Business as BusinessIcon } from '@mui/icons-material';
@@ -100,13 +100,16 @@ const CompanyDocumentsListContent: FC<CompanyDocumentsListProps> = ({
 	const handleChange = (_: SyntheticEvent, newValue: number) => {
 		const nextCompany = companies[newValue];
 		if (!Number.isInteger(newValue) || !nextCompany) return;
-		setAppliedHint(hintKey);
-		setSelectedIndex(newValue);
-		saveCompanyIndex(newValue);
-		publishChatAICompany(nextCompany.id);
-		const url = new URL(window.location.href);
-		url.searchParams.set('company_id', String(nextCompany.id));
-		window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+		startTransition(() => {
+			setAppliedHint(hintKey);
+			setSelectedIndex(newValue);
+			saveCompanyIndex(newValue);
+			publishChatAICompany(nextCompany.id);
+			const url = new URL(window.location.href);
+			url.searchParams.set('company_id', String(nextCompany.id));
+			url.searchParams.delete('page');
+			window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+		});
 	};
 
 	if (isLoading) {

@@ -54,7 +54,7 @@ import {
 import { useLogistiqueEmailPolling } from './use-logistique-email-polling';
 import { extractApiErrorMessage, formatNumberWithSpaces } from '@/utils/helpers';
 import { logistiqueManagerRoles } from '@/utils/rawData';
-import { LOGISTIQUE_LIST, LOGISTIQUE_EDIT, LOGISTIQUE_ADD } from '@/utils/routes';
+import { LOGISTIQUE_LIST, LOGISTIQUE_EDIT, LOGISTIQUE_SUPPLIERS, LOGISTIQUE_ADD } from '@/utils/routes';
 import { listReturnUrl } from '@/utils/listReturn';
 import { PURCHASE_CONDITIONS } from '@/utils/supplierPurchaseSchemas';
 import type { LogistiqueFormProps, LogistiquePaymentInstallment } from '@/types/logistiqueTypes';
@@ -552,7 +552,13 @@ export default function SupplierPurchase({ session, company_id, id }: Logistique
 									<InfoRow label="Créé par" value={order.created_by_user_name} icon={<Person />} />
 									<InfoRow label="Dossier créé le" value={dateTime(order.date_created)} icon={<CalendarToday />} />
 								</Box>
-								{canEdit && actionButton('Contacts fournisseurs', () => edit('repertoire'), true, <Business />)}
+								{canEdit &&
+									actionButton(
+										'Contacts fournisseurs',
+										() => router.push(`${LOGISTIQUE_SUPPLIERS}?company_id=${company_id}`),
+										true,
+										<Business />,
+									)}
 							</DetailCard>
 							<DetailCard title="Proforma fournisseur et conformité" icon={<Description color="primary" />}>
 								<Box sx={grid}>

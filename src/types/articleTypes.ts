@@ -71,7 +71,7 @@ export interface ArticlesViewProps extends SessionProps {
 export interface ClientArticleWrapperFormProps extends SessionProps {
 	company_id: number;
 	id?: number;
-	entityName: 'article' | 'client';
+	entityName: 'article' | 'client' | 'supplier';
 	FormikComponent: FC<{ token?: string; id?: number; company_id: number; company_raison_sociale?: string }>;
 }
 

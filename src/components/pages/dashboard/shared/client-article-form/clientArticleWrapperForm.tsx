@@ -19,6 +19,7 @@ const ClientArticleWrapperForm: FC<Props> = ({ session, company_id, id, entityNa
 	const isEditMode = id !== undefined;
 
 	const titles: Record<string, { add: string; edit: string }> = {
+		supplier: { add: t.logistique.supplierAddTitle, edit: t.logistique.supplierEditTitle },
 		article: {
 			add: t.articles.navAddTitle,
 			edit: t.articles.editTitle,
@@ -33,7 +34,9 @@ const ClientArticleWrapperForm: FC<Props> = ({ session, company_id, id, entityNa
 		<Stack direction="column" sx={{ position: 'relative' }}>
 			<NavigationBar title={isEditMode ? titles[entityName].edit : titles[entityName].add}>
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
-					{company?.role === 'Caissier' || company?.role === 'Commercial' ? (
+					{company?.role === 'Caissier' ||
+					company?.role === 'Commercial' ||
+					(entityName === 'supplier' && company?.role === 'Logistique') ? (
 						<Box sx={{ width: '100%' }}>
 							<FormikComponent
 								token={token}

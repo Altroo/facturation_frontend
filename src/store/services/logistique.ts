@@ -4,7 +4,7 @@ import { axiosBaseQuery } from '@/utils/axiosBaseQuery';
 import { getInitStateToken } from '@/store/selectors';
 import { initToken } from '@/store/slices/_initSlice';
 import type { RootState } from '@/store/store';
-import type { ApiErrorResponseType } from '@/types/_initTypes';
+import type { ApiErrorResponseType, PaginationResponseType } from '@/types/_initTypes';
 import type {
 	LogistiqueCreateResponse,
 	LogistiqueFormValues,
@@ -25,7 +25,7 @@ import { marqueApi } from '@/store/services/parameter';
 
 export const logistiqueApi = createApi({
 	reducerPath: 'logistiqueApi',
-	tagTypes: ['Logistique', 'Dashboard'],
+	tagTypes: ['Logistique', 'Dashboard', 'Supplier'],
 	baseQuery: axiosBaseQuery((api) =>
 		isAuthenticatedInstance(
 			() => getInitStateToken(api.getState() as RootState),
@@ -142,13 +142,68 @@ export const logistiqueApi = createApi({
 			}),
 			providesTags: [{ type: 'Logistique', id: 'LIST' }],
 		}),
-		getLogistiqueSuppliers: builder.query<LogistiqueSupplier[], { company_id: number }>({
-			query: ({ company_id }) => ({
+		getLogistiqueSuppliers: builder.query<
+			LogistiqueSupplier[] | PaginationResponseType<LogistiqueSupplier>,
+			{
+				company_id: number;
+				with_pagination?: boolean;
+				page?: number;
+				pageSize?: number;
+				[key: string]: string | number | boolean | undefined;
+			}
+		>({
+			query: ({ company_id, with_pagination, page, pageSize, ...filters }) => ({
 				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/fournisseurs/`,
+				method: 'GET',
+				params: {
+					company_id,
+					pagination: !!with_pagination,
+					page: with_pagination ? page : undefined,
+					page_size: with_pagination ? pageSize : undefined,
+					...filters,
+				},
+			}),
+			providesTags: ['Supplier', { type: 'Logistique', id: 'LIST' }],
+		}),
+		getLogistiqueSupplier: builder.query<LogistiqueSupplier, { id: number; company_id: number }>({
+			query: ({ id, company_id }) => ({
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/fournisseurs/${id}/`,
 				method: 'GET',
 				params: { company_id },
 			}),
-			providesTags: [{ type: 'Logistique', id: 'LIST' }],
+			providesTags: (_result, _error, { id }) => [
+				{ type: 'Supplier', id },
+				{ type: 'Logistique', id: 'LIST' },
+			],
+		}),
+		addLogistiqueSupplier: builder.mutation<LogistiqueSupplier, { company_id: number; nom: string; email: string }>({
+			query: ({ company_id, ...data }) => ({
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/fournisseurs/`,
+				method: 'POST',
+				params: { company_id },
+				data,
+			}),
+			invalidatesTags: (result) => (result ? ['Supplier'] : []),
+		}),
+		editLogistiqueSupplier: builder.mutation<
+			LogistiqueSupplier,
+			{ id: number; company_id: number; nom: string; email: string }
+		>({
+			query: ({ id, company_id, ...data }) => ({
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/fournisseurs/${id}/`,
+				method: 'PUT',
+				params: { company_id },
+				data,
+			}),
+			invalidatesTags: (result) => (result ? ['Supplier'] : []),
+		}),
+		deleteLogistiqueSupplier: builder.mutation<void, { id: number; company_id: number }>({
+			query: ({ id, company_id }) => ({
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/fournisseurs/${id}/`,
+				method: 'DELETE',
+				params: { company_id },
+			}),
+			invalidatesTags: (_result, error) => (error ? [] : ['Supplier']),
 		}),
 		getLogistiqueSourcePreview: builder.query<LogistiqueSourcePreview, { company_id: number; proformas: number[] }>({
 			query: ({ company_id, proformas }) => ({
@@ -456,6 +511,10 @@ export const {
 	useGetNumLogistiqueQuery,
 	useGetLogistiqueResponsablesQuery,
 	useGetLogistiqueSuppliersQuery,
+	useGetLogistiqueSupplierQuery,
+	useAddLogistiqueSupplierMutation,
+	useEditLogistiqueSupplierMutation,
+	useDeleteLogistiqueSupplierMutation,
 	useGetLogistiqueSourcePreviewQuery,
 	useAddLogistiqueMutation,
 	useEditLogistiqueMutation,

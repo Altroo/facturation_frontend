@@ -41,6 +41,36 @@ describe('logistiqueApi endpoints', () => {
 	const formData = () => new FormData();
 	const endpointCalls: Array<[string, () => Promise<unknown>]> = [
 		[
+			'getLogistiqueSupplier',
+			async () =>
+				storeRef.store
+					.dispatch(logistiqueApi.endpoints.getLogistiqueSupplier.initiate({ id: 8, company_id: 1 }))
+					.unwrap(),
+		],
+		[
+			'addLogistiqueSupplier',
+			async () =>
+				storeRef.store
+					.dispatch(logistiqueApi.endpoints.addLogistiqueSupplier.initiate({ company_id: 1, nom: 'Test', email: '' }))
+					.unwrap(),
+		],
+		[
+			'editLogistiqueSupplier',
+			async () =>
+				storeRef.store
+					.dispatch(
+						logistiqueApi.endpoints.editLogistiqueSupplier.initiate({ id: 8, company_id: 1, nom: 'Test', email: '' }),
+					)
+					.unwrap(),
+		],
+		[
+			'deleteLogistiqueSupplier',
+			async () =>
+				storeRef.store
+					.dispatch(logistiqueApi.endpoints.deleteLogistiqueSupplier.initiate({ id: 8, company_id: 1 }))
+					.unwrap(),
+		],
+		[
 			'purchaseAction',
 			async () =>
 				storeRef.store
@@ -286,6 +316,38 @@ describe('logistiqueApi endpoints', () => {
 		const [request] = mockBaseQuery.mock.calls.at(-1) ?? [];
 		expect(request?.url).toMatch(/^\/logistique\//);
 		expect(request?.url).not.toContain('undefined');
+	});
+
+	it('sends supplier sorting, search and filters with server pagination', async () => {
+		mockBaseQuery.mockClear();
+		await storeRef.store
+			.dispatch(
+				logistiqueApi.endpoints.getLogistiqueSuppliers.initiate({
+					company_id: 2,
+					with_pagination: true,
+					page: 3,
+					pageSize: 25,
+					ordering: '-total_dossiers',
+					search: 'Alpha',
+					email__isempty: 'false',
+				}),
+			)
+			.unwrap();
+		expect(mockBaseQuery).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				url: '/logistique/fournisseurs/',
+				method: 'GET',
+				params: {
+					company_id: 2,
+					pagination: true,
+					page: 3,
+					page_size: 25,
+					ordering: '-total_dossiers',
+					search: 'Alpha',
+					email__isempty: 'false',
+				},
+			}),
+		);
 	});
 
 	it('exposes every tested endpoint', () => {

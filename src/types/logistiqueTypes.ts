@@ -175,6 +175,7 @@ export type LogistiqueOrder = {
 	id: number;
 	company: number;
 	numero_commande: string;
+	fournisseur_record?: number | null;
 	fournisseur: string;
 	fournisseur_email: string;
 	marque: number | null;
@@ -394,6 +395,12 @@ export type LogistiqueSourcePreview = {
 };
 
 export type LogistiqueSupplier = {
+	id: number;
+	company: number;
+	nom: string;
+	email: string;
+	date_created: string;
+	date_updated: string;
 	fournisseur: string;
 	fournisseur_email: string;
 	total_dossiers: number;

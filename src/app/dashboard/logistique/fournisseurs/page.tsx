@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
-import LogistiqueSuppliers from '@/components/pages/dashboard/logistique/logistique-suppliers';
+import LogistiqueSuppliers from '@/components/pages/dashboard/logistique/logistique-suppliers-list';
 import { AUTH_LOGIN } from '@/utils/routes';
 
 export const metadata: Metadata = {

@@ -68,7 +68,9 @@ import {
 	useRecordLogistiquePaymentExecutionMutation,
 	useValidateLogistiquePaymentMutation,
 	useAddLogistiqueProcessNoteMutation,
-	useSaveSupplierContactMutation,
+	useGetLogistiqueSuppliersQuery,
+	useAddLogistiqueSupplierMutation,
+	useEditLogistiqueSupplierMutation,
 } from '@/store/services/logistique';
 import { extractApiErrorMessage, formatLocalDate, setFormikAutoErrors } from '@/utils/helpers';
 import { textInputTheme } from '@/utils/themes';
@@ -218,6 +220,11 @@ function PurchaseFormik({
 	const transitAfterReceipt = ['Réception locale', 'Livraison client', 'Clôture'].includes(order?.statut ?? '');
 	const extractionSequence = useRef(0);
 	const { data: company } = useGetCompanyQuery({ id: company_id }, { skip: !token });
+	const { currentData: supplierData } = useGetLogistiqueSuppliersQuery(
+		{ company_id },
+		{ skip: !token || !['dossier', 'repertoire'].includes(mode) },
+	);
+	const suppliers = Array.isArray(supplierData) ? supplierData : (supplierData?.results ?? []);
 	const { data: brands = [] } = useGetMarqueListQuery({ company_id }, { skip: !token });
 	const { data: responsibles = [] } = useGetLogistiqueResponsablesQuery(
 		{ company_id },
@@ -244,8 +251,10 @@ function PurchaseFormik({
 	const [recordPayment] = useRecordLogistiquePaymentExecutionMutation();
 	const [validatePayment] = useValidateLogistiquePaymentMutation();
 	const [addNote] = useAddLogistiqueProcessNoteMutation();
-	const [saveContact] = useSaveSupplierContactMutation();
+	const [addSupplier] = useAddLogistiqueSupplierMutation();
+	const [editSupplier] = useEditLogistiqueSupplierMutation();
 	const initialValues: PurchaseFormValues = {
+		fournisseur_record: '',
 		fournisseur: order?.fournisseur ?? '',
 		fournisseur_email: order?.fournisseur_email ?? '',
 		marque: value(order?.marque),
@@ -366,6 +375,13 @@ function PurchaseFormik({
 			try {
 				if (mode === 'dossier') {
 					const data = {
+						fournisseur_record: suppliers.some(
+							(supplier) =>
+								String(supplier.id) === values.fournisseur_record &&
+								supplier.nom.toLowerCase() === values.fournisseur.trim().toLowerCase(),
+						)
+							? Number(values.fournisseur_record)
+							: undefined,
 						fournisseur: values.fournisseur,
 						fournisseur_email: values.fournisseur_email,
 						responsable: Number(values.responsable),
@@ -381,13 +397,9 @@ function PurchaseFormik({
 					}
 					await purchase({ id, data: { action: 'dossier', ...data } }).unwrap();
 				} else if (mode === 'repertoire') {
-					const existing = brands.find((brand) => brand.nom.toLowerCase() === values.nom.trim().toLowerCase());
-					await saveContact({
-						company_id,
-						...(existing ? { id: existing.id } : {}),
-						nom: values.nom.trim(),
-						email: values.email_contact,
-					}).unwrap();
+					const existing = suppliers.find((supplier) => supplier.nom.toLowerCase() === values.nom.trim().toLowerCase());
+					const data = { company_id, nom: values.nom.trim(), email: values.email_contact.trim() };
+					await (existing ? editSupplier({ ...data, id: existing.id }) : addSupplier(data)).unwrap();
 				} else if (mode === 'demande_paiement')
 					await requestPayment({ id: id!, echeance_id: echeanceId, date_echeance: values.date_echeance }).unwrap();
 				else if (mode === 'paiement')
@@ -779,10 +791,35 @@ function PurchaseFormik({
 	if (mode === 'dossier')
 		sections.push(
 			<FormCard key="dossier" title="Informations du dossier" icon={<Business color="primary" />}>
+				<CustomAutoCompleteSelect
+					id="fournisseur_record"
+					label="Fournisseur enregistré"
+					items={suppliers.map((supplier) => ({ value: String(supplier.id), code: supplier.nom }))}
+					value={
+						suppliers
+							.filter((supplier) => String(supplier.id) === formik.values.fournisseur_record)
+							.map((supplier) => ({ value: String(supplier.id), code: supplier.nom }))[0] ?? null
+					}
+					onChange={(_, entry) => {
+						void formik.setFieldValue('fournisseur_record', entry?.value ?? '');
+						const supplier = suppliers.find((supplier) => String(supplier.id) === entry?.value);
+						if (supplier) {
+							void formik.setFieldValue('fournisseur', supplier.nom);
+							void formik.setFieldValue('fournisseur_email', supplier.email);
+						}
+					}}
+					disabled={disabled}
+					fullWidth
+					size="small"
+					theme={inputTheme}
+					startIcon={<Business fontSize="small" />}
+					noOptionsText="Aucun fournisseur enregistré"
+					helperText="Choisissez un fournisseur du répertoire ou saisissez son nom ci-dessous."
+				/>
 				{text('fournisseur', 'Fournisseur', <Business fontSize="small" />, true)}
 				<CustomAutoCompleteSelect
 					id="marque"
-					label="Marque / contact enregistré"
+					label="Marque"
 					items={brands.map((brand) => ({ value: String(brand.id), code: brand.nom }))}
 					value={
 						brands
@@ -791,11 +828,6 @@ function PurchaseFormik({
 					}
 					onChange={(_, entry) => {
 						void formik.setFieldValue('marque', entry?.value ?? '');
-						const brand = brands.find((item) => String(item.id) === entry?.value);
-						if (brand) {
-							void formik.setFieldValue('fournisseur', brand.nom);
-							void formik.setFieldValue('fournisseur_email', brand.email ?? '');
-						}
 					}}
 					onBlur={() => formik.setFieldTouched('marque', true)}
 					disabled={disabled}
@@ -803,7 +835,7 @@ function PurchaseFormik({
 					size="small"
 					theme={inputTheme}
 					startIcon={<Business fontSize="small" />}
-					noOptionsText="Aucun contact enregistré"
+					noOptionsText="Aucune marque enregistrée"
 				/>
 				{text('fournisseur_email', 'E-mail du fournisseur', <Email fontSize="small" />)}
 				{autocomplete('responsable', 'Responsable du dossier', responsibleItems, true, <Person fontSize="small" />)}
@@ -1188,7 +1220,7 @@ function PurchaseFormik({
 	if (mode === 'repertoire')
 		sections.push(
 			<FormCard key="repertoire" title="Contact fournisseur" icon={<Business color="primary" />}>
-				{text('nom', 'Marque / fournisseur', <Business fontSize="small" />, true)}
+				{text('nom', 'Nom du fournisseur', <Business fontSize="small" />, true)}
 				{text('email_contact', 'E-mail de contact', <Email fontSize="small" />)}
 			</FormCard>,
 		);

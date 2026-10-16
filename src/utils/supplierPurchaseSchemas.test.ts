@@ -8,6 +8,7 @@ import type {
 } from '@/types/supplierPurchaseTypes';
 
 const emptyValues = (): PurchaseFormValues => ({
+	fournisseur_record: '',
 	fournisseur: '',
 	fournisseur_email: '',
 	marque: '',
