@@ -92,6 +92,8 @@ export type LogistiqueEvent = {
 	action: string;
 	old_value: string;
 	new_value: string;
+	old_value_since?: string | null;
+	new_value_since?: string;
 	note: string;
 	user: number | null;
 	user_name: string | null;

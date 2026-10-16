@@ -125,3 +125,60 @@ test.each(['Avance 30 % : 3 000,00 USD', 'Échéance 6'])(
 		expect(screen.getByText('Paiement concerné').nextElementSibling?.textContent).toBe(snapshot);
 	},
 );
+
+test('before and after show their own recorded start times', () => {
+	const before = '2026-09-14T09:32:00Z';
+	const after = '2026-09-14T09:33:00Z';
+	render(
+		<PurchaseHistory
+			events={[
+				event({
+					action: 'Changement statut Commande & lancement',
+					old_value: 'À lancer',
+					new_value: 'En cours',
+					old_value_since: before,
+					new_value_since: after,
+					date_created: after,
+				}),
+			]}
+		/>,
+	);
+	const oldBox = screen.getByText('Avant').parentElement!;
+	const newBox = screen.getByText('Après').parentElement!;
+	expect(oldBox.querySelector('time')).toHaveAttribute('datetime', before);
+	expect(newBox.querySelector('time')).toHaveAttribute('datetime', after);
+	for (const box of [oldBox, newBox]) {
+		expect(box).toHaveTextContent(/Depuis le 14\/09\/2026 à \d{2}:\d{2}/);
+	}
+});
+
+test.each([null, undefined, 'invalid-date'])('missing or invalid previous date is explicit: %s', (before) => {
+	render(<PurchaseHistory events={[event({ old_value_since: before })]} />);
+	const oldBox = screen.getByText('Avant').parentElement!;
+	expect(within(oldBox).getByText('Date non renseignée')).toBeInTheDocument();
+	expect(oldBox.querySelector('time')).toBeNull();
+	expect(screen.getByText('Après').parentElement!.querySelector('time')).toHaveAttribute(
+		'datetime',
+		'2026-10-16T10:00:00Z',
+	);
+	expect(screen.queryByText(/Invalid Date/)).not.toBeInTheDocument();
+});
+
+test('future planned values do not become predicted status dates', () => {
+	const recorded = '2026-10-16T10:00:00Z';
+	render(
+		<PurchaseHistory
+			events={[
+				event({
+					action: 'Modification : Date d’expédition prévue',
+					old_value: '17/10/2026',
+					new_value: '20/10/2026',
+					old_value_since: '2026-10-15T09:00:00Z',
+					new_value_since: recorded,
+				}),
+			]}
+		/>,
+	);
+	expect(screen.getByText('Après').parentElement!.querySelector('time')).toHaveAttribute('datetime', recorded);
+	expect(screen.getByText('20/10/2026')).toBeInTheDocument();
+});

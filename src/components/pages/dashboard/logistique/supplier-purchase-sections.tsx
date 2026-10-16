@@ -137,7 +137,12 @@ export function PurchaseHistory({ events = [] }: { events?: LogistiqueEvent[] })
 										}}
 									>
 										{(details.oldValue || details.modification) && (
-											<HistoryValue label="Avant" value={details.oldValue || 'Non renseigné'} />
+											<HistoryValue
+												label="Avant"
+												value={details.oldValue || 'Non renseigné'}
+												since={entry.old_value_since}
+												showDate
+											/>
 										)}
 										<HistoryValue
 											label={
@@ -148,6 +153,8 @@ export function PurchaseHistory({ events = [] }: { events?: LogistiqueEvent[] })
 														: details.valueLabel
 											}
 											value={details.newValue || 'Non renseigné'}
+											since={entry.new_value_since ?? entry.date_created}
+											showDate={!!(details.oldValue || details.modification)}
 										/>
 									</Box>
 								)}
@@ -170,7 +177,19 @@ export function PurchaseHistory({ events = [] }: { events?: LogistiqueEvent[] })
 	);
 }
 
-function HistoryValue({ label, value }: { label: string; value: string }) {
+function HistoryValue({
+	label,
+	value,
+	since,
+	showDate = false,
+}: {
+	label: string;
+	value: string;
+	since?: string | null;
+	showDate?: boolean;
+}) {
+	const date = since ? new Date(since) : null;
+	const recorded = date !== null && Number.isFinite(date.getTime());
 	return (
 		<Box sx={{ p: 1.5, bgcolor: 'action.hover', borderRadius: 1, minWidth: 0 }}>
 			<Typography variant="caption" color="text.secondary" component="div" sx={{ mb: 0.5 }}>
@@ -179,6 +198,19 @@ function HistoryValue({ label, value }: { label: string; value: string }) {
 			<Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
 				{value}
 			</Typography>
+			{showDate && (
+				<Typography
+					variant="caption"
+					color="text.secondary"
+					component={recorded ? 'time' : 'div'}
+					dateTime={recorded ? since! : undefined}
+					sx={{ display: 'block', mt: 0.75 }}
+				>
+					{recorded
+						? `Depuis le ${date.toLocaleDateString('fr-FR')} à ${date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`
+						: 'Date non renseignée'}
+				</Typography>
+			)}
 		</Box>
 	);
 }
