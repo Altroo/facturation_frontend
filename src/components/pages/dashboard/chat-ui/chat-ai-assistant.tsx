@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useId, useRef, useState, useSyncExternalStore } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
 	Alert,
@@ -589,12 +589,15 @@ export const ChatAIAssistant = () => {
 	const [capabilities, setCapabilities] = useState<ChatCapabilities | null>(null);
 	const [open, setOpen] = useState(false);
 	const [overlayOpen, setOverlayOpen] = useState(false);
+	const companyMenuId = useId();
 	useEffect(() => {
 		// Native dialogs/drawers own focus and accessibility while open. Preserve
 		// the chat state, but hide its shell until those overlays are closed.
+		// The assistant's own company menu is portalled outside its shell.
 		const update = () =>
 			setOverlayOpen(
 				Array.from(document.querySelectorAll<HTMLElement>('.MuiModal-root')).some((element) => {
+					if (element.id === companyMenuId) return false;
 					const style = getComputedStyle(element);
 					return (
 						element.getAttribute('aria-hidden') !== 'true' && style.display !== 'none' && style.visibility !== 'hidden'
@@ -610,7 +613,7 @@ export const ChatAIAssistant = () => {
 			attributeFilter: ['aria-hidden', 'class', 'style'],
 		});
 		return () => observer.disconnect();
-	}, []);
+	}, [companyMenuId]);
 	const [pickedCompany, setPickedCompany] = useState<number | null>(null);
 	const authorizedCompanyId = (id: number | null) =>
 		id !== null && Number.isSafeInteger(id) && id > 0 && capabilities?.companies.some((item) => item.id === id)
@@ -675,6 +678,7 @@ export const ChatAIAssistant = () => {
 					label={language === 'en' ? 'Company' : 'Société'}
 					value={company?.id || ''}
 					onChange={(event) => setPickedCompany(Number(event.target.value))}
+					slotProps={{ select: { MenuProps: { id: companyMenuId } } }}
 				>
 					{capabilities.companies.map((item) => (
 						<MenuItem key={item.id} value={item.id}>

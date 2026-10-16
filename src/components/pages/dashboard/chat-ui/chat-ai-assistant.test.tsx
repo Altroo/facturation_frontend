@@ -409,6 +409,56 @@ it('does not offer unsupported edit or delete actions on payment results', () =>
 	expect(screen.queryByRole('button', { name: 'Supprimer' })).not.toBeInTheDocument();
 });
 
+it.each(['fr', 'en'] as const)('keeps the company picker usable on a fresh changelog visit in %s', async (language) => {
+	mockPathname = '/dashboard/changelog';
+	mockCompanyId = null;
+	mockLanguage = language;
+	render(themed(<ChatAIAssistant />));
+	fireEvent.click(await screen.findByRole('button', { name: 'Ask AI Assistant' }));
+	const panel = screen.getByRole('dialog', { name: 'AI Assistant' });
+	const picker = screen.getByRole('combobox', { name: language === 'en' ? 'Company' : 'Société' });
+	await act(async () => {
+		fireEvent.mouseDown(picker);
+	});
+	expect(panel).toBeVisible();
+	expect(await screen.findByRole('option', { name: 'Company 1' })).toBeVisible();
+	fireEvent.click(screen.getByRole('option', { name: 'Company 2' }));
+	expect(
+		await screen.findByRole('textbox', { name: language === 'en' ? 'Your message' : 'Votre message' }),
+	).toBeEnabled();
+	expect(screen.getByRole('combobox', { name: language === 'en' ? 'Company' : 'Société' })).toHaveTextContent(
+		'Company 2',
+	);
+	handlers['conversations/conversation-1/messages/'] = () => jsonResponse(assistantMessage('Company 2 reply'));
+	sendMessage('/voir');
+	await screen.findByText('Company 2 reply');
+	expect(chatRequest).toHaveBeenCalledWith(
+		'conversations/',
+		expect.any(String),
+		expect.objectContaining({ body: JSON.stringify({ company_id: 2 }) }),
+	);
+});
+
+it('still hides the assistant for application dialogs and restores its draft afterwards', async () => {
+	await renderAssistant();
+	const panel = screen.getByRole('dialog', { name: 'AI Assistant' });
+	fireEvent.change(screen.getByRole('textbox', { name: 'Votre message' }), { target: { value: 'Unsent draft' } });
+	const modal = document.createElement('div');
+	modal.className = 'MuiModal-root';
+	try {
+		await act(async () => {
+			document.body.appendChild(modal);
+		});
+		expect(panel).not.toBeVisible();
+	} finally {
+		await act(async () => {
+			modal.remove();
+		});
+	}
+	expect(panel).toBeVisible();
+	expect(screen.getByRole('textbox', { name: 'Votre message' })).toHaveValue('Unsent draft');
+});
+
 it('lets the user pick an authorized company despite an invalid URL and stale tab hint', async () => {
 	mockCompanyId = 999;
 	publishChatAICompany(999);
