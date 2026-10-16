@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, type FC } from 'react';
+import { useEffect, useEffectEvent, useRef, type FC } from 'react';
 import { useAppDispatch } from '@/utils/hooks';
 import { useSession } from 'next-auth/react';
 import { usePathname, useRouter } from 'next/navigation';
@@ -11,6 +11,7 @@ import { useGetUserCompaniesQuery } from '@/store/services/company';
 import { companiesSetUserCompaniesAction } from '@/store/actions/companiesActions';
 import { DASHBOARD_PASSWORD } from '@/utils/routes';
 import { useInitAccessToken } from '@/contexts/InitContext';
+import { initToken } from '@/store/slices/_initSlice';
 
 export const InitEffects: FC = () => {
 	const { data: session, status } = useSession();
@@ -34,6 +35,17 @@ export const InitEffects: FC = () => {
 	const { data: user } = useGetProfilQuery(undefined, { skip });
 	const { data: groupes } = useGetGroupsQuery(undefined, { skip });
 	const { data: companies } = useGetUserCompaniesQuery(undefined, { skip });
+
+	const handleSessionExpired = useEffectEvent(() => {
+		dispatch(initToken());
+	});
+	useEffect(() => {
+		const handler = () => {
+			handleSessionExpired();
+		};
+		window.addEventListener('session-expired', handler);
+		return () => window.removeEventListener('session-expired', handler);
+	}, []);
 
 	// Sync Redux tokens whenever the access token changes (covers initial login + every refresh)
 	useEffect(() => {

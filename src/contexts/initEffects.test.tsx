@@ -1,10 +1,11 @@
-import { render, waitFor } from '@testing-library/react';
+import { act, render, waitFor } from '@testing-library/react';
 import { InitEffects } from './initEffects';
 import { useSession } from 'next-auth/react';
 import { useGetProfilQuery, useGetGroupsQuery } from '@/store/services/account';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 import { useAppDispatch } from '@/utils/hooks';
 import { useInitAccessToken } from './InitContext';
+import { initToken } from '@/store/slices/_initSlice';
 
 jest.mock('next-auth/react');
 jest.mock('@/store/services/account');
@@ -50,6 +51,47 @@ describe('InitEffects', () => {
 			expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'INIT_APP' }));
 			expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'INIT_APP_SESSION_TOKENS' }));
 		});
+	});
+
+	it('keeps one expiry listener, uses the current dispatch, and removes it on unmount', () => {
+		(useSession as jest.Mock).mockReturnValue({
+			data: { accessToken: 'current-access' },
+			status: 'authenticated',
+		});
+		const addListener = jest.spyOn(window, 'addEventListener');
+		const removeListener = jest.spyOn(window, 'removeEventListener');
+		const nextDispatch = jest.fn();
+		const view = render(<InitEffects />);
+		try {
+			(useAppDispatch as jest.Mock).mockReturnValue(nextDispatch);
+			view.rerender(<InitEffects />);
+			mockDispatch.mockClear();
+			nextDispatch.mockClear();
+			act(() => window.dispatchEvent(new Event('session-expired')));
+			expect(mockDispatch).not.toHaveBeenCalled();
+			expect(nextDispatch).toHaveBeenCalledTimes(1);
+			expect(nextDispatch).toHaveBeenCalledWith(initToken());
+			expect(addListener.mock.calls.filter(([event]) => event === 'session-expired')).toHaveLength(1);
+			view.unmount();
+			expect(removeListener.mock.calls.filter(([event]) => event === 'session-expired')).toHaveLength(1);
+			nextDispatch.mockClear();
+			act(() => window.dispatchEvent(new Event('session-expired')));
+			expect(nextDispatch).not.toHaveBeenCalled();
+		} finally {
+			view.unmount();
+			addListener.mockRestore();
+			removeListener.mockRestore();
+		}
+	});
+
+	it('only resets Redux tokens in response to an expiry event', () => {
+		(useSession as jest.Mock).mockReturnValue({ data: null, status: 'loading' });
+		const view = render(<InitEffects />);
+		(useSession as jest.Mock).mockReturnValue({ data: null, status: 'unauthenticated' });
+		view.rerender(<InitEffects />);
+		expect(mockDispatch).not.toHaveBeenCalledWith(initToken());
+		act(() => window.dispatchEvent(new Event('session-expired')));
+		expect(mockDispatch).toHaveBeenCalledWith(initToken());
 	});
 
 	it('dispatches profile and group actions when data is available', async () => {
