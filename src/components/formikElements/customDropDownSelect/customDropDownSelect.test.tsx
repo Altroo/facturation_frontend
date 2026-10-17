@@ -16,6 +16,26 @@ const theme = createTheme();
 const mockItems = ['Option A', 'Option B', 'Option C'];
 
 describe('CustomDropDownSelect', () => {
+	it('shows an empty-state prompt without treating it as an option or a value', () => {
+		const onChange = jest.fn();
+		const props = {
+			id: 'currency',
+			label: 'Devise',
+			items: ['MAD', 'EUR'],
+			theme,
+			onChange,
+			placeholder: 'Choisissez une devise',
+		};
+		const { rerender } = render(<CustomDropDownSelect {...props} value="" />);
+		expect(screen.getByRole('combobox', { name: 'Devise' })).toHaveTextContent('Choisissez une devise');
+		fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Devise' }));
+		expect(screen.queryByRole('option', { name: 'Choisissez une devise' })).not.toBeInTheDocument();
+		fireEvent.click(screen.getByRole('option', { name: 'EUR' }));
+		expect(onChange.mock.calls[0][0].target.value).toBe('EUR');
+		rerender(<CustomDropDownSelect {...props} value="EUR" />);
+		expect(screen.getByRole('combobox', { name: 'Devise' })).toHaveTextContent('EUR');
+		expect(screen.queryByText('Choisissez une devise')).not.toBeInTheDocument();
+	});
 	it('renders label and options', () => {
 		render(<CustomDropDownSelect id="test-select" label="Test Label" items={mockItems} theme={theme} value="" />);
 

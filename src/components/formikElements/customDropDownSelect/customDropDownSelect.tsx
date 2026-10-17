@@ -1,7 +1,16 @@
 import { type FC } from 'react';
 import Styles from './customDropDownSelect.module.sass';
 import Select from '@mui/material/Select';
-import { MenuItem, FormControl, InputLabel, OutlinedInput, Stack, FormHelperText, InputAdornment } from '@mui/material';
+import {
+	MenuItem,
+	FormControl,
+	InputLabel,
+	OutlinedInput,
+	Stack,
+	FormHelperText,
+	InputAdornment,
+	Typography,
+} from '@mui/material';
 import { ThemeProvider } from '@/providers/scopedThemeProvider';
 import { CheckCircle as CheckCircleIcon } from '@mui/icons-material';
 import type { CustomDropDownSelectProps as Props } from '@/types/uiTypes';
@@ -27,17 +36,21 @@ const CustomDropDownSelect: FC<Props> = (props: Props) => {
 				disabled={props.disabled}
 				required={props.required}
 			>
-				<InputLabel id={`${props.id}-label`}>{props.label}</InputLabel>
+				<InputLabel id={`${props.id}-label`} shrink={props.placeholder ? true : undefined}>
+					{props.label}
+				</InputLabel>
 				<Select
 					labelId={`${props.id}-label`}
 					id={props.id}
 					value={props.value ? props.value : ''}
+					displayEmpty={!!props.placeholder}
 					size={props.size ? props.size : undefined}
 					disabled={props.disabled}
 					onChange={props.onChange}
 					input={
 						<OutlinedInput
 							label={props.label}
+							notched={props.placeholder ? true : undefined}
 							startAdornment={
 								props.startIcon ? <InputAdornment position="start">{props.startIcon}</InputAdornment> : undefined
 							}
@@ -45,7 +58,15 @@ const CustomDropDownSelect: FC<Props> = (props: Props) => {
 						/>
 					}
 					MenuProps={MenuProps}
-					renderValue={(selected) => selected}
+					renderValue={(selected) =>
+						selected === '' && props.placeholder ? (
+							<Typography component="span" sx={{ color: 'text.disabled' }}>
+								{props.placeholder}
+							</Typography>
+						) : (
+							selected
+						)
+					}
 					onBlur={props.onBlur}
 					error={props.error}
 				>

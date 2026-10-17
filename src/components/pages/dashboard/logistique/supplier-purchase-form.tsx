@@ -42,6 +42,7 @@ import {
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { enUS, frFR } from '@mui/x-date-pickers/locales';
 import { fr } from 'date-fns/locale';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
@@ -53,7 +54,7 @@ import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiP
 import NoPermission from '@/components/shared/noPermission/noPermission';
 import { LogistiqueDocumentsFormCard } from './logistique-documents-card';
 import { useInitAccessToken } from '@/contexts/InitContext';
-import { useAppSelector, useToast } from '@/utils/hooks';
+import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import { getInitStateToken, getUserCompaniesState } from '@/store/selectors';
 import { useGetUserCompaniesQuery, useGetCompanyQuery } from '@/store/services/company';
 import { useGetArticlesListQuery } from '@/store/services/article';
@@ -140,6 +141,7 @@ function payload(data: Record<string, unknown>): Record<string, unknown> | FormD
 }
 
 export default function SupplierPurchaseForm(props: LogistiqueFormProps) {
+	const { language } = useLanguage();
 	const token = useInitAccessToken(props.session);
 	const query = useSearchParams();
 	const requested = query.get('etape') ?? 'dossier';
@@ -174,7 +176,11 @@ export default function SupplierPurchaseForm(props: LogistiqueFormProps) {
 					) : !canAccess || (props.id && !order) ? (
 						<NoPermission />
 					) : (
-						<LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
+						<LocalizationProvider
+							dateAdapter={AdapterDateFns}
+							adapterLocale={fr}
+							localeText={(language === 'en' ? enUS : frFR).components.MuiLocalizationProvider.defaultProps.localeText}
+						>
 							<PurchaseFormik
 								key={`${props.company_id}-${props.id ?? 'new'}-${mode}-${query.get('echeance_id') ?? ''}`}
 								{...props}
@@ -201,6 +207,7 @@ function PurchaseFormik({
 }: LogistiqueFormProps & { token: string; mode: PurchaseFormMode; order?: LogistiqueOrder; echeanceId: number }) {
 	const router = useRouter();
 	const { onSuccess, onError } = useToast();
+	const { t } = useLanguage();
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 	const userId = useAppSelector(getInitStateToken).user.pk;
@@ -567,6 +574,8 @@ function PurchaseFormik({
 	const disabled = formik.isSubmitting || extracting || !!locked;
 	const errorFor = (name: string) =>
 		attempted || getIn(formik.touched, name) ? (getIn(formik.errors, name) as string | undefined) : undefined;
+	const placeholderFor = (name: string, label: string) =>
+		t.logistique.placeholders[name.split('.').at(-1) ?? name] ?? label;
 	const text = (
 		name: string,
 		label: string,
@@ -581,6 +590,7 @@ function PurchaseFormik({
 			name={name}
 			type={multiline ? 'textarea' : 'text'}
 			label={label}
+			placeholder={placeholderFor(name, label)}
 			value={value(getIn(formik.values, name))}
 			onChange={formik.handleChange(name)}
 			onBlur={formik.handleBlur(name)}
@@ -607,6 +617,7 @@ function PurchaseFormik({
 			id={name}
 			type="text"
 			label={label}
+			placeholder={placeholderFor(name, label)}
 			value={value(getIn(formik.values, name))}
 			onChange={formik.handleChange(name)}
 			onBlur={formik.handleBlur(name)}
@@ -661,6 +672,7 @@ function PurchaseFormik({
 		<CustomDropDownSelect
 			id={name}
 			label={label}
+			placeholder={placeholderFor(name, label)}
 			items={items}
 			value={value(getIn(formik.values, name))}
 			onChange={(event) => formik.setFieldValue(name, event.target.value)}
@@ -684,6 +696,7 @@ function PurchaseFormik({
 		<CustomAutoCompleteSelect
 			id={name}
 			label={label}
+			placeholder={placeholderFor(name, label)}
 			items={items}
 			value={items.find((item) => String(item.value) === value(getIn(formik.values, name))) ?? null}
 			onChange={(_, entry) => formik.setFieldValue(name, entry?.value ?? '')}
@@ -799,6 +812,7 @@ function PurchaseFormik({
 				<CustomAutoCompleteSelect
 					id="fournisseur_record"
 					label="Fournisseur enregistré"
+					placeholder={t.logistique.placeholders.fournisseur_record}
 					items={suppliers.map((supplier) => ({ value: String(supplier.id), code: supplier.nom }))}
 					value={
 						suppliers
@@ -825,6 +839,7 @@ function PurchaseFormik({
 				<CustomAutoCompleteSelect
 					id="marque"
 					label="Marque"
+					placeholder={t.logistique.placeholders.marque}
 					items={brands.map((brand) => ({ value: String(brand.id), code: brand.nom }))}
 					value={
 						brands
@@ -908,6 +923,7 @@ function PurchaseFormik({
 							<Stack spacing={2}>
 								<Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
 									<CustomAutoCompleteSelect
+										placeholder={t.logistique.placeholders.article}
 										id={`lignes.${index}.article`}
 										label="Article : référence et désignation"
 										serverFiltered

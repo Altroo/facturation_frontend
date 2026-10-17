@@ -11,6 +11,7 @@ import type { CustomAutoCompleteSelectProps as Props } from '@/types/uiTypes';
 const CustomAutoCompleteSelect: FC<Props> = ({
 	id,
 	label,
+	placeholder,
 	items,
 	theme,
 	value,
@@ -75,6 +76,7 @@ const CustomAutoCompleteSelect: FC<Props> = ({
 					<TextField
 						{...params}
 						label={label}
+						placeholder={placeholder}
 						error={error}
 						helperText={helperText}
 						required={required}

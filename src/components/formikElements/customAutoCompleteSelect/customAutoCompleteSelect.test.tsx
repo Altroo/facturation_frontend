@@ -12,6 +12,26 @@ const items: DropDownType[] = [
 ];
 
 describe('CustomAutocompleteSelect', () => {
+	it('keeps the placeholder and accessible label while allowing option search', () => {
+		const onChange = jest.fn();
+		render(
+			<CustomAutoCompleteSelect
+				id="supplier"
+				label="Fournisseur"
+				placeholder="Recherchez un fournisseur"
+				noOptionsText="Aucun fournisseur"
+				items={items}
+				theme={theme}
+				value={null}
+				onChange={onChange}
+			/>,
+		);
+		const input = screen.getByRole('combobox', { name: 'Fournisseur' });
+		expect(input).toHaveAttribute('placeholder', 'Recherchez un fournisseur');
+		fireEvent.change(input, { target: { value: 'Bob' } });
+		fireEvent.click(screen.getByRole('option', { name: 'Bob' }));
+		expect(onChange.mock.calls[0][1]).toEqual(items[1]);
+	});
 	it('renders label and initial value', () => {
 		render(
 			<CustomAutoCompleteSelect

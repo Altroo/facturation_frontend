@@ -31,6 +31,7 @@ import Grid from '@mui/material/Grid';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { enUS, frFR } from '@mui/x-date-pickers/locales';
 import { fr } from 'date-fns/locale';
 import {
 	ArrowBack as ArrowBackIcon,
@@ -267,7 +268,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 	const [setProofEmailStatus, { isLoading: isUpdatingProofEmail }] = useSetLogistiqueProofEmailStatusMutation();
 	const [addProcessNote, { isLoading: isAddingProcessNote }] = useAddLogistiqueProcessNoteMutation();
 	const [confirmPaymentReceipt] = useConfirmLogistiquePaymentReceiptMutation();
-	const { t } = useLanguage();
+	const { t, language } = useLanguage();
 	const { onSuccess, onError } = useToast();
 
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -656,7 +657,11 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 	const events = order?.events ?? [];
 
 	return (
-		<LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
+		<LocalizationProvider
+			dateAdapter={AdapterDateFns}
+			adapterLocale={fr}
+			localeText={(language === 'en' ? enUS : frFR).components.MuiLocalizationProvider.defaultProps.localeText}
+		>
 			<Stack direction="column" spacing={2} className={Styles.flexRootStack} sx={{ mt: '32px' }}>
 				<NavigationBar title={t.logistique.detailsTitle}>
 					<Stack spacing={3} sx={{ p: { xs: 2, md: 3 }, mt: 2 }}>
@@ -1685,6 +1690,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 										{(canManage || isOrderResponsible || canProcessAssignedPayment) && !isOrderCancelled && (
 											<Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr auto' }, gap: 1.5 }}>
 												<CustomTextInput
+													placeholder={t.logistique.placeholders.process_remark}
 													id="process_remark"
 													type="textarea"
 													label="Remarque"
@@ -1828,6 +1834,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 						>
 							<Box sx={{ mt: 2 }}>
 								<CustomDropDownSelect
+									placeholder={t.logistique.placeholders.statut_commande_lancement}
 									id="statut_commande_lancement"
 									label={t.logistique.fieldStepStatus}
 									items={logistiqueLaunchStatusItemsList}
@@ -1948,6 +1955,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 									</CardContent>
 								</Card>
 								<CustomTextInput
+									placeholder={t.logistique.placeholders.numero_proforma_fournisseur}
 									id="numero_proforma_fournisseur"
 									type="text"
 									label={t.logistique.fieldSupplierProformaNumber}
@@ -1995,6 +2003,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 									}}
 								/>
 								<FormattedNumberInput
+									placeholder={t.logistique.placeholders.montant_proforma_fournisseur}
 									id="montant_proforma_fournisseur"
 									type="text"
 									label={t.logistique.fieldSupplierProformaAmount}
@@ -2012,6 +2021,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 									required
 								/>
 								<CustomDropDownSelect
+									placeholder={t.logistique.placeholders.devise_proforma_fournisseur}
 									id="devise_proforma_fournisseur"
 									label={t.logistique.fieldSupplierProformaCurrency}
 									items={logistiqueCurrencyItemsList}
@@ -2028,6 +2038,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 									required
 								/>
 								<CustomTextInput
+									placeholder={t.logistique.placeholders.incoterm_proforma}
 									id="incoterm_proforma"
 									type="text"
 									label={t.logistique.fieldIncoterm}
@@ -2040,6 +2051,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 									required
 								/>
 								<FormattedNumberInput
+									placeholder={t.logistique.placeholders.delai_proforma_jours}
 									id="delai_proforma_jours"
 									type="text"
 									decimals={0}
@@ -2055,6 +2067,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 									required
 								/>
 								<CustomTextInput
+									placeholder={t.logistique.placeholders.conditions_paiement_proforma}
 									id="conditions_paiement_proforma"
 									type="textarea"
 									label={t.logistique.fieldConditionsPaiement}
@@ -2069,6 +2082,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 									required
 								/>
 								<CustomDropDownSelect
+									placeholder={t.logistique.placeholders.decision_proforma}
 									id="decision_proforma"
 									label={t.logistique.fieldProformaDecision}
 									items={logistiqueProformaDecisionItems}
@@ -2127,6 +2141,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 								</Stack>
 								<Box sx={{ gridColumn: { sm: '1 / -1' } }}>
 									<CustomTextInput
+										placeholder={t.logistique.placeholders.notes_ecarts_proforma}
 										id="notes_ecarts_proforma"
 										type="textarea"
 										label={t.logistique.fieldVarianceNotes}
@@ -2209,6 +2224,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 											slotProps={{ textField: { size: 'small', fullWidth: true, required: true } }}
 										/>
 										<FormattedNumberInput
+											placeholder={t.logistique.placeholders.pourcentage}
 											id={`pourcentage_${index}`}
 											type="text"
 											label={t.logistique.fieldPlannedAmount}
@@ -2310,6 +2326,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 									}}
 								/>
 								<FormattedNumberInput
+									placeholder={t.logistique.placeholders.montant_paiement}
 									id="montant_paiement"
 									type="text"
 									label={t.logistique.fieldMontantPaiement}
@@ -2322,6 +2339,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 									required
 								/>
 								<CustomDropDownSelect
+									placeholder={t.logistique.placeholders.devise_paiement}
 									id="devise_paiement"
 									label={t.logistique.fieldDevisePaiement}
 									items={logistiqueCurrencyItemsList}
@@ -2333,6 +2351,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 									required
 								/>
 								<CustomTextInput
+									placeholder={t.logistique.placeholders.banque_paiement}
 									id="banque_paiement"
 									type="text"
 									label={t.logistique.fieldBanquePaiement}
@@ -2345,6 +2364,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 									required
 								/>
 								<CustomTextInput
+									placeholder={t.logistique.placeholders.reference_paiement}
 									id="reference_paiement"
 									type="text"
 									label={t.logistique.fieldReferencePaiement}
@@ -2356,6 +2376,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 									startIcon={<ReceiptLongIcon fontSize="small" />}
 								/>
 								<CustomDropDownSelect
+									placeholder={t.logistique.placeholders.methode_paiement}
 									id="methode_paiement"
 									label={t.logistique.fieldMethodePaiement}
 									items={logistiquePaymentMethodItemsList}
@@ -2373,6 +2394,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 								/>
 								<Box sx={{ gridColumn: { sm: '1 / -1' } }}>
 									<CustomTextInput
+										placeholder={t.logistique.placeholders.commentaire_paiement}
 										id="commentaire_paiement"
 										type="textarea"
 										label={t.logistique.fieldCommentairePaiement}
@@ -2468,6 +2490,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 							]}
 						>
 							<CustomTextInput
+								placeholder={t.logistique.placeholders.reject_note}
 								id="reject_note"
 								type="textarea"
 								label={t.reglements.fieldObservations}

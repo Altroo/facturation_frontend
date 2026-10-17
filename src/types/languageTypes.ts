@@ -668,6 +668,7 @@ export type TranslationDictionary = {
 		documentTypeName: string;
 	};
 	logistique: {
+		placeholders: Record<string, string>;
 		dashboardTitle: string;
 		listTitle: string;
 		detailsTitle: string;

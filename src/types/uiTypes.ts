@@ -55,6 +55,7 @@ export type ApiProgressProps = {
 };
 
 export type CustomAutoCompleteSelectProps = {
+	placeholder?: string;
 	serverFiltered?: boolean;
 	onInputChange?: (event: SyntheticEvent, value: string, reason: string) => void;
 	id: string;
@@ -78,6 +79,7 @@ export type CustomAutoCompleteSelectProps = {
 };
 
 export type CustomDropDownSelectProps = {
+	placeholder?: string;
 	id: string;
 	label: string;
 	items: Array<DropDownType> | Array<string>;

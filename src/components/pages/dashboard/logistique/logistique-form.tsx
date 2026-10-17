@@ -43,6 +43,7 @@ import {
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { enUS, frFR } from '@mui/x-date-pickers/locales';
 import { fr } from 'date-fns/locale';
 import { useFormik } from 'formik';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
@@ -339,7 +340,7 @@ const paymentColor = (status?: LogistiquePaymentStatus | null) => {
 };
 
 const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
-	const { t } = useLanguage();
+	const { t, language } = useLanguage();
 	const { onSuccess, onError } = useToast();
 	const router = useRouter();
 	const theme = useTheme();
@@ -553,7 +554,11 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 			<NavigationBar title={title}>
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
 					{canAccessForm ? (
-						<LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
+						<LocalizationProvider
+							dateAdapter={AdapterDateFns}
+							adapterLocale={fr}
+							localeText={(language === 'en' ? enUS : frFR).components.MuiLocalizationProvider.defaultProps.localeText}
+						>
 							<Stack spacing={3} sx={{ p: { xs: 2, md: 3 }, width: '100%' }}>
 								<Stack
 									direction={isMobile ? 'column' : 'row'}
@@ -616,6 +621,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 														}}
 														renderInput={(params) => (
 															<TextField
+																placeholder={t.logistique.placeholders.proformas}
 																{...params}
 																size="small"
 																label={
@@ -648,6 +654,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 														sx={{ gridColumn: { md: '1 / -1' } }}
 													/>
 													<CustomAutoCompleteSelect
+														placeholder={t.logistique.placeholders.responsable}
 														id="responsable"
 														label={t.logistique.fieldResponsable}
 														items={responsableOptions}
@@ -836,6 +843,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 															icon={<InfoIcon color="primary" />}
 														>
 															<CustomDropDownSelect
+																placeholder={t.logistique.placeholders.devise}
 																id="devise"
 																label={t.logistique.fieldDevise}
 																items={logistiqueCurrencyItemsList}
@@ -849,6 +857,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 																helperText={getFieldError('devise')}
 															/>
 															<CustomTextInput
+																placeholder={t.logistique.placeholders.transport}
 																id="transport"
 																type="text"
 																label={t.logistique.fieldTransport}
@@ -864,6 +873,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 															/>
 															<Box sx={{ gridColumn: { md: '1 / -1' } }}>
 																<CustomTextInput
+																	placeholder={t.logistique.placeholders.description}
 																	id="description"
 																	type="textarea"
 																	label={t.logistique.fieldDescription}
@@ -876,6 +886,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 																/>
 															</Box>
 															<CustomAutoCompleteSelect
+																placeholder={t.logistique.placeholders.responsable}
 																id="responsable"
 																label={t.logistique.fieldResponsable}
 																items={responsableOptions}
@@ -905,7 +916,12 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 																		)
 																	}
 																	renderInput={(params) => (
-																		<TextField {...params} size="small" label={t.logistique.fieldBrands} />
+																		<TextField
+																			placeholder={t.logistique.placeholders.marques}
+																			{...params}
+																			size="small"
+																			label={t.logistique.fieldBrands}
+																		/>
 																	)}
 																/>
 																<EntityCrudControls
@@ -943,6 +959,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 																onChange={(value) => void formik.setFieldValue('date_reelle', value)}
 															/>
 															<CustomTextInput
+																placeholder={t.logistique.placeholders.origine_marchandise}
 																id="origine_marchandise"
 																type="text"
 																label={t.logistique.fieldOrigine}
@@ -958,6 +975,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 																helperText={getFieldError('origine_marchandise')}
 															/>
 															<CustomTextInput
+																placeholder={t.logistique.placeholders.nature_marchandise}
 																id="nature_marchandise"
 																type="text"
 																label={t.logistique.fieldNature}
@@ -973,6 +991,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 																helperText={getFieldError('nature_marchandise')}
 															/>
 															<FormattedNumberInput
+																placeholder={t.logistique.placeholders.poids_net}
 																id="poids_net"
 																type="text"
 																label={t.logistique.fieldPoidsNet}
@@ -987,6 +1006,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 																helperText={getFieldError('poids_net')}
 															/>
 															<FormattedNumberInput
+																placeholder={t.logistique.placeholders.poids_brut}
 																id="poids_brut"
 																type="text"
 																label={t.logistique.fieldPoidsBrut}
@@ -1001,6 +1021,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 																helperText={getFieldError('poids_brut')}
 															/>
 															<FormattedNumberInput
+																placeholder={t.logistique.placeholders.volume}
 																id="volume"
 																type="text"
 																label={t.logistique.fieldVolume}
@@ -1023,6 +1044,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 															icon={<LocalShippingIcon color="primary" />}
 														>
 															<CustomDropDownSelect
+																placeholder={t.logistique.placeholders.statut}
 																id="statut"
 																label={t.logistique.fieldStatut}
 																items={logistiqueLegacyWorkflowStatusItemsList}
@@ -1047,6 +1069,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 															/>
 															{formik.values.documents_originaux_requis && (
 																<CustomDropDownSelect
+																	placeholder={t.logistique.placeholders.statut_documents_originaux}
 																	id="statut_documents_originaux"
 																	label={t.logistique.fieldOriginalDocumentsStatus}
 																	items={['Demandé', 'Réceptionné', 'Retourné pour correction', 'Refusé']}
@@ -1076,6 +1099,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 																</Alert>
 															)}
 															<CustomTextInput
+																placeholder={t.logistique.placeholders.numero_domiciliation}
 																id="numero_domiciliation"
 																type="text"
 																label={t.logistique.fieldNumeroDomiciliation}
@@ -1088,6 +1112,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 																disabled={isImportTitleLocked}
 															/>
 															<CustomDropDownSelect
+																placeholder={t.logistique.placeholders.methode_paiement}
 																id="methode_paiement"
 																label={t.logistique.fieldMethodePaiement}
 																items={logistiquePaymentMethodItemsList}
@@ -1103,6 +1128,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 															/>
 															{formik.values.methode_paiement === 'LC' && (
 																<FormattedNumberInput
+																	placeholder={t.logistique.placeholders.avance_pourcentage}
 																	id="avance_pourcentage"
 																	type="text"
 																	label={t.logistique.fieldAdvancePercentage}
@@ -1116,6 +1142,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 																/>
 															)}
 															<CustomTextInput
+																placeholder={t.logistique.placeholders.banque}
 																id="banque"
 																type="text"
 																label={t.logistique.fieldBanque}
@@ -1128,6 +1155,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 																disabled={isImportTitleLocked}
 															/>
 															<FormattedNumberInput
+																placeholder={t.logistique.placeholders.montant_titre_importation}
 																id="montant_titre_importation"
 																type="text"
 																label={t.logistique.fieldMontantTI}
@@ -1140,6 +1168,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 																disabled={isImportTitleLocked}
 															/>
 															<CustomDropDownSelect
+																placeholder={t.logistique.placeholders.devise_titre_importation}
 																id="devise_titre_importation"
 																label={t.logistique.fieldDeviseTI}
 																items={logistiqueCurrencyItemsList}
@@ -1187,6 +1216,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 													{canManage && (
 														<FormCard title={t.logistique.costsSection} icon={<LocalShippingIcon color="primary" />}>
 															<FormattedNumberInput
+																placeholder={t.logistique.placeholders.cout_transport}
 																id="cout_transport"
 																type="text"
 																label={t.logistique.fieldCoutTransport}
@@ -1198,6 +1228,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 																startIcon={<LocalShippingIcon fontSize="small" />}
 															/>
 															<FormattedNumberInput
+																placeholder={t.logistique.placeholders.frais_transit}
 																id="frais_transit"
 																type="text"
 																label={t.logistique.fieldFraisTransit}
@@ -1209,6 +1240,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 																startIcon={<LocalShippingIcon fontSize="small" />}
 															/>
 															<FormattedNumberInput
+																placeholder={t.logistique.placeholders.frais_douane}
 																id="frais_douane"
 																type="text"
 																label={t.logistique.fieldFraisDouane}
@@ -1220,6 +1252,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 																startIcon={<LocalShippingIcon fontSize="small" />}
 															/>
 															<FormattedNumberInput
+																placeholder={t.logistique.placeholders.tva}
 																id="tva"
 																type="text"
 																label={t.logistique.fieldTva}
@@ -1231,6 +1264,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 																startIcon={<PaymentIcon fontSize="small" />}
 															/>
 															<FormattedNumberInput
+																placeholder={t.logistique.placeholders.livraison_locale}
 																id="livraison_locale"
 																type="text"
 																label={t.logistique.fieldLivraisonLocale}
@@ -1242,6 +1276,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 																startIcon={<LocalShippingIcon fontSize="small" />}
 															/>
 															<FormattedNumberInput
+																placeholder={t.logistique.placeholders.autres_frais}
 																id="autres_frais"
 																type="text"
 																label={t.logistique.fieldAutresFrais}

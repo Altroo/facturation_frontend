@@ -89,6 +89,7 @@ const FormikContent: FC<{ token?: string; company_id: number; id?: number }> = (
 								<Divider sx={{ mb: 3 }} />
 								<Stack spacing={3}>
 									<CustomTextInput
+										placeholder={t.logistique.placeholders.nom}
 										id="nom"
 										type="text"
 										label={t.logistique.supplierName}
@@ -107,6 +108,7 @@ const FormikContent: FC<{ token?: string; company_id: number; id?: number }> = (
 										disabled={formik.isSubmitting}
 									/>
 									<CustomTextInput
+										placeholder={t.logistique.placeholders.email}
 										id="email"
 										type="email"
 										label={t.logistique.colSupplierEmail}
