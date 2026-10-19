@@ -2,6 +2,7 @@ import { type Ref, type FC, type SyntheticEvent } from 'react';
 import { Slide, Snackbar, Stack } from '@mui/material';
 import { ThemeProvider } from '@/providers/scopedThemeProvider';
 import type { SlideProps } from '@mui/material/Slide';
+import type { SnackbarCloseReason } from '@mui/material/Snackbar';
 import Styles from './customToast.module.sass';
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
 import { customToastTheme } from '@/utils/themes';
@@ -22,7 +23,7 @@ const TransitionUp = (props: SlideProps) => <Slide {...props} direction="up" />;
 const CustomToast: FC<Props> = (props) => {
 	const { type } = props;
 
-	const handleClose = (_event?: SyntheticEvent | Event, reason?: string) => {
+	const handleClose = (_event: SyntheticEvent | Event | null, reason?: SnackbarCloseReason) => {
 		if (reason === 'clickaway') return;
 		props.setShow(false);
 	};

@@ -1,5 +1,5 @@
 import { type SVGProps } from 'react';
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import CustomToast from './customToast';
 import '@testing-library/jest-dom';
 
@@ -41,7 +41,28 @@ describe('CustomToast', () => {
 	afterEach(() => {
 		jest.clearAllMocks();
 		cleanup();
+		jest.useRealTimers();
 		document.body.innerHTML = '';
+	});
+
+	it('closes after the timeout, whose event is null in MUI 9.5', () => {
+		jest.useFakeTimers();
+		render(<CustomToast type="success" show setShow={setShowMock} message="Enregistrement terminé" />);
+
+		act(() => jest.advanceTimersByTime(5999));
+		expect(setShowMock).not.toHaveBeenCalled();
+		act(() => jest.advanceTimersByTime(1));
+		expect(setShowMock).toHaveBeenCalledTimes(1);
+		expect(setShowMock).toHaveBeenCalledWith(false);
+	});
+
+	it('keeps the toast open when clicking outside it', () => {
+		jest.useFakeTimers();
+		render(<CustomToast type="info" show setShow={setShowMock} message="Information" />);
+		act(() => jest.advanceTimersByTime(0));
+		fireEvent.click(document.body);
+
+		expect(setShowMock).not.toHaveBeenCalled();
 	});
 
 	it('renders the message and has a working close control', () => {

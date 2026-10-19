@@ -1,134 +1,92 @@
-import type { ReactNode } from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import { useInitAccessToken } from '@/contexts/InitContext';
 import { useGetLogistiqueQuery } from '@/store/services/logistique';
-import { useGetUserCompaniesQuery } from '@/store/services/company';
-import { getInitStateToken } from '@/store/selectors';
-import { useAppSelector } from '@/utils/hooks';
-import { logistiqueEmptyValues } from '@/utils/rawData';
-import { LOGISTIQUE_EDIT } from '@/utils/routes';
-import { translations } from '@/translations';
-import LogistiqueView from './logistique-view';
+import type { LogistiqueViewProps as Props } from '@/types/logistiqueTypes';
+import PurchaseRoute from './logistique-view';
 
-const mockPush = jest.fn();
-jest.mock('next/navigation', () => ({ useRouter: () => ({ push: mockPush }) }));
-jest.mock('@/contexts/InitContext', () => ({ useInitAccessToken: () => 'token' }));
-jest.mock('@/store/selectors', () => ({ getInitStateToken: jest.fn(), getUserCompaniesState: jest.fn() }));
-jest.mock('@/utils/hooks', () => ({
-	useAppSelector: jest.fn(),
-	useLanguage: () => ({ language: 'fr', t: jest.requireActual('@/translations').translations.fr }),
-	useToast: () => ({ onSuccess: jest.fn(), onError: jest.fn() }),
-}));
-jest.mock('@/store/services/company', () => ({ useGetUserCompaniesQuery: jest.fn() }));
-jest.mock('@/store/services/logistique', () => ({
-	useGetLogistiqueQuery: jest.fn(),
-	...Object.fromEntries(
-		[
-			'useDeleteLogistiqueMutation',
-			'usePatchLogistiqueStatutMutation',
-			'usePatchLogistiqueWorkflowStatusMutation',
-			'usePatchLogistiqueLaunchStatusMutation',
-			'useRecordLogistiqueProformaRequestMutation',
-			'useReviewLogistiqueSupplierProformaMutation',
-			'useRequestLogistiquePaymentMutation',
-			'useRetryLogistiquePaymentEmailMutation',
-			'useStartLogistiquePaymentMutation',
-			'useRecordLogistiquePaymentExecutionMutation',
-			'useValidateLogistiquePaymentMutation',
-			'useRejectLogistiquePaymentMutation',
-			'useSetLogistiqueProofEmailStatusMutation',
-			'useAddLogistiqueProcessNoteMutation',
-			'useConfirmLogistiquePaymentReceiptMutation',
-		].map((name) => [name, () => [jest.fn(), {}]]),
+jest.mock('@/contexts/InitContext', () => ({ useInitAccessToken: jest.fn() }));
+jest.mock('@/store/services/logistique', () => ({ useGetLogistiqueQuery: jest.fn() }));
+jest.mock('./logistique-historical-view', () => ({
+	__esModule: true,
+	default: ({ company_id, id }: Props) => (
+		<p>
+			Historique : {company_id}/{id}
+		</p>
 	),
 }));
 jest.mock('./supplier-purchase', () => ({
 	__esModule: true,
-	default: ({ company_id, id }: { company_id: number; id?: number }) => (
+	default: ({ company_id, id }: Props) => (
 		<p>
-			Nouveau parcours : {company_id}/{id}
+			Fournisseur : {company_id}/{id ?? 'new'}
 		</p>
 	),
 }));
-jest.mock('./use-logistique-email-polling', () => ({ useLogistiqueEmailPolling: jest.fn() }));
-jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
-	__esModule: true,
-	default: ({ children }: { children: ReactNode }) => <>{children}</>,
-}));
-jest.mock('@/components/shared/noPermission/noPermission', () => ({
-	__esModule: true,
-	default: () => <p>Accès refusé</p>,
-}));
-jest.mock('@/components/formikElements/apiLoading/apiProgress/apiProgress', () => ({
-	__esModule: true,
-	default: () => <div role="progressbar" />,
-}));
-
-const t = translations.fr;
-const order = {
-	...logistiqueEmptyValues,
-	id: 7,
-	company: 12,
-	workflow_version: 1,
-	numero_commande: 'LOG-LEGACY',
-	fournisseur: 'Ancien fournisseur',
-	statut_global: 'En cours',
-	statut: 'Proforma',
-	responsable: 27,
-	lignes: [],
-	alerts: [],
-	proformas_detail: [],
-	echeancier_paiement: [],
-	process_notes: [],
-	events: [],
-};
 
 beforeEach(() => {
 	jest.clearAllMocks();
-	(useAppSelector as jest.Mock).mockImplementation((selector) =>
-		selector === getInitStateToken ? { user: { pk: 27 } } : [],
-	);
-	(useGetUserCompaniesQuery as jest.Mock).mockReturnValue({ data: [{ id: 12, role: 'Logistique' }] });
-	(useGetLogistiqueQuery as jest.Mock).mockReturnValue({ data: order });
+	jest.mocked(useInitAccessToken).mockReturnValue('token');
+	(useGetLogistiqueQuery as jest.Mock).mockReturnValue({ currentData: { workflow_version: 1 } });
 });
 
-describe('LogistiqueView workflow routing and legacy details', () => {
-	it.each([{ workflow_version: 2 }, { can_adopt_supplier_workflow: true }])(
-		'uses the supplier workflow for %j',
-		(override) => {
-			(useGetLogistiqueQuery as jest.Mock).mockReturnValue({ data: { ...order, ...override } });
-			render(<LogistiqueView company_id={12} id={7} />);
-			expect(screen.getByText('Nouveau parcours : 12/7')).toBeInTheDocument();
+describe('Logistique view workflow selection', () => {
+	it.each([{ workflow_version: 2 }, { workflow_version: 1, can_adopt_supplier_workflow: true }])(
+		'loads the supplier screen for %j and preserves the company and dossier',
+		async (record) => {
+			(useGetLogistiqueQuery as jest.Mock).mockReturnValue({ currentData: record });
+			render(<PurchaseRoute company_id={12} id={7} />);
+			expect(await screen.findByText('Fournisseur : 12/7')).toBeInTheDocument();
+			expect(screen.queryByText(/Historique/)).not.toBeInTheDocument();
 		},
 	);
 
-	it('keeps historical dossiers in the legacy detail view with company-scoped edit navigation', () => {
-		render(<LogistiqueView company_id={12} id={7} />);
-		expect(screen.queryByText(/Nouveau parcours/)).not.toBeInTheDocument();
-		expect(screen.getAllByText('LOG-LEGACY').length).toBeGreaterThan(0);
-		fireEvent.click(screen.getByRole('button', { name: t.common.edit }));
-		expect(mockPush).toHaveBeenCalledWith(LOGISTIQUE_EDIT(7, 12));
+	it('loads the historical screen for a dossier that cannot adopt the supplier workflow', async () => {
+		render(<PurchaseRoute company_id={12} id={7} />);
+		expect(await screen.findByText('Historique : 12/7')).toBeInTheDocument();
+		expect(screen.queryByText(/Fournisseur/)).not.toBeInTheDocument();
 	});
 
-	it('denies legacy detail access outside the user company', () => {
-		(useGetUserCompaniesQuery as jest.Mock).mockReturnValue({ data: [{ id: 34, role: 'Caissier' }] });
-		render(<LogistiqueView company_id={12} id={7} />);
-		expect(screen.getByText('Accès refusé')).toBeInTheDocument();
-	});
-
-	it('waits for company membership loading before showing historical details', () => {
-		(useGetUserCompaniesQuery as jest.Mock).mockReturnValue({ isLoading: true });
-		render(<LogistiqueView company_id={12} id={7} />);
+	it('waits for the current dossier instead of using a previously cached dossier', () => {
+		(useGetLogistiqueQuery as jest.Mock).mockReturnValue({ data: { workflow_version: 1 }, isFetching: true });
+		render(<PurchaseRoute company_id={34} id={8} />);
 		expect(screen.getByRole('progressbar')).toBeInTheDocument();
-		expect(screen.queryByText('Ancien fournisseur')).not.toBeInTheDocument();
+		expect(screen.queryByText(/Historique|Fournisseur/)).not.toBeInTheDocument();
+		expect(useGetLogistiqueQuery).toHaveBeenCalledWith({ id: 8 }, { skip: false });
 	});
 
-	it('shows API failures instead of historical dossier details', () => {
-		(useGetLogistiqueQuery as jest.Mock).mockReturnValue({
-			data: order,
-			error: { status: 500, data: { details: { detail: ['Dossier indisponible.'] } } },
-		});
-		render(<LogistiqueView company_id={12} id={7} />);
-		expect(screen.getByRole('alert')).toHaveTextContent('Dossier indisponible.');
-		expect(screen.queryByText('Ancien fournisseur')).not.toBeInTheDocument();
+	it('waits for authentication before loading either screen', () => {
+		jest.mocked(useInitAccessToken).mockReturnValue(undefined);
+		render(<PurchaseRoute company_id={12} id={7} />);
+		expect(screen.getByRole('progressbar')).toBeInTheDocument();
+		expect(screen.queryByText(/Historique|Fournisseur/)).not.toBeInTheDocument();
+		expect(useGetLogistiqueQuery).toHaveBeenCalledWith({ id: 7 }, { skip: true });
+	});
+
+	it('uses the page session when resolving the access token', async () => {
+		const session = {
+			expires: '2026-10-25T12:00:00Z',
+			accessToken: 'session-token',
+			refreshToken: 'refresh-token',
+			accessTokenExpiration: '2026-10-25T12:00:00Z',
+			refreshTokenExpiration: '2026-10-25T12:00:00Z',
+			user: {
+				id: '27',
+				pk: 27,
+				email: 'logistique@example.com',
+				emailVerified: null,
+				name: 'Test User',
+				first_name: 'Test',
+				last_name: 'User',
+			},
+		};
+		render(<PurchaseRoute company_id={12} id={7} session={session} />);
+		expect(await screen.findByText('Historique : 12/7')).toBeInTheDocument();
+		expect(useInitAccessToken).toHaveBeenCalledWith(session);
+	});
+
+	it('lets the supplier screen handle dossier query errors', async () => {
+		(useGetLogistiqueQuery as jest.Mock).mockReturnValue({ error: { status: 403 } });
+		render(<PurchaseRoute company_id={12} id={7} />);
+		expect(await screen.findByText('Fournisseur : 12/7')).toBeInTheDocument();
 	});
 });

@@ -1,13 +1,13 @@
 // Site root
-export const SITE_ROOT = `${process.env.NEXT_PUBLIC_DOMAIN_URL_PREFIX}/`;
+export const SITE_ROOT = `${(process.env.NEXT_PUBLIC_DOMAIN_URL_PREFIX ?? '').replace(/\/+$/, '')}/`;
 export const BACKEND_SITE_ADMIN = `${process.env.NEXT_PUBLIC_API_URL}/gestion-interne-x7k2/`;
 // Auth
-export const AUTH_LOGIN = `${SITE_ROOT}/login`;
+export const AUTH_LOGIN = `${SITE_ROOT}login`;
 // Auth forgot password
-export const AUTH_RESET_PASSWORD = `${SITE_ROOT}/reset-password`;
-export const AUTH_RESET_PASSWORD_ENTER_CODE = `${SITE_ROOT}/reset-password/enter-code`;
-export const AUTH_RESET_PASSWORD_SET_PASSWORD = `${SITE_ROOT}/reset-password/set-password`;
-export const AUTH_RESET_PASSWORD_COMPLETE = `${SITE_ROOT}/reset-password/set-password-complete`;
+export const AUTH_RESET_PASSWORD = `${SITE_ROOT}reset-password`;
+export const AUTH_RESET_PASSWORD_ENTER_CODE = `${SITE_ROOT}reset-password/enter-code`;
+export const AUTH_RESET_PASSWORD_SET_PASSWORD = `${SITE_ROOT}reset-password/set-password`;
+export const AUTH_RESET_PASSWORD_COMPLETE = `${SITE_ROOT}reset-password/set-password-complete`;
 // dashboard
 export const DASHBOARD = `${SITE_ROOT}dashboard`;
 export const DASHBOARD_CHANGELOG = `${SITE_ROOT}dashboard/changelog`;
@@ -85,8 +85,10 @@ export const LOGISTIQUE_LIST = `${SITE_ROOT}dashboard/logistique`;
 export const LOGISTIQUE_DASHBOARD = `${SITE_ROOT}dashboard/logistique/dashboard`;
 export const LOGISTIQUE_SUPPLIERS = `${SITE_ROOT}dashboard/logistique/fournisseurs`;
 export const LOGISTIQUE_SUPPLIER_ADD = (company_id: number) => `${LOGISTIQUE_SUPPLIERS}/new/?company_id=${company_id}`;
-export const LOGISTIQUE_SUPPLIER_VIEW = (id: number, company_id: number) => `${LOGISTIQUE_SUPPLIERS}/${id}/?company_id=${company_id}`;
-export const LOGISTIQUE_SUPPLIER_EDIT = (id: number, company_id: number) => `${LOGISTIQUE_SUPPLIERS}/${id}/edit/?company_id=${company_id}`;
+export const LOGISTIQUE_SUPPLIER_VIEW = (id: number, company_id: number) =>
+	`${LOGISTIQUE_SUPPLIERS}/${id}/?company_id=${company_id}`;
+export const LOGISTIQUE_SUPPLIER_EDIT = (id: number, company_id: number) =>
+	`${LOGISTIQUE_SUPPLIERS}/${id}/edit/?company_id=${company_id}`;
 export const LOGISTIQUE_ADD = (company_id: number) => `${SITE_ROOT}dashboard/logistique/new/?company_id=${company_id}`;
 export const LOGISTIQUE_VIEW = (id: number, company_id: number) =>
 	`${SITE_ROOT}dashboard/logistique/${id}/?company_id=${company_id}`;
