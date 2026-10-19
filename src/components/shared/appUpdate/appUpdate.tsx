@@ -7,7 +7,7 @@ import ActionModals from '@/components/htmlElements/modals/actionModal/actionMod
 import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import { getAppVersions } from '@/store/selectors';
 import { isNewerAppVersion } from '@/utils/appVersion';
-import { APP_UPDATE_PARAM, getAppUpdateUrl, reloadApp } from '@/utils/updateApp';
+import { APP_UPDATE_PARAM, getAppUpdateUrl, reloadApp } from '@/utils/helpers';
 
 const AppUpdate = () => {
 	const { localVersion, serverVersion, maintenance } = useAppSelector(getAppVersions);

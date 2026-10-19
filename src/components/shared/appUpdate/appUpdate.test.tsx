@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import AppUpdate from './appUpdate';
 import { useAppSelector } from '@/utils/hooks';
-import { getAppUpdateUrl, reloadApp } from '@/utils/updateApp';
+import { getAppUpdateUrl, reloadApp } from '@/utils/helpers';
 
 const mockOnError = jest.fn();
 
@@ -11,7 +11,8 @@ jest.mock('@/utils/hooks', () => ({
 	useLanguage: () => ({ t: jest.requireActual('@/translations/fr').fr }),
 	useToast: () => ({ onError: mockOnError }),
 }));
-jest.mock('@/utils/updateApp', () => ({
+jest.mock('@/utils/helpers', () => ({
+	...jest.requireActual<typeof import('@/utils/helpers')>('@/utils/helpers'),
 	APP_UPDATE_PARAM: '_app_update',
 	getAppUpdateUrl: jest.fn(),
 	reloadApp: jest.fn(),

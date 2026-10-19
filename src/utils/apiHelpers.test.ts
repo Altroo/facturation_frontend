@@ -1,5 +1,5 @@
 import axios, { type AxiosInstance } from 'axios';
-import { cookiesDeleter, cookiesPoster, getApi, postApi } from './apiHelpers';
+import { cookiesDeleter, cookiesPoster, getApi, getAppVersion, postApi } from './apiHelpers';
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -7,6 +7,34 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
 describe('API utility functions', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
+	});
+
+	describe('getAppVersion', () => {
+		it('uses an independent Axios instance, bypasses caching and bounds the request to ten seconds', async () => {
+			const data = { version: '1.10.0' };
+			const get = jest.fn().mockResolvedValueOnce({ status: 200, data });
+			mockedAxios.create.mockReturnValueOnce({ get } as unknown as AxiosInstance);
+
+			await expect(getAppVersion()).resolves.toEqual({ status: 200, data });
+			expect(mockedAxios.create).toHaveBeenCalledWith();
+			expect(get).toHaveBeenCalledWith('/api/app-version', {
+				params: { check: expect.any(Number) },
+				timeout: 10_000,
+				headers: { 'Cache-Control': 'no-store' },
+				responseType: 'json',
+				transitional: { silentJSONParsing: false },
+			});
+		});
+
+		it.each(['offline', 'HTTP 503', 'invalid JSON', 'timeout'])(
+			'preserves %s failures for the caller',
+			async (message) => {
+				const failure = new Error(message);
+				const get = jest.fn().mockRejectedValueOnce(failure);
+				mockedAxios.create.mockReturnValueOnce({ get } as unknown as AxiosInstance);
+				await expect(getAppVersion()).rejects.toBe(failure);
+			},
+		);
 	});
 
 	describe('cookiesPoster', () => {

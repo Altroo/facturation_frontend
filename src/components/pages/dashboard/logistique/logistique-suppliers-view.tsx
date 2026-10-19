@@ -1,6 +1,6 @@
 'use client';
 
-import { startTransition, useState, isValidElement, type ReactNode } from 'react';
+import { startTransition, useState, isValidElement, type FC } from 'react';
 import { useRouter } from 'next/navigation';
 import {
 	Alert,
@@ -31,11 +31,15 @@ import { useAppSelector, useLanguage } from '@/utils/hooks';
 import { extractApiErrorMessage, formatDate } from '@/utils/helpers';
 import { listReturnUrl } from '@/utils/listReturn';
 import { LOGISTIQUE_SUPPLIERS, LOGISTIQUE_SUPPLIER_EDIT, LOGISTIQUE_VIEW } from '@/utils/routes';
-import type { SessionProps, PaginationResponseType } from '@/types/_initTypes';
-import type { LogistiqueOrder } from '@/types/logistiqueTypes';
+import type { PaginationResponseType } from '@/types/_initTypes';
+import type {
+	LogistiqueOrder,
+	LogistiqueViewInfoRowProps as InfoRowProps,
+	LogistiqueViewProps as Props,
+} from '@/types/logistiqueTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 
-function InfoRow({ icon, label, value }: { icon: ReactNode; label: string; value: ReactNode }) {
+const InfoRow: FC<InfoRowProps> = ({ icon, label, value }) => {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 	const displayValue = value === null || value === undefined || value === '' ? '-' : value;
@@ -62,9 +66,9 @@ function InfoRow({ icon, label, value }: { icon: ReactNode; label: string; value
 			</Stack>
 		</Stack>
 	);
-}
+};
 
-function SupplierDossiers({ id, company_id }: { id: number; company_id: number }) {
+const SupplierDossiers: FC<Pick<Props, 'id' | 'company_id'>> = ({ id, company_id }) => {
 	const { t } = useLanguage();
 	const router = useRouter();
 	const [paginationModel, setPaginationModel, sorting] = useDataGridPagination(5, { company_id });
@@ -136,13 +140,9 @@ function SupplierDossiers({ id, company_id }: { id: number; company_id: number }
 			gridMaxWidth={false}
 		/>
 	);
-}
+};
 
-export default function LogistiqueSuppliersView({
-	session,
-	company_id,
-	id,
-}: SessionProps & { company_id: number; id: number }) {
+const LogistiqueSuppliersView: FC<Props> = ({ session, company_id, id }) => {
 	const { t } = useLanguage();
 	const token = useInitAccessToken(session);
 	const theme = useTheme();
@@ -257,4 +257,6 @@ export default function LogistiqueSuppliersView({
 			</NavigationBar>
 		</Stack>
 	);
-}
+};
+
+export default LogistiqueSuppliersView;

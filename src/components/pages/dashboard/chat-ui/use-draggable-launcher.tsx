@@ -1,5 +1,6 @@
 'use client';
-import { useRef, useState, type CSSProperties, type KeyboardEvent, type MouseEvent, type PointerEvent } from 'react';
+
+import { type CSSProperties, type KeyboardEvent, type MouseEvent, type PointerEvent, useRef, useState } from 'react';
 
 type Position = { right: number; bottom: number };
 type Gesture = Position & {

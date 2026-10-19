@@ -1,7 +1,7 @@
 'use client';
 
 import { Box } from '@mui/material';
-import styles from './pdfLanguageModal.module.scss';
+import styles from './pdfLanguageModal.module.sass';
 import { type FC } from 'react';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import { Close as CloseIcon } from '@mui/icons-material';

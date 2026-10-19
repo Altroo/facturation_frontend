@@ -1,14 +1,13 @@
 'use client';
 
 import { startTransition, useState, type FC } from 'react';
-import type { GridColDef, GridFilterModel } from '@mui/x-data-grid';
+import { GridLogicOperator, type GridColDef, type GridFilterModel } from '@mui/x-data-grid';
 import { Box, Button } from '@mui/material';
 import { Add, Delete, Edit, Visibility } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
 import SupplierDeleteDialog from './logistique-supplier-delete-dialog';
 import { LOGISTIQUE_SUPPLIER_ADD, LOGISTIQUE_SUPPLIER_EDIT, LOGISTIQUE_SUPPLIER_VIEW } from '@/utils/routes';
-import { GridLogicOperator } from '@mui/x-data-grid';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
@@ -23,15 +22,11 @@ import type {
 	ResponseDataInterface,
 	SessionProps,
 } from '@/types/_initTypes';
-import type { LogistiqueSupplier } from '@/types/logistiqueTypes';
+import type { LogistiqueSupplier, LogistiqueListFormikContentProps as ContentProps } from '@/types/logistiqueTypes';
 import { formatDate } from '@/utils/helpers';
 import { useLanguage } from '@/utils/hooks';
 
-const SupplierListContent: FC<SessionProps & { company_id: number; role: string }> = ({
-	session,
-	company_id,
-	role,
-}) => {
+const SupplierListContent: FC<ContentProps> = ({ session, company_id, role }) => {
 	const token = useInitAccessToken(session);
 	const { t } = useLanguage();
 	const router = useRouter();

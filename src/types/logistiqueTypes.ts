@@ -411,6 +411,13 @@ export type LogistiqueSupplier = {
 	derniere_activite: string;
 };
 
+export type LogistiqueSupplierDeleteDialogProps = {
+	supplier: LogistiqueSupplier;
+	onClose: () => void;
+	onDeleted: () => void;
+	beforeDelete?: () => void;
+};
+
 export type LogistiqueFormValues = {
 	proformas: number[];
 	fournisseur: string;

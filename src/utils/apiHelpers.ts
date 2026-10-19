@@ -1,5 +1,18 @@
 import axios, { type AxiosInstance } from 'axios';
 
+// GET the deployed frontend version, independently of the Django API instance.
+export const getAppVersion = async () => {
+	const instance = axios.create();
+	const response = await instance.get<unknown>('/api/app-version', {
+		params: { check: Date.now() },
+		timeout: 10_000,
+		headers: { 'Cache-Control': 'no-store' },
+		responseType: 'json',
+		transitional: { silentJSONParsing: false },
+	});
+	return { status: response.status, data: response.data };
+};
+
 // POST Next api/cookies
 export const cookiesPoster = async (url: string, body: object) => {
 	const instance = axios.create();

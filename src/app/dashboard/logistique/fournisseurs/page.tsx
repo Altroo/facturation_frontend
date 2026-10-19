@@ -11,7 +11,11 @@ export const metadata: Metadata = {
 
 const LogistiqueSuppliersPage = async () => {
 	const session = await auth();
-	if (!session) redirect(AUTH_LOGIN);
+
+	if (!session) {
+		redirect(AUTH_LOGIN);
+	}
+
 	return <LogistiqueSuppliers session={session} />;
 };
 

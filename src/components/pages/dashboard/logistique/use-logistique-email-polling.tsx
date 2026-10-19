@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useEffectEvent } from 'react';
 import type { LogistiqueOrder } from '@/types/logistiqueTypes';
 

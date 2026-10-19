@@ -1,25 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type FC } from 'react';
 import { Alert } from '@mui/material';
 import { Close, Delete } from '@mui/icons-material';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import { useDeleteLogistiqueSupplierMutation } from '@/store/services/logistique';
 import { useLanguage, useToast } from '@/utils/hooks';
 import { extractApiErrorMessage } from '@/utils/helpers';
-import type { LogistiqueSupplier } from '@/types/logistiqueTypes';
+import type { LogistiqueSupplierDeleteDialogProps as Props } from '@/types/logistiqueTypes';
 
-export default function SupplierDeleteDialog({
-	supplier,
-	onClose,
-	onDeleted,
-	beforeDelete,
-}: {
-	supplier: LogistiqueSupplier;
-	onClose: () => void;
-	onDeleted: () => void;
-	beforeDelete?: () => void;
-}) {
+const SupplierDeleteDialog: FC<Props> = ({ supplier, onClose, onDeleted, beforeDelete }) => {
 	const { t } = useLanguage();
 	const { onSuccess } = useToast();
 	const [remove, { isLoading }] = useDeleteLogistiqueSupplierMutation();
@@ -70,4 +60,6 @@ export default function SupplierDeleteDialog({
 			{error && <Alert severity="error">{error}</Alert>}
 		</ActionModals>
 	);
-}
+};
+
+export default SupplierDeleteDialog;

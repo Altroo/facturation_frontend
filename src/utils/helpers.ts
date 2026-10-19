@@ -1,6 +1,8 @@
-import axios, { AxiosHeaders } from 'axios';
+import { isAppVersion, isNewerAppVersion } from '@/utils/appVersion';
+import { getAppVersion } from '@/utils/apiHelpers';
 import type { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
-import { signOut, getSession } from 'next-auth/react';
+import axios, { AxiosHeaders } from 'axios';
+import { getSession, signOut } from 'next-auth/react';
 import { SITE_ROOT } from '@/utils/routes';
 import type { APIContentTypeInterface, ApiErrorResponseType, InitStateToken } from '@/types/_initTypes';
 
@@ -266,10 +268,7 @@ export const safeParseForInput = (raw: string): number | string => {
  * @param decimals - Number of decimal places (default: 2)
  * @returns Formatted string with spaces as a thousand separators (French locale)
  */
-export const formatNumberWithSpaces = (
-	value: string | number | null | undefined,
-	decimals: number = 2
-): string => {
+export const formatNumberWithSpaces = (value: string | number | null | undefined, decimals: number = 2): string => {
 	if (value === null || value === undefined || value === '') return '';
 	const num = typeof value === 'string' ? parseFloat(value) : value;
 	if (Number.isNaN(num)) return '';
@@ -278,7 +277,7 @@ export const formatNumberWithSpaces = (
 	return num.toLocaleString('fr-FR', {
 		minimumFractionDigits: decimals,
 		maximumFractionDigits: decimals,
-		useGrouping: true
+		useGrouping: true,
 	});
 };
 
@@ -376,7 +375,7 @@ export const getCompanyDocumentLabelForKey = (fieldLabels: Record<string, string
 /**
  * Extracts a user-friendly error message from an RTK Query mutation error.
  * When the backend returns structured error details (e.g. ProtectedError / 409),
- * the first detail string is returned. Otherwise returns the fallback message.
+ * the first detail string is returned. Otherwise, returns the fallback message.
  */
 export const extractApiErrorMessage = (error: unknown, fallback: string): string => {
 	if (
@@ -407,3 +406,31 @@ export const extractApiErrorMessage = (error: unknown, fallback: string): string
 	}
 	return fallback;
 };
+
+export const APP_UPDATE_PARAM = '_app_update';
+
+type AppUpdateResult = { url: string; error?: never } | { url?: never; error: true };
+
+export const getAppUpdateUrl = async (targetVersion: string, currentUrl: string): Promise<AppUpdateResult> => {
+	if (!isAppVersion(targetVersion)) return { error: true };
+	try {
+		// Do not reload into an old frontend if the backend was published first.
+		const { status, data } = await getAppVersion();
+		if (status !== 200) return { error: true };
+		if (
+			!data ||
+			typeof data !== 'object' ||
+			!('version' in data) ||
+			!isAppVersion(data.version) ||
+			isNewerAppVersion(targetVersion, data.version)
+		)
+			return { error: true };
+		const url = new URL(currentUrl);
+		url.searchParams.set(APP_UPDATE_PARAM, `${targetVersion}-${Date.now()}`);
+		return { url: url.href };
+	} catch {
+		return { error: true };
+	}
+};
+
+export const reloadApp = (url: string) => window.location.replace(url);

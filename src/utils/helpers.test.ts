@@ -1,4 +1,13 @@
+import { getAppVersion } from '@/utils/apiHelpers';
+
+jest.mock('@/utils/apiHelpers', () => ({
+	...jest.requireActual<typeof import('@/utils/apiHelpers')>('@/utils/apiHelpers'),
+	getAppVersion: jest.fn(),
+}));
+
 import {
+	APP_UPDATE_PARAM,
+	getAppUpdateUrl,
 	isAuthenticatedInstance,
 	allowAnyInstance,
 	handleUnauthorized,
@@ -17,7 +26,9 @@ import { getSession, signOut } from 'next-auth/react';
 
 type RequestInterceptorWithHandlers = {
 	handlers?: Array<{
-		fulfilled?: (config: InternalAxiosRequestConfig) => InternalAxiosRequestConfig | Promise<InternalAxiosRequestConfig>;
+		fulfilled?: (
+			config: InternalAxiosRequestConfig,
+		) => InternalAxiosRequestConfig | Promise<InternalAxiosRequestConfig>;
 	}>;
 };
 
@@ -348,7 +359,8 @@ describe('API Utilities', () => {
 		it('falls back to the NextAuth session token when Redux auth state is empty', async () => {
 			mockedGetSession.mockResolvedValueOnce({ accessToken: 'session-access-token' });
 			const instance = isAuthenticatedInstance(() => undefined);
-			const requestInterceptor = instance.interceptors.request as typeof instance.interceptors.request & RequestInterceptorWithHandlers;
+			const requestInterceptor = instance.interceptors.request as typeof instance.interceptors.request &
+				RequestInterceptorWithHandlers;
 			const handler = requestInterceptor.handlers?.[0]?.fulfilled;
 
 			const config = await handler?.({ headers: new AxiosHeaders() } as InternalAxiosRequestConfig);
@@ -359,7 +371,8 @@ describe('API Utilities', () => {
 
 		it('prefers the Redux token and skips NextAuth fallback when access is already present', async () => {
 			const instance = isAuthenticatedInstance(() => mockToken);
-			const requestInterceptor = instance.interceptors.request as typeof instance.interceptors.request & RequestInterceptorWithHandlers;
+			const requestInterceptor = instance.interceptors.request as typeof instance.interceptors.request &
+				RequestInterceptorWithHandlers;
 			const handler = requestInterceptor.handlers?.[0]?.fulfilled;
 
 			const config = await handler?.({ headers: new AxiosHeaders() } as InternalAxiosRequestConfig);
@@ -554,5 +567,54 @@ describe('Label helpers', () => {
 			const labels = { global_remise: 'Remise globale' };
 			expect(getCompanyDocumentLabelForKey(labels, 'global_remise')).toBe('Remise globale');
 		});
+	});
+});
+
+describe('App updates', () => {
+	beforeEach(() => {
+		jest.mocked(getAppVersion).mockReset();
+	});
+
+	it('verifies the deployed frontend before a cache-busted navigation preserving route, filters and hash', async () => {
+		jest.mocked(getAppVersion).mockResolvedValue({ status: 200, data: { version: '1.10.0' } });
+		const result = await getAppUpdateUrl('1.9.0', 'https://app.test/dashboard/board?project=2#card');
+		expect(result.error).toBeUndefined();
+		const url = new URL(result.url!);
+		expect(url.pathname).toBe('/dashboard/board');
+		expect(url.searchParams.get('project')).toBe('2');
+		expect(url.searchParams.get(APP_UPDATE_PARAM)).toMatch(/^1\.9\.0-\d+$/);
+		expect(url.hash).toBe('#card');
+		expect(getAppVersion).toHaveBeenCalledWith();
+	});
+
+	it.each([{ version: '1.0.0' }, { version: 'invalid' }, {}, null])(
+		'rejects unavailable or invalid releases: %s',
+		async (data) => {
+			jest.mocked(getAppVersion).mockResolvedValue({ status: 200, data });
+			await expect(getAppUpdateUrl('2.0.0', 'https://app.test/')).resolves.toEqual({ error: true });
+		},
+	);
+	it('does not navigate after an offline/HTTP failure', async () => {
+		jest.mocked(getAppVersion).mockRejectedValueOnce(new Error('offline'));
+		await expect(getAppUpdateUrl('2.0.0', 'https://app.test/')).resolves.toEqual({ error: true });
+		jest.mocked(getAppVersion).mockResolvedValueOnce({ status: 503, data: null });
+		await expect(getAppUpdateUrl('2.0.0', 'https://app.test/')).resolves.toEqual({ error: true });
+	});
+	it('does not request an invalid target', async () => {
+		await expect(getAppUpdateUrl('bad', 'https://app.test/')).resolves.toEqual({ error: true });
+		expect(getAppVersion).not.toHaveBeenCalled();
+	});
+
+	it.each(['json', 'url'])('returns a handled failure for invalid %s', async (failure) => {
+		if (failure === 'json') jest.mocked(getAppVersion).mockRejectedValueOnce(new SyntaxError('bad JSON'));
+		else jest.mocked(getAppVersion).mockResolvedValueOnce({ status: 200, data: { version: '2.0.0' } });
+		await expect(getAppUpdateUrl('2.0.0', failure === 'url' ? 'bad-url' : 'https://app.test/')).resolves.toEqual({
+			error: true,
+		});
+	});
+
+	it('handles an Axios timeout without navigating', async () => {
+		jest.mocked(getAppVersion).mockRejectedValueOnce(new Error('timeout of 10000ms exceeded'));
+		await expect(getAppUpdateUrl('2.0.0', 'https://app.test/')).resolves.toEqual({ error: true });
 	});
 });

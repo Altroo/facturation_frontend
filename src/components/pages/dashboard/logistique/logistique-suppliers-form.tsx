@@ -21,11 +21,12 @@ import { logistiqueSupplierSchema } from '@/utils/logistiqueSupplierSchema';
 import { textInputTheme } from '@/utils/themes';
 import { LOGISTIQUE_SUPPLIERS, LOGISTIQUE_SUPPLIER_VIEW } from '@/utils/routes';
 import { listReturnUrl } from '@/utils/listReturn';
-import type { SessionProps } from '@/types/_initTypes';
+import type { ClientArticleWrapperFormProps } from '@/types/articleTypes';
+import type { LogistiqueFormProps as Props } from '@/types/logistiqueTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 
 const inputTheme = textInputTheme();
-const FormikContent: FC<{ token?: string; company_id: number; id?: number }> = ({ token, company_id, id }) => {
+const FormikContent: ClientArticleWrapperFormProps['FormikComponent'] = ({ token, company_id, id }) => {
 	const { t } = useLanguage();
 	const { onSuccess } = useToast();
 	const router = useRouter();
@@ -146,7 +147,8 @@ const FormikContent: FC<{ token?: string; company_id: number; id?: number }> = (
 	);
 };
 
-const LogistiqueSuppliersForm: FC<SessionProps & { company_id: number; id?: number }> = (props) => (
+const LogistiqueSuppliersForm: FC<Props> = (props) => (
 	<ClientArticleWrapperForm {...props} entityName="supplier" FormikComponent={FormikContent} />
 );
+
 export default LogistiqueSuppliersForm;

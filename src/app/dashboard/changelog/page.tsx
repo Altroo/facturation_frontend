@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { translations } from '@/translations';
@@ -5,7 +6,7 @@ import { auth } from '@/auth';
 import { AUTH_LOGIN } from '@/utils/routes';
 import Changelog from '@/components/pages/dashboard/changelog/changelog';
 
-export const generateMetadata = async () => {
+export const generateMetadata = async (): Promise<Metadata> => {
 	const language = (await cookies()).get('app-language')?.value === 'en' ? 'en' : 'fr';
 	const t = translations[language];
 	return { title: t.navigation.changelog, description: t.changelog.description };
@@ -13,7 +14,11 @@ export const generateMetadata = async () => {
 
 const ChangelogPage = async () => {
 	const session = await auth();
-	if (!session) redirect(AUTH_LOGIN);
+
+	if (!session) {
+		redirect(AUTH_LOGIN);
+	}
+
 	return <Changelog />;
 };
 
