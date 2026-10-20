@@ -87,3 +87,8 @@ next-env.d.ts
 /storageState*.json
 /auth-state*.json
 *.har
+
+AGENTS.md
+agents.md
+CLAUDE.md
+claude.md
