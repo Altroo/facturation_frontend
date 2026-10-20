@@ -68,7 +68,7 @@
     "typescript": "npm:@typescript/typescript6@^6.0.2"
   },
   "resolutions": {
-    "baseline-browser-mapping": "2.11.27"
+    "baseline-browser-mapping": "2.11.29"
   },
   "trustedDependencies": [
     "@parcel/watcher",

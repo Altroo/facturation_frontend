@@ -893,7 +893,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 										error={formik.touched.remarque && Boolean(formik.errors.remarque)}
 										helperText={formik.touched.remarque ? formik.errors.remarque : ''}
 										fullWidth={false}
-										size="small"
+										size="medium"
 										theme={inputTheme}
 										startIcon={<NotesIcon fontSize="small" />}
 									/>

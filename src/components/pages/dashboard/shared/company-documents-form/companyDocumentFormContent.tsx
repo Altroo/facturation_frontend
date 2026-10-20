@@ -1,7 +1,7 @@
 'use client';
 
 import { listReturnUrl } from '@/utils/listReturn';
-import { useEffect, useEffectEvent, useRef, useState, type JSX, type ChangeEvent, type MouseEvent } from 'react';
+import { type ChangeEvent, type JSX, type MouseEvent, useEffect, useEffectEvent, useRef, useState } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import {
@@ -96,6 +96,7 @@ import type {
 	FactureDocumentData,
 	FactureFormSchema,
 	FactureNumResponse,
+	SharedDocumentFormContentProps,
 	TypeFactureLivraisonDevisStatus,
 } from '@/types/companyDocumentsTypes';
 import type { ValidateArticleLinesErrorType } from '@/types/devisTypes';
@@ -104,7 +105,6 @@ import DocumentFormModals from './DocumentFormModals';
 import type { SelectedArticlePopupValues } from '@/types/articleTypes';
 import EntityCrudControls from '@/components/shared/entityCrudControls/entityCrudControls';
 import { isNectarRaisonSociale } from '@/utils/nectar';
-import type { SharedDocumentFormContentProps } from '@/types/companyDocumentsTypes';
 
 const inputFieldTheme = textInputTheme();
 
@@ -1675,7 +1675,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 												error={formik.touched.remarque && Boolean(formik.errors.remarque)}
 												helperText={formik.touched.remarque ? formik.errors.remarque : ''}
 												fullWidth
-												size="small"
+												size="medium"
 												theme={inputFieldTheme}
 												startIcon={<NotesIcon fontSize="small" color="action" />}
 											/>

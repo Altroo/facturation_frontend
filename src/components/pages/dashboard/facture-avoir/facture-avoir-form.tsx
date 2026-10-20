@@ -71,7 +71,7 @@ import type { ArticleClass, ClientClass, FactureAvoirClass, FactureClass } from 
 import type { PaginationResponseType } from '@/types/_initTypes';
 import type { DropDownType } from '@/types/accountTypes';
 import type { DeviFactureLineFormValues, TypeRemiseType, ValidateArticleLinesErrorType } from '@/types/devisTypes';
-import { FACTURE_AVOIR_EDIT, FACTURE_AVOIR_VIEW, FACTURE_AVOIR_LIST } from '@/utils/routes';
+import { FACTURE_AVOIR_EDIT, FACTURE_AVOIR_LIST, FACTURE_AVOIR_VIEW } from '@/utils/routes';
 import { extractApiErrorMessage, formatLocalDate, parseNumber } from '@/utils/helpers';
 import { customDropdownTheme, textInputTheme } from '@/utils/themes';
 import { useLanguage, useToast } from '@/utils/hooks';
@@ -849,7 +849,7 @@ const FormikContent: FC<FormikContentProps> = ({ token, company_id, id, isEditMo
 									onChange={formik.handleChange('remarque')}
 									onBlur={formik.handleBlur('remarque')}
 									fullWidth
-									size="small"
+									size="medium"
 									theme={inputFieldTheme}
 									startIcon={<NotesIcon fontSize="small" color="action" />}
 									disabled={isLocked}
