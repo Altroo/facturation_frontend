@@ -817,8 +817,8 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 										onBlur={formik.handleBlur('remarque')}
 										error={formik.touched.remarque && Boolean(formik.errors.remarque)}
 										helperText={formik.touched.remarque ? formik.errors.remarque : ''}
-										fullWidth={false}
-										size="medium"
+										fullWidth
+										size="small"
 										theme={inputTheme}
 										startIcon={<NotesIcon fontSize="small" />}
 									/>

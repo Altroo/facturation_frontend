@@ -1675,7 +1675,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 												error={formik.touched.remarque && Boolean(formik.errors.remarque)}
 												helperText={formik.touched.remarque ? formik.errors.remarque : ''}
 												fullWidth
-												size="medium"
+												size="small"
 												theme={inputFieldTheme}
 												startIcon={<NotesIcon fontSize="small" color="action" />}
 											/>

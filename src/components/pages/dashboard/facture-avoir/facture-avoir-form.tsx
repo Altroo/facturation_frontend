@@ -849,7 +849,7 @@ const FormikContent: FC<FormikContentProps> = ({ token, company_id, id, isEditMo
 									onChange={formik.handleChange('remarque')}
 									onBlur={formik.handleBlur('remarque')}
 									fullWidth
-									size="medium"
+									size="small"
 									theme={inputFieldTheme}
 									startIcon={<NotesIcon fontSize="small" color="action" />}
 									disabled={isLocked}
