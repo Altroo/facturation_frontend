@@ -1,5 +1,6 @@
 import { type ReactNode, type ReactElement } from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import ClientsViewClient from './clients-view';
 import { Provider } from 'react-redux';
 import { store } from '@/store/store';
@@ -301,6 +302,12 @@ describe('ClientsViewClient', () => {
 		expect(screen.getByText('700,00')).toBeInTheDocument();
 	});
 	describe('statement PDF', () => {
+		const pickStatementDay = async (label: string, day: number, user: ReturnType<typeof userEvent.setup>) => {
+			const picker = label === 'Du' ? 0 : 1;
+			await user.click(screen.getAllByRole('button', { name: /choose date/i })[picker]);
+			const calendar = within(screen.getByRole('grid'));
+			await user.click(calendar.getByRole('gridcell', { name: String(day) }));
+		};
 		const createObjectURL = jest.fn(() => 'blob:statement-pdf');
 		const revokeObjectURL = jest.fn();
 		const onError = jest.fn();
@@ -341,12 +348,14 @@ describe('ClientsViewClient', () => {
 
 		it('opens the authenticated PDF with the selected language and current filters', async () => {
 			jest.useFakeTimers();
+			jest.setSystemTime(new Date(2026, 5, 10, 12));
+			const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 			const blob = new Blob(['pdf'], { type: 'application/pdf' });
 			jest.mocked(fetchPdfBlob).mockResolvedValue(blob);
 			const open = jest.spyOn(window, 'open').mockReturnValue(null);
 			renderWithProviders(<ClientsViewClient {...defaultProps} />);
-			fireEvent.change(screen.getByLabelText('Du'), { target: { value: '2026-06-01' } });
-			fireEvent.change(screen.getByLabelText('Au'), { target: { value: '2026-06-30' } });
+			await pickStatementDay('Du', 1, user);
+			await pickStatementDay('Au', 30, user);
 			fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Type' }));
 			fireEvent.click(screen.getByRole('option', { name: 'Factures' }));
 			fireEvent.click(screen.getByRole('button', { name: 'Imprimer le relevé' }));
@@ -362,6 +371,27 @@ describe('ClientsViewClient', () => {
 			expect(createObjectURL).toHaveBeenCalledWith(blob);
 			jest.advanceTimersByTime(60_000);
 			expect(revokeObjectURL).toHaveBeenCalledWith('blob:statement-pdf');
+		});
+
+		it('disables dates outside the selected statement range in both calendars', async () => {
+			jest.useFakeTimers();
+			jest.setSystemTime(new Date(2026, 5, 10, 12));
+			const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+			renderWithProviders(<ClientsViewClient {...defaultProps} />);
+			await pickStatementDay('Du', 15, user);
+			await pickStatementDay('Au', 20, user);
+
+			await user.click(screen.getAllByRole('button', { name: /choose date/i })[1]);
+			let calendar = within(screen.getByRole('grid'));
+			expect(calendar.getByRole('gridcell', { name: '14' })).toBeDisabled();
+			expect(calendar.getByRole('gridcell', { name: '15' })).not.toBeDisabled();
+			await user.keyboard('{Escape}');
+
+			await user.click(screen.getAllByRole('button', { name: /choose date/i })[0]);
+			calendar = within(screen.getByRole('grid'));
+			expect(calendar.getByRole('gridcell', { name: '21' })).toBeDisabled();
+			expect(calendar.getByRole('gridcell', { name: '20' })).not.toBeDisabled();
+			expect(fetchPdfBlob).not.toHaveBeenCalled();
 		});
 
 		it('reports a failed PDF request through the existing toast', async () => {

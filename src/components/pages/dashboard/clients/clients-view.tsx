@@ -3,6 +3,7 @@
 import {
 	extractApiErrorMessage,
 	formatDate,
+	formatLocalDate,
 	formatNumberWithSpaces,
 	listReturnUrl,
 	runWithCleanup,
@@ -52,6 +53,11 @@ import {
 	PictureAsPdf as PictureAsPdfIcon,
 	Receipt as ReceiptIcon,
 } from '@mui/icons-material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { parseISO } from 'date-fns';
+import { enUS, fr } from 'date-fns/locale';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { CLIENT_STATEMENT_PDF, CLIENTS_EDIT, CLIENTS_LIST } from '@/utils/routes';
 import { fetchPdfBlob } from '@/utils/apiHelpers';
@@ -146,7 +152,7 @@ const ClientsViewClient: FC<Props> = ({ session, company_id, id }) => {
 
 	const [deleteRecord] = useDeleteClientMutation();
 	const { onSuccess, onError } = useToast();
-	const { t } = useLanguage();
+	const { t, language } = useLanguage();
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
 	const [showLanguageModal, setShowLanguageModal] = useState(false);
 	const [historyTab, setHistoryTab] = useState(0);
@@ -626,39 +632,43 @@ const ClientsViewClient: FC<Props> = ({ session, company_id, id }) => {
 										)}
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
-									<Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 2 }}>
-										<TextField
-											type="date"
-											size="small"
-											label={t.clients.statementDateFrom}
-											value={statementDateFrom}
-											onChange={(event) => setStatementDateFrom(event.target.value)}
-											slotProps={{ inputLabel: { shrink: true } }}
-											fullWidth
-										/>
-										<TextField
-											type="date"
-											size="small"
-											label={t.clients.statementDateTo}
-											value={statementDateTo}
-											onChange={(event) => setStatementDateTo(event.target.value)}
-											slotProps={{ inputLabel: { shrink: true } }}
-											fullWidth
-										/>
-										<TextField
-											select
-											size="small"
-											label={t.clients.statementType}
-											value={statementType}
-											onChange={(event) => setStatementType(event.target.value as StatementType)}
-											fullWidth
-										>
-											<MenuItem value="all">{t.clients.statementAllTypes}</MenuItem>
-											<MenuItem value="invoice">{t.clients.historyFactures}</MenuItem>
-											<MenuItem value="credit_note">{t.clients.historyAvoirs}</MenuItem>
-											<MenuItem value="payment">{t.clients.historyReglements}</MenuItem>
-										</TextField>
-									</Stack>
+									<LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={language === 'en' ? enUS : fr}>
+										<Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 2 }}>
+											<DatePicker
+												label={t.clients.statementDateFrom}
+												value={statementDateFrom ? parseISO(statementDateFrom) : null}
+												onChange={(date, context) => {
+													if (!context.validationError) setStatementDateFrom(date ? formatLocalDate(date) : '');
+												}}
+												maxDate={statementDateTo ? parseISO(statementDateTo) : undefined}
+												format="dd/MM/yyyy"
+												slotProps={{ textField: { size: 'small', fullWidth: true }, field: { clearable: true } }}
+											/>
+											<DatePicker
+												label={t.clients.statementDateTo}
+												value={statementDateTo ? parseISO(statementDateTo) : null}
+												onChange={(date, context) => {
+													if (!context.validationError) setStatementDateTo(date ? formatLocalDate(date) : '');
+												}}
+												minDate={statementDateFrom ? parseISO(statementDateFrom) : undefined}
+												format="dd/MM/yyyy"
+												slotProps={{ textField: { size: 'small', fullWidth: true }, field: { clearable: true } }}
+											/>
+											<TextField
+												select
+												size="small"
+												label={t.clients.statementType}
+												value={statementType}
+												onChange={(event) => setStatementType(event.target.value as StatementType)}
+												fullWidth
+											>
+												<MenuItem value="all">{t.clients.statementAllTypes}</MenuItem>
+												<MenuItem value="invoice">{t.clients.historyFactures}</MenuItem>
+												<MenuItem value="credit_note">{t.clients.historyAvoirs}</MenuItem>
+												<MenuItem value="payment">{t.clients.historyReglements}</MenuItem>
+											</TextField>
+										</Stack>
+									</LocalizationProvider>
 									{isHistoryLoading ? (
 										<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
 									) : accountStatementRows.length === 0 ? (
