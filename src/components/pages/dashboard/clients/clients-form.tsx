@@ -1,7 +1,14 @@
 'use client';
 
-import { listReturnUrl } from '@/utils/listReturn';
-import { runWithCleanup, runWithErrorHandler } from '@/utils/runWithCleanup';
+import {
+	listReturnUrl,
+	runWithCleanup,
+	runWithErrorHandler,
+	getLabelForKey,
+	setFormikAutoErrors,
+	isNectarRaisonSociale,
+} from '@/utils/helpers';
+
 import { type FC, type MouseEvent, useState } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
@@ -56,7 +63,7 @@ import {
 	useGetClientQuery,
 	useGetCodeClientQuery,
 } from '@/store/services/client';
-import { getLabelForKey, setFormikAutoErrors } from '@/utils/helpers';
+
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import type {
 	ClientSchemaType,
@@ -75,7 +82,6 @@ import { clientSchema } from '@/utils/formValidationSchemas';
 import { pmRequired, ppRequired } from '@/utils/rawData';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import ClientArticleWrapperForm from '@/components/pages/dashboard/shared/client-article-form/clientArticleWrapperForm';
-import { isNectarRaisonSociale } from '@/utils/nectar';
 
 const inputTheme = textInputTheme();
 

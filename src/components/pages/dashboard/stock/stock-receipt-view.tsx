@@ -1,8 +1,13 @@
 'use client';
 
-import { listReturnUrl } from '@/utils/listReturn';
-import { runWithCleanup } from '@/utils/runWithCleanup';
-import { isValidElement, useState, type FC } from 'react';
+import {
+	extractApiErrorMessage,
+	formatDate,
+	formatNumberWithSpaces,
+	listReturnUrl,
+	runWithCleanup,
+} from '@/utils/helpers';
+import { type FC, isValidElement, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { STOCK_RECEIPTS } from '@/utils/routes';
 import {
@@ -44,14 +49,13 @@ import {
 } from '@/store/services/stock';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
-import type { StockReceiptLine } from '@/types/stockTypes';
-import { extractApiErrorMessage, formatDate, formatNumberWithSpaces } from '@/utils/helpers';
-import { useAppSelector, useToast } from '@/utils/hooks';
 import type {
+	PendingAction,
+	StockReceiptLine,
 	StockReceiptViewInfoRowProps as InfoRowProps,
 	StockReceiptViewProps,
-	PendingAction,
 } from '@/types/stockTypes';
+import { useAppSelector, useToast } from '@/utils/hooks';
 
 const InfoRow: FC<InfoRowProps> = ({ icon, label, value }) => {
 	const theme = useTheme();

@@ -1,6 +1,6 @@
 'use client';
 
-import { runWithCleanup } from '@/utils/runWithCleanup';
+import { runWithCleanup, setFormikAutoErrors } from '@/utils/helpers';
 import {
 	useRef,
 	useState,
@@ -12,7 +12,7 @@ import {
 	type FC,
 } from 'react';
 import Styles from '@/styles/auth/auth.module.sass';
-import { setFormikAutoErrors } from '@/utils/helpers';
+
 import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
 import { cookiesPoster } from '@/utils/apiHelpers';
 import { AUTH_RESET_PASSWORD_SET_PASSWORD } from '@/utils/routes';
@@ -32,8 +32,11 @@ import { useSession } from 'next-auth/react';
 import { useLanguage, useToast } from '@/utils/hooks';
 import { Send as SendIcon, ThumbUpAlt as ThumbUpAltIcon } from '@mui/icons-material';
 import { passwordResetCodeFields as fields } from '@/utils/rawData';
-import type { PasswordResetCodeField as FieldKey } from '@/types/accountTypes';
-import type { EnterCodePageContentProps, EnterCodeProps as Props } from '@/types/accountTypes';
+import type {
+	PasswordResetCodeField as FieldKey,
+	EnterCodePageContentProps,
+	EnterCodeProps as Props,
+} from '@/types/accountTypes';
 
 const EnterCodePageContent = ({ email }: EnterCodePageContentProps) => {
 	const router = useRouter();

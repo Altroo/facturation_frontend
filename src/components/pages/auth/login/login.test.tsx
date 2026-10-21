@@ -53,6 +53,7 @@ jest.mock('@/utils/apiHelpers', () => ({
 }));
 
 jest.mock('@/utils/helpers', () => ({
+	...jest.requireActual('@/utils/helpers'),
 	allowAnyInstance: () => ({}),
 	// forward single param to the jest mock (setFormikAutoErrors is called with one object)
 	setFormikAutoErrors: (p: unknown) => mockSetFormikAutoErrors(p),

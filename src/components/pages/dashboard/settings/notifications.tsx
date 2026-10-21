@@ -1,10 +1,10 @@
 'use client';
 
-import { runWithCleanup } from '@/utils/runWithCleanup';
+import { runWithCleanup, setFormikAutoErrors } from '@/utils/helpers';
 import { useEffect, useState, type FC } from 'react';
 import Styles from '@/styles/dashboard/settings/settings.module.sass';
-import type { SelectChangeEvent } from '@mui/material';
 import {
+	type SelectChangeEvent,
 	Box,
 	FormControl,
 	FormControlLabel,
@@ -16,7 +16,7 @@ import {
 	useMediaQuery,
 	useTheme,
 } from '@mui/material';
-import { setFormikAutoErrors } from '@/utils/helpers';
+
 import { useFormik } from 'formik';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import {

@@ -1,9 +1,11 @@
-import { type ReactNode, type ReactElement } from 'react';
-import { render, screen, cleanup } from '@testing-library/react';
+import { type ReactElement, type ReactNode } from 'react';
+import { cleanup, render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import type { AppSession } from '@/types/_initTypes';
+// Import after mocks
+import UsersForm from './users-form';
 
 // Minimal mock store
 const mockStore = configureStore({
@@ -89,7 +91,7 @@ jest.mock('@/components/layouts/protected/protected', () => ({
 	Protected: ({ children }: { children: ReactNode }) => <div data-testid="protected">{children}</div>,
 }));
 
-// Mock form sub-components
+// Mock form subcomponents
 jest.mock('@/components/formikElements/customTextInput/customTextInput', () => ({
 	__esModule: true,
 	default: ({ id, label }: { id: string; label: string }) => (
@@ -143,11 +145,13 @@ jest.mock('@/utils/themes', () => ({
 }));
 
 jest.mock('@/utils/helpers', () => ({
+	...jest.requireActual('@/utils/helpers'),
 	getLabelForKey: jest.fn((labels: Record<string, string>, key: string) => labels[key] || key),
 	setFormikAutoErrors: jest.fn(),
 }));
 
 jest.mock('@/utils/rawData', () => ({
+	...jest.requireActual('@/utils/rawData'),
 	genderItemsList: [
 		{ value: 'H', label: 'Homme' },
 		{ value: 'F', label: 'Femme' },
@@ -165,9 +169,6 @@ jest.mock('zod-formik-adapter', () => ({
 jest.mock('@/utils/routes', () => ({
 	USERS_LIST: '/dashboard/users',
 }));
-
-// Import after mocks
-import UsersForm from './users-form';
 
 const mockSession: AppSession = {
 	accessToken: 'mock-token',

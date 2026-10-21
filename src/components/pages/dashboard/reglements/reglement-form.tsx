@@ -1,8 +1,15 @@
 'use client';
 
-import { listReturnUrl } from '@/utils/listReturn';
-import { runWithCleanup } from '@/utils/runWithCleanup';
-import { useEffect, useState, type FC, type ChangeEvent, type InputHTMLAttributes, type MouseEvent } from 'react';
+import {
+	formatLocalDate,
+	formatNumber,
+	getLabelForKey,
+	listReturnUrl,
+	parseNumber,
+	runWithCleanup,
+	setFormikAutoErrors,
+} from '@/utils/helpers';
+import { type ChangeEvent, type FC, type InputHTMLAttributes, type MouseEvent, useEffect, useState } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import {
@@ -47,9 +54,12 @@ import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import { getUserCompaniesState } from '@/store/selectors';
 import { useAddReglementMutation, useEditReglementMutation, useGetReglementQuery } from '@/store/services/reglement';
 import { useGetFactureClientForPaymentQuery } from '@/store/services/factureClient';
-import { formatLocalDate, formatNumber, getLabelForKey, parseNumber, setFormikAutoErrors } from '@/utils/helpers';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
-import type { ReglementSchemaType } from '@/types/reglementTypes';
+import type {
+	ReglementFormFormikContentProps as FormikContentProps,
+	ReglementFormProps as Props,
+	ReglementSchemaType,
+} from '@/types/reglementTypes';
 import { reglementSchema } from '@/utils/formValidationSchemas';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
@@ -63,10 +73,6 @@ import {
 } from '@/store/services/parameter';
 import NoPermission from '@/components/shared/noPermission/noPermission';
 import { useGetClientsListQuery } from '@/store/services/client';
-import type {
-	ReglementFormFormikContentProps as FormikContentProps,
-	ReglementFormProps as Props,
-} from '@/types/reglementTypes';
 
 const inputTheme = textInputTheme();
 

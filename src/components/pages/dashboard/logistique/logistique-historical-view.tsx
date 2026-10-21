@@ -1,11 +1,18 @@
 'use client';
 
-import { listReturnUrl } from '@/utils/listReturn';
-import { runWithCleanup } from '@/utils/runWithCleanup';
-import { isValidElement, useState, type FC } from 'react';
+import {
+	extractApiErrorMessage,
+	formatDate,
+	formatLocalDate,
+	formatNumberWithSpaces,
+	listReturnUrl,
+	runWithCleanup,
+} from '@/utils/helpers';
+import { type FC, isValidElement, useState } from 'react';
 import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
+	Alert,
 	Box,
 	Button,
 	Card,
@@ -13,7 +20,6 @@ import {
 	Checkbox,
 	Chip,
 	Divider,
-	Alert,
 	FormControlLabel,
 	InputAdornment,
 	Link as MuiLink,
@@ -32,8 +38,8 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { enUS, frFR } from '@mui/x-date-pickers/locales';
 import { fr } from 'date-fns/locale';
 import {
-	ArrowBack as ArrowBackIcon,
 	Add as AddIcon,
+	ArrowBack as ArrowBackIcon,
 	AssignmentTurnedIn as AssignmentTurnedInIcon,
 	Business as BusinessIcon,
 	CalendarToday as CalendarTodayIcon,
@@ -76,7 +82,6 @@ import { useInitAccessToken } from '@/contexts/InitContext';
 import { getInitStateToken, getUserCompaniesState } from '@/store/selectors';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
-import { extractApiErrorMessage, formatDate, formatLocalDate, formatNumberWithSpaces } from '@/utils/helpers';
 import {
 	acceptedDocumentTypes,
 	documentFields,
@@ -90,20 +95,20 @@ import {
 } from '@/utils/rawData';
 import { textInputTheme } from '@/utils/themes';
 import {
-	useDeleteLogistiqueMutation,
+	useAddLogistiqueProcessNoteMutation,
 	useConfirmLogistiquePaymentReceiptMutation,
+	useDeleteLogistiqueMutation,
 	useGetLogistiqueQuery,
 	usePatchLogistiqueLaunchStatusMutation,
 	usePatchLogistiqueStatutMutation,
 	usePatchLogistiqueWorkflowStatusMutation,
-	useRejectLogistiquePaymentMutation,
-	useRecordLogistiqueProformaRequestMutation,
 	useRecordLogistiquePaymentExecutionMutation,
+	useRecordLogistiqueProformaRequestMutation,
+	useRejectLogistiquePaymentMutation,
 	useRequestLogistiquePaymentMutation,
 	useRetryLogistiquePaymentEmailMutation,
 	useReviewLogistiqueSupplierProformaMutation,
 	useSetLogistiqueProofEmailStatusMutation,
-	useAddLogistiqueProcessNoteMutation,
 	useStartLogistiquePaymentMutation,
 	useValidateLogistiquePaymentMutation,
 } from '@/store/services/logistique';
@@ -113,19 +118,17 @@ import type {
 	LogistiqueDocumentField,
 	LogistiqueEmailDeliveryStatus,
 	LogistiqueLaunchStatus,
-	LogistiquePaymentMethod,
 	LogistiquePaymentInstallment,
+	LogistiquePaymentMethod,
 	LogistiqueProformaStatus,
 	LogistiqueStatut,
 	LogistiqueSupplierProformaReviewAction,
+	LogistiqueViewDetailCardProps as DetailCardProps,
+	LogistiqueViewInfoRowProps as InfoRowProps,
+	LogistiqueViewProps as Props,
 } from '@/types/logistiqueTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import { useLogistiqueEmailPolling } from './use-logistique-email-polling';
-import type {
-	LogistiqueViewProps as Props,
-	LogistiqueViewInfoRowProps as InfoRowProps,
-	LogistiqueViewDetailCardProps as DetailCardProps,
-} from '@/types/logistiqueTypes';
 
 const inputTheme = textInputTheme();
 const getProformaReviewAction = (

@@ -1,6 +1,6 @@
 'use client';
 
-import { runWithCleanup } from '@/utils/runWithCleanup';
+import { runWithCleanup } from '@/utils/helpers';
 import { type FC, useState } from 'react';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Stack } from '@mui/material';
 import { Close as CloseIcon, Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';

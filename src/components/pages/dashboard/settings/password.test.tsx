@@ -91,6 +91,7 @@ jest.mock('zod-formik-adapter', () => ({
 }));
 
 jest.mock('@/utils/helpers', () => ({
+	...jest.requireActual('@/utils/helpers'),
 	setFormikAutoErrors: jest.fn(),
 }));
 

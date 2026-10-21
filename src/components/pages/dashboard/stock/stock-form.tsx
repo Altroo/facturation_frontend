@@ -1,8 +1,7 @@
 'use client';
 
-import { listReturnUrl } from '@/utils/listReturn';
-import { runWithCleanup } from '@/utils/runWithCleanup';
-import { useState, type FC, type MouseEvent } from 'react';
+import { getLabelForKey, listReturnUrl, parseNumber, runWithCleanup, setFormikAutoErrors } from '@/utils/helpers';
+import { type FC, type MouseEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
 	Alert,
@@ -43,14 +42,12 @@ import Styles from '@/styles/dashboard/dashboard.module.sass';
 import type { ArticleClass } from '@/models/classes';
 import type { DropDownType } from '@/types/accountTypes';
 import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
-import type { StockAdjustmentFormValues } from '@/types/stockTypes';
-import { getLabelForKey, parseNumber, setFormikAutoErrors } from '@/utils/helpers';
+import type { StockAdjustmentFormValues, StockFormContentProps, StockFormProps } from '@/types/stockTypes';
 import { stockAdjustmentSchema } from '@/utils/formValidationSchemas';
 import { useToast } from '@/utils/hooks';
 import { STOCK_LIST } from '@/utils/routes';
 import { stockAdjustmentMovementItems } from '@/utils/rawData';
 import { textInputTheme } from '@/utils/themes';
-import type { StockFormContentProps, StockFormProps } from '@/types/stockTypes';
 
 const inputTheme = textInputTheme();
 

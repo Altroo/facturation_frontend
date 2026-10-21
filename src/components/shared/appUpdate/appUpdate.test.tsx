@@ -2,7 +2,10 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import AppUpdate from './appUpdate';
 import { useAppSelector } from '@/utils/hooks';
-import { getAppUpdateUrl, reloadApp } from '@/utils/helpers';
+import { getAppUpdateUrl } from '@/utils/apiHelpers';
+import { reloadApp } from '@/utils/helpers';
+
+jest.mock('@/utils/apiHelpers', () => ({ ...jest.requireActual('@/utils/apiHelpers'), getAppUpdateUrl: jest.fn() }));
 
 const mockOnError = jest.fn();
 
@@ -13,8 +16,6 @@ jest.mock('@/utils/hooks', () => ({
 }));
 jest.mock('@/utils/helpers', () => ({
 	...jest.requireActual<typeof import('@/utils/helpers')>('@/utils/helpers'),
-	APP_UPDATE_PARAM: '_app_update',
-	getAppUpdateUrl: jest.fn(),
 	reloadApp: jest.fn(),
 }));
 

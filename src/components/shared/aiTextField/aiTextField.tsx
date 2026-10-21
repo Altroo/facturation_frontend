@@ -1,9 +1,10 @@
 'use client';
+
 import { type ChangeEvent } from 'react';
 import { Box } from '@mui/material';
 import TextField, { type TextFieldProps } from '@mui/material/TextField';
 import AiAssistantControl from '@/components/shared/aiAssistantControl/aiAssistantControl';
-import { isAiTextField } from '@/utils/aiTextFields';
+import { isAiTextField } from '@/utils/helpers';
 
 type Props = TextFieldProps & { ai?: boolean };
 

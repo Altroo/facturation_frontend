@@ -1,7 +1,7 @@
 'use client';
 
-import { runWithCleanup } from '@/utils/runWithCleanup';
-import { useState, type FC } from 'react';
+import { runWithCleanup, setFormikAutoErrors } from '@/utils/helpers';
+import { type FC, useState } from 'react';
 import Styles from '@/styles/dashboard/settings/settings.module.sass';
 import { Box, Stack, useMediaQuery, useTheme } from '@mui/material';
 import { useFormik } from 'formik';
@@ -12,7 +12,6 @@ import CustomDropDownSelect from '@/components/formikElements/customDropDownSele
 import { genderItemsList } from '@/utils/rawData';
 import { useAppDispatch, useLanguage, useToast } from '@/utils/hooks';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
-import { setFormikAutoErrors } from '@/utils/helpers';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import type { SessionProps } from '@/types/_initTypes';
 import { useEditProfilMutation, useGetProfilQuery } from '@/store/services/account';

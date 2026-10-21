@@ -20,13 +20,14 @@ import { useAppDispatch, useAppSelector, useLanguage } from '@/utils/hooks';
 import { getAccessToken, getProfilState } from '@/store/selectors';
 import {
 	chatErrorCode,
-	chatRequest,
-	consumeChatStream,
-	downloadInvoicePDF,
 	isChatMessage,
 	safeNavigation,
-} from '@/utils/chatAiApi';
-import { getChatAICompany, publishChatAICompany, subscribeChatAICompany } from '@/utils/chatAiCompany';
+	getChatAICompany,
+	publishChatAICompany,
+	subscribeChatAICompany,
+} from '@/utils/helpers';
+import { chatRequest, consumeChatStream, downloadInvoicePDF } from '@/utils/apiHelpers';
+
 import { factureClientApi } from '@/store/services/factureClient';
 import { deviApi } from '@/store/services/devi';
 import { factureProFormaApi } from '@/store/services/factureProForma';
@@ -153,7 +154,7 @@ const ChatAIWorkspace = ({
 		}
 	}, [messages, delta, busy, historyOpen]);
 
-	// Every new view/request invalidates older asynchronous work, including fetches
+	// Every new view/request invalidates older asynchronous work, including requests
 	// whose response body finishes after abort. Server-confirmed writes are still
 	// allowed to invalidate business caches, but cannot change a newer chat view.
 	const cancelPending = () => {
@@ -205,7 +206,7 @@ const ChatAIWorkspace = ({
 			// successful result must refresh caches even after leaving this view.
 			const result = await chatRequest(`actions/${card.action_id}/confirm/`, token, {
 				method: 'POST',
-				body: JSON.stringify({ confirmed: true }),
+				data: { confirmed: true },
 			});
 			if (result.error) {
 				const message = ['APPLICATION_UNAVAILABLE', 'ABORTED'].includes(result.error.code)
@@ -262,14 +263,14 @@ const ChatAIWorkspace = ({
 		try {
 			const response = await chatRequest(`conversations/${conversation}/selection/`, token, {
 				method: 'POST',
-				body: JSON.stringify({ resource, identifier, operation }),
+				data: { resource, identifier, operation },
 				signal: request.signal,
 			});
 			if (response.error) {
 				if (request.isCurrent()) showError(response.error);
 				return;
 			}
-			const message: unknown = await response.data.json();
+			const message: unknown = response.data;
 			if (!isChatMessage(message)) {
 				if (request.isCurrent()) showError({ code: 'INVALID_MODEL_OUTPUT' });
 				return;
@@ -303,16 +304,16 @@ const ChatAIWorkspace = ({
 		try {
 			let id = conversation;
 			if (!id) {
-				const response = await chatRequest('conversations/', token, {
+				const response = await chatRequest<{ id?: unknown }>('conversations/', token, {
 					method: 'POST',
-					body: JSON.stringify({ company_id: companyId }),
+					data: { company_id: companyId },
 					signal,
 				});
 				if (response.error) {
 					if (isCurrent()) showError(response.error);
 					return;
 				}
-				id = (await response.data.json()).id as string;
+				id = response.data.id as string;
 				if (typeof id !== 'string' || !id) {
 					if (isCurrent()) showError({ code: 'INVALID_MODEL_OUTPUT' });
 					return;
@@ -320,10 +321,11 @@ const ChatAIWorkspace = ({
 				if (!isCurrent()) return;
 				setConversation(id);
 			}
-			const response = await chatRequest(`conversations/${id}/messages/`, token, {
+			const response = await chatRequest<ReadableStream<Uint8Array>>(`conversations/${id}/messages/`, token, {
 				method: 'POST',
 				headers: { Accept: 'text/event-stream' },
-				body: JSON.stringify({ text, request_id: requestId, context }),
+				responseType: 'stream',
+				data: { text, request_id: requestId, context },
 				signal,
 			});
 			if (response.error) {
@@ -358,7 +360,7 @@ const ChatAIWorkspace = ({
 				if (request.isCurrent()) showError(response.error);
 				return;
 			}
-			const result = await response.data.json();
+			const result = response.data;
 			if (
 				!Array.isArray(result) ||
 				!result.every((item) => item && typeof item.id === 'string' && typeof item.updated_at === 'string')
@@ -376,12 +378,16 @@ const ChatAIWorkspace = ({
 	const openHistory = async (id: string) => {
 		const request = startRequest('history');
 		try {
-			const response = await chatRequest(`conversations/${id}/`, token, { signal: request.signal });
+			const response = await chatRequest<{ company_id: number; messages: ChatMessage[] }>(
+				`conversations/${id}/`,
+				token,
+				{ signal: request.signal },
+			);
 			if (response.error) {
 				if (request.isCurrent()) showError(response.error);
 				return;
 			}
-			const result = await response.data.json();
+			const result = response.data;
 			if (
 				!result ||
 				result.company_id !== companyId ||
@@ -716,14 +722,16 @@ export const ChatAIAssistant = () => {
 		setCapabilitiesLoading(true);
 		const load = async () => {
 			try {
-				const result = await chatRequest(`capabilities/?language=${language}`, token, { signal: controller.signal });
+				const result = await chatRequest<ChatCapabilities>(`capabilities/?language=${language}`, token, {
+					signal: controller.signal,
+				});
 				if (controller.signal.aborted) return;
 				if (result.error) {
 					setCapabilities(null);
 					setCapabilitiesError(chatErrorMessage(result.error, language));
 					return;
 				}
-				const value = await result.data.json();
+				const value = result.data;
 				if (controller.signal.aborted) return;
 				if (
 					!value ||

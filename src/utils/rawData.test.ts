@@ -1,4 +1,5 @@
 import {
+	APP_VERSION,
 	acceptedDocumentTypes,
 	dashboardChartColors,
 	dashboardPieColors,
@@ -41,7 +42,9 @@ import {
 	logistiquePaymentMethodItemsList,
 	logistiquePaymentStatusItemsList,
 	logistiqueProformaStatusItemsList,
-} from './rawData';
+} from '@/utils/rawData';
+import { version } from '../../package.json';
+
 import { translations } from '@/translations';
 
 describe('items lists', () => {
@@ -371,3 +374,5 @@ describe('shared raw data', () => {
 		}
 	});
 });
+
+it('uses the bundled package version', () => expect(APP_VERSION).toBe(version));

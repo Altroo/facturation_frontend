@@ -1,7 +1,7 @@
 'use client';
 
-import { runWithCleanup } from '@/utils/runWithCleanup';
-import { useState, type FC, useEffect } from 'react';
+import { extractApiErrorMessage, formatDate, formatNumberWithSpaces, runWithCleanup } from '@/utils/helpers';
+import { type FC, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, Chip, Divider, Typography } from '@mui/material';
 import CurrencyToggle from '@/components/shared/currencyToggle/currencyToggle';
@@ -30,12 +30,15 @@ import { CLIENTS_VIEW, REGLEMENT_PDF, REGLEMENTS_ADD, REGLEMENTS_EDIT, REGLEMENT
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
 import type { SessionProps } from '@/types/_initTypes';
-import type { ReglementListResponseType, ReglementStatutType } from '@/types/reglementTypes';
+import type {
+	ReglementListFormikContentProps as FormikContentProps,
+	ReglementListResponseType,
+	ReglementStatutType,
+} from '@/types/reglementTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type { ReglementClass } from '@/models/classes';
-import { extractApiErrorMessage, formatDate, formatNumberWithSpaces } from '@/utils/helpers';
 import { getUserCompaniesState } from '@/store/selectors';
 import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import { useGetModePaiementListQuery } from '@/store/services/parameter';
@@ -49,7 +52,6 @@ import DashboardStatCard from '@/components/shared/dashboardStatCard/dashboardSt
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
 import { useGetCompanyQuery } from '@/store/services/company';
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
-import type { ReglementListFormikContentProps as FormikContentProps } from '@/types/reglementTypes';
 
 const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 	const { session, company_id, role } = props;

@@ -197,6 +197,7 @@ jest.mock('@/components/shared/dateRangeFilter/dateRangeFilterOperator', () => (
 }));
 
 jest.mock('@/utils/helpers', () => ({
+	...jest.requireActual('@/utils/helpers'),
 	formatDate: (date: string | null) => (date ? new Date(date).toLocaleDateString('fr-FR') : '—'),
 	extractApiErrorMessage: (error: unknown, fallback: string) => fallback,
 }));

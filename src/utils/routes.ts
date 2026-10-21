@@ -1,3 +1,5 @@
+import type { StatementType } from '@/types/clientTypes';
+
 // Site root
 export const SITE_ROOT = `${(process.env.NEXT_PUBLIC_DOMAIN_URL_PREFIX ?? '').replace(/\/+$/, '')}/`;
 export const BACKEND_SITE_ADMIN = `${process.env.NEXT_PUBLIC_API_URL}/gestion-interne-x7k2/`;
@@ -171,6 +173,19 @@ export const BON_DE_LIVRAISON_PDF = (
 	language: 'fr' | 'en' | 'nl' = 'fr',
 ) =>
 	`${process.env.NEXT_PUBLIC_ROOT_API_URL}/bon_de_livraison/pdf/${language}/${id}/?company_id=${company_id}&type=${type}`;
+
+export const CLIENT_STATEMENT_PDF = (
+	id: number,
+	company_id: number,
+	language: 'fr' | 'en' | 'nl' = 'fr',
+	filters: { date_from?: string; date_to?: string; type?: StatementType } = {},
+) => {
+	const params = new URLSearchParams({ company_id: String(company_id) });
+	if (filters.date_from) params.set('date_from', filters.date_from);
+	if (filters.date_to) params.set('date_to', filters.date_to);
+	if (filters.type) params.set('type', filters.type);
+	return `${process.env.NEXT_PUBLIC_ROOT_API_URL}/client/pdf/${language}/${id}/?${params}`;
+};
 
 export const REGLEMENT_PDF = (id: number, company_id: number, language: 'fr' | 'en' | 'nl' = 'fr') =>
 	`${process.env.NEXT_PUBLIC_ROOT_API_URL}/reglement/pdf/${language}/${id}/?company_id=${company_id}`;

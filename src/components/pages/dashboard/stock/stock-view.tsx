@@ -1,6 +1,6 @@
 'use client';
 
-import { listReturnUrl } from '@/utils/listReturn';
+import { formatDate, formatNumberWithSpaces, listReturnUrl } from '@/utils/helpers';
 import { type FC, isValidElement, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -27,8 +27,7 @@ import {
 	Visibility as VisibilityIcon,
 	Warehouse as WarehouseIcon,
 } from '@mui/icons-material';
-import type { GridColDef, GridFilterModel, GridRenderCellParams } from '@mui/x-data-grid';
-import { GridLogicOperator } from '@mui/x-data-grid';
+import { type GridColDef, type GridFilterModel, GridLogicOperator, type GridRenderCellParams } from '@mui/x-data-grid';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import DashboardStatCard from '@/components/shared/dashboardStatCard/dashboardStatCard';
@@ -48,9 +47,8 @@ import type {
 	StockViewInfoRowProps as InfoRowProps,
 	StockViewProps,
 } from '@/types/stockTypes';
-import { formatDate, formatNumberWithSpaces } from '@/utils/helpers';
 import { useAppSelector } from '@/utils/hooks';
-import { STOCK_LIST, STOCK_ADD, STOCK_MOVEMENT_VIEW } from '@/utils/routes';
+import { STOCK_ADD, STOCK_LIST, STOCK_MOVEMENT_VIEW } from '@/utils/routes';
 import { stockMovementViewOptions } from '@/utils/rawData';
 
 const InfoRow: FC<InfoRowProps> = ({ icon, label, value }) => {

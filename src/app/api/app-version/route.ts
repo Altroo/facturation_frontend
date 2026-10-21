@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { APP_VERSION } from '@/utils/appVersion';
+import { APP_VERSION } from '@/utils/rawData';
 
 export const dynamic = 'force-dynamic';
 

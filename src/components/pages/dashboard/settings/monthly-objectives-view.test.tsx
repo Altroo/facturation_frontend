@@ -100,6 +100,7 @@ jest.mock('@/utils/themes', () => ({ textInputTheme: jest.fn(() => ({})) }));
 jest.mock('@/utils/formValidationSchemas', () => ({ monthlyObjectivesSchema: { parse: jest.fn() } }));
 jest.mock('zod-formik-adapter', () => ({ toFormikValidationSchema: jest.fn(() => undefined) }));
 jest.mock('@/utils/helpers', () => ({
+	...jest.requireActual('@/utils/helpers'),
 	parseNumber: jest.fn((value: string) => {
 		const number = parseFloat(value);
 		return Number.isNaN(number) ? null : number;

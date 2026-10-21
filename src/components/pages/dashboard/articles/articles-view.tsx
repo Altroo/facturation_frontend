@@ -1,6 +1,14 @@
 ﻿'use client';
-import { listReturnUrl } from '@/utils/listReturn';
-import { runWithCleanup } from '@/utils/runWithCleanup';
+import {
+	listReturnUrl,
+	runWithCleanup,
+	extractApiErrorMessage,
+	formatDate,
+	formatNumberWithSpaces,
+	calculateNectarPrixTTC,
+	isNectarRaisonSociale,
+} from '@/utils/helpers';
+
 import { type FC, isValidElement, useState } from 'react';
 import { Box, Button, Card, CardContent, Divider, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import {
@@ -36,8 +44,7 @@ import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import { getUserCompaniesState } from '@/store/selectors';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
-import { extractApiErrorMessage, formatDate, formatNumberWithSpaces } from '@/utils/helpers';
-import { calculateNectarPrixTTC, isNectarRaisonSociale } from '@/utils/nectar';
+
 import type { ArticlesViewInfoRowProps as InfoRowProps, ArticlesViewProps as Props } from '@/types/articleTypes';
 
 const InfoRow: FC<InfoRowProps> = ({ icon, label, value }) => {

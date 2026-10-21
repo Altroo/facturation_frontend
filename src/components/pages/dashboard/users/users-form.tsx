@@ -1,8 +1,13 @@
 'use client';
 
-import { listReturnUrl } from '@/utils/listReturn';
-import { runWithCleanup, runWithErrorHandler } from '@/utils/runWithCleanup';
-import { useState, type FC, type MouseEvent } from 'react';
+import {
+	getLabelForKey,
+	listReturnUrl,
+	runWithCleanup,
+	runWithErrorHandler,
+	setFormikAutoErrors,
+} from '@/utils/helpers';
+import { type FC, type MouseEvent, useState } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import {
@@ -40,7 +45,6 @@ import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadi
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { userSchema } from '@/utils/formValidationSchemas';
 import { genderItemsList } from '@/utils/rawData';
-import { getLabelForKey, setFormikAutoErrors } from '@/utils/helpers';
 import { customDropdownTheme, textInputTheme } from '@/utils/themes';
 import { USERS_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
@@ -54,13 +58,17 @@ import {
 	useGetUserQuery,
 } from '@/store/services/account';
 import type { DropDownType } from '@/types/accountTypes';
-import type { UserCompaniesType, UsersFormValuesType } from '@/types/usersTypes';
+import type {
+	UserCompaniesType,
+	UsersFormFormikContentProps as FormikContentProps,
+	UsersFormProps as Props,
+	UsersFormValuesType,
+} from '@/types/usersTypes';
 import { useGetCompaniesListQuery } from '@/store/services/company';
 import type { CompanyClass } from '@/models/classes';
 import ManagedByTableSection from '@/components/shared/addManagedByTable/addManagedByTable';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import CompanyUsersWrapperForm from '@/components/pages/dashboard/shared/companies-users-form/companyUsersWrapperForm';
-import type { UsersFormFormikContentProps as FormikContentProps, UsersFormProps as Props } from '@/types/usersTypes';
 
 const inputTheme = textInputTheme();
 

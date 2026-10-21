@@ -1,6 +1,6 @@
 'use client';
 
-import { runWithCleanup } from '@/utils/runWithCleanup';
+import { runWithCleanup } from '@/utils/helpers';
 import { useEffect, useRef, useState, type MouseEvent, type SyntheticEvent } from 'react';
 import ThemeToggle from '@/components/shared/themeToggle/themeToggle';
 import { styled } from '@mui/material/styles';

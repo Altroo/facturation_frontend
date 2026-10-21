@@ -256,6 +256,7 @@ jest.mock('@/components/shared/numericFilter/numericFilterOperator', () => ({
 	createNumericFilterOperators: jest.fn(() => []),
 }));
 jest.mock('@/utils/helpers', () => ({
+	...jest.requireActual('@/utils/helpers'),
 	formatDate: (date: string | null) => (date ? new Date(date).toLocaleDateString('fr-FR') : '—'),
 	formatNumberWithSpaces: (n: number, d: number) =>
 		n != null ? n.toFixed(d).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') : '0.00',

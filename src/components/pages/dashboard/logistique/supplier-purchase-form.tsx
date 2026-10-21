@@ -1,8 +1,8 @@
 'use client';
 
-import { useDeferredValue, useRef, useState, type ReactNode } from 'react';
+import { type ReactNode, useDeferredValue, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useFormik, getIn } from 'formik';
+import { getIn, useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import {
 	Alert,
@@ -56,29 +56,28 @@ import { LogistiqueDocumentsFormCard } from './logistique-documents-card';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import { getInitStateToken, getUserCompaniesState } from '@/store/selectors';
-import { useGetUserCompaniesQuery, useGetCompanyQuery } from '@/store/services/company';
+import { useGetCompanyQuery, useGetUserCompaniesQuery } from '@/store/services/company';
 import { useGetArticlesListQuery } from '@/store/services/article';
-import { useGetMarqueListQuery, useGetEmplacementListQuery } from '@/store/services/parameter';
+import { useGetEmplacementListQuery, useGetMarqueListQuery } from '@/store/services/parameter';
 import {
 	useAddLogistiqueMutation,
-	useGetLogistiqueQuery,
-	useGetLogistiqueResponsablesQuery,
-	usePurchaseActionMutation,
-	useExtractImportTitleMutation,
-	useRequestPurchasePaymentMutation,
-	useRecordLogistiquePaymentExecutionMutation,
-	useValidateLogistiquePaymentMutation,
 	useAddLogistiqueProcessNoteMutation,
-	useGetLogistiqueSuppliersQuery,
 	useAddLogistiqueSupplierMutation,
 	useEditLogistiqueSupplierMutation,
+	useExtractImportTitleMutation,
+	useGetLogistiqueQuery,
+	useGetLogistiqueResponsablesQuery,
+	useGetLogistiqueSuppliersQuery,
+	usePurchaseActionMutation,
+	useRecordLogistiquePaymentExecutionMutation,
+	useRequestPurchasePaymentMutation,
+	useValidateLogistiquePaymentMutation,
 } from '@/store/services/logistique';
-import { extractApiErrorMessage, formatLocalDate, setFormikAutoErrors } from '@/utils/helpers';
+import { extractApiErrorMessage, formatLocalDate, listReturnUrl, setFormikAutoErrors } from '@/utils/helpers';
 import { textInputTheme } from '@/utils/themes';
-import { logistiqueManagerRoles, logistiquePaymentMethodItemsList } from '@/utils/rawData';
+import { logistiqueManagerRoles, logistiquePaymentMethodItemsList, PURCHASE_CONDITIONS } from '@/utils/rawData';
 import { LOGISTIQUE_ADD, LOGISTIQUE_LIST, LOGISTIQUE_VIEW } from '@/utils/routes';
-import { listReturnUrl } from '@/utils/listReturn';
-import { getSupplierPurchaseSchema, PURCHASE_CONDITIONS } from '@/utils/supplierPurchaseSchemas';
+import { getSupplierPurchaseSchema } from '@/utils/formValidationSchemas';
 import type { PurchaseFormMode, PurchaseFormValues } from '@/types/supplierPurchaseTypes';
 import type { LogistiqueDocumentField, LogistiqueFormProps, LogistiqueOrder } from '@/types/logistiqueTypes';
 import type { DropDownType } from '@/types/accountTypes';

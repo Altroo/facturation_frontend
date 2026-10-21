@@ -1,7 +1,12 @@
 'use client';
 
-import { listReturnUrl } from '@/utils/listReturn';
-import { runWithCleanup } from '@/utils/runWithCleanup';
+import {
+	extractApiErrorMessage,
+	formatDate,
+	formatNumberWithSpaces,
+	listReturnUrl,
+	runWithCleanup,
+} from '@/utils/helpers';
 import { type FC, Fragment, isValidElement, useState } from 'react';
 import {
 	Box,
@@ -44,11 +49,13 @@ import {
 	Payment as PaymentIcon,
 	Person as PersonIcon,
 	Phone as PhoneIcon,
-	Print as PrintIcon,
+	PictureAsPdf as PictureAsPdfIcon,
 	Receipt as ReceiptIcon,
 } from '@mui/icons-material';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import { CLIENTS_EDIT, CLIENTS_LIST } from '@/utils/routes';
+import { CLIENT_STATEMENT_PDF, CLIENTS_EDIT, CLIENTS_LIST } from '@/utils/routes';
+import { fetchPdfBlob } from '@/utils/apiHelpers';
+import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
 import { useRouter } from 'next/navigation';
 import { useDeleteClientMutation, useGetClientHistoryQuery, useGetClientQuery } from '@/store/services/client';
 import { useInitAccessToken } from '@/contexts/InitContext';
@@ -59,7 +66,6 @@ import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import { getUserCompaniesState } from '@/store/selectors';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
-import { extractApiErrorMessage, formatDate, formatNumberWithSpaces } from '@/utils/helpers';
 import type {
 	AccountStatementRow,
 	ClientsViewInfoRowProps as InfoRowProps,
@@ -142,6 +148,7 @@ const ClientsViewClient: FC<Props> = ({ session, company_id, id }) => {
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
+	const [showLanguageModal, setShowLanguageModal] = useState(false);
 	const [historyTab, setHistoryTab] = useState(0);
 	const [statementDateFrom, setStatementDateFrom] = useState('');
 	const [statementDateTo, setStatementDateTo] = useState('');
@@ -304,113 +311,27 @@ const ClientsViewClient: FC<Props> = ({ session, company_id, id }) => {
 	const hasMultipleStatementCurrencies = statementTotals.length > 1;
 	const formatStatementAmount = (value: string | number | null | undefined, devise = 'MAD') =>
 		`${formatNumberWithSpaces(value ?? 0, 2)}${hasMultipleStatementCurrencies ? ` ${devise}` : ''}`;
-	const statementPeriodFrom =
-		statementDateFrom || accountStatementRows.find((row) => row.type !== 'opening')?.date || statementDateFrom;
-	const statementPeriodTo =
-		statementDateTo ||
-		[...accountStatementRows].reverse().find((row) => row.type !== 'opening')?.date ||
-		new Date().toISOString();
+	const canPrint = company?.role === 'Caissier' || company?.role === 'Comptable' || company?.role === 'Commercial';
 
-	const handlePrintStatement = () => {
-		const printWindow = window.open('', '_blank', 'width=1100,height=800');
-		if (!printWindow) return;
-		const escapeHtml = (value: unknown) =>
-			String(value ?? '').replace(/[&<>"']/g, (char) => {
-				const entities: Record<string, string> = {
-					'&': '&amp;',
-					'<': '&lt;',
-					'>': '&gt;',
-					'"': '&quot;',
-					"'": '&#39;',
-				};
-				return entities[char] ?? char;
+	const handleLanguageSelect = async (language: 'fr' | 'en' | 'nl') => {
+		setShowLanguageModal(false);
+		if (!token) {
+			onError(t.errors.authRequired);
+			return;
+		}
+		try {
+			const url = CLIENT_STATEMENT_PDF(id, company_id, language, {
+				date_from: statementDateFrom,
+				date_to: statementDateTo,
+				type: statementType,
 			});
-		const rowsHtml = accountStatementRows
-			.map(
-				(row) => `
-					<tr>
-						<td>${escapeHtml(formatStatementDate(row.date))}</td>
-						<td>${escapeHtml(row.dueDate ? formatStatementDate(row.dueDate) : '')}</td>
-						<td>${escapeHtml(row.piece)}</td>
-						<td>${escapeHtml(row.label)}</td>
-						<td class="money">${escapeHtml(formatStatementAmount(row.debit, row.devise))}</td>
-						<td class="money">${escapeHtml(formatStatementAmount(row.credit, row.devise))}</td>
-					</tr>
-				`,
-			)
-			.join('');
-		const totalsHtml = statementTotals
-			.map(
-				(total) => `
-					<tr class="totals">
-						<td colspan="4"></td>
-						<td class="money">${escapeHtml(formatStatementAmount(total.debit, total.devise))}</td>
-						<td class="money">${escapeHtml(formatStatementAmount(total.credit, total.devise))}</td>
-					</tr>
-					<tr class="balance">
-						<td colspan="4"></td>
-						<td class="money label">${escapeHtml(t.clients.statementBalance)}</td>
-						<td class="money">${escapeHtml(formatStatementAmount(total.balance, total.devise))}</td>
-					</tr>
-				`,
-			)
-			.join('');
-		printWindow.document.write(`
-			<!doctype html>
-			<html>
-				<head>
-					<title>${escapeHtml(t.clients.accountStatement)}</title>
-					<style>
-						body { font-family: Arial, sans-serif; padding: 24px 36px; color: #111; }
-						.header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #777; padding-bottom: 8px; margin-bottom: 10px; }
-						.title { display: flex; gap: 28px; align-items: baseline; font-size: 15px; font-weight: 700; text-decoration: underline; }
-						.client { text-decoration: none; font-size: 14px; }
-						.meta { min-width: 160px; display: grid; grid-template-columns: 1fr auto; gap: 8px 24px; font-size: 12px; font-weight: 700; }
-						.period { display: flex; justify-content: flex-end; gap: 36px; margin: 6px 0 26px; font-size: 12px; font-weight: 700; }
-						table { border-collapse: collapse; width: 100%; }
-						th, td { border: 1px solid #9ca3af; padding: 6px 8px; font-size: 11px; text-align: left; }
-						th { background: #f7f7f7; text-align: center; font-weight: 700; font-style: italic; }
-						.money { text-align: right; white-space: nowrap; }
-						.totals td, .balance td { font-weight: 700; }
-						.balance .label { text-align: center; background: #f7f7f7; }
-					</style>
-				</head>
-				<body>
-					<div class="header">
-						<div class="title">
-							<span>${escapeHtml(t.clients.accountStatement)}</span>
-							<span class="client">${escapeHtml(clientDisplayName)}</span>
-						</div>
-						<div class="meta">
-							<span>${escapeHtml(t.common.date)} :</span>
-							<span>${escapeHtml(formatStatementDate(new Date().toISOString()))}</span>
-							<span></span>
-							<span>1 / 1</span>
-						</div>
-					</div>
-					<div class="period">
-						<span>${escapeHtml(t.clients.statementDateFrom)} : ${escapeHtml(formatStatementDate(statementPeriodFrom))}</span>
-						<span>${escapeHtml(t.clients.statementDateTo)} : ${escapeHtml(formatStatementDate(statementPeriodTo))}</span>
-					</div>
-					<table>
-						<thead>
-							<tr>
-								<th>${escapeHtml(t.common.date)}</th>
-								<th>${escapeHtml(t.clients.statementDueDate)}</th>
-								<th>${escapeHtml(t.clients.statementPiece)}</th>
-								<th>${escapeHtml(t.clients.statementLabel)}</th>
-								<th>${escapeHtml(t.clients.statementDebit)}</th>
-								<th>${escapeHtml(t.clients.statementCredit)}</th>
-							</tr>
-						</thead>
-						<tbody>${rowsHtml}${totalsHtml}</tbody>
-					</table>
-				</body>
-			</html>
-		`);
-		printWindow.document.close();
-		printWindow.focus();
-		printWindow.print();
+			const blob = await fetchPdfBlob(url, token);
+			const blobUrl = window.URL.createObjectURL(blob);
+			window.open(blobUrl, '_blank');
+			setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60_000);
+		} catch {
+			onError(t.errors.documentOpenError);
+		}
 	};
 
 	return (
@@ -692,15 +613,17 @@ const ClientsViewClient: FC<Props> = ({ session, company_id, id }) => {
 												{t.clients.accountStatement}
 											</Typography>
 										</Stack>
-										<Button
-											variant="outlined"
-											size="small"
-											startIcon={<PrintIcon />}
-											onClick={handlePrintStatement}
-											disabled={accountStatementRows.length === 0}
-										>
-											{t.clients.statementPrint}
-										</Button>
+										{canPrint && (
+											<Button
+												variant="outlined"
+												size="small"
+												startIcon={<PictureAsPdfIcon />}
+												onClick={() => setShowLanguageModal(true)}
+												disabled={isHistoryLoading || accountStatementRows.length === 0}
+											>
+												{t.clients.statementPrint}
+											</Button>
+										)}
 									</Stack>
 									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 									<Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 2 }}>
@@ -952,6 +875,9 @@ const ClientsViewClient: FC<Props> = ({ session, company_id, id }) => {
 					)}
 				</Stack>
 			</NavigationBar>
+			{showLanguageModal && (
+				<PdfLanguageModal onSelectLanguage={handleLanguageSelect} onClose={() => setShowLanguageModal(false)} />
+			)}
 			{showDeleteModal && (
 				<ActionModals
 					title={t.clients.deleteModalTitle}

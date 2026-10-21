@@ -23,7 +23,7 @@ jest.mock('next/headers', () => {
 	};
 });
 
-jest.mock('@/utils/corsHeaders', () => {
+jest.mock('@/utils/apiHelpers', () => {
 	return {
 		get addCorsHeaders() {
 			return mockAddCorsHeaders;

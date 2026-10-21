@@ -1,6 +1,14 @@
 'use client';
 
-import { runWithCleanup, runWithErrorHandler } from '@/utils/runWithCleanup';
+import {
+	runWithCleanup,
+	runWithErrorHandler,
+	extractApiErrorMessage,
+	formatDate,
+	formatNumberWithSpaces,
+	calculateNectarPrixTTC,
+	isNectarRaisonSociale,
+} from '@/utils/helpers';
 import { type ChangeEvent, type FC, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Alert, Box, Button, Chip, CircularProgress, IconButton, Typography } from '@mui/material';
@@ -36,7 +44,7 @@ import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDa
 import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type { ArticleClass } from '@/models/classes';
-import { extractApiErrorMessage, formatDate, formatNumberWithSpaces } from '@/utils/helpers';
+
 import { useLanguage, useToast } from '@/utils/hooks';
 import Image from 'next/image';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
@@ -53,7 +61,7 @@ import {
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
 import type { ChipFilterConfig } from '@/types/uiTypes';
 import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
-import { calculateNectarPrixTTC, isNectarRaisonSociale } from '@/utils/nectar';
+
 import type {
 	ArticlesListFormikContentProps as FormikContentProps,
 	ArticlesListProps as Props,

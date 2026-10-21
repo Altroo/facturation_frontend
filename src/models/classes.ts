@@ -1,9 +1,8 @@
 import type { NbrEmployeType, CiviliteType, ManagedByType, ManagedByWriteOnlyType } from '@/types/companyTypes';
 import type { TypeClientType } from '@/types/clientTypes';
-import type { TypeArticleType, CurrencyType } from '@/types/articleTypes';
+import type { TypeArticleType, CurrencyType, SalePriceBasis } from '@/types/articleTypes';
 import type { TypeFactureLivraisonDevisStatus, TypeRemiseType } from '@/types/devisTypes';
 import type { ReglementStatutType } from '@/types/reglementTypes';
-import type { SalePriceBasis } from '@/utils/articlePricing';
 
 export class UserClass {
 	constructor(

@@ -162,6 +162,7 @@ jest.mock('@/utils/themes', () => ({
 }));
 
 jest.mock('@/utils/rawData', () => ({
+	...jest.requireActual('@/utils/rawData'),
 	genderItemsList: [
 		{ value: 'Homme', label: 'Homme' },
 		{ value: 'Femme', label: 'Femme' },
@@ -177,6 +178,7 @@ jest.mock('zod-formik-adapter', () => ({
 }));
 
 jest.mock('@/utils/helpers', () => ({
+	...jest.requireActual('@/utils/helpers'),
 	setFormikAutoErrors: jest.fn(),
 }));
 

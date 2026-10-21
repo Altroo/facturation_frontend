@@ -2,7 +2,7 @@
 
 import { type ChangeEvent } from 'react';
 import AiAssistantControl from '@/components/shared/aiAssistantControl/aiAssistantControl';
-import { isAiTextField } from '@/utils/aiTextFields';
+import { isAiTextField } from '@/utils/helpers';
 import { Box, InputAdornment } from '@mui/material';
 import { ThemeProvider } from '@/providers/scopedThemeProvider';
 import TextField from '@mui/material/TextField';

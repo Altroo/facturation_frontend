@@ -12,6 +12,7 @@ jest.mock('next/image', () => ({
 	default: (props: Record<string, unknown>) => <img {...props} alt={(props.alt as string) ?? ''} />,
 }));
 jest.mock('@/utils/helpers', () => ({
+	...jest.requireActual('@/utils/helpers'),
 	parseNumber: jest.fn((v: string) => {
 		const n = Number(v);
 		return isNaN(n) ? null : n;
@@ -24,6 +25,7 @@ jest.mock('@/utils/themes', () => ({
 	customGridDropdownTheme: jest.fn(() => ({})),
 }));
 jest.mock('@/utils/rawData', () => ({
+	...jest.requireActual('@/utils/rawData'),
 	remiseTypeItemsList: [
 		{ value: 'Pourcentage', label: 'Pourcentage' },
 		{ value: 'Fixe', label: 'Fixe' },

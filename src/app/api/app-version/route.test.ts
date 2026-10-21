@@ -1,6 +1,6 @@
 /** @jest-environment node */
 import { GET, dynamic } from './route';
-import { APP_VERSION } from '@/utils/appVersion';
+import { APP_VERSION } from '@/utils/rawData';
 
 it('returns the deployed frontend version without caching', async () => {
 	const response = GET();

@@ -1,7 +1,12 @@
 'use client';
 
-import { listReturnUrl } from '@/utils/listReturn';
-import { runWithErrorHandler } from '@/utils/runWithCleanup';
+import {
+	extractApiErrorMessage,
+	formatLocalDate,
+	listReturnUrl,
+	parseNumber,
+	runWithErrorHandler,
+} from '@/utils/helpers';
 import { type FC, type MouseEvent, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -72,7 +77,6 @@ import type { PaginationResponseType } from '@/types/_initTypes';
 import type { DropDownType } from '@/types/accountTypes';
 import type { DeviFactureLineFormValues, TypeRemiseType, ValidateArticleLinesErrorType } from '@/types/devisTypes';
 import { FACTURE_AVOIR_EDIT, FACTURE_AVOIR_LIST, FACTURE_AVOIR_VIEW } from '@/utils/routes';
-import { extractApiErrorMessage, formatLocalDate, parseNumber } from '@/utils/helpers';
 import { customDropdownTheme, textInputTheme } from '@/utils/themes';
 import { useLanguage, useToast } from '@/utils/hooks';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
@@ -84,9 +88,7 @@ import type {
 } from '@/types/companyDocumentsTypes';
 
 const inputFieldTheme = textInputTheme();
-
 const today = () => formatLocalDate(new Date());
-
 const requiredLabel = (label: string) => (label.includes('*') ? label : `${label} *`);
 
 const normalizeDevise = (value: unknown): string | null => {

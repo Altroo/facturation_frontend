@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FC } from 'react';
+import { type FC, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Alert, Box, Button, Card, CardContent, Divider, Stack, Typography } from '@mui/material';
 import { ArrowBack, Business, Email, Save } from '@mui/icons-material';
@@ -16,11 +16,10 @@ import {
 	useGetLogistiqueSupplierQuery,
 } from '@/store/services/logistique';
 import { useLanguage, useToast } from '@/utils/hooks';
-import { extractApiErrorMessage, setFormikAutoErrors } from '@/utils/helpers';
-import { logistiqueSupplierSchema } from '@/utils/logistiqueSupplierSchema';
+import { extractApiErrorMessage, listReturnUrl, setFormikAutoErrors } from '@/utils/helpers';
+import { logistiqueSupplierSchema } from '@/utils/formValidationSchemas';
 import { textInputTheme } from '@/utils/themes';
-import { LOGISTIQUE_SUPPLIERS, LOGISTIQUE_SUPPLIER_VIEW } from '@/utils/routes';
-import { listReturnUrl } from '@/utils/listReturn';
+import { LOGISTIQUE_SUPPLIER_VIEW, LOGISTIQUE_SUPPLIERS } from '@/utils/routes';
 import type { ClientArticleWrapperFormProps } from '@/types/articleTypes';
 import type { LogistiqueFormProps as Props } from '@/types/logistiqueTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';

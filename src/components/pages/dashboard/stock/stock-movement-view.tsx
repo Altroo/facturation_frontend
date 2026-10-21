@@ -1,6 +1,6 @@
 'use client';
 
-import { listReturnUrl } from '@/utils/listReturn';
+import { formatDate, formatNumberWithSpaces, listReturnUrl } from '@/utils/helpers';
 import { type FC, isValidElement } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -34,7 +34,6 @@ import type {
 	StockMovementViewInfoRowProps as InfoRowProps,
 	StockMovementViewProps,
 } from '@/types/stockTypes';
-import { formatDate, formatNumberWithSpaces } from '@/utils/helpers';
 import { STOCK_MOVEMENTS, STOCK_VIEW } from '@/utils/routes';
 
 const InfoRow: FC<InfoRowProps> = ({ icon, label, value }) => {

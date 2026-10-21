@@ -1,8 +1,7 @@
 'use client';
 
-import { listReturnUrl } from '@/utils/listReturn';
-import { runWithCleanup } from '@/utils/runWithCleanup';
-import { useState, type FC, type MouseEvent } from 'react';
+import { getLabelForKey, listReturnUrl, parseNumber, runWithCleanup, setFormikAutoErrors } from '@/utils/helpers';
+import { type FC, type MouseEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
 	Alert,
@@ -45,13 +44,15 @@ import Styles from '@/styles/dashboard/dashboard.module.sass';
 import type { ArticleClass } from '@/models/classes';
 import type { DropDownType } from '@/types/accountTypes';
 import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
-import type { StockInventoryFormValues } from '@/types/stockTypes';
-import { getLabelForKey, parseNumber, setFormikAutoErrors } from '@/utils/helpers';
+import type {
+	StockInventoryFormContentProps,
+	StockInventoryFormProps,
+	StockInventoryFormValues,
+} from '@/types/stockTypes';
 import { stockInventorySchema } from '@/utils/formValidationSchemas';
 import { useToast } from '@/utils/hooks';
-import { STOCK_INVENTORY_VIEW, STOCK_INVENTORIES } from '@/utils/routes';
+import { STOCK_INVENTORIES, STOCK_INVENTORY_VIEW } from '@/utils/routes';
 import { textInputTheme } from '@/utils/themes';
-import type { StockInventoryFormContentProps, StockInventoryFormProps } from '@/types/stockTypes';
 
 const inputTheme = textInputTheme();
 

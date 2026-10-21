@@ -1,7 +1,6 @@
 'use client';
 
-import { listReturnUrl } from '@/utils/listReturn';
-import { runWithCleanup } from '@/utils/runWithCleanup';
+import { getLabelForKey, listReturnUrl, runWithCleanup, setFormikAutoErrors } from '@/utils/helpers';
 import { type FC, type MouseEvent, useState } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import { useAddCompanyMutation, useEditCompanyMutation, useGetCompanyQuery } from '@/store/services/company';
@@ -13,10 +12,10 @@ import {
 	Card,
 	CardContent,
 	Divider,
-	FormControlLabel,
 	FormControl,
-	FormLabel,
+	FormControlLabel,
 	FormHelperText,
+	FormLabel,
 	Radio,
 	RadioGroup,
 	Stack,
@@ -58,7 +57,6 @@ import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadi
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { companySchema } from '@/utils/formValidationSchemas';
 import { civiliteItemsList, nbrEmployeItemsList } from '@/utils/rawData';
-import { getLabelForKey, setFormikAutoErrors } from '@/utils/helpers';
 import { customDropdownTheme, textInputTheme } from '@/utils/themes';
 import { COMPANIES_LIST } from '@/utils/routes';
 import { useRouter } from 'next/navigation';

@@ -1,7 +1,7 @@
 import { handlers } from '@/auth';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { addCorsHeaders, getCorsHeaders } from '@/utils/corsHeaders';
+import { addCorsHeaders, getCorsHeaders } from '@/utils/apiHelpers';
 
 async function handler(req: NextRequest, authHandler: (req: NextRequest) => Promise<Response>): Promise<Response> {
 	const origin = req.headers.get('origin');

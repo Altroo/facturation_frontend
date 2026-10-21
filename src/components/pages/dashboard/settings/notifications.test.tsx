@@ -72,6 +72,7 @@ jest.mock('@/components/formikElements/apiLoading/apiProgress/apiProgress', () =
 }));
 
 jest.mock('@/utils/helpers', () => ({
+	...jest.requireActual('@/utils/helpers'),
 	setFormikAutoErrors: jest.fn(),
 }));
 

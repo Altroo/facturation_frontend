@@ -1,9 +1,9 @@
 'use client';
 
-import { runWithCleanup } from '@/utils/runWithCleanup';
+import { runWithCleanup, setFormikAutoErrors } from '@/utils/helpers';
 import { useState, type FC } from 'react';
 import Styles from '@/styles/auth/auth.module.sass';
-import { setFormikAutoErrors } from '@/utils/helpers';
+
 import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
 import { cookiesPoster } from '@/utils/apiHelpers';
 import { AUTH_RESET_PASSWORD_COMPLETE } from '@/utils/routes';

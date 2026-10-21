@@ -37,6 +37,7 @@ jest.mock('@/components/formikElements/customTextInput/customTextInput', () => (
 
 // Mock helpers
 jest.mock('@/utils/helpers', () => ({
+	...jest.requireActual('@/utils/helpers'),
 	formatNumberWithSpaces: (value: string | number, decimals: number = 2) => {
 		const num = typeof value === 'string' ? parseFloat(value) : value;
 		if (isNaN(num)) return '';

@@ -1,7 +1,6 @@
 'use client';
 
-import { listReturnUrl } from '@/utils/listReturn';
-import { runWithCleanup } from '@/utils/runWithCleanup';
+import { extractApiErrorMessage, listReturnUrl, runWithCleanup } from '@/utils/helpers';
 import { type FC, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Link as MuiLink } from '@mui/material';
@@ -23,7 +22,6 @@ import { useDeleteFactureAvoirMutation, useGetFactureAvoirQuery } from '@/store/
 import { useInitAccessToken } from '@/contexts/InitContext';
 import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import { getUserCompaniesState } from '@/store/selectors';
-import { extractApiErrorMessage } from '@/utils/helpers';
 import { fetchPdfBlob } from '@/utils/apiHelpers';
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
 import CompanyDocumentsWrapperView from '@/components/pages/dashboard/shared/company-documents-view/companyDocumentsWrapperView';

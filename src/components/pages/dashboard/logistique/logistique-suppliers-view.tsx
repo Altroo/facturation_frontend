@@ -1,6 +1,6 @@
 'use client';
 
-import { startTransition, useState, isValidElement, type FC } from 'react';
+import { type FC, isValidElement, startTransition, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
 	Alert,
@@ -25,12 +25,11 @@ import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/use
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
 import SupplierDeleteDialog from './logistique-supplier-delete-dialog';
 import { useInitAccessToken } from '@/contexts/InitContext';
-import { useGetLogistiqueSupplierQuery, useGetLogistiqueListQuery } from '@/store/services/logistique';
+import { useGetLogistiqueListQuery, useGetLogistiqueSupplierQuery } from '@/store/services/logistique';
 import { getUserCompaniesState } from '@/store/selectors';
 import { useAppSelector, useLanguage } from '@/utils/hooks';
-import { extractApiErrorMessage, formatDate } from '@/utils/helpers';
-import { listReturnUrl } from '@/utils/listReturn';
-import { LOGISTIQUE_SUPPLIERS, LOGISTIQUE_SUPPLIER_EDIT, LOGISTIQUE_VIEW } from '@/utils/routes';
+import { extractApiErrorMessage, formatDate, listReturnUrl } from '@/utils/helpers';
+import { LOGISTIQUE_SUPPLIER_EDIT, LOGISTIQUE_SUPPLIERS, LOGISTIQUE_VIEW } from '@/utils/routes';
 import type { PaginationResponseType } from '@/types/_initTypes';
 import type {
 	LogistiqueOrder,

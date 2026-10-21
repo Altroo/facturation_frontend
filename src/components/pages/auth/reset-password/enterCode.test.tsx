@@ -62,6 +62,7 @@ jest.mock('@/utils/apiHelpers', () => ({
 }));
 
 jest.mock('@/utils/helpers', () => ({
+	...jest.requireActual('@/utils/helpers'),
 	setFormikAutoErrors: (...args: unknown[]) => mockSetFormikAutoErrors(...(args as unknown[])),
 	// simple stub to avoid runtime errors from components that call hexToRGB
 	hexToRGB: (hex: string, alpha = 1) => `rgba(0,0,0,${alpha})`,

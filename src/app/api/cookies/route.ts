@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { addCorsHeaders } from '@/utils/corsHeaders';
+import { addCorsHeaders } from '@/utils/apiHelpers';
 
 export async function OPTIONS(request: NextRequest) {
 	const origin = request.headers.get('origin');

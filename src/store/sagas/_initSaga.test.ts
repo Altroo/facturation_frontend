@@ -16,6 +16,7 @@ import { allowAnyInstance } from '@/utils/helpers';
 import { getApi } from '@/utils/apiHelpers';
 
 jest.mock('@/utils/helpers', () => ({
+	...jest.requireActual('@/utils/helpers'),
 	allowAnyInstance: jest.fn(),
 }));
 

@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { type Dispatch, type SetStateAction, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
-import type { Dispatch, SetStateAction } from 'react';
-import { rememberListPagination, type ListScope } from '@/utils/listReturn';
+import { rememberListPagination } from '@/utils/helpers';
+import type { ListScope } from '@/types/routeTypes';
 import type { GridPaginationModel, GridSortModel } from '@mui/x-data-grid';
 import { dataGridPageSizes } from '@/utils/rawData';
 

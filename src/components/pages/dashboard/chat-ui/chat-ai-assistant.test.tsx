@@ -1,12 +1,13 @@
+import type { AxiosRequestConfig } from 'axios';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { ChatAIAssistant, ChatAIFloatingButton, ChatAIPanel } from './chat-ai-assistant';
-import { chatErrorCode, chatRequest, consumeChatStream } from '@/utils/chatAiApi';
+import { chatErrorCode, getChatAICompany, publishChatAICompany } from '@/utils/helpers';
+import { chatRequest, consumeChatStream } from '@/utils/apiHelpers';
 import { useAppDispatch, useAppSelector } from '@/utils/hooks';
 import { getAccessToken } from '@/store/selectors';
 import type { ChatCapabilities, ChatCard, ChatMessage, ChatRecord, NavigationTarget } from '@/types/chatAiTypes';
 import { ChatAIResults } from './chat-ai-results';
-import { getChatAICompany, publishChatAICompany } from '@/utils/chatAiCompany';
 
 const mockPush = jest.fn();
 const mockDispatch = jest.fn();
@@ -20,8 +21,8 @@ jest.mock('next/navigation', () => ({
 	useRouter: () => ({ push: mockPush }),
 	useSearchParams: () => new URLSearchParams(mockCompanyId === null ? '' : `company_id=${mockCompanyId}`),
 }));
-jest.mock('@/utils/chatAiApi', () => ({
-	...jest.requireActual('@/utils/chatAiApi'),
+jest.mock('@/utils/apiHelpers', () => ({
+	...jest.requireActual('@/utils/apiHelpers'),
 	chatRequest: jest.fn(),
 	consumeChatStream: jest.fn(),
 }));
@@ -171,7 +172,7 @@ const capabilities: ChatCapabilities = {
 	})),
 	languages: ['fr', 'en'],
 };
-const jsonResponse = (value: unknown) => ({ json: async () => value }) as Response;
+const jsonData = (value: unknown) => value;
 const deferred = <T,>() => {
 	let resolve!: (value: T) => void;
 	const promise = new Promise<T>((done) => {
@@ -185,7 +186,7 @@ const assistantMessage = (text: string, cards: ChatCard[] = []): ChatMessage => 
 	text,
 	cards,
 });
-let handlers: Record<string, (init?: RequestInit) => Response | Promise<Response>>;
+let handlers: Record<string, (config?: AxiosRequestConfig) => unknown>;
 let conversationCount = 0;
 beforeEach(() => {
 	jest.clearAllMocks();
@@ -201,18 +202,21 @@ beforeEach(() => {
 		.mocked(useAppSelector)
 		.mockImplementation((selector) => (selector === getAccessToken ? mockToken : { id: mockProfileId }));
 	jest.mocked(useAppDispatch).mockReturnValue(mockDispatch);
-	jest.mocked(chatRequest).mockImplementation(async (path, _token, init) => {
+	jest.mocked(chatRequest).mockImplementation(async <T,>(path: string, _token: string, config?: AxiosRequestConfig) => {
 		try {
-			if (handlers[path]) return { data: await handlers[path](init) };
-			if (path.startsWith('capabilities/')) return { data: jsonResponse(capabilities) };
-			if (path === 'conversations/') return { data: jsonResponse({ id: `conversation-${++conversationCount}` }) };
+			if (handlers[path]) {
+				const result = handlers[path](config);
+				return { data: (config?.responseType === 'stream' ? { message: result } : await result) as T };
+			}
+			if (path.startsWith('capabilities/')) return { data: capabilities as T };
+			if (path === 'conversations/') return { data: { id: `conversation-${++conversationCount}` } as T };
 			throw new Error(`Unexpected request: ${path}`);
 		} catch (error) {
 			return { error: { code: chatErrorCode(error) } };
 		}
 	});
 	jest.mocked(consumeChatStream).mockImplementation(async (response, receive) => {
-		receive('message.completed', await response.json());
+		receive('message.completed', await (response as unknown as { message: unknown }).message);
 		return { data: true };
 	});
 });
@@ -241,7 +245,7 @@ const quoteConfirmation: ChatCard = {
 };
 const beginQuoteConfirmation = async () => {
 	handlers['conversations/conversation-1/messages/'] = () =>
-		jsonResponse(assistantMessage('Vérifiez ce devis.', [quoteConfirmation]));
+		jsonData(assistantMessage('Vérifiez ce devis.', [quoteConfirmation]));
 	const result = await renderAssistant();
 	sendMessage('/supprimer devis');
 	await screen.findByText('Vérifiez ce devis.');
@@ -255,9 +259,9 @@ const beginQuoteConfirmation = async () => {
 
 it('keeps a sent reply visible when an older history response finishes later', async () => {
 	const historyBody = deferred<unknown>();
-	handlers['conversations/?company_id=1'] = () => ({ json: () => historyBody.promise }) as Response;
+	handlers['conversations/?company_id=1'] = () => historyBody.promise;
 	handlers['conversations/conversation-1/messages/'] = () =>
-		jsonResponse(assistantMessage('Voici comment utiliser /voir.'));
+		jsonData(assistantMessage('Voici comment utiliser /voir.'));
 	await renderAssistant();
 	fireEvent.click(screen.getByRole('button', { name: 'Historique' }));
 	await screen.findByText('Chargement de l’historique…');
@@ -276,9 +280,9 @@ it('keeps a sent reply visible when an older history response finishes later', a
 
 it('does not replace a new conversation with an older history detail response', async () => {
 	const oldDetail = deferred<unknown>();
-	handlers['conversations/?company_id=1'] = () => jsonResponse([historyItem]);
-	handlers['conversations/old-conversation/'] = () => ({ json: () => oldDetail.promise }) as Response;
-	handlers['conversations/conversation-1/messages/'] = () => jsonResponse(assistantMessage('Nouvelle réponse'));
+	handlers['conversations/?company_id=1'] = () => jsonData([historyItem]);
+	handlers['conversations/old-conversation/'] = () => oldDetail.promise;
+	handlers['conversations/conversation-1/messages/'] = () => jsonData(assistantMessage('Nouvelle réponse'));
 	await renderAssistant();
 	fireEvent.click(screen.getByRole('button', { name: 'Historique' }));
 	fireEvent.click(await screen.findByRole('button', { name: `Ouvrir la conversation : ${historyItem.title}` }));
@@ -300,13 +304,13 @@ it('ignores an old record selection without clearing the newer response loading 
 	const selection = deferred<unknown>();
 	const latestReply = deferred<unknown>();
 	handlers['conversations/conversation-1/messages/'] = () =>
-		jsonResponse(
+		jsonData(
 			assistantMessage('Un devis', [
 				{ type: 'record_list', resource: 'quote', items: [{ id: 12, number: 'DEV-0012/26' }] },
 			]),
 		);
-	handlers['conversations/conversation-1/selection/'] = () => ({ json: () => selection.promise }) as Response;
-	handlers['conversations/conversation-2/messages/'] = () => ({ json: () => latestReply.promise }) as Response;
+	handlers['conversations/conversation-1/selection/'] = () => selection.promise;
+	handlers['conversations/conversation-2/messages/'] = () => latestReply.promise;
 	await renderAssistant();
 	sendMessage('/voir devis');
 	await screen.findByText('DEV-0012/26');
@@ -344,7 +348,7 @@ it('ignores an old record selection without clearing the newer response loading 
 
 it('keeps cancellation effective when a canceled stream still delivers its final event', async () => {
 	const reply = deferred<unknown>();
-	handlers['conversations/conversation-1/messages/'] = () => ({ json: () => reply.promise }) as Response;
+	handlers['conversations/conversation-1/messages/'] = () => reply.promise;
 	await renderAssistant();
 	sendMessage('Recherche lente');
 	await waitFor(() => expect(consumeChatStream).toHaveBeenCalled());
@@ -358,14 +362,14 @@ it('keeps cancellation effective when a canceled stream still delivers its final
 });
 
 it('refreshes quote caches after a confirmed write without affecting a different company', async () => {
-	const confirmation = deferred<Response>();
+	const confirmation = deferred<unknown>();
 	handlers['actions/quote-delete/confirm/'] = () => confirmation.promise;
 	const { rerender } = await beginQuoteConfirmation();
 	mockCompanyId = 2;
 	rerender(themed(<ChatAIAssistant />));
 	await waitFor(() => expect(screen.getByText('Company 2')).toBeVisible());
 	await act(async () => {
-		confirmation.resolve(jsonResponse({ success: true }));
+		confirmation.resolve(jsonData({ success: true }));
 	});
 	expect(mockDispatch).toHaveBeenCalledWith({ type: 'devi/invalidateTags', payload: ['Devi'] });
 	expect(screen.queryByText(/Action effectuée\. Votre identité/)).not.toBeInTheDocument();
@@ -374,11 +378,11 @@ it('refreshes quote caches after a confirmed write without affecting a different
 });
 
 it('navigates to the quote list after a current confirmed quote deletion', async () => {
-	const confirmation = deferred<Response>();
+	const confirmation = deferred<unknown>();
 	handlers['actions/quote-delete/confirm/'] = () => confirmation.promise;
 	await beginQuoteConfirmation();
 	await act(async () => {
-		confirmation.resolve(jsonResponse({ success: true }));
+		confirmation.resolve(jsonData({ success: true }));
 	});
 	expect(mockPush).toHaveBeenCalledWith('/dashboard/devis/?company_id=1');
 	expect(mockDispatch).toHaveBeenCalledWith({ type: 'devi/invalidateTags', payload: ['Devi'] });
@@ -386,13 +390,13 @@ it('navigates to the quote list after a current confirmed quote deletion', async
 });
 
 it('does not redirect away from a page opened while a confirmation was pending', async () => {
-	const confirmation = deferred<Response>();
+	const confirmation = deferred<unknown>();
 	handlers['actions/quote-delete/confirm/'] = () => confirmation.promise;
 	const { rerender } = await beginQuoteConfirmation();
 	mockPathname = '/dashboard/clients/';
 	rerender(themed(<ChatAIAssistant />));
 	await act(async () => {
-		confirmation.resolve(jsonResponse({ success: true }));
+		confirmation.resolve(jsonData({ success: true }));
 	});
 	expect(mockPush).not.toHaveBeenCalled();
 	expect(mockDispatch).toHaveBeenCalledWith({ type: 'devi/invalidateTags', payload: ['Devi'] });
@@ -434,13 +438,13 @@ it.each(['fr', 'en'] as const)('keeps the company picker usable on a fresh chang
 	expect(screen.getByRole('combobox', { name: language === 'en' ? 'Company' : 'Société' })).toHaveTextContent(
 		'Company 2',
 	);
-	handlers['conversations/conversation-1/messages/'] = () => jsonResponse(assistantMessage('Company 2 reply'));
+	handlers['conversations/conversation-1/messages/'] = () => jsonData(assistantMessage('Company 2 reply'));
 	sendMessage('/voir');
 	await screen.findByText('Company 2 reply');
 	expect(chatRequest).toHaveBeenCalledWith(
 		'conversations/',
 		expect.any(String),
-		expect.objectContaining({ body: JSON.stringify({ company_id: 2 }) }),
+		expect.objectContaining({ data: { company_id: 2 } }),
 	);
 });
 
@@ -476,13 +480,13 @@ it('lets the user pick an authorized company despite an invalid URL and stale ta
 		await screen.findByRole('textbox', { name: mockLanguage === 'en' ? 'Your message' : 'Votre message' }),
 	).toBeEnabled();
 	expect(screen.getByRole('combobox', { name: 'Société' })).toHaveTextContent('Company 2');
-	handlers['conversations/conversation-1/messages/'] = () => jsonResponse(assistantMessage('Réponse Company 2'));
+	handlers['conversations/conversation-1/messages/'] = () => jsonData(assistantMessage('Réponse Company 2'));
 	sendMessage('/voir');
 	await screen.findByText('Réponse Company 2');
 	expect(chatRequest).toHaveBeenCalledWith(
 		'conversations/',
 		expect.any(String),
-		expect.objectContaining({ body: JSON.stringify({ company_id: 2 }) }),
+		expect.objectContaining({ data: { company_id: 2 } }),
 	);
 });
 
@@ -501,8 +505,8 @@ it('retains the detail company and its conversation when moving from a different
 	mockCompanyId = null;
 	mockPathname = '/dashboard/clients/';
 	publishChatAICompany(1);
-	handlers['conversations/conversation-1/messages/'] = () => jsonResponse(assistantMessage('Résultats Company 1'));
-	handlers['conversations/conversation-2/messages/'] = () => jsonResponse(assistantMessage('Résultats Company 2'));
+	handlers['conversations/conversation-1/messages/'] = () => jsonData(assistantMessage('Résultats Company 1'));
+	handlers['conversations/conversation-2/messages/'] = () => jsonData(assistantMessage('Résultats Company 2'));
 	const { rerender } = await renderAssistant();
 	sendMessage('/voir clients');
 	await screen.findByText('Résultats Company 1');
@@ -522,8 +526,7 @@ it('retains the detail company and its conversation when moving from a different
 });
 
 it('clears shared company scope and private conversation state on logout', async () => {
-	handlers['conversations/conversation-1/messages/'] = () =>
-		jsonResponse(assistantMessage('Private old session response'));
+	handlers['conversations/conversation-1/messages/'] = () => jsonData(assistantMessage('Private old session response'));
 	const { rerender } = await renderAssistant();
 	sendMessage('/voir clients');
 	await screen.findByText('Private old session response');
@@ -545,9 +548,9 @@ it('clears shared company scope and private conversation state on logout', async
 
 it('deletes the named history row while preserving the active conversation', async () => {
 	const current = { ...historyItem, id: 'conversation-1', title: 'Mes factures actuelles' };
-	handlers['conversations/conversation-1/messages/'] = () => jsonResponse(assistantMessage('Résultat actuel'));
-	handlers['conversations/?company_id=1'] = () => jsonResponse([current, historyItem]);
-	handlers['conversations/old-conversation/'] = () => jsonResponse({});
+	handlers['conversations/conversation-1/messages/'] = () => jsonData(assistantMessage('Résultat actuel'));
+	handlers['conversations/?company_id=1'] = () => jsonData([current, historyItem]);
+	handlers['conversations/old-conversation/'] = () => jsonData({});
 	await renderAssistant();
 	sendMessage('Mes factures actuelles');
 	await screen.findByText('Résultat actuel');
@@ -583,9 +586,9 @@ it('deletes the named history row while preserving the active conversation', asy
 
 it('clears the active conversation only when its own history row is deleted', async () => {
 	const current = { ...historyItem, id: 'conversation-1', title: 'Conversation à supprimer' };
-	handlers['conversations/conversation-1/messages/'] = () => jsonResponse(assistantMessage('Réponse à supprimer'));
-	handlers['conversations/?company_id=1'] = () => jsonResponse([current, historyItem]);
-	handlers['conversations/conversation-1/'] = () => jsonResponse({});
+	handlers['conversations/conversation-1/messages/'] = () => jsonData(assistantMessage('Réponse à supprimer'));
+	handlers['conversations/?company_id=1'] = () => jsonData([current, historyItem]);
+	handlers['conversations/conversation-1/'] = () => jsonData({});
 	await renderAssistant();
 	sendMessage(current.title);
 	await screen.findByText('Réponse à supprimer');
@@ -604,12 +607,11 @@ it('clears the active conversation only when its own history row is deleted', as
 });
 
 it('ignores a late history deletion result after the user starts another conversation', async () => {
-	const deletion = deferred<Response>();
+	const deletion = deferred<unknown>();
 	const current = { ...historyItem, id: 'conversation-1', title: 'Ancienne conversation' };
-	handlers['conversations/conversation-1/messages/'] = () => jsonResponse(assistantMessage('Ancienne réponse'));
-	handlers['conversations/conversation-2/messages/'] = () =>
-		jsonResponse(assistantMessage('Nouvelle réponse préservée'));
-	handlers['conversations/?company_id=1'] = () => jsonResponse([current]);
+	handlers['conversations/conversation-1/messages/'] = () => jsonData(assistantMessage('Ancienne réponse'));
+	handlers['conversations/conversation-2/messages/'] = () => jsonData(assistantMessage('Nouvelle réponse préservée'));
+	handlers['conversations/?company_id=1'] = () => jsonData([current]);
 	handlers['conversations/conversation-1/'] = () => deletion.promise;
 	await renderAssistant();
 	sendMessage(current.title);
@@ -627,7 +629,7 @@ it('ignores a late history deletion result after the user starts another convers
 	fireEvent.click(screen.getByRole('button', { name: 'Nouvelle conversation' }));
 	sendMessage('Une nouvelle demande');
 	await screen.findByText('Nouvelle réponse préservée');
-	await act(async () => deletion.resolve(jsonResponse({})));
+	await act(async () => deletion.resolve(jsonData({})));
 	expect(screen.getByText('Nouvelle réponse préservée')).toBeVisible();
 	expect(screen.queryByText('Ancienne réponse')).not.toBeInTheDocument();
 });
@@ -640,7 +642,7 @@ it('stops forcing stream scroll after the reader scrolls up, and resumes on a ne
 		await streamDone.promise;
 		return { data: true };
 	});
-	handlers['conversations/conversation-1/messages/'] = () => jsonResponse(assistantMessage('Nouvelle réponse'));
+	handlers['conversations/conversation-1/messages/'] = () => jsonData(assistantMessage('Nouvelle réponse'));
 	await renderAssistant();
 	const log = screen.getByRole('log', { name: 'Conversation' });
 	const bottom = log.lastElementChild as HTMLElement;
@@ -780,7 +782,7 @@ it.each(commercialDocuments)(
 it.each(commercialDocuments)(
 	'refreshes $resource and dependent caches only after confirmed deletion, then opens its own list',
 	async ({ resource, path, api, tag }) => {
-		const confirmation = deferred<Response>();
+		const confirmation = deferred<unknown>();
 		const card: ChatCard = {
 			...quoteConfirmation,
 			resource,
@@ -789,7 +791,7 @@ it.each(commercialDocuments)(
 			record_id: 42,
 		};
 		handlers['conversations/conversation-1/messages/'] = () =>
-			jsonResponse(assistantMessage('Vérifiez le document sélectionné.', [card]));
+			jsonData(assistantMessage('Vérifiez le document sélectionné.', [card]));
 		handlers[`actions/${resource}-delete/confirm/`] = () => confirmation.promise;
 		await renderAssistant();
 		sendMessage(`/supprimer ${resource}`);
@@ -801,11 +803,11 @@ it.each(commercialDocuments)(
 			expect(chatRequest).toHaveBeenCalledWith(
 				`actions/${resource}-delete/confirm/`,
 				expect.any(String),
-				expect.objectContaining({ method: 'POST', body: JSON.stringify({ confirmed: true }) }),
+				expect.objectContaining({ method: 'POST', data: { confirmed: true } }),
 			),
 		);
 		expect(mockDispatch).not.toHaveBeenCalled();
-		await act(async () => confirmation.resolve(jsonResponse({ success: true })));
+		await act(async () => confirmation.resolve(jsonData({ success: true })));
 		expect(mockDispatch).toHaveBeenCalledWith({ type: `${api}/invalidateTags`, payload: [tag] });
 		expect(mockDispatch).toHaveBeenCalledWith({ type: 'factureClient/invalidateTags', payload: ['FactureClient'] });
 		expect(mockDispatch).toHaveBeenCalledWith({
@@ -819,7 +821,7 @@ it.each(commercialDocuments)(
 
 it('does not invalidate caches or navigate when a delivery-note deletion is rejected', async () => {
 	const card: ChatCard = { ...quoteConfirmation, resource: 'delivery_note', action_id: 'delivery-denied' };
-	handlers['conversations/conversation-1/messages/'] = () => jsonResponse(assistantMessage('Vérifiez ce bon.', [card]));
+	handlers['conversations/conversation-1/messages/'] = () => jsonData(assistantMessage('Vérifiez ce bon.', [card]));
 	handlers['actions/delivery-denied/confirm/'] = () => {
 		throw { code: 'PERMISSION_DENIED' };
 	};
@@ -1210,7 +1212,7 @@ it.each([
 ])('retries the original context from %s after navigating to another invoice', async (initialPath, initialContext) => {
 	mockPathname = initialPath;
 	mockLanguage = 'en';
-	handlers['conversations/conversation-1/messages/'] = () => jsonResponse(assistantMessage('Original answer'));
+	handlers['conversations/conversation-1/messages/'] = () => jsonData(assistantMessage('Original answer'));
 	jest.mocked(consumeChatStream).mockResolvedValueOnce({ error: { code: 'INCOMPLETE_RESPONSE' } });
 	const { rerender } = await renderAssistant();
 	sendMessage('Explain this invoice');
@@ -1219,7 +1221,7 @@ it.each([
 		jest
 			.mocked(chatRequest)
 			.mock.calls.filter(([path]) => path === 'conversations/conversation-1/messages/')
-			.map(([, , init]) => JSON.parse(init!.body as string));
+			.map(([, , init]) => init!.data);
 	expect(requests()[0].context).toEqual(initialContext);
 	mockPathname = '/dashboard/facture-client/22/';
 	mockLanguage = 'fr';
@@ -1230,7 +1232,7 @@ it.each([
 	expect(requests()[1]).toEqual(requests()[0]);
 	expect(screen.getAllByRole('article', { name: 'Message de vous' })).toHaveLength(1);
 	expect(screen.queryByRole('button', { name: 'Réessayer' })).not.toBeInTheDocument();
-	handlers['conversations/conversation-1/messages/'] = () => jsonResponse(assistantMessage('Current answer'));
+	handlers['conversations/conversation-1/messages/'] = () => jsonData(assistantMessage('Current answer'));
 	sendMessage('Explique cette facture maintenant');
 	await screen.findByText('Current answer');
 	expect(requests()[2].context).toEqual({ interface_language: 'fr', invoice_id: 22 });
@@ -1238,7 +1240,7 @@ it.each([
 });
 
 it.each(['conversation', 'company'])('clears a failed retry when changing %s', async (scope) => {
-	handlers['conversations/conversation-1/messages/'] = () => jsonResponse(assistantMessage('Never completed'));
+	handlers['conversations/conversation-1/messages/'] = () => jsonData(assistantMessage('Never completed'));
 	jest.mocked(consumeChatStream).mockResolvedValueOnce({ error: { code: 'INCOMPLETE_RESPONSE' } });
 	const { rerender } = await renderAssistant();
 	sendMessage('Old request');
@@ -1268,8 +1270,8 @@ it.each([
 			suggestions: [company.id === 2 ? question : 'Suggestion from another company'],
 		})),
 	};
-	handlers[`capabilities/?language=${language}`] = () => jsonResponse(scoped);
-	handlers['conversations/conversation-1/messages/'] = () => jsonResponse(assistantMessage('Authorized results.'));
+	handlers[`capabilities/?language=${language}`] = () => jsonData(scoped);
+	handlers['conversations/conversation-1/messages/'] = () => jsonData(assistantMessage('Authorized results.'));
 	await renderAssistant();
 	expect(screen.queryByRole('button', { name: 'Suggestion from another company' })).not.toBeInTheDocument();
 	fireEvent.change(screen.getByRole('textbox', { name: mockLanguage === 'en' ? 'Your message' : 'Votre message' }), {
@@ -1279,10 +1281,10 @@ it.each([
 	await screen.findByText('Authorized results.');
 	const calls = jest.mocked(chatRequest).mock.calls;
 	const creation = calls.find(([path]) => path === 'conversations/');
-	expect(JSON.parse(creation![2]!.body as string)).toEqual({ company_id: 2 });
+	expect(creation![2]!.data).toEqual({ company_id: 2 });
 	const sent = calls.filter(([path]) => path.endsWith('/messages/'));
 	expect(sent).toHaveLength(1);
-	expect(JSON.parse(sent[0][2]!.body as string)).toEqual(
+	expect(sent[0][2]!.data).toEqual(
 		expect.objectContaining({
 			text: question,
 			context: { interface_language: language },
@@ -1319,7 +1321,7 @@ it.each(['fr', 'en'] as const)('offers a visible retry after initial AI failure 
 	fireEvent.click(await screen.findByRole('button', { name: 'Ask AI Assistant' }));
 	expect(await screen.findByRole('alert')).toHaveTextContent(language === 'en' ? 'unavailable' : 'indisponible');
 	expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
-	handlers[`capabilities/?language=${language}`] = () => jsonResponse(capabilities);
+	handlers[`capabilities/?language=${language}`] = () => jsonData(capabilities);
 	fireEvent.click(screen.getByRole('button', { name: language === 'en' ? 'Retry' : 'Réessayer' }));
 	expect(
 		await screen.findByRole('textbox', { name: language === 'en' ? 'Your message' : 'Votre message' }),
@@ -1327,7 +1329,7 @@ it.each(['fr', 'en'] as const)('offers a visible retry after initial AI failure 
 });
 it('keeps a denied confirmation open and never reports success or invalidates caches', async () => {
 	handlers['conversations/conversation-1/messages/'] = () =>
-		jsonResponse(assistantMessage('Vérifiez', [quoteConfirmation]));
+		jsonData(assistantMessage('Vérifiez', [quoteConfirmation]));
 	handlers['actions/quote-delete/confirm/'] = () => {
 		throw { code: 'PERMISSION_DENIED' };
 	};

@@ -1,8 +1,15 @@
 'use client';
 
-import { listReturnUrl } from '@/utils/listReturn';
-import { runWithCleanup, runWithErrorHandler } from '@/utils/runWithCleanup';
-import { useState, type FC, type MouseEvent } from 'react';
+import {
+	extractApiErrorMessage,
+	formatLocalDate,
+	getLabelForKey,
+	listReturnUrl,
+	runWithCleanup,
+	runWithErrorHandler,
+	setFormikAutoErrors,
+} from '@/utils/helpers';
+import { type FC, type MouseEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
 	Alert,
@@ -59,7 +66,6 @@ import { useInitAccessToken } from '@/contexts/InitContext';
 import { getInitStateToken, getUserCompaniesState } from '@/store/selectors';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
-import { extractApiErrorMessage, formatLocalDate, getLabelForKey, setFormikAutoErrors } from '@/utils/helpers';
 import { textInputTheme } from '@/utils/themes';
 import { useGetFactureProFormaListQuery } from '@/store/services/factureProForma';
 import {
@@ -91,16 +97,14 @@ import type { DropDownType } from '@/types/accountTypes';
 import type { FactureClass } from '@/models/classes';
 import type {
 	LogistiqueDocumentField,
+	LogistiqueFormFormCardProps as FormCardProps,
+	LogistiqueFormProps as Props,
 	LogistiqueFormValues,
 	LogistiqueOrder,
 	LogistiquePaymentStatus,
 	LogistiqueResponsibleOption,
 } from '@/types/logistiqueTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
-import type {
-	LogistiqueFormProps as Props,
-	LogistiqueFormFormCardProps as FormCardProps,
-} from '@/types/logistiqueTypes';
 
 const inputTheme = textInputTheme();
 

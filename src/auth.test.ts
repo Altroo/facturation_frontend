@@ -20,6 +20,7 @@ jest.mock('next-auth/providers/credentials', () => ({
 }));
 
 jest.mock('@/utils/helpers', () => ({
+	...jest.requireActual('@/utils/helpers'),
 	allowAnyInstance: jest.fn(() => ({})),
 }));
 

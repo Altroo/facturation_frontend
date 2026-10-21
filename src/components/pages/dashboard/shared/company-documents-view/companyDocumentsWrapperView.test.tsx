@@ -49,6 +49,7 @@ jest.mock('@/components/pages/dashboard/devis/devis-list', () => ({
 }));
 
 jest.mock('@/utils/helpers', () => ({
+	...jest.requireActual('@/utils/helpers'),
 	__esModule: true,
 	formatDate: (d: unknown) => (d ? '01/01/2025' : ''),
 	formatNumberWithSpaces: (value: string | number | null | undefined, decimals: number = 2): string => {

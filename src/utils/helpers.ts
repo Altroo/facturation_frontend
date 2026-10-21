@@ -1,5 +1,8 @@
-import { isAppVersion, isNewerAppVersion } from '@/utils/appVersion';
-import { getAppVersion } from '@/utils/apiHelpers';
+import { aiWritingFields, NECTAR_RAISON_SOCIALE } from '@/utils/rawData';
+import type { ListScope } from '@/types/routeTypes';
+import type { SalePriceBasis } from '@/types/articleTypes';
+import type { ChatMessage, NavigationTarget } from '@/types/chatAiTypes';
+
 import type { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import axios, { AxiosHeaders } from 'axios';
 import { getSession, signOut } from 'next-auth/react';
@@ -26,7 +29,7 @@ export const handleUnauthorized = async (onResetToken?: () => void) => {
  * The getToken callback should read the latest token from Redux state (via api.getState()).
  */
 export const isAuthenticatedInstance = (
-	getToken?: () => InitStateToken | undefined,
+	getToken?: () => Pick<InitStateToken, 'access'> | undefined,
 	onUnauthorized?: () => void,
 	contentType: APIContentTypeInterface = 'application/json',
 ): AxiosInstance => {
@@ -39,7 +42,7 @@ export const isAuthenticatedInstance = (
 
 	// Request interceptor - add auth token
 	instance.interceptors.request.use(
-		async (config: InternalAxiosRequestConfig) => {
+		async (config: InternalAxiosRequestConfig & { _retried?: boolean }) => {
 			const headers = new AxiosHeaders(config.headers as Record<string, string>);
 			const token = getToken?.();
 			let accessToken = token?.access;
@@ -49,7 +52,7 @@ export const isAuthenticatedInstance = (
 				accessToken = session?.accessToken;
 			}
 
-			if (accessToken) {
+			if (accessToken && !config._retried) {
 				headers.set('Authorization', `Bearer ${accessToken}`);
 			}
 
@@ -68,43 +71,60 @@ export const isAuthenticatedInstance = (
 	instance.interceptors.response.use(
 		(response: AxiosResponse) => response,
 		async (error) => {
-			if (error.response?.data) {
-				const errorData = error.response.data as ApiErrorResponseType;
+			if (axios.isCancel(error)) return Promise.reject(error);
 
-				if (error.response.status >= 500) {
-					return Promise.reject({
-						error: {
-							status_code: error.response.status,
-							message: 'Erreur serveur.',
-							details: {
-								error: [
-									'Il semble que nous ne puissions pas nous connecter. Veuillez vérifier votre connexion réseau et réessayer.',
-								],
-							},
-						},
-					});
-				}
+			// Streaming requests still return JSON error bodies on HTTP failures.
+			if (error.response?.data && typeof error.response.data.getReader === 'function') {
+				error.response.data = await new Response(error.response.data).json().catch(() => null);
+			}
+			if (error.config?.signal?.aborted) return Promise.reject(new axios.CanceledError());
 
-				if (error.response.status === 401) {
-					// Retry once with a fresh session token before giving up
-					if (error.config && !error.config._retried) {
-						error.config._retried = true;
-						const freshSession = await getSession();
-						if (freshSession?.accessToken) {
-							error.config.headers['Authorization'] = `Bearer ${freshSession.accessToken}`;
-							return instance(error.config);
-						}
+			const errorData = error.response?.data as (ApiErrorResponseType & { error?: { code?: string } }) | undefined;
+			if (error.response?.status === 401) {
+				// Retry once with a fresh session token before giving up
+				if (error.config && !error.config._retried) {
+					error.config._retried = true;
+					const freshSession = await getSession();
+					if (error.config.signal?.aborted) return Promise.reject(new axios.CanceledError());
+					if (freshSession?.accessToken) {
+						error.config.headers['Authorization'] = `Bearer ${freshSession.accessToken}`;
+						return instance(error.config);
 					}
-					await handleUnauthorized(onUnauthorized);
-					return Promise.reject({
-						error: {
-							status_code: 401,
-							message: errorData.message || 'Non autorisé',
-							details: errorData.details || { error: ['Authentification requise'] },
-						},
-					});
 				}
+				await handleUnauthorized(onUnauthorized);
+				return Promise.reject({
+					error: {
+						status_code: 401,
+						message: errorData?.message || 'Non autorisé',
+						details: errorData?.details || { error: ['Authentification requise'] },
+					},
+				});
+			}
 
+			if (typeof errorData?.error?.code === 'string') {
+				return Promise.reject({
+					error: {
+						status_code: error.response.status,
+						code: errorData.error.code,
+						message: errorData.message || error.message,
+						details: errorData.details || {},
+					},
+				});
+			}
+			if (error.response?.status >= 500) {
+				return Promise.reject({
+					error: {
+						status_code: error.response.status,
+						message: 'Erreur serveur.',
+						details: {
+							error: [
+								'Il semble que nous ne puissions pas nous connecter. Veuillez vérifier votre connexion réseau et réessayer.',
+							],
+						},
+					},
+				});
+			}
+			if (errorData) {
 				if (errorData.status_code !== undefined && errorData.message !== undefined) {
 					return Promise.reject({
 						error: {
@@ -118,7 +138,7 @@ export const isAuthenticatedInstance = (
 
 			return Promise.reject({
 				error: {
-					status_code: 0,
+					status_code: error.response?.status ?? 0,
 					message: error.message || 'Erreur réseau',
 					details: { error: ['Impossible de se connecter au serveur'] },
 				},
@@ -407,30 +427,235 @@ export const extractApiErrorMessage = (error: unknown, fallback: string): string
 	return fallback;
 };
 
-export const APP_UPDATE_PARAM = '_app_update';
+export const reloadApp = (url: string) => window.location.replace(url);
 
-type AppUpdateResult = { url: string; error?: never } | { url?: never; error: true };
+export const normalizeCompanyName = (value?: string | null): string => (value ?? '').trim().toUpperCase();
 
-export const getAppUpdateUrl = async (targetVersion: string, currentUrl: string): Promise<AppUpdateResult> => {
-	if (!isAppVersion(targetVersion)) return { error: true };
+export const isNectarRaisonSociale = (value?: string | null): boolean =>
+	normalizeCompanyName(value) === NECTAR_RAISON_SOCIALE;
+
+export const calculateNectarPrixTTC = (prixHT?: number | string | null, tva?: number | string | null): number => {
+	const ht = Number(prixHT ?? 0);
+	const tvaRate = Number(tva ?? 0);
+	if (!Number.isFinite(ht)) return 0;
+	return ht * (1 + (Number.isFinite(tvaRate) ? tvaRate : 0) / 100);
+};
+
+export const runWithCleanup = async <T>(action: () => Promise<T>, cleanup: () => void): Promise<T> => {
 	try {
-		// Do not reload into an old frontend if the backend was published first.
-		const { status, data } = await getAppVersion();
-		if (status !== 200) return { error: true };
-		if (
-			!data ||
-			typeof data !== 'object' ||
-			!('version' in data) ||
-			!isAppVersion(data.version) ||
-			isNewerAppVersion(targetVersion, data.version)
-		)
-			return { error: true };
-		const url = new URL(currentUrl);
-		url.searchParams.set(APP_UPDATE_PARAM, `${targetVersion}-${Date.now()}`);
-		return { url: url.href };
-	} catch {
-		return { error: true };
+		return await action();
+	} finally {
+		cleanup();
 	}
 };
 
-export const reloadApp = (url: string) => window.location.replace(url);
+export const runWithErrorHandler = async (
+	action: () => Promise<void>,
+	onError: (error: unknown) => void,
+): Promise<void> => {
+	try {
+		await action();
+	} catch (error) {
+		onError(error);
+	}
+};
+
+const PREFIX = 'list-pagination:v1:';
+const PAGE_SIZES = new Set(['5', '10', '25', '50', '100']);
+
+function storageKey(url: URL, scope: ListScope = {}) {
+	return (
+		PREFIX +
+		JSON.stringify([
+			url.pathname,
+			...(['company_id', 'store_id'] as const).map((key) => String(scope[key] ?? url.searchParams.get(key) ?? '')),
+		])
+	);
+}
+
+function validParameter(key: string, value: string) {
+	if (!/^(?:[a-z][a-z0-9_]*_)?(?:page|page_size|ordering)$/.test(key)) return false;
+	if (key === 'page_size' || key.endsWith('_page_size')) return PAGE_SIZES.has(value);
+	if (key === 'ordering' || key.endsWith('_ordering')) return /^-?[a-zA-Z_][a-zA-Z0-9_]{0,99}$/.test(value);
+	return /^[1-9][0-9]{0,5}$/.test(value);
+}
+
+export function rememberListPagination(href: string, scope: ListScope = {}) {
+	if (typeof window === 'undefined') return;
+	try {
+		const url = new URL(href, window.location.origin);
+		if (url.origin !== window.location.origin) return;
+		const values = [...url.searchParams].filter(([key, value]) => validParameter(key, value));
+		window.sessionStorage.setItem(storageKey(url, scope), JSON.stringify(values));
+	} catch {
+		// Browsers that block storage still retain normal URL pagination/navigation.
+	}
+}
+
+export function listReturnUrl(target: string): string {
+	if (typeof window === 'undefined') return target;
+	const absolute = /^https?:\/\//.test(target);
+	if ((!target.startsWith('/') && !absolute) || target.startsWith('//') || target.includes('\\')) return target;
+	try {
+		const url = new URL(target, window.location.origin);
+		if (url.origin !== window.location.origin || url.username || url.password) return target;
+		const raw = window.sessionStorage.getItem(storageKey(url));
+		if (!raw || raw.length > 8192) return target;
+		const values: unknown = JSON.parse(raw);
+		if (!Array.isArray(values) || values.length > 32) return target;
+		let changed = false;
+		for (const item of values) {
+			if (!Array.isArray(item) || item.length !== 2) continue;
+			const [key, value] = item;
+			if (
+				typeof key !== 'string' ||
+				typeof value !== 'string' ||
+				!validParameter(key, value) ||
+				url.searchParams.has(key)
+			)
+				continue;
+			url.searchParams.set(key, value);
+			changed = true;
+		}
+		return changed ? (absolute ? url.href : url.pathname + url.search + url.hash) : target;
+	} catch {
+		return target;
+	}
+}
+
+export const isAiTextField = (name: string, type: string) =>
+	(type === 'text' || type === 'textarea') && aiWritingFields.has(name);
+
+export const calculateSalePriceHT = (price: number, tva: number, basis: SalePriceBasis = 'HT'): number => {
+	if (basis === 'HT') return price;
+	// Work in cents and VAT basis points so half-cent results round consistently.
+	const cents = Math.round(price * 100);
+	const taxFactor = 10_000 + Math.round(tva * 100);
+	return Math.round((cents * 10_000) / taxFactor) / 100;
+};
+
+export const calculateSalePriceTTC = (priceHT: number, tva: number): number => {
+	const cents = Math.round(priceHT * 100);
+	const taxFactor = 10_000 + Math.round(tva * 100);
+	return Math.round((cents * taxFactor) / 10_000) / 100;
+};
+
+export const isAppVersion = (value: unknown): value is string =>
+	typeof value === 'string' && /^(0|[1-9]\d{0,5})\.(0|[1-9]\d{0,5})\.(0|[1-9]\d{0,5})$/.exec(value)?.[0] === value;
+
+export const isNewerAppVersion = (candidate: unknown, current: unknown): boolean => {
+	if (!isAppVersion(candidate) || !isAppVersion(current)) return false;
+	const next = candidate.split('.').map(Number);
+	const local = current.split('.').map(Number);
+	for (let i = 0; i < next.length; i++) {
+		if (next[i] !== local[i]) return next[i] > local[i];
+	}
+	return false;
+};
+
+let activeCompany: number | null = null;
+const listeners = new Set<() => void>();
+
+export const publishChatAICompany = (id: number | null) => {
+	if (activeCompany === id) return;
+	activeCompany = id;
+	listeners.forEach((notify) => notify());
+};
+export const getChatAICompany = () => activeCompany;
+export const subscribeChatAICompany = (notify: () => void) => {
+	listeners.add(notify);
+	return () => {
+		listeners.delete(notify);
+	};
+};
+
+export const chatErrorCode = (error: unknown): string => {
+	if (axios.isCancel(error)) return 'ABORTED';
+	if (axios.isAxiosError(error)) {
+		const code = error.response?.data?.error?.code;
+		if (typeof code === 'string') return code;
+		if (error.response?.status === 401) return 'NOT_AUTHENTICATED';
+		if (error.response?.status === 403) return 'PERMISSION_DENIED';
+	}
+	if (error && typeof error === 'object') {
+		if ('name' in error && error.name === 'AbortError') return 'ABORTED';
+		if ('error' in error && error.error && typeof error.error === 'object') {
+			if ('code' in error.error && typeof error.error.code === 'string') return error.error.code;
+			if ('status_code' in error.error && error.error.status_code === 401) return 'NOT_AUTHENTICATED';
+			if ('status_code' in error.error && error.error.status_code === 403) return 'PERMISSION_DENIED';
+		}
+		if (!(error instanceof Error) && 'code' in error && typeof error.code === 'string') return error.code;
+	}
+	return 'APPLICATION_UNAVAILABLE';
+};
+
+export const isChatMessage = (value: unknown): value is ChatMessage => {
+	if (!value || typeof value !== 'object') return false;
+	return (
+		'id' in value &&
+		typeof value.id === 'string' &&
+		'role' in value &&
+		(value.role === 'assistant' || value.role === 'user') &&
+		'text' in value &&
+		typeof value.text === 'string' &&
+		(!('cards' in value) ||
+			value.cards === undefined ||
+			(Array.isArray(value.cards) &&
+				value.cards.every((card) => card && typeof card === 'object' && typeof card.type === 'string')))
+	);
+};
+
+export const safeNavigation = (target: NavigationTarget, companyId: number) => {
+	if (target.application !== 'facturation' || target.company_id !== companyId) return null;
+	const list: Record<string, string> = {
+		invoices: 'facture-client/',
+		clients: 'clients/',
+		payments: 'reglements/',
+		dashboard: '',
+		quotes: 'devis/',
+		proformas: 'facture-pro-forma/',
+		credit_notes: 'facture-avoir/',
+		delivery_notes: 'bon-de-livraison/',
+		articles: 'articles/',
+		users: 'users/',
+		stock: 'stock/',
+		stock_movements: 'stock/movements/',
+		stock_receipts: 'stock/receipts/',
+		stock_inventories: 'stock/inventories/',
+		logistics: 'logistique/',
+	};
+	const detail: Record<string, string> = {
+		invoice: 'facture-client/',
+		client: 'clients/',
+		invoice_edit: 'facture-client/',
+		client_edit: 'clients/',
+		quote: 'devis/',
+		quote_edit: 'devis/',
+		proforma: 'facture-pro-forma/',
+		proforma_edit: 'facture-pro-forma/',
+		credit_note: 'facture-avoir/',
+		credit_note_edit: 'facture-avoir/',
+		delivery_note: 'bon-de-livraison/',
+		delivery_note_edit: 'bon-de-livraison/',
+		article: 'articles/',
+		payment: 'reglements/',
+		user: 'users/',
+		stock_balance: 'stock/',
+		stock_movement: 'stock/movements/',
+		stock_receipt: 'stock/receipts/',
+		stock_inventory: 'stock/inventories/',
+		logistics_order: 'logistique/',
+	};
+	let route: string;
+	if (
+		Object.hasOwn(detail, target.resource) &&
+		Number.isSafeInteger(target.identifier) &&
+		(target.identifier ?? 0) > 0
+	) {
+		route = `/dashboard/${detail[target.resource]}${target.identifier}/${target.resource.endsWith('_edit') ? 'edit/' : ''}`;
+	} else if (Object.hasOwn(list, target.resource) && target.identifier === null) {
+		route = `/dashboard/${list[target.resource]}`;
+	} else return null;
+	const expected = ['user', 'users'].includes(target.resource) ? route : `${route}?company_id=${companyId}`;
+	return target.path === expected ? expected : null;
+};

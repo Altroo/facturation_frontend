@@ -1,6 +1,12 @@
 'use client';
 
-import { runWithCleanup, runWithErrorHandler } from '@/utils/runWithCleanup';
+import {
+	runWithCleanup,
+	runWithErrorHandler,
+	extractApiErrorMessage,
+	formatDate,
+	isNectarRaisonSociale,
+} from '@/utils/helpers';
 import { type FC, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, Chip, Typography } from '@mui/material';
@@ -30,7 +36,7 @@ import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDa
 import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type { ClientClass } from '@/models/classes';
-import { extractApiErrorMessage, formatDate } from '@/utils/helpers';
+
 import { useLanguage, useToast } from '@/utils/hooks';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
@@ -39,7 +45,7 @@ import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActio
 import { useGetCitiesListQuery } from '@/store/services/parameter';
 import type { ChipFilterConfig } from '@/types/uiTypes';
 import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
-import { isNectarRaisonSociale } from '@/utils/nectar';
+
 import type {
 	ClientsListFormikContentProps as FormikContentProps,
 	ClientsListProps as Props,

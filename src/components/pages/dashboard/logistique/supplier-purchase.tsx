@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
 	Alert,
@@ -45,18 +45,16 @@ import { getInitStateToken, getUserCompaniesState } from '@/store/selectors';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 import {
 	useGetLogistiqueQuery,
-	usePurchaseActionMutation,
-	useStartLogistiquePaymentMutation,
-	useSetLogistiqueProofEmailStatusMutation,
-	useRetryLogistiquePaymentEmailMutation,
 	usePatchLogistiqueStatutMutation,
+	usePurchaseActionMutation,
+	useRetryLogistiquePaymentEmailMutation,
+	useSetLogistiqueProofEmailStatusMutation,
+	useStartLogistiquePaymentMutation,
 } from '@/store/services/logistique';
 import { useLogistiqueEmailPolling } from './use-logistique-email-polling';
-import { extractApiErrorMessage, formatNumberWithSpaces } from '@/utils/helpers';
-import { logistiqueManagerRoles } from '@/utils/rawData';
-import { LOGISTIQUE_LIST, LOGISTIQUE_EDIT, LOGISTIQUE_SUPPLIERS, LOGISTIQUE_ADD } from '@/utils/routes';
-import { listReturnUrl } from '@/utils/listReturn';
-import { PURCHASE_CONDITIONS } from '@/utils/supplierPurchaseSchemas';
+import { extractApiErrorMessage, formatNumberWithSpaces, listReturnUrl } from '@/utils/helpers';
+import { logistiqueManagerRoles, PURCHASE_CONDITIONS } from '@/utils/rawData';
+import { LOGISTIQUE_ADD, LOGISTIQUE_EDIT, LOGISTIQUE_LIST, LOGISTIQUE_SUPPLIERS } from '@/utils/routes';
 import type { LogistiqueFormProps, LogistiquePaymentInstallment } from '@/types/logistiqueTypes';
 import type { PurchaseFormMode } from '@/types/supplierPurchaseTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';

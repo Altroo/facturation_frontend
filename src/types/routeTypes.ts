@@ -23,3 +23,6 @@ export type CompanyScopedEditRouteProps = {
 export type ReglementNewRouteProps = {
 	searchParams: Promise<{ company_id: string; facture_client_id?: string }>;
 };
+
+/** Remember pagination only; return destinations always come from native application routes. */
+export type ListScope = { company_id?: number | string | null; store_id?: number | string | null };

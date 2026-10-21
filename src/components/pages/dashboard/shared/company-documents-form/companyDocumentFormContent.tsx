@@ -1,6 +1,14 @@
 'use client';
 
-import { listReturnUrl } from '@/utils/listReturn';
+import {
+	formatLocalDate,
+	getCompanyDocumentLabelForKey,
+	isNectarRaisonSociale,
+	listReturnUrl,
+	parseNumber,
+	setFormikAutoErrors,
+	ValidatePricesHelper,
+} from '@/utils/helpers';
 import { type ChangeEvent, type JSX, type MouseEvent, useEffect, useEffectEvent, useRef, useState } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
@@ -48,13 +56,6 @@ import CustomTextInput from '@/components/formikElements/customTextInput/customT
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
-import {
-	formatLocalDate,
-	getCompanyDocumentLabelForKey,
-	parseNumber,
-	setFormikAutoErrors,
-	ValidatePricesHelper,
-} from '@/utils/helpers';
 import { customDropdownTheme, textInputTheme } from '@/utils/themes';
 import { CLIENTS_ADD } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
@@ -104,7 +105,6 @@ import { useDocumentLinesColumns } from './useDocumentLinesColumns';
 import DocumentFormModals from './DocumentFormModals';
 import type { SelectedArticlePopupValues } from '@/types/articleTypes';
 import EntityCrudControls from '@/components/shared/entityCrudControls/entityCrudControls';
-import { isNectarRaisonSociale } from '@/utils/nectar';
 
 const inputFieldTheme = textInputTheme();
 

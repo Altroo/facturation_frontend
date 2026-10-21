@@ -34,6 +34,7 @@ jest.mock('@/utils/axiosBaseQuery', () => {
 	};
 });
 jest.mock('@/utils/helpers', () => ({
+	...jest.requireActual('@/utils/helpers'),
 	__esModule: true,
 	isAuthenticatedInstance: jest.fn(() => ({})),
 }));

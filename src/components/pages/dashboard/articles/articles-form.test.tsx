@@ -293,6 +293,7 @@ jest.mock('@/utils/themes', () => ({
 }));
 
 jest.mock('@/utils/helpers', () => ({
+	...jest.requireActual('@/utils/helpers'),
 	formatNumberWithSpaces: jest.requireActual('@/utils/helpers').formatNumberWithSpaces,
 	getLabelForKey: jest.fn((labels: Record<string, string>, key: string) => labels[key] || key),
 	setFormikAutoErrors: jest.fn(),

@@ -115,3 +115,7 @@ export type ChatCapabilities = {
 	}[];
 	languages: string[];
 };
+
+export type ChatError = { code: string };
+
+export type ChatResult<T> = { data: T; error?: never } | { data?: never; error: ChatError };

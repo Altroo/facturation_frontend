@@ -1,5 +1,5 @@
 import { type ReactNode, type ReactElement } from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import ClientsViewClient from './clients-view';
 import { Provider } from 'react-redux';
 import { store } from '@/store/store';
@@ -7,7 +7,8 @@ import { useGetClientHistoryQuery, useGetClientQuery } from '@/store/services/cl
 import '@testing-library/jest-dom';
 import type { AppSession } from '@/types/_initTypes';
 import { useRouter } from 'next/navigation';
-import { useAppSelector } from '@/utils/hooks';
+import { useAppSelector, useToast } from '@/utils/hooks';
+import { fetchPdfBlob } from '@/utils/apiHelpers';
 
 // Router mock
 jest.mock('next/navigation', () => ({
@@ -20,6 +21,11 @@ jest.mock('@/store/services/client', () => {
 	const actual = jest.requireActual('@/store/services/client');
 	return { ...actual, useGetClientHistoryQuery: jest.fn(), useGetClientQuery: jest.fn() };
 });
+
+jest.mock('@/utils/apiHelpers', () => ({
+	...jest.requireActual('@/utils/apiHelpers'),
+	fetchPdfBlob: jest.fn(),
+}));
 
 // InitContext mock
 jest.mock('@/contexts/InitContext', () => ({
@@ -123,6 +129,8 @@ describe('ClientsViewClient', () => {
 
 	afterEach(() => {
 		jest.clearAllMocks();
+		jest.restoreAllMocks();
+		jest.useRealTimers();
 	});
 
 	it('renders loading state', () => {
@@ -291,5 +299,98 @@ describe('ClientsViewClient', () => {
 		expect(screen.getAllByText('1 200,00')).not.toHaveLength(0);
 		expect(screen.getAllByText('500,00')).not.toHaveLength(0);
 		expect(screen.getByText('700,00')).toBeInTheDocument();
+	});
+	describe('statement PDF', () => {
+		const createObjectURL = jest.fn(() => 'blob:statement-pdf');
+		const revokeObjectURL = jest.fn();
+		const onError = jest.fn();
+		const originalCreate = Object.getOwnPropertyDescriptor(URL, 'createObjectURL');
+		const originalRevoke = Object.getOwnPropertyDescriptor(URL, 'revokeObjectURL');
+
+		beforeAll(() => {
+			Object.defineProperty(URL, 'createObjectURL', { configurable: true, value: createObjectURL });
+			Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, value: revokeObjectURL });
+		});
+
+		afterAll(() => {
+			if (originalCreate) Object.defineProperty(URL, 'createObjectURL', originalCreate);
+			else Reflect.deleteProperty(URL, 'createObjectURL');
+			if (originalRevoke) Object.defineProperty(URL, 'revokeObjectURL', originalRevoke);
+			else Reflect.deleteProperty(URL, 'revokeObjectURL');
+		});
+
+		beforeEach(() => {
+			(useToast as jest.Mock).mockReturnValue({ onSuccess: jest.fn(), onError });
+			(useGetClientQuery as jest.Mock).mockReturnValue({ data: mockClientPM, isLoading: false });
+			(useGetClientHistoryQuery as jest.Mock).mockReturnValue({
+				isLoading: false,
+				data: {
+					...emptyHistory,
+					factures: [
+						{
+							id: 10,
+							numero_facture: 'FAC/26',
+							date_facture: '2026-06-10',
+							total_ttc_apres_remise: '1200',
+							devise: 'MAD',
+						},
+					],
+				},
+			});
+		});
+
+		it('opens the authenticated PDF with the selected language and current filters', async () => {
+			jest.useFakeTimers();
+			const blob = new Blob(['pdf'], { type: 'application/pdf' });
+			jest.mocked(fetchPdfBlob).mockResolvedValue(blob);
+			const open = jest.spyOn(window, 'open').mockReturnValue(null);
+			renderWithProviders(<ClientsViewClient {...defaultProps} />);
+			fireEvent.change(screen.getByLabelText('Du'), { target: { value: '2026-06-01' } });
+			fireEvent.change(screen.getByLabelText('Au'), { target: { value: '2026-06-30' } });
+			fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Type' }));
+			fireEvent.click(screen.getByRole('option', { name: 'Factures' }));
+			fireEvent.click(screen.getByRole('button', { name: 'Imprimer le relevé' }));
+			expect(fetchPdfBlob).not.toHaveBeenCalled();
+			fireEvent.click(screen.getByRole('button', { name: /English|Anglais/ }));
+			await waitFor(() => expect(open).toHaveBeenCalledWith('blob:statement-pdf', '_blank'));
+			const [url, token] = jest.mocked(fetchPdfBlob).mock.calls[0];
+			expect(url).toContain('/client/pdf/en/123/?');
+			expect(new URLSearchParams(url.split('?')[1])).toEqual(
+				new URLSearchParams({ company_id: '1', date_from: '2026-06-01', date_to: '2026-06-30', type: 'invoice' }),
+			);
+			expect(token).toBe('test-token');
+			expect(createObjectURL).toHaveBeenCalledWith(blob);
+			jest.advanceTimersByTime(60_000);
+			expect(revokeObjectURL).toHaveBeenCalledWith('blob:statement-pdf');
+		});
+
+		it('reports a failed PDF request through the existing toast', async () => {
+			jest.mocked(fetchPdfBlob).mockRejectedValue(new Error('Request failed'));
+			const open = jest.spyOn(window, 'open').mockReturnValue(null);
+			renderWithProviders(<ClientsViewClient {...defaultProps} />);
+			fireEvent.click(screen.getByRole('button', { name: 'Imprimer le relevé' }));
+			fireEvent.click(screen.getByRole('button', { name: /Français/ }));
+			await waitFor(() => expect(onError).toHaveBeenCalledWith("Erreur lors de l'ouverture du document"));
+			expect(open).not.toHaveBeenCalled();
+		});
+
+		it('cancels language selection without requesting a PDF', () => {
+			renderWithProviders(<ClientsViewClient {...defaultProps} />);
+			fireEvent.click(screen.getByRole('button', { name: 'Imprimer le relevé' }));
+			fireEvent.click(screen.getByRole('button', { name: 'Annuler' }));
+			expect(fetchPdfBlob).not.toHaveBeenCalled();
+		});
+
+		it('hides printing for the read-only role', () => {
+			(useAppSelector as jest.Mock).mockReturnValue([{ id: 1, role: 'Lecture' }]);
+			renderWithProviders(<ClientsViewClient {...defaultProps} />);
+			expect(screen.queryByRole('button', { name: 'Imprimer le relevé' })).not.toBeInTheDocument();
+		});
+
+		it('disables printing while history is loading', () => {
+			(useGetClientHistoryQuery as jest.Mock).mockReturnValue({ data: emptyHistory, isLoading: true });
+			renderWithProviders(<ClientsViewClient {...defaultProps} />);
+			expect(screen.getByRole('button', { name: 'Imprimer le relevé' })).toBeDisabled();
+		});
 	});
 });

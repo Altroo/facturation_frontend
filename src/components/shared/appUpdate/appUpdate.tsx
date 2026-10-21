@@ -6,8 +6,9 @@ import { Alert, Typography } from '@mui/material';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import { getAppVersions } from '@/store/selectors';
-import { isNewerAppVersion } from '@/utils/appVersion';
-import { APP_UPDATE_PARAM, getAppUpdateUrl, reloadApp } from '@/utils/helpers';
+import { isNewerAppVersion, reloadApp } from '@/utils/helpers';
+import { APP_UPDATE_PARAM } from '@/utils/rawData';
+import { getAppUpdateUrl } from '@/utils/apiHelpers';
 
 const AppUpdate = () => {
 	const { localVersion, serverVersion, maintenance } = useAppSelector(getAppVersions);

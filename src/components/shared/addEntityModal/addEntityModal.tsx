@@ -1,6 +1,6 @@
 'use client';
 
-import { runWithErrorHandler } from '@/utils/runWithCleanup';
+import { runWithErrorHandler } from '@/utils/helpers';
 import { type FC, useState } from 'react';
 import { Box, Button, Modal, Typography } from '@mui/material';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';

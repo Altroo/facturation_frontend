@@ -1,8 +1,14 @@
 'use client';
 
-import { listReturnUrl } from '@/utils/listReturn';
-import { runWithCleanup } from '@/utils/runWithCleanup';
-import { useState, type FC, type MouseEvent } from 'react';
+import {
+	formatNumberWithSpaces,
+	getLabelForKey,
+	listReturnUrl,
+	parseNumber,
+	runWithCleanup,
+	setFormikAutoErrors,
+} from '@/utils/helpers';
+import { type FC, type MouseEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
 	Alert,
@@ -45,13 +51,11 @@ import Styles from '@/styles/dashboard/dashboard.module.sass';
 import type { DropDownType } from '@/types/accountTypes';
 import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import type { LogistiqueListResponse } from '@/types/logistiqueTypes';
-import type { StockReceiptFormValues } from '@/types/stockTypes';
-import { formatNumberWithSpaces, getLabelForKey, parseNumber, setFormikAutoErrors } from '@/utils/helpers';
+import type { StockReceiptFormContentProps, StockReceiptFormProps, StockReceiptFormValues } from '@/types/stockTypes';
 import { stockReceiptSchema } from '@/utils/formValidationSchemas';
 import { useToast } from '@/utils/hooks';
 import { STOCK_RECEIPT_VIEW, STOCK_RECEIPTS } from '@/utils/routes';
 import { textInputTheme } from '@/utils/themes';
-import type { StockReceiptFormContentProps, StockReceiptFormProps } from '@/types/stockTypes';
 
 const inputTheme = textInputTheme();
 

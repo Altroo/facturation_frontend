@@ -1,7 +1,7 @@
 'use client';
 
-import { runWithCleanup } from '@/utils/runWithCleanup';
-import { useState, type FC } from 'react';
+import { extractApiErrorMessage, formatDate, formatNumberWithSpaces, runWithCleanup } from '@/utils/helpers';
+import { type FC, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, Chip, Divider, Typography } from '@mui/material';
 import {
@@ -23,10 +23,9 @@ import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDa
 import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
 import DashboardStatCard from '@/components/shared/dashboardStatCard/dashboardStatCard';
 import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
-import type { ChipFilterConfig } from '@/types/uiTypes';
+import type { ActionItem, ChipFilterConfig } from '@/types/uiTypes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
-import type { ActionItem } from '@/types/uiTypes';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
@@ -39,7 +38,6 @@ import {
 	useGetLogistiqueListQuery,
 } from '@/store/services/logistique';
 import { LOGISTIQUE_ADD, LOGISTIQUE_EDIT, LOGISTIQUE_VIEW } from '@/utils/routes';
-import { extractApiErrorMessage, formatDate, formatNumberWithSpaces } from '@/utils/helpers';
 import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import {
 	logistiqueGlobalStatusItemsList as logisticsStatuses,
@@ -48,8 +46,12 @@ import {
 	logistiquePaymentStatusItemsList as paymentStatuses,
 } from '@/utils/rawData';
 import type { SessionProps } from '@/types/_initTypes';
-import type { LogistiqueListResponse, LogistiqueOrder, LogistiquePaymentStatus } from '@/types/logistiqueTypes';
-import type { LogistiqueListFormikContentProps as FormikContentProps } from '@/types/logistiqueTypes';
+import type {
+	LogistiqueListFormikContentProps as FormikContentProps,
+	LogistiqueListResponse,
+	LogistiqueOrder,
+	LogistiquePaymentStatus,
+} from '@/types/logistiqueTypes';
 
 const statusColor = (status: string) => {
 	if (status === 'Clôturé') return 'success' as const;

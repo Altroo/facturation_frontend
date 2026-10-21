@@ -2,7 +2,6 @@ import type { SessionProps } from '@/types/_initTypes';
 import type { FC, ReactNode } from 'react';
 import type { ArticleClass } from '@/models/classes';
 import type { TypeRemiseType } from '@/types/devisTypes';
-import type { SalePriceBasis } from '@/utils/articlePricing';
 
 export type TypeArticleType = 'Produit' | 'Service';
 
@@ -101,3 +100,5 @@ export interface AddArticleModalProps {
 	documentDevise?: string;
 	disableRemise?: boolean;
 }
+
+export type SalePriceBasis = 'HT' | 'TTC';

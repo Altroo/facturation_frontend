@@ -168,6 +168,7 @@ jest.mock('@/utils/themes', () => ({
 }));
 
 jest.mock('@/utils/helpers', () => ({
+	...jest.requireActual('@/utils/helpers'),
 	getLabelForKey: jest.fn((labels: Record<string, string>, key: string) => labels[key] || key),
 	setFormikAutoErrors: jest.fn(),
 	parseNumber: jest.fn((val: string) => {

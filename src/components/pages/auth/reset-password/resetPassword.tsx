@@ -1,9 +1,9 @@
 'use client';
 
-import { runWithCleanup } from '@/utils/runWithCleanup';
+import { runWithCleanup, setFormikAutoErrors } from '@/utils/helpers';
 import { useEffect, useState, type FC } from 'react';
 import Styles from '@/styles/auth/auth.module.sass';
-import { setFormikAutoErrors } from '@/utils/helpers';
+
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
 import { cookiesPoster } from '@/utils/apiHelpers';

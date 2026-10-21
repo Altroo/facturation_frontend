@@ -1,6 +1,6 @@
 'use client';
 
-import { listReturnUrl } from '@/utils/listReturn';
+import { extractApiErrorMessage, formatDate, formatNumberWithSpaces, listReturnUrl } from '@/utils/helpers';
 import { type FC, isValidElement } from 'react';
 import { useRouter } from 'next/navigation';
 import { STOCK_INVENTORIES } from '@/utils/routes';
@@ -40,7 +40,6 @@ import type {
 	StockInventoryViewInfoRowProps as InfoRowProps,
 	StockInventoryViewProps,
 } from '@/types/stockTypes';
-import { extractApiErrorMessage, formatDate, formatNumberWithSpaces } from '@/utils/helpers';
 import { useAppSelector, useToast } from '@/utils/hooks';
 
 const InfoRow: FC<InfoRowProps> = ({ icon, label, value }) => {

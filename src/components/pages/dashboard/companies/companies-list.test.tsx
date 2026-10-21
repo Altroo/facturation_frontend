@@ -189,6 +189,7 @@ jest.mock('@/components/shared/dateRangeFilter/dateRangeFilterOperator', () => (
 	createDateRangeFilterOperator: jest.fn(() => []),
 }));
 jest.mock('@/utils/helpers', () => ({
+	...jest.requireActual('@/utils/helpers'),
 	formatDate: (date: string | null) => (date ? new Date(date).toLocaleDateString('fr-FR') : '—'),
 }));
 import CompaniesListClient from './companies-list';

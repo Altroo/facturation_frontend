@@ -1,7 +1,7 @@
 'use client';
 
-import { runWithCleanup } from '@/utils/runWithCleanup';
-import { useState, type FC } from 'react';
+import { extractApiErrorMessage, formatDate, formatNumberWithSpaces, runWithCleanup } from '@/utils/helpers';
+import { type FC, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Box, Button, Chip, Typography } from '@mui/material';
 import {
@@ -11,14 +11,12 @@ import {
 	Close as CloseIcon,
 	Visibility as VisibilityIcon,
 } from '@mui/icons-material';
-import type { GridColDef, GridFilterModel, GridRenderCellParams } from '@mui/x-data-grid';
-import { GridLogicOperator } from '@mui/x-data-grid';
+import { type GridColDef, type GridFilterModel, GridLogicOperator, type GridRenderCellParams } from '@mui/x-data-grid';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
-import type { ChipFilterConfig } from '@/types/uiTypes';
+import type { ActionItem, ChipFilterConfig } from '@/types/uiTypes';
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
-import type { ActionItem } from '@/types/uiTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
@@ -30,9 +28,8 @@ import {
 } from '@/store/services/stock';
 import type { SessionProps } from '@/types/_initTypes';
 import type { StockReceipt } from '@/types/stockTypes';
-import { extractApiErrorMessage, formatDate, formatNumberWithSpaces } from '@/utils/helpers';
 import { useToast } from '@/utils/hooks';
-import { STOCK_RECEIPTS_ADD, STOCK_RECEIPT_VIEW } from '@/utils/routes';
+import { STOCK_RECEIPT_VIEW, STOCK_RECEIPTS_ADD } from '@/utils/routes';
 import { stockReceiptStatusOptions } from '@/utils/rawData';
 
 const receiptStatusLabel = (status: StockReceipt['status']) =>

@@ -1,7 +1,7 @@
 import { type ReactNode } from 'react';
 import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import type { DocumentFormConfig } from '@/types/companyDocumentsTypes';
+import type { DocumentFormConfig, SharedDocumentFormContentProps } from '@/types/companyDocumentsTypes';
 import { DeviClass, BonDeLivraisonClass, FactureClass } from '@/models/classes';
 
 // ── Mock external dependencies ────────────────────────────────────
@@ -76,11 +76,13 @@ jest.mock('@/store/services/parameter', () => ({
 	useDeleteLivreParMutation: jest.fn(() => [jest.fn()]),
 }));
 jest.mock('@/utils/rawData', () => ({
+	...jest.requireActual('@/utils/rawData'),
 	bonDeLivraisonStatusItemsList: [],
 	devisFactureStatusItemsList: [],
 	remiseTypeItemsList: [],
 }));
 jest.mock('@/utils/helpers', () => ({
+	...jest.requireActual('@/utils/helpers'),
 	getCompanyDocumentLabelForKey: jest.fn((_, k) => k),
 	parseNumber: jest.fn((v) => Number(v)),
 	safeParseForInput: jest.fn((v) => v ?? ''),
@@ -183,7 +185,6 @@ jest.mock('date-fns/locale', () => ({ fr: {} }));
 
 // ── Import the REAL component ─────────────────────────────────────
 import CompanyDocumentFormContent, { generateRowId } from './companyDocumentFormContent';
-import type { SharedDocumentFormContentProps } from '@/types/companyDocumentsTypes';
 
 const mockDevisConfig: DocumentFormConfig<DeviClass> = {
 	documentType: 'devis',

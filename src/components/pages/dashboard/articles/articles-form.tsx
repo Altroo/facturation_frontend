@@ -1,7 +1,17 @@
 'use client';
 
-import { listReturnUrl } from '@/utils/listReturn';
-import { runWithCleanup } from '@/utils/runWithCleanup';
+import {
+	listReturnUrl,
+	runWithCleanup,
+	formatNumberWithSpaces,
+	getLabelForKey,
+	parseNumber,
+	setFormikAutoErrors,
+	isNectarRaisonSociale,
+	calculateSalePriceHT,
+	calculateSalePriceTTC,
+} from '@/utils/helpers';
+
 import { type ChangeEvent, type FC, type MouseEvent, useState } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
@@ -57,7 +67,7 @@ import {
 	useGetArticleQuery,
 	useGetCodeReferenceQuery,
 } from '@/store/services/article';
-import { formatNumberWithSpaces, getLabelForKey, parseNumber, setFormikAutoErrors } from '@/utils/helpers';
+
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import type {
@@ -65,6 +75,7 @@ import type {
 	ArticlesFormFormikContentProps as FormikContentProps,
 	ArticlesFormProps as Props,
 	TypeArticleType,
+	SalePriceBasis,
 } from '@/types/articleTypes';
 import {
 	useAddCategorieMutation,
@@ -90,8 +101,6 @@ import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import ClientArticleWrapperForm from '@/components/pages/dashboard/shared/client-article-form/clientArticleWrapperForm';
 import { useGetCompanyQuery } from '@/store/services/company';
 import EntityCrudControls from '@/components/shared/entityCrudControls/entityCrudControls';
-import { isNectarRaisonSociale } from '@/utils/nectar';
-import { calculateSalePriceHT, calculateSalePriceTTC, type SalePriceBasis } from '@/utils/articlePricing';
 
 const inputTheme = textInputTheme();
 

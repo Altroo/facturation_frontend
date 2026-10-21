@@ -1,10 +1,9 @@
 'use client';
 
-import { runWithCleanup } from '@/utils/runWithCleanup';
-import { useState, type FC } from 'react';
+import { runWithCleanup, setFormikAutoErrors } from '@/utils/helpers';
+import { type FC, useState } from 'react';
 import Styles from '@/styles/dashboard/settings/settings.module.sass';
 import { Alert, Box, Stack, useMediaQuery, useTheme } from '@mui/material';
-import { setFormikAutoErrors } from '@/utils/helpers';
 import { useFormik } from 'formik';
 import { changePasswordSchema } from '@/utils/formValidationSchemas';
 import { toFormikValidationSchema } from 'zod-formik-adapter';

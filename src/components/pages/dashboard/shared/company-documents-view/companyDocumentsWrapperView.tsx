@@ -1,6 +1,12 @@
 'use client';
 
-import { listReturnUrl } from '@/utils/listReturn';
+import {
+	extractApiErrorMessage,
+	formatDate,
+	formatNumberWithSpaces,
+	isNectarRaisonSociale,
+	listReturnUrl,
+} from '@/utils/helpers';
 import { type FC, Fragment, isValidElement } from 'react';
 import {
 	Alert,
@@ -46,14 +52,12 @@ import Styles from '@/styles/dashboard/dashboard.module.sass';
 import { useAppSelector, useLanguage } from '@/utils/hooks';
 import { getUserCompaniesState } from '@/store/selectors';
 import { useGetArticlesListQuery } from '@/store/services/article';
-import { extractApiErrorMessage, formatDate, formatNumberWithSpaces } from '@/utils/helpers';
-import { isNectarRaisonSociale } from '@/utils/nectar';
 import {
+	BON_DE_LIVRAISON_LIST,
 	DEVIS_LIST,
+	FACTURE_AVOIR_LIST,
 	FACTURE_CLIENT_LIST,
 	FACTURE_PRO_FORMA_LIST,
-	FACTURE_AVOIR_LIST,
-	BON_DE_LIVRAISON_LIST,
 } from '@/utils/routes';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import type { ArticleClass } from '@/models/classes';

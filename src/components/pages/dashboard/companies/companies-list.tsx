@@ -1,7 +1,7 @@
 'use client';
 
-import { runWithCleanup } from '@/utils/runWithCleanup';
-import { useState, type FC } from 'react';
+import { formatDate, runWithCleanup } from '@/utils/helpers';
+import { type FC, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, Chip, Stack, Typography } from '@mui/material';
 import {
@@ -29,7 +29,6 @@ import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDa
 import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type { CompanyClass } from '@/models/classes';
-import { formatDate } from '@/utils/helpers';
 import { Protected } from '@/components/layouts/protected/protected';
 import { useLanguage, useToast } from '@/utils/hooks';
 import Image from 'next/image';

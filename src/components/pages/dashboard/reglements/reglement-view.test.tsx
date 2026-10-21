@@ -98,6 +98,7 @@ jest.mock('@/components/pages/dashboard/devis/devis-list', () => ({
 }));
 
 jest.mock('@/utils/helpers', () => ({
+	...jest.requireActual('@/utils/helpers'),
 	formatDate: (date: string | null) => (date ? new Date(date).toLocaleDateString('fr-FR') : '—'),
 	formatNumber: (val: number) => (val != null ? val.toFixed(2) : '0.00'),
 }));

@@ -1,3 +1,4 @@
+import { version } from '../../package.json';
 import type { AccountGenderCodeValueType, DropDownType, PasswordResetCodeField } from '@/types/accountTypes';
 import type { TranslationDictionary } from '@/types/languageTypes';
 import type { CompanyLike } from '@/types/companyDocumentsTypes';
@@ -365,3 +366,38 @@ export const getTranslatedLogistiqueMacroSteps = (t: TranslationDictionary): str
 	t.logistique.macroStepDelivery,
 	t.logistique.macroStepClosing,
 ];
+
+export const APP_UPDATE_PARAM = '_app_update';
+
+export const NECTAR_RAISON_SOCIALE = 'IMMOBILIERE NECTAR';
+
+export const PURCHASE_CONDITIONS = [
+	['documentary100', '100 % par remise documentaire'],
+	['advance30_lc70', '30 % d’avance et 70 % par lettre de crédit (LC)'],
+	['advance30_documentary70', '30 % d’avance et 70 % par remise documentaire'],
+	['advance100', '100 % d’avance (total inférieur à 18 000)'],
+	['advance30_transfer70', '30 % d’avance et 70 % par virement'],
+	['receipt100', 'Paiement à la réception'],
+	['shipment100', 'Paiement après l’expédition'],
+] as const;
+
+// Only reviewed writing fields get AI. Unknown fields stay unchanged by default.
+export const aiWritingFields = new Set([
+	'designation',
+	'remarque',
+	'description',
+	'nature_marchandise',
+	'process_remark',
+	'conditions_paiement_proforma',
+	'notes_ecarts_proforma',
+	'commentaire_paiement',
+	'reject_note',
+	'libelle',
+	'observations',
+	'termes_paiement',
+	'reason',
+	'note',
+]);
+
+// Bundled with the running code, never copied from the server announcement.
+export const APP_VERSION = version;

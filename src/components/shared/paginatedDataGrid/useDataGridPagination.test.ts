@@ -1,4 +1,4 @@
-// Model Next's canonical query independently from the browser history commit.
+// Model Next's canonical query independently of the browser history commit.
 let mockCanonicalSearch: string | null = null;
 jest.mock('next/navigation', () => ({
 	useSearchParams: () => {
@@ -19,14 +19,18 @@ jest.mock('next/navigation', () => ({
 	},
 }));
 const replaceState = window.history.replaceState.bind(window.history);
-beforeAll(() => jest.spyOn(window.history, 'replaceState').mockImplementation((...args) => {
-	replaceState(...args);
-	window.dispatchEvent(new Event('test-next-query'));
-}));
+beforeAll(() =>
+	jest.spyOn(window.history, 'replaceState').mockImplementation((...args) => {
+		replaceState(...args);
+		window.dispatchEvent(new Event('test-next-query'));
+	}),
+);
 afterAll(() => jest.restoreAllMocks());
-afterEach(() => { mockCanonicalSearch = null; });
+afterEach(() => {
+	mockCanonicalSearch = null;
+});
 
-import { listReturnUrl } from '@/utils/listReturn';
+import { listReturnUrl } from '@/utils/helpers';
 import { act, renderHook } from '@testing-library/react';
 import type { GridPaginationModel } from '@mui/x-data-grid';
 import { parseDataGridPagination, useDataGridPagination } from './useDataGridPagination';
@@ -92,7 +96,6 @@ it('preserves the sort model identity when only the page changes', () => {
 	act(() => result.current[1]({ page: 2, pageSize: 10 }));
 	expect(result.current[2].sortModel).toBe(sortModel);
 });
-
 
 it('records list pagination for an explicit return after unmount, without restoring fresh navigation', () => {
 	window.sessionStorage.clear();
