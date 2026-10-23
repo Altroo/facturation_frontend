@@ -596,6 +596,8 @@ const CompaniesViewClient: FC<Props> = ({ session, id }) => {
 																}}
 															>
 																<Avatar
+																	src={manager.avatar_cropped || manager.avatar || undefined}
+																	alt={formatManagerName(manager)}
 																	sx={{
 																		bgcolor: 'primary.main',
 																		width: 40,

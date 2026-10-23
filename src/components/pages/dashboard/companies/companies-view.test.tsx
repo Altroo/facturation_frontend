@@ -123,6 +123,41 @@ describe('CompaniesViewClient', () => {
 		expect(screen.getByText(/Erreur serveur/)).toBeInTheDocument();
 	});
 
+	it('uses cropped manager photos, falls back to originals, and supports managers without a photo', () => {
+		(useGetCompanyQuery as jest.Mock).mockReturnValue({
+			isLoading: false,
+			error: undefined,
+			data: {
+				id: 123,
+				raison_sociale: 'Entreprise Test',
+				admins: [
+					{
+						id: 1,
+						first_name: 'Sara',
+						last_name: 'Ali',
+						role: 'Caissier',
+						avatar: '/media/sara.png',
+						avatar_cropped: '/media/sara-cropped.png',
+					},
+					{
+						id: 2,
+						first_name: 'Amine',
+						last_name: 'Benali',
+						role: 'Lecture',
+						avatar: '/media/amine.png',
+						avatar_cropped: null,
+					},
+					{ id: 3, first_name: 'Sans', last_name: 'Photo', role: 'Lecture', avatar: null, avatar_cropped: null },
+				],
+			},
+		});
+		renderWithProviders(<CompaniesViewClient {...defaultProps} />);
+		expect(screen.getByRole('img', { name: 'Sara Ali' })).toHaveAttribute('src', '/media/sara-cropped.png');
+		expect(screen.getByRole('img', { name: 'Amine Benali' })).toHaveAttribute('src', '/media/amine.png');
+		expect(screen.queryByRole('img', { name: 'Sans Photo' })).not.toBeInTheDocument();
+		expect(screen.getByText('Sans Photo')).toBeInTheDocument();
+	});
+
 	it('renders company details on success', () => {
 		(useGetCompanyQuery as jest.Mock).mockReturnValue({
 			isLoading: false,
