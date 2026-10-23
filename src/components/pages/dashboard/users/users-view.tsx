@@ -429,10 +429,13 @@ const UsersViewClient: FC<Props> = ({ session, id }) => {
 																}}
 															>
 																<Avatar
+																	src={companie.logo_cropped || companie.logo || undefined}
+																	alt={companie.raison_sociale}
 																	sx={{
 																		bgcolor: 'primary.main',
 																		width: 40,
 																		height: 40,
+																		'& .MuiAvatar-img': { objectFit: 'contain' },
 																	}}
 																>
 																	<BusinessIcon />

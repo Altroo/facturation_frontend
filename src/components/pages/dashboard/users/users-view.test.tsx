@@ -138,6 +138,26 @@ describe('UsersViewClient navigation and permissions', () => {
 		expect(screen.getByText(/Erreur serveur/)).toBeInTheDocument();
 	});
 
+	it('uses the cropped company logo, falls back to the original, and keeps missing logos safe', () => {
+		(useGetUserQuery as jest.Mock).mockReturnValue({
+			isLoading: false,
+			error: undefined,
+			data: {
+				...mockUserData,
+				companies: [
+					{ ...mockUserData.companies[0], logo: '/media/logo.png', logo_cropped: '/media/cropped.png' },
+					{ ...mockUserData.companies[1], logo: '/media/original.png', logo_cropped: null },
+					{ membership_id: '789', raison_sociale: 'No Logo', role: 'Lecture', logo: null, logo_cropped: null },
+				],
+			},
+		});
+		renderWithProviders(<UsersViewClient {...defaultProps} />);
+		expect(screen.getByRole('img', { name: 'TechCorp' })).toHaveAttribute('src', '/media/cropped.png');
+		expect(screen.getByRole('img', { name: 'BizGroup' })).toHaveAttribute('src', '/media/original.png');
+		expect(screen.queryByRole('img', { name: 'No Logo' })).not.toBeInTheDocument();
+		expect(screen.getByText('No Logo')).toBeInTheDocument();
+	});
+
 	it('renders user details on success and scopes date checks to correct labels', () => {
 		(useGetUserQuery as jest.Mock).mockReturnValue({
 			isLoading: false,
