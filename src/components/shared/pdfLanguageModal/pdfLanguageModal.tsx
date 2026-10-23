@@ -33,14 +33,12 @@ const PdfLanguageModal: FC<PdfLanguageModalProps> = ({ onSelectLanguage, onClose
 					text: t.pdf.french,
 					onClick: () => onSelectLanguage('fr'),
 					icon: <LanguageFlag language="fr" />,
-					color: 'var(--app-text, #0D070B)',
 				},
 				{
 					active: true,
 					text: t.pdf.english,
 					onClick: () => onSelectLanguage('en'),
 					icon: <LanguageFlag language="en" />,
-					color: 'var(--app-text, #0D070B)',
 				},
 				{
 					active: false,
@@ -58,7 +56,6 @@ const PdfLanguageModal: FC<PdfLanguageModalProps> = ({ onSelectLanguage, onClose
 							}}
 						/>
 					),
-					color: 'var(--app-text, #0D070B)',
 				},
 			]}
 		/>
