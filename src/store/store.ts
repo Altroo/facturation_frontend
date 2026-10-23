@@ -81,15 +81,7 @@ export const makeStore = (): SagaStore => {
 	const s = configureStore({
 		reducer: reducers,
 		middleware: (getDefaultMiddleware) =>
-			getDefaultMiddleware({
-				serializableCheck: {
-					// RTK Query uses some non-serializable values in its internal actions
-					ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
-					// Ignore RTK Query cache metadata paths
-					ignoredPaths: ['meta.arg', 'meta.baseQueryMeta', 'payload.timestamp'],
-				},
-				thunk: true,
-			})
+			getDefaultMiddleware()
 				.prepend(sagaMw)
 				.concat(
 					accountApi.middleware,
