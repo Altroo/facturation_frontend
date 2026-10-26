@@ -32,8 +32,15 @@ export default function SupplierPurchaseSteps({
 	onEdit,
 }: Props) {
 	const selectedButton = useRef<HTMLButtonElement | null>(null);
+	const navigation = useRef<HTMLDivElement | null>(null);
 	useEffect(() => {
-		selectedButton.current?.scrollIntoView?.({ block: 'nearest', inline: 'center' });
+		const container = navigation.current;
+		const button = selectedButton.current;
+		if (!container || !button) return;
+		container.scrollLeft +=
+			button.getBoundingClientRect().left -
+			container.getBoundingClientRect().left -
+			(container.clientWidth - button.clientWidth) / 2;
 	}, [selected]);
 	const [remark, setRemark] = useState('');
 	const [requesting, setRequesting] = useState(false);
@@ -46,10 +53,10 @@ export default function SupplierPurchaseSteps({
 		(request) => request.demandeur === userId && ['pending', 'approved'].includes(request.statut),
 	);
 	return (
-		<Card elevation={2} sx={{ borderRadius: 2, minWidth: 0 }}>
+		<Card elevation={2} sx={{ borderRadius: 2, minWidth: 0, flexShrink: 0 }}>
 			<CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
 				<Stack spacing={2}>
-					<Box sx={{ overflowX: 'auto', p: 1 }}>
+					<Box ref={navigation} sx={{ overflowX: 'auto', p: 1 }}>
 						<Stepper
 							nonLinear
 							activeStep={steps.findIndex((step) => step.key === selected)}

@@ -83,7 +83,7 @@ function DetailCard({
 	children: ReactNode;
 }) {
 	return (
-		<Card elevation={2} sx={{ borderRadius: 2, minWidth: 0, height: '100%' }}>
+		<Card elevation={2} sx={{ borderRadius: 2, minWidth: 0, flexShrink: 0 }}>
 			<CardContent sx={{ p: { xs: 2, sm: 2.5 }, '&:last-child': { pb: { xs: 2, sm: 2.5 } } }}>
 				<Stack
 					direction={{ xs: 'column', sm: 'row' }}
