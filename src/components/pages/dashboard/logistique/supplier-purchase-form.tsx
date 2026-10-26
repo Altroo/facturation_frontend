@@ -13,6 +13,7 @@ import {
 	Checkbox,
 	Divider,
 	FormControlLabel,
+	IconButton,
 	InputAdornment,
 	Stack,
 	Typography,
@@ -1141,7 +1142,7 @@ function PurchaseFormik({
 							sx={{ gridColumn: { md: '1 / -1' }, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}
 						>
 							<Stack spacing={2}>
-								<Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+								<Box className={Controls.articleSelectorRow}>
 									<CustomAutoCompleteSelect
 										placeholder={t.logistique.placeholders.article}
 										id={`lignes.${index}.article`}
@@ -1183,14 +1184,12 @@ function PurchaseFormik({
 										}
 										noOptionsText={loadingArticles ? 'Recherche en cours…' : 'Aucun article trouvé'}
 									/>
-									<PrimaryLoadingButton
-										buttonText={`Retirer l’article ${index + 1}`}
+									<IconButton
 										size="small"
-										loading={false}
-										active={!disabled}
-										inverted
-										iconOnly
-										startIcon={<Delete fontSize="small" />}
+										color="error"
+										disabled={disabled}
+										title={t.common.delete}
+										className={Controls.articleDeleteAction}
 										aria-label={`Retirer l’article ${index + 1}`}
 										onClick={() =>
 											formik.setFieldValue(
@@ -1198,8 +1197,10 @@ function PurchaseFormik({
 												formik.values.lignes.filter((_, position) => position !== index),
 											)
 										}
-									/>
-								</Stack>
+									>
+										<Delete fontSize="small" />
+									</IconButton>
+								</Box>
 								<Box sx={grid}>
 									{number(`lignes.${index}.quantity`, 'Quantité achetée', <Inventory fontSize="small" />, 3, true)}
 									{number(
