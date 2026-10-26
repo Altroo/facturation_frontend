@@ -22,6 +22,7 @@ import type {
 import type { SxProps } from '@mui/system';
 import type { Theme } from '@mui/material/styles';
 import type { TextFieldProps } from '@mui/material/TextField';
+import type { AutocompleteValue } from '@mui/material/useAutocomplete';
 import type { DropDownType } from '@/types/accountTypes';
 import type { SelectChangeEvent } from '@mui/material/Select';
 import type { UrlObject } from 'url';
@@ -54,7 +55,8 @@ export type ApiProgressProps = {
 	circularColor: string;
 };
 
-export type CustomAutoCompleteSelectProps = {
+export type CustomAutoCompleteSelectProps<Multiple extends boolean = false> = {
+	multiple?: Multiple;
 	placeholder?: string;
 	serverFiltered?: boolean;
 	onInputChange?: (event: SyntheticEvent, value: string, reason: string) => void;
@@ -62,11 +64,11 @@ export type CustomAutoCompleteSelectProps = {
 	label: string;
 	items: Array<DropDownType>;
 	theme: Theme;
-	value: DropDownType | null;
+	value: AutocompleteValue<DropDownType, Multiple, false, false>;
 	noOptionsText: string;
 	size?: 'small' | 'medium';
 	fullWidth?: boolean;
-	onChange?: (event: SyntheticEvent, newValue: DropDownType | null) => void;
+	onChange?: (event: SyntheticEvent, newValue: AutocompleteValue<DropDownType, Multiple, false, false>) => void;
 	onBlur?: (e: FocusEvent<HTMLInputElement>) => void;
 	helperText?: string;
 	error?: boolean;

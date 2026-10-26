@@ -2374,6 +2374,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 										<FormattedNumberInput
 											placeholder={t.logistique.placeholders.pourcentage}
 											id={`pourcentage_${index}`}
+											startIcon={<PaymentIcon fontSize="small" />}
 											type="text"
 											label={t.logistique.fieldPlannedAmount}
 											value={item.pourcentage}

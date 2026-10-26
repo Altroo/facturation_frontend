@@ -2,22 +2,12 @@
 
 import { type FC, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-	Alert,
-	Autocomplete,
-	Box,
-	Button,
-	Card,
-	CardContent,
-	Divider,
-	Stack,
-	TextField,
-	Typography,
-} from '@mui/material';
-import { ArrowBack, Business, Email, Save } from '@mui/icons-material';
+import { Alert, Box, Button, Card, CardContent, Divider, Stack, Typography } from '@mui/material';
+import { ArrowBack, Business, Email, Save, Star } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import ClientArticleWrapperForm from '@/components/pages/dashboard/shared/client-article-form/clientArticleWrapperForm';
+import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
@@ -72,6 +62,7 @@ const FormikContent: ClientArticleWrapperFormProps['FormikComponent'] = ({ token
 			}
 		},
 	});
+	const brandItems = brands.map((brand) => ({ value: String(brand.id), code: brand.nom }));
 	const loading = !token || (!!id && isFetching);
 	return (
 		<Stack spacing={3} sx={{ p: { xs: 2, md: 3 }, width: '100%' }}>
@@ -105,23 +96,28 @@ const FormikContent: ClientArticleWrapperFormProps['FormikComponent'] = ({ token
 								</Stack>
 								<Divider sx={{ mb: 3 }} />
 								<Stack spacing={3}>
-									<Autocomplete
+									<CustomAutoCompleteSelect
 										multiple
+										id="marques"
+										label={t.logistique.fieldBrands}
+										placeholder={t.logistique.placeholders.marques}
+										noOptionsText={t.articles.noMarque}
 										size="small"
-										options={brands}
-										getOptionLabel={(brand) => brand.nom}
-										isOptionEqualToValue={(option, selected) => option.id === selected.id}
-										value={brands.filter((brand) => formik.values.marques.includes(brand.id))}
+										fullWidth
+										theme={inputTheme}
+										startIcon={<Star fontSize="small" />}
+										items={brandItems}
+										value={brandItems.filter((brand) => formik.values.marques.includes(Number(brand.value)))}
 										onChange={(_, selected) => {
 											void formik.setFieldValue(
 												'marques',
-												selected.map((brand) => brand.id),
+												selected.map((brand) => Number(brand.value)),
 											);
 										}}
+										onBlur={formik.handleBlur('marques')}
+										error={!!(formik.touched.marques && formik.errors.marques)}
+										helperText={formik.touched.marques ? formik.errors.marques?.toString() : undefined}
 										disabled={formik.isSubmitting}
-										renderInput={(params) => (
-											<TextField {...params} label="Marques" placeholder="Sélectionnez les marques du fournisseur" />
-										)}
 									/>
 									<CustomTextInput
 										placeholder={t.logistique.placeholders.nom}

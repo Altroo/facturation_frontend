@@ -898,7 +898,6 @@ export type TranslationDictionary = {
 		noAttachments: string;
 		attachmentFile: string;
 		attachmentFiles: string;
-		pendingUpload: string;
 		downloadDocument: string;
 		noAlerts: string;
 		paymentRequestSentBy: string;

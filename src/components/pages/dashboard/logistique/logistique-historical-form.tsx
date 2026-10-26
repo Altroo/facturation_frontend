@@ -13,7 +13,6 @@ import { type FC, type MouseEvent, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
 	Alert,
-	Autocomplete,
 	Box,
 	Button,
 	Card,
@@ -24,7 +23,6 @@ import {
 	FormControlLabel,
 	InputAdornment,
 	Stack,
-	TextField,
 	Typography,
 	useMediaQuery,
 	useTheme,
@@ -398,6 +396,13 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 		return items.filter((proforma) => !proforma.has_logistics_dossier);
 	})();
 
+	const proformaOptions = proformas
+		.filter((proforma) => proforma.id)
+		.map((proforma) => ({
+			value: String(proforma.id),
+			code: `${proforma.numero_bon_commande_client ? `${proforma.numero_bon_commande_client} - ` : ''}${proforma.numero_facture ?? ''}${proforma.client_name ? ` - ${proforma.client_name}` : ''}`,
+		}));
+
 	const responsableOptions = (responsablesData ?? []).map((responsable: LogistiqueResponsibleOption) => ({
 		value: String(responsable.id),
 		code: responsable.label,
@@ -649,58 +654,34 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 										<Stack spacing={3}>
 											{!isEditMode && (
 												<FormCard title={t.logistique.sourceSection} icon={<RequestQuoteIcon color="primary" />}>
-													<Autocomplete
-														multiple
-														options={proformas}
-														value={proformas.filter(
-															(proforma) => proforma.id && formik.values.proformas.includes(proforma.id),
-														)}
-														getOptionLabel={(option) =>
-															`${option.numero_bon_commande_client ? `${option.numero_bon_commande_client} - ` : ''}${option.numero_facture ?? ''}${option.client_name ? ` - ${option.client_name}` : ''}`
-														}
-														isOptionEqualToValue={(option, value) => option.id === value.id}
-														onChange={(_, selected) => {
-															setHasAttemptedSubmit(false);
-															formik.setErrors({});
-															void formik.setFieldValue(
-																'proformas',
-																selected.flatMap((proforma) => (proforma.id ? [proforma.id] : [])),
-															);
-														}}
-														renderInput={(params) => (
-															<TextField
-																placeholder={t.logistique.placeholders.proformas}
-																{...params}
-																size="small"
-																label={
-																	<Box component="span">
-																		{t.logistique.fieldProformas}{' '}
-																		<Box component="span" sx={{ color: 'error.main' }}>
-																			*
-																		</Box>
-																	</Box>
-																}
-																error={hasFieldError('proformas')}
-																helperText={getFieldError('proformas')}
-																slotProps={{
-																	...params.slotProps,
-																	input: {
-																		...params.slotProps.input,
-																		startAdornment: (
-																			<>
-																				<InputAdornment position="start">
-																					<DescriptionIcon fontSize="small" />
-																				</InputAdornment>
-																				{params.slotProps.input.startAdornment}
-																			</>
-																		),
-																	},
-																}}
-															/>
-														)}
-														noOptionsText={t.logistique.noProforma}
-														sx={{ gridColumn: { md: '1 / -1' } }}
-													/>
+													<Box sx={{ gridColumn: { md: '1 / -1' } }}>
+														<CustomAutoCompleteSelect
+															multiple
+															id="proformas"
+															label={`${t.logistique.fieldProformas} *`}
+															placeholder={t.logistique.placeholders.proformas}
+															items={proformaOptions}
+															value={proformaOptions.filter((proforma) =>
+																formik.values.proformas.includes(Number(proforma.value)),
+															)}
+															onChange={(_, selected) => {
+																setHasAttemptedSubmit(false);
+																formik.setErrors({});
+																void formik.setFieldValue(
+																	'proformas',
+																	selected.map((proforma) => Number(proforma.value)),
+																);
+															}}
+															onBlur={formik.handleBlur('proformas')}
+															error={hasFieldError('proformas')}
+															helperText={getFieldError('proformas')}
+															noOptionsText={t.logistique.noProforma}
+															theme={inputTheme}
+															startIcon={<DescriptionIcon fontSize="small" />}
+															size="small"
+															fullWidth
+														/>
+													</Box>
 													<CustomAutoCompleteSelect
 														placeholder={t.logistique.placeholders.responsable}
 														id="responsable"
@@ -963,48 +944,52 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 																				alignItems: 'center',
 																			}}
 																		>
-																			<Autocomplete
+																			<CustomAutoCompleteSelect
 																				multiple
 																				fullWidth
-																				options={marqueOptions}
+																				id="marques"
+																				label={t.logistique.fieldBrands}
+																				placeholder={t.logistique.placeholders.marques}
+																				size="small"
+																				theme={inputTheme}
+																				startIcon={<StarIcon fontSize="small" />}
+																				items={marqueOptions}
 																				value={selectedMarques}
-																				getOptionLabel={(option) => option.code}
-																				isOptionEqualToValue={(option, value) => option.value === value.value}
 																				onChange={(_, values) =>
 																					void formik.setFieldValue(
 																						'marques',
 																						values.map((item) => Number(item.value)),
 																					)
 																				}
-																				renderInput={(params) => (
-																					<TextField
-																						placeholder={t.logistique.placeholders.marques}
-																						{...params}
-																						size="small"
-																						label={t.logistique.fieldBrands}
+																				onBlur={formik.handleBlur('marques')}
+																				error={hasFieldError('marques')}
+																				helperText={getFieldError('marques')}
+																				noOptionsText={t.articles.noMarque}
+																				endIcon={
+																					<EntityCrudControls
+																						label={t.logistique.fieldBrands.toLowerCase()}
+																						icon={<StarIcon fontSize="small" />}
+																						inputTheme={inputTheme}
+																						selectedItem={selectedMarqueForCrud}
+																						addEntity={(args) =>
+																							addMarque({ data: { ...args.data, company: company_id } })
+																						}
+																						editEntity={({ id: marqueId, data }) =>
+																							editMarque({ id: marqueId, data: { ...data, company: company_id } })
+																						}
+																						deleteEntity={({ id: marqueId }) => deleteMarque({ id: marqueId })}
+																						onAddSuccess={(newId) =>
+																							void formik.setFieldValue('marques', [...formik.values.marques, newId])
+																						}
+																						onDeleteSuccess={() =>
+																							void formik.setFieldValue(
+																								'marques',
+																								formik.values.marques.filter(
+																									(id) => id !== Number(selectedMarqueForCrud?.value),
+																								),
+																							)
+																						}
 																					/>
-																				)}
-																			/>
-																			<EntityCrudControls
-																				label={t.logistique.fieldBrands.toLowerCase()}
-																				icon={<StarIcon fontSize="small" />}
-																				inputTheme={inputTheme}
-																				selectedItem={selectedMarqueForCrud}
-																				addEntity={(args) => addMarque({ data: { ...args.data, company: company_id } })}
-																				editEntity={({ id: marqueId, data }) =>
-																					editMarque({ id: marqueId, data: { ...data, company: company_id } })
-																				}
-																				deleteEntity={({ id: marqueId }) => deleteMarque({ id: marqueId })}
-																				onAddSuccess={(newId) =>
-																					void formik.setFieldValue('marques', [...formik.values.marques, newId])
-																				}
-																				onDeleteSuccess={() =>
-																					void formik.setFieldValue(
-																						'marques',
-																						formik.values.marques.filter(
-																							(id) => id !== Number(selectedMarqueForCrud?.value),
-																						),
-																					)
 																				}
 																			/>
 																		</Box>
@@ -1263,6 +1248,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 																	{allows('banque') && (
 																		<CustomAutoCompleteSelect
 																			id="banque"
+																			startIcon={<PaymentIcon fontSize="small" />}
 																			label={t.logistique.fieldBanque}
 																			placeholder="Sélectionnez la banque"
 																			noOptionsText="Aucune banque"

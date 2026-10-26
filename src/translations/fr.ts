@@ -972,7 +972,6 @@ export const fr: TranslationDictionary = {
 		noAttachments: 'Aucune pièce jointe',
 		attachmentFile: 'fichier',
 		attachmentFiles: 'fichiers',
-		pendingUpload: 'En attente',
 		downloadDocument: 'Télécharger',
 		noAlerts: 'Aucune alerte',
 		paymentRequestSentBy: 'Demande envoyée par',

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { createTheme } from '@mui/material/styles';
 import CustomAutoCompleteSelect from './customAutoCompleteSelect';
@@ -12,6 +12,34 @@ const items: DropDownType[] = [
 ];
 
 describe('CustomAutocompleteSelect', () => {
+	it('keeps multiple selected values, field icons and the inline add action together', () => {
+		const onChange = jest.fn();
+		const onAdd = jest.fn();
+		render(
+			<CustomAutoCompleteSelect
+				multiple
+				id="brands"
+				label="Marques"
+				placeholder="Sélectionnez les marques"
+				noOptionsText="Aucune marque"
+				items={items}
+				theme={theme}
+				value={[items[0]]}
+				onChange={onChange}
+				startIcon={<span data-testid="brand-icon" />}
+				endIcon={<button onClick={onAdd}>Ajouter</button>}
+			/>,
+		);
+		const field = screen.getByRole('combobox', { name: 'Marques' }).closest('.MuiInputBase-root')!;
+		expect(within(field as HTMLElement).getByText('Alice')).toBeInTheDocument();
+		expect(within(field as HTMLElement).getByTestId('brand-icon')).toBeInTheDocument();
+		fireEvent.click(within(field as HTMLElement).getByRole('button', { name: 'Ajouter' }));
+		expect(onAdd).toHaveBeenCalledTimes(1);
+		fireEvent.change(screen.getByRole('combobox'), { target: { value: 'Bob' } });
+		fireEvent.click(screen.getByRole('option', { name: 'Bob' }));
+		expect(onChange.mock.calls[0][1]).toEqual(items);
+	});
+
 	it('keeps the placeholder and accessible label while allowing option search', () => {
 		const onChange = jest.fn();
 		render(

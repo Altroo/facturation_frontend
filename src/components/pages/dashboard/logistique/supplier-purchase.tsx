@@ -3,6 +3,9 @@
 import { type ReactNode, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
+	Accordion,
+	AccordionDetails,
+	AccordionSummary,
 	Alert,
 	Box,
 	Button,
@@ -25,6 +28,7 @@ import {
 	Description,
 	Edit,
 	Email,
+	ExpandMore,
 	History,
 	Inventory,
 	LocalShipping,
@@ -66,18 +70,35 @@ const date = (entry?: string | null) =>
 	entry ? new Date(entry.length === 10 ? `${entry}T00:00:00` : entry).toLocaleDateString('fr-FR') : '-';
 const dateTime = (entry?: string | null) =>
 	entry ? new Date(entry).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) : '-';
-const grid = { display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 2 };
-function DetailCard({ title, icon, children }: { title: string; icon: ReactNode; children: ReactNode }) {
+const grid = { display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, columnGap: 3, rowGap: 1 };
+function DetailCard({
+	title,
+	icon,
+	action,
+	children,
+}: {
+	title: string;
+	icon: ReactNode;
+	action?: ReactNode;
+	children: ReactNode;
+}) {
 	return (
-		<Card elevation={2} sx={{ borderRadius: 2 }}>
-			<CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-				<Stack direction="row" spacing={2} sx={{ alignItems: 'center', mb: 2 }}>
-					{icon}
-					<Typography variant="h6" sx={{ fontWeight: 700 }}>
-						{title}
-					</Typography>
+		<Card elevation={2} sx={{ borderRadius: 2, minWidth: 0, height: '100%' }}>
+			<CardContent sx={{ p: { xs: 2, sm: 2.5 }, '&:last-child': { pb: { xs: 2, sm: 2.5 } } }}>
+				<Stack
+					direction={{ xs: 'column', sm: 'row' }}
+					spacing={1.5}
+					sx={{ alignItems: { sm: 'center' }, justifyContent: 'space-between', mb: 2 }}
+				>
+					<Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', minWidth: 0 }}>
+						{icon}
+						<Typography variant="h6" sx={{ fontWeight: 700 }}>
+							{title}
+						</Typography>
+					</Stack>
+					{action}
 				</Stack>
-				<Divider sx={{ mb: 3 }} />
+				<Divider sx={{ mb: 2 }} />
 				<Stack spacing={2}>{children}</Stack>
 			</CardContent>
 		</Card>
@@ -85,11 +106,20 @@ function DetailCard({ title, icon, children }: { title: string; icon: ReactNode;
 }
 function InfoRow({ label, value, icon }: { label: string; value: ReactNode; icon?: ReactNode }) {
 	return (
-		<Stack direction="row" spacing={2} sx={{ alignItems: 'flex-start', py: 1.5, flexWrap: 'wrap' }}>
-			<Box sx={{ color: 'primary.main', display: 'flex', alignItems: 'center', minWidth: 40 }}>
+		<Stack direction="row" spacing={1.5} sx={{ alignItems: 'flex-start', py: 0.75, minWidth: 0 }}>
+			<Box
+				sx={{
+					color: 'primary.main',
+					display: 'flex',
+					alignItems: 'center',
+					flexShrink: 0,
+					pt: 0.25,
+					'& .MuiSvgIcon-root': { fontSize: 20 },
+				}}
+			>
 				{icon ?? <Description />}
 			</Box>
-			<Stack spacing={0.5} sx={{ flex: 1, minWidth: 0 }}>
+			<Stack spacing={0.25} sx={{ flex: 1, minWidth: 0 }}>
 				<Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
 					{label}
 				</Typography>
@@ -127,6 +157,26 @@ export default function SupplierPurchase({ session, company_id, id }: Logistique
 	const cancelled = order?.statut_global === 'Annulé';
 	const needsAdoption = !!order?.can_adopt_supplier_workflow;
 	const hasUnconfirmedSourceLines = !!order?.lignes?.some((line) => line.proforma || line.source_line || line.client);
+	const hasProformaDetails =
+		!!order &&
+		(order.numero_proforma_fournisseur ||
+			order.date_proforma_fournisseur ||
+			order.proforma_fournisseur_file ||
+			Number(order.montant_proforma_fournisseur) ||
+			order.proforma_controlee_le ||
+			order.is_proforma_step_complete ||
+			order.lignes?.length ||
+			order.incoterm ||
+			order.delai_proforma_jours != null ||
+			order.origine_marchandise ||
+			order.nature_marchandise ||
+			Number(order.poids_net) ||
+			Number(order.poids_brut) ||
+			order.ecart_prix_proforma ||
+			order.ecart_quantite_proforma ||
+			order.ecart_autre_proforma ||
+			order.notes_ecarts_proforma);
+
 	const active = !!order && !needsAdoption && !cancelled && order.statut !== 'Clôture';
 	const currentStep = order?.workflow?.etape_courante ?? 'proforma';
 	const requestedStep = chosenStep ?? query.get('etape');
@@ -162,12 +212,13 @@ export default function SupplierPurchase({ session, company_id, id }: Logistique
 	const actionButton = (label: string, onClick: () => void, enabled = true, icon: ReactNode = <Edit />) => (
 		<Button
 			variant="outlined"
+			size="small"
 			disabled={!enabled || busy}
 			loading={busy}
 			onClick={onClick}
 			type="button"
 			startIcon={icon}
-			sx={{ alignSelf: { xs: 'stretch', sm: 'flex-start' }, maxWidth: '100%' }}
+			sx={{ alignSelf: 'flex-start', maxWidth: '100%', flexShrink: 0 }}
 		>
 			{label}
 		</Button>
@@ -509,26 +560,51 @@ export default function SupplierPurchase({ session, company_id, id }: Logistique
 					) : !order || !company ? (
 						<NoPermission />
 					) : (
-						<Stack spacing={3} sx={{ p: { xs: 2, md: 3 }, width: '100%' }}>
-							<Stack direction={mobile ? 'column' : 'row'} spacing={2} sx={{ pt: 2, justifyContent: 'space-between' }}>
+						<Stack spacing={2} sx={{ p: { xs: 2, md: 3 }, width: '100%', minWidth: 0 }}>
+							<Stack
+								direction={mobile ? 'column' : 'row'}
+								spacing={2}
+								sx={{ justifyContent: 'space-between', alignItems: { sm: 'center' } }}
+							>
 								<Button
 									variant="outlined"
+									size="small"
 									startIcon={<ArrowBack />}
 									onClick={() => router.push(listReturnUrl(`${LOGISTIQUE_LIST}?company_id=${company_id}`))}
 									sx={{ width: mobile ? '100%' : 'auto' }}
 								>
 									Retour à la liste
 								</Button>
-								{canManage && needsAdoption && (
-									<Button
-										variant="outlined"
-										startIcon={<Edit />}
-										onClick={() => edit('dossier')}
-										sx={{ width: mobile ? '100%' : 'auto' }}
-									>
-										{needsAdoption ? 'Compléter le dossier' : 'Modifier le dossier'}
-									</Button>
-								)}
+								<Stack
+									direction="row"
+									role="group"
+									aria-label="Actions du dossier"
+									sx={{ gap: 1, flexWrap: 'wrap', alignItems: 'center' }}
+								>
+									{canManage && needsAdoption && (
+										<Button
+											variant="outlined"
+											size="small"
+											startIcon={<Edit />}
+											onClick={() => edit('dossier')}
+											sx={{ width: mobile ? '100%' : 'auto' }}
+										>
+											{needsAdoption ? 'Compléter le dossier' : 'Modifier le dossier'}
+										</Button>
+									)}
+									{company.can_change_document_status && order.statut !== 'Clôture' && (
+										<Button
+											variant="outlined"
+											size="small"
+											color={cancelled ? 'primary' : 'error'}
+											disabled={busy}
+											startIcon={cancelled ? <History /> : <Close />}
+											onClick={() => setPending(cancelled ? 'Rouvert' : 'Annulé')}
+										>
+											{cancelled ? 'Rouvrir le dossier' : 'Annuler le dossier'}
+										</Button>
+									)}
+								</Stack>
 							</Stack>
 							{actionError && (
 								<Alert severity="error" onClose={() => setActionError('')}>
@@ -608,108 +684,142 @@ export default function SupplierPurchase({ session, company_id, id }: Logistique
 							{!needsAdoption && (
 								<>
 									{selectedStep === 'proforma' && (
-										<DetailCard title="Proforma fournisseur et conformité" icon={<Description color="primary" />}>
-											<Box sx={grid}>
-												<InfoRow label="N° de proforma fournisseur" value={order.numero_proforma_fournisseur} />
-												<InfoRow
-													label="Date de la proforma"
-													value={date(order.date_proforma_fournisseur)}
-													icon={<CalendarToday />}
-												/>
-												<InfoRow
-													label="Montant fournisseur"
-													value={money(order.montant_proforma_fournisseur, order.devise_proforma_fournisseur)}
-													icon={<Payment />}
-												/>
-												<InfoRow label="Contrôle" value={order.statut_proforma_conformite} icon={<CheckCircle />} />
-												<InfoRow label="Incoterm" value={order.incoterm} />
-												<InfoRow
-													label="Délai fournisseur"
-													value={order.delai_proforma_jours == null ? '-' : `${order.delai_proforma_jours} jours`}
-													icon={<CalendarToday />}
-												/>
-											</Box>
-											<Box sx={grid}>
-												<InfoRow
-													label="Total des articles"
-													value={hasUnconfirmedSourceLines ? '-' : money(order.cout_achat, order.devise)}
-													icon={<Payment />}
-												/>
-												<InfoRow label="Origine de la marchandise" value={order.origine_marchandise} />
-												<InfoRow label="Nature de la marchandise" value={order.nature_marchandise} />
-												<InfoRow label="Poids net (kg)" value={formatNumberWithSpaces(order.poids_net, 2)} />
-												<InfoRow label="Poids brut (kg)" value={formatNumberWithSpaces(order.poids_brut, 2)} />
-												<InfoRow
-													label="Contrôle enregistré"
-													value={
-														order.proforma_controlee_le
-															? `${dateTime(order.proforma_controlee_le)} · ${order.proforma_controlee_par_name ?? '-'}`
-															: '-'
-													}
-													icon={<CheckCircle />}
-												/>
-												<InfoRow
-													label="Proforma validée"
-													value={
-														order.proforma_validee_le
-															? `${dateTime(order.proforma_validee_le)} · ${order.proforma_validee_par_name ?? '-'}`
-															: '-'
-													}
-													icon={<CheckCircle />}
-												/>
-											</Box>
-											{hasUnconfirmedSourceLines && (
-												<Alert severity="info">
-													Renseignez les quantités et les prix d’achat depuis la proforma fournisseur. Les anciennes
-													valeurs ne sont pas reprises comme achats confirmés.
-												</Alert>
-											)}
-											{order.lignes
-												?.filter((line) => !line.proforma && !line.source_line && !line.client)
-												.map((line) => (
-													<Box
-														key={line.id}
-														sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}
-													>
-														<Typography variant="subtitle2">
-															{line.article_reference} : {line.designation}
-														</Typography>
-														<Typography variant="body2">
-															Quantité : {formatNumberWithSpaces(line.quantity, 3)} · Prix unitaire d’achat :{' '}
-															{money(line.prix_achat, line.devise_prix_achat)}
-														</Typography>
+										<DetailCard
+											title="Proforma fournisseur et conformité"
+											icon={<Description color="primary" />}
+											action={
+												canEdit && !order.is_proforma_step_complete
+													? actionButton('Contrôler la proforma', () => edit('proforma'), true, <Description />)
+													: undefined
+											}
+										>
+											{!hasProformaDetails ? (
+												<Typography variant="body2" color="text.secondary">
+													Aucune proforma fournisseur renseignée.
+												</Typography>
+											) : (
+												<>
+													<Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+														Document fournisseur
+													</Typography>
+													<Box sx={grid}>
+														<InfoRow label="N° de proforma fournisseur" value={order.numero_proforma_fournisseur} />
+														<InfoRow
+															label="Date de la proforma"
+															value={date(order.date_proforma_fournisseur)}
+															icon={<CalendarToday />}
+														/>
+														<InfoRow
+															label="Montant fournisseur"
+															value={money(order.montant_proforma_fournisseur, order.devise_proforma_fournisseur)}
+															icon={<Payment />}
+														/>
+														<InfoRow
+															label="Contrôle"
+															value={
+																order.statut_proforma_conformite === 'En attente'
+																	? 'À contrôler'
+																	: order.statut_proforma_conformite
+															}
+															icon={<CheckCircle />}
+														/>
+														<InfoRow label="Incoterm" value={order.incoterm} />
+														<InfoRow
+															label="Délai fournisseur"
+															value={order.delai_proforma_jours == null ? '-' : `${order.delai_proforma_jours} jours`}
+															icon={<CalendarToday />}
+														/>
 													</Box>
-												))}
-											<Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
-												{[
-													['Anomalie de prix', order.ecart_prix_proforma],
-													['Anomalie de quantité', order.ecart_quantite_proforma],
-													['Autre anomalie', order.ecart_autre_proforma],
-												].map(([label, flagged]) => (
-													<Chip
-														key={String(label)}
-														size="small"
-														variant="outlined"
-														color={flagged ? 'warning' : 'default'}
-														label={`${label} : ${flagged ? 'Oui' : 'Non'}`}
-													/>
-												))}
-											</Stack>
-											{!hasUnconfirmedSourceLines &&
-												Math.abs(Number(order.cout_achat) - Number(order.montant_proforma_fournisseur)) > 0.01 && (
-													<Alert severity="warning">
-														Le total des articles diffère du montant de la proforma fournisseur. Vérifiez les quantités,
-														les prix, les remises et les frais du document.
-													</Alert>
-												)}
-											{order.notes_ecarts_proforma && (
-												<Alert severity={order.is_proforma_step_complete ? 'info' : 'warning'}>
-													{order.notes_ecarts_proforma}
-												</Alert>
+													<Divider />
+													<Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+														Marchandise
+													</Typography>
+													<Box sx={grid}>
+														<InfoRow
+															label="Total des articles"
+															value={hasUnconfirmedSourceLines ? '-' : money(order.cout_achat, order.devise)}
+															icon={<Payment />}
+														/>
+														<InfoRow label="Origine de la marchandise" value={order.origine_marchandise} />
+														<InfoRow label="Nature de la marchandise" value={order.nature_marchandise} />
+														<InfoRow label="Poids net (kg)" value={formatNumberWithSpaces(order.poids_net, 2)} />
+														<InfoRow label="Poids brut (kg)" value={formatNumberWithSpaces(order.poids_brut, 2)} />
+													</Box>
+													<Divider />
+													<Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+														Conformité
+													</Typography>
+													<Box sx={grid}>
+														<InfoRow
+															label="Contrôle enregistré"
+															value={
+																order.proforma_controlee_le
+																	? `${dateTime(order.proforma_controlee_le)} · ${order.proforma_controlee_par_name ?? '-'}`
+																	: '-'
+															}
+															icon={<CheckCircle />}
+														/>
+														<InfoRow
+															label="Proforma validée"
+															value={
+																order.proforma_validee_le
+																	? `${dateTime(order.proforma_validee_le)} · ${order.proforma_validee_par_name ?? '-'}`
+																	: '-'
+															}
+															icon={<CheckCircle />}
+														/>
+													</Box>
+													{hasUnconfirmedSourceLines && (
+														<Alert severity="info">
+															Renseignez les quantités et les prix d’achat depuis la proforma fournisseur. Les anciennes
+															valeurs ne sont pas reprises comme achats confirmés.
+														</Alert>
+													)}
+													{order.lignes
+														?.filter((line) => !line.proforma && !line.source_line && !line.client)
+														.map((line) => (
+															<Box
+																key={line.id}
+																sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}
+															>
+																<Typography variant="subtitle2">
+																	{line.article_reference} : {line.designation}
+																</Typography>
+																<Typography variant="body2">
+																	Quantité : {formatNumberWithSpaces(line.quantity, 3)} · Prix unitaire d’achat :{' '}
+																	{money(line.prix_achat, line.devise_prix_achat)}
+																</Typography>
+															</Box>
+														))}
+													<Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
+														{[
+															['Anomalie de prix', order.ecart_prix_proforma],
+															['Anomalie de quantité', order.ecart_quantite_proforma],
+															['Autre anomalie', order.ecart_autre_proforma],
+														].map(([label, flagged]) => (
+															<Chip
+																key={String(label)}
+																size="small"
+																variant="outlined"
+																color={flagged ? 'warning' : 'default'}
+																label={`${label} : ${flagged ? 'Oui' : 'Non'}`}
+															/>
+														))}
+													</Stack>
+													{!hasUnconfirmedSourceLines &&
+														Math.abs(Number(order.cout_achat) - Number(order.montant_proforma_fournisseur)) > 0.01 && (
+															<Alert severity="warning">
+																Le total des articles diffère du montant de la proforma fournisseur. Vérifiez les
+																quantités, les prix, les remises et les frais du document.
+															</Alert>
+														)}
+													{order.notes_ecarts_proforma && (
+														<Alert severity={order.is_proforma_step_complete ? 'info' : 'warning'}>
+															{order.notes_ecarts_proforma}
+														</Alert>
+													)}
+												</>
 											)}
-											{canEdit &&
-												!order.is_proforma_step_complete &&
-												actionButton('Contrôler la proforma', () => edit('proforma'), true, <Description />)}
 										</DetailCard>
 									)}
 									{['titre', 'paiement', 'solde'].includes(selectedStep) && bank}
@@ -756,57 +866,75 @@ export default function SupplierPurchase({ session, company_id, id }: Logistique
 									)}
 								</>
 							)}
-							<LogistiqueDocumentsViewCard
-								items={orderFiles.filter(
-									(file) =>
-										({
-											proforma_fournisseur_file: 'proforma',
-											titre_importation_file: 'titre',
-											documents_originaux_file: 'expedition',
-											justificatifs_file: 'couts',
-										})[file.field] === selectedStep,
-								)}
-							/>
-							<DetailCard title="Remarques" icon={<Notes color="primary" />}>
-								{order.process_notes?.length ? (
-									order.process_notes.map((entry) => (
-										<Box key={entry.id}>
-											<Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
-												{entry.remarque}
-											</Typography>
-											<Typography variant="caption" color="text.secondary">
-												{entry.user_name} · {dateTime(entry.date_created)} · {entry.statut}
-											</Typography>
-											{entry.fichier && (
-												<Link href={entry.fichier} target="_blank" rel="noreferrer" sx={{ display: 'block' }}>
-													Voir la pièce jointe
-												</Link>
-											)}
-										</Box>
-									))
-								) : (
-									<Typography variant="body2" color="text.secondary">
-										Aucune remarque enregistrée.
-									</Typography>
-								)}
-								{active &&
-									(canManage || accounting) &&
-									actionButton('Ajouter une remarque', () => edit('remarque'), true, <Notes />)}
-							</DetailCard>
-							<DetailCard title="Historique" icon={<History color="primary" />}>
-								<PurchaseHistory events={order.events} />
-							</DetailCard>
-							{company.can_change_document_status && order.statut !== 'Clôture' && (
-								<Button
-									variant="outlined"
-									color={cancelled ? 'primary' : 'error'}
-									disabled={busy}
-									startIcon={cancelled ? <History /> : <Close />}
-									onClick={() => setPending(cancelled ? 'Rouvert' : 'Annulé')}
+							<Box sx={{ ...grid, gap: 2 }}>
+								<LogistiqueDocumentsViewCard
+									items={orderFiles.filter(
+										(file) =>
+											({
+												proforma_fournisseur_file: 'proforma',
+												titre_importation_file: 'titre',
+												documents_originaux_file: 'expedition',
+												justificatifs_file: 'couts',
+											})[file.field] === selectedStep,
+									)}
+								/>
+								<DetailCard
+									title="Remarques"
+									icon={<Notes color="primary" />}
+									action={
+										active && (canManage || accounting)
+											? actionButton('Ajouter une remarque', () => edit('remarque'), true, <Notes />)
+											: undefined
+									}
 								>
-									{cancelled ? 'Rouvrir le dossier' : 'Annuler le dossier'}
-								</Button>
-							)}
+									{order.process_notes?.length ? (
+										order.process_notes.map((entry) => (
+											<Box key={entry.id}>
+												<Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
+													{entry.remarque}
+												</Typography>
+												<Typography variant="caption" color="text.secondary">
+													{entry.user_name} · {dateTime(entry.date_created)} · {entry.statut}
+												</Typography>
+												{entry.fichier && (
+													<Link href={entry.fichier} target="_blank" rel="noreferrer" sx={{ display: 'block' }}>
+														Voir la pièce jointe
+													</Link>
+												)}
+											</Box>
+										))
+									) : (
+										<Typography variant="body2" color="text.secondary">
+											Aucune remarque enregistrée.
+										</Typography>
+									)}
+								</DetailCard>
+							</Box>
+							<Accordion
+								disableGutters
+								elevation={2}
+								sx={{ borderRadius: '8px !important', '&:before': { display: 'none' } }}
+							>
+								<AccordionSummary
+									expandIcon={<ExpandMore />}
+									aria-controls="dossier-history"
+									id="dossier-history-heading"
+									sx={{ px: { xs: 2, sm: 2.5 }, minHeight: 64 }}
+								>
+									<Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
+										<History color="primary" />
+										<Typography variant="h6" sx={{ fontWeight: 700 }}>
+											Historique
+										</Typography>
+										<Chip size="small" variant="outlined" label={order.events?.length ?? 0} />
+									</Stack>
+								</AccordionSummary>
+								<AccordionDetails sx={{ px: { xs: 2, sm: 2.5 }, pb: 2.5 }}>
+									<Stack spacing={2}>
+										<PurchaseHistory events={order.events} />
+									</Stack>
+								</AccordionDetails>
+							</Accordion>
 						</Stack>
 					)}
 					{pending && order && (

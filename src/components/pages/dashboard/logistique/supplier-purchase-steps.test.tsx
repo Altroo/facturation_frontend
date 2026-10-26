@@ -42,6 +42,11 @@ it('requires a remark and submits it with the selected step', async () => {
 	render(<SupplierPurchaseSteps {...props} />);
 	fireEvent.click(screen.getByRole('button', { name: 'Demander une modification' }));
 	const send = screen.getByRole('button', { name: 'Envoyer la demande' });
+	expect(screen.getByTestId('NotesIcon')).toBeInTheDocument();
+	expect(screen.getByRole('textbox', { name: /Remarque pour le responsable/ })).toHaveAttribute(
+		'placeholder',
+		'Expliquez la correction à effectuer',
+	);
 	expect(send).toBeDisabled();
 	fireEvent.change(screen.getByRole('textbox', { name: /Remarque pour le responsable/ }), {
 		target: { value: 'Corriger la référence fournisseur' },

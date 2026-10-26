@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import {
 	useGetLogistiqueQuery,
 	useAddLogistiqueMutation,
@@ -9,6 +9,7 @@ import {
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 import { getInitStateToken } from '@/store/selectors';
 import { useAppSelector } from '@/utils/hooks';
+import { purchaseDraft } from '@/utils/helpers';
 import { LOGISTIQUE_VIEW } from '@/utils/routes';
 import SupplierPurchaseForm from './supplier-purchase-form';
 
@@ -16,6 +17,7 @@ const mockPush = jest.fn();
 const mockReplace = jest.fn();
 const mockOnSuccess = jest.fn();
 const mockOnError = jest.fn();
+jest.mock('@/utils/helpers', () => ({ ...jest.requireActual('@/utils/helpers'), purchaseDraft: jest.fn() }));
 jest.mock('next/navigation', () => ({
 	useRouter: () => ({ push: mockPush, replace: mockReplace }),
 	useSearchParams: () => new URLSearchParams(window.location.search),
@@ -113,6 +115,75 @@ beforeEach(() => {
 afterEach(() => jest.restoreAllMocks());
 
 describe('SupplierPurchaseForm', () => {
+	it('opens the current step when Edit from the list has no step parameter', async () => {
+		(useGetLogistiqueQuery as jest.Mock).mockReturnValue({
+			data: {
+				...order,
+				workflow: { etape_courante: 'proforma', etapes: [] },
+			},
+		});
+		window.history.replaceState(null, '', '/dashboard/logistique/7/edit?company_id=12');
+		await act(async () => {
+			render(<SupplierPurchaseForm company_id={12} id={7} />);
+		});
+		expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Proforma fournisseur et conformité');
+		expect(screen.queryByText('Accès refusé')).not.toBeInTheDocument();
+	});
+
+	it('keeps completed steps protected when explicitly requested without approval', async () => {
+		(useGetLogistiqueQuery as jest.Mock).mockReturnValue({
+			data: {
+				...order,
+				workflow: { etape_courante: 'proforma', etapes: [] },
+			},
+		});
+		await renderForm('dossier');
+		expect(screen.getByText('Accès refusé')).toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: 'Enregistrer' })).not.toBeInTheDocument();
+	});
+
+	it.each(['paiement', 'solde'])(
+		'opens the permitted accounting actions for %s instead of an unscoped payment form',
+		async (step) => {
+			(useGetLogistiqueQuery as jest.Mock).mockReturnValue({
+				data: {
+					...order,
+					workflow: { etape_courante: step, etapes: [] },
+				},
+			});
+			window.history.replaceState(null, '', '/dashboard/logistique/7/edit?company_id=12');
+			await act(async () => {
+				render(<SupplierPurchaseForm company_id={12} id={7} />);
+			});
+			expect(mockReplace).toHaveBeenCalledWith(`${LOGISTIQUE_VIEW(7, 12)}&etape=${step}`);
+			expect(screen.queryByRole('button', { name: 'Enregistrer' })).not.toBeInTheDocument();
+		},
+	);
+
+	it('opens article creation from the selector after preserving the proforma draft', async () => {
+		(purchaseDraft as jest.Mock).mockResolvedValue(undefined);
+		await renderForm('proforma');
+		fireEvent.click(screen.getByRole('button', { name: 'Ajouter un article' }));
+		const field = screen
+			.getByRole('combobox', { name: /Article : référence et désignation/ })
+			.closest('.MuiInputBase-root')!;
+		expect(screen.queryByRole('button', { name: 'Nouvel article' })).not.toBeInTheDocument();
+		fireEvent.click(within(field as HTMLElement).getByRole('button', { name: 'Ajouter' }));
+		await waitFor(() => expect(mockPush).toHaveBeenCalledTimes(1));
+		expect(purchaseDraft).toHaveBeenCalledWith(
+			expect.stringContaining('purchase:27:12:7:'),
+			'write',
+			expect.objectContaining({ lignes: expect.any(Array) }),
+		);
+		const destination = new URL(mockPush.mock.calls[0][0], 'http://localhost');
+		expect(destination.pathname).toBe('/dashboard/articles/new/');
+		expect(destination.searchParams.get('company_id')).toBe('12');
+		const back = new URL(destination.searchParams.get('retour')!, 'http://localhost');
+		expect(back.pathname).toBe('/dashboard/logistique/7/edit');
+		expect(back.searchParams.get('etape')).toBe('proforma');
+		expect(back.searchParams.get('brouillon')).toBeTruthy();
+	});
+
 	it('creates an independent supplier dossier without date inputs or a client proforma', async () => {
 		(useGetLogistiqueQuery as jest.Mock).mockReturnValue({});
 		window.history.replaceState(null, '', '/dashboard/logistique/new?company_id=12');

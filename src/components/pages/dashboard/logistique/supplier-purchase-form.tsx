@@ -154,8 +154,7 @@ export default function SupplierPurchaseForm(props: LogistiqueFormProps) {
 	const { language } = useLanguage();
 	const token = useInitAccessToken(props.session);
 	const query = useSearchParams();
-	const requested = query.get('etape') ?? 'dossier';
-	const requestedMode: PurchaseFormMode = allowedModes.has(requested) ? (requested as PurchaseFormMode) : 'dossier';
+	const router = useRouter();
 	const companiesState = useAppSelector(getUserCompaniesState);
 	const { data: companies, isLoading: loadingCompanies } = useGetUserCompaniesQuery(undefined, { skip: !token });
 	const {
@@ -164,9 +163,23 @@ export default function SupplierPurchaseForm(props: LogistiqueFormProps) {
 		error,
 		refetch,
 	} = useGetLogistiqueQuery({ id: props.id ?? 0 }, { skip: !token || !props.id });
+	const requested = query.get('etape') ?? order?.workflow?.etape_courante ?? 'dossier';
+	const requestedMode: PurchaseFormMode = allowedModes.has(requested) ? (requested as PurchaseFormMode) : 'dossier';
 	const mode: PurchaseFormMode = order?.can_adopt_supplier_workflow ? 'dossier' : requestedMode;
 	const company = (companies ?? companiesState)?.find((entry) => entry.id === props.company_id);
 	const title = !props.id && mode === 'dossier' ? 'Nouveau dossier fournisseur' : titles[mode];
+	const paymentActionsUrl =
+		props.id &&
+		company &&
+		!query.has('etape') &&
+		!order?.can_adopt_supplier_workflow &&
+		['paiement', 'solde'].includes(order?.workflow?.etape_courante ?? '')
+			? `${LOGISTIQUE_VIEW(props.id, props.company_id)}&etape=${order?.workflow?.etape_courante}`
+			: null;
+	useEffect(() => {
+		if (token && paymentActionsUrl) router.replace(paymentActionsUrl);
+	}, [token, paymentActionsUrl, router]);
+
 	const currentUser = useAppSelector(getInitStateToken).user.pk;
 	const isAccounting = ['paiement', 'justificatif'].includes(mode);
 	const canManage = !!company?.role && logistiqueManagerRoles.has(company.role);
@@ -198,7 +211,7 @@ export default function SupplierPurchaseForm(props: LogistiqueFormProps) {
 		<Stack direction="column" sx={{ position: 'relative' }}>
 			<NavigationBar title={title}>
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
-					{loadingCompanies || loadingOrder || !token ? (
+					{loadingCompanies || loadingOrder || !token || paymentActionsUrl ? (
 						<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
 					) : error ? (
 						<Alert severity="error">
@@ -1063,11 +1076,6 @@ function PurchaseFormik({
 		sections.push(
 			<FormCard key="lignes" title="Articles de la proforma fournisseur" icon={<Inventory color="primary" />}>
 				{full(
-					<Button variant="outlined" startIcon={<Add />} disabled={disabled} onClick={() => void addNewArticle()}>
-						Nouvel article
-					</Button>,
-				)}
-				{full(
 					<Typography variant="body2" color="text.secondary">
 						Renseignez les quantités et prix d’achat du document fournisseur.
 					</Typography>,
@@ -1118,6 +1126,17 @@ function PurchaseFormik({
 										size="small"
 										theme={inputTheme}
 										startIcon={<Inventory fontSize="small" />}
+										endIcon={
+											<Button
+												size="small"
+												variant="outlined"
+												disabled={disabled}
+												onClick={() => void addNewArticle()}
+												sx={{ ml: 1 }}
+											>
+												{t.common.add}
+											</Button>
+										}
 										noOptionsText={loadingArticles ? 'Recherche en cours…' : 'Aucun article trouvé'}
 									/>
 									<IconButton
@@ -1338,6 +1357,7 @@ function PurchaseFormik({
 					full(
 						<CustomAutoCompleteSelect
 							id="correction-reception"
+							startIcon={<Inventory fontSize="small" />}
 							label="Réception à corriger"
 							placeholder="Sélectionnez la réception"
 							noOptionsText="Aucune réception"
@@ -1437,6 +1457,7 @@ function PurchaseFormik({
 					full(
 						<CustomAutoCompleteSelect
 							id="correction-echeance"
+							startIcon={<Payment fontSize="small" />}
 							noOptionsText="Aucun paiement validé"
 							label="Paiement à corriger"
 							placeholder="Sélectionnez le paiement"

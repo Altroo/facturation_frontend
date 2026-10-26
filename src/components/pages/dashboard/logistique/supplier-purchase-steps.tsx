@@ -1,23 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import {
-	Alert,
-	Box,
-	Button,
-	Card,
-	CardContent,
-	Stack,
-	Step,
-	StepButton,
-	Stepper,
-	TextField,
-	Typography,
-	useMediaQuery,
-	useTheme,
-} from '@mui/material';
-import { Edit, Send } from '@mui/icons-material';
+import { useEffect, useRef, useState } from 'react';
+import { Alert, Box, Button, Card, CardContent, Stack, Step, StepButton, Stepper, Typography } from '@mui/material';
+import { Edit, Notes, Send } from '@mui/icons-material';
 import type { LogistiqueOrder } from '@/types/logistiqueTypes';
+import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
+import { textInputTheme } from '@/utils/themes';
+
+const inputTheme = textInputTheme();
 
 type Props = {
 	order: LogistiqueOrder;
@@ -40,7 +30,10 @@ export default function SupplierPurchaseSteps({
 	onAction,
 	onEdit,
 }: Props) {
-	const compact = useMediaQuery(useTheme().breakpoints.down('lg'));
+	const selectedButton = useRef<HTMLButtonElement | null>(null);
+	useEffect(() => {
+		selectedButton.current?.scrollIntoView?.({ block: 'nearest', inline: 'center' });
+	}, [selected]);
 	const [remark, setRemark] = useState('');
 	const [requesting, setRequesting] = useState(false);
 	const steps = order.workflow?.etapes ?? [];
@@ -52,49 +45,65 @@ export default function SupplierPurchaseSteps({
 		(request) => request.demandeur === userId && ['pending', 'approved'].includes(request.statut),
 	);
 	return (
-		<Card elevation={2} sx={{ borderRadius: 2 }}>
-			<CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-				<Stack spacing={3}>
-					<Stepper
-						nonLinear
-						activeStep={steps.findIndex((step) => step.key === selected)}
-						alternativeLabel={!compact}
-						orientation={compact ? 'vertical' : 'horizontal'}
-					>
-						{steps.map((step) => (
-							<Step key={step.key} completed={step.completed}>
-								<StepButton
-									disabled={!step.accessible}
-									onClick={() => {
-										onSelect(step.key);
-										setRequesting(false);
-										setRemark('');
-									}}
-									aria-current={selected === step.key ? 'step' : undefined}
-								>
-									{step.label}
-								</StepButton>
-							</Step>
-						))}
-					</Stepper>
+		<Card elevation={2} sx={{ borderRadius: 2, minWidth: 0 }}>
+			<CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+				<Stack spacing={2}>
+					<Box sx={{ overflowX: 'auto', p: 1 }}>
+						<Stepper
+							nonLinear
+							activeStep={steps.findIndex((step) => step.key === selected)}
+							alternativeLabel
+							sx={{
+								minWidth: steps.length * 115,
+								'& .MuiStepLabel-label': { mt: 1, fontSize: '0.8rem', lineHeight: 1.4 },
+								'& .MuiStepButton-root': { py: 1 },
+							}}
+						>
+							{steps.map((step) => (
+								<Step key={step.key} completed={step.completed}>
+									<StepButton
+										ref={selected === step.key ? selectedButton : undefined}
+										disabled={!step.accessible}
+										onClick={() => {
+											onSelect(step.key);
+											setRequesting(false);
+											setRemark('');
+										}}
+										aria-current={selected === step.key ? 'step' : undefined}
+									>
+										{step.label}
+									</StepButton>
+								</Step>
+							))}
+						</Stepper>
+					</Box>
 					{previous && (
 						<Alert severity="info">
 							Étape terminée, affichée en lecture seule. Toute correction nécessite l’accord du responsable.
 						</Alert>
 					)}
 					{previous && canManage && !mine && !requesting && (
-						<Button variant="outlined" startIcon={<Edit />} onClick={() => setRequesting(true)}>
+						<Button
+							size="small"
+							sx={{ alignSelf: 'flex-start' }}
+							variant="outlined"
+							startIcon={<Edit />}
+							onClick={() => setRequesting(true)}
+						>
 							Demander une modification
 						</Button>
 					)}
 					{previous && requesting && (
 						<Stack spacing={2}>
-							<TextField
+							<CustomTextInput
+								id="correction_remarque"
+								type="textarea"
+								theme={inputTheme}
+								startIcon={<Notes fontSize="small" />}
 								label="Remarque pour le responsable"
 								placeholder="Expliquez la correction à effectuer"
 								size="small"
 								fullWidth
-								multiline
 								minRows={3}
 								required
 								value={remark}

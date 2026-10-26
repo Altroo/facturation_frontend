@@ -10,9 +10,7 @@ import {
 	Divider,
 	IconButton,
 	LinearProgress,
-	MenuItem,
 	Stack,
-	TextField,
 	Tooltip,
 	Typography,
 } from '@mui/material';
@@ -28,12 +26,17 @@ import {
 	UploadFile as UploadFileIcon,
 } from '@mui/icons-material';
 import { useLanguage } from '@/utils/hooks';
+import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
+import { textInputTheme } from '@/utils/themes';
+
 import type {
 	AttachmentRowProps,
 	LogistiqueDocumentField,
 	LogistiqueDocumentsFormCardProps,
 	LogistiqueDocumentsViewCardProps,
 } from '@/types/logistiqueTypes';
+
+const inputTheme = textInputTheme();
 
 const fileInputSx = {
 	clip: 'rect(0 0 0 0)',
@@ -72,7 +75,7 @@ const getFileIcon = (filename: string, mimeType?: string) => {
 	return <InsertDriveFileIcon fontSize="small" />;
 };
 
-const AttachmentRow: FC<AttachmentRowProps> = ({ icon, title, subtitle, actions, status }) => (
+const AttachmentRow: FC<AttachmentRowProps> = ({ icon, title, subtitle, actions }) => (
 	<Box
 		sx={(theme) => ({
 			display: 'flex',
@@ -115,7 +118,6 @@ const AttachmentRow: FC<AttachmentRowProps> = ({ icon, title, subtitle, actions,
 				{subtitle}
 			</Typography>
 		</Box>
-		{status ? <Chip label={status} size="small" color="warning" variant="outlined" sx={{ flexShrink: 0 }} /> : null}
 		<Stack direction="row" spacing={0.25} sx={{ flexShrink: 0 }}>
 			{actions}
 		</Stack>
@@ -208,20 +210,22 @@ export const LogistiqueDocumentsFormCard: FC<LogistiqueDocumentsFormCardProps> =
 						spacing={1.5}
 						sx={{ alignItems: { xs: 'stretch', md: 'center' } }}
 					>
-						<TextField
-							select
+						<CustomAutoCompleteSelect
+							id="attachment_type"
 							size="small"
 							label={t.logistique.attachmentLabel}
-							value={selectedItem?.field ?? ''}
-							onChange={(event) => onSelectedFieldChangeAction(event.target.value as LogistiqueDocumentField)}
+							placeholder={t.logistique.attachmentLabel}
+							theme={inputTheme}
+							startIcon={<AttachFileIcon fontSize="small" />}
+							items={items.map((item) => ({ value: item.field, code: item.label }))}
+							value={selectedItem ? { value: selectedItem.field, code: selectedItem.label } : null}
+							onChange={(_, item) => {
+								if (item) onSelectedFieldChangeAction(item.value as LogistiqueDocumentField);
+							}}
+							noOptionsText={t.logistique.noAttachments}
+							disabled={isLoading}
 							fullWidth
-						>
-							{items.map((item) => (
-								<MenuItem key={item.field} value={item.field}>
-									{item.label}
-								</MenuItem>
-							))}
-						</TextField>
+						/>
 						<Button
 							component="label"
 							variant="contained"
@@ -331,7 +335,6 @@ export const LogistiqueDocumentsFormCard: FC<LogistiqueDocumentsFormCardProps> =
 										icon={getFileIcon(filename, item.file?.type)}
 										title={item.label}
 										subtitle={subtitle}
-										status={item.file ? t.logistique.pendingUpload : undefined}
 										actions={
 											<>
 												{item.currentUrl && !item.file ? (
@@ -383,9 +386,9 @@ export const LogistiqueDocumentsViewCard: FC<LogistiqueDocumentsViewCardProps> =
 	const attachments = items.filter((item) => item.currentUrl);
 
 	return (
-		<Card elevation={2} sx={{ borderRadius: 2 }}>
-			<CardContent sx={{ p: 3 }}>
-				<Stack direction="row" spacing={2} sx={{ alignItems: 'center', mb: 2 }}>
+		<Card elevation={2} sx={{ borderRadius: 2, minWidth: 0, height: '100%' }}>
+			<CardContent sx={{ p: { xs: 2, sm: 2.5 }, '&:last-child': { pb: { xs: 2, sm: 2.5 } } }}>
+				<Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', mb: 2 }}>
 					<AttachFileIcon color="primary" />
 					<Typography variant="h6" sx={{ fontWeight: 700 }}>
 						{t.logistique.attachmentsTitle}
@@ -406,7 +409,9 @@ export const LogistiqueDocumentsViewCard: FC<LogistiqueDocumentsViewCardProps> =
 
 					{!isLoading && attachments.length === 0 ? (
 						<Box sx={{ py: 0.5 }}>
-							<Typography color="text.secondary">{t.logistique.noAttachments}</Typography>
+							<Typography variant="body2" color="text.secondary">
+								{t.logistique.noAttachments}
+							</Typography>
 						</Box>
 					) : (
 						<Stack spacing={1}>

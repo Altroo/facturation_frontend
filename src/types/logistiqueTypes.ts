@@ -511,7 +511,6 @@ export type AttachmentRowProps = {
 	title: string;
 	subtitle: string;
 	actions: ReactNode;
-	status?: string;
 };
 
 export interface LogistiqueFormProps extends SessionProps {

@@ -55,11 +55,11 @@ describe('LogistiqueDocumentsFormCard', () => {
 		expect(onFileChangeAction).toHaveBeenCalledWith('justificatifs_file', file);
 	});
 
-	it('shows a pending attachment and clears it without removing an existing remote file', () => {
+	it('shows a selected filename without a status badge and clears it without removing an existing remote file', () => {
 		const file = new File(['pdf'], 'nouveau.pdf', { type: 'application/pdf' });
 		render(<LogistiqueDocumentsFormCard {...props} items={[{ ...items[0], file, currentUrl: '/ancien.pdf' }]} />);
 
-		expect(screen.getByText(t.logistique.pendingUpload)).toBeInTheDocument();
+		expect(screen.queryByText(/En attente|Non enregistré/)).not.toBeInTheDocument();
 		expect(screen.getByText(/nouveau.pdf/)).toBeInTheDocument();
 		expect(screen.queryByRole('link')).not.toBeInTheDocument();
 		fireEvent.click(screen.getByRole('button', { name: t.common.delete }));

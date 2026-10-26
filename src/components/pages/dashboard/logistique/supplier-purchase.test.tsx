@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import {
 	useGetLogistiqueQuery,
 	usePurchaseActionMutation,
@@ -122,6 +122,19 @@ beforeEach(() => {
 });
 
 describe('SupplierPurchase', () => {
+	it('places cancellation in the compact top action group and keeps confirmation required', () => {
+		(useGetUserCompaniesQuery as jest.Mock).mockReturnValue({
+			data: [{ id: 12, role: 'Logistique', can_change_document_status: true }],
+		});
+		render(<SupplierPurchase company_id={12} id={7} />);
+		const actions = screen.getByRole('group', { name: 'Actions du dossier' });
+		const cancel = within(actions).getByRole('button', { name: 'Annuler le dossier' });
+		expect(cancel).toHaveClass('MuiButton-sizeSmall');
+		fireEvent.click(cancel);
+		expect(screen.getByRole('button', { name: 'Confirmer' })).toBeInTheDocument();
+		expect(mockPurchase).not.toHaveBeenCalled();
+	});
+
 	it('shows one step and opens completed dossier information read-only', () => {
 		render(<SupplierPurchase company_id={12} id={7} />);
 		expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Dossier LOG-007');
@@ -132,6 +145,44 @@ describe('SupplierPurchase', () => {
 		expect(screen.queryByRole('button', { name: 'Modifier le dossier' })).not.toBeInTheDocument();
 		expect(screen.queryByRole('button', { name: 'Contrôler la proforma' })).not.toBeInTheDocument();
 		expect(screen.getByRole('button', { name: 'Demander une modification' })).toBeInTheDocument();
+	});
+
+	it('keeps an empty proforma compact while retaining the action to enter it', () => {
+		render(<SupplierPurchase company_id={12} id={7} />);
+		expect(screen.getByText('Aucune proforma fournisseur renseignée.')).toBeInTheDocument();
+		expect(screen.queryByText('Montant fournisseur')).not.toBeInTheDocument();
+		fireEvent.click(screen.getByRole('button', { name: 'Contrôler la proforma' }));
+		expect(mockPush).toHaveBeenCalledWith(`${LOGISTIQUE_EDIT(7, 12)}&etape=proforma`);
+	});
+
+	it('preserves partially entered proforma details and keeps history available on demand', () => {
+		(useGetLogistiqueQuery as jest.Mock).mockReturnValue({
+			data: {
+				...order,
+				origine_marchandise: 'Italie',
+				statut_proforma_conformite: 'En attente',
+				events: [
+					{
+						id: 1,
+						action: 'Création du dossier fournisseur',
+						old_value: '',
+						new_value: 'LOG-007',
+						note: '',
+						user_name: 'Service IT',
+						date_created: '2026-10-26T10:00:00Z',
+					},
+				],
+			},
+		});
+		render(<SupplierPurchase company_id={12} id={7} />);
+		expect(screen.queryByText('Aucune proforma fournisseur renseignée.')).not.toBeInTheDocument();
+		expect(screen.getByText('Italie')).toBeInTheDocument();
+		expect(screen.getByText('À contrôler')).toBeInTheDocument();
+		const history = screen.getByRole('button', { name: /Historique/ });
+		expect(history).toHaveAttribute('aria-expanded', 'false');
+		fireEvent.click(history);
+		expect(history).toHaveAttribute('aria-expanded', 'true');
+		expect(screen.getByText('Création du dossier fournisseur')).toBeVisible();
 	});
 
 	it('denies access to a dossier outside the user companies', () => {

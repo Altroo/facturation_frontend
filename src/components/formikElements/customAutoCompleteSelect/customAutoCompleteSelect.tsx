@@ -1,6 +1,6 @@
 'use client';
 
-import { type Key, type HTMLAttributes, type FC } from 'react';
+import { type Key, type HTMLAttributes } from 'react';
 import TextField from '@mui/material/TextField';
 import { ThemeProvider } from '@/providers/scopedThemeProvider';
 import type { DropDownType } from '@/types/accountTypes';
@@ -8,7 +8,8 @@ import { Autocomplete, InputAdornment, Box, Typography } from '@mui/material';
 import { useLanguage } from '@/utils/hooks';
 import type { CustomAutoCompleteSelectProps as Props } from '@/types/uiTypes';
 
-const CustomAutoCompleteSelect: FC<Props> = ({
+const CustomAutoCompleteSelect = <Multiple extends boolean = false>({
+	multiple,
 	id,
 	label,
 	placeholder,
@@ -30,7 +31,7 @@ const CustomAutoCompleteSelect: FC<Props> = ({
 	helperText,
 	required,
 	renderOption: renderOptionProp,
-}) => {
+}: Props<Multiple>) => {
 	const { t } = useLanguage();
 	const defaultRenderOption = (props: HTMLAttributes<HTMLLIElement> & { key: Key }, option: DropDownType) => {
 		const { key, ...rest } = props;
@@ -50,7 +51,8 @@ const CustomAutoCompleteSelect: FC<Props> = ({
 
 	return (
 		<ThemeProvider theme={theme}>
-			<Autocomplete
+			<Autocomplete<DropDownType, Multiple, false, false>
+				multiple={multiple}
 				id={id}
 				size={size}
 				fullWidth={fullWidth}

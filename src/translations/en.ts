@@ -967,7 +967,6 @@ export const en: TranslationDictionary = {
 		noAttachments: 'No attachments',
 		attachmentFile: 'file',
 		attachmentFiles: 'files',
-		pendingUpload: 'Pending',
 		downloadDocument: 'Download',
 		noAlerts: 'No alerts',
 		paymentRequestSentBy: 'Request sent by',
