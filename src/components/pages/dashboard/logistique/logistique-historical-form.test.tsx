@@ -11,7 +11,10 @@ import LogistiqueForm from './logistique-historical-form';
 
 const mockPush = jest.fn();
 const mockOnError = jest.fn();
-jest.mock('next/navigation', () => ({ useRouter: () => ({ push: mockPush }) }));
+jest.mock('next/navigation', () => ({
+	useRouter: () => ({ push: mockPush }),
+	useSearchParams: () => new URLSearchParams(window.location.search),
+}));
 jest.mock('@/contexts/InitContext', () => ({ useInitAccessToken: () => 'token' }));
 jest.mock('@/store/selectors', () => ({ getInitStateToken: jest.fn(), getUserCompaniesState: jest.fn() }));
 jest.mock('@/utils/hooks', () => ({
@@ -60,7 +63,11 @@ const order = {
 	responsable: 27,
 	fournisseur: 'Ancien fournisseur',
 	statut_paiement: 'Non demandé',
-	statut: 'Proforma',
+	statut: 'Expédition',
+	workflow: {
+		etape_courante: 'expedition',
+		etapes: [{ key: 'expedition', label: 'Expédition', accessible: true, completed: false }],
+	},
 	proformas_detail: [],
 	lignes: [],
 	date_prevue: '2026-10-25',
@@ -77,6 +84,7 @@ const renderForm = async (id: number | null = 7) => {
 
 beforeEach(() => {
 	jest.clearAllMocks();
+	window.history.replaceState(null, '', '/dashboard/logistique/7?company_id=12');
 	(useAppSelector as jest.Mock).mockImplementation((selector) =>
 		selector === getInitStateToken ? { user: { pk: 27 } } : [],
 	);
@@ -118,4 +126,29 @@ describe('LogistiqueForm historical dossier editing', () => {
 		expect(screen.getByText('Ancien fournisseur')).toBeInTheDocument();
 		expect(mockPush).not.toHaveBeenCalled();
 	});
+});
+
+it('refuses direct access to an unapproved completed stage', async () => {
+	window.history.replaceState(null, '', '/dashboard/logistique/7/edit?company_id=12&etape=dossier');
+	await renderForm();
+	expect(screen.getByText('Accès refusé')).toBeInTheDocument();
+});
+it('limits an approved correction to that requester and step', async () => {
+	window.history.replaceState(null, '', '/dashboard/logistique/7/edit?company_id=12&etape=dossier&correction_id=9');
+	(useGetLogistiqueQuery as jest.Mock).mockReturnValue({
+		data: { ...order, change_requests: [{ id: 9, demandeur: 27, etape: 'dossier', statut: 'approved' }] },
+	});
+	await renderForm();
+	expect(screen.queryByPlaceholderText(t.logistique.placeholders.transport)).not.toBeInTheDocument();
+	fireEvent.change(screen.getByPlaceholderText(t.logistique.placeholders.description), {
+		target: { value: 'Description corrigée' },
+	});
+	fireEvent.click(screen.getByRole('button', { name: t.common.save }));
+	await waitFor(() =>
+		expect(mockEdit).toHaveBeenCalledWith({
+			id: 7,
+			data: expect.objectContaining({ description: 'Description corrigée', etape: 'dossier', correction_id: 9 }),
+		}),
+	);
+	expect(mockEdit.mock.calls[0][0].data).not.toHaveProperty('transport');
 });

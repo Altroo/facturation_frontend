@@ -401,3 +401,74 @@ export const aiWritingFields = new Set([
 
 // Bundled with the running code, never copied from the server announcement.
 export const APP_VERSION = version;
+
+// Bank Al-Maghrib's banking directory, with current names from the SGFG member list.
+// https://www.bkam.ma/fr/content/download/825344/9011558/Implantation%20Bancaire%202024.pdf
+// https://www.sgfg.ma/fr/garantie-des-depots/liste-des-banques-membres
+export const MOROCCAN_BANKS = [
+	'Al Barid Bank',
+	'Al Akhdar Bank',
+	'Arab Bank Maroc',
+	'Attijariwafa bank',
+	'Banco Sabadell',
+	'Bank Al-Amal',
+	'Bank Al Karam',
+	'Bank Al Yousr',
+	'Bank Assafa',
+	'Bank of Africa',
+	'Banque Populaire (BCP)',
+	'BCP Securities Services',
+	'BMCI',
+	'CaixaBank',
+	'CDG Capital',
+	'CFG Bank',
+	'CIH Bank',
+	'Citibank Maghreb',
+	'Crédit Agricole du Maroc',
+	'Crédit du Maroc',
+	'Fonds d’Équipement Communal',
+	'Saham Bank',
+	'Umnia Bank',
+	'Union Marocaine de Banques',
+	'Attijari International Bank',
+	'Bank of Africa Offshore',
+	'BMCI Banque Offshore',
+	'Chaabi International Bank',
+	'Crédit du Maroc Offshore',
+	'Saham Bank Offshore',
+];
+
+export const historicalLogisticsStepFields: Record<string, string[]> = {
+	dossier: ['description', 'responsable', 'marques', 'justificatifs_file'],
+	proforma: ['origine_marchandise', 'nature_marchandise', 'poids_net', 'poids_brut'],
+	paiement: [
+		'numero_domiciliation',
+		'banque',
+		'montant_titre_importation',
+		'devise_titre_importation',
+		'date_titre_importation',
+		'methode_paiement',
+		'avance_pourcentage',
+		'titre_importation_file',
+	],
+	production: ['date_prevue'],
+	expedition: ['transport', 'documents_originaux_requis', 'statut_documents_originaux', 'documents_originaux_file'],
+	transit: ['frais_transit', 'frais_douane', 'tva'],
+	reception: ['date_reelle', 'livraison_locale'],
+	couts: [
+		'cout_transport',
+		'frais_transit',
+		'frais_douane',
+		'tva',
+		'livraison_locale',
+		'autres_frais',
+		'justificatifs_file',
+	],
+};
+export const historicalLogisticsNextStatuses: Record<string, string[]> = {
+	production: ['Expédition'],
+	expedition: ['Transit'],
+	transit: ['Dédouanement', 'Réception locale'],
+	reception: ['Livraison client'],
+	couts: ['Clôture'],
+};

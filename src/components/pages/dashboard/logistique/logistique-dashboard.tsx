@@ -515,6 +515,24 @@ const DashboardContent: FC<DashboardContentProps> = ({ session, company_id }) =>
 					color="#00695C"
 					testId="logistique-dashboard-costs"
 				/>
+				<DashboardStatCard
+					icon={<LocalShippingIcon />}
+					label={t.logistique.swiftMissing}
+					value={String(stats.swift_manquant ?? 0)}
+					color="#C62828"
+				/>
+				<DashboardStatCard
+					icon={<LocalShippingIcon />}
+					label={t.logistique.docsMissing}
+					value={String(stats.documents_non_recus ?? 0)}
+					color="#455A64"
+				/>
+				<DashboardStatCard
+					icon={<LocalShippingIcon />}
+					label={t.logistique.transitNotStarted}
+					value={String(stats.transit_non_lance ?? 0)}
+					color="#00695C"
+				/>
 			</Box>
 
 			<Box

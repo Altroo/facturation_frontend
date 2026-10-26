@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useDeferredValue, useRef, useState } from 'react';
+import { type ReactNode, useDeferredValue, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getIn, useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -57,7 +57,7 @@ import { useInitAccessToken } from '@/contexts/InitContext';
 import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import { getInitStateToken, getUserCompaniesState } from '@/store/selectors';
 import { useGetCompanyQuery, useGetUserCompaniesQuery } from '@/store/services/company';
-import { useGetArticlesListQuery } from '@/store/services/article';
+import { useGetArticlesListQuery, useGetArticleQuery } from '@/store/services/article';
 import { useGetEmplacementListQuery, useGetMarqueListQuery } from '@/store/services/parameter';
 import {
 	useAddLogistiqueMutation,
@@ -73,10 +73,21 @@ import {
 	useRequestPurchasePaymentMutation,
 	useValidateLogistiquePaymentMutation,
 } from '@/store/services/logistique';
-import { extractApiErrorMessage, formatLocalDate, listReturnUrl, setFormikAutoErrors } from '@/utils/helpers';
+import {
+	extractApiErrorMessage,
+	formatLocalDate,
+	listReturnUrl,
+	setFormikAutoErrors,
+	purchaseDraft,
+} from '@/utils/helpers';
 import { textInputTheme } from '@/utils/themes';
-import { logistiqueManagerRoles, logistiquePaymentMethodItemsList, PURCHASE_CONDITIONS } from '@/utils/rawData';
-import { LOGISTIQUE_ADD, LOGISTIQUE_LIST, LOGISTIQUE_VIEW } from '@/utils/routes';
+import {
+	logistiqueManagerRoles,
+	logistiquePaymentMethodItemsList,
+	PURCHASE_CONDITIONS,
+	MOROCCAN_BANKS,
+} from '@/utils/rawData';
+import { ARTICLES_ADD, LOGISTIQUE_ADD, LOGISTIQUE_LIST, LOGISTIQUE_VIEW } from '@/utils/routes';
 import { getSupplierPurchaseSchema } from '@/utils/formValidationSchemas';
 import type { PurchaseFormMode, PurchaseFormValues } from '@/types/supplierPurchaseTypes';
 import type { LogistiqueDocumentField, LogistiqueFormProps, LogistiqueOrder } from '@/types/logistiqueTypes';
@@ -160,7 +171,29 @@ export default function SupplierPurchaseForm(props: LogistiqueFormProps) {
 	const isAccounting = ['paiement', 'justificatif'].includes(mode);
 	const canManage = !!company?.role && logistiqueManagerRoles.has(company.role);
 	const assignedAccountant = company?.role === 'Comptable' && order?.paiement_assigne_a === currentUser;
-	const canAccess = isAccounting ? assignedAccountant : canManage || (mode === 'remarque' && assignedAccountant);
+	const correctionId = Number(query.get('correction_id') ?? 0);
+	const correction = order?.change_requests?.find(
+		(entry) =>
+			entry.id === correctionId &&
+			entry.demandeur === currentUser &&
+			entry.statut === 'approved' &&
+			entry.etape === (query.get('etape_correction') ?? mode),
+	);
+	const step =
+		isAccounting || mode === 'demande_paiement'
+			? order?.workflow?.etapes?.find((entry) => entry.payment_ids?.includes(Number(query.get('echeance_id'))))?.key
+			: mode;
+	const permittedStep =
+		!order?.workflow?.etape_courante ||
+		!!correction ||
+		step === order.workflow.etape_courante ||
+		['remarque', 'repertoire'].includes(mode) ||
+		!!order.can_adopt_supplier_workflow;
+	const canAccess =
+		permittedStep &&
+		(isAccounting
+			? assignedAccountant || (!!correction && canManage)
+			: canManage || (mode === 'remarque' && assignedAccountant));
 	return (
 		<Stack direction="column" sx={{ position: 'relative' }}>
 			<NavigationBar title={title}>
@@ -181,12 +214,13 @@ export default function SupplierPurchaseForm(props: LogistiqueFormProps) {
 							localeText={(language === 'en' ? enUS : frFR).components.MuiLocalizationProvider.defaultProps.localeText}
 						>
 							<PurchaseFormik
-								key={`${props.company_id}-${props.id ?? 'new'}-${mode}-${query.get('echeance_id') ?? ''}`}
+								key={`${props.company_id}-${props.id ?? 'new'}-${mode}-${query.get('echeance_id') ?? ''}-${query.get('reception_id') ?? ''}-${correctionId}`}
 								{...props}
 								token={token}
 								mode={mode}
 								order={order}
 								echeanceId={Number(query.get('echeance_id') ?? 0)}
+								correctionId={correction?.id}
 							/>
 						</LocalizationProvider>
 					)}
@@ -203,8 +237,18 @@ function PurchaseFormik({
 	mode,
 	order,
 	echeanceId,
-}: LogistiqueFormProps & { token: string; mode: PurchaseFormMode; order?: LogistiqueOrder; echeanceId: number }) {
+	correctionId,
+}: LogistiqueFormProps & {
+	token: string;
+	mode: PurchaseFormMode;
+	order?: LogistiqueOrder;
+	echeanceId: number;
+	correctionId?: number;
+}) {
 	const router = useRouter();
+	const query = useSearchParams();
+	const draftId = query.get('brouillon');
+	const returnedArticleId = Number(query.get('article_id') ?? 0);
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
 	const theme = useTheme();
@@ -252,7 +296,19 @@ function PurchaseFormik({
 		!!company?.stock_management_enabled &&
 		(order?.lignes?.some((line) => (line.type_article ?? 'Produit').toLowerCase() === 'produit') ?? false);
 	const [add] = useAddLogistiqueMutation();
-	const [purchase] = usePurchaseActionMutation();
+	const [purchaseAction] = usePurchaseActionMutation();
+	const purchase = ({ id: targetId, data }: { id: number; data: Record<string, unknown> | FormData }) => {
+		if (data instanceof FormData) {
+			data.set('etape', query.get('etape_correction') ?? mode);
+			if (correctionId) data.set('correction_id', String(correctionId));
+		} else
+			data = {
+				...data,
+				etape: query.get('etape_correction') ?? mode,
+				...(correctionId ? { correction_id: correctionId } : {}),
+			};
+		return purchaseAction({ id: targetId, data });
+	};
 	const [extract, { isLoading: extracting }] = useExtractImportTitleMutation();
 	const [requestPayment] = useRequestPurchasePaymentMutation();
 	const [recordPayment] = useRecordLogistiquePaymentExecutionMutation();
@@ -261,7 +317,7 @@ function PurchaseFormik({
 	const [addSupplier] = useAddLogistiqueSupplierMutation();
 	const [editSupplier] = useEditLogistiqueSupplierMutation();
 	const initialValues: PurchaseFormValues = {
-		fournisseur_record: '',
+		fournisseur_record: value(order?.fournisseur_record),
 		fournisseur: order?.fournisseur ?? '',
 		fournisseur_email: order?.fournisseur_email ?? '',
 		marque: value(order?.marque),
@@ -271,7 +327,9 @@ function PurchaseFormik({
 		numero_proforma_fournisseur: order?.numero_proforma_fournisseur ?? '',
 		date_proforma_fournisseur: order?.date_proforma_fournisseur ?? '',
 		montant_proforma_fournisseur: value(order?.montant_proforma_fournisseur),
-		devise_proforma_fournisseur: order?.devise_proforma_fournisseur ?? 'EUR',
+		devise_proforma_fournisseur: order?.numero_proforma_fournisseur
+			? order.devise_proforma_fournisseur || 'EUR'
+			: 'EUR',
 		condition_achat: order?.condition_achat ?? '',
 		incoterm: order?.incoterm ?? '',
 		delai_proforma_jours: value(order?.delai_proforma_jours),
@@ -284,11 +342,15 @@ function PurchaseFormik({
 		ecart_quantite_proforma: order?.ecart_quantite_proforma ?? false,
 		ecart_autre_proforma: order?.ecart_autre_proforma ?? false,
 		notes_ecarts_proforma: order?.notes_ecarts_proforma ?? '',
-		decision: 'control',
+		decision: correctionId ? 'validate' : 'control',
 		numero_domiciliation: order?.numero_domiciliation ?? '',
 		banque: order?.banque ?? '',
-		montant_titre_importation: value(order?.montant_titre_importation || order?.montant_proforma_fournisseur),
-		devise_titre_importation: order?.devise_titre_importation ?? order?.devise_proforma_fournisseur ?? 'EUR',
+		montant_titre_importation: value(
+			Number(order?.montant_titre_importation) > 0
+				? order?.montant_titre_importation
+				: order?.montant_proforma_fournisseur,
+		),
+		devise_titre_importation: order?.date_titre_importation ? order.devise_titre_importation || 'EUR' : 'EUR',
 		date_titre_importation: order?.date_titre_importation ?? '',
 		date_expedition_prevue: order?.date_expedition_prevue ?? '',
 		confirmer_production: false,
@@ -306,8 +368,16 @@ function PurchaseFormik({
 		livraison_locale: value(order?.livraison_locale),
 		autres_frais: value(order?.autres_frais),
 		remarque: '',
-		note: '',
-		reference_reception: '',
+		note: correctionId
+			? (order?.receptions?.find(
+					(entry) => entry.id === Number(query.get('reception_id') ?? order?.receptions?.[0]?.id),
+				)?.note ?? '')
+			: '',
+		reference_reception: correctionId
+			? (order?.receptions?.find(
+					(entry) => entry.id === Number(query.get('reception_id') ?? order?.receptions?.[0]?.id),
+				)?.reference ?? '')
+			: '',
 		nom: '',
 		email_contact: '',
 		statut:
@@ -323,8 +393,8 @@ function PurchaseFormik({
 		date_paiement: today(),
 		methode_paiement: installment?.methode_paiement ?? '',
 		montant_paye: value(installment?.montant_prevu),
-		reference_paiement: '',
-		commentaire_paiement: '',
+		reference_paiement: correctionId ? (installment?.reference_bancaire ?? '') : '',
+		commentaire_paiement: correctionId ? (installment?.commentaire ?? '') : '',
 		lignes:
 			order?.lignes?.map((line) => ({
 				article: line.article,
@@ -355,6 +425,7 @@ function PurchaseFormik({
 		validateOnMount: true,
 		validationSchema: toFormikValidationSchema(
 			getSupplierPurchaseSchema(mode, {
+				approvedCorrection: !!correctionId,
 				existingProformaFile: !!order?.proforma_fournisseur_file,
 				existingTitleFile: !!order?.titre_importation_file,
 				managedReceipt,
@@ -362,6 +433,7 @@ function PurchaseFormik({
 			}),
 		),
 		onSubmit: async (values, { setFieldError }) => {
+			if (!draftReady) return;
 			setApiError('');
 			const optionalNumbers = new Set<keyof PurchaseFormValues>([
 				'poids_net',
@@ -394,8 +466,6 @@ function PurchaseFormik({
 						fournisseur_email: values.fournisseur_email,
 						responsable: Number(values.responsable),
 						marque: values.marque ? Number(values.marque) : null,
-						date_prevue: values.date_prevue || null,
-						date_commande_client: values.date_commande_client || null,
 					};
 					if (!id) {
 						const result = await add({ company_id, data: { ...data, marque: data.marque ?? undefined } }).unwrap();
@@ -406,6 +476,26 @@ function PurchaseFormik({
 					await purchase({
 						id,
 						data: { action: order?.can_adopt_supplier_workflow ? 'adopter_parcours_fournisseur' : 'dossier', ...data },
+					}).unwrap();
+				} else if (correctionId && mode === 'paiement') {
+					await purchase({
+						id: id!,
+						data: {
+							action: 'corriger_paiement',
+							echeance_id: echeanceId,
+							reference_paiement: values.reference_paiement,
+							commentaire_paiement: values.commentaire_paiement,
+						},
+					}).unwrap();
+				} else if (correctionId && mode === 'reception' && managedReceipt) {
+					await purchase({
+						id: id!,
+						data: {
+							action: 'corriger_reception',
+							reception_id: Number(query.get('reception_id') ?? order?.receptions?.[0]?.id),
+							reference: values.reference_reception,
+							note: values.note,
+						},
 					}).unwrap();
 				} else if (mode === 'repertoire') {
 					const existing = suppliers.find((supplier) => supplier.nom.toLowerCase() === values.nom.trim().toLowerCase());
@@ -457,7 +547,6 @@ function PurchaseFormik({
 								'delai_proforma_jours',
 								'poids_net',
 								'poids_brut',
-								'volume',
 								'ecart_prix_proforma',
 								'ecart_quantite_proforma',
 								'ecart_autre_proforma',
@@ -553,6 +642,7 @@ function PurchaseFormik({
 					await purchase({ id: id!, data: payload(data) }).unwrap();
 				}
 				onSuccess('Modifications enregistrées.');
+				if (draftKey) void purchaseDraft(draftKey, 'delete').catch(() => undefined);
 				router.push(id ? LOGISTIQUE_VIEW(id, company_id) : LOGISTIQUE_ADD(company_id));
 			} catch (failure) {
 				const message = extractApiErrorMessage(
@@ -566,11 +656,93 @@ function PurchaseFormik({
 			}
 		},
 	});
+	const draftKey = draftId ? `purchase:${userId}:${company_id}:${id}:${draftId}` : null;
+	const { data: returnedArticle, error: returnedArticleError } = useGetArticleQuery(
+		{ id: returnedArticleId },
+		{ skip: !token || !draftId || !returnedArticleId || mode !== 'proforma' },
+	);
+	const restored = useRef<string | null>(null);
+	const [draftReady, setDraftReady] = useState(!draftId || mode !== 'proforma');
+	const setValues = formik.setValues;
+	useEffect(() => {
+		if (
+			!draftKey ||
+			mode !== 'proforma' ||
+			restored.current === draftKey ||
+			(returnedArticleId && !returnedArticle && !returnedArticleError)
+		)
+			return;
+		let cancelled = false;
+		void purchaseDraft<PurchaseFormValues>(draftKey, 'read')
+			.then(async (draft) => {
+				if (cancelled) return;
+				restored.current = draftKey;
+				if (!draft) {
+					setApiError('Le brouillon est introuvable ou a expiré.');
+					return;
+				}
+				if (
+					returnedArticle &&
+					returnedArticle.company === company_id &&
+					!draft.lignes.some((line) => line.article === returnedArticle.id)
+				) {
+					const line = {
+						article: returnedArticle.id,
+						article_reference: returnedArticle.reference,
+						designation: returnedArticle.designation ?? '',
+						quantity: '1',
+						prix_achat:
+							returnedArticle.devise_prix_achat === draft.devise_proforma_fournisseur
+								? String(returnedArticle.prix_achat ?? '')
+								: '',
+						expected_emplacement: returnedArticle.emplacement ?? null,
+					};
+					const empty = draft.lignes.findIndex((entry) => !entry.article);
+					if (empty >= 0) draft.lignes[empty] = line;
+					else draft.lignes.push(line);
+				}
+				await setValues(draft);
+				if (returnedArticleError)
+					setApiError(
+						'Le brouillon est restauré, mais l’article ajouté n’a pas pu être chargé. Sélectionnez-le dans la liste.',
+					);
+				else if (returnedArticle && returnedArticle.company !== company_id)
+					setApiError('Le brouillon est restauré. Cet article n’appartient pas à cette société.');
+			})
+			.catch(() => {
+				if (!cancelled) setApiError('Impossible de restaurer le brouillon.');
+			})
+			.finally(() => {
+				if (!cancelled) setDraftReady(true);
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, [draftKey, mode, returnedArticle, returnedArticleError, returnedArticleId, company_id, setValues]);
+	const addNewArticle = async () => {
+		const key = draftId || crypto.randomUUID();
+		try {
+			await purchaseDraft(`purchase:${userId}:${company_id}:${id}:${key}`, 'write', formik.values);
+			const back = new URL(window.location.href);
+			back.searchParams.set('brouillon', key);
+			back.searchParams.delete('article_id');
+			router.push(`${ARTICLES_ADD(company_id)}&retour=${encodeURIComponent(back.pathname + back.search)}`);
+		} catch {
+			setApiError('Impossible de conserver le brouillon. Le formulaire reste ouvert.');
+		}
+	};
+
+	const hasAnomaly =
+		formik.values.ecart_prix_proforma || formik.values.ecart_quantite_proforma || formik.values.ecart_autre_proforma;
+	const selectedSupplier = suppliers.find((supplier) => String(supplier.id) === formik.values.fournisseur_record);
+	const filteredBrands = selectedSupplier
+		? brands.filter((brand) => selectedSupplier.marques?.includes(brand.id))
+		: brands;
 	const locked =
 		order?.statut_global === 'Annulé' ||
 		order?.statut === 'Clôture' ||
-		(mode === 'proforma' && order?.is_proforma_step_complete);
-	const disabled = formik.isSubmitting || extracting || !!locked;
+		(mode === 'proforma' && order?.is_proforma_step_complete && !correctionId);
+	const disabled = formik.isSubmitting || extracting || !!locked || !draftReady;
 	const errorFor = (name: string) =>
 		attempted || getIn(formik.touched, name) ? (getIn(formik.errors, name) as string | undefined) : undefined;
 	const placeholderFor = (name: string, label: string) =>
@@ -596,7 +768,7 @@ function PurchaseFormik({
 			helperText={errorFor(name) ?? helper}
 			error={!!errorFor(name)}
 			required={required}
-			disabled={disabled || readOnly}
+			disabled={disabled || (readOnly && (name === 'notes_ecarts_proforma' || !correctionId))}
 			fullWidth
 			size="small"
 			theme={inputTheme}
@@ -639,7 +811,7 @@ function PurchaseFormik({
 				void formik.setFieldValue(name, entry && !Number.isNaN(entry.getTime()) ? formatLocalDate(entry) : '');
 			}}
 			format="dd/MM/yyyy"
-			disabled={disabled || readOnly}
+			disabled={disabled || (readOnly && !correctionId)}
 			slotProps={{
 				textField: {
 					size: 'small',
@@ -783,8 +955,8 @@ function PurchaseFormik({
 			...previous,
 			numero_domiciliation: '',
 			banque: '',
-			montant_titre_importation: '',
-			devise_titre_importation: '',
+			montant_titre_importation: value(order?.montant_proforma_fournisseur),
+			devise_titre_importation: 'EUR',
 			date_titre_importation: '',
 		}));
 		try {
@@ -792,7 +964,10 @@ function PurchaseFormik({
 			body.append('file', file);
 			const result = await extract({ id, data: body }).unwrap();
 			if (sequence !== extractionSequence.current) return;
-			await formik.setValues((previous) => ({ ...previous, ...result.fields }));
+			await formik.setValues((previous) => ({
+				...previous,
+				...Object.fromEntries(Object.entries(result.fields).filter(([, entry]) => entry !== '' && entry != null)),
+			}));
 			setWarnings(result.warnings);
 		} catch (failure) {
 			if (sequence === extractionSequence.current)
@@ -824,6 +999,7 @@ function PurchaseFormik({
 						if (supplier) {
 							void formik.setFieldValue('fournisseur', supplier.nom);
 							void formik.setFieldValue('fournisseur_email', supplier.email);
+							if (!supplier.marques?.includes(Number(formik.values.marque))) void formik.setFieldValue('marque', '');
 						}
 					}}
 					disabled={disabled}
@@ -839,7 +1015,7 @@ function PurchaseFormik({
 					id="marque"
 					label="Marque"
 					placeholder={t.logistique.placeholders.marque}
-					items={brands.map((brand) => ({ value: String(brand.id), code: brand.nom }))}
+					items={filteredBrands.map((brand) => ({ value: String(brand.id), code: brand.nom }))}
 					value={
 						brands
 							.filter((brand) => String(brand.id) === formik.values.marque)
@@ -858,18 +1034,6 @@ function PurchaseFormik({
 				/>
 				{text('fournisseur_email', 'E-mail du fournisseur', <Email fontSize="small" />)}
 				{autocomplete('responsable', 'Responsable du dossier', responsibleItems, true, <Person fontSize="small" />)}
-				{date(
-					'date_prevue',
-					'Date prévue de fin du dossier',
-					false,
-					'Facultative ; date à laquelle le dossier doit être terminé.',
-				)}
-				{date(
-					'date_commande_client',
-					'Date de commande client',
-					false,
-					'Facultative ; aucun document client à sélectionner.',
-				)}
 			</FormCard>,
 		);
 	if (mode === 'proforma') {
@@ -898,6 +1062,11 @@ function PurchaseFormik({
 		);
 		sections.push(
 			<FormCard key="lignes" title="Articles de la proforma fournisseur" icon={<Inventory color="primary" />}>
+				{full(
+					<Button variant="outlined" startIcon={<Add />} disabled={disabled} onClick={() => void addNewArticle()}>
+						Nouvel article
+					</Button>,
+				)}
 				{full(
 					<Typography variant="body2" color="text.secondary">
 						Renseignez les quantités et prix d’achat du document fournisseur.
@@ -1041,7 +1210,6 @@ function PurchaseFormik({
 				{text('nature_marchandise', 'Nature de la marchandise', <Inventory fontSize="small" />)}
 				{number('poids_net', 'Poids net (kg)', <Scale fontSize="small" />)}
 				{number('poids_brut', 'Poids brut (kg)', <Scale fontSize="small" />)}
-				{number('volume', 'Volume (m³)', <Scale fontSize="small" />, 3)}
 				{full(
 					<Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
 						{checkbox('ecart_prix_proforma', 'Anomalie de prix')}
@@ -1049,7 +1217,17 @@ function PurchaseFormik({
 						{checkbox('ecart_autre_proforma', 'Autre anomalie')}
 					</Stack>,
 				)}
-				{full(text('notes_ecarts_proforma', 'Détail des anomalies / motif', <Notes fontSize="small" />, false, true))}
+				{full(
+					text(
+						'notes_ecarts_proforma',
+						'Détail des anomalies / motif',
+						<Notes fontSize="small" />,
+						false,
+						true,
+						undefined,
+						!hasAnomaly,
+					),
+				)}
 				{full(autocomplete('decision', 'Décision', decisionItems, true, <CheckCircle fontSize="small" />))}
 			</FormCard>,
 		);
@@ -1064,7 +1242,16 @@ function PurchaseFormik({
 					</Typography>,
 				)}
 				{text('numero_domiciliation', 'N° de domiciliation', <Description fontSize="small" />, true)}
-				{text('banque', 'Banque', <Business fontSize="small" />, true)}
+				{autocomplete(
+					'banque',
+					'Banque',
+					[...new Set([...MOROCCAN_BANKS, ...(formik.values.banque ? [formik.values.banque] : [])])].map((bank) => ({
+						value: bank,
+						code: bank,
+					})),
+					true,
+					<Business fontSize="small" />,
+				)}
 				{number('montant_titre_importation', 'Montant du titre d’importation', <Payment fontSize="small" />, 2, true)}
 				{select(
 					'devise_titre_importation',
@@ -1146,6 +1333,45 @@ function PurchaseFormik({
 	if (mode === 'reception')
 		sections.push(
 			<FormCard key="reception" title="Réception des marchandises" icon={<Inventory color="primary" />}>
+				{correctionId &&
+					managedReceipt &&
+					full(
+						<CustomAutoCompleteSelect
+							id="correction-reception"
+							label="Réception à corriger"
+							placeholder="Sélectionnez la réception"
+							noOptionsText="Aucune réception"
+							items={(order?.receptions ?? []).map((entry) => ({
+								value: String(entry.id),
+								code: entry.reference || `Réception ${entry.id}`,
+							}))}
+							value={(() => {
+								const entry = order?.receptions?.find(
+									(receipt) => receipt.id === Number(query.get('reception_id') ?? order?.receptions?.[0]?.id),
+								);
+								return entry ? { value: String(entry.id), code: entry.reference || `Réception ${entry.id}` } : null;
+							})()}
+							onChange={(_, entry) => {
+								if (entry) {
+									const url = new URL(window.location.href);
+									url.searchParams.set('reception_id', entry.value);
+									router.replace(url.pathname + url.search);
+								}
+							}}
+							fullWidth
+							size="small"
+							theme={inputTheme}
+							disabled={disabled}
+						/>,
+					)}
+				{correctionId &&
+					managedReceipt &&
+					full(
+						<Alert severity="info">
+							La référence et la note peuvent être corrigées. Les quantités validées restent enregistrées dans les
+							mouvements de stock.
+						</Alert>,
+					)}
 				{managedReceipt &&
 					full(
 						text(
@@ -1158,7 +1384,7 @@ function PurchaseFormik({
 						),
 					)}
 				{managedReceipt
-					? formik.values.reception_lignes.map((line, index) => (
+					? (correctionId ? [] : formik.values.reception_lignes).map((line, index) => (
 							<Box key={line.logistics_line} sx={{ gridColumn: { md: '1 / -1' } }}>
 								<Stack spacing={2}>
 									{text(
@@ -1207,6 +1433,44 @@ function PurchaseFormik({
 	if (['demande_paiement', 'paiement', 'justificatif'].includes(mode))
 		sections.push(
 			<FormCard key="paiement" title={titles[mode]} icon={<Payment color="primary" />}>
+				{correctionId &&
+					full(
+						<CustomAutoCompleteSelect
+							id="correction-echeance"
+							noOptionsText="Aucun paiement validé"
+							label="Paiement à corriger"
+							placeholder="Sélectionnez le paiement"
+							items={(order?.echeancier_paiement ?? [])
+								.filter(
+									(entry) =>
+										entry.paiement_valide_le &&
+										(entry.declencheur === 'advance' ? 'paiement' : 'solde') ===
+											(query.get('etape_correction') ?? 'paiement'),
+								)
+								.map((entry) => ({
+									value: String(entry.id),
+									code: `${entry.montant_paye} ${entry.devise} · ${entry.reference_bancaire || 'Sans référence'}`,
+								}))}
+							value={
+								installment
+									? {
+											value: String(installment.id),
+											code: `${installment.montant_paye} ${installment.devise} · ${installment.reference_bancaire || 'Sans référence'}`,
+										}
+									: null
+							}
+							onChange={(_, entry) => {
+								if (entry) {
+									const url = new URL(window.location.href);
+									url.searchParams.set('echeance_id', entry.value);
+									router.replace(url.pathname + url.search);
+								}
+							}}
+							fullWidth
+							size="small"
+							theme={inputTheme}
+						/>,
+					)}
 				{full(
 					<Alert severity="info">
 						{installment
@@ -1217,15 +1481,17 @@ function PurchaseFormik({
 				{mode === 'demande_paiement' && date('date_echeance', 'Date d’échéance', true)}
 				{mode === 'paiement' && (
 					<>
-						{date('date_paiement', 'Date du paiement effectué', true)}
-						{select(
-							'methode_paiement',
-							'Méthode de paiement',
-							logistiquePaymentMethodItemsList.filter((method) => method !== ''),
-							<Payment fontSize="small" />,
-							true,
-						)}
-						{number('montant_paye', `Montant payé (${installment?.devise})`, <Payment fontSize="small" />, 2, true)}
+						{!correctionId && date('date_paiement', 'Date du paiement effectué', true)}
+						{!correctionId &&
+							select(
+								'methode_paiement',
+								'Méthode de paiement',
+								logistiquePaymentMethodItemsList.filter((method) => method !== ''),
+								<Payment fontSize="small" />,
+								true,
+							)}
+						{!correctionId &&
+							number('montant_paye', `Montant payé (${installment?.devise})`, <Payment fontSize="small" />, 2, true)}
 						{text('reference_paiement', 'Référence bancaire', <Description fontSize="small" />)}
 						{full(text('commentaire_paiement', 'Commentaire', <Notes fontSize="small" />, false, true))}
 					</>

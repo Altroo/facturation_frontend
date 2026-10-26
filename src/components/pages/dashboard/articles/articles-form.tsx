@@ -2,6 +2,7 @@
 
 import {
 	listReturnUrl,
+	logisticsArticleReturnUrl,
 	runWithCleanup,
 	formatNumberWithSpaces,
 	getLabelForKey,
@@ -58,7 +59,7 @@ import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadi
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { customDropdownTheme, textInputTheme } from '@/utils/themes';
 import { ARTICLES_LIST } from '@/utils/routes';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import type { DropDownType } from '@/types/accountTypes';
 import { useLanguage, useToast } from '@/utils/hooks';
 import {
@@ -112,6 +113,8 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 	const router = useRouter();
+	const searchParams = useSearchParams();
+	const returnUrl = logisticsArticleReturnUrl(searchParams.get('retour'), company_id);
 	const {
 		data: rawData,
 		isLoading: isDataLoading,
@@ -216,7 +219,12 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 							await updateArticle({ data: submissionPayload, id: id! }).unwrap();
 							onSuccess(t.articles.updateSuccess);
 						} else {
-							await addArticle({ data: submissionPayload }).unwrap();
+							const result = await addArticle({ data: submissionPayload }).unwrap();
+							if (returnUrl && result.id) {
+								onSuccess(t.articles.addSuccess);
+								router.replace(`${returnUrl}&article_id=${result.id}`);
+								return;
+							}
 							onSuccess(t.articles.addSuccess);
 						}
 						if (!isEditMode) {
@@ -353,7 +361,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 				<Button
 					variant="outlined"
 					startIcon={<ArrowBackIcon />}
-					onClick={() => router.push(listReturnUrl(`${ARTICLES_LIST}?company_id=${company_id}`))}
+					onClick={() => router.push(returnUrl ?? listReturnUrl(`${ARTICLES_LIST}?company_id=${company_id}`))}
 					sx={{
 						whiteSpace: 'nowrap',
 						px: { xs: 1.5, sm: 2, md: 3 },

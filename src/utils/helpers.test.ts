@@ -9,6 +9,7 @@ import {
 	calculateSalePriceTTC,
 	isAiTextField,
 	listReturnUrl,
+	logisticsArticleReturnUrl,
 	rememberListPagination,
 	runWithCleanup,
 	runWithErrorHandler,
@@ -1087,4 +1088,20 @@ describe('Chat navigation', () => {
 			expect(safeNavigation({ ...destination, resource: 'user_edit', path: `${USERS_VIEW(12)}/edit/` }, 7)).toBeNull();
 		});
 	});
+});
+
+describe('logistics article return URL', () => {
+	it('preserves the draft and step within the same company', () => {
+		const url = '/dashboard/logistique/7/edit?company_id=12&etape=proforma&brouillon=abc';
+		expect(logisticsArticleReturnUrl(url, 12)).toBe(url);
+	});
+	it.each([
+		'https://evil.invalid/dashboard/logistique/7/edit?company_id=12&etape=proforma&brouillon=abc',
+		'//evil.invalid/dashboard/logistique/7/edit?company_id=12&etape=proforma&brouillon=abc',
+		'/dashboard/logistique/7/edit?company_id=13&etape=proforma&brouillon=abc',
+		'/dashboard/logistique/7/edit?company_id=12&etape=paiement&brouillon=abc',
+		'/dashboard/logistique/7/edit?company_id=12&etape=proforma',
+	])('rejects an unrelated or incomplete return route %s', (url) =>
+		expect(logisticsArticleReturnUrl(url, 12)).toBeNull(),
+	);
 });

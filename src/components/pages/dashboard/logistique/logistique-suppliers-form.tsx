@@ -2,7 +2,18 @@
 
 import { type FC, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Alert, Box, Button, Card, CardContent, Divider, Stack, Typography } from '@mui/material';
+import {
+	Alert,
+	Autocomplete,
+	Box,
+	Button,
+	Card,
+	CardContent,
+	Divider,
+	Stack,
+	TextField,
+	Typography,
+} from '@mui/material';
 import { ArrowBack, Business, Email, Save } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -16,6 +27,7 @@ import {
 	useGetLogistiqueSupplierQuery,
 } from '@/store/services/logistique';
 import { useLanguage, useToast } from '@/utils/hooks';
+import { useGetMarqueListQuery } from '@/store/services/parameter';
 import { extractApiErrorMessage, listReturnUrl, setFormikAutoErrors } from '@/utils/helpers';
 import { logistiqueSupplierSchema } from '@/utils/formValidationSchemas';
 import { textInputTheme } from '@/utils/themes';
@@ -38,14 +50,19 @@ const FormikContent: ClientArticleWrapperFormProps['FormikComponent'] = ({ token
 	} = useGetLogistiqueSupplierQuery({ id: id ?? 0, company_id }, { skip: !token || !id });
 	const [add] = useAddLogistiqueSupplierMutation();
 	const [edit] = useEditLogistiqueSupplierMutation();
+	const { data: brands = [] } = useGetMarqueListQuery({ company_id }, { skip: !token });
 	const formik = useFormik({
-		initialValues: { nom: supplier?.nom ?? '', email: supplier?.email ?? '' },
+		initialValues: {
+			nom: supplier?.nom ?? '',
+			email: supplier?.email ?? '',
+			marques: supplier?.marques ?? ([] as number[]),
+		},
 		enableReinitialize: true,
 		validationSchema: toFormikValidationSchema(logistiqueSupplierSchema(t.logistique)),
 		onSubmit: async (values, { setFieldError }) => {
 			setSaveError('');
 			try {
-				const data = { company_id, nom: values.nom.trim(), email: values.email.trim() };
+				const data = { company_id, nom: values.nom.trim(), email: values.email.trim(), marques: values.marques };
 				const saved = await (id ? edit({ ...data, id }) : add(data)).unwrap();
 				onSuccess(t.logistique.supplierSaved);
 				router.replace(LOGISTIQUE_SUPPLIER_VIEW(saved.id, company_id));
@@ -88,6 +105,24 @@ const FormikContent: ClientArticleWrapperFormProps['FormikComponent'] = ({ token
 								</Stack>
 								<Divider sx={{ mb: 3 }} />
 								<Stack spacing={3}>
+									<Autocomplete
+										multiple
+										size="small"
+										options={brands}
+										getOptionLabel={(brand) => brand.nom}
+										isOptionEqualToValue={(option, selected) => option.id === selected.id}
+										value={brands.filter((brand) => formik.values.marques.includes(brand.id))}
+										onChange={(_, selected) => {
+											void formik.setFieldValue(
+												'marques',
+												selected.map((brand) => brand.id),
+											);
+										}}
+										disabled={formik.isSubmitting}
+										renderInput={(params) => (
+											<TextField {...params} label="Marques" placeholder="Sélectionnez les marques du fournisseur" />
+										)}
+									/>
 									<CustomTextInput
 										placeholder={t.logistique.placeholders.nom}
 										id="nom"

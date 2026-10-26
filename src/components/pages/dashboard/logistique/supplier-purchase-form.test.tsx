@@ -31,7 +31,10 @@ jest.mock('@/store/services/company', () => ({
 	useGetUserCompaniesQuery: jest.fn(),
 	useGetCompanyQuery: () => ({ data: { stock_management_enabled: false } }),
 }));
-jest.mock('@/store/services/article', () => ({ useGetArticlesListQuery: () => ({ data: [] }) }));
+jest.mock('@/store/services/article', () => ({
+	useGetArticlesListQuery: () => ({ data: [] }),
+	useGetArticleQuery: () => ({}),
+}));
 jest.mock('@/store/services/parameter', () => ({
 	useGetMarqueListQuery: () => ({ data: [] }),
 	useGetEmplacementListQuery: () => ({ data: [] }),
@@ -110,12 +113,14 @@ beforeEach(() => {
 afterEach(() => jest.restoreAllMocks());
 
 describe('SupplierPurchaseForm', () => {
-	it('creates an independent supplier dossier with optional dates and no client proforma', async () => {
+	it('creates an independent supplier dossier without date inputs or a client proforma', async () => {
 		(useGetLogistiqueQuery as jest.Mock).mockReturnValue({});
 		window.history.replaceState(null, '', '/dashboard/logistique/new?company_id=12');
 		await act(async () => {
 			render(<SupplierPurchaseForm company_id={12} />);
 		});
+		expect(screen.queryByText('Date de commande')).not.toBeInTheDocument();
+		expect(screen.queryByText('Date cible de livraison')).not.toBeInTheDocument();
 		fireEvent.change(screen.getByRole('textbox', { name: 'Fournisseur' }), {
 			target: { value: 'Nouveau fournisseur' },
 		});
@@ -125,7 +130,7 @@ describe('SupplierPurchaseForm', () => {
 		const [request] = mockAdd.mock.calls[0];
 		expect(request).toMatchObject({
 			company_id: 12,
-			data: { fournisseur: 'Nouveau fournisseur', responsable: 27, date_prevue: null, date_commande_client: null },
+			data: { fournisseur: 'Nouveau fournisseur', responsable: 27 },
 		});
 		expect(request.data).not.toHaveProperty('proformas');
 	});
@@ -177,6 +182,7 @@ describe('SupplierPurchaseForm', () => {
 			id: 7,
 			data: {
 				action: 'progression',
+				etape: 'couts',
 				cout_transport: '0',
 				frais_transit: '0',
 				frais_douane: '0',
@@ -224,4 +230,29 @@ describe('SupplierPurchaseForm', () => {
 		fireEvent.click(screen.getByRole('button', { name: 'Réessayer' }));
 		expect(mockRefetch).toHaveBeenCalledTimes(1);
 	});
+});
+
+it('starts proforma in EUR, removes volume, and disables the motif until an anomaly is selected', async () => {
+	await renderForm('proforma');
+	expect(screen.queryByLabelText(/Volume/)).not.toBeInTheDocument();
+	expect(screen.getByRole('combobox', { name: /Devise de la proforma/ })).toHaveTextContent('EUR');
+	const motif = screen.getByRole('textbox', { name: /motif/i });
+	expect(motif).toBeDisabled();
+	fireEvent.click(screen.getByRole('checkbox', { name: /prix/i }));
+	await waitFor(() => expect(screen.getByRole('textbox', { name: /motif/i })).toBeEnabled());
+	fireEvent.click(screen.getByRole('checkbox', { name: /prix/i }));
+	await waitFor(() => expect(screen.getByRole('textbox', { name: /motif/i })).toBeDisabled());
+});
+it('defaults the import title to the proforma total even when the saved amount is 0.00', async () => {
+	(useGetLogistiqueQuery as jest.Mock).mockReturnValue({
+		data: {
+			...order,
+			montant_titre_importation: '0.00',
+			montant_proforma_fournisseur: '1250.50',
+			devise_titre_importation: 'MAD',
+		},
+	});
+	await renderForm('titre');
+	expect(screen.getByRole('combobox', { name: /Devise du titre/ })).toHaveTextContent('EUR');
+	expect(screen.getByRole('textbox', { name: /Montant du titre/ })).toHaveValue('1\u202f250,50');
 });

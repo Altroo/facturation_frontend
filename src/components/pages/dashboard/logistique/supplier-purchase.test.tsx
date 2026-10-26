@@ -15,7 +15,10 @@ import SupplierPurchase from './supplier-purchase';
 const mockPush = jest.fn();
 const mockOnSuccess = jest.fn();
 const mockOnError = jest.fn();
-jest.mock('next/navigation', () => ({ useRouter: () => ({ push: mockPush }) }));
+jest.mock('next/navigation', () => ({
+	useRouter: () => ({ push: mockPush }),
+	useSearchParams: () => new URLSearchParams(window.location.search),
+}));
 jest.mock('@/contexts/InitContext', () => ({ useInitAccessToken: () => 'token' }));
 jest.mock('@/store/selectors', () => ({ getInitStateToken: jest.fn(), getUserCompaniesState: jest.fn() }));
 jest.mock('@/utils/hooks', () => ({
@@ -47,7 +50,33 @@ jest.mock('@/components/shared/noPermission/noPermission', () => ({
 	default: () => <p>Accès refusé</p>,
 }));
 
+const workflow = (current: string) => {
+	const keys = [
+		'dossier',
+		'proforma',
+		'titre',
+		'paiement',
+		'production',
+		'expedition',
+		'transit',
+		'reception',
+		'solde',
+		'couts',
+	];
+	return {
+		etape_courante: current,
+		etapes: keys.map((key, index) => ({
+			key,
+			label: key,
+			completed: index < keys.indexOf(current),
+			accessible: index <= keys.indexOf(current),
+			payment_ids: key === 'paiement' ? [14] : [],
+		})),
+	};
+};
+
 const order = {
+	workflow: workflow('proforma'),
 	id: 7,
 	company: 12,
 	numero_commande: 'LOG-007',
@@ -93,12 +122,16 @@ beforeEach(() => {
 });
 
 describe('SupplierPurchase', () => {
-	it('displays supplier workflow details and keeps company scope when editing', () => {
+	it('shows one step and opens completed dossier information read-only', () => {
 		render(<SupplierPurchase company_id={12} id={7} />);
 		expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Dossier LOG-007');
+		expect(screen.getByRole('button', { name: 'Contrôler la proforma' })).toBeEnabled();
+		expect(screen.queryByText('Informations du dossier')).not.toBeInTheDocument();
+		fireEvent.click(screen.getByRole('tab', { name: /dossier/ }));
 		expect(screen.getByText('Fournisseur Test')).toBeInTheDocument();
-		fireEvent.click(screen.getByRole('button', { name: 'Modifier le dossier' }));
-		expect(mockPush).toHaveBeenCalledWith(`${LOGISTIQUE_EDIT(7, 12)}&etape=dossier`);
+		expect(screen.queryByRole('button', { name: 'Modifier le dossier' })).not.toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: 'Contrôler la proforma' })).not.toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'Demander une modification' })).toBeInTheDocument();
 	});
 
 	it('denies access to a dossier outside the user companies', () => {
@@ -109,8 +142,11 @@ describe('SupplierPurchase', () => {
 
 	it('requires proforma completion before opening production follow-up', () => {
 		const { rerender } = render(<SupplierPurchase company_id={12} id={7} />);
-		expect(screen.getByRole('button', { name: 'Suivre la production' })).toBeDisabled();
-		(useGetLogistiqueQuery as jest.Mock).mockReturnValue({ data: { ...order, is_proforma_step_complete: true } });
+		expect(screen.queryByRole('button', { name: 'Suivre la production' })).not.toBeInTheDocument();
+		expect(screen.getByRole('tab', { name: /production/ })).toBeDisabled();
+		(useGetLogistiqueQuery as jest.Mock).mockReturnValue({
+			data: { ...order, workflow: workflow('production'), is_proforma_step_complete: true },
+		});
 		rerender(<SupplierPurchase company_id={12} id={7} />);
 		fireEvent.click(screen.getByRole('button', { name: 'Suivre la production' }));
 		expect(mockPush).toHaveBeenCalledWith(`${LOGISTIQUE_EDIT(7, 12)}&etape=production`);
@@ -118,9 +154,9 @@ describe('SupplierPurchase', () => {
 
 	it('requires complete receipt and zero remaining balance before closure', () => {
 		const { rerender } = render(<SupplierPurchase company_id={12} id={7} />);
-		expect(screen.getByRole('button', { name: 'Clôturer le dossier' })).toBeDisabled();
+		expect(screen.queryByRole('button', { name: 'Clôturer le dossier' })).not.toBeInTheDocument();
 		(useGetLogistiqueQuery as jest.Mock).mockReturnValue({
-			data: { ...order, date_reelle: '2026-10-19', solde_restant: '0' },
+			data: { ...order, workflow: workflow('couts'), date_reelle: '2026-10-19', solde_restant: '0' },
 		});
 		rerender(<SupplierPurchase company_id={12} id={7} />);
 		fireEvent.click(screen.getByRole('button', { name: 'Clôturer le dossier' }));
@@ -130,27 +166,30 @@ describe('SupplierPurchase', () => {
 
 	it('submits closure only after confirmation', async () => {
 		(useGetLogistiqueQuery as jest.Mock).mockReturnValue({
-			data: { ...order, date_reelle: '2026-10-19', solde_restant: '0' },
+			data: { ...order, workflow: workflow('couts'), date_reelle: '2026-10-19', solde_restant: '0' },
 		});
 		render(<SupplierPurchase company_id={12} id={7} />);
 		fireEvent.click(screen.getByRole('button', { name: 'Clôturer le dossier' }));
 		fireEvent.click(screen.getByRole('button', { name: 'Confirmer' }));
 		await waitFor(() => expect(mockOnSuccess).toHaveBeenCalled());
-		expect(mockPurchase).toHaveBeenCalledWith({ id: 7, data: { action: 'progression', statut: 'Clôture' } });
+		expect(mockPurchase).toHaveBeenCalledWith({
+			id: 7,
+			data: { action: 'progression', etape: 'couts', statut: 'Clôture' },
+		});
 		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 	});
 
 	it('allows only the assigned accountant to start a requested payment', async () => {
 		(useGetUserCompaniesQuery as jest.Mock).mockReturnValue({ data: [{ id: 12, role: 'Comptable' }] });
 		(useGetLogistiqueQuery as jest.Mock).mockReturnValue({
-			data: { ...order, paiement_assigne_a: 27, echeancier_paiement: [installment] },
+			data: { ...order, workflow: workflow('paiement'), paiement_assigne_a: 27, echeancier_paiement: [installment] },
 		});
 		const { rerender } = render(<SupplierPurchase company_id={12} id={7} />);
 		fireEvent.click(screen.getByRole('button', { name: 'Commencer le paiement' }));
 		await waitFor(() => expect(mockOnSuccess).toHaveBeenCalled());
 		expect(mockStartPayment).toHaveBeenCalledWith({ id: 7, echeance_id: 14 });
 		(useGetLogistiqueQuery as jest.Mock).mockReturnValue({
-			data: { ...order, paiement_assigne_a: 28, echeancier_paiement: [installment] },
+			data: { ...order, workflow: workflow('paiement'), paiement_assigne_a: 28, echeancier_paiement: [installment] },
 		});
 		rerender(<SupplierPurchase company_id={12} id={7} />);
 		expect(screen.queryByRole('button', { name: 'Commencer le paiement' })).not.toBeInTheDocument();
@@ -158,7 +197,11 @@ describe('SupplierPurchase', () => {
 
 	it('records the creator confirmation that validated payment proof was sent to the supplier', async () => {
 		(useGetLogistiqueQuery as jest.Mock).mockReturnValue({
-			data: { ...order, echeancier_paiement: [{ ...installment, paiement_valide_le: '2026-10-19' }] },
+			data: {
+				...order,
+				workflow: workflow('paiement'),
+				echeancier_paiement: [{ ...installment, paiement_valide_le: '2026-10-19' }],
+			},
 		});
 		render(<SupplierPurchase company_id={12} id={7} />);
 		fireEvent.click(screen.getByRole('button', { name: 'Justificatif transmis au fournisseur' }));
@@ -170,7 +213,7 @@ describe('SupplierPurchase', () => {
 		mockUnwrap.mockRejectedValueOnce({ data: { details: { detail: ['Paiement verrouillé.'] } } });
 		(useGetUserCompaniesQuery as jest.Mock).mockReturnValue({ data: [{ id: 12, role: 'Comptable' }] });
 		(useGetLogistiqueQuery as jest.Mock).mockReturnValue({
-			data: { ...order, paiement_assigne_a: 27, echeancier_paiement: [installment] },
+			data: { ...order, workflow: workflow('paiement'), paiement_assigne_a: 27, echeancier_paiement: [installment] },
 		});
 		render(<SupplierPurchase company_id={12} id={7} />);
 		fireEvent.click(screen.getByRole('button', { name: 'Commencer le paiement' }));

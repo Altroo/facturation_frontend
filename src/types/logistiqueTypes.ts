@@ -159,6 +159,16 @@ export type LogistiquePaymentInstallment = {
 };
 
 export type LogistiqueOrder = {
+	change_requests?: {
+		id: number;
+		etape: string;
+		remarque: string;
+		statut: 'pending' | 'approved' | 'rejected' | 'applied';
+		demandeur: number;
+		responsable: number;
+		demandeur_name: string;
+		date_created: string;
+	}[];
 	created_by_user?: number | null;
 	workflow_version?: number;
 	can_adopt_supplier_workflow?: boolean;
@@ -170,6 +180,8 @@ export type LogistiqueOrder = {
 	date_arrivee_maroc?: string | null;
 	documents_remis_banque_le?: string | null;
 	workflow?: {
+		etape_courante?: string;
+		etapes?: { key: string; label: string; completed: boolean; accessible: boolean; payment_ids?: number[] }[];
 		prochaine_action?: string;
 		preparation_possible?: boolean;
 		raison_preparation?: string;
@@ -403,6 +415,8 @@ export type LogistiqueSupplier = {
 	company: number;
 	nom: string;
 	email: string;
+	marques?: number[];
+	marques_names?: string[];
 	date_created: string;
 	date_updated: string;
 	fournisseur: string;

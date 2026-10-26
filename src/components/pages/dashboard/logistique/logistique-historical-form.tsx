@@ -10,7 +10,7 @@ import {
 	setFormikAutoErrors,
 } from '@/utils/helpers';
 import { type FC, type MouseEvent, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
 	Alert,
 	Autocomplete,
@@ -87,8 +87,10 @@ import {
 	documentFields,
 	importTitleFields,
 	logistiqueCurrencyItemsList,
+	MOROCCAN_BANKS,
 	logistiqueEmptyValues,
-	logistiqueLegacyWorkflowStatusItemsList,
+	historicalLogisticsStepFields,
+	historicalLogisticsNextStatuses,
 	logistiqueManagerRoles,
 	logistiquePaymentMethodItemsList,
 } from '@/utils/rawData';
@@ -137,8 +139,13 @@ const valuesFromOrder = (order?: LogistiqueOrder): LogistiqueFormValues => {
 		nature_marchandise: order.nature_marchandise ?? '',
 		numero_domiciliation: order.numero_domiciliation ?? '',
 		banque: order.banque ?? '',
-		montant_titre_importation: stringValue(order.montant_titre_importation, '0'),
-		devise_titre_importation: order.devise_titre_importation ?? 'MAD',
+		montant_titre_importation: stringValue(
+			Number(order.montant_titre_importation) > 0
+				? order.montant_titre_importation
+				: order.montant_proforma_fournisseur,
+			'0',
+		),
+		devise_titre_importation: order.date_titre_importation ? (order.devise_titre_importation ?? 'EUR') : 'EUR',
 		date_titre_importation: dateValue(order.date_titre_importation),
 		date_validation_titre_importation: dateValue(order.date_validation_titre_importation),
 		statut_titre_importation: order.statut_titre_importation,
@@ -345,6 +352,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 	const { t, language } = useLanguage();
 	const { onSuccess, onError } = useToast();
 	const router = useRouter();
+	const query = useSearchParams();
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 	const token = useInitAccessToken(session);
@@ -396,16 +404,36 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 	})) as DropDownType[];
 	const marqueOptions = marquesData.map((marque) => ({ value: String(marque.id), code: marque.nom })) as DropDownType[];
 
+	const currentStep = order?.workflow?.etape_courante ?? 'dossier';
+	const selectedStep = query.get('etape') ?? currentStep;
+	const correction = order?.change_requests?.find(
+		(request) =>
+			request.id === Number(query.get('correction_id')) &&
+			request.demandeur === currentUserId &&
+			request.etape === selectedStep &&
+			request.statut === 'approved',
+	);
+	const stageAccessible = !isEditMode || selectedStep === currentStep || !!correction;
+	const allowedFields = historicalLogisticsStepFields[selectedStep] ?? [];
+	const allows = (field: string) =>
+		allowedFields.includes(field) ||
+		(field === 'statut' && selectedStep === currentStep && !!historicalLogisticsNextStatuses[selectedStep]?.length);
+	const selectedStepLabel =
+		order?.workflow?.etapes?.find((step) => step.key === selectedStep)?.label ?? t.logistique.detailsTitle;
 	const initialValues = order
 		? valuesFromOrder(order)
 		: { ...logistiqueEmptyValues, responsable: currentUserId ? String(currentUserId) : '' };
 	const isOrderResponsible = Boolean(currentUserId && order?.responsable === currentUserId);
-	const isImportTitleLocked = Boolean(isEditMode && order && order.statut_paiement !== 'Non demandé');
-	const canEditImportTitle = Boolean(isEditMode && isOrderResponsible && !isImportTitleLocked);
+	const isImportTitleLocked = Boolean(isEditMode && order && order.statut_paiement !== 'Non demandé' && !correction);
+	const canEditImportTitle = Boolean(
+		isEditMode && selectedStep === 'paiement' && (isOrderResponsible || !!correction) && !isImportTitleLocked,
+	);
 	const isTitleOnlyEditor = Boolean(isEditMode && isOrderResponsible && !canManage);
 	const canAccessForm =
-		canManage || Boolean(isEditMode && (isOrderLoading || (isOrderResponsible && !isImportTitleLocked)));
+		(canManage || Boolean(isEditMode && (isOrderLoading || (isOrderResponsible && !isImportTitleLocked)))) &&
+		stageAccessible;
 	const editableDocumentFields = documentFields.filter((field) => {
+		if (!allows(field)) return false;
 		if (field === 'proforma_fournisseur_file' || field === 'swift_file') return false;
 		if (field === 'titre_importation_file') return canEditImportTitle;
 		return canManage;
@@ -440,7 +468,25 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 							if (isEditMode && id) {
 								await editLogistique({
 									id,
-									data: toPayload(values, true, !canEditImportTitle, isTitleOnlyEditor),
+									data: (() => {
+										const data = toPayload(values, true, !canEditImportTitle, isTitleOnlyEditor);
+										if (data instanceof FormData) {
+											[...data.keys()].forEach((field) => {
+												if (!allows(field)) data.delete(field);
+											});
+											data.set('etape', selectedStep);
+											if (correction) data.set('correction_id', String(correction.id));
+										} else {
+											Object.keys(data).forEach((field) => {
+												if (!allows(field)) delete data[field as keyof LogistiqueFormValues];
+											});
+											Object.assign(data, {
+												etape: selectedStep,
+												...(correction ? { correction_id: correction.id } : {}),
+											});
+										}
+										return data;
+									})(),
 								}).unwrap();
 								onSuccess(t.logistique.updateSuccess);
 								router.push(LOGISTIQUE_VIEW(id, company_id));
@@ -823,474 +869,599 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 															</Box>
 														</CardContent>
 													</Card>
-
-													<FormCard title={t.logistique.fieldGlobalStatus} icon={<InfoIcon color="primary" />}>
-														<Chip
-															label={order?.statut_global || '-'}
-															size="medium"
-															color="info"
-															variant="outlined"
-															sx={{
-																alignSelf: 'center',
-																justifySelf: 'start',
-																maxWidth: '100%',
-																'& .MuiChip-label': { whiteSpace: 'normal' },
-															}}
-														/>
-													</FormCard>
-
-													{canManage && (
-														<FormCard
-															title={`2. ${t.logistique.proformaComplianceSection.replace(/^2\.\s*/, '')}`}
-															icon={<InfoIcon color="primary" />}
-														>
-															<CustomDropDownSelect
-																placeholder={t.logistique.placeholders.devise}
-																id="devise"
-																label={t.logistique.fieldDevise}
-																items={logistiqueCurrencyItemsList}
-																value={formik.values.devise}
-																onChange={(event) => void formik.setFieldValue('devise', event.target.value)}
-																size="small"
-																theme={inputTheme}
-																startIcon={<PaymentIcon fontSize="small" />}
-																disabled
-																error={hasFieldError('devise')}
-																helperText={getFieldError('devise')}
-															/>
-															<CustomTextInput
-																placeholder={t.logistique.placeholders.transport}
-																id="transport"
-																type="text"
-																label={t.logistique.fieldTransport}
-																value={formik.values.transport}
-																onChange={formik.handleChange('transport')}
-																onBlur={formik.handleBlur('transport')}
-																fullWidth
-																size="small"
-																theme={inputTheme}
-																startIcon={<LocalShippingIcon fontSize="small" />}
-																error={hasFieldError('transport')}
-																helperText={getFieldError('transport')}
-															/>
-															<Box sx={{ gridColumn: { md: '1 / -1' } }}>
-																<CustomTextInput
-																	placeholder={t.logistique.placeholders.description}
-																	id="description"
-																	type="textarea"
-																	label={t.logistique.fieldDescription}
-																	value={formik.values.description}
-																	onChange={formik.handleChange('description')}
-																	fullWidth
-																	size="small"
-																	theme={inputTheme}
-																	startIcon={<DescriptionIcon fontSize="small" />}
-																/>
-															</Box>
-															<CustomAutoCompleteSelect
-																placeholder={t.logistique.placeholders.responsable}
-																id="responsable"
-																label={t.logistique.fieldResponsable}
-																items={responsableOptions}
-																value={selectedResponsable}
-																onChange={(_, value) => void formik.setFieldValue('responsable', value?.value ?? '')}
-																onBlur={formik.handleBlur('responsable')}
-																noOptionsText={t.logistique.noResponsable}
-																fullWidth
-																size="small"
-																theme={inputTheme}
-																startIcon={<PersonIcon fontSize="small" />}
-																error={hasFieldError('responsable')}
-																helperText={getFieldError('responsable')}
-															/>
-															<Box sx={{ gridColumn: { md: '1 / -1' }, display: 'flex', gap: 1, alignItems: 'center' }}>
-																<Autocomplete
-																	multiple
-																	fullWidth
-																	options={marqueOptions}
-																	value={selectedMarques}
-																	getOptionLabel={(option) => option.code}
-																	isOptionEqualToValue={(option, value) => option.value === value.value}
-																	onChange={(_, values) =>
-																		void formik.setFieldValue(
-																			'marques',
-																			values.map((item) => Number(item.value)),
-																		)
-																	}
-																	renderInput={(params) => (
-																		<TextField
-																			placeholder={t.logistique.placeholders.marques}
-																			{...params}
+													<FormCard title={selectedStepLabel} icon={<InfoIcon color="primary" />}>
+														{canManage && (
+															<>
+																<>
+																	{allows('devise') && (
+																		<CustomDropDownSelect
+																			placeholder={t.logistique.placeholders.devise}
+																			id="devise"
+																			label={t.logistique.fieldDevise}
+																			items={logistiqueCurrencyItemsList}
+																			value={formik.values.devise}
+																			onChange={(event) => void formik.setFieldValue('devise', event.target.value)}
 																			size="small"
-																			label={t.logistique.fieldBrands}
+																			theme={inputTheme}
+																			startIcon={<PaymentIcon fontSize="small" />}
+																			disabled
+																			error={hasFieldError('devise')}
+																			helperText={getFieldError('devise')}
 																		/>
 																	)}
-																/>
-																<EntityCrudControls
-																	label={t.logistique.fieldBrands.toLowerCase()}
-																	icon={<StarIcon fontSize="small" />}
-																	inputTheme={inputTheme}
-																	selectedItem={selectedMarqueForCrud}
-																	addEntity={(args) => addMarque({ data: { ...args.data, company: company_id } })}
-																	editEntity={({ id: marqueId, data }) =>
-																		editMarque({ id: marqueId, data: { ...data, company: company_id } })
-																	}
-																	deleteEntity={({ id: marqueId }) => deleteMarque({ id: marqueId })}
-																	onAddSuccess={(newId) =>
-																		void formik.setFieldValue('marques', [...formik.values.marques, newId])
-																	}
-																	onDeleteSuccess={() =>
-																		void formik.setFieldValue(
-																			'marques',
-																			formik.values.marques.filter((id) => id !== Number(selectedMarqueForCrud?.value)),
-																		)
-																	}
-																/>
-															</Box>
-															<DateField
-																label={t.logistique.fieldDatePrevue}
-																value={formik.values.date_prevue}
-																onChange={(value) => void formik.setFieldValue('date_prevue', value)}
-																required
-																error={hasFieldError('date_prevue')}
-																helperText={getFieldError('date_prevue')}
-															/>
-															<DateField
-																label={t.logistique.fieldDateReelle}
-																value={formik.values.date_reelle}
-																onChange={(value) => void formik.setFieldValue('date_reelle', value)}
-															/>
-															<CustomTextInput
-																placeholder={t.logistique.placeholders.origine_marchandise}
-																id="origine_marchandise"
-																type="text"
-																label={t.logistique.fieldOrigine}
-																value={formik.values.origine_marchandise}
-																onChange={formik.handleChange('origine_marchandise')}
-																onBlur={formik.handleBlur('origine_marchandise')}
-																fullWidth
-																size="small"
-																theme={inputTheme}
-																startIcon={<PublicIcon fontSize="small" />}
-																required
-																error={hasFieldError('origine_marchandise')}
-																helperText={getFieldError('origine_marchandise')}
-															/>
-															<CustomTextInput
-																placeholder={t.logistique.placeholders.nature_marchandise}
-																id="nature_marchandise"
-																type="text"
-																label={t.logistique.fieldNature}
-																value={formik.values.nature_marchandise}
-																onChange={formik.handleChange('nature_marchandise')}
-																onBlur={formik.handleBlur('nature_marchandise')}
-																fullWidth
-																size="small"
-																theme={inputTheme}
-																startIcon={<DescriptionIcon fontSize="small" />}
-																required
-																error={hasFieldError('nature_marchandise')}
-																helperText={getFieldError('nature_marchandise')}
-															/>
-															<FormattedNumberInput
-																placeholder={t.logistique.placeholders.poids_net}
-																id="poids_net"
-																type="text"
-																label={t.logistique.fieldPoidsNet}
-																value={formik.values.poids_net}
-																onChange={formik.handleChange('poids_net')}
-																onBlur={formik.handleBlur('poids_net')}
-																fullWidth
-																size="small"
-																theme={inputTheme}
-																startIcon={<ScaleIcon fontSize="small" />}
-																error={hasFieldError('poids_net')}
-																helperText={getFieldError('poids_net')}
-															/>
-															<FormattedNumberInput
-																placeholder={t.logistique.placeholders.poids_brut}
-																id="poids_brut"
-																type="text"
-																label={t.logistique.fieldPoidsBrut}
-																value={formik.values.poids_brut}
-																onChange={formik.handleChange('poids_brut')}
-																onBlur={formik.handleBlur('poids_brut')}
-																fullWidth
-																size="small"
-																theme={inputTheme}
-																startIcon={<ScaleIcon fontSize="small" />}
-																error={hasFieldError('poids_brut')}
-																helperText={getFieldError('poids_brut')}
-															/>
-															<FormattedNumberInput
-																placeholder={t.logistique.placeholders.volume}
-																id="volume"
-																type="text"
-																label={t.logistique.fieldVolume}
-																value={formik.values.volume}
-																onChange={formik.handleChange('volume')}
-																onBlur={formik.handleBlur('volume')}
-																fullWidth
-																size="small"
-																theme={inputTheme}
-																startIcon={<ScaleIcon fontSize="small" />}
-																error={hasFieldError('volume')}
-																helperText={getFieldError('volume')}
-															/>
-														</FormCard>
-													)}
+																</>
+																<>
+																	{allows('transport') && (
+																		<CustomTextInput
+																			placeholder={t.logistique.placeholders.transport}
+																			id="transport"
+																			type="text"
+																			label={t.logistique.fieldTransport}
+																			value={formik.values.transport}
+																			onChange={formik.handleChange('transport')}
+																			onBlur={formik.handleBlur('transport')}
+																			fullWidth
+																			size="small"
+																			theme={inputTheme}
+																			startIcon={<LocalShippingIcon fontSize="small" />}
+																			error={hasFieldError('transport')}
+																			helperText={getFieldError('transport')}
+																		/>
+																	)}
+																</>
+																<>
+																	{allows('description') && (
+																		<Box sx={{ gridColumn: { md: '1 / -1' } }}>
+																			<>
+																				{allows('description') && (
+																					<CustomTextInput
+																						placeholder={t.logistique.placeholders.description}
+																						id="description"
+																						type="textarea"
+																						label={t.logistique.fieldDescription}
+																						value={formik.values.description}
+																						onChange={formik.handleChange('description')}
+																						fullWidth
+																						size="small"
+																						theme={inputTheme}
+																						startIcon={<DescriptionIcon fontSize="small" />}
+																					/>
+																				)}
+																			</>
+																		</Box>
+																	)}
+																</>
+																<>
+																	{allows('responsable') && (
+																		<CustomAutoCompleteSelect
+																			placeholder={t.logistique.placeholders.responsable}
+																			id="responsable"
+																			label={t.logistique.fieldResponsable}
+																			items={responsableOptions}
+																			value={selectedResponsable}
+																			onChange={(_, value) =>
+																				void formik.setFieldValue('responsable', value?.value ?? '')
+																			}
+																			onBlur={formik.handleBlur('responsable')}
+																			noOptionsText={t.logistique.noResponsable}
+																			fullWidth
+																			size="small"
+																			theme={inputTheme}
+																			startIcon={<PersonIcon fontSize="small" />}
+																			error={hasFieldError('responsable')}
+																			helperText={getFieldError('responsable')}
+																		/>
+																	)}
+																</>
+																<>
+																	{allows('marques') && (
+																		<Box
+																			sx={{
+																				gridColumn: { md: '1 / -1' },
+																				display: 'flex',
+																				gap: 1,
+																				alignItems: 'center',
+																			}}
+																		>
+																			<Autocomplete
+																				multiple
+																				fullWidth
+																				options={marqueOptions}
+																				value={selectedMarques}
+																				getOptionLabel={(option) => option.code}
+																				isOptionEqualToValue={(option, value) => option.value === value.value}
+																				onChange={(_, values) =>
+																					void formik.setFieldValue(
+																						'marques',
+																						values.map((item) => Number(item.value)),
+																					)
+																				}
+																				renderInput={(params) => (
+																					<TextField
+																						placeholder={t.logistique.placeholders.marques}
+																						{...params}
+																						size="small"
+																						label={t.logistique.fieldBrands}
+																					/>
+																				)}
+																			/>
+																			<EntityCrudControls
+																				label={t.logistique.fieldBrands.toLowerCase()}
+																				icon={<StarIcon fontSize="small" />}
+																				inputTheme={inputTheme}
+																				selectedItem={selectedMarqueForCrud}
+																				addEntity={(args) => addMarque({ data: { ...args.data, company: company_id } })}
+																				editEntity={({ id: marqueId, data }) =>
+																					editMarque({ id: marqueId, data: { ...data, company: company_id } })
+																				}
+																				deleteEntity={({ id: marqueId }) => deleteMarque({ id: marqueId })}
+																				onAddSuccess={(newId) =>
+																					void formik.setFieldValue('marques', [...formik.values.marques, newId])
+																				}
+																				onDeleteSuccess={() =>
+																					void formik.setFieldValue(
+																						'marques',
+																						formik.values.marques.filter(
+																							(id) => id !== Number(selectedMarqueForCrud?.value),
+																						),
+																					)
+																				}
+																			/>
+																		</Box>
+																	)}
+																</>
+																<>
+																	{allows('date_prevue') && (
+																		<DateField
+																			label={t.logistique.fieldDatePrevue}
+																			value={formik.values.date_prevue}
+																			onChange={(value) => void formik.setFieldValue('date_prevue', value)}
+																			required
+																			error={hasFieldError('date_prevue')}
+																			helperText={getFieldError('date_prevue')}
+																		/>
+																	)}
+																</>
+																<>
+																	{allows('date_reelle') && (
+																		<DateField
+																			label={t.logistique.fieldDateReelle}
+																			value={formik.values.date_reelle}
+																			onChange={(value) => void formik.setFieldValue('date_reelle', value)}
+																		/>
+																	)}
+																</>
+																<>
+																	{allows('origine_marchandise') && (
+																		<CustomTextInput
+																			placeholder={t.logistique.placeholders.origine_marchandise}
+																			id="origine_marchandise"
+																			type="text"
+																			label={t.logistique.fieldOrigine}
+																			value={formik.values.origine_marchandise}
+																			onChange={formik.handleChange('origine_marchandise')}
+																			onBlur={formik.handleBlur('origine_marchandise')}
+																			fullWidth
+																			size="small"
+																			theme={inputTheme}
+																			startIcon={<PublicIcon fontSize="small" />}
+																			required
+																			error={hasFieldError('origine_marchandise')}
+																			helperText={getFieldError('origine_marchandise')}
+																		/>
+																	)}
+																</>
+																<>
+																	{allows('nature_marchandise') && (
+																		<CustomTextInput
+																			placeholder={t.logistique.placeholders.nature_marchandise}
+																			id="nature_marchandise"
+																			type="text"
+																			label={t.logistique.fieldNature}
+																			value={formik.values.nature_marchandise}
+																			onChange={formik.handleChange('nature_marchandise')}
+																			onBlur={formik.handleBlur('nature_marchandise')}
+																			fullWidth
+																			size="small"
+																			theme={inputTheme}
+																			startIcon={<DescriptionIcon fontSize="small" />}
+																			required
+																			error={hasFieldError('nature_marchandise')}
+																			helperText={getFieldError('nature_marchandise')}
+																		/>
+																	)}
+																</>
+																<>
+																	{allows('poids_net') && (
+																		<FormattedNumberInput
+																			placeholder={t.logistique.placeholders.poids_net}
+																			id="poids_net"
+																			type="text"
+																			label={t.logistique.fieldPoidsNet}
+																			value={formik.values.poids_net}
+																			onChange={formik.handleChange('poids_net')}
+																			onBlur={formik.handleBlur('poids_net')}
+																			fullWidth
+																			size="small"
+																			theme={inputTheme}
+																			startIcon={<ScaleIcon fontSize="small" />}
+																			error={hasFieldError('poids_net')}
+																			helperText={getFieldError('poids_net')}
+																		/>
+																	)}
+																</>
+																<>
+																	{allows('poids_brut') && (
+																		<FormattedNumberInput
+																			placeholder={t.logistique.placeholders.poids_brut}
+																			id="poids_brut"
+																			type="text"
+																			label={t.logistique.fieldPoidsBrut}
+																			value={formik.values.poids_brut}
+																			onChange={formik.handleChange('poids_brut')}
+																			onBlur={formik.handleBlur('poids_brut')}
+																			fullWidth
+																			size="small"
+																			theme={inputTheme}
+																			startIcon={<ScaleIcon fontSize="small" />}
+																			error={hasFieldError('poids_brut')}
+																			helperText={getFieldError('poids_brut')}
+																		/>
+																	)}
+																</>
+																<>
+																	{allows('volume') && (
+																		<FormattedNumberInput
+																			placeholder={t.logistique.placeholders.volume}
+																			id="volume"
+																			type="text"
+																			label={t.logistique.fieldVolume}
+																			value={formik.values.volume}
+																			onChange={formik.handleChange('volume')}
+																			onBlur={formik.handleBlur('volume')}
+																			fullWidth
+																			size="small"
+																			theme={inputTheme}
+																			startIcon={<ScaleIcon fontSize="small" />}
+																			error={hasFieldError('volume')}
+																			helperText={getFieldError('volume')}
+																		/>
+																	)}
+																</>
+															</>
+														)}
 
-													{canManage && (
-														<FormCard
-															title={`4. ${t.logistique.macroStepSupplierPreparation}`}
-															icon={<LocalShippingIcon color="primary" />}
-														>
-															<CustomDropDownSelect
-																placeholder={t.logistique.placeholders.statut}
-																id="statut"
-																label={t.logistique.fieldStatut}
-																items={logistiqueLegacyWorkflowStatusItemsList}
-																value={formik.values.statut}
-																onChange={(event) => void formik.setFieldValue('statut', event.target.value)}
-																size="small"
-																theme={inputTheme}
-																startIcon={<InfoIcon fontSize="small" />}
-															/>
-															<FormControlLabel
-																control={
-																	<Checkbox
-																		checked={formik.values.documents_originaux_requis}
-																		onChange={(event) => {
-																			void formik.setFieldValue('documents_originaux_requis', event.target.checked);
-																			if (!event.target.checked)
-																				void formik.setFieldValue('statut_documents_originaux', '');
-																		}}
-																	/>
-																}
-																label={t.logistique.fieldOriginalDocumentsRequired}
-															/>
-															{formik.values.documents_originaux_requis && (
-																<CustomDropDownSelect
-																	placeholder={t.logistique.placeholders.statut_documents_originaux}
-																	id="statut_documents_originaux"
-																	label={t.logistique.fieldOriginalDocumentsStatus}
-																	items={['Demandé', 'Réceptionné', 'Retourné pour correction', 'Refusé']}
-																	value={formik.values.statut_documents_originaux}
-																	onChange={(event) =>
-																		void formik.setFieldValue('statut_documents_originaux', event.target.value)
-																	}
-																	size="small"
-																	theme={inputTheme}
-																	startIcon={<DescriptionIcon fontSize="small" />}
-																/>
-															)}
-															{formik.values.documents_originaux_requis &&
-																formik.values.statut_documents_originaux !== 'Réceptionné' && (
-																	<Alert severity="warning" sx={{ gridColumn: { md: '1 / -1' } }}>
-																		Documents originaux non réceptionnés.
+														{canManage && (
+															<>
+																<>
+																	{allows('statut') && (
+																		<CustomDropDownSelect
+																			placeholder={t.logistique.placeholders.statut}
+																			id="statut"
+																			label={t.logistique.fieldStatut}
+																			items={[order!.statut, ...(historicalLogisticsNextStatuses[selectedStep] ?? [])]}
+																			value={formik.values.statut}
+																			onChange={(event) => void formik.setFieldValue('statut', event.target.value)}
+																			size="small"
+																			theme={inputTheme}
+																			startIcon={<InfoIcon fontSize="small" />}
+																		/>
+																	)}
+																</>
+																<>
+																	{allows('documents_originaux_requis') && (
+																		<FormControlLabel
+																			control={
+																				<Checkbox
+																					checked={formik.values.documents_originaux_requis}
+																					onChange={(event) => {
+																						void formik.setFieldValue(
+																							'documents_originaux_requis',
+																							event.target.checked,
+																						);
+																						if (!event.target.checked)
+																							void formik.setFieldValue('statut_documents_originaux', '');
+																					}}
+																				/>
+																			}
+																			label={t.logistique.fieldOriginalDocumentsRequired}
+																		/>
+																	)}
+																</>
+																{formik.values.documents_originaux_requis && (
+																	<>
+																		{allows('statut_documents_originaux') && (
+																			<CustomDropDownSelect
+																				placeholder={t.logistique.placeholders.statut_documents_originaux}
+																				id="statut_documents_originaux"
+																				label={t.logistique.fieldOriginalDocumentsStatus}
+																				items={['Demandé', 'Réceptionné', 'Retourné pour correction', 'Refusé']}
+																				value={formik.values.statut_documents_originaux}
+																				onChange={(event) =>
+																					void formik.setFieldValue('statut_documents_originaux', event.target.value)
+																				}
+																				size="small"
+																				theme={inputTheme}
+																				startIcon={<DescriptionIcon fontSize="small" />}
+																			/>
+																		)}
+																	</>
+																)}
+																{formik.values.documents_originaux_requis &&
+																	formik.values.statut_documents_originaux !== 'Réceptionné' && (
+																		<Alert severity="warning" sx={{ gridColumn: { md: '1 / -1' } }}>
+																			Documents originaux non réceptionnés.
+																		</Alert>
+																	)}
+															</>
+														)}
+
+														{canEditImportTitle && (
+															<>
+																{isImportTitleLocked && (
+																	<Alert severity="info" sx={{ gridColumn: { md: '1 / -1' } }}>
+																		{t.logistique.importTitleLocked}
 																	</Alert>
 																)}
-														</FormCard>
-													)}
+																<>
+																	{allows('numero_domiciliation') && (
+																		<CustomTextInput
+																			placeholder={t.logistique.placeholders.numero_domiciliation}
+																			id="numero_domiciliation"
+																			type="text"
+																			label={t.logistique.fieldNumeroDomiciliation}
+																			value={formik.values.numero_domiciliation}
+																			onChange={formik.handleChange('numero_domiciliation')}
+																			fullWidth
+																			size="small"
+																			theme={inputTheme}
+																			startIcon={<DescriptionIcon fontSize="small" />}
+																			disabled={isImportTitleLocked}
+																		/>
+																	)}
+																</>
+																<>
+																	{allows('methode_paiement') && (
+																		<CustomDropDownSelect
+																			placeholder={t.logistique.placeholders.methode_paiement}
+																			id="methode_paiement"
+																			label={t.logistique.fieldMethodePaiement}
+																			items={logistiquePaymentMethodItemsList}
+																			value={formik.values.methode_paiement}
+																			onChange={(event) => {
+																				void formik.setFieldValue('methode_paiement', event.target.value);
+																				if (event.target.value !== 'LC')
+																					void formik.setFieldValue('avance_pourcentage', '');
+																			}}
+																			size="small"
+																			theme={inputTheme}
+																			startIcon={<PaymentIcon fontSize="small" />}
+																			disabled={isImportTitleLocked}
+																		/>
+																	)}
+																</>
+																{formik.values.methode_paiement === 'LC' && (
+																	<>
+																		{allows('avance_pourcentage') && (
+																			<FormattedNumberInput
+																				placeholder={t.logistique.placeholders.avance_pourcentage}
+																				id="avance_pourcentage"
+																				type="text"
+																				label={t.logistique.fieldAdvancePercentage}
+																				value={formik.values.avance_pourcentage}
+																				onChange={formik.handleChange('avance_pourcentage')}
+																				fullWidth
+																				size="small"
+																				theme={inputTheme}
+																				startIcon={<PaymentIcon fontSize="small" />}
+																				disabled={isImportTitleLocked}
+																			/>
+																		)}
+																	</>
+																)}
+																<>
+																	{allows('banque') && (
+																		<CustomAutoCompleteSelect
+																			id="banque"
+																			label={t.logistique.fieldBanque}
+																			placeholder="Sélectionnez la banque"
+																			noOptionsText="Aucune banque"
+																			items={[
+																				...new Set([...MOROCCAN_BANKS, formik.values.banque].filter(Boolean)),
+																			].map((bank) => ({ value: bank, code: bank }))}
+																			value={
+																				formik.values.banque
+																					? { value: formik.values.banque, code: formik.values.banque }
+																					: null
+																			}
+																			onChange={(_, bank) => void formik.setFieldValue('banque', bank?.value ?? '')}
+																			fullWidth
+																			size="small"
+																			theme={inputTheme}
+																			disabled={isImportTitleLocked}
+																		/>
+																	)}
+																</>
+																<>
+																	{allows('montant_titre_importation') && (
+																		<FormattedNumberInput
+																			placeholder={t.logistique.placeholders.montant_titre_importation}
+																			id="montant_titre_importation"
+																			type="text"
+																			label={t.logistique.fieldMontantTI}
+																			value={formik.values.montant_titre_importation}
+																			onChange={formik.handleChange('montant_titre_importation')}
+																			fullWidth
+																			size="small"
+																			theme={inputTheme}
+																			startIcon={<PaymentIcon fontSize="small" />}
+																			disabled={isImportTitleLocked}
+																		/>
+																	)}
+																</>
+																<>
+																	{allows('devise_titre_importation') && (
+																		<CustomDropDownSelect
+																			placeholder={t.logistique.placeholders.devise_titre_importation}
+																			id="devise_titre_importation"
+																			label={t.logistique.fieldDeviseTI}
+																			items={logistiqueCurrencyItemsList}
+																			value={formik.values.devise_titre_importation}
+																			onChange={(event) =>
+																				void formik.setFieldValue('devise_titre_importation', event.target.value)
+																			}
+																			size="small"
+																			theme={inputTheme}
+																			startIcon={<PaymentIcon fontSize="small" />}
+																			disabled={isImportTitleLocked}
+																		/>
+																	)}
+																</>
+																<>
+																	{allows('date_titre_importation') && (
+																		<DateField
+																			label={t.logistique.fieldDateTI}
+																			value={formik.values.date_titre_importation}
+																			onChange={(value) => void formik.setFieldValue('date_titre_importation', value)}
+																			disabled={isImportTitleLocked}
+																		/>
+																	)}
+																</>
+																<Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minHeight: 40 }}>
+																	<Typography variant="body2" color="text.secondary">
+																		{t.logistique.fieldStatutTI}
+																	</Typography>
+																	<Chip
+																		label={formik.values.statut_titre_importation}
+																		size="small"
+																		variant="outlined"
+																	/>
+																</Box>
+															</>
+														)}
 
-													{canEditImportTitle && (
-														<FormCard title={t.logistique.importSection} icon={<DescriptionIcon color="primary" />}>
-															{isImportTitleLocked && (
-																<Alert severity="info" sx={{ gridColumn: { md: '1 / -1' } }}>
-																	{t.logistique.importTitleLocked}
-																</Alert>
-															)}
-															<CustomTextInput
-																placeholder={t.logistique.placeholders.numero_domiciliation}
-																id="numero_domiciliation"
-																type="text"
-																label={t.logistique.fieldNumeroDomiciliation}
-																value={formik.values.numero_domiciliation}
-																onChange={formik.handleChange('numero_domiciliation')}
-																fullWidth
-																size="small"
-																theme={inputTheme}
-																startIcon={<DescriptionIcon fontSize="small" />}
-																disabled={isImportTitleLocked}
-															/>
-															<CustomDropDownSelect
-																placeholder={t.logistique.placeholders.methode_paiement}
-																id="methode_paiement"
-																label={t.logistique.fieldMethodePaiement}
-																items={logistiquePaymentMethodItemsList}
-																value={formik.values.methode_paiement}
-																onChange={(event) => {
-																	void formik.setFieldValue('methode_paiement', event.target.value);
-																	if (event.target.value !== 'LC') void formik.setFieldValue('avance_pourcentage', '');
-																}}
-																size="small"
-																theme={inputTheme}
-																startIcon={<PaymentIcon fontSize="small" />}
-																disabled={isImportTitleLocked}
-															/>
-															{formik.values.methode_paiement === 'LC' && (
-																<FormattedNumberInput
-																	placeholder={t.logistique.placeholders.avance_pourcentage}
-																	id="avance_pourcentage"
-																	type="text"
-																	label={t.logistique.fieldAdvancePercentage}
-																	value={formik.values.avance_pourcentage}
-																	onChange={formik.handleChange('avance_pourcentage')}
-																	fullWidth
-																	size="small"
-																	theme={inputTheme}
-																	startIcon={<PaymentIcon fontSize="small" />}
-																	disabled={isImportTitleLocked}
-																/>
-															)}
-															<CustomTextInput
-																placeholder={t.logistique.placeholders.banque}
-																id="banque"
-																type="text"
-																label={t.logistique.fieldBanque}
-																value={formik.values.banque}
-																onChange={formik.handleChange('banque')}
-																fullWidth
-																size="small"
-																theme={inputTheme}
-																startIcon={<PaymentIcon fontSize="small" />}
-																disabled={isImportTitleLocked}
-															/>
-															<FormattedNumberInput
-																placeholder={t.logistique.placeholders.montant_titre_importation}
-																id="montant_titre_importation"
-																type="text"
-																label={t.logistique.fieldMontantTI}
-																value={formik.values.montant_titre_importation}
-																onChange={formik.handleChange('montant_titre_importation')}
-																fullWidth
-																size="small"
-																theme={inputTheme}
-																startIcon={<PaymentIcon fontSize="small" />}
-																disabled={isImportTitleLocked}
-															/>
-															<CustomDropDownSelect
-																placeholder={t.logistique.placeholders.devise_titre_importation}
-																id="devise_titre_importation"
-																label={t.logistique.fieldDeviseTI}
-																items={logistiqueCurrencyItemsList}
-																value={formik.values.devise_titre_importation}
-																onChange={(event) =>
-																	void formik.setFieldValue('devise_titre_importation', event.target.value)
+														{editableDocumentFields.length > 0 && (
+															<LogistiqueDocumentsFormCard
+																items={editableDocumentFields.map((field) => ({
+																	field,
+																	label: documentLabels[field],
+																	file: formik.values[field],
+																	currentUrl: order?.[field] ?? null,
+																}))}
+																selectedField={
+																	editableDocumentFields.includes(selectedDocumentField)
+																		? selectedDocumentField
+																		: editableDocumentFields[0]
 																}
-																size="small"
-																theme={inputTheme}
-																startIcon={<PaymentIcon fontSize="small" />}
-																disabled={isImportTitleLocked}
+																onSelectedFieldChangeAction={setSelectedDocumentField}
+																onFileChangeAction={(field, file) => void formik.setFieldValue(field, file)}
+																onClearFileAction={(field) => void formik.setFieldValue(field, null)}
+																isLoading={isPending}
+																accept={acceptedDocumentTypes}
 															/>
-															<DateField
-																label={t.logistique.fieldDateTI}
-																value={formik.values.date_titre_importation}
-																onChange={(value) => void formik.setFieldValue('date_titre_importation', value)}
-																disabled={isImportTitleLocked}
-															/>
-															<Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minHeight: 40 }}>
-																<Typography variant="body2" color="text.secondary">
-																	{t.logistique.fieldStatutTI}
-																</Typography>
-																<Chip label={formik.values.statut_titre_importation} size="small" variant="outlined" />
-															</Box>
-														</FormCard>
-													)}
+														)}
 
-													{editableDocumentFields.length > 0 && (
-														<LogistiqueDocumentsFormCard
-															items={editableDocumentFields.map((field) => ({
-																field,
-																label: documentLabels[field],
-																file: formik.values[field],
-																currentUrl: order?.[field] ?? null,
-															}))}
-															selectedField={selectedDocumentField}
-															onSelectedFieldChangeAction={setSelectedDocumentField}
-															onFileChangeAction={(field, file) => void formik.setFieldValue(field, file)}
-															onClearFileAction={(field) => void formik.setFieldValue(field, null)}
-															isLoading={isPending}
-															accept={acceptedDocumentTypes}
-														/>
-													)}
-
-													{canManage && (
-														<FormCard title={t.logistique.costsSection} icon={<LocalShippingIcon color="primary" />}>
-															<FormattedNumberInput
-																placeholder={t.logistique.placeholders.cout_transport}
-																id="cout_transport"
-																type="text"
-																label={t.logistique.fieldCoutTransport}
-																value={formik.values.cout_transport}
-																onChange={formik.handleChange('cout_transport')}
-																fullWidth
-																size="small"
-																theme={inputTheme}
-																startIcon={<LocalShippingIcon fontSize="small" />}
-															/>
-															<FormattedNumberInput
-																placeholder={t.logistique.placeholders.frais_transit}
-																id="frais_transit"
-																type="text"
-																label={t.logistique.fieldFraisTransit}
-																value={formik.values.frais_transit}
-																onChange={formik.handleChange('frais_transit')}
-																fullWidth
-																size="small"
-																theme={inputTheme}
-																startIcon={<LocalShippingIcon fontSize="small" />}
-															/>
-															<FormattedNumberInput
-																placeholder={t.logistique.placeholders.frais_douane}
-																id="frais_douane"
-																type="text"
-																label={t.logistique.fieldFraisDouane}
-																value={formik.values.frais_douane}
-																onChange={formik.handleChange('frais_douane')}
-																fullWidth
-																size="small"
-																theme={inputTheme}
-																startIcon={<LocalShippingIcon fontSize="small" />}
-															/>
-															<FormattedNumberInput
-																placeholder={t.logistique.placeholders.tva}
-																id="tva"
-																type="text"
-																label={t.logistique.fieldTva}
-																value={formik.values.tva}
-																onChange={formik.handleChange('tva')}
-																fullWidth
-																size="small"
-																theme={inputTheme}
-																startIcon={<PaymentIcon fontSize="small" />}
-															/>
-															<FormattedNumberInput
-																placeholder={t.logistique.placeholders.livraison_locale}
-																id="livraison_locale"
-																type="text"
-																label={t.logistique.fieldLivraisonLocale}
-																value={formik.values.livraison_locale}
-																onChange={formik.handleChange('livraison_locale')}
-																fullWidth
-																size="small"
-																theme={inputTheme}
-																startIcon={<LocalShippingIcon fontSize="small" />}
-															/>
-															<FormattedNumberInput
-																placeholder={t.logistique.placeholders.autres_frais}
-																id="autres_frais"
-																type="text"
-																label={t.logistique.fieldAutresFrais}
-																value={formik.values.autres_frais}
-																onChange={formik.handleChange('autres_frais')}
-																fullWidth
-																size="small"
-																theme={inputTheme}
-																startIcon={<PaymentIcon fontSize="small" />}
-															/>
-														</FormCard>
-													)}
+														{canManage && (
+															<>
+																<>
+																	{allows('cout_transport') && (
+																		<FormattedNumberInput
+																			placeholder={t.logistique.placeholders.cout_transport}
+																			id="cout_transport"
+																			type="text"
+																			label={t.logistique.fieldCoutTransport}
+																			value={formik.values.cout_transport}
+																			onChange={formik.handleChange('cout_transport')}
+																			fullWidth
+																			size="small"
+																			theme={inputTheme}
+																			startIcon={<LocalShippingIcon fontSize="small" />}
+																		/>
+																	)}
+																</>
+																<>
+																	{allows('frais_transit') && (
+																		<FormattedNumberInput
+																			placeholder={t.logistique.placeholders.frais_transit}
+																			id="frais_transit"
+																			type="text"
+																			label={t.logistique.fieldFraisTransit}
+																			value={formik.values.frais_transit}
+																			onChange={formik.handleChange('frais_transit')}
+																			fullWidth
+																			size="small"
+																			theme={inputTheme}
+																			startIcon={<LocalShippingIcon fontSize="small" />}
+																		/>
+																	)}
+																</>
+																<>
+																	{allows('frais_douane') && (
+																		<FormattedNumberInput
+																			placeholder={t.logistique.placeholders.frais_douane}
+																			id="frais_douane"
+																			type="text"
+																			label={t.logistique.fieldFraisDouane}
+																			value={formik.values.frais_douane}
+																			onChange={formik.handleChange('frais_douane')}
+																			fullWidth
+																			size="small"
+																			theme={inputTheme}
+																			startIcon={<LocalShippingIcon fontSize="small" />}
+																		/>
+																	)}
+																</>
+																<>
+																	{allows('tva') && (
+																		<FormattedNumberInput
+																			placeholder={t.logistique.placeholders.tva}
+																			id="tva"
+																			type="text"
+																			label={t.logistique.fieldTva}
+																			value={formik.values.tva}
+																			onChange={formik.handleChange('tva')}
+																			fullWidth
+																			size="small"
+																			theme={inputTheme}
+																			startIcon={<PaymentIcon fontSize="small" />}
+																		/>
+																	)}
+																</>
+																<>
+																	{allows('livraison_locale') && (
+																		<FormattedNumberInput
+																			placeholder={t.logistique.placeholders.livraison_locale}
+																			id="livraison_locale"
+																			type="text"
+																			label={t.logistique.fieldLivraisonLocale}
+																			value={formik.values.livraison_locale}
+																			onChange={formik.handleChange('livraison_locale')}
+																			fullWidth
+																			size="small"
+																			theme={inputTheme}
+																			startIcon={<LocalShippingIcon fontSize="small" />}
+																		/>
+																	)}
+																</>
+																<>
+																	{allows('autres_frais') && (
+																		<FormattedNumberInput
+																			placeholder={t.logistique.placeholders.autres_frais}
+																			id="autres_frais"
+																			type="text"
+																			label={t.logistique.fieldAutresFrais}
+																			value={formik.values.autres_frais}
+																			onChange={formik.handleChange('autres_frais')}
+																			fullWidth
+																			size="small"
+																			theme={inputTheme}
+																			startIcon={<PaymentIcon fontSize="small" />}
+																		/>
+																	)}
+																</>
+															</>
+														)}
+													</FormCard>
 												</>
 											)}
 

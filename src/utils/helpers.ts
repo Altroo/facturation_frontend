@@ -492,6 +492,64 @@ export function rememberListPagination(href: string, scope: ListScope = {}) {
 	}
 }
 
+export function logisticsArticleReturnUrl(target: string | null, companyId: number): string | null {
+	if (!target || !target.startsWith('/') || target.startsWith('//') || target.includes('\\')) return null;
+	try {
+		const url = new URL(target, 'https://local.invalid');
+		if (
+			url.origin !== 'https://local.invalid' ||
+			!/^\/dashboard\/logistique\/\d+\/edit\/?$/.test(url.pathname) ||
+			url.searchParams.get('company_id') !== String(companyId) ||
+			url.searchParams.get('etape') !== 'proforma' ||
+			!url.searchParams.get('brouillon')
+		)
+			return null;
+		return url.pathname + url.search;
+	} catch {
+		return null;
+	}
+}
+
+/** IndexedDB preserves File objects while the user creates an article on another route. */
+export async function purchaseDraft<T>(
+	key: string,
+	operation: 'read' | 'write' | 'delete',
+	value?: T,
+): Promise<T | undefined> {
+	return new Promise((resolve, reject) => {
+		const open = indexedDB.open('facturation-form-drafts', 1);
+		open.onupgradeneeded = () => open.result.createObjectStore('drafts');
+		open.onerror = () => reject(open.error);
+		open.onsuccess = () => {
+			const db = open.result;
+			const tx = db.transaction('drafts', operation === 'read' ? 'readonly' : 'readwrite');
+			const store = tx.objectStore('drafts');
+			const request =
+				operation === 'write'
+					? store.put({ value, expires: Date.now() + 86400000 }, key)
+					: operation === 'delete'
+						? store.delete(key)
+						: store.get(key);
+			let result: T | undefined;
+			request.onsuccess = () => {
+				if (operation === 'read' && request.result?.expires > Date.now()) result = request.result.value as T;
+			};
+			tx.oncomplete = () => {
+				db.close();
+				resolve(result);
+			};
+			tx.onerror = () => {
+				db.close();
+				reject(tx.error);
+			};
+			tx.onabort = () => {
+				db.close();
+				reject(tx.error);
+			};
+		};
+	});
+}
+
 export function listReturnUrl(target: string): string {
 	if (typeof window === 'undefined') return target;
 	const absolute = /^https?:\/\//.test(target);

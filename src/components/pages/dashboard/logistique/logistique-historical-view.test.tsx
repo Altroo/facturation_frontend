@@ -10,7 +10,10 @@ import { translations } from '@/translations';
 import LogistiqueView from './logistique-historical-view';
 
 const mockPush = jest.fn();
-jest.mock('next/navigation', () => ({ useRouter: () => ({ push: mockPush }) }));
+jest.mock('next/navigation', () => ({
+	useRouter: () => ({ push: mockPush }),
+	useSearchParams: () => new URLSearchParams(window.location.search),
+}));
 jest.mock('@/contexts/InitContext', () => ({ useInitAccessToken: () => 'token' }));
 jest.mock('@/store/selectors', () => ({ getInitStateToken: jest.fn(), getUserCompaniesState: jest.fn() }));
 jest.mock('@/utils/hooks', () => ({
@@ -23,6 +26,7 @@ jest.mock('@/store/services/logistique', () => ({
 	useGetLogistiqueQuery: jest.fn(),
 	...Object.fromEntries(
 		[
+			'usePurchaseActionMutation',
 			'useDeleteLogistiqueMutation',
 			'usePatchLogistiqueStatutMutation',
 			'usePatchLogistiqueWorkflowStatusMutation',
@@ -76,6 +80,7 @@ const order = {
 
 beforeEach(() => {
 	jest.clearAllMocks();
+	window.history.replaceState(null, '', '/dashboard/logistique/7?company_id=12');
 	(useAppSelector as jest.Mock).mockImplementation((selector) =>
 		selector === getInitStateToken ? { user: { pk: 27 } } : [],
 	);
@@ -89,7 +94,7 @@ describe('LogistiqueView historical dossier details', () => {
 		expect(screen.queryByText(/Nouveau parcours/)).not.toBeInTheDocument();
 		expect(screen.getAllByText('LOG-LEGACY').length).toBeGreaterThan(0);
 		fireEvent.click(screen.getByRole('button', { name: t.common.edit }));
-		expect(mockPush).toHaveBeenCalledWith(LOGISTIQUE_EDIT(7, 12));
+		expect(mockPush).toHaveBeenCalledWith(`${LOGISTIQUE_EDIT(7, 12)}&etape=dossier`);
 	});
 
 	it('denies legacy detail access outside the user company', () => {
@@ -114,4 +119,34 @@ describe('LogistiqueView historical dossier details', () => {
 		expect(screen.getByRole('alert')).toHaveTextContent('Dossier indisponible.');
 		expect(screen.queryByText('Ancien fournisseur')).not.toBeInTheDocument();
 	});
+});
+
+it('shows only the current card, allows read-only completed steps and locks future steps', () => {
+	(useGetLogistiqueQuery as jest.Mock).mockReturnValue({
+		data: {
+			...order,
+			is_launch_step_complete: true,
+			is_proforma_step_complete: true,
+			statut: 'Paiement demandé',
+			workflow: {
+				etape_courante: 'paiement',
+				etapes: [
+					{ key: 'dossier', label: 'Commande & lancement', completed: true, accessible: true },
+					{ key: 'proforma', label: 'Proforma & conformité', completed: true, accessible: true },
+					{ key: 'paiement', label: 'Banque & paiement', completed: false, accessible: true },
+					{ key: 'production', label: 'Préparation fournisseur', completed: false, accessible: false },
+				],
+			},
+		},
+	});
+	render(<LogistiqueView company_id={12} id={7} />);
+	expect(screen.getByRole('heading', { name: 'Banque & paiement' })).toBeInTheDocument();
+	expect(screen.queryByRole('heading', { name: t.logistique.commandLaunchSection })).not.toBeInTheDocument();
+	expect(screen.queryByRole('heading', { name: t.logistique.proformaComplianceSection })).not.toBeInTheDocument();
+	expect(screen.getByRole('tab', { name: /Préparation fournisseur/ })).toBeDisabled();
+	fireEvent.click(screen.getByRole('tab', { name: 'Commande & lancement' }));
+	expect(screen.getByRole('heading', { name: 'Commande & lancement' })).toBeInTheDocument();
+	expect(screen.queryByRole('heading', { name: 'Banque & paiement' })).not.toBeInTheDocument();
+	expect(screen.queryByRole('button', { name: t.common.edit })).not.toBeInTheDocument();
+	expect(screen.getByRole('button', { name: 'Demander une modification' })).toBeInTheDocument();
 });

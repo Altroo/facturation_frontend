@@ -176,7 +176,10 @@ export const logistiqueApi = createApi({
 				{ type: 'Logistique', id: 'LIST' },
 			],
 		}),
-		addLogistiqueSupplier: builder.mutation<LogistiqueSupplier, { company_id: number; nom: string; email: string }>({
+		addLogistiqueSupplier: builder.mutation<
+			LogistiqueSupplier,
+			{ company_id: number; nom: string; email: string; marques?: number[] }
+		>({
 			query: ({ company_id, ...data }) => ({
 				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/fournisseurs/`,
 				method: 'POST',
@@ -187,7 +190,7 @@ export const logistiqueApi = createApi({
 		}),
 		editLogistiqueSupplier: builder.mutation<
 			LogistiqueSupplier,
-			{ id: number; company_id: number; nom: string; email: string }
+			{ id: number; company_id: number; nom: string; email: string; marques?: number[] }
 		>({
 			query: ({ id, company_id, ...data }) => ({
 				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/fournisseurs/${id}/`,
@@ -225,8 +228,8 @@ export const logistiqueApi = createApi({
 							fournisseur: string;
 							fournisseur_email: string;
 							responsable: number;
-							date_prevue: string | null;
-							date_commande_client: string | null;
+							date_prevue?: string | null;
+							date_commande_client?: string | null;
 							marque?: number;
 					  };
 			}

@@ -80,7 +80,7 @@ export const articleApi = createApi({
 			}),
 			invalidatesTags: ['Article', 'Dashboard'],
 		}),
-		addArticle: builder.mutation<SuccessResponseType<ArticleClass>, { data: Partial<ArticleClass> }>({
+		addArticle: builder.mutation<ArticleClass, { data: Partial<ArticleClass> }>({
 			query: ({ data }) => ({
 				url: `${process.env.NEXT_PUBLIC_ARTICLE_ROOT}/`,
 				method: 'POST',

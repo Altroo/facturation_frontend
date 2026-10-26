@@ -3,25 +3,18 @@
 import { extractApiErrorMessage, formatDate, formatNumberWithSpaces, runWithCleanup } from '@/utils/helpers';
 import { type FC, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Button, Chip, Divider, Typography } from '@mui/material';
+import { Box, Button, Chip, Typography } from '@mui/material';
 import {
 	Add as AddIcon,
-	AssignmentTurnedIn as AssignmentTurnedInIcon,
 	Close as CloseIcon,
 	Delete as DeleteIcon,
 	Edit as EditIcon,
-	ErrorOutlined as ErrorOutlinedIcon,
-	LocalShipping as LocalShippingIcon,
-	Payment as PaymentIcon,
-	RequestQuote as RequestQuoteIcon,
 	Visibility as VisibilityIcon,
-	Warehouse as WarehouseIcon,
 } from '@mui/icons-material';
 import { GridColDef, GridFilterModel, GridLogicOperator, GridRenderCellParams } from '@mui/x-data-grid';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
-import DashboardStatCard from '@/components/shared/dashboardStatCard/dashboardStatCard';
 import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 import type { ActionItem, ChipFilterConfig } from '@/types/uiTypes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
@@ -68,15 +61,6 @@ const paymentColor = (status: LogistiquePaymentStatus) => {
 
 const formatMoney = (value: string | number | null | undefined, devise = 'MAD') =>
 	`${formatNumberWithSpaces(value ?? 0, 2)} ${devise}`;
-
-const numericValue = (value: string | number | null | undefined) => {
-	const parsed = Number(
-		String(value ?? 0)
-			.replace(/\s/g, '')
-			.replace(',', '.'),
-	);
-	return Number.isFinite(parsed) ? parsed : 0;
-};
 
 const FormikContent: FC<FormikContentProps> = ({ session, company_id, role }) => {
 	const { t } = useLanguage();
@@ -379,243 +363,8 @@ const FormikContent: FC<FormikContentProps> = ({ session, company_id, role }) =>
 		},
 	];
 
-	const stats = listData?.stats;
-	const supplierKpis = (stats?.kpi_fournisseurs ?? []).map((supplier, index) => ({
-		id: `supplier-${index}-${supplier.fournisseur || 'unknown'}`,
-		name: supplier.fournisseur || '-',
-		total_commandes: supplier.total_commandes,
-		cout_total: supplier.cout_total,
-	}));
-	const maxSupplierCost = Math.max(...supplierKpis.map((supplier) => numericValue(supplier.cout_total)), 1);
-	const maxSupplierOrders = Math.max(...supplierKpis.map((supplier) => supplier.total_commandes), 1);
-
 	return (
 		<>
-			<Box sx={{ px: { xs: 1, sm: 2, md: 3 }, mt: { xs: 1, sm: 2, md: 3 } }}>
-				<Box
-					sx={{
-						display: 'grid',
-						gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', xl: '1fr 1fr 1fr' },
-						gap: 2,
-						mb: 3,
-					}}
-				>
-					<DashboardStatCard
-						icon={<RequestQuoteIcon />}
-						label={t.logistique.totalOrders}
-						value={String(stats?.total_commandes ?? 0)}
-						color="#1565C0"
-						testId="logistique-stats-total"
-					/>
-					<DashboardStatCard
-						icon={<WarehouseIcon />}
-						label={t.logistique.inProgress}
-						value={String(stats?.commandes_en_cours ?? 0)}
-						color="#2E7D32"
-						testId="logistique-stats-progress"
-					/>
-					<DashboardStatCard
-						icon={<ErrorOutlinedIcon />}
-						label={t.logistique.delays}
-						value={String(stats?.retards ?? 0)}
-						color="#D32F2F"
-						valueColor="error.main"
-						testId="logistique-stats-delays"
-					/>
-					<DashboardStatCard
-						icon={<PaymentIcon />}
-						label={t.logistique.pendingPayments}
-						value={String(stats?.paiements_en_attente ?? 0)}
-						color="#ED6C02"
-						testId="logistique-stats-payments"
-					/>
-					<DashboardStatCard
-						icon={<LocalShippingIcon />}
-						label={t.logistique.deliveries}
-						value={String(stats?.livraisons ?? 0)}
-						color="#00838F"
-						testId="logistique-stats-deliveries"
-					/>
-					<DashboardStatCard
-						icon={<AssignmentTurnedInIcon />}
-						label={t.logistique.logisticsCosts}
-						value={formatMoney(stats?.couts_logistiques ?? 0)}
-						color="#6A1B9A"
-						testId="logistique-stats-costs"
-					/>
-					<DashboardStatCard
-						icon={<PaymentIcon />}
-						label={t.logistique.swiftMissing}
-						value={String(stats?.swift_manquant ?? 0)}
-						color="#C62828"
-						testId="logistique-stats-swift"
-					/>
-					<DashboardStatCard
-						icon={<RequestQuoteIcon />}
-						label={t.logistique.docsMissing}
-						value={String(stats?.documents_non_recus ?? 0)}
-						color="#455A64"
-						testId="logistique-stats-docs"
-					/>
-					<DashboardStatCard
-						icon={<LocalShippingIcon />}
-						label={t.logistique.transitNotStarted}
-						value={String(stats?.transit_non_lance ?? 0)}
-						color="#00695C"
-						testId="logistique-stats-transit"
-					/>
-				</Box>
-				{supplierKpis.length ? (
-					<Box sx={{ mb: 3 }}>
-						<Box
-							sx={{
-								display: 'flex',
-								justifyContent: 'space-between',
-								alignItems: 'baseline',
-								gap: 2,
-								mb: 1.5,
-								flexWrap: 'wrap',
-							}}
-						>
-							<Typography variant="h6" sx={{ fontWeight: 800 }}>
-								{t.logistique.supplierKpiSection}
-							</Typography>
-							<Typography variant="caption" color="text.secondary">
-								{t.logistique.supplierKpiComparisonHint}
-							</Typography>
-						</Box>
-						<Box sx={{ display: 'grid', gap: 1.25 }}>
-							{supplierKpis.map((supplier, index) => {
-								const costValue = numericValue(supplier.cout_total);
-								const costPercent = Math.max(5, Math.round((costValue / maxSupplierCost) * 100));
-								const orderPercent = Math.max(5, Math.round((supplier.total_commandes / maxSupplierOrders) * 100));
-								return (
-									<Box
-										key={supplier.id}
-										sx={{
-											border: '1px solid',
-											borderColor: 'divider',
-											borderRadius: 2,
-											bgcolor: 'background.paper',
-											p: { xs: 1.5, sm: 2 },
-											display: 'grid',
-											gridTemplateColumns: { xs: '1fr', md: 'minmax(220px, 0.8fr) minmax(320px, 1.6fr)' },
-											gap: { xs: 1.25, md: 2 },
-											alignItems: 'center',
-											minWidth: 0,
-											boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-										}}
-									>
-										<Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, minWidth: 0 }}>
-											<Box
-												sx={{
-													width: 34,
-													height: 34,
-													borderRadius: '50%',
-													display: 'grid',
-													placeItems: 'center',
-													bgcolor: index === 0 ? 'primary.main' : 'var(--app-inset-hover, #f5f5f5)',
-													color: index === 0 ? 'primary.contrastText' : 'text.primary',
-													fontWeight: 800,
-													flexShrink: 0,
-												}}
-											>
-												{index + 1}
-											</Box>
-											<Box sx={{ minWidth: 0 }}>
-												<DarkTooltip title={supplier.name}>
-													<Typography variant="subtitle2" noWrap sx={{ fontWeight: 800 }}>
-														{supplier.name}
-													</Typography>
-												</DarkTooltip>
-											</Box>
-										</Box>
-										<Box sx={{ display: 'grid', gap: 1, minWidth: 0 }}>
-											<Box sx={{ display: 'grid', gap: 0.5, minWidth: 0 }}>
-												<Box
-													sx={{
-														display: 'flex',
-														alignItems: 'baseline',
-														justifyContent: 'space-between',
-														gap: 1,
-														minWidth: 0,
-													}}
-												>
-													<Typography variant="caption" color="text.secondary">
-														{t.logistique.colCoutTotal}
-													</Typography>
-													<Typography
-														variant="caption"
-														sx={{ fontWeight: 800, color: 'text.primary', textAlign: 'right' }}
-													>
-														{formatMoney(supplier.cout_total)} · {costPercent}% {t.logistique.supplierKpiRelativeToMax}
-													</Typography>
-												</Box>
-												<Box
-													sx={{
-														height: 9,
-														borderRadius: 999,
-														bgcolor: 'var(--app-inset-hover, #f5f5f5)',
-														overflow: 'hidden',
-													}}
-												>
-													<Box
-														sx={{
-															width: `${costPercent}%`,
-															height: '100%',
-															bgcolor: 'primary.main',
-															borderRadius: 999,
-														}}
-													/>
-												</Box>
-											</Box>
-											<Box sx={{ display: 'grid', gap: 0.5, minWidth: 0 }}>
-												<Box
-													sx={{
-														display: 'flex',
-														alignItems: 'baseline',
-														justifyContent: 'space-between',
-														gap: 1,
-														minWidth: 0,
-													}}
-												>
-													<Typography variant="caption" color="text.secondary">
-														{t.logistique.ordersCount}
-													</Typography>
-													<Typography
-														variant="caption"
-														sx={{ fontWeight: 800, color: 'text.primary', textAlign: 'right' }}
-													>
-														{supplier.total_commandes} · {orderPercent}% {t.logistique.supplierKpiRelativeToMax}
-													</Typography>
-												</Box>
-												<Box
-													sx={{
-														height: 9,
-														borderRadius: 999,
-														bgcolor: 'var(--app-inset-hover, #f5f5f5)',
-														overflow: 'hidden',
-													}}
-												>
-													<Box
-														sx={{
-															width: `${orderPercent}%`,
-															height: '100%',
-															bgcolor: 'success.main',
-															borderRadius: 999,
-														}}
-													/>
-												</Box>
-											</Box>
-										</Box>
-									</Box>
-								);
-							})}
-						</Box>
-					</Box>
-				) : null}
-				<Divider sx={{ mb: 2 }} />
-			</Box>
 			{canManage && (
 				<Box
 					sx={{

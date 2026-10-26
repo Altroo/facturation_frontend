@@ -22,6 +22,7 @@ jest.mock('@/utils/hooks', () => ({
 	useLanguage: () => ({ t: jest.requireActual('@/translations').translations.fr }),
 	useToast: () => ({ onSuccess: mockOnSuccess }),
 }));
+jest.mock('@/store/services/parameter', () => ({ useGetMarqueListQuery: () => ({ data: [] }) }));
 jest.mock('@/store/services/logistique', () => ({
 	useGetLogistiqueSupplierQuery: jest.fn(),
 	useAddLogistiqueSupplierMutation: jest.fn(),
@@ -103,7 +104,7 @@ describe('LogistiqueSuppliersForm', () => {
 
 	it('loads current supplier data for editing and submits a company-scoped update', async () => {
 		(useGetLogistiqueSupplierQuery as jest.Mock).mockReturnValue({
-			currentData: { nom: 'Fournisseur existant', email: 'supplier@example.com' },
+			currentData: { nom: 'Fournisseur existant', email: 'supplier@example.com', marques: [] },
 			refetch: mockRefetch,
 		});
 		render(<LogistiqueSuppliersForm company_id={12} id={7} />);
@@ -115,7 +116,13 @@ describe('LogistiqueSuppliersForm', () => {
 		submit();
 
 		await waitFor(() => expect(mockReplace).toHaveBeenCalledWith(LOGISTIQUE_SUPPLIER_VIEW(7, 12)));
-		expect(mockEdit).toHaveBeenCalledWith({ id: 7, company_id: 12, nom: 'Nouveau nom', email: 'supplier@example.com' });
+		expect(mockEdit).toHaveBeenCalledWith({
+			id: 7,
+			company_id: 12,
+			nom: 'Nouveau nom',
+			email: 'supplier@example.com',
+			marques: [],
+		});
 		expect(mockAdd).not.toHaveBeenCalled();
 	});
 
@@ -126,7 +133,12 @@ describe('LogistiqueSuppliersForm', () => {
 		submit();
 
 		await waitFor(() => expect(mockReplace).toHaveBeenCalledWith(LOGISTIQUE_SUPPLIER_VIEW(7, 12)));
-		expect(mockAdd).toHaveBeenCalledWith({ company_id: 12, nom: 'Fournisseur Test', email: 'supplier@example.com' });
+		expect(mockAdd).toHaveBeenCalledWith({
+			company_id: 12,
+			nom: 'Fournisseur Test',
+			email: 'supplier@example.com',
+			marques: [],
+		});
 		expect(mockOnSuccess).toHaveBeenCalledWith(t.logistique.supplierSaved);
 		expect(mockEdit).not.toHaveBeenCalled();
 	});

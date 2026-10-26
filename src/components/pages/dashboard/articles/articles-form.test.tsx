@@ -16,12 +16,14 @@ const mockStore = configureStore({
 
 // Mock next/navigation
 const mockPush = jest.fn();
+const mockReplace = jest.fn();
 jest.mock('next/navigation', () => ({
+	useSearchParams: () => new URLSearchParams(window.location.search),
 	__esModule: true,
 	useRouter: () => ({
 		push: mockPush,
 		back: jest.fn(),
-		replace: jest.fn(),
+		replace: mockReplace,
 		refresh: jest.fn(),
 		forward: jest.fn(),
 		prefetch: jest.fn(),
@@ -343,6 +345,7 @@ const renderWithProviders = (ui: ReactElement) => {
 describe('ArticlesForm', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
+		window.history.replaceState(null, '', '/dashboard/articles/new?company_id=1');
 		mockUseGetArticleQuery.mockReturnValue({
 			data: undefined,
 			isLoading: false,
@@ -364,6 +367,15 @@ describe('ArticlesForm', () => {
 				data: { raison_sociale: 'CASA DI LUSSO', uses_foreign_currency: false },
 				isFetching: false,
 			});
+		});
+
+		it('returns the created article ID to the saved supplier proforma draft', async () => {
+			const back = '/dashboard/logistique/7/edit?company_id=1&etape=proforma&brouillon=test-draft';
+			window.history.replaceState(null, '', `/dashboard/articles/new?company_id=1&retour=${encodeURIComponent(back)}`);
+			renderWithProviders(<ArticlesForm session={mockSession} company_id={1} />);
+			fireEvent.change(screen.getByTestId('input-field-prix_vente'), { target: { value: '100' } });
+			fireEvent.click(screen.getByTestId('submit-button'));
+			await waitFor(() => expect(mockReplace).toHaveBeenCalledWith(`${back}&article_id=50`));
 		});
 
 		it('defaults to HT, previews TTC and submits the unchanged HT amount', async () => {

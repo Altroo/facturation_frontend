@@ -103,6 +103,7 @@ export type PurchaseFormValues = {
 };
 
 export type SupplierPurchaseSchemaContext = {
+	approvedCorrection?: boolean;
 	existingProformaFile?: boolean;
 	existingTitleFile?: boolean;
 	managedReceipt?: boolean;

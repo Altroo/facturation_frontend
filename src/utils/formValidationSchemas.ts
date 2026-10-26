@@ -960,6 +960,16 @@ export const getSupplierPurchaseSchema = (mode: PurchaseFormMode, context: Suppl
 			if (mandatory) required(key);
 			if (String(values[key]).length > max) issue([key], `Saisissez au maximum ${max} caractères.`);
 		};
+		if (context.approvedCorrection && mode === 'paiement') {
+			text('reference_paiement', 120);
+			text('commentaire_paiement', 4000);
+			return;
+		}
+		if (context.approvedCorrection && mode === 'reception' && context.managedReceipt) {
+			text('reference_reception', 80);
+			text('note', 4000);
+			return;
+		}
 		const numeric = (
 			value: string,
 			path: (string | number)[],
