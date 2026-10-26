@@ -1653,24 +1653,24 @@ function PurchaseFormik({
 					{sections}
 					{proposalMode && (
 						<FormCard title="Motif de la modification" icon={<Notes color="primary" />}>
-							<CustomTextInput
-								id="correction_remarque"
-								type="textarea"
-								theme={inputTheme}
-								startIcon={<Notes fontSize="small" />}
-								label="Motif de la modification"
-								placeholder="Expliquez pourquoi ces valeurs doivent être corrigées"
-								size="small"
-								fullWidth
-								minRows={3}
-								required
-								value={correctionReason}
-								onChange={(event) => setCorrectionReason(event.target.value)}
-								disabled={disabled}
-							/>
-							<Typography variant="body2" color="text.secondary">
-								Les valeurs actuelles seront conservées jusqu’à la validation de votre proposition.
-							</Typography>
+							{full(
+								<CustomTextInput
+									id="correction_remarque"
+									type="textarea"
+									theme={inputTheme}
+									startIcon={<Notes fontSize="small" />}
+									label="Motif de la modification"
+									placeholder="Expliquez pourquoi ces valeurs doivent être corrigées"
+									helperText="Les valeurs actuelles seront conservées jusqu’à la validation de votre proposition."
+									size="small"
+									fullWidth
+									minRows={3}
+									required
+									value={correctionReason}
+									onChange={(event) => setCorrectionReason(event.target.value)}
+									disabled={disabled}
+								/>,
+							)}
 						</FormCard>
 					)}
 					{items.length > 0 && (
