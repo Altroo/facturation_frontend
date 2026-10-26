@@ -6,6 +6,7 @@ import { getIn, useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import {
 	Alert,
+	Button,
 	Box,
 	Card,
 	CardContent,
@@ -1558,27 +1559,23 @@ function PurchaseFormik({
 	return (
 		<Stack spacing={3} sx={{ p: { xs: 2, md: 3 }, width: '100%' }}>
 			<Stack direction={isMobile ? 'column' : 'row'} spacing={2} sx={{ pt: 2, justifyContent: 'space-between' }}>
-				<PrimaryLoadingButton
-					buttonText="Retour à la liste"
-					size="small"
-					loading={false}
-					active
-					inverted
+				<Button
+					variant="outlined"
 					startIcon={<ArrowBack />}
 					onClick={() => router.push(listReturnUrl(`${LOGISTIQUE_LIST}?company_id=${company_id}`))}
-					cssClass={Controls.mobileFullWidth}
-				/>
+					sx={{ width: isMobile ? '100%' : 'auto' }}
+				>
+					Retour à la liste
+				</Button>
 				{id && (
-					<PrimaryLoadingButton
-						buttonText="Retour au dossier"
-						size="small"
-						loading={false}
-						active
-						inverted
+					<Button
+						variant="outlined"
 						startIcon={<ArrowBack />}
 						onClick={() => router.push(LOGISTIQUE_VIEW(id, company_id))}
-						cssClass={Controls.mobileFullWidth}
-					/>
+						sx={{ width: isMobile ? '100%' : 'auto' }}
+					>
+						Retour au dossier
+					</Button>
 				)}
 			</Stack>
 			{id && (

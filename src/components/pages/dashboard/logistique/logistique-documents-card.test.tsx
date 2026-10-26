@@ -34,7 +34,7 @@ describe('LogistiqueDocumentsFormCard', () => {
 		expect(onSelectedFieldChangeAction).toHaveBeenCalledWith('justificatifs_file');
 	});
 
-	it('opens the native file picker from the shared choose-files button', () => {
+	it('opens the native file picker from the choose-files button', () => {
 		const { container } = render(<LogistiqueDocumentsFormCard {...props} />);
 		const input = container.querySelector<HTMLInputElement>('input[type="file"]')!;
 		const click = jest.spyOn(input, 'click').mockImplementation(() => {});

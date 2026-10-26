@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Box, Chip, Divider, Stack, Typography } from '@mui/material';
+import { Box, Button, Chip, Divider, Stack, Typography } from '@mui/material';
 import { AddCircleOutlined, Edit, Inventory, LocalShipping, Payment, Place, SwapHoriz } from '@mui/icons-material';
 import type { LogistiqueEvent, LogistiqueOrder } from '@/types/logistiqueTypes';
-import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
+import Controls from '@/styles/dashboard/logistique/logistique-controls.module.sass';
 
 const quantity = (value: number | string) => Number(value).toLocaleString('fr-FR', { maximumFractionDigits: 3 });
 const timestamp = (value: string) =>
@@ -170,14 +170,13 @@ export function PurchaseHistory({ events = [] }: { events?: LogistiqueEvent[] })
 				})}
 			</Box>
 			{limit < ordered.length && (
-				<PrimaryLoadingButton
-					buttonText={`Voir les actions précédentes (${ordered.length - limit})`}
-					size="small"
-					loading={false}
-					active
-					inverted
+				<Button
+					variant="outlined"
 					onClick={() => setLimit((current) => current + 12)}
-				/>
+					className={Controls.historyAction}
+				>
+					Voir les actions précédentes ({ordered.length - limit})
+				</Button>
 			)}
 		</>
 	);

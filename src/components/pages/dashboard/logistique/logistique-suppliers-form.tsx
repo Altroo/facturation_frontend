@@ -2,7 +2,7 @@
 
 import { type FC, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Alert, Box, Card, CardContent, Divider, Stack, Typography } from '@mui/material';
+import { Button, Alert, Box, Card, CardContent, Divider, Stack, Typography } from '@mui/material';
 import { ArrowBack, Business, Email, Save, Star } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
@@ -67,15 +67,14 @@ const FormikContent: ClientArticleWrapperFormProps['FormikComponent'] = ({ token
 	return (
 		<Stack spacing={3} sx={{ p: { xs: 2, md: 3 }, width: '100%' }}>
 			<Box sx={{ pt: 2 }}>
-				<PrimaryLoadingButton
-					buttonText={t.logistique.supplierBackToList}
-					size="small"
-					loading={false}
-					active={!formik.isSubmitting}
-					inverted
+				<Button
+					variant="outlined"
 					startIcon={<ArrowBack />}
+					disabled={formik.isSubmitting}
 					onClick={() => router.push(listReturnUrl(`${LOGISTIQUE_SUPPLIERS}?company_id=${company_id}`))}
-				/>
+				>
+					{t.logistique.supplierBackToList}
+				</Button>
 			</Box>
 			{loading ? (
 				<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />

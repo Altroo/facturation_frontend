@@ -13,6 +13,7 @@ import { type FC, type MouseEvent, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
 	Alert,
+	Button,
 	Box,
 	Card,
 	CardContent,
@@ -104,7 +105,6 @@ import type {
 	LogistiqueResponsibleOption,
 } from '@/types/logistiqueTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
-import Controls from '@/styles/dashboard/logistique/logistique-controls.module.sass';
 
 const inputTheme = textInputTheme();
 
@@ -618,16 +618,14 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 									spacing={2}
 									sx={{ pt: 2, justifyContent: 'space-between' }}
 								>
-									<PrimaryLoadingButton
-										buttonText={t.logistique.backToList}
-										size="small"
-										loading={false}
-										active
-										inverted
+									<Button
+										variant="outlined"
 										startIcon={<ArrowBackIcon />}
 										onClick={() => router.push(listReturnUrl(`${LOGISTIQUE_LIST}?company_id=${company_id}`))}
-										cssClass={Controls.mobileFullWidth}
-									/>
+										sx={{ width: isMobile ? '100%' : 'auto' }}
+									>
+										{t.logistique.backToList}
+									</Button>
 								</Stack>
 
 								{Object.keys(validationErrors).length > 0 && (

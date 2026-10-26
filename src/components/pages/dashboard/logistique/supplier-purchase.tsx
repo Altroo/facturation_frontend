@@ -7,6 +7,7 @@ import {
 	AccordionDetails,
 	AccordionSummary,
 	Alert,
+	Button,
 	Box,
 	Card,
 	CardContent,
@@ -572,16 +573,15 @@ export default function SupplierPurchase({ session, company_id, id }: Logistique
 								spacing={2}
 								sx={{ justifyContent: 'space-between', alignItems: { sm: 'center' } }}
 							>
-								<PrimaryLoadingButton
-									buttonText="Retour à la liste"
+								<Button
+									variant="outlined"
 									size="small"
-									loading={false}
-									active
-									inverted
 									startIcon={<ArrowBack />}
 									onClick={() => router.push(listReturnUrl(`${LOGISTIQUE_LIST}?company_id=${company_id}`))}
-									cssClass={Controls.mobileFullWidth}
-								/>
+									sx={{ width: mobile ? '100%' : 'auto' }}
+								>
+									Retour à la liste
+								</Button>
 								<Stack
 									direction="row"
 									role="group"

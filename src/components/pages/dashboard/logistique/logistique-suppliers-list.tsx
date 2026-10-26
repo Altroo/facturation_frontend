@@ -2,10 +2,9 @@
 
 import { startTransition, useState, type FC } from 'react';
 import { GridLogicOperator, type GridColDef, type GridFilterModel } from '@mui/x-data-grid';
-import { Box } from '@mui/material';
+import { Button, Box } from '@mui/material';
 import { Add, Delete, Edit, Visibility } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
-import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
 import SupplierDeleteDialog from './logistique-supplier-delete-dialog';
 import { LOGISTIQUE_SUPPLIER_ADD, LOGISTIQUE_SUPPLIER_EDIT, LOGISTIQUE_SUPPLIER_VIEW } from '@/utils/routes';
@@ -122,14 +121,13 @@ const SupplierListContent: FC<ContentProps> = ({ session, company_id, role }) =>
 		<>
 			{canManage && (
 				<Box sx={{ px: { xs: 1, sm: 2, md: 3 }, my: { xs: 1, sm: 2, md: 3 } }}>
-					<PrimaryLoadingButton
-						buttonText={t.logistique.supplierNew}
-						size="small"
-						loading={false}
-						active
+					<Button
+						variant="contained"
 						startIcon={<Add />}
 						onClick={() => router.push(LOGISTIQUE_SUPPLIER_ADD(company_id))}
-					/>
+					>
+						{t.logistique.supplierNew}
+					</Button>
 				</Box>
 			)}
 			<PaginatedDataGrid

@@ -16,6 +16,7 @@ import {
 	AccordionDetails,
 	AccordionSummary,
 	Alert,
+	Button,
 	Box,
 	Card,
 	CardContent,
@@ -132,7 +133,6 @@ import type {
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import SupplierPurchaseSteps from './supplier-purchase-steps';
 import { useLogistiqueEmailPolling } from './use-logistique-email-polling';
-import Controls from '@/styles/dashboard/logistique/logistique-controls.module.sass';
 
 const inputTheme = textInputTheme();
 const getProformaReviewAction = (
@@ -702,16 +702,14 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 							spacing={2}
 							sx={{ justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'center' }}
 						>
-							<PrimaryLoadingButton
-								buttonText={t.logistique.backToList}
-								size="small"
-								loading={false}
-								active
-								inverted
+							<Button
+								variant="outlined"
 								startIcon={<ArrowBackIcon />}
 								onClick={() => router.push(listReturnUrl(`${LOGISTIQUE_LIST}?company_id=${company_id}`))}
-								cssClass={Controls.mobileFullWidth}
-							/>
+								sx={{ width: isMobile ? '100%' : 'auto' }}
+							>
+								{t.logistique.backToList}
+							</Button>
 							{!isLoading && !error && canRead && (
 								<Stack direction="row" sx={{ gap: 1, flexWrap: 'wrap' }}>
 									{viewingCurrentStep &&

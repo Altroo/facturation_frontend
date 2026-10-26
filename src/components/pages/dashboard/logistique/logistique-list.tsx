@@ -3,7 +3,7 @@
 import { extractApiErrorMessage, formatDate, formatNumberWithSpaces, runWithCleanup } from '@/utils/helpers';
 import { type FC, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Chip, Typography } from '@mui/material';
+import { Button, Box, Chip, Typography } from '@mui/material';
 import {
 	Add as AddIcon,
 	Close as CloseIcon,
@@ -379,14 +379,19 @@ const FormikContent: FC<FormikContentProps> = ({ session, company_id, role }) =>
 						flexWrap: 'wrap',
 					}}
 				>
-					<PrimaryLoadingButton
-						buttonText={t.logistique.newOrder}
-						size="small"
-						loading={false}
-						active
+					<Button
+						variant="contained"
 						onClick={() => router.push(LOGISTIQUE_ADD(company_id))}
+						sx={{
+							whiteSpace: 'nowrap',
+							px: { xs: 1.5, sm: 2, md: 3 },
+							py: { xs: 0.8, sm: 1, md: 1 },
+							fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
+						}}
 						startIcon={<AddIcon fontSize="small" />}
-					/>
+					>
+						{t.logistique.newOrder}
+					</Button>
 					{canDelete && selectedIds.length > 0 && (
 						<PrimaryLoadingButton
 							buttonText={t.logistique.bulkDeleteBtn(selectedIds.length)}

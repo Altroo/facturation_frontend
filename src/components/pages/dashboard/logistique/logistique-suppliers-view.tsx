@@ -4,6 +4,7 @@ import { type FC, isValidElement, startTransition, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
 	Alert,
+	Button,
 	Box,
 	Card,
 	CardContent,
@@ -37,7 +38,6 @@ import type {
 	LogistiqueViewProps as Props,
 } from '@/types/logistiqueTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
-import Controls from '@/styles/dashboard/logistique/logistique-controls.module.sass';
 
 const InfoRow: FC<InfoRowProps> = ({ icon, label, value }) => {
 	const theme = useTheme();
@@ -174,16 +174,14 @@ const LogistiqueSuppliersView: FC<Props> = ({ session, company_id, id }) => {
 						spacing={2}
 						sx={{ justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'center' }}
 					>
-						<PrimaryLoadingButton
-							buttonText={t.logistique.supplierBackToList}
-							size="small"
-							loading={false}
-							active
-							inverted
+						<Button
+							variant="outlined"
 							startIcon={<ArrowBack />}
 							onClick={back}
-							cssClass={Controls.mobileFullWidth}
-						/>
+							sx={{ width: isMobile ? '100%' : 'auto' }}
+						>
+							{t.logistique.supplierBackToList}
+						</Button>
 						{supplier && !isFetching && !error && (
 							<Stack direction="row" sx={{ gap: 1, flexWrap: 'wrap' }}>
 								{canManage && (

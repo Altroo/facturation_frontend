@@ -1,7 +1,18 @@
 'use client';
 
 import { type ChangeEvent, type DragEvent, type FC, useRef, useState } from 'react';
-import { Box, Card, CardContent, Chip, Divider, LinearProgress, Stack, Tooltip, Typography } from '@mui/material';
+import {
+	Box,
+	Button,
+	Card,
+	CardContent,
+	Chip,
+	Divider,
+	LinearProgress,
+	Stack,
+	Tooltip,
+	Typography,
+} from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import {
 	AttachFile as AttachFileIcon,
@@ -18,6 +29,7 @@ import PrimaryAnchorButton from '@/components/htmlElements/buttons/primaryAnchor
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import { textInputTheme } from '@/utils/themes';
+import Controls from '@/styles/dashboard/logistique/logistique-controls.module.sass';
 
 import type {
 	AttachmentRowProps,
@@ -195,11 +207,7 @@ export const LogistiqueDocumentsFormCard: FC<LogistiqueDocumentsFormCardProps> =
 				<Divider />
 
 				<Stack spacing={2} sx={{ p: 3 }}>
-					<Stack
-						direction={{ xs: 'column', md: 'row' }}
-						spacing={1.5}
-						sx={{ alignItems: { xs: 'stretch', md: 'center' } }}
-					>
+					<Box className={Controls.attachmentControls}>
 						<CustomAutoCompleteSelect
 							id="attachment_type"
 							size="small"
@@ -216,26 +224,26 @@ export const LogistiqueDocumentsFormCard: FC<LogistiqueDocumentsFormCardProps> =
 							disabled={isLoading}
 							fullWidth
 						/>
-						<>
-							<PrimaryLoadingButton
-								buttonText={t.logistique.chooseFiles}
-								size="small"
-								loading={false}
-								active={!isLoading}
-								startIcon={<UploadFileIcon />}
-								onClick={() => inputRef.current?.click()}
-							/>
-							<Box
-								component="input"
-								ref={inputRef}
-								type="file"
-								accept={accept}
-								disabled={isLoading}
-								onChange={handleFileChange}
-								sx={fileInputSx}
-							/>
-						</>
-					</Stack>
+						<Button
+							variant="contained"
+							type="button"
+							startIcon={<UploadFileIcon />}
+							disabled={isLoading}
+							onClick={() => inputRef.current?.click()}
+							className={Controls.attachmentUploadButton}
+						>
+							{t.logistique.chooseFiles}
+						</Button>
+					</Box>
+					<Box
+						component="input"
+						ref={inputRef}
+						type="file"
+						accept={accept}
+						disabled={isLoading}
+						onChange={handleFileChange}
+						sx={fileInputSx}
+					/>
 
 					<Box
 						role="button"
