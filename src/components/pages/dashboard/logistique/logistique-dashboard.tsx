@@ -40,6 +40,7 @@ import {
 } from '@mui/icons-material';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import DashboardStatCard from '@/components/shared/dashboardStatCard/dashboardStatCard';
+import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import { useGetLogistiqueDashboardQuery } from '@/store/services/logistique';
 import { formatNumberWithSpaces } from '@/utils/helpers';
@@ -454,6 +455,15 @@ const DashboardContent: FC<DashboardContentProps> = ({ session, company_id }) =>
 		);
 	}
 
+	const supplierKpis = (stats.kpi_fournisseurs ?? []).map((supplier, index) => ({
+		id: `supplier-${index}-${supplier.fournisseur || 'unknown'}`,
+		name: supplier.fournisseur || '-',
+		total_commandes: supplier.total_commandes,
+		cout_total: supplier.cout_total,
+	}));
+	const maxSupplierCost = Math.max(...supplierKpis.map((supplier) => numericValue(supplier.cout_total)), 1);
+	const maxSupplierOrders = Math.max(...supplierKpis.map((supplier) => supplier.total_commandes), 1);
+
 	return (
 		<Box sx={{ px: { xs: 1, sm: 2, md: 3 }, py: { xs: 1, sm: 2, md: 3 } }}>
 			<Box sx={{ mb: 3 }}>
@@ -534,6 +544,168 @@ const DashboardContent: FC<DashboardContentProps> = ({ session, company_id }) =>
 					color="#00695C"
 				/>
 			</Box>
+
+			{supplierKpis.length ? (
+				<Box component="section" aria-label={t.logistique.supplierKpiSection} sx={{ mb: 3 }}>
+					<Box
+						sx={{
+							display: 'flex',
+							justifyContent: 'space-between',
+							alignItems: 'baseline',
+							gap: 2,
+							mb: 1.5,
+							flexWrap: 'wrap',
+						}}
+					>
+						<Typography variant="h6" sx={{ fontWeight: 800 }}>
+							{t.logistique.supplierKpiSection}
+						</Typography>
+						<Typography variant="caption" color="text.secondary">
+							{t.logistique.supplierKpiComparisonHint}
+						</Typography>
+					</Box>
+					<Box sx={{ display: 'grid', gap: 1.25 }}>
+						{supplierKpis.map((supplier, index) => {
+							const costValue = numericValue(supplier.cout_total);
+							const costPercent = Math.max(5, Math.round((costValue / maxSupplierCost) * 100));
+							const orderPercent = Math.max(5, Math.round((supplier.total_commandes / maxSupplierOrders) * 100));
+							return (
+								<Box
+									key={supplier.id}
+									sx={{
+										border: '1px solid',
+										borderColor: 'divider',
+										borderRadius: 2,
+										bgcolor: 'background.paper',
+										p: { xs: 1.5, sm: 2 },
+										display: 'grid',
+										gridTemplateColumns: { xs: '1fr', md: 'minmax(220px, 0.8fr) minmax(320px, 1.6fr)' },
+										gap: { xs: 1.25, md: 2 },
+										alignItems: 'center',
+										minWidth: 0,
+										boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+									}}
+								>
+									<Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, minWidth: 0 }}>
+										<Box
+											sx={{
+												width: 34,
+												height: 34,
+												borderRadius: '50%',
+												display: 'grid',
+												placeItems: 'center',
+												bgcolor: index === 0 ? 'primary.main' : 'var(--app-inset-hover, #f5f5f5)',
+												color: index === 0 ? 'primary.contrastText' : 'text.primary',
+												fontWeight: 800,
+												flexShrink: 0,
+											}}
+										>
+											{index + 1}
+										</Box>
+										<Box sx={{ minWidth: 0 }}>
+											<DarkTooltip title={supplier.name}>
+												<Typography variant="subtitle2" noWrap sx={{ fontWeight: 800 }}>
+													{supplier.name}
+												</Typography>
+											</DarkTooltip>
+										</Box>
+									</Box>
+									<Box sx={{ display: 'grid', gap: 1, minWidth: 0 }}>
+										<Box sx={{ display: 'grid', gap: 0.5, minWidth: 0 }}>
+											<Box
+												sx={{
+													display: 'flex',
+													alignItems: 'baseline',
+													justifyContent: 'space-between',
+													gap: 1,
+													minWidth: 0,
+												}}
+											>
+												<Typography variant="caption" color="text.secondary">
+													{t.logistique.colCoutTotal}
+												</Typography>
+												<Typography
+													variant="caption"
+													sx={{ fontWeight: 800, color: 'text.primary', textAlign: 'right' }}
+												>
+													{formatMoney(supplier.cout_total)} · {costPercent}% {t.logistique.supplierKpiRelativeToMax}
+												</Typography>
+											</Box>
+											<Box
+												role="meter"
+												aria-label={`${supplier.name} · ${t.logistique.colCoutTotal}`}
+												aria-valuemin={0}
+												aria-valuemax={maxSupplierCost}
+												aria-valuenow={costValue}
+												aria-valuetext={formatMoney(supplier.cout_total)}
+												sx={{
+													height: 9,
+													borderRadius: 999,
+													bgcolor: 'var(--app-inset-hover, #f5f5f5)',
+													overflow: 'hidden',
+												}}
+											>
+												<Box
+													sx={{
+														width: `${costPercent}%`,
+														height: '100%',
+														bgcolor: 'primary.main',
+														borderRadius: 999,
+													}}
+												/>
+											</Box>
+										</Box>
+										<Box sx={{ display: 'grid', gap: 0.5, minWidth: 0 }}>
+											<Box
+												sx={{
+													display: 'flex',
+													alignItems: 'baseline',
+													justifyContent: 'space-between',
+													gap: 1,
+													minWidth: 0,
+												}}
+											>
+												<Typography variant="caption" color="text.secondary">
+													{t.logistique.ordersCount}
+												</Typography>
+												<Typography
+													variant="caption"
+													sx={{ fontWeight: 800, color: 'text.primary', textAlign: 'right' }}
+												>
+													{supplier.total_commandes} · {orderPercent}% {t.logistique.supplierKpiRelativeToMax}
+												</Typography>
+											</Box>
+											<Box
+												role="meter"
+												aria-label={`${supplier.name} · ${t.logistique.ordersCount}`}
+												aria-valuemin={0}
+												aria-valuemax={maxSupplierOrders}
+												aria-valuenow={supplier.total_commandes}
+												aria-valuetext={String(supplier.total_commandes)}
+												sx={{
+													height: 9,
+													borderRadius: 999,
+													bgcolor: 'var(--app-inset-hover, #f5f5f5)',
+													overflow: 'hidden',
+												}}
+											>
+												<Box
+													sx={{
+														width: `${orderPercent}%`,
+														height: '100%',
+														bgcolor: 'success.main',
+														borderRadius: 999,
+													}}
+												/>
+											</Box>
+										</Box>
+									</Box>
+								</Box>
+							);
+						})}
+					</Box>
+				</Box>
+			) : null}
 
 			<Box
 				sx={{

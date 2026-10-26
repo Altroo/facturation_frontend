@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import type { ChartData } from 'chart.js';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import { useGetLogistiqueDashboardQuery } from '@/store/services/logistique';
@@ -82,6 +82,35 @@ describe('LogistiqueDashboard', () => {
 		expect(screen.getByText(t.logistique.noSupplierKpi)).toBeInTheDocument();
 		expect(screen.queryByTestId('line-chart')).not.toBeInTheDocument();
 		expect(screen.queryByTestId('doughnut-chart')).not.toBeInTheDocument();
+		expect(screen.queryByRole('region', { name: t.logistique.supplierKpiSection })).not.toBeInTheDocument();
+	});
+
+	it('keeps supplier cost and order comparison bars on the dashboard', () => {
+		(useGetLogistiqueDashboardQuery as jest.Mock).mockReturnValue({
+			data: {
+				...stats,
+				kpi_fournisseurs: [
+					{ fournisseur: 'Fournisseur A', total_commandes: 4, cout_total: '1 000,00' },
+					{ fournisseur: 'Fournisseur B', total_commandes: 2, cout_total: '500,00' },
+				],
+			},
+		});
+		render(<LogistiqueDashboard />);
+
+		const section = within(screen.getByRole('region', { name: t.logistique.supplierKpiSection }));
+		expect(section.getByText('Fournisseur A')).toBeVisible();
+		expect(section.getByText('Fournisseur B')).toBeVisible();
+		expect(section.getByText(t.logistique.supplierKpiComparisonHint)).toBeVisible();
+		expect(section.getAllByRole('meter')).toHaveLength(4);
+		const cost = section.getByRole('meter', { name: `Fournisseur B · ${t.logistique.colCoutTotal}` });
+		expect(cost).toHaveAttribute('aria-valuenow', '500');
+		expect(cost).toHaveAttribute('aria-valuemax', '1000');
+		expect(cost).toHaveAttribute('aria-valuetext', '500,00 MAD');
+		expect(cost.firstElementChild).toHaveStyle({ width: '50%' });
+		const orders = section.getByRole('meter', { name: `Fournisseur B · ${t.logistique.ordersCount}` });
+		expect(orders).toHaveAttribute('aria-valuenow', '2');
+		expect(orders).toHaveAttribute('aria-valuemax', '4');
+		expect(orders.firstElementChild).toHaveStyle({ width: '50%' });
 	});
 
 	it('translates monthly activity and numeric cost strings into chart datasets', () => {
