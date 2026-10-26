@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import type { LogistiqueOrder } from '@/types/logistiqueTypes';
 import SupplierPurchaseSteps from './supplier-purchase-steps';
 
@@ -38,30 +38,15 @@ it('allows earlier steps and disables future steps', () => {
 	expect(screen.getByText(/lecture seule/)).toBeInTheDocument();
 });
 
-it('requires a remark and submits it with the selected step', async () => {
+it('opens the actual step form to propose edits instead of sending a text-only request', () => {
 	render(<SupplierPurchaseSteps {...props} />);
-	fireEvent.click(screen.getByRole('button', { name: 'Demander une modification' }));
-	const send = screen.getByRole('button', { name: 'Envoyer la demande' });
-	expect(screen.getByTestId('NotesIcon')).toBeInTheDocument();
-	expect(screen.getByRole('textbox', { name: /Remarque pour le responsable/ })).toHaveAttribute(
-		'placeholder',
-		'Expliquez la correction à effectuer',
-	);
-	expect(send).toBeDisabled();
-	fireEvent.change(screen.getByRole('textbox', { name: /Remarque pour le responsable/ }), {
-		target: { value: 'Corriger la référence fournisseur' },
-	});
-	fireEvent.click(send);
-	await waitFor(() =>
-		expect(props.onAction).toHaveBeenCalledWith({
-			action: 'demander_modification',
-			etape: 'proforma',
-			remarque: 'Corriger la référence fournisseur',
-		}),
-	);
+	fireEvent.click(screen.getByRole('button', { name: 'Proposer une modification' }));
+	expect(props.onEdit).toHaveBeenCalledWith('proforma');
+	expect(props.onAction).not.toHaveBeenCalled();
+	expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
 });
 
-it('only lets the responsible approve and the approved requester open the correction', () => {
+it('shows proposed values to the reviewer and preserves previously granted authorizations', () => {
 	const request = {
 		id: 3,
 		etape: 'proforma',
@@ -69,13 +54,15 @@ it('only lets the responsible approve and the approved requester open the correc
 		demandeur: 4,
 		responsable: 8,
 		demandeur_name: 'Demandeur',
+		has_proposal: true,
+		changes: [{ field: 'numero_proforma_fournisseur', label: 'Référence fournisseur', before: 'OLD', after: 'NEW' }],
 		statut: 'pending' as const,
 		date_created: '',
 	};
 	const { rerender } = render(
 		<SupplierPurchaseSteps {...props} userId={8} order={{ ...order, change_requests: [request] }} />,
 	);
-	fireEvent.click(screen.getByRole('button', { name: 'Approuver' }));
+	fireEvent.click(screen.getByRole('button', { name: 'Accepter' }));
 	expect(props.onAction).toHaveBeenCalledWith({ action: 'approuver_modification', demande_id: 3 });
 	rerender(
 		<SupplierPurchaseSteps {...props} order={{ ...order, change_requests: [{ ...request, statut: 'approved' }] }} />,
@@ -92,16 +79,32 @@ it('only lets the responsible approve and the approved requester open the correc
 	expect(screen.queryByRole('button', { name: 'Effectuer la correction autorisée' })).not.toBeInTheDocument();
 });
 
-it('prevents correction submission while another action is running', () => {
-	const { rerender } = render(<SupplierPurchaseSteps {...props} />);
-	fireEvent.click(screen.getByRole('button', { name: 'Demander une modification' }));
-	fireEvent.change(screen.getByRole('textbox', { name: /Remarque pour le responsable/ }), {
-		target: { value: 'Corriger la référence' },
-	});
-	rerender(<SupplierPurchaseSteps {...props} busy />);
-	const send = screen.getByRole('button', { name: 'Envoyer la demande' });
-	expect(send).toBeDisabled();
-	expect(screen.getByRole('progressbar')).toBeInTheDocument();
-	fireEvent.click(send);
-	expect(props.onAction).not.toHaveBeenCalled();
+it('prevents opening a proposal while another action is running', () => {
+	render(<SupplierPurchaseSteps {...props} busy />);
+	const edit = screen.getByRole('button', { name: 'Proposer une modification' });
+	expect(edit).toBeDisabled();
+	fireEvent.click(edit);
+	expect(props.onEdit).not.toHaveBeenCalled();
+});
+
+it('lets a company admin review the values and hides decisions from the requester', () => {
+	const request = {
+		id: 3,
+		etape: 'proforma',
+		remarque: 'Référence corrigée',
+		demandeur: 4,
+		responsable: 8,
+		demandeur_name: 'Demandeur',
+		statut: 'pending' as const,
+		date_created: '',
+		has_proposal: true,
+		changes: [{ field: 'numero_proforma_fournisseur', label: 'Référence', before: 'OLD', after: 'NEW' }],
+	};
+	const { rerender } = render(<SupplierPurchaseSteps {...props} order={{ ...order, change_requests: [request] }} />);
+	expect(screen.getByText('OLD')).toBeInTheDocument();
+	expect(screen.getByText('NEW')).toBeInTheDocument();
+	expect(screen.queryByRole('button', { name: 'Accepter' })).not.toBeInTheDocument();
+	rerender(<SupplierPurchaseSteps {...props} userId={9} canReview order={{ ...order, change_requests: [request] }} />);
+	fireEvent.click(screen.getByRole('button', { name: 'Refuser' }));
+	expect(props.onAction).toHaveBeenCalledWith({ action: 'refuser_modification', demande_id: 3 });
 });

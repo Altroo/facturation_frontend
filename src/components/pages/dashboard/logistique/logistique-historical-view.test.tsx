@@ -148,5 +148,5 @@ it('shows only the current card, allows read-only completed steps and locks futu
 	expect(screen.getByRole('heading', { name: 'Commande & lancement' })).toBeInTheDocument();
 	expect(screen.queryByRole('heading', { name: 'Banque & paiement' })).not.toBeInTheDocument();
 	expect(screen.queryByRole('button', { name: t.common.edit })).not.toBeInTheDocument();
-	expect(screen.getByRole('button', { name: 'Demander une modification' })).toBeInTheDocument();
+	expect(screen.getByRole('button', { name: 'Proposer une modification' })).toBeInTheDocument();
 });

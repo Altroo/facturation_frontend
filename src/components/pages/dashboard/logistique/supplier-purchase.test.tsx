@@ -144,7 +144,7 @@ describe('SupplierPurchase', () => {
 		expect(screen.getByText('Fournisseur Test')).toBeInTheDocument();
 		expect(screen.queryByRole('button', { name: 'Modifier le dossier' })).not.toBeInTheDocument();
 		expect(screen.queryByRole('button', { name: 'Contrôler la proforma' })).not.toBeInTheDocument();
-		expect(screen.getByRole('button', { name: 'Demander une modification' })).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'Proposer une modification' })).toBeInTheDocument();
 	});
 
 	it('keeps an empty proforma compact while retaining the action to enter it', () => {

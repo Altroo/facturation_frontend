@@ -633,12 +633,13 @@ export default function SupplierPurchase({ session, company_id, id }: Logistique
 									selected={selectedStep}
 									userId={userId}
 									canManage={canManage && active}
+									canReview={company.role === 'Caissier'}
 									busy={busy}
 									onSelect={setChosenStep}
 									onAction={(data) => run(() => purchase({ id: order.id, data }).unwrap())}
 									onEdit={(step, approval) =>
 										router.push(
-											`${LOGISTIQUE_EDIT(order.id, company_id)}&etape=${['paiement', 'solde'].includes(step) ? 'paiement' : step}&correction_id=${approval}${['paiement', 'solde'].includes(step) ? `&etape_correction=${step}&echeance_id=${order.workflow?.etapes?.find((entry) => entry.key === step)?.payment_ids?.[0] ?? ''}` : ''}`,
+											`${LOGISTIQUE_EDIT(order.id, company_id)}&etape=${['paiement', 'solde'].includes(step) ? 'paiement' : step}&${approval ? `correction_id=${approval}` : 'proposer=1'}${['paiement', 'solde'].includes(step) ? `&etape_correction=${step}&echeance_id=${order.workflow?.etapes?.find((entry) => entry.key === step)?.payment_ids?.[0] ?? ''}` : ''}`,
 										)
 									}
 								/>

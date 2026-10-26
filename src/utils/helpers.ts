@@ -717,3 +717,27 @@ export const safeNavigation = (target: NavigationTarget, companyId: number) => {
 	const expected = ['user', 'users'].includes(target.resource) ? route : `${route}?company_id=${companyId}`;
 	return target.path === expected ? expected : null;
 };
+
+export const logisticsChangeProposal = (
+	data: Record<string, unknown> | FormData,
+	step: string,
+	reason: string,
+): Record<string, unknown> | FormData => {
+	if (!(data instanceof FormData))
+		return { action: 'demander_modification', etape: step, remarque: reason.trim(), modifications: data };
+	const changes: Record<string, unknown> = {};
+	const proposal = new FormData();
+	for (const [field, entry] of data.entries()) {
+		if (entry instanceof File) proposal.set(field, entry);
+		else if (field === 'lignes') changes[field] = JSON.parse(entry);
+		else if (field === 'marques') {
+			const values = data.getAll(field) as string[];
+			changes[field] = values.length === 1 && values[0].startsWith('[') ? JSON.parse(values[0]) : values.map(Number);
+		} else changes[field] = entry;
+	}
+	proposal.set('action', 'demander_modification');
+	proposal.set('etape', step);
+	proposal.set('remarque', reason.trim());
+	proposal.set('modifications', JSON.stringify(changes));
+	return proposal;
+};

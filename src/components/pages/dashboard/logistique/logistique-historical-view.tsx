@@ -868,6 +868,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 										selected={stepKey}
 										userId={currentUserId}
 										canManage={hasManagerRole && !isOrderCancelled}
+										canReview={company?.role === 'Caissier'}
 										busy={correctionBusy}
 										onSelect={(key) =>
 											setChosenStep(
@@ -894,7 +895,9 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 											}
 										}}
 										onEdit={(step, approval) =>
-											router.push(`${LOGISTIQUE_EDIT(id, company_id)}&etape=${step}&correction_id=${approval}`)
+											router.push(
+												`${LOGISTIQUE_EDIT(id, company_id)}&etape=${step}&${approval ? `correction_id=${approval}` : 'proposer=1'}`,
+											)
 										}
 									/>
 								)}

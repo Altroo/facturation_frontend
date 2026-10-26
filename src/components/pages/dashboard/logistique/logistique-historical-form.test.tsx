@@ -1,6 +1,10 @@
 import type { ReactNode } from 'react';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { useGetLogistiqueQuery, useEditLogistiqueMutation } from '@/store/services/logistique';
+import {
+	useGetLogistiqueQuery,
+	useEditLogistiqueMutation,
+	usePurchaseActionMutation,
+} from '@/store/services/logistique';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 import { getInitStateToken } from '@/store/selectors';
 import { useAppSelector } from '@/utils/hooks';
@@ -36,6 +40,7 @@ jest.mock('@/store/services/logistique', () => ({
 	useGetLogistiqueSourcePreviewQuery: () => ({}),
 	useAddLogistiqueMutation: () => [jest.fn(), {}],
 	useEditLogistiqueMutation: jest.fn(),
+	usePurchaseActionMutation: jest.fn(),
 }));
 jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 	__esModule: true,
@@ -75,6 +80,7 @@ const order = {
 	nature_marchandise: 'Meubles',
 };
 const mockEdit = jest.fn();
+const mockPropose = jest.fn();
 const mockUnwrap = jest.fn();
 const renderForm = async (id: number | null = 7) => {
 	await act(async () => {
@@ -91,6 +97,8 @@ beforeEach(() => {
 	(useGetUserCompaniesQuery as jest.Mock).mockReturnValue({ data: [{ id: 12, role: 'Logistique' }] });
 	(useGetLogistiqueQuery as jest.Mock).mockReturnValue({ data: order });
 	(useEditLogistiqueMutation as jest.Mock).mockReturnValue([mockEdit, {}]);
+	(usePurchaseActionMutation as jest.Mock).mockReturnValue([mockPropose]);
+	mockPropose.mockReturnValue({ unwrap: mockUnwrap });
 	mockEdit.mockReturnValue({ unwrap: mockUnwrap });
 	mockUnwrap.mockResolvedValue({ id: 7 });
 });
@@ -151,4 +159,39 @@ it('limits an approved correction to that requester and step', async () => {
 		}),
 	);
 	expect(mockEdit.mock.calls[0][0].data).not.toHaveProperty('transport');
+});
+
+it('proposes actual edits on a completed historical step with a reason', async () => {
+	(useGetLogistiqueQuery as jest.Mock).mockReturnValue({
+		data: {
+			...order,
+			workflow: {
+				etape_courante: 'expedition',
+				etapes: [{ key: 'dossier', label: 'Dossier', completed: true, accessible: true }],
+			},
+		},
+	});
+	window.history.replaceState(null, '', '/dashboard/logistique/7/edit?company_id=12&etape=dossier&proposer=1');
+	await renderForm();
+	const submit = screen.getByRole('button', { name: 'Soumettre les modifications' });
+	expect(submit).toBeDisabled();
+	fireEvent.change(screen.getByRole('textbox', { name: /Description|Remarque/i }), {
+		target: { value: 'Correction du dossier' },
+	});
+	fireEvent.change(screen.getByRole('textbox', { name: /Motif de la modification/ }), {
+		target: { value: 'Erreur de saisie' },
+	});
+	fireEvent.click(submit);
+	await waitFor(() =>
+		expect(mockPropose).toHaveBeenCalledWith({
+			id: 7,
+			data: expect.objectContaining({
+				action: 'demander_modification',
+				etape: 'dossier',
+				remarque: 'Erreur de saisie',
+				modifications: expect.objectContaining({ action: 'historical', description: 'Correction du dossier' }),
+			}),
+		}),
+	);
+	expect(mockEdit).not.toHaveBeenCalled();
 });

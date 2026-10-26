@@ -5,6 +5,7 @@ import {
 	formatLocalDate,
 	getLabelForKey,
 	listReturnUrl,
+	logisticsChangeProposal,
 	runWithCleanup,
 	runWithErrorHandler,
 	setFormikAutoErrors,
@@ -35,11 +36,13 @@ import {
 	Edit as EditIcon,
 	Info as InfoIcon,
 	LocalShipping as LocalShippingIcon,
+	Notes as NotesIcon,
 	Payment as PaymentIcon,
 	Person as PersonIcon,
 	Public as PublicIcon,
 	RequestQuote as RequestQuoteIcon,
 	Scale as ScaleIcon,
+	Send as SendIcon,
 	Star as StarIcon,
 	Warning as WarningIcon,
 } from '@mui/icons-material';
@@ -69,6 +72,7 @@ import { useGetFactureProFormaListQuery } from '@/store/services/factureProForma
 import {
 	useAddLogistiqueMutation,
 	useEditLogistiqueMutation,
+	usePurchaseActionMutation,
 	useGetLogistiqueQuery,
 	useGetLogistiqueResponsablesQuery,
 	useGetLogistiqueSourcePreviewQuery,
@@ -385,6 +389,8 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 	const [deleteMarque] = useDeleteMarqueMutation();
 
 	const [addLogistique, { isLoading: isAddLoading, error: addError }] = useAddLogistiqueMutation();
+	const [proposeChange] = usePurchaseActionMutation();
+	const [correctionReason, setCorrectionReason] = useState('');
 	const [editLogistique, { isLoading: isEditLoading, error: updateError }] = useEditLogistiqueMutation();
 	const [isPending, setIsPending] = useState(false);
 	const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
@@ -418,7 +424,21 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 			request.etape === selectedStep &&
 			request.statut === 'approved',
 	);
-	const stageAccessible = !isEditMode || selectedStep === currentStep || !!correction;
+	const proposalMode = query.get('proposer') === '1';
+	const canPropose =
+		proposalMode &&
+		canManage &&
+		!!order?.workflow?.etapes?.some(
+			(step) => step.key === selectedStep && step.completed && step.accessible && step.key !== currentStep,
+		) &&
+		!order?.change_requests?.some(
+			(request) =>
+				request.etape === selectedStep &&
+				request.demandeur === currentUserId &&
+				request.statut === 'pending' &&
+				request.has_proposal,
+		);
+	const stageAccessible = proposalMode ? canPropose : !isEditMode || selectedStep === currentStep || !!correction;
 	const allowedFields = historicalLogisticsStepFields[selectedStep] ?? [];
 	const allows = (field: string) =>
 		allowedFields.includes(field) ||
@@ -429,9 +449,14 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 		? valuesFromOrder(order)
 		: { ...logistiqueEmptyValues, responsable: currentUserId ? String(currentUserId) : '' };
 	const isOrderResponsible = Boolean(currentUserId && order?.responsable === currentUserId);
-	const isImportTitleLocked = Boolean(isEditMode && order && order.statut_paiement !== 'Non demandé' && !correction);
+	const isImportTitleLocked = Boolean(
+		isEditMode && order && order.statut_paiement !== 'Non demandé' && !correction && !canPropose,
+	);
 	const canEditImportTitle = Boolean(
-		isEditMode && selectedStep === 'paiement' && (isOrderResponsible || !!correction) && !isImportTitleLocked,
+		isEditMode &&
+		selectedStep === 'paiement' &&
+		(isOrderResponsible || !!correction || canPropose) &&
+		!isImportTitleLocked,
 	);
 	const isTitleOnlyEditor = Boolean(isEditMode && isOrderResponsible && !canManage);
 	const canAccessForm =
@@ -465,13 +490,17 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 		},
 		onSubmit: async (values, { setFieldError }) => {
 			setHasAttemptedSubmit(true);
+			if (proposalMode && !correctionReason.trim()) {
+				onError('Expliquez le motif de la modification.');
+				return;
+			}
 			setIsPending(true);
 			await runWithCleanup(
 				async () => {
 					await runWithErrorHandler(
 						async () => {
 							if (isEditMode && id) {
-								await editLogistique({
+								const submission = {
 									id,
 									data: (() => {
 										const data = toPayload(values, true, !canEditImportTitle, isTitleOnlyEditor);
@@ -492,9 +521,19 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 										}
 										return data;
 									})(),
-								}).unwrap();
-								onSuccess(t.logistique.updateSuccess);
-								router.push(LOGISTIQUE_VIEW(id, company_id));
+								};
+								if (proposalMode) {
+									if (submission.data instanceof FormData) submission.data.set('action', 'historical');
+									else Object.assign(submission.data, { action: 'historical' });
+									await proposeChange({
+										id,
+										data: logisticsChangeProposal(submission.data, selectedStep, correctionReason),
+									}).unwrap();
+								} else await editLogistique(submission).unwrap();
+								onSuccess(
+									proposalMode ? 'Modifications proposées, en attente de validation.' : t.logistique.updateSuccess,
+								);
+								router.push(`${LOGISTIQUE_VIEW(id, company_id)}${proposalMode ? `&etape=${selectedStep}` : ''}`);
 							} else {
 								const response = await addLogistique({ company_id, data: toPayload(values, false) }).unwrap();
 								onSuccess(t.logistique.addSuccess);
@@ -1453,10 +1492,36 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 												</>
 											)}
 
+											{proposalMode && (
+												<FormCard title="Motif de la modification" icon={<NotesIcon color="primary" />}>
+													<Box sx={{ gridColumn: '1 / -1' }}>
+														<CustomTextInput
+															id="correction_remarque"
+															type="textarea"
+															label="Motif de la modification"
+															placeholder="Expliquez pourquoi ces valeurs doivent être corrigées"
+															value={correctionReason}
+															onChange={(event) => setCorrectionReason(event.target.value)}
+															theme={inputTheme}
+															startIcon={<NotesIcon fontSize="small" />}
+															size="small"
+															fullWidth
+															minRows={3}
+															required
+															disabled={isPending}
+														/>
+														<Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+															Les valeurs actuelles seront conservées jusqu’à la validation de votre proposition.
+														</Typography>
+													</Box>
+												</FormCard>
+											)}
 											<Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
 												<PrimaryLoadingButton
-													buttonText={t.common.save}
-													active={canSubmitCurrentForm}
+													buttonText={proposalMode ? 'Soumettre les modifications' : t.common.save}
+													active={
+														canSubmitCurrentForm && (!proposalMode || (!!correctionReason.trim() && formik.dirty))
+													}
 													onClick={(event: MouseEvent<HTMLButtonElement>) => {
 														setHasAttemptedSubmit(true);
 														if (!formik.isValid) {
@@ -1468,7 +1533,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 													}}
 													cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}
 													type="submit"
-													startIcon={isEditMode ? <EditIcon /> : <AddIcon />}
+													startIcon={proposalMode ? <SendIcon /> : isEditMode ? <EditIcon /> : <AddIcon />}
 													loading={isPending}
 												/>
 											</Box>

@@ -1,24 +1,23 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Alert, Box, Card, CardContent, Stack, Step, StepButton, Stepper, Typography } from '@mui/material';
-import { Edit, Notes, Send } from '@mui/icons-material';
+import { CheckCircle, Close, Description, Edit } from '@mui/icons-material';
 import type { LogistiqueOrder } from '@/types/logistiqueTypes';
-import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
-import { textInputTheme } from '@/utils/themes';
+import { HistoryValue } from './supplier-purchase-sections';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
-
-const inputTheme = textInputTheme();
+import PrimaryAnchorButton from '@/components/htmlElements/buttons/primaryAnchorButton/primaryAnchorButton';
 
 type Props = {
 	order: LogistiqueOrder;
 	selected: string;
 	userId: number | null;
 	canManage: boolean;
+	canReview?: boolean;
 	busy: boolean;
 	onSelect: (step: string) => void;
 	onAction: (data: Record<string, unknown>) => Promise<boolean>;
-	onEdit: (step: string, approval: number) => void;
+	onEdit: (step: string, approval?: number) => void;
 };
 
 export default function SupplierPurchaseSteps({
@@ -26,6 +25,7 @@ export default function SupplierPurchaseSteps({
 	selected,
 	userId,
 	canManage,
+	canReview = false,
 	busy,
 	onSelect,
 	onAction,
@@ -42,8 +42,6 @@ export default function SupplierPurchaseSteps({
 			container.getBoundingClientRect().left -
 			(container.clientWidth - button.clientWidth) / 2;
 	}, [selected]);
-	const [remark, setRemark] = useState('');
-	const [requesting, setRequesting] = useState(false);
 	const steps = order.workflow?.etapes ?? [];
 	const current = order.workflow?.etape_courante;
 	const previous =
@@ -55,7 +53,7 @@ export default function SupplierPurchaseSteps({
 	return (
 		<Card elevation={2} sx={{ borderRadius: 2, minWidth: 0, flexShrink: 0 }}>
 			<CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-				<Stack spacing={2}>
+				<Stack spacing={2} useFlexGap>
 					<Box ref={navigation} sx={{ overflowX: 'auto', p: 1 }}>
 						<Stepper
 							nonLinear
@@ -74,8 +72,6 @@ export default function SupplierPurchaseSteps({
 										disabled={!step.accessible}
 										onClick={() => {
 											onSelect(step.key);
-											setRequesting(false);
-											setRemark('');
 										}}
 										aria-current={selected === step.key ? 'step' : undefined}
 									>
@@ -87,55 +83,25 @@ export default function SupplierPurchaseSteps({
 					</Box>
 					{previous && (
 						<Alert severity="info">
-							Étape terminée, affichée en lecture seule. Toute correction nécessite l’accord du responsable.
+							Étape terminée, affichée en lecture seule. Les modifications proposées seront appliquées après validation.
 						</Alert>
 					)}
-					{previous && canManage && !mine && !requesting && (
+					{previous && canManage && (!mine || (mine.statut === 'pending' && !mine.has_proposal)) && (
 						<PrimaryLoadingButton
-							buttonText="Demander une modification"
+							buttonText="Proposer une modification"
 							size="small"
 							loading={false}
-							active
+							active={!busy}
 							inverted
 							startIcon={<Edit />}
-							onClick={() => setRequesting(true)}
+							onClick={() => onEdit(selected)}
 						/>
 					)}
-					{previous && requesting && (
-						<Stack spacing={2}>
-							<CustomTextInput
-								id="correction_remarque"
-								type="textarea"
-								theme={inputTheme}
-								startIcon={<Notes fontSize="small" />}
-								label="Remarque pour le responsable"
-								placeholder="Expliquez la correction à effectuer"
-								size="small"
-								fullWidth
-								minRows={3}
-								required
-								value={remark}
-								onChange={(event) => setRemark(event.target.value)}
-								disabled={busy}
-							/>
-							<Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-								<PrimaryLoadingButton
-									buttonText="Envoyer la demande"
-									type="button"
-									startIcon={<Send />}
-									active={!busy && !!remark.trim()}
-									loading={busy}
-									onClick={async () => {
-										if (await onAction({ action: 'demander_modification', etape: selected, remarque: remark.trim() })) {
-											setRequesting(false);
-											setRemark('');
-										}
-									}}
-								/>
-							</Box>
-						</Stack>
+					{mine?.statut === 'pending' && mine.has_proposal && (
+						<Alert severity="info">
+							Vos modifications attendent une validation. Les valeurs actuelles sont conservées.
+						</Alert>
 					)}
-					{mine?.statut === 'pending' && <Alert severity="info">Votre demande attend l’accord du responsable.</Alert>}
 					{mine?.statut === 'approved' && canManage && (
 						<PrimaryLoadingButton
 							buttonText="Effectuer la correction autorisée"
@@ -148,33 +114,68 @@ export default function SupplierPurchaseSteps({
 						/>
 					)}
 					{requests
-						.filter((request) => request.statut === 'pending' && order.responsable === userId)
+						.filter(
+							(request) =>
+								request.statut === 'pending' &&
+								(request.demandeur === userId || order.responsable === userId || canReview),
+						)
 						.map((request) => (
 							<Alert severity="warning" key={request.id}>
-								<Stack spacing={1}>
-									<Typography variant="subtitle2">Demande de {request.demandeur_name}</Typography>
+								<Stack spacing={2}>
+									<Typography variant="subtitle2">Proposition de {request.demandeur_name}</Typography>
 									<Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
 										{request.remarque}
 									</Typography>
-									<Stack direction="row" spacing={1}>
-										<PrimaryLoadingButton
-											buttonText="Approuver"
-											size="small"
-											loading={false}
-											active={!busy}
-											inverted
-											onClick={() => void onAction({ action: 'approuver_modification', demande_id: request.id })}
-										/>
-										<PrimaryLoadingButton
-											buttonText="Refuser"
-											size="small"
-											loading={false}
-											active={!busy}
-											inverted
-											color="error"
-											onClick={() => void onAction({ action: 'refuser_modification', demande_id: request.id })}
-										/>
-									</Stack>
+									{(request.changes ?? []).map((change) => (
+										<Stack key={change.field} spacing={1}>
+											<Typography variant="subtitle2">{change.label}</Typography>
+											<Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1 }}>
+												<HistoryValue label="Valeur actuelle" value={change.before || 'Non renseigné'} />
+												<HistoryValue label="Valeur proposée" value={change.after || 'Non renseigné'} />
+											</Box>
+											{change.file_url && (
+												<PrimaryAnchorButton
+													buttonText="Consulter le document proposé"
+													nextPage={change.file_url}
+													target="_blank"
+													rel="noreferrer"
+													size="small"
+													active
+													inverted
+													startIcon={<Description fontSize="small" />}
+												/>
+											)}
+										</Stack>
+									))}
+									{!request.has_proposal && (
+										<Typography variant="body2">
+											Le demandeur doit renseigner les valeurs à modifier avant la validation.
+										</Typography>
+									)}
+									{(order.responsable === userId || canReview) && (
+										<Stack direction="row" sx={{ gap: 1, flexWrap: 'wrap' }}>
+											{request.has_proposal && (
+												<PrimaryLoadingButton
+													buttonText="Accepter"
+													size="small"
+													loading={busy}
+													active={!busy}
+													startIcon={<CheckCircle />}
+													onClick={() => void onAction({ action: 'approuver_modification', demande_id: request.id })}
+												/>
+											)}
+											<PrimaryLoadingButton
+												buttonText="Refuser"
+												size="small"
+												loading={false}
+												active={!busy}
+												inverted
+												color="error"
+												startIcon={<Close />}
+												onClick={() => void onAction({ action: 'refuser_modification', demande_id: request.id })}
+											/>
+										</Stack>
+									)}
 								</Stack>
 							</Alert>
 						))}

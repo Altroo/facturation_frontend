@@ -35,6 +35,7 @@ import {
 	Person,
 	Public,
 	Save,
+	Send,
 	Scale,
 	Warning,
 } from '@mui/icons-material';
@@ -76,6 +77,7 @@ import {
 	extractApiErrorMessage,
 	formatLocalDate,
 	listReturnUrl,
+	logisticsChangeProposal,
 	setFormikAutoErrors,
 	purchaseDraft,
 } from '@/utils/helpers';
@@ -196,16 +198,36 @@ export default function SupplierPurchaseForm(props: LogistiqueFormProps) {
 		isAccounting || mode === 'demande_paiement'
 			? order?.workflow?.etapes?.find((entry) => entry.payment_ids?.includes(Number(query.get('echeance_id'))))?.key
 			: mode;
-	const permittedStep =
-		!order?.workflow?.etape_courante ||
-		!!correction ||
-		step === order.workflow.etape_courante ||
-		['remarque', 'repertoire'].includes(mode) ||
-		!!order.can_adopt_supplier_workflow;
+	const proposalMode = query.get('proposer') === '1';
+	const proposedStep = query.get('etape_correction') ?? step;
+	const canPropose =
+		proposalMode &&
+		canManage &&
+		!!order?.workflow?.etapes?.some(
+			(entry) =>
+				entry.key === proposedStep &&
+				entry.completed &&
+				entry.accessible &&
+				entry.key !== order.workflow?.etape_courante,
+		) &&
+		!order?.change_requests?.some(
+			(entry) =>
+				entry.etape === proposedStep &&
+				entry.demandeur === currentUser &&
+				entry.statut === 'pending' &&
+				entry.has_proposal,
+		);
+	const permittedStep = proposalMode
+		? canPropose
+		: !order?.workflow?.etape_courante ||
+			!!correction ||
+			step === order.workflow.etape_courante ||
+			['remarque', 'repertoire'].includes(mode) ||
+			!!order.can_adopt_supplier_workflow;
 	const canAccess =
 		permittedStep &&
 		(isAccounting
-			? assignedAccountant || (!!correction && canManage)
+			? assignedAccountant || ((!!correction || canPropose) && canManage)
 			: canManage || (mode === 'remarque' && assignedAccountant));
 	return (
 		<Stack direction="column" sx={{ position: 'relative' }}>
@@ -234,13 +256,14 @@ export default function SupplierPurchaseForm(props: LogistiqueFormProps) {
 							localeText={(language === 'en' ? enUS : frFR).components.MuiLocalizationProvider.defaultProps.localeText}
 						>
 							<PurchaseFormik
-								key={`${props.company_id}-${props.id ?? 'new'}-${mode}-${query.get('echeance_id') ?? ''}-${query.get('reception_id') ?? ''}-${correctionId}`}
+								key={`${props.company_id}-${props.id ?? 'new'}-${mode}-${query.get('echeance_id') ?? ''}-${query.get('reception_id') ?? ''}-${correctionId}-${canPropose}`}
 								{...props}
 								token={token}
 								mode={mode}
 								order={order}
 								echeanceId={Number(query.get('echeance_id') ?? 0)}
 								correctionId={correction?.id}
+								proposalMode={canPropose}
 							/>
 						</LocalizationProvider>
 					)}
@@ -258,13 +281,17 @@ function PurchaseFormik({
 	order,
 	echeanceId,
 	correctionId,
+	proposalMode = false,
 }: LogistiqueFormProps & {
 	token: string;
 	mode: PurchaseFormMode;
 	order?: LogistiqueOrder;
 	echeanceId: number;
 	correctionId?: number;
+	proposalMode?: boolean;
 }) {
+	const isCorrection = !!correctionId || proposalMode;
+	const [correctionReason, setCorrectionReason] = useState('');
 	const router = useRouter();
 	const query = useSearchParams();
 	const draftId = query.get('brouillon');
@@ -327,6 +354,7 @@ function PurchaseFormik({
 				etape: query.get('etape_correction') ?? mode,
 				...(correctionId ? { correction_id: correctionId } : {}),
 			};
+		if (proposalMode) data = logisticsChangeProposal(data, query.get('etape_correction') ?? mode, correctionReason);
 		return purchaseAction({ id: targetId, data });
 	};
 	const [extract, { isLoading: extracting }] = useExtractImportTitleMutation();
@@ -362,7 +390,7 @@ function PurchaseFormik({
 		ecart_quantite_proforma: order?.ecart_quantite_proforma ?? false,
 		ecart_autre_proforma: order?.ecart_autre_proforma ?? false,
 		notes_ecarts_proforma: order?.notes_ecarts_proforma ?? '',
-		decision: correctionId ? 'validate' : 'control',
+		decision: isCorrection ? 'validate' : 'control',
 		numero_domiciliation: order?.numero_domiciliation ?? '',
 		banque: order?.banque ?? '',
 		montant_titre_importation: value(
@@ -388,12 +416,12 @@ function PurchaseFormik({
 		livraison_locale: value(order?.livraison_locale),
 		autres_frais: value(order?.autres_frais),
 		remarque: '',
-		note: correctionId
+		note: isCorrection
 			? (order?.receptions?.find(
 					(entry) => entry.id === Number(query.get('reception_id') ?? order?.receptions?.[0]?.id),
 				)?.note ?? '')
 			: '',
-		reference_reception: correctionId
+		reference_reception: isCorrection
 			? (order?.receptions?.find(
 					(entry) => entry.id === Number(query.get('reception_id') ?? order?.receptions?.[0]?.id),
 				)?.reference ?? '')
@@ -413,8 +441,8 @@ function PurchaseFormik({
 		date_paiement: today(),
 		methode_paiement: installment?.methode_paiement ?? '',
 		montant_paye: value(installment?.montant_prevu),
-		reference_paiement: correctionId ? (installment?.reference_bancaire ?? '') : '',
-		commentaire_paiement: correctionId ? (installment?.commentaire ?? '') : '',
+		reference_paiement: isCorrection ? (installment?.reference_bancaire ?? '') : '',
+		commentaire_paiement: isCorrection ? (installment?.commentaire ?? '') : '',
 		lignes:
 			order?.lignes?.map((line) => ({
 				article: line.article,
@@ -445,7 +473,7 @@ function PurchaseFormik({
 		validateOnMount: true,
 		validationSchema: toFormikValidationSchema(
 			getSupplierPurchaseSchema(mode, {
-				approvedCorrection: !!correctionId,
+				approvedCorrection: isCorrection,
 				existingProformaFile: !!order?.proforma_fournisseur_file,
 				existingTitleFile: !!order?.titre_importation_file,
 				managedReceipt,
@@ -455,6 +483,10 @@ function PurchaseFormik({
 		onSubmit: async (values, { setFieldError }) => {
 			if (!draftReady) return;
 			setApiError('');
+			if (proposalMode && !correctionReason.trim()) {
+				setApiError('Expliquez le motif de la modification.');
+				return;
+			}
 			const optionalNumbers = new Set<keyof PurchaseFormValues>([
 				'poids_net',
 				'poids_brut',
@@ -497,7 +529,7 @@ function PurchaseFormik({
 						id,
 						data: { action: order?.can_adopt_supplier_workflow ? 'adopter_parcours_fournisseur' : 'dossier', ...data },
 					}).unwrap();
-				} else if (correctionId && mode === 'paiement') {
+				} else if (isCorrection && mode === 'paiement') {
 					await purchase({
 						id: id!,
 						data: {
@@ -507,7 +539,7 @@ function PurchaseFormik({
 							commentaire_paiement: values.commentaire_paiement,
 						},
 					}).unwrap();
-				} else if (correctionId && mode === 'reception' && managedReceipt) {
+				} else if (isCorrection && mode === 'reception' && managedReceipt) {
 					await purchase({
 						id: id!,
 						data: {
@@ -661,9 +693,13 @@ function PurchaseFormik({
 						};
 					await purchase({ id: id!, data: payload(data) }).unwrap();
 				}
-				onSuccess('Modifications enregistrées.');
+				onSuccess(proposalMode ? 'Modifications proposées, en attente de validation.' : 'Modifications enregistrées.');
 				if (draftKey) void purchaseDraft(draftKey, 'delete').catch(() => undefined);
-				router.push(id ? LOGISTIQUE_VIEW(id, company_id) : LOGISTIQUE_ADD(company_id));
+				router.push(
+					id
+						? `${LOGISTIQUE_VIEW(id, company_id)}${proposalMode ? `&etape=${query.get('etape_correction') ?? mode}` : ''}`
+						: LOGISTIQUE_ADD(company_id),
+				);
 			} catch (failure) {
 				const message = extractApiErrorMessage(
 					failure,
@@ -761,7 +797,7 @@ function PurchaseFormik({
 	const locked =
 		order?.statut_global === 'Annulé' ||
 		order?.statut === 'Clôture' ||
-		(mode === 'proforma' && order?.is_proforma_step_complete && !correctionId);
+		(mode === 'proforma' && order?.is_proforma_step_complete && !isCorrection);
 	const disabled = formik.isSubmitting || extracting || !!locked || !draftReady;
 	const errorFor = (name: string) =>
 		attempted || getIn(formik.touched, name) ? (getIn(formik.errors, name) as string | undefined) : undefined;
@@ -788,7 +824,7 @@ function PurchaseFormik({
 			helperText={errorFor(name) ?? helper}
 			error={!!errorFor(name)}
 			required={required}
-			disabled={disabled || (readOnly && (name === 'notes_ecarts_proforma' || !correctionId))}
+			disabled={disabled || (readOnly && (name === 'notes_ecarts_proforma' || !isCorrection))}
 			fullWidth
 			size="small"
 			theme={inputTheme}
@@ -831,7 +867,7 @@ function PurchaseFormik({
 				void formik.setFieldValue(name, entry && !Number.isNaN(entry.getTime()) ? formatLocalDate(entry) : '');
 			}}
 			format="dd/MM/yyyy"
-			disabled={disabled || (readOnly && !correctionId)}
+			disabled={disabled || (readOnly && !isCorrection)}
 			slotProps={{
 				textField: {
 					size: 'small',
@@ -1135,15 +1171,15 @@ function PurchaseFormik({
 										theme={inputTheme}
 										startIcon={<Inventory fontSize="small" />}
 										endIcon={
-											<PrimaryLoadingButton
-												buttonText={t.common.add}
+											<Button
 												size="small"
-												loading={false}
-												active={!disabled}
-												inverted
+												variant="outlined"
+												disabled={disabled}
 												onClick={() => void addNewArticle()}
-												cssClass={Controls.inlineAction}
-											/>
+												className={Controls.inlineAction}
+											>
+												{t.common.add}
+											</Button>
 										}
 										noOptionsText={loadingArticles ? 'Recherche en cours…' : 'Aucun article trouvé'}
 									/>
@@ -1365,7 +1401,7 @@ function PurchaseFormik({
 	if (mode === 'reception')
 		sections.push(
 			<FormCard key="reception" title="Réception des marchandises" icon={<Inventory color="primary" />}>
-				{correctionId &&
+				{isCorrection &&
 					managedReceipt &&
 					full(
 						<CustomAutoCompleteSelect
@@ -1397,7 +1433,7 @@ function PurchaseFormik({
 							disabled={disabled}
 						/>,
 					)}
-				{correctionId &&
+				{isCorrection &&
 					managedReceipt &&
 					full(
 						<Alert severity="info">
@@ -1417,7 +1453,7 @@ function PurchaseFormik({
 						),
 					)}
 				{managedReceipt
-					? (correctionId ? [] : formik.values.reception_lignes).map((line, index) => (
+					? (isCorrection ? [] : formik.values.reception_lignes).map((line, index) => (
 							<Box key={line.logistics_line} sx={{ gridColumn: { md: '1 / -1' } }}>
 								<Stack spacing={2}>
 									{text(
@@ -1466,7 +1502,7 @@ function PurchaseFormik({
 	if (['demande_paiement', 'paiement', 'justificatif'].includes(mode))
 		sections.push(
 			<FormCard key="paiement" title={titles[mode]} icon={<Payment color="primary" />}>
-				{correctionId &&
+				{isCorrection &&
 					full(
 						<CustomAutoCompleteSelect
 							id="correction-echeance"
@@ -1515,8 +1551,8 @@ function PurchaseFormik({
 				{mode === 'demande_paiement' && date('date_echeance', 'Date d’échéance', true)}
 				{mode === 'paiement' && (
 					<>
-						{!correctionId && date('date_paiement', 'Date du paiement effectué', true)}
-						{!correctionId &&
+						{!isCorrection && date('date_paiement', 'Date du paiement effectué', true)}
+						{!isCorrection &&
 							select(
 								'methode_paiement',
 								'Méthode de paiement',
@@ -1524,7 +1560,7 @@ function PurchaseFormik({
 								<Payment fontSize="small" />,
 								true,
 							)}
-						{!correctionId &&
+						{!isCorrection &&
 							number('montant_paye', `Montant payé (${installment?.devise})`, <Payment fontSize="small" />, 2, true)}
 						{text('reference_paiement', 'Référence bancaire', <Description fontSize="small" />)}
 						{full(text('commentaire_paiement', 'Commentaire', <Notes fontSize="small" />, false, true))}
@@ -1615,6 +1651,28 @@ function PurchaseFormik({
 			<form onSubmit={formik.handleSubmit} noValidate>
 				<Stack spacing={3}>
 					{sections}
+					{proposalMode && (
+						<FormCard title="Motif de la modification" icon={<Notes color="primary" />}>
+							<CustomTextInput
+								id="correction_remarque"
+								type="textarea"
+								theme={inputTheme}
+								startIcon={<Notes fontSize="small" />}
+								label="Motif de la modification"
+								placeholder="Expliquez pourquoi ces valeurs doivent être corrigées"
+								size="small"
+								fullWidth
+								minRows={3}
+								required
+								value={correctionReason}
+								onChange={(event) => setCorrectionReason(event.target.value)}
+								disabled={disabled}
+							/>
+							<Typography variant="body2" color="text.secondary">
+								Les valeurs actuelles seront conservées jusqu’à la validation de votre proposition.
+							</Typography>
+						</FormCard>
+					)}
 					{items.length > 0 && (
 						<LogistiqueDocumentsFormCard
 							items={items}
@@ -1637,15 +1695,19 @@ function PurchaseFormik({
 					))}
 					<Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
 						<PrimaryLoadingButton
-							buttonText="Enregistrer"
-							active={!disabled && (!['demande_paiement', 'paiement', 'justificatif'].includes(mode) || !!installment)}
+							buttonText={proposalMode ? 'Soumettre les modifications' : 'Enregistrer'}
+							active={
+								!disabled &&
+								(!proposalMode || (!!correctionReason.trim() && formik.dirty)) &&
+								(!['demande_paiement', 'paiement', 'justificatif'].includes(mode) || !!installment)
+							}
 							loading={formik.isSubmitting}
 							onClick={() => {
 								setAttempted(true);
 							}}
 							cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}
 							type="submit"
-							startIcon={<Save />}
+							startIcon={proposalMode ? <Send /> : <Save />}
 						/>
 					</Box>
 				</Stack>

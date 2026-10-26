@@ -10,6 +10,7 @@ import {
 	isAiTextField,
 	listReturnUrl,
 	logisticsArticleReturnUrl,
+	logisticsChangeProposal,
 	rememberListPagination,
 	runWithCleanup,
 	runWithErrorHandler,
@@ -1104,4 +1105,38 @@ describe('logistics article return URL', () => {
 	])('rejects an unrelated or incomplete return route %s', (url) =>
 		expect(logisticsArticleReturnUrl(url, 12)).toBeNull(),
 	);
+});
+
+describe('logisticsChangeProposal', () => {
+	it('keeps proposed values separate from the reason and request action', () => {
+		expect(
+			logisticsChangeProposal(
+				{ action: 'dossier', fournisseur: 'Nouveau fournisseur' },
+				'dossier',
+				'  Erreur de saisie  ',
+			),
+		).toEqual({
+			action: 'demander_modification',
+			etape: 'dossier',
+			remarque: 'Erreur de saisie',
+			modifications: { action: 'dossier', fournisseur: 'Nouveau fournisseur' },
+		});
+	});
+	it('keeps files outside the proposed JSON and preserves lines and repeated brand IDs', () => {
+		const data = new FormData();
+		const file = new File(['document'], 'proforma.pdf', { type: 'application/pdf' });
+		data.set('action', 'proforma');
+		data.set('lignes', JSON.stringify([{ article: 1, quantity: '2' }]));
+		data.append('marques', '2');
+		data.append('marques', '3');
+		data.set('proforma_fournisseur_file', file);
+		const result = logisticsChangeProposal(data, 'proforma', 'Document corrigé') as FormData;
+		expect(result.get('proforma_fournisseur_file')).toBe(file);
+		expect(JSON.parse(result.get('modifications') as string)).toEqual({
+			action: 'proforma',
+			lignes: [{ article: 1, quantity: '2' }],
+			marques: [2, 3],
+		});
+		expect(result.get('action')).toBe('demander_modification');
+	});
 });

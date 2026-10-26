@@ -327,3 +327,52 @@ it('defaults the import title to the proforma total even when the saved amount i
 	expect(screen.getByRole('combobox', { name: /Devise du titre/ })).toHaveTextContent('EUR');
 	expect(screen.getByRole('textbox', { name: /Montant du titre/ })).toHaveValue('1\u202f250,50');
 });
+
+it('submits edited values and a reason for approval instead of directly saving the dossier', async () => {
+	(useGetLogistiqueQuery as jest.Mock).mockReturnValue({
+		data: {
+			...order,
+			workflow: {
+				etape_courante: 'proforma',
+				etapes: [{ key: 'dossier', label: 'Dossier', completed: true, accessible: true }],
+			},
+		},
+	});
+	await renderForm('dossier&proposer=1');
+	const submit = screen.getByRole('button', { name: 'Soumettre les modifications' });
+	expect(submit).toBeDisabled();
+	fireEvent.change(screen.getByRole('textbox', { name: 'E-mail du fournisseur' }), {
+		target: { value: 'corrected@example.com' },
+	});
+	fireEvent.change(screen.getByRole('textbox', { name: /Motif de la modification/ }), {
+		target: { value: 'Coordonnées corrigées' },
+	});
+	await waitFor(() => expect(submit).toBeEnabled());
+	fireEvent.click(submit);
+	await waitFor(() =>
+		expect(mockPurchase).toHaveBeenCalledWith({
+			id: 7,
+			data: expect.objectContaining({
+				action: 'demander_modification',
+				etape: 'dossier',
+				remarque: 'Coordonnées corrigées',
+				modifications: expect.objectContaining({ action: 'dossier', fournisseur_email: 'corrected@example.com' }),
+			}),
+		}),
+	);
+	expect(mockPush).toHaveBeenCalledWith(`${LOGISTIQUE_VIEW(7, 12)}&etape=dossier`);
+});
+
+it('does not allow proposal mode to open a future step', async () => {
+	(useGetLogistiqueQuery as jest.Mock).mockReturnValue({
+		data: {
+			...order,
+			workflow: {
+				etape_courante: 'proforma',
+				etapes: [{ key: 'titre', label: 'Titre', completed: false, accessible: false }],
+			},
+		},
+	});
+	await renderForm('titre&proposer=1');
+	expect(screen.getByText('Accès refusé')).toBeInTheDocument();
+});
