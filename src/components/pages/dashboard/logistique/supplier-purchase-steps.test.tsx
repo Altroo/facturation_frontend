@@ -91,3 +91,17 @@ it('only lets the responsible approve and the approved requester open the correc
 	);
 	expect(screen.queryByRole('button', { name: 'Effectuer la correction autorisée' })).not.toBeInTheDocument();
 });
+
+it('prevents correction submission while another action is running', () => {
+	const { rerender } = render(<SupplierPurchaseSteps {...props} />);
+	fireEvent.click(screen.getByRole('button', { name: 'Demander une modification' }));
+	fireEvent.change(screen.getByRole('textbox', { name: /Remarque pour le responsable/ }), {
+		target: { value: 'Corriger la référence' },
+	});
+	rerender(<SupplierPurchaseSteps {...props} busy />);
+	const send = screen.getByRole('button', { name: 'Envoyer la demande' });
+	expect(send).toBeDisabled();
+	expect(screen.getByRole('progressbar')).toBeInTheDocument();
+	fireEvent.click(send);
+	expect(props.onAction).not.toHaveBeenCalled();
+});

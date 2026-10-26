@@ -6,6 +6,7 @@ import { Edit, Notes, Send } from '@mui/icons-material';
 import type { LogistiqueOrder } from '@/types/logistiqueTypes';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import { textInputTheme } from '@/utils/themes';
+import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 
 const inputTheme = textInputTheme();
 
@@ -56,7 +57,7 @@ export default function SupplierPurchaseSteps({
 							sx={{
 								minWidth: steps.length * 115,
 								'& .MuiStepLabel-label': { mt: 1, fontSize: '0.8rem', lineHeight: 1.4 },
-								'& .MuiStepButton-root': { py: 1 },
+								'& .MuiStepButton-root': { m: 0, p: 0, width: '100%' },
 							}}
 						>
 							{steps.map((step) => (
@@ -110,20 +111,20 @@ export default function SupplierPurchaseSteps({
 								onChange={(event) => setRemark(event.target.value)}
 								disabled={busy}
 							/>
-							<Box>
-								<Button
-									variant="contained"
+							<Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+								<PrimaryLoadingButton
+									buttonText="Envoyer la demande"
+									type="button"
 									startIcon={<Send />}
-									disabled={busy || !remark.trim()}
+									active={!busy && !!remark.trim()}
+									loading={busy}
 									onClick={async () => {
 										if (await onAction({ action: 'demander_modification', etape: selected, remarque: remark.trim() })) {
 											setRequesting(false);
 											setRemark('');
 										}
 									}}
-								>
-									Envoyer la demande
-								</Button>
+								/>
 							</Box>
 						</Stack>
 					)}
