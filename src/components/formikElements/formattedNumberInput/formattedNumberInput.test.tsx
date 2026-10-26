@@ -43,11 +43,6 @@ jest.mock('@/utils/helpers', () => ({
 		if (isNaN(num)) return '';
 		return num.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 	},
-	parseFormattedNumber: (value: string) => {
-		const cleaned = value.replace(/\s/g, '').replace(',', '.');
-		const parsed = parseFloat(cleaned);
-		return isNaN(parsed) ? null : parsed;
-	},
 }));
 import FormattedNumberInput from './formattedNumberInput';
 import { createTheme } from '@mui/material/styles';
@@ -99,6 +94,23 @@ describe('FormattedNumberInput', () => {
 		expect(mockOnChange).toHaveBeenCalled();
 		const syntheticEvent = mockOnChange.mock.calls[0][0];
 		expect(syntheticEvent.target.value).toBe('5000');
+	});
+
+	it.each([',', '.'])('keeps the %s separator editable and sends finite values while typing', (separator) => {
+		const onChange = jest.fn();
+		render(<FormattedNumberInput {...defaultProps} value="" decimals={2} onChange={onChange} />);
+		const input = screen.getByTestId('custom-text-input');
+		fireEvent.focus(input);
+		for (const [text, expected] of [
+			['833', '833'],
+			[`833${separator}`, '833'],
+			[`833${separator}3`, '833.3'],
+			[`833${separator}33`, '833.33'],
+		]) {
+			fireEvent.change(input, { target: { value: text } });
+			expect(input).toHaveValue(text);
+			expect(onChange.mock.lastCall[0].target.value).toBe(expected);
+		}
 	});
 
 	it('calls onChange with raw value when input cannot be parsed', () => {

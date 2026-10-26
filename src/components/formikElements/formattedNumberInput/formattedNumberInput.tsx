@@ -22,7 +22,8 @@ const FormattedNumberInput = (props: Props) => {
 		setEditValue(inputValue);
 
 		// Parse the formatted number and update parent
-		const parsed = parseFormattedNumber(inputValue);
+		// Keep the separator visible while giving validation a finite numeric value.
+		const parsed = parseFormattedNumber(/[.,]$/.test(inputValue) ? `${inputValue}0` : inputValue);
 
 		// Create a synthetic event with the parsed value
 		const syntheticEvent = {

@@ -96,7 +96,7 @@ import {
 	useGetMarqueListQuery,
 	useGetUniteListQuery,
 } from '@/store/services/parameter';
-import { articleSchema } from '@/utils/formValidationSchemas';
+import { getArticleSchema } from '@/utils/formValidationSchemas';
 import CustomSquareImageUploading from '@/components/formikElements/customSquareImageUploading/customSquareImageUploading';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import ClientArticleWrapperForm from '@/components/pages/dashboard/shared/client-article-form/clientArticleWrapperForm';
@@ -193,12 +193,13 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 		},
 		enableReinitialize: true,
 		validateOnMount: true,
-		validationSchema: toFormikValidationSchema(articleSchema),
+		validationSchema: toFormikValidationSchema(getArticleSchema(companyData?.stock_management_enabled === true)),
 		onSubmit: async (data, { setFieldError }) => {
 			setHasAttemptedSubmit(true);
 			setIsPending(true);
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const { globalError, ...payload } = data;
+			payload.prix_achat = Number(payload.prix_achat ?? 0);
 			// Persist the entry basis while keeping document and PDF prices in HT.
 			payload.prix_vente = calculateSalePriceHT(
 				Number(payload.prix_vente ?? 0),
@@ -771,6 +772,9 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 										size="small"
 										noOptionsText={t.articles.noEmplacement}
 										label={t.articles.filterEmplacement}
+										required={
+											companyData?.stock_management_enabled === true && formik.values.type_article === 'Produit'
+										}
 										items={emplacementItems}
 										theme={theme}
 										value={selectedEmplacement}

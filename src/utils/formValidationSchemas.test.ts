@@ -13,6 +13,7 @@ import {
 	userSchema,
 	clientSchema,
 	articleSchema,
+	getArticleSchema,
 	deviSchema,
 	devisLivraisonFactureLineSchema,
 	deviAddSchema,
@@ -245,6 +246,44 @@ describe('Zod Schema Validation', () => {
 
 	// ✅ articleSchema
 	describe('articleSchema', () => {
+		const article = {
+			type_article: 'Produit',
+			reference: 'REF001',
+			designation: 'Produit Test',
+			company: 1,
+		};
+
+		it.each([
+			[true, 'Produit', null, false],
+			[true, 'Produit', 1, true],
+			[true, 'Service', null, true],
+			[false, 'Produit', null, true],
+		])('requires a location only for stock-managed products (%s, %s, %s)', (enabled, type, location, valid) => {
+			const result = getArticleSchema(enabled).safeParse({ ...article, type_article: type, emplacement: location });
+			expect(result.success).toBe(valid);
+			if (!result.success) expect(result.error.issues[0].path).toEqual(['emplacement']);
+		});
+
+		it.each(['prix_achat', 'prix_vente'])('accepts comma input and two decimal places for %s', (field) => {
+			for (const price of ['833,', '833,33', '833.33', 833.33, 99_999_999.99]) {
+				const result = articleSchema.safeParse({ ...article, [field]: price });
+				expect(result.success).toBe(true);
+				if (result.success)
+					expect(result.data[field as 'prix_achat' | 'prix_vente']).toBe(Number(String(price).replace(',', '.')));
+			}
+		});
+
+		it.each(['prix_achat', 'prix_vente'])('rejects more than two decimals for %s', (field) => {
+			const result = articleSchema.safeParse({ ...article, [field]: '833,333' });
+			expect(result.success).toBe(false);
+			if (!result.success)
+				expect(result.error.issues).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({ path: [field], message: expect.stringContaining('2 chiffres') }),
+					]),
+				);
+		});
+
 		it('validates required fields', () => {
 			expect(() =>
 				articleSchema.parse({

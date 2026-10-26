@@ -204,16 +204,19 @@ jest.mock('@/components/formikElements/customAutoCompleteSelect/customAutoComple
 		label,
 		onChange,
 		onBlur,
+		required,
 	}: {
 		id: string;
 		label: string;
 		onChange?: (event: SyntheticEvent, value: { id: number; label: string } | null) => void;
 		onBlur?: () => void;
+		required?: boolean;
 	}) => (
 		<div data-testid={`select-${id}`}>
 			<label>{label}</label>
 			<input
 				data-testid={`select-field-${id}`}
+				required={required}
 				onChange={(e) => onChange?.(e, { id: parseInt(e.target.value) || 0, label: e.target.value })}
 				onBlur={() => onBlur?.()}
 			/>
@@ -299,14 +302,10 @@ jest.mock('@/utils/helpers', () => ({
 	formatNumberWithSpaces: jest.requireActual('@/utils/helpers').formatNumberWithSpaces,
 	getLabelForKey: jest.fn((labels: Record<string, string>, key: string) => labels[key] || key),
 	setFormikAutoErrors: jest.fn(),
-	parseNumber: jest.fn((val: string) => {
-		const n = parseFloat(val);
-		return Number.isNaN(n) ? null : n;
-	}),
 }));
 
 jest.mock('@/utils/formValidationSchemas', () => ({
-	articleSchema: { parse: jest.fn() },
+	getArticleSchema: jest.fn(() => ({ parse: jest.fn() })),
 }));
 
 jest.mock('zod-formik-adapter', () => ({
@@ -367,6 +366,44 @@ describe('ArticlesForm', () => {
 				data: { raison_sociale: 'CASA DI LUSSO', uses_foreign_currency: false },
 				isFetching: false,
 			});
+		});
+
+		it.each([
+			[true, 'Produit', true],
+			[true, 'Service', false],
+			[false, 'Produit', false],
+		])('marks location required for stock %s and type %s', async (enabled, type, required) => {
+			jest.requireMock('@/store/services/company').useGetCompanyQuery.mockReturnValue({
+				data: { stock_management_enabled: enabled },
+				isFetching: false,
+			});
+			renderWithProviders(<ArticlesForm session={mockSession} company_id={1} />);
+			if (type === 'Service') fireEvent.click(screen.getByRole('button', { name: 'Service' }));
+			await waitFor(() =>
+				expect(screen.getByTestId('select-field-emplacement').hasAttribute('required')).toBe(required),
+			);
+		});
+
+		it('submits comma-separated purchase and sale prices with two decimals', async () => {
+			renderWithProviders(<ArticlesForm session={mockSession} company_id={1} />);
+			fireEvent.change(screen.getByTestId('input-field-prix_achat'), { target: { value: '500,12' } });
+			fireEvent.change(screen.getByTestId('input-field-prix_vente'), { target: { value: '833,33' } });
+			fireEvent.click(screen.getByTestId('submit-button'));
+			await waitFor(() => expect(mockAddArticleMutation).toHaveBeenCalled());
+			expect(mockAddArticleMutation.mock.calls[0][0].data).toEqual(
+				expect.objectContaining({ prix_achat: 500.12, prix_vente: 833.33 }),
+			);
+		});
+
+		it('uses zero when optional purchase and sale prices are cleared', async () => {
+			renderWithProviders(<ArticlesForm session={mockSession} company_id={1} />);
+			fireEvent.change(screen.getByTestId('input-field-prix_achat'), { target: { value: '' } });
+			fireEvent.change(screen.getByTestId('input-field-prix_vente'), { target: { value: '' } });
+			fireEvent.click(screen.getByTestId('submit-button'));
+			await waitFor(() => expect(mockAddArticleMutation).toHaveBeenCalled());
+			expect(mockAddArticleMutation.mock.calls[0][0].data).toEqual(
+				expect.objectContaining({ prix_achat: 0, prix_vente: 0 }),
+			);
 		});
 
 		it('returns the created article ID to the saved supplier proforma draft', async () => {
