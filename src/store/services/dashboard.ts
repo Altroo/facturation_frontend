@@ -11,7 +11,6 @@ import type {
 	CollectionRateData,
 	DateFilterParams,
 	DiscountImpactData,
-	InvoiceStatusData,
 	KPICardsData,
 	MonthlyDocumentVolumeData,
 	MonthlyGlobalPerformanceData,
@@ -26,7 +25,6 @@ import type {
 	ProductMarginVolumeData,
 	ProductPriceVolumeData,
 	QuoteConversionData,
-	RevenueByTypeData,
 	SectionMicroTrendsData,
 	TopClientData,
 	TopProductData,
@@ -78,13 +76,6 @@ export const dashboardApi = createApi({
 			}),
 			providesTags: ['Dashboard'],
 		}),
-		getRevenueByDocumentType: builder.query<RevenueByTypeData[], DateFilterParams | void>({
-			query: (params) => ({
-				url: `/dashboard/financial/revenue-by-type/${buildDateQueryString(params ?? undefined)}`,
-				method: 'GET',
-			}),
-			providesTags: ['Dashboard'],
-		}),
 		getPaymentStatusOverview: builder.query<PaymentStatusData[], DateFilterParams | void>({
 			query: (params) => ({
 				url: `/dashboard/financial/payment-status/${buildDateQueryString(params ?? undefined)}`,
@@ -131,13 +122,6 @@ export const dashboardApi = createApi({
 		}),
 
 		// Operational Indicators
-		getInvoiceStatusDistribution: builder.query<InvoiceStatusData[], DateFilterParams | void>({
-			query: (params) => ({
-				url: `/dashboard/operational/invoice-status/${buildDateQueryString(params ?? undefined)}`,
-				method: 'GET',
-			}),
-			providesTags: ['Dashboard'],
-		}),
 		getMonthlyDocumentVolume: builder.query<MonthlyDocumentVolumeData[], DateFilterParams | void>({
 			query: (params) => ({
 				url: `/dashboard/operational/document-volume/${buildDateQueryString(params ?? undefined)}`,
@@ -260,14 +244,12 @@ export const {
 	useGetReceivablesByClientQuery,
 	useGetUninvoicedDeliveriesQuery,
 	useGetMonthlyRevenueEvolutionQuery,
-	useGetRevenueByDocumentTypeQuery,
 	useGetPaymentStatusOverviewQuery,
 	useGetCollectionRateQuery,
 	useGetTopClientsByRevenueQuery,
 	useGetTopProductsByQuantityQuery,
 	useGetQuoteConversionRateQuery,
 	useGetProductPriceVolumeAnalysisQuery,
-	useGetInvoiceStatusDistributionQuery,
 	useGetMonthlyDocumentVolumeQuery,
 	useGetPaymentTimelineQuery,
 	useGetOverdueReceivablesQuery,

@@ -27,11 +27,6 @@ export interface MonthlyRevenueData {
 	revenue: number;
 }
 
-export interface RevenueByTypeData {
-	type: string;
-	amount: number;
-}
-
 export interface PaymentStatusData {
 	status: string;
 	count: number;
@@ -66,11 +61,6 @@ export interface ProductPriceVolumeData {
 	designation: string;
 	average_price: number;
 	total_quantity: number;
-}
-
-export interface InvoiceStatusData {
-	status: string;
-	count: number;
 }
 
 export interface MonthlyDocumentVolumeData {

@@ -6,7 +6,6 @@ import type {
 	CollectionRateData,
 	DateFilterParams,
 	DiscountImpactData,
-	InvoiceStatusData,
 	KPICardsData,
 	MonthlyDocumentVolumeData,
 	MonthlyGlobalPerformanceData,
@@ -19,7 +18,6 @@ import type {
 	ProductMarginVolumeData,
 	ProductPriceVolumeData,
 	QuoteConversionData,
-	RevenueByTypeData,
 	SectionMicroTrendsData,
 	TopClientData,
 	TopProductData,
@@ -58,14 +56,12 @@ describe('dashboardApi', () => {
 	it('should have all endpoints defined', () => {
 		const endpoints = dashboardApi.endpoints;
 		expect(endpoints.getMonthlyRevenueEvolution).toBeDefined();
-		expect(endpoints.getRevenueByDocumentType).toBeDefined();
 		expect(endpoints.getPaymentStatusOverview).toBeDefined();
 		expect(endpoints.getCollectionRate).toBeDefined();
 		expect(endpoints.getTopClientsByRevenue).toBeDefined();
 		expect(endpoints.getTopProductsByQuantity).toBeDefined();
 		expect(endpoints.getQuoteConversionRate).toBeDefined();
 		expect(endpoints.getProductPriceVolumeAnalysis).toBeDefined();
-		expect(endpoints.getInvoiceStatusDistribution).toBeDefined();
 		expect(endpoints.getMonthlyDocumentVolume).toBeDefined();
 		expect(endpoints.getPaymentTimeline).toBeDefined();
 		expect(endpoints.getOverdueReceivables).toBeDefined();
@@ -99,12 +95,6 @@ describe('dashboardApi', () => {
 			const data: MonthlyRevenueData = { month: '2024-01', revenue: 10000 };
 			expect(data.month).toBe('2024-01');
 			expect(data.revenue).toBe(10000);
-		});
-
-		it('should have correct RevenueByTypeData structure', () => {
-			const data: RevenueByTypeData = { type: 'facture', amount: 5000 };
-			expect(data.type).toBe('facture');
-			expect(data.amount).toBe(5000);
 		});
 
 		it('should have correct PaymentStatusData structure', () => {
@@ -142,12 +132,6 @@ describe('dashboardApi', () => {
 			const data: ProductPriceVolumeData = { article_id: 1, designation: 'A', average_price: 50, total_quantity: 200 };
 			expect(data.average_price).toBe(50);
 			expect(data.total_quantity).toBe(200);
-		});
-
-		it('should have correct InvoiceStatusData structure', () => {
-			const data: InvoiceStatusData = { status: 'pending', count: 10 };
-			expect(data.status).toBe('pending');
-			expect(data.count).toBe(10);
 		});
 
 		it('should have correct MonthlyDocumentVolumeData structure', () => {
@@ -313,14 +297,12 @@ describe('dashboardApi', () => {
 			'getReceivablesByClient',
 			'getUninvoicedDeliveries',
 			'getMonthlyRevenueEvolution',
-			'getRevenueByDocumentType',
 			'getPaymentStatusOverview',
 			'getCollectionRate',
 			'getTopClientsByRevenue',
 			'getTopProductsByQuantity',
 			'getQuoteConversionRate',
 			'getProductPriceVolumeAnalysis',
-			'getInvoiceStatusDistribution',
 			'getMonthlyDocumentVolume',
 			'getPaymentTimeline',
 			'getOverdueReceivables',
@@ -388,14 +370,12 @@ describe('dashboardApi', () => {
 			['getReceivablesByClient', '/dashboard/financial/receivables-by-client/'],
 			['getUninvoicedDeliveries', '/dashboard/operational/uninvoiced-deliveries/'],
 			['getMonthlyRevenueEvolution', '/dashboard/financial/monthly-revenue/'],
-			['getRevenueByDocumentType', '/dashboard/financial/revenue-by-type/'],
 			['getPaymentStatusOverview', '/dashboard/financial/payment-status/'],
 			['getCollectionRate', '/dashboard/financial/collection-rate/'],
 			['getTopClientsByRevenue', '/dashboard/commercial/top-clients/'],
 			['getTopProductsByQuantity', '/dashboard/commercial/top-products/'],
 			['getQuoteConversionRate', '/dashboard/commercial/quote-conversion/'],
 			['getProductPriceVolumeAnalysis', '/dashboard/commercial/product-price-volume/'],
-			['getInvoiceStatusDistribution', '/dashboard/operational/invoice-status/'],
 			['getMonthlyDocumentVolume', '/dashboard/operational/document-volume/'],
 			['getPaymentTimeline', '/dashboard/cashflow/payment-timeline/'],
 			['getOverdueReceivables', '/dashboard/cashflow/overdue-receivables/'],
