@@ -225,7 +225,7 @@ export const LogistiqueDocumentsFormCard: FC<LogistiqueDocumentsFormCardProps> =
 							fullWidth
 						/>
 						<Button
-							variant="contained"
+							variant="outlined"
 							type="button"
 							startIcon={<UploadFileIcon />}
 							disabled={isLoading}
