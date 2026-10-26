@@ -8,7 +8,6 @@ import {
 	AccordionSummary,
 	Alert,
 	Box,
-	Button,
 	Card,
 	CardContent,
 	Chip,
@@ -37,6 +36,7 @@ import {
 	Person,
 	Send,
 } from '@mui/icons-material';
+import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
@@ -63,6 +63,7 @@ import { LOGISTIQUE_ADD, LOGISTIQUE_EDIT, LOGISTIQUE_LIST, LOGISTIQUE_SUPPLIERS 
 import type { LogistiqueFormProps, LogistiquePaymentInstallment } from '@/types/logistiqueTypes';
 import type { PurchaseFormMode } from '@/types/supplierPurchaseTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
+import Controls from '@/styles/dashboard/logistique/logistique-controls.module.sass';
 
 const money = (amount: unknown, currency?: string) =>
 	`${Number(amount ?? 0).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency ?? ''}`;
@@ -210,18 +211,16 @@ export default function SupplierPurchase({ session, company_id, id }: Logistique
 		}
 	}
 	const actionButton = (label: string, onClick: () => void, enabled = true, icon: ReactNode = <Edit />) => (
-		<Button
-			variant="outlined"
+		<PrimaryLoadingButton
+			buttonText={label}
 			size="small"
-			disabled={!enabled || busy}
 			loading={busy}
+			active={enabled && !busy}
+			inverted
 			onClick={onClick}
 			type="button"
 			startIcon={icon}
-			sx={{ alignSelf: 'flex-start', maxWidth: '100%', flexShrink: 0 }}
-		>
-			{label}
-		</Button>
+		/>
 	);
 	const orderFiles = order
 		? (
@@ -331,9 +330,12 @@ export default function SupplierPurchase({ session, company_id, id }: Logistique
 								<Alert severity="warning">
 									{item.notification_createur_erreur}
 									{canManage && !cancelled && (
-										<Button
-											variant="outlined"
-											disabled={busy}
+										<PrimaryLoadingButton
+											buttonText="Relancer la notification"
+											size="small"
+											loading={false}
+											active={!busy}
+											inverted
 											onClick={() => {
 												void run(() =>
 													purchase({
@@ -342,9 +344,7 @@ export default function SupplierPurchase({ session, company_id, id }: Logistique
 													}).unwrap(),
 												);
 											}}
-										>
-											Relancer la notification
-										</Button>
+										/>
 									)}
 								</Alert>
 							) : (
@@ -422,15 +422,16 @@ export default function SupplierPurchase({ session, company_id, id }: Logistique
 				<Alert severity="warning">
 					La transmission au comptable a échoué.
 					{responsible && canEdit && (
-						<Button
-							variant="outlined"
-							disabled={busy}
+						<PrimaryLoadingButton
+							buttonText="Réessayer l’envoi"
+							size="small"
+							loading={false}
+							active={!busy}
+							inverted
 							onClick={() => {
 								void run(() => retryEmail({ id: id! }).unwrap());
 							}}
-						>
-							Réessayer l’envoi
-						</Button>
+						/>
 					)}
 				</Alert>
 			)}
@@ -553,9 +554,14 @@ export default function SupplierPurchase({ session, company_id, id }: Logistique
 					) : error ? (
 						<Alert severity="error">
 							{extractApiErrorMessage(error, 'Impossible de charger le dossier.')}
-							<Button variant="outlined" onClick={() => refetch()}>
-								Réessayer
-							</Button>
+							<PrimaryLoadingButton
+								buttonText="Réessayer"
+								size="small"
+								loading={false}
+								active
+								inverted
+								onClick={() => refetch()}
+							/>
 						</Alert>
 					) : !order || !company ? (
 						<NoPermission />
@@ -566,15 +572,16 @@ export default function SupplierPurchase({ session, company_id, id }: Logistique
 								spacing={2}
 								sx={{ justifyContent: 'space-between', alignItems: { sm: 'center' } }}
 							>
-								<Button
-									variant="outlined"
+								<PrimaryLoadingButton
+									buttonText="Retour à la liste"
 									size="small"
+									loading={false}
+									active
+									inverted
 									startIcon={<ArrowBack />}
 									onClick={() => router.push(listReturnUrl(`${LOGISTIQUE_LIST}?company_id=${company_id}`))}
-									sx={{ width: mobile ? '100%' : 'auto' }}
-								>
-									Retour à la liste
-								</Button>
+									cssClass={Controls.mobileFullWidth}
+								/>
 								<Stack
 									direction="row"
 									role="group"
@@ -582,27 +589,28 @@ export default function SupplierPurchase({ session, company_id, id }: Logistique
 									sx={{ gap: 1, flexWrap: 'wrap', alignItems: 'center' }}
 								>
 									{canManage && needsAdoption && (
-										<Button
-											variant="outlined"
+										<PrimaryLoadingButton
+											buttonText={needsAdoption ? 'Compléter le dossier' : 'Modifier le dossier'}
 											size="small"
+											loading={false}
+											active
+											inverted
 											startIcon={<Edit />}
 											onClick={() => edit('dossier')}
-											sx={{ width: mobile ? '100%' : 'auto' }}
-										>
-											{needsAdoption ? 'Compléter le dossier' : 'Modifier le dossier'}
-										</Button>
+											cssClass={Controls.mobileFullWidth}
+										/>
 									)}
 									{company.can_change_document_status && order.statut !== 'Clôture' && (
-										<Button
-											variant="outlined"
+										<PrimaryLoadingButton
+											buttonText={cancelled ? 'Rouvrir le dossier' : 'Annuler le dossier'}
 											size="small"
+											loading={false}
+											active={!busy}
+											inverted
 											color={cancelled ? 'primary' : 'error'}
-											disabled={busy}
 											startIcon={cancelled ? <History /> : <Close />}
 											onClick={() => setPending(cancelled ? 'Rouvert' : 'Annulé')}
-										>
-											{cancelled ? 'Rouvrir le dossier' : 'Annuler le dossier'}
-										</Button>
+										/>
 									)}
 								</Stack>
 							</Stack>

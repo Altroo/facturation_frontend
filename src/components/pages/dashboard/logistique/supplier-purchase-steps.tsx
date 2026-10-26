@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Box, Button, Card, CardContent, Stack, Step, StepButton, Stepper, Typography } from '@mui/material';
+import { Alert, Box, Card, CardContent, Stack, Step, StepButton, Stepper, Typography } from '@mui/material';
 import { Edit, Notes, Send } from '@mui/icons-material';
 import type { LogistiqueOrder } from '@/types/logistiqueTypes';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
@@ -91,15 +91,15 @@ export default function SupplierPurchaseSteps({
 						</Alert>
 					)}
 					{previous && canManage && !mine && !requesting && (
-						<Button
+						<PrimaryLoadingButton
+							buttonText="Demander une modification"
 							size="small"
-							sx={{ alignSelf: 'flex-start' }}
-							variant="outlined"
+							loading={false}
+							active
+							inverted
 							startIcon={<Edit />}
 							onClick={() => setRequesting(true)}
-						>
-							Demander une modification
-						</Button>
+						/>
 					)}
 					{previous && requesting && (
 						<Stack spacing={2}>
@@ -137,9 +137,15 @@ export default function SupplierPurchaseSteps({
 					)}
 					{mine?.statut === 'pending' && <Alert severity="info">Votre demande attend l’accord du responsable.</Alert>}
 					{mine?.statut === 'approved' && canManage && (
-						<Button variant="outlined" startIcon={<Edit />} disabled={busy} onClick={() => onEdit(selected, mine.id)}>
-							Effectuer la correction autorisée
-						</Button>
+						<PrimaryLoadingButton
+							buttonText="Effectuer la correction autorisée"
+							size="small"
+							loading={false}
+							active={!busy}
+							inverted
+							startIcon={<Edit />}
+							onClick={() => onEdit(selected, mine.id)}
+						/>
 					)}
 					{requests
 						.filter((request) => request.statut === 'pending' && order.responsable === userId)
@@ -151,19 +157,23 @@ export default function SupplierPurchaseSteps({
 										{request.remarque}
 									</Typography>
 									<Stack direction="row" spacing={1}>
-										<Button
-											disabled={busy}
+										<PrimaryLoadingButton
+											buttonText="Approuver"
+											size="small"
+											loading={false}
+											active={!busy}
+											inverted
 											onClick={() => void onAction({ action: 'approuver_modification', demande_id: request.id })}
-										>
-											Approuver
-										</Button>
-										<Button
+										/>
+										<PrimaryLoadingButton
+											buttonText="Refuser"
+											size="small"
+											loading={false}
+											active={!busy}
+											inverted
 											color="error"
-											disabled={busy}
 											onClick={() => void onAction({ action: 'refuser_modification', demande_id: request.id })}
-										>
-											Refuser
-										</Button>
+										/>
 									</Stack>
 								</Stack>
 							</Alert>

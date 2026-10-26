@@ -4,12 +4,10 @@ import { type FC } from 'react';
 import {
 	Alert,
 	Box,
-	Button,
 	Card,
 	CardContent,
 	CardHeader,
 	CircularProgress,
-	IconButton,
 	Tooltip as MuiTooltip,
 	Typography,
 } from '@mui/material';
@@ -27,6 +25,7 @@ import {
 	Tooltip as ChartTooltip,
 	type ChartOptions,
 } from 'chart.js';
+import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import { Bar, Doughnut, Line } from '@/components/shared/themedCharts/themedCharts';
 import {
 	AssignmentTurnedIn as AssignmentTurnedInIcon,
@@ -176,9 +175,16 @@ const ChartCard: FC<ChartCardProps> = ({ title, children, height = 320, wide = f
 			action={
 				infoTooltip && (
 					<MuiTooltip title={infoTooltip} arrow placement="top">
-						<IconButton size="small" sx={{ color: 'text.secondary' }} aria-label={infoTooltip}>
-							<InfoOutlinedIcon fontSize="small" />
-						</IconButton>
+						<PrimaryLoadingButton
+							buttonText={infoTooltip}
+							size="small"
+							loading={false}
+							active
+							inverted
+							iconOnly
+							startIcon={<InfoOutlinedIcon fontSize="small" />}
+							aria-label={infoTooltip}
+						/>
 					</MuiTooltip>
 				)
 			}
@@ -445,9 +451,15 @@ const DashboardContent: FC<DashboardContentProps> = ({ session, company_id }) =>
 			<Alert
 				severity="error"
 				action={
-					<Button color="inherit" size="small" onClick={() => refetch()}>
-						{t.common.retry}
-					</Button>
+					<PrimaryLoadingButton
+						buttonText={t.common.retry}
+						size="small"
+						loading={false}
+						active
+						inverted
+						color="inherit"
+						onClick={() => refetch()}
+					/>
 				}
 			>
 				{t.common.genericError}

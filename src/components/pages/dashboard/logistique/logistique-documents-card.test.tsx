@@ -34,6 +34,15 @@ describe('LogistiqueDocumentsFormCard', () => {
 		expect(onSelectedFieldChangeAction).toHaveBeenCalledWith('justificatifs_file');
 	});
 
+	it('opens the native file picker from the shared choose-files button', () => {
+		const { container } = render(<LogistiqueDocumentsFormCard {...props} />);
+		const input = container.querySelector<HTMLInputElement>('input[type="file"]')!;
+		const click = jest.spyOn(input, 'click').mockImplementation(() => {});
+		fireEvent.click(screen.getByRole('button', { name: t.logistique.chooseFiles }));
+		expect(click).toHaveBeenCalledTimes(1);
+		click.mockRestore();
+	});
+
 	it('uploads only the first selected file to the selected category and resets the file input', () => {
 		const { container } = render(<LogistiqueDocumentsFormCard {...props} accept="application/pdf" />);
 		const input = container.querySelector('input[type="file"]')!;

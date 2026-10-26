@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import {
 	Alert,
 	Box,
-	Button,
 	Card,
 	CardContent,
 	Divider,
@@ -17,6 +16,7 @@ import {
 } from '@mui/material';
 import { ArrowBack, Business, Delete, Description, Edit, Email, Visibility } from '@mui/icons-material';
 import type { GridColDef } from '@mui/x-data-grid';
+import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import NoPermission from '@/components/shared/noPermission/noPermission';
@@ -37,6 +37,7 @@ import type {
 	LogistiqueViewProps as Props,
 } from '@/types/logistiqueTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
+import Controls from '@/styles/dashboard/logistique/logistique-controls.module.sass';
 
 const InfoRow: FC<InfoRowProps> = ({ icon, label, value }) => {
 	const theme = useTheme();
@@ -117,7 +118,14 @@ const SupplierDossiers: FC<Pick<Props, 'id' | 'company_id'>> = ({ id, company_id
 		return (
 			<Alert severity="error">
 				{extractApiErrorMessage(error, t.logistique.supplierLoadError)}{' '}
-				<Button onClick={() => refetch()}>{t.common.retry}</Button>
+				<PrimaryLoadingButton
+					buttonText={t.common.retry}
+					size="small"
+					loading={false}
+					active
+					inverted
+					onClick={() => refetch()}
+				/>
 			</Alert>
 		);
 	return (
@@ -166,36 +174,40 @@ const LogistiqueSuppliersView: FC<Props> = ({ session, company_id, id }) => {
 						spacing={2}
 						sx={{ justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'center' }}
 					>
-						<Button
-							variant="outlined"
+						<PrimaryLoadingButton
+							buttonText={t.logistique.supplierBackToList}
+							size="small"
+							loading={false}
+							active
+							inverted
 							startIcon={<ArrowBack />}
 							onClick={back}
-							sx={{ width: isMobile ? '100%' : 'auto' }}
-						>
-							{t.logistique.supplierBackToList}
-						</Button>
+							cssClass={Controls.mobileFullWidth}
+						/>
 						{supplier && !isFetching && !error && (
 							<Stack direction="row" sx={{ gap: 1, flexWrap: 'wrap' }}>
 								{canManage && (
-									<Button
-										variant="outlined"
+									<PrimaryLoadingButton
+										buttonText={t.common.edit}
 										size="small"
+										loading={false}
+										active
+										inverted
 										startIcon={<Edit />}
 										onClick={() => router.push(LOGISTIQUE_SUPPLIER_EDIT(id, company_id))}
-									>
-										{t.common.edit}
-									</Button>
+									/>
 								)}
 								{company?.role === 'Caissier' && (
-									<Button
-										variant="outlined"
+									<PrimaryLoadingButton
+										buttonText={t.common.delete}
 										size="small"
+										loading={false}
+										active
+										inverted
 										color="error"
 										startIcon={<Delete />}
 										onClick={() => setDeleting(true)}
-									>
-										{t.common.delete}
-									</Button>
+									/>
 								)}
 							</Stack>
 						)}
@@ -205,7 +217,14 @@ const LogistiqueSuppliersView: FC<Props> = ({ session, company_id, id }) => {
 					) : error ? (
 						<Alert severity="error">
 							{extractApiErrorMessage(error, t.logistique.supplierLoadError)}{' '}
-							<Button onClick={() => refetch()}>{t.common.retry}</Button>
+							<PrimaryLoadingButton
+								buttonText={t.common.retry}
+								size="small"
+								loading={false}
+								active
+								inverted
+								onClick={() => refetch()}
+							/>
 						</Alert>
 					) : !company || !supplier ? (
 						<NoPermission />

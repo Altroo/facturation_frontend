@@ -14,7 +14,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import {
 	Alert,
 	Box,
-	Button,
 	Card,
 	CardContent,
 	Checkbox,
@@ -105,6 +104,7 @@ import type {
 	LogistiqueResponsibleOption,
 } from '@/types/logistiqueTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
+import Controls from '@/styles/dashboard/logistique/logistique-controls.module.sass';
 
 const inputTheme = textInputTheme();
 
@@ -618,14 +618,16 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 									spacing={2}
 									sx={{ pt: 2, justifyContent: 'space-between' }}
 								>
-									<Button
-										variant="outlined"
+									<PrimaryLoadingButton
+										buttonText={t.logistique.backToList}
+										size="small"
+										loading={false}
+										active
+										inverted
 										startIcon={<ArrowBackIcon />}
 										onClick={() => router.push(listReturnUrl(`${LOGISTIQUE_LIST}?company_id=${company_id}`))}
-										sx={{ width: isMobile ? '100%' : 'auto' }}
-									>
-										{t.logistique.backToList}
-									</Button>
+										cssClass={Controls.mobileFullWidth}
+									/>
 								</Stack>
 
 								{Object.keys(validationErrors).length > 0 && (
@@ -899,6 +901,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 																						placeholder={t.logistique.placeholders.description}
 																						id="description"
 																						type="textarea"
+																						minRows={3}
 																						label={t.logistique.fieldDescription}
 																						value={formik.values.description}
 																						onChange={formik.handleChange('description')}
@@ -1138,6 +1141,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 																		<FormControlLabel
 																			control={
 																				<Checkbox
+																					size="small"
 																					checked={formik.values.documents_originaux_requis}
 																					onChange={(event) => {
 																						void formik.setFieldValue(

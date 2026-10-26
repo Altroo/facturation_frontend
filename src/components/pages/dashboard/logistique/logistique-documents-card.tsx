@@ -1,19 +1,7 @@
 'use client';
 
 import { type ChangeEvent, type DragEvent, type FC, useRef, useState } from 'react';
-import {
-	Box,
-	Button,
-	Card,
-	CardContent,
-	Chip,
-	Divider,
-	IconButton,
-	LinearProgress,
-	Stack,
-	Tooltip,
-	Typography,
-} from '@mui/material';
+import { Box, Card, CardContent, Chip, Divider, LinearProgress, Stack, Tooltip, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import {
 	AttachFile as AttachFileIcon,
@@ -26,6 +14,8 @@ import {
 	UploadFile as UploadFileIcon,
 } from '@mui/icons-material';
 import { useLanguage } from '@/utils/hooks';
+import PrimaryAnchorButton from '@/components/htmlElements/buttons/primaryAnchorButton/primaryAnchorButton';
+import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import { textInputTheme } from '@/utils/themes';
 
@@ -226,21 +216,15 @@ export const LogistiqueDocumentsFormCard: FC<LogistiqueDocumentsFormCardProps> =
 							disabled={isLoading}
 							fullWidth
 						/>
-						<Button
-							component="label"
-							variant="contained"
-							startIcon={<UploadFileIcon />}
-							disabled={isLoading}
-							sx={{
-								minWidth: { xs: '100%', md: 180 },
-								flexShrink: 0,
-								px: 2,
-								py: 1,
-								whiteSpace: 'nowrap',
-								'& .MuiButton-startIcon': { ml: 0, mr: 1 },
-							}}
-						>
-							{t.logistique.chooseFiles}
+						<>
+							<PrimaryLoadingButton
+								buttonText={t.logistique.chooseFiles}
+								size="small"
+								loading={false}
+								active={!isLoading}
+								startIcon={<UploadFileIcon />}
+								onClick={() => inputRef.current?.click()}
+							/>
 							<Box
 								component="input"
 								ref={inputRef}
@@ -250,7 +234,7 @@ export const LogistiqueDocumentsFormCard: FC<LogistiqueDocumentsFormCardProps> =
 								onChange={handleFileChange}
 								sx={fileInputSx}
 							/>
-						</Button>
+						</>
 					</Stack>
 
 					<Box
@@ -339,33 +323,39 @@ export const LogistiqueDocumentsFormCard: FC<LogistiqueDocumentsFormCardProps> =
 											<>
 												{item.currentUrl && !item.file ? (
 													<Tooltip title={t.logistique.downloadDocument}>
-														<IconButton
-															aria-label={t.logistique.downloadDocument}
-															size="small"
-															component="a"
-															href={item.currentUrl}
-															target="_blank"
-															rel="noreferrer"
-															download={filename || undefined}
-															onClick={(event) => event.stopPropagation()}
-														>
-															<DownloadIcon fontSize="small" />
-														</IconButton>
+														<span>
+															<PrimaryAnchorButton
+																buttonText={t.logistique.downloadDocument}
+																size="small"
+																active
+																inverted
+																iconOnly
+																startIcon={<DownloadIcon fontSize="small" />}
+																nextPage={item.currentUrl}
+																target="_blank"
+																rel="noreferrer"
+																download={filename || undefined}
+																onClick={(event) => event.stopPropagation()}
+															/>
+														</span>
 													</Tooltip>
 												) : null}
 												{item.file ? (
 													<Tooltip title={t.common.delete}>
-														<IconButton
+														<PrimaryLoadingButton
+															buttonText={t.common.delete}
 															size="small"
+															loading={false}
+															active={!isLoading}
+															inverted
+															iconOnly
+															startIcon={<ClearIcon fontSize="small" />}
 															color="error"
-															disabled={isLoading}
 															onClick={(event) => {
 																event.stopPropagation();
 																onClearFileAction(item.field);
 															}}
-														>
-															<ClearIcon fontSize="small" />
-														</IconButton>
+														/>
 													</Tooltip>
 												) : null}
 											</>
@@ -427,17 +417,20 @@ export const LogistiqueDocumentsViewCard: FC<LogistiqueDocumentsViewCardProps> =
 										actions={
 											item.currentUrl ? (
 												<Tooltip title={t.logistique.downloadDocument}>
-													<IconButton
-														aria-label={t.logistique.downloadDocument}
-														size="small"
-														component="a"
-														href={item.currentUrl}
-														target="_blank"
-														rel="noreferrer"
-														download={filename || undefined}
-													>
-														<DownloadIcon fontSize="small" />
-													</IconButton>
+													<span>
+														<PrimaryAnchorButton
+															buttonText={t.logistique.downloadDocument}
+															size="small"
+															active
+															inverted
+															iconOnly
+															startIcon={<DownloadIcon fontSize="small" />}
+															nextPage={item.currentUrl}
+															target="_blank"
+															rel="noreferrer"
+															download={filename || undefined}
+														/>
+													</span>
 												</Tooltip>
 											) : null
 										}

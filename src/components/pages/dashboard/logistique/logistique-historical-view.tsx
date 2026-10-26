@@ -8,7 +8,7 @@ import {
 	listReturnUrl,
 	runWithCleanup,
 } from '@/utils/helpers';
-import { type FC, isValidElement, useState } from 'react';
+import { type FC, isValidElement, useState, useRef } from 'react';
 import NextLink from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -17,7 +17,6 @@ import {
 	AccordionSummary,
 	Alert,
 	Box,
-	Button,
 	Card,
 	CardContent,
 	Checkbox,
@@ -66,6 +65,7 @@ import {
 	UploadFile as UploadFileIcon,
 	Warning as WarningIcon,
 } from '@mui/icons-material';
+import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
@@ -132,6 +132,7 @@ import type {
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import SupplierPurchaseSteps from './supplier-purchase-steps';
 import { useLogistiqueEmailPolling } from './use-logistique-email-polling';
+import Controls from '@/styles/dashboard/logistique/logistique-controls.module.sass';
 
 const inputTheme = textInputTheme();
 const getProformaReviewAction = (
@@ -332,6 +333,8 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 	});
 	const [rejectNote, setRejectNote] = useState('');
 	const [processRemark, setProcessRemark] = useState('');
+	const processFileInputRef = useRef<HTMLInputElement>(null);
+	const swiftProofInputRef = useRef<HTMLInputElement>(null);
 	const [processFile, setProcessFile] = useState<File | null>(null);
 	const documentLabels = {
 		titre_importation_file: t.logistique.fieldTitreImportationFile,
@@ -699,14 +702,16 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 							spacing={2}
 							sx={{ justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'center' }}
 						>
-							<Button
-								variant="outlined"
+							<PrimaryLoadingButton
+								buttonText={t.logistique.backToList}
+								size="small"
+								loading={false}
+								active
+								inverted
 								startIcon={<ArrowBackIcon />}
 								onClick={() => router.push(listReturnUrl(`${LOGISTIQUE_LIST}?company_id=${company_id}`))}
-								sx={{ width: isMobile ? '100%' : 'auto' }}
-							>
-								{t.logistique.backToList}
-							</Button>
+								cssClass={Controls.mobileFullWidth}
+							/>
 							{!isLoading && !error && canRead && (
 								<Stack direction="row" sx={{ gap: 1, flexWrap: 'wrap' }}>
 									{viewingCurrentStep &&
@@ -716,58 +721,63 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 										order?.statut_commande_lancement === 'Terminée' &&
 										order.statut_global !== 'Annulé' &&
 										!['Réception locale', 'Livraison client', 'Clôture', 'Annulé'].includes(order.statut) && (
-											<Button
-												variant="outlined"
+											<PrimaryLoadingButton
+												buttonText="Réceptionner le stock"
 												size="small"
+												loading={false}
+												active
+												inverted
 												startIcon={<InventoryIcon />}
 												onClick={() => router.push(`${STOCK_RECEIPTS}?company_id=${company_id}`)}
-											>
-												Réceptionner le stock
-											</Button>
+											/>
 										)}
 									{(canManage || (isOrderResponsible && order?.statut_paiement === 'Non demandé')) &&
 										!isOrderCancelled && (
-											<Button
-												variant="outlined"
+											<PrimaryLoadingButton
+												buttonText={t.common.edit}
 												size="small"
+												loading={false}
+												active
+												inverted
 												startIcon={<EditIcon />}
 												onClick={() => router.push(`${LOGISTIQUE_EDIT(id, company_id)}&etape=${stepKey}`)}
-											>
-												{t.common.edit}
-											</Button>
+											/>
 										)}
 									{canChangeGlobalStatus && order && !isOrderCancelled && (
-										<Button
-											variant="outlined"
-											color="error"
+										<PrimaryLoadingButton
+											buttonText={t.logistique.cancelOrder}
 											size="small"
+											loading={false}
+											active
+											inverted
+											color="error"
 											startIcon={<CloseIcon />}
 											onClick={() => setPendingGlobalStatus('Annulé')}
-										>
-											{t.logistique.cancelOrder}
-										</Button>
+										/>
 									)}
 									{canChangeGlobalStatus && order && isOrderCancelled && (
-										<Button
-											variant="outlined"
-											color="warning"
+										<PrimaryLoadingButton
+											buttonText={t.logistique.reopenOrder}
 											size="small"
+											loading={false}
+											active
+											inverted
+											color="warning"
 											startIcon={<HistoryIcon />}
 											onClick={() => setPendingGlobalStatus('Rouvert')}
-										>
-											{t.logistique.reopenOrder}
-										</Button>
+										/>
 									)}
 									{canDelete && (
-										<Button
-											variant="outlined"
-											color="error"
+										<PrimaryLoadingButton
+											buttonText={t.common.delete}
 											size="small"
+											loading={false}
+											active
+											inverted
+											color="error"
 											startIcon={<DeleteIcon />}
 											onClick={() => setShowDeleteModal(true)}
-										>
-											{t.common.delete}
-										</Button>
+										/>
 									)}
 								</Stack>
 							)}
@@ -1037,29 +1047,29 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 																'& > button': { margin: '0 !important' },
 															}}
 														>
-															<Button
-																variant="outlined"
+															<PrimaryLoadingButton
+																buttonText={t.logistique.updateLaunchStatus}
+																size="small"
+																loading={false}
+																active
+																inverted
 																type="button"
 																startIcon={<EditIcon />}
 																onClick={() => {
 																	setLaunchStatusDraft(order?.statut_commande_lancement ?? 'À lancer');
 																	setShowLaunchStatusModal(true);
 																}}
-																sx={{ maxWidth: '100%', alignSelf: { xs: 'stretch', sm: 'flex-start' } }}
-															>
-																{t.logistique.updateLaunchStatus}
-															</Button>
-															<Button
-																variant="outlined"
-																disabled={isRecordingProformaRequest}
+															/>
+															<PrimaryLoadingButton
+																buttonText={t.logistique.recordProformaRequest}
+																size="small"
 																loading={isRecordingProformaRequest}
+																active={!isRecordingProformaRequest}
+																inverted
 																type="button"
 																startIcon={<RequestQuoteIcon />}
 																onClick={() => setShowProformaRequestModal(true)}
-																sx={{ maxWidth: '100%', alignSelf: { xs: 'stretch', sm: 'flex-start' } }}
-															>
-																{t.logistique.recordProformaRequest}
-															</Button>
+															/>
 														</Stack>
 													)}
 												</Stack>
@@ -1193,17 +1203,16 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 														order?.is_launch_step_complete &&
 														!order?.is_proforma_step_complete && (
 															<Box sx={{ alignSelf: { xs: 'stretch', sm: 'flex-start' } }}>
-																<Button
-																	variant="outlined"
-																	disabled={isReviewingSupplierProforma}
+																<PrimaryLoadingButton
+																	buttonText={t.logistique.reviewSupplierProforma}
+																	size="small"
 																	loading={isReviewingSupplierProforma}
+																	active={!isReviewingSupplierProforma}
+																	inverted
 																	type="button"
 																	startIcon={<DescriptionIcon />}
 																	onClick={openSupplierProformaReview}
-																	sx={{ maxWidth: '100%', alignSelf: { xs: 'stretch', sm: 'flex-start' } }}
-																>
-																	{t.logistique.reviewSupplierProforma}
-																</Button>
+																/>
 															</Box>
 														)}
 												</Stack>
@@ -1390,13 +1399,15 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 															}
 															action={
 																isOrderResponsible && order.statut_paiement === 'En attente' ? (
-																	<Button
+																	<PrimaryLoadingButton
+																		buttonText={t.logistique.retryPaymentEmail}
+																		size="small"
+																		loading={false}
+																		active={!isRetryingPaymentEmail}
+																		inverted
 																		color="inherit"
-																		disabled={isRetryingPaymentEmail}
 																		onClick={handleRetryPaymentEmail}
-																	>
-																		{t.logistique.retryPaymentEmail}
-																	</Button>
+																	/>
 																) : undefined
 															}
 														>
@@ -1411,15 +1422,16 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 														order?.is_proforma_step_complete &&
 														order?.statut_paiement === 'Non demandé' && (
 															<Box sx={{ alignSelf: { xs: 'stretch', sm: 'flex-start' } }}>
-																<Button
-																	variant="outlined"
+																<PrimaryLoadingButton
+																	buttonText={t.logistique.requestPayment}
+																	size="small"
+																	loading={false}
+																	active
+																	inverted
 																	type="button"
 																	startIcon={<PaymentIcon />}
 																	onClick={openPaymentRequest}
-																	sx={{ maxWidth: '100%', alignSelf: { xs: 'stretch', sm: 'flex-start' } }}
-																>
-																	{t.logistique.requestPayment}
-																</Button>
+																/>
 															</Box>
 														)}
 													{isOrderResponsible &&
@@ -1498,39 +1510,46 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 																			<Stack direction={{ xs: 'column', sm: 'row' }} sx={{ gap: 1, flexWrap: 'wrap' }}>
 																				{canProcessAssignedPayment &&
 																					installment.statut_traitement === 'Paiement à traiter' && (
-																						<Button
-																							variant="outlined"
+																						<PrimaryLoadingButton
+																							buttonText={t.logistique.startPayment}
+																							size="small"
+																							loading={false}
+																							active
+																							inverted
 																							startIcon={<PaymentIcon />}
 																							onClick={() => handleStartPayment(installment)}
-																						>
-																							{t.logistique.startPayment}
-																						</Button>
+																						/>
 																					)}
 																				{canProcessAssignedPayment &&
 																					installment.statut_traitement === 'Paiement en cours' && (
-																						<Button
-																							variant="outlined"
+																						<PrimaryLoadingButton
+																							buttonText={t.logistique.recordPaymentExecution}
+																							size="small"
+																							loading={false}
+																							active
+																							inverted
 																							startIcon={<EditIcon />}
 																							onClick={() => openPaymentExecution(installment)}
-																						>
-																							{t.logistique.recordPaymentExecution}
-																						</Button>
+																						/>
 																					)}
 																				{canProcessAssignedPayment &&
 																					installment.statut_traitement ===
 																						'Paiement effectué – Justificatif à joindre' && (
-																						<Button
-																							variant="outlined"
+																						<PrimaryLoadingButton
+																							buttonText={t.logistique.validatePayment}
+																							size="small"
+																							loading={false}
+																							active
+																							inverted
 																							startIcon={<UploadFileIcon />}
 																							onClick={() => openPaymentValidation(installment)}
-																						>
-																							{t.logistique.validatePayment}
-																						</Button>
+																						/>
 																					)}
 																				{isOrderResponsible && installment.paiement_valide_le && (
 																					<FormControlLabel
 																						control={
 																							<Checkbox
+																								size="small"
 																								checked={installment.preuve_email_statut === 'Envoyé'}
 																								disabled={isUpdatingProofEmail}
 																								onChange={(event) =>
@@ -1545,13 +1564,15 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 																					installment.preuve_email_statut === 'Envoyé' &&
 																					installment.preuve_envoyee_fournisseur_le &&
 																					!installment.reception_confirmee_le && (
-																						<Button
-																							variant="outlined"
+																						<PrimaryLoadingButton
+																							buttonText={t.logistique.confirmSupplierReceipt}
+																							size="small"
+																							loading={false}
+																							active
+																							inverted
 																							startIcon={<CheckCircleIcon />}
 																							onClick={() => handleConfirmReceipt(installment)}
-																						>
-																							{t.logistique.confirmSupplierReceipt}
-																						</Button>
+																						/>
 																					)}
 																			</Stack>
 																		</Stack>
@@ -1565,26 +1586,27 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 														)}
 													</Stack>
 													{canProcessAssignedPayment && order?.statut_paiement === 'En attente' && (
-														<Button
+														<PrimaryLoadingButton
+															buttonText={t.logistique.blockPayment}
+															size="small"
+															loading={false}
+															active
+															inverted
 															color="error"
-															variant="outlined"
 															startIcon={<CloseIcon />}
 															onClick={() => setShowRejectModal(true)}
-															sx={{ alignSelf: 'flex-start' }}
-														>
-															{t.logistique.blockPayment}
-														</Button>
+														/>
 													)}
 													{canStartSupplierPreparation && (
-														<Button
-															variant="outlined"
+														<PrimaryLoadingButton
+															buttonText={t.logistique.startSupplierPreparation}
+															size="small"
+															loading={false}
+															active={!isChangingWorkflowStatus}
+															inverted
 															startIcon={<InventoryIcon />}
-															disabled={isChangingWorkflowStatus}
 															onClick={handleStartSupplierPreparation}
-															sx={{ alignSelf: 'flex-start' }}
-														>
-															{t.logistique.startSupplierPreparation}
-														</Button>
+														/>
 													)}
 												</Stack>
 											</DetailSection>
@@ -1837,6 +1859,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 																placeholder={t.logistique.placeholders.process_remark}
 																id="process_remark"
 																type="textarea"
+																minRows={3}
 																label="Remarque"
 																value={processRemark}
 																onChange={(event) => setProcessRemark(event.target.value)}
@@ -1846,22 +1869,31 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 																startIcon={<NotesIcon fontSize="small" />}
 															/>
 															<Stack spacing={1} sx={{ minWidth: 210 }}>
-																<Button component="label" variant="outlined" startIcon={<UploadFileIcon />}>
-																	{processFile?.name || 'Joindre un fichier'}
+																<>
+																	<PrimaryLoadingButton
+																		buttonText={processFile?.name || 'Joindre un fichier'}
+																		size="small"
+																		loading={false}
+																		active
+																		inverted
+																		startIcon={<UploadFileIcon />}
+																		onClick={() => processFileInputRef.current?.click()}
+																	/>
 																	<input
+																		ref={processFileInputRef}
 																		type="file"
 																		hidden
 																		accept={acceptedDocumentTypes}
 																		onChange={(event) => setProcessFile(event.target.files?.[0] ?? null)}
 																	/>
-																</Button>
-																<Button
-																	variant="contained"
-																	disabled={!processRemark.trim() || isAddingProcessNote}
+																</>
+																<PrimaryLoadingButton
+																	buttonText="Ajouter"
+																	size="small"
+																	loading={false}
+																	active={!!processRemark.trim() && !isAddingProcessNote}
 																	onClick={handleAddProcessNote}
-																>
-																	Ajouter
-																</Button>
+																/>
 															</Stack>
 														</Box>
 													)}
@@ -2217,6 +2249,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 									placeholder={t.logistique.placeholders.conditions_paiement_proforma}
 									id="conditions_paiement_proforma"
 									type="textarea"
+									minRows={3}
 									label={t.logistique.fieldConditionsPaiement}
 									value={supplierProformaData.conditions_paiement}
 									onChange={(event) =>
@@ -2246,6 +2279,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 									<FormControlLabel
 										control={
 											<Checkbox
+												size="small"
 												checked={supplierProformaData.ecart_prix_proforma}
 												onChange={(event) =>
 													setSupplierProformaData((prev) => ({
@@ -2260,6 +2294,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 									<FormControlLabel
 										control={
 											<Checkbox
+												size="small"
 												checked={supplierProformaData.ecart_quantite_proforma}
 												onChange={(event) =>
 													setSupplierProformaData((prev) => ({
@@ -2274,6 +2309,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 									<FormControlLabel
 										control={
 											<Checkbox
+												size="small"
 												checked={supplierProformaData.ecart_autre_proforma}
 												onChange={(event) =>
 													setSupplierProformaData((prev) => ({
@@ -2292,6 +2328,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 										id="notes_ecarts_proforma"
 										disabled={!hasProformaVariance}
 										type="textarea"
+										minRows={3}
 										label={t.logistique.fieldVarianceNotes}
 										value={supplierProformaData.notes_ecarts_proforma}
 										onChange={(event) =>
@@ -2369,7 +2406,22 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 												)
 											}
 											format="dd/MM/yyyy"
-											slotProps={{ textField: { size: 'small', fullWidth: true, required: true } }}
+											slotProps={{
+												textField: {
+													size: 'small',
+													fullWidth: true,
+													required: true,
+													slotProps: {
+														input: {
+															startAdornment: (
+																<InputAdornment position="start">
+																	<CalendarTodayIcon fontSize="small" color="action" />
+																</InputAdornment>
+															),
+														},
+													},
+												},
+											}}
 										/>
 										<FormattedNumberInput
 											placeholder={t.logistique.placeholders.pourcentage}
@@ -2390,29 +2442,33 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 											theme={inputTheme}
 											required
 										/>
-										<Button
+										<PrimaryLoadingButton
+											buttonText={t.common.delete}
+											size="small"
+											loading={false}
+											active={!(paymentSchedule.length === 1)}
+											inverted
+											iconOnly
+											startIcon={<DeleteIcon />}
 											color="error"
-											variant="outlined"
 											aria-label={t.common.delete}
 											onClick={() =>
 												setPaymentSchedule((previous) => previous.filter((_, rowIndex) => rowIndex !== index))
 											}
-											disabled={paymentSchedule.length === 1}
-										>
-											<DeleteIcon />
-										</Button>
+										/>
 									</Box>
 								))}
-								<Button
-									variant="outlined"
+								<PrimaryLoadingButton
+									buttonText={t.logistique.addInstallment}
+									size="small"
+									loading={false}
+									active
+									inverted
 									startIcon={<AddIcon />}
 									onClick={() =>
 										setPaymentSchedule((previous) => [...previous, { date_echeance: '', pourcentage: '' }])
 									}
-									sx={{ alignSelf: 'flex-start' }}
-								>
-									{t.logistique.addInstallment}
-								</Button>
+								/>
 								<Alert severity={hasCompletePaymentSchedule ? 'success' : 'warning'}>
 									{t.logistique.scheduleTotal(formatNumberWithSpaces(scheduledPercentage, 2))}
 								</Alert>
@@ -2546,6 +2602,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 										placeholder={t.logistique.placeholders.commentaire_paiement}
 										id="commentaire_paiement"
 										type="textarea"
+										minRows={3}
 										label={t.logistique.fieldCommentairePaiement}
 										value={paymentData.commentaire_paiement}
 										onChange={(event) =>
@@ -2591,21 +2648,22 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 							<Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, p: 2, mt: 2 }}>
 								<input
 									id="swift-proof-file"
+									ref={swiftProofInputRef}
 									type="file"
 									accept={acceptedDocumentTypes}
 									hidden
 									onChange={(event) => setSwiftProofFile(event.target.files?.[0] ?? null)}
 								/>
 								<Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
-									<Button
-										component="label"
-										htmlFor="swift-proof-file"
-										variant="outlined"
+									<PrimaryLoadingButton
+										buttonText={swiftProofFile ? t.logistique.replaceDocument : t.logistique.uploadDocument}
 										size="small"
+										loading={false}
+										active
+										inverted
 										startIcon={<UploadFileIcon />}
-									>
-										{swiftProofFile ? t.logistique.replaceDocument : t.logistique.uploadDocument}
-									</Button>
+										onClick={() => swiftProofInputRef.current?.click()}
+									/>
 									<Typography variant="body2" color="text.secondary" sx={{ overflowWrap: 'anywhere' }}>
 										{swiftProofFile
 											? `${t.logistique.selectedFile}: ${swiftProofFile.name}`
@@ -2642,6 +2700,7 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 								placeholder={t.logistique.placeholders.reject_note}
 								id="reject_note"
 								type="textarea"
+								minRows={3}
 								label={t.reglements.fieldObservations}
 								value={rejectNote}
 								onChange={(event) => setRejectNote(event.target.value)}

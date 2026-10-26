@@ -37,3 +37,45 @@
 @media #{$mobile}
   .primaryButtonDisabled
     width: 100% !important
+
+// Compact actions reuse the same typography, shape and theme as form submission.
+.primaryButtonDisabled.compact
+  width: auto !important
+  max-width: 100%
+  min-width: 0
+  min-height: 32px
+  height: auto !important
+  padding: 5px 12px !important
+  margin: 0 !important
+  font-size: 13px !important
+  line-height: 1.5
+  flex-shrink: 0
+  align-self: flex-start
+
+.primaryButtonDisabled.iconOnly
+  width: 32px !important
+  height: 32px !important
+  min-width: 32px
+  padding: 6px !important
+  margin: 0 !important
+  flex-shrink: 0
+
+.primaryButtonInverse.compact
+  border-width: 1px !important
+  &:hover
+    background-color: var(--app-soft-hover) !important
+    color: var(--button-tone, #{$primary}) !important
+
+.primaryButtonDisabled.error
+  --button-tone: var(--app-error)
+
+.primaryButtonDisabled.warning
+  --button-tone: var(--app-warm-text)
+
+.primaryButtonInverse.error, .primaryButtonInverse.warning
+  color: var(--button-tone) !important
+  border-color: var(--button-tone) !important
+
+.primaryButtonActive.error, .primaryButtonActive.warning
+  background-color: var(--button-tone) !important
+  color: var(--app-on-solid) !important

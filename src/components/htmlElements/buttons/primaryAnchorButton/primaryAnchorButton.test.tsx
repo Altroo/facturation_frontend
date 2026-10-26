@@ -35,3 +35,26 @@ describe('PrimaryAnchorButton', () => {
 		expect(link).toHaveAttribute('href', '/dashboard');
 	});
 });
+
+it('preserves external download attributes and an accessible name for compact icon links', () => {
+	render(
+		<PrimaryAnchorButton
+			buttonText="Télécharger"
+			nextPage="/documents/titre.pdf"
+			active
+			size="small"
+			iconOnly
+			inverted
+			startIcon={<span aria-hidden>↓</span>}
+			target="_blank"
+			rel="noreferrer"
+			download="titre.pdf"
+		/>,
+	);
+	const link = screen.getByRole('link', { name: 'Télécharger' });
+	expect(link).toHaveAttribute('href', '/documents/titre.pdf');
+	expect(link).toHaveAttribute('target', '_blank');
+	expect(link).toHaveAttribute('rel', 'noreferrer');
+	expect(link).toHaveAttribute('download', 'titre.pdf');
+	expect(screen.getByRole('button', { name: 'Télécharger' })).toBeEnabled();
+});

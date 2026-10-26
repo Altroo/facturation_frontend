@@ -29,3 +29,28 @@
 @media #{$mobile}
   .primaryButtonDisabled
     width: 100% !important
+
+.primaryButtonInverse
+  background-color: $surface !important
+  color: $primary !important
+  border: 1px solid $primary !important
+  &:hover
+    background-color: var(--app-soft-hover) !important
+
+.primaryButtonDisabled.compact
+  width: auto !important
+  max-width: 100%
+  min-width: 0
+  height: auto !important
+  min-height: 32px
+  padding: 5px 12px !important
+  margin: 0 !important
+  font-size: 13px !important
+  line-height: 1.5
+
+.primaryButtonDisabled.iconOnly
+  width: 32px !important
+  height: 32px !important
+  min-width: 32px
+  padding: 6px !important
+  margin: 0 !important

@@ -20,21 +20,46 @@ const PrimaryAnchorButton = ({
 	shallow,
 	replace,
 	type,
+	size = 'medium',
+	iconOnly,
+	inverted,
+	target,
+	rel,
+	download,
 }: Props) => {
 	return (
-		<Link href={nextPage} className={anchorcssClass} scroll={scroll} shallow={shallow} replace={replace} ref={ref}>
+		<Link
+			href={nextPage}
+			className={anchorcssClass}
+			scroll={scroll}
+			shallow={shallow}
+			replace={replace}
+			ref={ref}
+			target={target}
+			rel={rel}
+			download={download}
+			aria-label={iconOnly ? buttonText : undefined}
+		>
 			<ThemeProvider theme={getDefaultTheme()}>
 				<Button
 					onClick={onClick}
-					className={[Styles.primaryButtonDisabled, active ? Styles.primaryButtonActive : '', cssClass ?? '']
+					className={[
+						Styles.primaryButtonDisabled,
+						active ? (inverted ? Styles.primaryButtonInverse : Styles.primaryButtonActive) : '',
+						size === 'small' ? Styles.compact : '',
+						iconOnly ? Styles.iconOnly : '',
+						cssClass ?? '',
+					]
 						.filter(Boolean)
 						.join(' ')}
 					disabled={!active}
 					type={type}
 					color="primary"
-					startIcon={startIcon}
+					size={size}
+					aria-label={iconOnly ? buttonText : undefined}
+					startIcon={iconOnly ? undefined : startIcon}
 				>
-					{buttonText}
+					{iconOnly ? startIcon : buttonText}
 				</Button>
 			</ThemeProvider>
 		</Link>

@@ -3,7 +3,7 @@
 import { extractApiErrorMessage, formatDate, formatNumberWithSpaces, runWithCleanup } from '@/utils/helpers';
 import { type FC, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Button, Chip, Typography } from '@mui/material';
+import { Box, Chip, Typography } from '@mui/material';
 import {
 	Add as AddIcon,
 	Close as CloseIcon,
@@ -12,6 +12,7 @@ import {
 	Visibility as VisibilityIcon,
 } from '@mui/icons-material';
 import { GridColDef, GridFilterModel, GridLogicOperator, GridRenderCellParams } from '@mui/x-data-grid';
+import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
@@ -378,34 +379,25 @@ const FormikContent: FC<FormikContentProps> = ({ session, company_id, role }) =>
 						flexWrap: 'wrap',
 					}}
 				>
-					<Button
-						variant="contained"
+					<PrimaryLoadingButton
+						buttonText={t.logistique.newOrder}
+						size="small"
+						loading={false}
+						active
 						onClick={() => router.push(LOGISTIQUE_ADD(company_id))}
-						sx={{
-							whiteSpace: 'nowrap',
-							px: { xs: 1.5, sm: 2, md: 3 },
-							py: { xs: 0.8, sm: 1, md: 1 },
-							fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
-						}}
 						startIcon={<AddIcon fontSize="small" />}
-					>
-						{t.logistique.newOrder}
-					</Button>
+					/>
 					{canDelete && selectedIds.length > 0 && (
-						<Button
-							variant="outlined"
+						<PrimaryLoadingButton
+							buttonText={t.logistique.bulkDeleteBtn(selectedIds.length)}
+							size="small"
+							loading={false}
+							active
+							inverted
 							color="error"
 							startIcon={<DeleteIcon fontSize="small" />}
 							onClick={() => setShowBulkDeleteModal(true)}
-							sx={{
-								whiteSpace: 'nowrap',
-								px: { xs: 1.5, sm: 2, md: 3 },
-								py: { xs: 0.8, sm: 1, md: 1 },
-								fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
-							}}
-						>
-							{t.logistique.bulkDeleteBtn(selectedIds.length)}
-						</Button>
+						/>
 					)}
 				</Box>
 			)}

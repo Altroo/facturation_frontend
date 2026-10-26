@@ -7,13 +7,11 @@ import { toFormikValidationSchema } from 'zod-formik-adapter';
 import {
 	Alert,
 	Box,
-	Button,
 	Card,
 	CardContent,
 	Checkbox,
 	Divider,
 	FormControlLabel,
-	IconButton,
 	InputAdornment,
 	Stack,
 	Typography,
@@ -93,6 +91,7 @@ import type { PurchaseFormMode, PurchaseFormValues } from '@/types/supplierPurch
 import type { LogistiqueDocumentField, LogistiqueFormProps, LogistiqueOrder } from '@/types/logistiqueTypes';
 import type { DropDownType } from '@/types/accountTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
+import Controls from '@/styles/dashboard/logistique/logistique-controls.module.sass';
 
 const inputTheme = textInputTheme();
 const titles: Record<PurchaseFormMode, string> = {
@@ -216,7 +215,14 @@ export default function SupplierPurchaseForm(props: LogistiqueFormProps) {
 					) : error ? (
 						<Alert severity="error">
 							{extractApiErrorMessage(error, 'Impossible de charger le dossier.')}
-							<Button onClick={() => refetch()}>Réessayer</Button>
+							<PrimaryLoadingButton
+								buttonText="Réessayer"
+								size="small"
+								loading={false}
+								active
+								inverted
+								onClick={() => refetch()}
+							/>
 						</Alert>
 					) : !canAccess || (props.id && !order) ? (
 						<NoPermission />
@@ -901,6 +907,7 @@ function PurchaseFormik({
 			label={label}
 			control={
 				<Checkbox
+					size="small"
 					checked={!!formik.values[name]}
 					disabled={disabled}
 					onChange={(_, checked) => formik.setFieldValue(name, checked)}
@@ -1127,30 +1134,34 @@ function PurchaseFormik({
 										theme={inputTheme}
 										startIcon={<Inventory fontSize="small" />}
 										endIcon={
-											<Button
+											<PrimaryLoadingButton
+												buttonText={t.common.add}
 												size="small"
-												variant="outlined"
-												disabled={disabled}
+												loading={false}
+												active={!disabled}
+												inverted
 												onClick={() => void addNewArticle()}
-												sx={{ ml: 1 }}
-											>
-												{t.common.add}
-											</Button>
+												cssClass={Controls.inlineAction}
+											/>
 										}
 										noOptionsText={loadingArticles ? 'Recherche en cours…' : 'Aucun article trouvé'}
 									/>
-									<IconButton
+									<PrimaryLoadingButton
+										buttonText={`Retirer l’article ${index + 1}`}
+										size="small"
+										loading={false}
+										active={!disabled}
+										inverted
+										iconOnly
+										startIcon={<Delete fontSize="small" />}
 										aria-label={`Retirer l’article ${index + 1}`}
-										disabled={disabled}
 										onClick={() =>
 											formik.setFieldValue(
 												'lignes',
 												formik.values.lignes.filter((_, position) => position !== index),
 											)
 										}
-									>
-										<Delete fontSize="small" />
-									</IconButton>
+									/>
 								</Stack>
 								<Box sx={grid}>
 									{number(`lignes.${index}.quantity`, 'Quantité achetée', <Inventory fontSize="small" />, 3, true)}
@@ -1184,10 +1195,13 @@ function PurchaseFormik({
 						</Alert>,
 					)}
 				{full(
-					<Button
-						variant="outlined"
+					<PrimaryLoadingButton
+						buttonText="Ajouter un article"
+						size="small"
+						loading={false}
+						active={!disabled}
+						inverted
 						startIcon={<Add />}
-						disabled={disabled}
 						onClick={() =>
 							formik.setFieldValue('lignes', [
 								...formik.values.lignes,
@@ -1201,9 +1215,7 @@ function PurchaseFormik({
 								},
 							])
 						}
-					>
-						Ajouter un article
-					</Button>,
+					/>,
 				)}
 			</FormCard>,
 		);
@@ -1546,23 +1558,27 @@ function PurchaseFormik({
 	return (
 		<Stack spacing={3} sx={{ p: { xs: 2, md: 3 }, width: '100%' }}>
 			<Stack direction={isMobile ? 'column' : 'row'} spacing={2} sx={{ pt: 2, justifyContent: 'space-between' }}>
-				<Button
-					variant="outlined"
+				<PrimaryLoadingButton
+					buttonText="Retour à la liste"
+					size="small"
+					loading={false}
+					active
+					inverted
 					startIcon={<ArrowBack />}
 					onClick={() => router.push(listReturnUrl(`${LOGISTIQUE_LIST}?company_id=${company_id}`))}
-					sx={{ width: isMobile ? '100%' : 'auto' }}
-				>
-					Retour à la liste
-				</Button>
+					cssClass={Controls.mobileFullWidth}
+				/>
 				{id && (
-					<Button
-						variant="outlined"
+					<PrimaryLoadingButton
+						buttonText="Retour au dossier"
+						size="small"
+						loading={false}
+						active
+						inverted
 						startIcon={<ArrowBack />}
 						onClick={() => router.push(LOGISTIQUE_VIEW(id, company_id))}
-						sx={{ width: isMobile ? '100%' : 'auto' }}
-					>
-						Retour au dossier
-					</Button>
+						cssClass={Controls.mobileFullWidth}
+					/>
 				)}
 			</Stack>
 			{id && (

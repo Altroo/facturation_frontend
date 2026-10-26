@@ -21,6 +21,7 @@ import type {
 } from 'react';
 import type { SxProps } from '@mui/system';
 import type { Theme } from '@mui/material/styles';
+import type { ButtonProps } from '@mui/material/Button';
 import type { TextFieldProps } from '@mui/material/TextField';
 import type { AutocompleteValue } from '@mui/material/useAutocomplete';
 import type { DropDownType } from '@/types/accountTypes';
@@ -221,7 +222,7 @@ export type PrimaryAnchorButtonProps = {
 	active: boolean;
 	nextPage: string | UrlObject;
 	startIcon?: ReactNode;
-	onClick?: () => void;
+	onClick?: MouseEventHandler<HTMLButtonElement> | (() => void);
 	anchorcssClass?: string;
 	cssClass?: string;
 	scroll?: boolean;
@@ -229,6 +230,12 @@ export type PrimaryAnchorButtonProps = {
 	replace?: boolean;
 	type?: 'submit' | 'reset' | 'button' | undefined;
 	children?: ReactNode;
+	size?: 'small' | 'medium';
+	iconOnly?: boolean;
+	inverted?: boolean;
+	target?: string;
+	rel?: string;
+	download?: string | boolean;
 };
 
 export type PrimaryButtonProps = {
@@ -240,16 +247,21 @@ export type PrimaryButtonProps = {
 	children?: ReactNode;
 };
 
-export type PrimaryLoadingButtonProps = {
+export type PrimaryLoadingButtonProps = Omit<
+	ButtonProps,
+	'children' | 'disabled' | 'variant' | 'color' | 'size' | 'onClick'
+> & {
 	buttonText: string;
 	loading: boolean;
 	onClick?: MouseEventHandler<HTMLButtonElement> | (() => void);
 	active?: boolean;
-	type?: 'submit' | 'reset' | 'button' | undefined;
-	startIcon?: ReactNode;
 	cssClass?: string;
 	children?: ReactNode;
 	inverted?: boolean;
+	size?: 'small' | 'medium';
+	color?: 'primary' | 'error' | 'warning' | 'inherit';
+	iconOnly?: boolean;
+	ref?: Ref<HTMLButtonElement>;
 };
 
 export type SquareImageInputFileProps = {
