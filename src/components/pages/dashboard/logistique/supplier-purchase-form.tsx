@@ -1559,14 +1559,6 @@ function PurchaseFormik({
 	return (
 		<Stack spacing={3} sx={{ p: { xs: 2, md: 3 }, width: '100%' }}>
 			<Stack direction={isMobile ? 'column' : 'row'} spacing={2} sx={{ pt: 2, justifyContent: 'space-between' }}>
-				<Button
-					variant="outlined"
-					startIcon={<ArrowBack />}
-					onClick={() => router.push(listReturnUrl(`${LOGISTIQUE_LIST}?company_id=${company_id}`))}
-					sx={{ width: isMobile ? '100%' : 'auto' }}
-				>
-					Retour à la liste
-				</Button>
 				{id && (
 					<Button
 						variant="outlined"
@@ -1577,6 +1569,14 @@ function PurchaseFormik({
 						Retour au dossier
 					</Button>
 				)}
+				<Button
+					variant="outlined"
+					startIcon={<ArrowBack />}
+					onClick={() => router.push(listReturnUrl(`${LOGISTIQUE_LIST}?company_id=${company_id}`))}
+					sx={{ width: isMobile ? '100%' : 'auto' }}
+				>
+					Retour à la liste
+				</Button>
 			</Stack>
 			{id && (
 				<Alert severity="info">
