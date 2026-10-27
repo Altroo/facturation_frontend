@@ -114,6 +114,7 @@ const StockArticleSelect = ({
 			items={items}
 			value={selected?.option ?? null}
 			serverFiltered
+			listboxMaxHeight="min(40vh, 240px)"
 			loading={loading}
 			loadingText="Chargement des articles…"
 			endIcon={

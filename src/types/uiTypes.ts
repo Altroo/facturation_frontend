@@ -63,6 +63,7 @@ export type CustomAutoCompleteSelectProps<Multiple extends boolean = false> = {
 	serverFiltered?: boolean;
 	loading?: boolean;
 	loadingText?: string;
+	listboxMaxHeight?: string;
 	onListboxScroll?: UIEventHandler<HTMLUListElement>;
 	onInputChange?: (event: SyntheticEvent, value: string, reason: string) => void;
 	id: string;

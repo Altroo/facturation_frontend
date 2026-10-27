@@ -22,6 +22,7 @@ const CustomAutoCompleteSelect = <Multiple extends boolean = false>({
 	serverFiltered = false,
 	loading,
 	loadingText,
+	listboxMaxHeight,
 	onListboxScroll,
 	disabled,
 	slotProps,
@@ -62,7 +63,7 @@ const CustomAutoCompleteSelect = <Multiple extends boolean = false>({
 				noOptionsText={noOptionsText}
 				loading={loading}
 				loadingText={loadingText}
-				slotProps={{ listbox: { onScroll: onListboxScroll } }}
+				slotProps={{ listbox: { onScroll: onListboxScroll, sx: { maxHeight: listboxMaxHeight } } }}
 				options={items}
 				getOptionLabel={(option) => (option.archived ? `${option.code} (${t.common.archived})` : option.code)}
 				getOptionKey={(option) => option.value}
