@@ -18,6 +18,7 @@ import type {
 	Ref,
 	SetStateAction,
 	SyntheticEvent,
+	UIEventHandler,
 } from 'react';
 import type { SxProps } from '@mui/system';
 import type { Theme } from '@mui/material/styles';
@@ -60,6 +61,9 @@ export type CustomAutoCompleteSelectProps<Multiple extends boolean = false> = {
 	multiple?: Multiple;
 	placeholder?: string;
 	serverFiltered?: boolean;
+	loading?: boolean;
+	loadingText?: string;
+	onListboxScroll?: UIEventHandler<HTMLUListElement>;
 	onInputChange?: (event: SyntheticEvent, value: string, reason: string) => void;
 	id: string;
 	label: string;

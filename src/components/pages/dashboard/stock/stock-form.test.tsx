@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import { mockSession } from './stock-test-helpers';
+import { mockSession, setMockArticlesLoading } from './stock-test-helpers';
 import StockForm from './stock-form';
 
 describe('StockForm', () => {
@@ -13,5 +13,12 @@ describe('StockForm', () => {
 		expect(screen.getByLabelText('Emplacement')).toBeInTheDocument();
 		expect(screen.getByLabelText('Quantité signée')).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: 'Enregistrer le mouvement' })).toBeInTheDocument();
+	});
+	it('keeps the form visible while article suggestions load', () => {
+		setMockArticlesLoading(true);
+		render(<StockForm session={mockSession} company_id={1} />);
+		expect(screen.getByRole('heading', { name: 'Mouvement de stock' })).toBeInTheDocument();
+		expect(screen.getByLabelText('Quantité signée')).toBeInTheDocument();
+		expect(screen.getByLabelText('Article')).toBeInTheDocument();
 	});
 });

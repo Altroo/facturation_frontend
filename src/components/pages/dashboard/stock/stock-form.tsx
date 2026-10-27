@@ -34,12 +34,11 @@ import FormattedNumberInput from '@/components/formikElements/formattedNumberInp
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import StockFormWrapper from '@/components/pages/dashboard/stock/stock-form-wrapper';
 import StockDisabledState from '@/components/pages/dashboard/stock/stock-disabled-state';
-import { useGetArticlesListQuery } from '@/store/services/article';
+import StockArticleSelect from '@/components/pages/dashboard/stock/stock-article-select';
 import { useGetCompanyQuery } from '@/store/services/company';
 import { useGetEmplacementListQuery } from '@/store/services/parameter';
 import { useCreateStockAdjustmentMutation, useGetStockBalanceQuery } from '@/store/services/stock';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
-import type { ArticleClass } from '@/models/classes';
 import type { DropDownType } from '@/types/accountTypes';
 import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import type { StockAdjustmentFormValues, StockFormContentProps, StockFormProps } from '@/types/stockTypes';
@@ -69,14 +68,6 @@ const StockFormContent: FC<StockFormContentProps> = ({ token, company_id, balanc
 		error: balanceError,
 	} = useGetStockBalanceQuery({ company_id, id: balance_id ?? 0 }, { skip: !token || !balance_id });
 	const {
-		data: articlesRaw,
-		isLoading: articlesLoading,
-		error: articlesError,
-	} = useGetArticlesListQuery(
-		{ company_id, with_pagination: false, archived: false },
-		{ skip: !token || company?.stock_management_enabled !== true },
-	);
-	const {
 		data: emplacements = [],
 		isLoading: emplacementsLoading,
 		error: emplacementsError,
@@ -84,13 +75,6 @@ const StockFormContent: FC<StockFormContentProps> = ({ token, company_id, balanc
 	const [createAdjustment, { isLoading: adjustmentLoading, error: adjustmentError }] =
 		useCreateStockAdjustmentMutation();
 
-	const articles = ((Array.isArray(articlesRaw) ? articlesRaw : articlesRaw?.results) ?? []).filter(
-		(item: Partial<ArticleClass>) => item.type_article === 'Produit',
-	);
-	const articleItems = articles.map((article: Partial<ArticleClass>) => ({
-		value: String(article.id),
-		code: `${article.reference} — ${article.designation}`,
-	})) as DropDownType[];
 	const emplacementItems = emplacements.map((location) => ({
 		value: String(location.id),
 		code: location.nom,
@@ -139,7 +123,6 @@ const StockFormContent: FC<StockFormContentProps> = ({ token, company_id, balanc
 	const selectedMovementType =
 		stockAdjustmentMovementItems.find((item) => item.value === formik.values.movement_type) ??
 		stockAdjustmentMovementItems[0];
-	const selectedArticle = articleItems.find((item) => item.value === String(formik.values.article)) ?? null;
 	const selectedEmplacement = emplacementItems.find((item) => item.value === String(formik.values.emplacement)) ?? null;
 	const fieldLabels = {
 		movement_type: 'Type de mouvement',
@@ -154,10 +137,9 @@ const StockFormContent: FC<StockFormContentProps> = ({ token, company_id, balanc
 			Object.entries(formik.errors).filter(([key, value]) => key !== 'globalError' && typeof value === 'string'),
 		) as Record<string, string>;
 	})();
-	const error = companyError || balanceError || articlesError || emplacementsError || adjustmentError;
+	const error = companyError || balanceError || emplacementsError || adjustmentError;
 	const axiosError = error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined;
-	const isLoading =
-		companyLoading || balanceLoading || articlesLoading || emplacementsLoading || adjustmentLoading || isPending;
+	const isLoading = companyLoading || balanceLoading || emplacementsLoading || adjustmentLoading || isPending;
 	const shouldShowError = (axiosError?.status ?? 0) > 400 && !isLoading;
 
 	return (
@@ -229,29 +211,21 @@ const StockFormContent: FC<StockFormContentProps> = ({ token, company_id, balanc
 										startIcon={<SwapVertIcon fontSize="small" />}
 										required
 									/>
-									<CustomAutoCompleteSelect
-										id="article"
-										label="Article"
-										items={articleItems}
-										value={selectedArticle}
-										onChange={(_, value) => {
-											const articleId = value ? Number(value.value) : null;
-											const article = articles.find((item: Partial<ArticleClass>) => item.id === articleId);
+									<StockArticleSelect
+										key={company_id}
+										company_id={company_id}
+										enabled={Boolean(token) && company?.stock_management_enabled === true}
+										value={formik.values.article}
+										onChange={(article) => {
 											void formik.setValues((values) => ({
 												...values,
-												article: articleId,
+												article: article?.id ?? null,
 												emplacement: article?.emplacement ?? null,
 											}));
 										}}
 										onBlur={formik.handleBlur('article')}
 										error={formik.touched.article && Boolean(formik.errors.article)}
 										helperText={formik.touched.article ? formik.errors.article : ''}
-										noOptionsText="Aucun article"
-										fullWidth
-										size="small"
-										theme={theme}
-										startIcon={<Inventory2Icon fontSize="small" />}
-										required
 									/>
 									<CustomAutoCompleteSelect
 										id="emplacement"

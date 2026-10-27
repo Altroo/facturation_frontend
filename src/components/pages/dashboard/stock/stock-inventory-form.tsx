@@ -19,7 +19,6 @@ import {
 	Add as AddIcon,
 	ArrowBack as ArrowBackIcon,
 	FactCheck as FactCheckIcon,
-	Inventory2 as Inventory2Icon,
 	LocationOn as LocationOnIcon,
 	Notes as NotesIcon,
 	Numbers as NumbersIcon,
@@ -36,12 +35,11 @@ import FormattedNumberInput from '@/components/formikElements/formattedNumberInp
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import StockFormWrapper from '@/components/pages/dashboard/stock/stock-form-wrapper';
 import StockDisabledState from '@/components/pages/dashboard/stock/stock-disabled-state';
-import { useGetArticlesListQuery } from '@/store/services/article';
+import StockArticleSelect from '@/components/pages/dashboard/stock/stock-article-select';
 import { useGetCompanyQuery } from '@/store/services/company';
 import { useGetEmplacementListQuery } from '@/store/services/parameter';
 import { useCreateInventoryMutation, useValidateInventoryMutation } from '@/store/services/stock';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
-import type { ArticleClass } from '@/models/classes';
 import type { DropDownType } from '@/types/accountTypes';
 import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import type {
@@ -69,14 +67,6 @@ const StockInventoryFormContent: FC<StockInventoryFormContentProps> = ({ token, 
 		error: companyError,
 	} = useGetCompanyQuery({ id: company_id }, { skip: !token });
 	const {
-		data: articlesRaw,
-		isLoading: articlesLoading,
-		error: articlesError,
-	} = useGetArticlesListQuery(
-		{ company_id, with_pagination: false, archived: false },
-		{ skip: !token || company?.stock_management_enabled !== true || company?.inventory_management_enabled !== true },
-	);
-	const {
 		data: emplacements = [],
 		isLoading: emplacementsLoading,
 		error: emplacementsError,
@@ -87,13 +77,6 @@ const StockInventoryFormContent: FC<StockInventoryFormContentProps> = ({ token, 
 	const [createInventory, { isLoading: createLoading, error: createError }] = useCreateInventoryMutation();
 	const [validateInventory, { isLoading: validateLoading, error: validateError }] = useValidateInventoryMutation();
 
-	const articles = ((Array.isArray(articlesRaw) ? articlesRaw : articlesRaw?.results) ?? []).filter(
-		(item: Partial<ArticleClass>) => item.type_article === 'Produit',
-	);
-	const articleItems = articles.map((article: Partial<ArticleClass>) => ({
-		value: String(article.id),
-		code: `${article.reference} — ${article.designation}`,
-	})) as DropDownType[];
 	const emplacementItems = emplacements.map((location) => ({
 		value: String(location.id),
 		code: location.nom,
@@ -145,7 +128,6 @@ const StockInventoryFormContent: FC<StockInventoryFormContentProps> = ({ token, 
 		},
 	});
 
-	const selectedArticle = articleItems.find((item) => item.value === String(formik.values.article)) ?? null;
 	const selectedEmplacement = emplacementItems.find((item) => item.value === String(formik.values.emplacement)) ?? null;
 	const fieldLabels = {
 		article: 'Article',
@@ -160,10 +142,9 @@ const StockInventoryFormContent: FC<StockInventoryFormContentProps> = ({ token, 
 			Object.entries(formik.errors).filter(([key, value]) => key !== 'globalError' && typeof value === 'string'),
 		) as Record<string, string>;
 	})();
-	const error = companyError || articlesError || emplacementsError || createError || validateError;
+	const error = companyError || emplacementsError || createError || validateError;
 	const axiosError = error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined;
-	const isLoading =
-		companyLoading || articlesLoading || emplacementsLoading || createLoading || validateLoading || isPending;
+	const isLoading = companyLoading || emplacementsLoading || createLoading || validateLoading || isPending;
 	const shouldShowError = (axiosError?.status ?? 0) > 400 && !isLoading;
 
 	return (
@@ -223,29 +204,25 @@ const StockInventoryFormContent: FC<StockInventoryFormContentProps> = ({ token, 
 								</Stack>
 								<Divider sx={{ mb: 3 }} />
 								<Stack spacing={2.5}>
-									<CustomAutoCompleteSelect
-										id="article"
-										label="Article"
-										items={articleItems}
-										value={selectedArticle}
-										onChange={(_, value) => {
-											const articleId = value ? Number(value.value) : null;
-											const article = articles.find((item: Partial<ArticleClass>) => item.id === articleId);
+									<StockArticleSelect
+										key={company_id}
+										company_id={company_id}
+										enabled={
+											Boolean(token) &&
+											company?.stock_management_enabled === true &&
+											company?.inventory_management_enabled === true
+										}
+										value={formik.values.article}
+										onChange={(article) => {
 											void formik.setValues((values) => ({
 												...values,
-												article: articleId,
+												article: article?.id ?? null,
 												emplacement: article?.emplacement ?? null,
 											}));
 										}}
 										onBlur={formik.handleBlur('article')}
 										error={formik.touched.article && Boolean(formik.errors.article)}
 										helperText={formik.touched.article ? formik.errors.article : ''}
-										noOptionsText="Aucun article"
-										fullWidth
-										size="small"
-										theme={theme}
-										startIcon={<Inventory2Icon fontSize="small" />}
-										required
 									/>
 									<CustomAutoCompleteSelect
 										id="emplacement"

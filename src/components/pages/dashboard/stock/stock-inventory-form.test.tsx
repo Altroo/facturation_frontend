@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import { mockSession, setMockInventoryEnabled } from './stock-test-helpers';
+import { mockSession, setMockArticlesLoading, setMockInventoryEnabled } from './stock-test-helpers';
 import StockInventoryForm from './stock-inventory-form';
 
 describe('StockInventoryForm', () => {
@@ -17,5 +17,12 @@ describe('StockInventoryForm', () => {
 		render(<StockInventoryForm session={mockSession} company_id={1} />);
 		expect(screen.getByText(/Activez-le dans les paramètres de la société/)).toBeInTheDocument();
 		expect(screen.queryByRole('button', { name: 'Enregistrer et valider' })).not.toBeInTheDocument();
+	});
+	it('keeps the form visible while article suggestions load', () => {
+		setMockArticlesLoading(true);
+		render(<StockInventoryForm session={mockSession} company_id={1} />);
+		expect(screen.getByRole('heading', { name: 'Périmètre de l’inventaire' })).toBeInTheDocument();
+		expect(screen.getByLabelText('Quantité comptée')).toBeInTheDocument();
+		expect(screen.getByLabelText('Article')).toBeInTheDocument();
 	});
 });

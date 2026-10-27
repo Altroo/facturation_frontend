@@ -413,21 +413,24 @@ jest.mock('@/store/services/parameter', () => ({
 	useGetEmplacementListQuery: () => ({ data: [{ id: 2, nom: 'Dépôt principal' }], isLoading: false }),
 }));
 
+const mockArticlePage = {
+	count: 1,
+	next: null,
+	previous: null,
+	results: [{ id: 11, reference: 'LAMPE-03', designation: 'Lampe suspendue', type_article: 'Produit', emplacement: 2 }],
+};
+let mockArticlesLoading = false;
+export const setMockArticlesLoading = (loading: boolean) => {
+	mockArticlesLoading = loading;
+};
+
 jest.mock('@/store/services/article', () => ({
 	useGetArticlesListQuery: () => ({
-		data: {
-			results: [
-				{
-					id: 11,
-					reference: 'LAMPE-03',
-					designation: 'Lampe suspendue',
-					type_article: 'Produit',
-					emplacement: 2,
-				},
-			],
-		},
-		isLoading: false,
+		currentData: mockArticlesLoading ? undefined : mockArticlePage,
+		isLoading: mockArticlesLoading,
+		isFetching: mockArticlesLoading,
 	}),
+	useGetArticleQuery: () => ({ isFetching: false }),
 }));
 
 jest.mock('@/store/services/logistique', () => ({
@@ -516,6 +519,7 @@ export const setMockCompanyRole = (role: string) => {
 };
 
 beforeEach(() => {
+	mockArticlesLoading = false;
 	mockInventoryEnabled = true;
 	jest.clearAllMocks();
 	mockListRole = 'Caissier';

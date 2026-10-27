@@ -1,5 +1,7 @@
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import type { ReactNode } from 'react';
+import type { ArticleClass } from '@/models/classes';
+import type { CustomAutoCompleteSelectProps } from '@/types/uiTypes';
 
 export type StockState = 'disponible' | 'minimum' | 'a_approvisionner';
 export type StockMovementType = 'opening' | 'adjustment' | 'receipt' | 'delivery' | 'inventory' | 'reversal';
@@ -189,3 +191,10 @@ export type StockViewInfoRowProps = {
 };
 
 export type StockViewProps = SessionProps & { company_id: number; id: number };
+
+export type StockArticleSelectProps = Pick<CustomAutoCompleteSelectProps, 'onBlur' | 'error' | 'helperText'> & {
+	company_id: number;
+	enabled: boolean;
+	value: number | null;
+	onChange: (article: Partial<ArticleClass> | null) => void;
+};

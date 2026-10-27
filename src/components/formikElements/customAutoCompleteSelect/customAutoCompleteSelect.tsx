@@ -20,6 +20,9 @@ const CustomAutoCompleteSelect = <Multiple extends boolean = false>({
 	onChange,
 	onInputChange,
 	serverFiltered = false,
+	loading,
+	loadingText,
+	onListboxScroll,
 	disabled,
 	slotProps,
 	startIcon,
@@ -57,6 +60,9 @@ const CustomAutoCompleteSelect = <Multiple extends boolean = false>({
 				size={size}
 				fullWidth={fullWidth}
 				noOptionsText={noOptionsText}
+				loading={loading}
+				loadingText={loadingText}
+				slotProps={{ listbox: { onScroll: onListboxScroll } }}
 				options={items}
 				getOptionLabel={(option) => (option.archived ? `${option.code} (${t.common.archived})` : option.code)}
 				getOptionKey={(option) => option.value}
