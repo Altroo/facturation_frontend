@@ -12,7 +12,6 @@ import {
 	Visibility as VisibilityIcon,
 } from '@mui/icons-material';
 import { GridColDef, GridFilterModel, GridLogicOperator, GridRenderCellParams } from '@mui/x-data-grid';
-import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/useDataGridPagination';
@@ -393,16 +392,20 @@ const FormikContent: FC<FormikContentProps> = ({ session, company_id, role }) =>
 						{t.logistique.newOrder}
 					</Button>
 					{canDelete && selectedIds.length > 0 && (
-						<PrimaryLoadingButton
-							buttonText={t.logistique.bulkDeleteBtn(selectedIds.length)}
-							size="small"
-							loading={false}
-							active
-							inverted
+						<Button
+							variant="outlined"
 							color="error"
-							startIcon={<DeleteIcon fontSize="small" />}
 							onClick={() => setShowBulkDeleteModal(true)}
-						/>
+							startIcon={<DeleteIcon fontSize="small" />}
+							sx={{
+								whiteSpace: 'nowrap',
+								px: { xs: 1.5, sm: 2, md: 3 },
+								py: { xs: 0.8, sm: 1, md: 1 },
+								fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
+							}}
+						>
+							{t.logistique.bulkDeleteBtn(selectedIds.length)}
+						</Button>
 					)}
 				</Box>
 			)}
