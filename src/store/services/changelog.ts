@@ -16,7 +16,7 @@ export const changelogApi = createApi({
 	),
 	endpoints: (builder) => ({
 		getChangelog: builder.query<ChangelogEntry[], void>({
-			query: () => ({ url: '/ws/changelog/', method: 'GET' }),
+			query: () => ({ url: '/ws/changelog/', method: 'GET', params: { platform: 'web' } }),
 		}),
 	}),
 });

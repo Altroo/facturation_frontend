@@ -50,6 +50,7 @@ it('shows entries returned by the server', () => {
 				id: 1,
 				date: '2026-10-06',
 				version: '1.0.0',
+				platform: 'web',
 				title_fr: 'Nouvelle fonction',
 				title_en: 'New feature',
 				changes_fr: ['Une nouveauté.'],

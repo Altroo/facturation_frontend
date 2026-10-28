@@ -1,7 +1,7 @@
 'use client';
+
 import { useEffect } from 'react';
 import Styles from '@/styles/dashboard/changelog/changelog.module.sass';
-
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { ChangelogTimeline } from '@/components/changelog/changelogTimeline';
 import { useGetChangelogQuery } from '@/store/services/changelog';

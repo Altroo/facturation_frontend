@@ -7,6 +7,7 @@ const entries: ChangelogEntry[] = [
 		id: 1,
 		date: '2026-09-09',
 		version: '1.0.0',
+		platform: 'web',
 		title_fr: 'Des projets partagés',
 		title_en: 'Shared projects',
 		changes_fr: ['Travaillez ensemble.', 'Ajoutez plusieurs fichiers.'],
