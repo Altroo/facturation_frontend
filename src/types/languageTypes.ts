@@ -686,6 +686,7 @@ export type TranslationDictionary = {
 		supplierPreparationSuccess: string;
 		addTitle: string;
 		editTitle: string;
+		numberPreviewError: string;
 		colNumero: string;
 		colFournisseur: string;
 		colSupplierEmail: string;
@@ -703,6 +704,10 @@ export type TranslationDictionary = {
 		supplierDeleteBody: string;
 		supplierDeleted: string;
 		supplierDeleteError: string;
+		supplierBulkDeleteTitle: (n: number) => string;
+		supplierBulkDeleteBody: (n: number) => string;
+		suppliersDeleted: (n: number) => string;
+		supplierBulkDeleteError: string;
 		supplierInUse: string;
 		supplierDossiers: string;
 		supplierRequired: string;

@@ -21,7 +21,6 @@ import type {
 	LogistiqueSupplierProformaReviewAction,
 } from '@/types/logistiqueTypes';
 import { factureProFormaApi } from '@/store/services/factureProForma';
-import { marqueApi } from '@/store/services/parameter';
 
 export const logistiqueApi = createApi({
 	reducerPath: 'logistiqueApi',
@@ -33,22 +32,6 @@ export const logistiqueApi = createApi({
 		),
 	),
 	endpoints: (builder) => ({
-		saveSupplierContact: builder.mutation<unknown, { company_id: number; id?: number; nom: string; email: string }>({
-			query: ({ company_id, ...data }) => ({
-				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/supplier_directory/`,
-				method: 'POST',
-				params: { company_id },
-				data,
-			}),
-			async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
-				try {
-					await queryFulfilled;
-					dispatch(marqueApi.util.invalidateTags(['Marque']));
-				} catch {
-					/* The form displays the API error. */
-				}
-			},
-		}),
 		purchaseAction: builder.mutation<LogistiqueOrder, { id: number; data: FormData | Record<string, unknown> }>({
 			query: ({ id, data }) => ({
 				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/${id}/purchase/`,
@@ -205,6 +188,15 @@ export const logistiqueApi = createApi({
 				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/fournisseurs/${id}/`,
 				method: 'DELETE',
 				params: { company_id },
+			}),
+			invalidatesTags: (_result, error) => (error ? [] : ['Supplier']),
+		}),
+		bulkDeleteLogistiqueSuppliers: builder.mutation<void, { company_id: number; ids: number[] }>({
+			query: ({ company_id, ids }) => ({
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/fournisseurs/bulk_delete/`,
+				method: 'DELETE',
+				params: { company_id },
+				data: { ids },
 			}),
 			invalidatesTags: (_result, error) => (error ? [] : ['Supplier']),
 		}),
@@ -504,7 +496,6 @@ export const logistiqueApi = createApi({
 });
 
 export const {
-	useSaveSupplierContactMutation,
 	usePurchaseActionMutation,
 	useRequestPurchasePaymentMutation,
 	useExtractImportTitleMutation,
@@ -514,6 +505,8 @@ export const {
 	useGetNumLogistiqueQuery,
 	useGetLogistiqueResponsablesQuery,
 	useGetLogistiqueSuppliersQuery,
+	useLazyGetLogistiqueSuppliersQuery,
+	useBulkDeleteLogistiqueSuppliersMutation,
 	useGetLogistiqueSupplierQuery,
 	useAddLogistiqueSupplierMutation,
 	useEditLogistiqueSupplierMutation,

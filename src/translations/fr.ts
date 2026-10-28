@@ -665,6 +665,7 @@ export const fr: TranslationDictionary = {
 	},
 	logistique: {
 		placeholders: {
+			numero_commande: 'Générée automatiquement',
 			fournisseur: 'Ex. : Maison Lumière',
 			fournisseur_record: 'Recherchez un fournisseur enregistré',
 			marque: 'Recherchez une marque',
@@ -745,6 +746,7 @@ export const fr: TranslationDictionary = {
 		supplierPreparationSuccess: 'Le dossier est passé à la préparation fournisseur.',
 		addTitle: 'Créer un dossier logistique',
 		editTitle: 'Modifier le dossier logistique',
+		numberPreviewError: 'Aperçu indisponible. La référence sera attribuée à l’enregistrement.',
 		colNumero: 'Référence dossier',
 		colFournisseur: 'Fournisseur',
 		colSupplierEmail: 'E-mail',
@@ -762,6 +764,11 @@ export const fr: TranslationDictionary = {
 		supplierDeleteBody: 'Le fournisseur sera supprimé du répertoire.',
 		supplierDeleted: 'Fournisseur supprimé.',
 		supplierDeleteError: 'Impossible de supprimer le fournisseur.',
+		supplierBulkDeleteTitle: (n: number) => `Supprimer ${n} fournisseur(s) ?`,
+		supplierBulkDeleteBody: (n: number) =>
+			`Êtes-vous sûr de vouloir supprimer les ${n} fournisseur(s) sélectionné(s) ? Les fournisseurs liés à des dossiers ne peuvent pas être supprimés.`,
+		suppliersDeleted: (n: number) => `${n} fournisseur(s) supprimé(s).`,
+		supplierBulkDeleteError: 'Impossible de supprimer les fournisseurs.',
 		supplierInUse: 'Ce fournisseur est lié à des dossiers. Il peut être modifié, mais pas supprimé.',
 		supplierDossiers: 'Dossiers liés',
 		supplierRequired: 'Renseignez le nom du fournisseur.',

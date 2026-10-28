@@ -67,6 +67,7 @@ import {
 	useEditLogistiqueSupplierMutation,
 	useExtractImportTitleMutation,
 	useGetLogistiqueQuery,
+	useGetNumLogistiqueQuery,
 	useGetLogistiqueResponsablesQuery,
 	useGetLogistiqueSuppliersQuery,
 	usePurchaseActionMutation,
@@ -319,6 +320,10 @@ function PurchaseFormik({
 	const transitAfterReceipt = ['Réception locale', 'Livraison client', 'Clôture'].includes(order?.statut ?? '');
 	const extractionSequence = useRef(0);
 	const { data: company } = useGetCompanyQuery({ id: company_id }, { skip: !token });
+	const { currentData: numberPreview, error: numberPreviewError } = useGetNumLogistiqueQuery(
+		{ company_id },
+		{ skip: !token || !!id || mode !== 'dossier', refetchOnMountOrArgChange: true },
+	);
 	const { currentData: supplierData } = useGetLogistiqueSuppliersQuery(
 		{ company_id },
 		{ skip: !token || !['dossier', 'repertoire'].includes(mode) },
@@ -1041,6 +1046,20 @@ function PurchaseFormik({
 	if (mode === 'dossier')
 		sections.push(
 			<FormCard key="dossier" title="Informations du dossier" icon={<Business color="primary" />}>
+				<CustomTextInput
+					id="numero_commande"
+					type="text"
+					label={t.logistique.colNumero}
+					placeholder={t.logistique.placeholders.numero_commande}
+					value={id ? (order?.numero_commande ?? '') : (numberPreview?.numero_commande ?? '')}
+					onChange={() => undefined}
+					helperText={!id && numberPreviewError ? t.logistique.numberPreviewError : undefined}
+					disabled
+					fullWidth
+					size="small"
+					theme={inputTheme}
+					startIcon={<Description fontSize="small" />}
+				/>
 				<CustomAutoCompleteSelect
 					id="fournisseur_record"
 					label="Fournisseur enregistré"

@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import {
 	useGetLogistiqueQuery,
+	useGetNumLogistiqueQuery,
 	useAddLogistiqueMutation,
 	usePurchaseActionMutation,
 	useAddLogistiqueProcessNoteMutation,
@@ -43,6 +44,7 @@ jest.mock('@/store/services/parameter', () => ({
 }));
 jest.mock('@/store/services/logistique', () => ({
 	useGetLogistiqueQuery: jest.fn(),
+	useGetNumLogistiqueQuery: jest.fn(),
 	useAddLogistiqueMutation: jest.fn(),
 	usePurchaseActionMutation: jest.fn(),
 	useAddLogistiqueProcessNoteMutation: jest.fn(),
@@ -106,6 +108,7 @@ beforeEach(() => {
 	);
 	(useGetUserCompaniesQuery as jest.Mock).mockReturnValue({ data: [{ id: 12, role: 'Logistique' }] });
 	(useGetLogistiqueQuery as jest.Mock).mockReturnValue({ data: order, refetch: mockRefetch });
+	(useGetNumLogistiqueQuery as jest.Mock).mockReturnValue({ currentData: { numero_commande: 'LOG008/26' } });
 	(useAddLogistiqueMutation as jest.Mock).mockReturnValue([mockAdd]);
 	(usePurchaseActionMutation as jest.Mock).mockReturnValue([mockPurchase]);
 	(useAddLogistiqueProcessNoteMutation as jest.Mock).mockReturnValue([mockAddNote]);
@@ -190,6 +193,12 @@ describe('SupplierPurchaseForm', () => {
 		await act(async () => {
 			render(<SupplierPurchaseForm company_id={12} />);
 		});
+		expect(screen.getByRole('textbox', { name: 'Référence dossier' })).toHaveValue('LOG008/26');
+		expect(screen.getByRole('textbox', { name: 'Référence dossier' })).toBeDisabled();
+		expect(useGetNumLogistiqueQuery).toHaveBeenCalledWith(
+			{ company_id: 12 },
+			{ skip: false, refetchOnMountOrArgChange: true },
+		);
 		expect(screen.queryByText('Date de commande')).not.toBeInTheDocument();
 		expect(screen.queryByText('Date cible de livraison')).not.toBeInTheDocument();
 		fireEvent.change(screen.getByRole('textbox', { name: 'Fournisseur' }), {
@@ -204,7 +213,33 @@ describe('SupplierPurchaseForm', () => {
 			data: { fournisseur: 'Nouveau fournisseur', responsable: 27 },
 		});
 		expect(request.data).not.toHaveProperty('proformas');
+		expect(request.data).not.toHaveProperty('numero_commande');
 	});
+
+	it('keeps the saved dossier number and skips the preview when editing', async () => {
+		await renderForm('dossier');
+		expect(screen.getByRole('textbox', { name: 'Référence dossier' })).toHaveValue('LOG-007');
+		expect(useGetNumLogistiqueQuery).toHaveBeenCalledWith(
+			{ company_id: 12 },
+			{ skip: true, refetchOnMountOrArgChange: true },
+		);
+	});
+
+	it.each([{ data: { numero_commande: 'OTHER-COMPANY' }, isFetching: true }, { error: { status: 503 } }])(
+		'keeps a new form usable without a current number preview: %j',
+		async (preview) => {
+			(useGetLogistiqueQuery as jest.Mock).mockReturnValue({});
+			(useGetNumLogistiqueQuery as jest.Mock).mockReturnValue(preview);
+			window.history.replaceState(null, '', '/dashboard/logistique/new?company_id=12');
+			await act(async () => {
+				render(<SupplierPurchaseForm company_id={12} />);
+			});
+			expect(screen.getByRole('textbox', { name: 'Référence dossier' })).toHaveValue('');
+			expect(screen.getByRole('textbox', { name: 'Fournisseur' })).toBeEnabled();
+			expect(screen.getByRole('button', { name: 'Enregistrer' })).toBeInTheDocument();
+			if ('error' in preview) expect(screen.getByText(/Aperçu indisponible/)).toBeInTheDocument();
+		},
+	);
 
 	it('falls back to dossier mode for an unknown URL step', async () => {
 		await renderForm('unknown-step');

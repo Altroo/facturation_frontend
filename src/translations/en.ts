@@ -664,6 +664,7 @@ export const en: TranslationDictionary = {
 	},
 	logistique: {
 		placeholders: {
+			numero_commande: 'Generated automatically',
 			fournisseur: 'E.g. Maison Lumière',
 			fournisseur_record: 'Search registered suppliers',
 			marque: 'Search brands',
@@ -744,6 +745,7 @@ export const en: TranslationDictionary = {
 		supplierPreparationSuccess: 'The file moved to supplier preparation.',
 		addTitle: 'Create a logistics file',
 		editTitle: 'Edit logistics file',
+		numberPreviewError: 'Preview unavailable. The reference will be assigned when saving.',
 		colNumero: 'File reference',
 		colFournisseur: 'Supplier',
 		colSupplierEmail: 'Email',
@@ -761,6 +763,11 @@ export const en: TranslationDictionary = {
 		supplierDeleteBody: 'The supplier will be removed from the directory.',
 		supplierDeleted: 'Supplier deleted.',
 		supplierDeleteError: 'Unable to delete supplier.',
+		supplierBulkDeleteTitle: (n: number) => `Delete ${n} supplier(s)?`,
+		supplierBulkDeleteBody: (n: number) =>
+			`Are you sure you want to delete the ${n} selected supplier(s)? Suppliers linked to dossiers cannot be deleted.`,
+		suppliersDeleted: (n: number) => `${n} supplier(s) deleted.`,
+		supplierBulkDeleteError: 'Unable to delete suppliers.',
 		supplierInUse: 'This supplier is linked to dossiers. It can be edited, but cannot be deleted.',
 		supplierDossiers: 'Linked dossiers',
 		supplierRequired: 'Enter the supplier name.',

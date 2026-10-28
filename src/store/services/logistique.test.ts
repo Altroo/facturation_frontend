@@ -71,6 +71,13 @@ describe('logistiqueApi endpoints', () => {
 					.unwrap(),
 		],
 		[
+			'bulkDeleteLogistiqueSuppliers',
+			async () =>
+				storeRef.store
+					.dispatch(logistiqueApi.endpoints.bulkDeleteLogistiqueSuppliers.initiate({ company_id: 1, ids: [7, 8] }))
+					.unwrap(),
+		],
+		[
 			'purchaseAction',
 			async () =>
 				storeRef.store
@@ -100,19 +107,6 @@ describe('logistiqueApi endpoints', () => {
 			async () =>
 				storeRef.store
 					.dispatch(logistiqueApi.endpoints.extractImportTitle.initiate({ id: 1, data: formData() }))
-					.unwrap(),
-		],
-		[
-			'saveSupplierContact',
-			async () =>
-				storeRef.store
-					.dispatch(
-						logistiqueApi.endpoints.saveSupplierContact.initiate({
-							company_id: 1,
-							nom: 'Fournisseur test',
-							email: 'test@example.invalid',
-						}),
-					)
 					.unwrap(),
 		],
 		[
@@ -316,6 +310,19 @@ describe('logistiqueApi endpoints', () => {
 		const [request] = mockBaseQuery.mock.calls.at(-1) ?? [];
 		expect(request?.url).toMatch(/^\/logistique\//);
 		expect(request?.url).not.toContain('undefined');
+	});
+
+	it('sends supplier bulk deletion with the selected IDs and company scope', async () => {
+		mockBaseQuery.mockClear();
+		await storeRef.store
+			.dispatch(logistiqueApi.endpoints.bulkDeleteLogistiqueSuppliers.initiate({ company_id: 2, ids: [7, 8] }))
+			.unwrap();
+		expect(mockBaseQuery).toHaveBeenCalledWith({
+			url: '/logistique/fournisseurs/bulk_delete/',
+			method: 'DELETE',
+			params: { company_id: 2 },
+			data: { ids: [7, 8] },
+		});
 	});
 
 	it('sends supplier sorting, search and filters with server pagination', async () => {
