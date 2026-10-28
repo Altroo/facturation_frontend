@@ -85,6 +85,23 @@ describe('LogistiqueDashboard', () => {
 		expect(screen.queryByRole('region', { name: t.logistique.supplierKpiSection })).not.toBeInTheDocument();
 	});
 
+	it('uses the shared compact help button for every chart', async () => {
+		render(<LogistiqueDashboard />);
+		const explanations = [
+			t.logistique.flowChartTooltip,
+			t.logistique.workflowChartTooltip,
+			t.logistique.paymentChartTooltip,
+			t.logistique.alertChartTooltip,
+			t.logistique.costBreakdownChartTooltip,
+			t.logistique.costTrendChartTooltip,
+			t.logistique.supplierCostShareChartTooltip,
+		];
+		for (const title of explanations)
+			expect(screen.getByRole('button', { name: title })).toHaveClass('MuiIconButton-sizeSmall');
+		fireEvent.mouseOver(screen.getByRole('button', { name: explanations[0] }));
+		expect(await screen.findByRole('tooltip')).toHaveTextContent(explanations[0]);
+	});
+
 	it('keeps supplier cost and order comparison bars on the dashboard', () => {
 		(useGetLogistiqueDashboardQuery as jest.Mock).mockReturnValue({
 			data: {

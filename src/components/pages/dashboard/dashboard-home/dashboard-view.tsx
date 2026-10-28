@@ -9,13 +9,10 @@ import {
 	CardContent,
 	CardHeader,
 	CircularProgress,
-	IconButton,
 	Stack,
 	TextField,
-	Tooltip as MuiTooltip,
 	Typography,
 } from '@mui/material';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -64,6 +61,7 @@ import type {
 import { useGetCompanyQuery } from '@/store/services/company';
 import { useGetClientsListQuery } from '@/store/services/client';
 import CurrencyToggle from '@/components/shared/currencyToggle/currencyToggle';
+import DashboardInfoTooltip from '@/components/shared/dashboardInfoTooltip/dashboardInfoTooltip';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import type { SessionProps } from '@/types/_initTypes';
 import Link from 'next/link';
@@ -130,15 +128,7 @@ const ChartCard: FC<ChartCardProps> = ({ title, description, children, height, i
 						</Typography>
 					)
 				}
-				action={
-					infoTooltip && (
-						<MuiTooltip title={infoTooltip} arrow placement="top">
-							<IconButton size="small" sx={{ color: 'text.secondary' }}>
-								<InfoOutlinedIcon fontSize="small" />
-							</IconButton>
-						</MuiTooltip>
-					)
-				}
+				action={infoTooltip && <DashboardInfoTooltip title={infoTooltip} />}
 				sx={{ pb: { xs: 0, sm: 1 }, px: { xs: 1.5, sm: 2 } }}
 			/>
 			<CardContent sx={{ pt: { xs: 1, sm: 2 }, pb: { xs: 2, sm: 3 }, px: { xs: 1, sm: 2 } }}>
@@ -838,13 +828,7 @@ const KPICardsSection: FC<ChartProps> = ({ dateParams, company_id, devise = 'MAD
 								{card.title}
 							</Typography>
 						}
-						action={
-							<MuiTooltip title={card.tooltip} arrow placement="top">
-								<IconButton size="small" sx={{ color: 'text.secondary' }}>
-									<InfoOutlinedIcon fontSize="small" />
-								</IconButton>
-							</MuiTooltip>
-						}
+						action={<DashboardInfoTooltip title={card.tooltip} />}
 						sx={{ pb: 0, px: { xs: 1.5, sm: 2 } }}
 					/>
 					<CardContent sx={{ px: { xs: 1.5, sm: 2 }, pt: 1 }}>
@@ -965,13 +949,7 @@ const MonthlyObjectivesSection: FC<ChartProps> = ({ dateParams, company_id, devi
 								{obj.title}
 							</Typography>
 						}
-						action={
-							<MuiTooltip title={obj.tooltip} arrow placement="top">
-								<IconButton size="small" sx={{ color: 'text.secondary' }}>
-									<InfoOutlinedIcon fontSize="small" />
-								</IconButton>
-							</MuiTooltip>
-						}
+						action={<DashboardInfoTooltip title={obj.tooltip} />}
 						sx={{ pb: 1, px: { xs: 1.5, sm: 2 } }}
 					/>
 					<CardContent sx={{ px: { xs: 1.5, sm: 2 }, pt: 0 }}>

@@ -1,16 +1,7 @@
 'use client';
 
 import { type FC } from 'react';
-import {
-	Alert,
-	Box,
-	Card,
-	CardContent,
-	CardHeader,
-	CircularProgress,
-	Tooltip as MuiTooltip,
-	Typography,
-} from '@mui/material';
+import { Alert, Box, Card, CardContent, CardHeader, CircularProgress, Typography } from '@mui/material';
 import {
 	ArcElement,
 	BarElement,
@@ -31,7 +22,6 @@ import {
 	AssignmentTurnedIn as AssignmentTurnedInIcon,
 	BarChart as BarChartIcon,
 	ErrorOutlined as ErrorOutlinedIcon,
-	InfoOutlined as InfoOutlinedIcon,
 	LocalShipping as LocalShippingIcon,
 	Payment as PaymentIcon,
 	RequestQuote as RequestQuoteIcon,
@@ -39,6 +29,7 @@ import {
 } from '@mui/icons-material';
 import CompanyDocumentsWrapperList from '@/components/pages/dashboard/shared/company-documents-list/companyDocumentsWrapperList';
 import DashboardStatCard from '@/components/shared/dashboardStatCard/dashboardStatCard';
+import DashboardInfoTooltip from '@/components/shared/dashboardInfoTooltip/dashboardInfoTooltip';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import { useGetLogistiqueDashboardQuery } from '@/store/services/logistique';
@@ -172,22 +163,7 @@ const ChartCard: FC<ChartCardProps> = ({ title, children, height = 320, wide = f
 					{title}
 				</Typography>
 			}
-			action={
-				infoTooltip && (
-					<MuiTooltip title={infoTooltip} arrow placement="top">
-						<PrimaryLoadingButton
-							buttonText={infoTooltip}
-							size="small"
-							loading={false}
-							active
-							inverted
-							iconOnly
-							startIcon={<InfoOutlinedIcon fontSize="small" />}
-							aria-label={infoTooltip}
-						/>
-					</MuiTooltip>
-				)
-			}
+			action={infoTooltip && <DashboardInfoTooltip title={infoTooltip} />}
 			sx={{ pb: 0 }}
 		/>
 		<CardContent sx={{ pt: 2 }}>

@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react';
 import { render, screen, cleanup } from '@testing-library/react';
+import { translations } from '@/translations';
 import '@testing-library/jest-dom';
 import type { AppSession } from '@/types/_initTypes';
 import type {
@@ -398,6 +399,13 @@ describe('DashboardClient', () => {
 			// Use getAllByText since title appears in wrapper and h4
 			const titles = screen.getAllByText('Tableau de Bord');
 			expect(titles.length).toBeGreaterThan(0);
+		});
+
+		it('shares compact information controls across charts, KPIs, and objectives', () => {
+			render(<DashboardClient session={mockSession} />);
+			const t = translations.fr;
+			for (const title of [t.dashboard.tooltipEvolutionCA, t.dashboard.kpiCATooltip, t.dashboard.objectifCATooltip])
+				expect(screen.getByRole('button', { name: title })).toHaveClass('MuiIconButton-sizeSmall');
 		});
 
 		it('renders all section titles', () => {

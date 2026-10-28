@@ -5,6 +5,10 @@ export type DashboardClientOption = {
 	label: string;
 };
 
+export type DashboardInfoTooltipProps = {
+	title: string;
+};
+
 export type DashboardChartCardProps = {
 	title: string;
 	description?: string;
