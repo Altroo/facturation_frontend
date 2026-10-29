@@ -775,30 +775,23 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 		handleLineChangeRef.current = handleLineChange;
 	});
 
-	// Sync formik.errors.lignes with validationErrors state for red border highlighting
-	useEffect(() => {
-		const lignesErrors = formik.errors.lignes;
-		if (lignesErrors && Array.isArray(lignesErrors)) {
-			setValidationErrors((prevErrors) => {
-				const newErrors = { ...prevErrors };
-				lignesErrors.forEach((lineError: unknown, index: number) => {
-					if (lineError && typeof lineError === 'object') {
-						Object.entries(lineError as Record<string, string>).forEach(([field, message]) => {
-							if (message) {
-								const errorKey = `ligne_${index}_${field}`;
-								newErrors[errorKey] = message;
-							}
-						});
+	// Derive schema errors from Formik so corrected fields cannot keep stale errors.
+	const lineValidationErrors = { ...validationErrors };
+	if (Array.isArray(formik.errors.lignes)) {
+		formik.errors.lignes.forEach((lineError, index) => {
+			if (lineError && typeof lineError === 'object') {
+				Object.entries(lineError).forEach(([field, message]) => {
+					if (typeof message === 'string' && message) {
+						lineValidationErrors[`ligne_${index}_${field}`] = message;
 					}
 				});
-				return newErrors;
-			});
-		}
-	}, [formik.errors.lignes]);
+			}
+		});
+	}
 
 	const { linesColumns } = useDocumentLinesColumns({
 		getLines,
-		validationErrors,
+		validationErrors: lineValidationErrors,
 		role,
 		devise: formik.values.devise ?? 'MAD',
 		handleLineChangeRef,
@@ -969,7 +962,7 @@ const CompanyDocumentFormContent = <TDocument extends DocumentListClass = Docume
 	})();
 
 	const hasValidationErrors = combinedValidationEntries.length > 0;
-	const hasLineValidationErrors = Object.keys(validationErrors).length > 0;
+	const hasLineValidationErrors = Object.keys(lineValidationErrors).length > 0;
 
 	// Show Alert only after a submit attempt or when line-level/custom validation errors exist
 	const showValidationAlert = hasValidationErrors && (formik.submitCount > 0 || hasLineValidationErrors);

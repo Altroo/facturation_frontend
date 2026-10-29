@@ -979,3 +979,51 @@ describe('CompanyDocumentFormContent', () => {
 		});
 	});
 });
+
+describe('document line validation recovery', () => {
+	it('clears the required quantity error after entering 150 and preserves other line errors', () => {
+		const formikMock = jest.requireMock('formik') as { useFormik: jest.Mock };
+		const previousImplementation = formikMock.useFormik.getMockImplementation();
+		const previousScrollIntoView = HTMLElement.prototype.scrollIntoView;
+		HTMLElement.prototype.scrollIntoView = jest.fn();
+		const formState = {
+			values: {
+				numero_part: '02',
+				year_part: '26',
+				client: 1,
+				date_devis: '2026-10-29',
+				devise: 'MAD',
+				remise_type: null,
+				remise: 0,
+				lignes: [{ article: 10, prix_vente: 163.67, quantity: '' as string | number, remise_type: '', remise: 0 }],
+			},
+			errors: { lignes: [{ quantity: 'Ce champ est obligatoire.', prix_vente: 'Prix invalide.' }] } as Record<
+				string,
+				unknown
+			>,
+			touched: {},
+			handleSubmit: jest.fn(),
+			handleBlur: jest.fn(),
+			handleChange: jest.fn(),
+			setFieldValue: jest.fn(),
+			submitCount: 1,
+		};
+		formikMock.useFormik.mockImplementation(() => formState);
+		try {
+			const { rerender } = render(<CompanyDocumentFormContent {...defaultProps} isEditMode id={1} />);
+			expect(screen.getByRole('alert')).toHaveTextContent('Ce champ est obligatoire.');
+			formState.values.lignes[0].quantity = 150;
+			formState.errors = { lignes: [{ prix_vente: 'Prix invalide.' }] };
+			rerender(<CompanyDocumentFormContent {...defaultProps} isEditMode id={1} />);
+			expect(screen.getByRole('alert')).not.toHaveTextContent('Ce champ est obligatoire.');
+			expect(screen.getByRole('alert')).toHaveTextContent('Prix invalide.');
+			formState.errors = {};
+			rerender(<CompanyDocumentFormContent {...defaultProps} isEditMode id={1} />);
+			expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+		} finally {
+			cleanup();
+			formikMock.useFormik.mockImplementation(previousImplementation!);
+			HTMLElement.prototype.scrollIntoView = previousScrollIntoView;
+		}
+	});
+});
