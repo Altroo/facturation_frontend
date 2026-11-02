@@ -2757,8 +2757,6 @@ describe('supplierPurchaseSchemas', () => {
 		montant_paye: '',
 		reference_paiement: '',
 		commentaire_paiement: '',
-		nom: '',
-		email_contact: '',
 		statut: '',
 		ecart_prix_proforma: false,
 		ecart_quantite_proforma: false,
@@ -2847,7 +2845,6 @@ describe('supplierPurchaseSchemas', () => {
 		],
 		['justificatif', { echeance_id: '1', swift_file: new File(['proof'], 'preuve.pdf', { type: 'application/pdf' }) }],
 		['remarque', { remarque: 'Réception confirmée.' }],
-		['repertoire', { nom: 'Fournisseur test' }],
 	];
 
 	it.each(validCases.map(([mode, changes, context = {}]) => [mode, changes, context] as const))(

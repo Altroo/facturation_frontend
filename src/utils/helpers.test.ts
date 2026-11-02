@@ -1,3 +1,4 @@
+import * as helpers from './helpers';
 import {
 	safeNavigation,
 	isAppVersion,
@@ -1138,5 +1139,31 @@ describe('logisticsChangeProposal', () => {
 			marques: [2, 3],
 		});
 		expect(result.get('action')).toBe('demander_modification');
+	});
+});
+
+describe('API error normalization', () => {
+	const message = 'Ce dossier est lié à une réception de stock.';
+	it.each([
+		{ details: { protected: [message] } },
+		{ data: { details: { protected: [message] }, message: 'Suppression impossible' } },
+		{ error: { data: { details: { protected: [message] } } } },
+		{ error: { details: message } },
+		{ data: { details: { lignes: [{ quantity: [''], remise: [message] }] } } },
+		{ data: { message } },
+	])('preserves the actionable backend detail across envelopes', (error) => {
+		expect(helpers.extractApiErrorMessage(error, 'Échec')).toBe(message);
+	});
+	it.each([undefined, null, 0, 'unknown', { data: { details: { empty: [] }, message: ' ' } }])(
+		'uses the fallback for an empty or malformed payload',
+		(error) => {
+			expect(helpers.extractApiErrorMessage(error, 'Échec')).toBe('Échec');
+		},
+	);
+	it('handles cyclic malformed payloads without throwing', () => {
+		const error: Record<string, unknown> = {};
+		error.error = error;
+		error.details = { parent: error, message };
+		expect(helpers.extractApiErrorMessage(error, 'Échec')).toBe(message);
 	});
 });

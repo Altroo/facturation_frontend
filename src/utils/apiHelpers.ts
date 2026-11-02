@@ -258,3 +258,21 @@ export function addCorsHeaders(response: Response, origin: string | null): Respo
 		headers,
 	});
 }
+
+export function logisticsFormPayload(data: Record<string, unknown>): Record<string, unknown> | FormData {
+	const entries = Object.entries(data).filter(([, entry]) => entry !== undefined);
+	if (!entries.some(([, entry]) => entry instanceof File)) return Object.fromEntries(entries);
+	const body = new FormData();
+	for (const [key, entry] of entries)
+		body.append(
+			key,
+			entry instanceof File
+				? entry
+				: entry == null
+					? ''
+					: typeof entry === 'object'
+						? JSON.stringify(entry)
+						: String(entry),
+		);
+	return body;
+}

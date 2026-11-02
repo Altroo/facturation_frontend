@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { ChatAIHeader, ChatAIInterface, ChatAIMessageBox, ChatAIWelcome } from './chat-ai-interface';
+import {
+	ChatAIFloatingButton,
+	ChatAIHeader,
+	ChatAIInterface,
+	ChatAIMessageBox,
+	ChatAIWelcome,
+} from './chat-ai-interface';
 
 afterEach(() => jest.restoreAllMocks());
 
@@ -70,10 +76,13 @@ it('contains keyboard focus on mobile and restores the launcher after Escape', (
 	function Harness() {
 		const [open, setOpen] = useState(false);
 		return (
-			<ChatAIInterface open={open} onOpenChangeAction={setOpen}>
-				<button>First control</button>
-				<button>Last control</button>
-			</ChatAIInterface>
+			<>
+				<ChatAIFloatingButton open={open} toggleAction={() => setOpen(!open)} />
+				<ChatAIInterface open={open} onOpenChangeAction={setOpen}>
+					<button>First control</button>
+					<button>Last control</button>
+				</ChatAIInterface>
+			</>
 		);
 	}
 	try {
@@ -94,4 +103,14 @@ it('contains keyboard focus on mobile and restores the launcher after Escape', (
 		if (original) Object.defineProperty(window, 'matchMedia', original);
 		else Reflect.deleteProperty(window, 'matchMedia');
 	}
+});
+
+it('keeps the application launcher hidden while the assistant is paused', () => {
+	render(
+		<ChatAIInterface open={false} onOpenChangeAction={jest.fn()}>
+			<button>Hidden control</button>
+		</ChatAIInterface>,
+	);
+	expect(screen.queryByRole('button', { name: 'Ask AI Assistant' })).not.toBeInTheDocument();
+	expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 });

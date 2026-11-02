@@ -1,3 +1,20 @@
+import type { ComponentProps } from 'react';
+
+// The application launcher is intentionally paused. Exercise conversation behavior
+// with an explicit test-only launcher while keeping the real panel and controls.
+jest.mock('./chat-ai-interface', () => {
+	const actual = jest.requireActual<typeof import('./chat-ai-interface')>('./chat-ai-interface');
+	return {
+		...actual,
+		ChatAIInterface: (props: ComponentProps<typeof actual.ChatAIInterface>) => (
+			<div data-chat-ai-shell style={{ display: props.suppressed ? 'none' : 'contents' }}>
+				<actual.ChatAIFloatingButton open={props.open} toggleAction={() => props.onOpenChangeAction(!props.open)} />
+				<actual.ChatAIInterface {...props} />
+			</div>
+		),
+	};
+});
+
 import type { AxiosRequestConfig } from 'axios';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createTheme, ThemeProvider } from '@mui/material/styles';

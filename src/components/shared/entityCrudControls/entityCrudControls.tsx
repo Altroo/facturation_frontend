@@ -1,32 +1,14 @@
 'use client';
 
-import { runWithCleanup } from '@/utils/helpers';
+import { extractApiErrorMessage, runWithCleanup } from '@/utils/helpers';
 import { type FC, useState } from 'react';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Stack } from '@mui/material';
 import { Close as CloseIcon, Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
-import type { ApiErrorResponseType } from '@/types/_initTypes';
 import AddEntityModal from '@/components/shared/addEntityModal/addEntityModal';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import { useLanguage } from '@/utils/hooks';
 import type { EntityCrudControlsProps } from '@/types/uiTypes';
-
-const getMutationErrorMessage = (error: unknown, fallback: string): string => {
-	const payload =
-		(error as { error?: ApiErrorResponseType; data?: ApiErrorResponseType }).error ??
-		(error as { error?: ApiErrorResponseType; data?: ApiErrorResponseType }).data ??
-		(error as ApiErrorResponseType);
-
-	if (payload?.details && typeof payload.details === 'object') {
-		const detailsValues = Object.values(payload.details);
-		if (detailsValues.length > 0) {
-			const firstError = detailsValues[0];
-			return String(Array.isArray(firstError) ? firstError[0] : firstError);
-		}
-	}
-
-	return fallback;
-};
 
 const EntityCrudControls: FC<EntityCrudControlsProps> = ({
 	label,
@@ -75,7 +57,7 @@ const EntityCrudControls: FC<EntityCrudControlsProps> = ({
 					}
 					setEditOpen(false);
 				} catch (error) {
-					setEditError(getMutationErrorMessage(error, t.addEntityModal.addError(label)));
+					setEditError(extractApiErrorMessage(error, t.addEntityModal.addError(label)));
 				}
 			},
 			() => {

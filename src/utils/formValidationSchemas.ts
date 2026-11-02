@@ -1154,8 +1154,5 @@ export const getSupplierPurchaseSchema = (mode: PurchaseFormMode, context: Suppl
 			if (!values.swift_file) issue(['swift_file'], 'Joignez le justificatif bancaire.');
 		} else if (mode === 'remarque') {
 			required('remarque', 'Renseignez votre remarque.');
-		} else if (mode === 'repertoire') {
-			text('nom', 255, true);
-			email('email_contact');
 		}
 	});

@@ -1,110 +1,24 @@
 'use client';
 
-import {
-	extractApiErrorMessage,
-	formatDate,
-	formatLocalDate,
-	formatNumberWithSpaces,
-	listReturnUrl,
-	runWithCleanup,
-} from '@/utils/helpers';
-import { type FC, isValidElement, useState, useRef } from 'react';
-import NextLink from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import {
-	Accordion,
-	AccordionDetails,
-	AccordionSummary,
-	Alert,
-	Button,
-	Box,
-	Card,
-	CardContent,
-	Checkbox,
-	Chip,
-	Divider,
-	FormControlLabel,
-	InputAdornment,
-	Link as MuiLink,
-	Stack,
-	Typography,
-	useMediaQuery,
-	useTheme,
-} from '@mui/material';
-import Grid from '@mui/material/Grid';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { enUS, frFR } from '@mui/x-date-pickers/locales';
-import { fr } from 'date-fns/locale';
-import {
-	Add as AddIcon,
-	ArrowBack as ArrowBackIcon,
-	AssignmentTurnedIn as AssignmentTurnedInIcon,
-	Business as BusinessIcon,
-	CalendarToday as CalendarTodayIcon,
-	CheckCircle as CheckCircleIcon,
-	Close as CloseIcon,
-	Delete as DeleteIcon,
-	Description as DescriptionIcon,
-	Edit as EditIcon,
-	ExpandMore as ExpandMoreIcon,
-	Email as EmailIcon,
-	History as HistoryIcon,
-	Info as InfoIcon,
-	Inventory as InventoryIcon,
-	LocalShipping as LocalShippingIcon,
-	Notes as NotesIcon,
-	OpenInNew as OpenInNewIcon,
-	Payment as PaymentIcon,
-	Person as PersonIcon,
-	Public as PublicIcon,
-	ReceiptLong as ReceiptLongIcon,
-	RequestQuote as RequestQuoteIcon,
-	Scale as ScaleIcon,
-	Send as SendIcon,
-	UploadFile as UploadFileIcon,
-	Warning as WarningIcon,
-} from '@mui/icons-material';
-import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
-import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
+import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
+import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
-import NoPermission from '@/components/shared/noPermission/noPermission';
+import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import DashboardStatCard from '@/components/shared/dashboardStatCard/dashboardStatCard';
-import {
-	LogistiqueDocumentsFormCard,
-	LogistiqueDocumentsViewCard,
-} from '@/components/pages/dashboard/logistique/logistique-documents-card';
-import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
-import FormattedNumberInput from '@/components/formikElements/formattedNumberInput/formattedNumberInput';
-import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
+import NoPermission from '@/components/shared/noPermission/noPermission';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import { getInitStateToken, getUserCompaniesState } from '@/store/selectors';
 import { useGetUserCompaniesQuery } from '@/store/services/company';
-import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
-import {
-	acceptedDocumentTypes,
-	documentFields,
-	getTranslatedLogistiqueMacroSteps,
-	logistiqueCurrencyItemsList,
-	logistiqueLaunchStatusItemsList,
-	logistiqueLegacyStatusStepIndex,
-	logistiqueManagerRoles,
-	logistiquePaymentMethodItemsList,
-	logistiqueProformaDecisionItems,
-} from '@/utils/rawData';
-import { textInputTheme } from '@/utils/themes';
 import {
 	useAddLogistiqueProcessNoteMutation,
 	useConfirmLogistiquePaymentReceiptMutation,
 	useDeleteLogistiqueMutation,
 	useGetLogistiqueQuery,
 	usePatchLogistiqueLaunchStatusMutation,
-	usePurchaseActionMutation,
 	usePatchLogistiqueStatutMutation,
 	usePatchLogistiqueWorkflowStatusMutation,
+	usePurchaseActionMutation,
 	useRecordLogistiquePaymentExecutionMutation,
 	useRecordLogistiqueProformaRequestMutation,
 	useRejectLogistiquePaymentMutation,
@@ -115,137 +29,62 @@ import {
 	useStartLogistiquePaymentMutation,
 	useValidateLogistiquePaymentMutation,
 } from '@/store/services/logistique';
-import { ARTICLES_VIEW, LOGISTIQUE_EDIT, LOGISTIQUE_LIST, STOCK_RECEIPTS } from '@/utils/routes';
+import Styles from '@/styles/dashboard/dashboard.module.sass';
 import type { ApiErrorResponseType, ResponseDataInterface } from '@/types/_initTypes';
 import type {
 	LogistiqueDocumentField,
-	LogistiqueEmailDeliveryStatus,
 	LogistiqueLaunchStatus,
 	LogistiquePaymentInstallment,
 	LogistiquePaymentMethod,
 	LogistiqueProformaStatus,
 	LogistiqueStatut,
-	LogistiqueSupplierProformaReviewAction,
-	LogistiqueViewDetailCardProps as DetailCardProps,
-	LogistiqueViewInfoRowProps as InfoRowProps,
 	LogistiqueViewProps as Props,
 } from '@/types/logistiqueTypes';
-import Styles from '@/styles/dashboard/dashboard.module.sass';
+import { extractApiErrorMessage, formatNumberWithSpaces, listReturnUrl, runWithCleanup } from '@/utils/helpers';
+import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
+import {
+	getTranslatedLogistiqueMacroSteps,
+	logistiqueLegacyStatusStepIndex,
+	logistiqueManagerRoles,
+} from '@/utils/rawData';
+import { LOGISTIQUE_EDIT, LOGISTIQUE_LIST, STOCK_RECEIPTS } from '@/utils/routes';
+import {
+	ArrowBack as ArrowBackIcon,
+	Business as BusinessIcon,
+	Close as CloseIcon,
+	Delete as DeleteIcon,
+	Edit as EditIcon,
+	History as HistoryIcon,
+	Inventory as InventoryIcon,
+	LocalShipping as LocalShippingIcon,
+	Payment as PaymentIcon,
+	ReceiptLong as ReceiptLongIcon,
+} from '@mui/icons-material';
+import { Alert, Box, Button, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { enUS, frFR } from '@mui/x-date-pickers/locales';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { fr } from 'date-fns/locale';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { type FC, useRef, useState } from 'react';
 import SupplierPurchaseSteps from './supplier-purchase-steps';
 import { useLogistiqueEmailPolling } from './use-logistique-email-polling';
 
-const inputTheme = textInputTheme();
-const getProformaReviewAction = (
-	status: Exclude<LogistiqueProformaStatus, 'En attente'>,
-): LogistiqueSupplierProformaReviewAction => {
-	switch (status) {
-		case 'En contrôle':
-			return 'control';
-		case 'Correction demandée':
-			return 'request_correction';
-		case 'Validée':
-			return 'validate';
-		case 'Refusée':
-			return 'reject';
-	}
-};
-
-const emailDeliveryColor = (status: LogistiqueEmailDeliveryStatus) => {
-	if (status === 'Envoyé') return 'success' as const;
-	if (status === 'Échec') return 'error' as const;
-	if (status === 'En attente' || status === 'Envoi en cours') return 'warning' as const;
-	return 'default' as const;
-};
-
-const formatMoney = (value: string | number | null | undefined, devise = 'MAD') =>
-	`${formatNumberWithSpaces(value ?? 0, 2)} ${devise}`;
-
-const formatDateOnly = (value: string | null | undefined) => {
-	if (!value) return '-';
-	const [datePart] = value.split('T');
-	const [year, month, day] = datePart.split('-').map(Number);
-	if (!year || !month || !day) return formatDate(value);
-	return new Intl.DateTimeFormat('fr-FR', {
-		year: 'numeric',
-		month: 'short',
-		day: '2-digit',
-	}).format(new Date(year, month - 1, day));
-};
-
-const InfoRow: FC<InfoRowProps> = ({ icon, label, value }) => {
-	const theme = useTheme();
-	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-	const displayValue =
-		isValidElement(value) || (value !== null && value !== undefined && value.toString().length > 0) ? value : '-';
-
-	return (
-		<Stack
-			direction="row"
-			spacing={2}
-			sx={{
-				alignItems: 'flex-start',
-				py: 1.5,
-				flexWrap: 'wrap',
-			}}
-		>
-			<Box sx={{ color: 'primary.main', display: 'flex', alignItems: 'center', minWidth: 40 }}>{icon}</Box>
-			<Stack
-				direction="row"
-				spacing={isMobile ? 0 : 2}
-				sx={{
-					alignItems: 'center',
-					flex: 1,
-					flexWrap: 'wrap',
-				}}
-			>
-				<Typography
-					sx={{
-						fontWeight: 600,
-						color: 'text.secondary',
-						minWidth: { xs: '100%', sm: 200 },
-						wordBreak: 'break-word',
-					}}
-				>
-					{label}
-				</Typography>
-				<Box sx={{ flex: 1 }}>
-					{isValidElement(displayValue) ? (
-						displayValue
-					) : (
-						<Typography sx={{ color: 'text.primary' }}>{displayValue}</Typography>
-					)}
-				</Box>
-			</Stack>
-		</Stack>
-	);
-};
-
-const DetailCard: FC<DetailCardProps> = ({ title, icon, children }) => (
-	<Card elevation={2} sx={{ borderRadius: 2 }}>
-		<CardContent sx={{ p: 3 }}>
-			<Stack direction="row" spacing={2} sx={{ alignItems: 'center', mb: 2 }}>
-				{icon}
-				<Typography variant="h6" sx={{ fontWeight: 700 }}>
-					{title}
-				</Typography>
-			</Stack>
-			<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
-			{children}
-		</CardContent>
-	</Card>
-);
-
-const DetailSection: FC<DetailCardProps> = ({ title, icon, children }) => (
-	<Box component="section">
-		<Stack direction="row" spacing={2} sx={{ alignItems: 'center', mb: 2 }}>
-			{icon}
-			<Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-				{title}
-			</Typography>
-		</Stack>
-		{children}
-	</Box>
-);
+import {
+	formatLogistiqueDate as formatDateOnly,
+	formatLogistiqueMoney as formatMoney,
+	getLogistiqueProformaReviewAction as getProformaReviewAction,
+} from '@/utils/helpers';
+import { LogistiqueHistoricalDetails } from './logistique-historical-details';
+import {
+	LogistiqueHistoricalLaunchStatusDialog,
+	LogistiqueHistoricalPaymentExecutionDialog,
+	LogistiqueHistoricalPaymentRejectionDialog,
+	LogistiqueHistoricalPaymentValidationDialog,
+	LogistiqueHistoricalProformaRequestDialog,
+	LogistiqueHistoricalProformaReviewDialog,
+	LogistiqueHistoricalRequestPaymentDialog,
+} from './logistique-historical-dialogs';
 
 const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 	const token = useInitAccessToken(session);
@@ -902,1038 +741,49 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 									/>
 								)}
 
-								<DetailCard title={workflowSteps[selectedStep]} icon={<DescriptionIcon color="primary" />}>
-									<Stack spacing={3}>
-										{selectedStep >= 3 && selectedStep <= 6 && (
-											<Stack spacing={2}>
-												<InfoRow icon={<InfoIcon />} label={t.logistique.fieldStepStatus} value={order?.statut} />
-												{selectedStep === 3 && (
-													<InfoRow
-														icon={<CalendarTodayIcon />}
-														label={t.logistique.fieldDatePrevue}
-														value={formatDateOnly(order?.date_prevue)}
-													/>
-												)}
-												{selectedStep === 4 && (
-													<>
-														<InfoRow
-															icon={<LocalShippingIcon />}
-															label={t.logistique.fieldTransport}
-															value={order?.transport}
-														/>
-														<InfoRow
-															icon={<DescriptionIcon />}
-															label={t.logistique.fieldOriginalDocumentsStatus}
-															value={
-																order?.documents_originaux_requis ? order.statut_documents_originaux : 'Non requis'
-															}
-														/>
-													</>
-												)}
-												{selectedStep === 5 && (
-													<>
-														<InfoRow
-															icon={<PublicIcon />}
-															label={t.logistique.fieldOrigine}
-															value={order?.origine_marchandise}
-														/>
-														<InfoRow
-															icon={<DescriptionIcon />}
-															label={t.logistique.fieldNature}
-															value={order?.nature_marchandise}
-														/>
-														<InfoRow
-															icon={<LocalShippingIcon />}
-															label={t.logistique.fieldFraisTransit}
-															value={formatMoney(order?.frais_transit, order?.devise)}
-														/>
-														<InfoRow
-															icon={<LocalShippingIcon />}
-															label={t.logistique.fieldFraisDouane}
-															value={formatMoney(order?.frais_douane, order?.devise)}
-														/>
-													</>
-												)}
-												{selectedStep === 6 && (
-													<InfoRow
-														icon={<CalendarTodayIcon />}
-														label={t.logistique.fieldDateReelle}
-														value={formatDateOnly(order?.date_reelle)}
-													/>
-												)}
-											</Stack>
-										)}
-
-										{selectedStep === 0 && (
-											<>
-												<Stack spacing={2.5}>
-													<Alert variant="outlined" severity={order?.is_launch_step_complete ? 'success' : 'info'}>
-														{order?.is_launch_step_complete
-															? t.logistique.commandLaunchMilestone
-															: t.logistique.commandLaunchObjective}
-													</Alert>
-													<Grid container spacing={2}>
-														<Grid size={{ xs: 12, lg: 6 }}>
-															<InfoRow
-																icon={<InfoIcon />}
-																label={t.logistique.fieldStepStatus}
-																value={order?.statut_commande_lancement}
-															/>
-															<InfoRow
-																icon={<ReceiptLongIcon />}
-																label={t.logistique.fieldClientOrder}
-																value={order?.projects_display}
-															/>
-															<InfoRow
-																icon={<CalendarTodayIcon />}
-																label={t.logistique.fieldOrderDate}
-																value={sourceOrderDates}
-															/>
-															<InfoRow
-																icon={<BusinessIcon />}
-																label={t.logistique.colClients}
-																value={order?.clients_display}
-															/>
-															<InfoRow
-																icon={<AssignmentTurnedInIcon />}
-																label={t.logistique.colFournisseur}
-																value={order?.fournisseur}
-															/>
-															<InfoRow
-																icon={<EmailIcon />}
-																label={t.logistique.fieldSupplierEmail}
-																value={order?.fournisseur_email}
-															/>
-															<InfoRow
-																icon={<InventoryIcon />}
-																label={t.logistique.fieldArticlesCount}
-																value={order?.lignes_count}
-															/>
-														</Grid>
-														<Grid size={{ xs: 12, lg: 6 }}>
-															<InfoRow
-																icon={<PersonIcon />}
-																label={t.logistique.fieldResponsable}
-																value={order?.responsable_name}
-															/>
-															<InfoRow icon={<PaymentIcon />} label={t.logistique.fieldDevise} value={order?.devise} />
-															<InfoRow
-																icon={<CalendarTodayIcon />}
-																label={t.logistique.fieldTargetDate}
-																value={formatDateOnly(order?.date_prevue)}
-															/>
-															<InfoRow
-																icon={<SendIcon />}
-																label={t.logistique.fieldProformaRequestedAt}
-																value={formatDate(order?.proforma_demandee_le ?? null)}
-															/>
-															<InfoRow
-																icon={<PersonIcon />}
-																label={t.logistique.fieldProformaRequestedBy}
-																value={order?.proforma_demandee_par_name}
-															/>
-															<InfoRow
-																icon={<CalendarTodayIcon />}
-																label={t.logistique.fieldNextProformaFollowUp}
-																value={formatDateOnly(order?.prochaine_relance_proforma)}
-															/>
-														</Grid>
-													</Grid>
-													{canManage && !isOrderCancelled && !order?.is_launch_step_complete && (
-														<Stack
-															direction={{ xs: 'column', sm: 'row' }}
-															sx={{
-																gap: 1.5,
-																alignItems: { sm: 'center' },
-																'& > button': { margin: '0 !important' },
-															}}
-														>
-															<PrimaryLoadingButton
-																buttonText={t.logistique.updateLaunchStatus}
-																size="small"
-																loading={false}
-																active
-																inverted
-																type="button"
-																startIcon={<EditIcon />}
-																onClick={() => {
-																	setLaunchStatusDraft(order?.statut_commande_lancement ?? 'À lancer');
-																	setShowLaunchStatusModal(true);
-																}}
-															/>
-															<PrimaryLoadingButton
-																buttonText={t.logistique.recordProformaRequest}
-																size="small"
-																loading={isRecordingProformaRequest}
-																active={!isRecordingProformaRequest}
-																inverted
-																type="button"
-																startIcon={<RequestQuoteIcon />}
-																onClick={() => setShowProformaRequestModal(true)}
-															/>
-														</Stack>
-													)}
-												</Stack>
-											</>
-										)}
-
-										{selectedStep === 1 && (
-											<>
-												<Stack spacing={2.5}>
-													<Alert
-														variant="outlined"
-														severity={
-															!order?.is_launch_step_complete
-																? 'info'
-																: order?.is_proforma_step_complete
-																	? 'success'
-																	: 'warning'
-														}
-													>
-														{!order?.is_launch_step_complete
-															? t.logistique.proformaComplianceLocked
-															: order?.is_proforma_step_complete
-																? t.logistique.proformaComplianceMilestone
-																: t.logistique.proformaComplianceObjective}
-													</Alert>
-													<Grid container spacing={2}>
-														<Grid size={{ xs: 12, lg: 6 }}>
-															<InfoRow
-																icon={<InfoIcon />}
-																label={t.logistique.fieldStepStatus}
-																value={
-																	<Chip
-																		label={order?.statut_proforma_conformite ?? '-'}
-																		color={order?.is_proforma_step_complete ? 'success' : 'warning'}
-																		variant="outlined"
-																	/>
-																}
-															/>
-															<InfoRow
-																icon={<ReceiptLongIcon />}
-																label={t.logistique.fieldSupplierProformaNumber}
-																value={order?.numero_proforma_fournisseur}
-															/>
-															<InfoRow
-																icon={<CalendarTodayIcon />}
-																label={t.logistique.fieldSupplierProformaDate}
-																value={formatDateOnly(order?.date_proforma_fournisseur)}
-															/>
-															<InfoRow
-																icon={<PaymentIcon />}
-																label={t.logistique.fieldSupplierProformaAmount}
-																value={formatMoney(
-																	order?.montant_proforma_fournisseur,
-																	order?.devise_proforma_fournisseur,
-																)}
-															/>
-															<InfoRow
-																icon={<PublicIcon />}
-																label={t.logistique.fieldIncoterm}
-																value={order?.incoterm}
-															/>
-															<InfoRow
-																icon={<CalendarTodayIcon />}
-																label={t.logistique.fieldSupplierLeadTime}
-																value={order?.delai_proforma_jours}
-															/>
-														</Grid>
-														<Grid size={{ xs: 12, lg: 6 }}>
-															<InfoRow
-																icon={<PaymentIcon />}
-																label={t.logistique.fieldConditionsPaiement}
-																value={order?.conditions_paiement}
-															/>
-															<InfoRow
-																icon={<InventoryIcon />}
-																label={t.logistique.fieldTargetQuantity}
-																value={formatNumberWithSpaces(targetQuantity, 3)}
-															/>
-															<InfoRow
-																icon={<PaymentIcon />}
-																label={t.logistique.fieldTargetPurchaseTotal}
-																value={formatMoney(order?.cout_achat, order?.devise)}
-															/>
-															<InfoRow
-																icon={<ReceiptLongIcon />}
-																label={t.logistique.fieldTargetUnitPrices}
-																value={targetPriceLines.length ? <Stack spacing={0.5}>{targetPriceLines}</Stack> : '-'}
-															/>
-															<InfoRow
-																icon={<WarningIcon />}
-																label={t.logistique.fieldPriceVariance}
-																value={
-																	order?.ecart_prix_proforma ? t.logistique.varianceDetected : t.logistique.noVariance
-																}
-															/>
-															<InfoRow
-																icon={<WarningIcon />}
-																label={t.logistique.fieldQuantityVariance}
-																value={
-																	order?.ecart_quantite_proforma
-																		? t.logistique.varianceDetected
-																		: t.logistique.noVariance
-																}
-															/>
-															<InfoRow
-																icon={<WarningIcon />}
-																label={t.logistique.fieldOtherVariance}
-																value={
-																	order?.ecart_autre_proforma ? t.logistique.varianceDetected : t.logistique.noVariance
-																}
-															/>
-															<InfoRow
-																icon={<NotesIcon />}
-																label={t.logistique.fieldVarianceNotes}
-																value={order?.notes_ecarts_proforma}
-															/>
-															<InfoRow
-																icon={<PersonIcon />}
-																label={t.logistique.fieldProformaControlledBy}
-																value={order?.proforma_controlee_par_name}
-															/>
-															<InfoRow
-																icon={<CheckCircleIcon />}
-																label={t.logistique.fieldProformaValidatedAt}
-																value={formatDate(order?.proforma_validee_le ?? null)}
-															/>
-														</Grid>
-													</Grid>
-													{canManage &&
-														!isOrderCancelled &&
-														order?.is_launch_step_complete &&
-														!order?.is_proforma_step_complete && (
-															<Box sx={{ alignSelf: { xs: 'stretch', sm: 'flex-start' } }}>
-																<PrimaryLoadingButton
-																	buttonText={t.logistique.reviewSupplierProforma}
-																	size="small"
-																	loading={isReviewingSupplierProforma}
-																	active={!isReviewingSupplierProforma}
-																	inverted
-																	type="button"
-																	startIcon={<DescriptionIcon />}
-																	onClick={openSupplierProformaReview}
-																/>
-															</Box>
-														)}
-												</Stack>
-												<Grid container spacing={2}>
-													<Grid size={{ xs: 12, lg: 6 }}>
-														<InfoRow
-															icon={<PublicIcon />}
-															label={t.logistique.fieldOrigine}
-															value={order?.origine_marchandise}
-														/>
-														<InfoRow icon={<ScaleIcon />} label={t.logistique.fieldPoidsNet} value={order?.poids_net} />
-													</Grid>
-													<Grid size={{ xs: 12, lg: 6 }}>
-														<InfoRow
-															icon={<DescriptionIcon />}
-															label={t.logistique.fieldNature}
-															value={order?.nature_marchandise}
-														/>
-														<InfoRow
-															icon={<ScaleIcon />}
-															label={t.logistique.fieldPoidsBrut}
-															value={order?.poids_brut}
-														/>
-													</Grid>
-												</Grid>
-											</>
-										)}
-
-										{order?.alerts?.length ? (
-											<DetailSection title={t.logistique.alertsSection} icon={<WarningIcon color="warning" />}>
-												<Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
-													{order.alerts.map((alert) => (
-														<Chip key={alert} icon={<WarningIcon />} label={alert} color="warning" variant="outlined" />
-													))}
-												</Stack>
-											</DetailSection>
-										) : null}
-
-										{selectedStep === 0 && (
-											<InfoRow
-												icon={<DescriptionIcon />}
-												label={t.logistique.fieldDescription}
-												value={order?.description}
-											/>
-										)}
-
-										{selectedStep === 2 && (
-											<DetailSection title={t.logistique.importSection} icon={<DescriptionIcon color="primary" />}>
-												<Grid container spacing={2}>
-													<Grid size={{ xs: 12, lg: 6 }}>
-														<InfoRow
-															icon={<DescriptionIcon />}
-															label={t.logistique.fieldNumeroDomiciliation}
-															value={order?.numero_domiciliation}
-														/>
-														<InfoRow icon={<PaymentIcon />} label={t.logistique.fieldBanque} value={order?.banque} />
-														<InfoRow
-															icon={<PaymentIcon />}
-															label={t.logistique.fieldMontantTI}
-															value={formatMoney(order?.montant_titre_importation, order?.devise_titre_importation)}
-														/>
-													</Grid>
-													<Grid size={{ xs: 12, lg: 6 }}>
-														<InfoRow
-															icon={<InfoIcon />}
-															label={t.logistique.fieldStatutTI}
-															value={order?.statut_titre_importation}
-														/>
-														<InfoRow
-															icon={<CalendarTodayIcon />}
-															label={t.logistique.fieldDateTI}
-															value={formatDateOnly(order?.date_titre_importation)}
-														/>
-														<InfoRow
-															icon={<CalendarTodayIcon />}
-															label={t.logistique.fieldDateValidationTI}
-															value={formatDateOnly(order?.date_validation_titre_importation)}
-														/>
-													</Grid>
-												</Grid>
-											</DetailSection>
-										)}
-
-										{[1, 2, 4, 7].includes(selectedStep) && (
-											<LogistiqueDocumentsViewCard
-												items={documentFields
-													.filter(
-														(field) =>
-															({
-																proforma_fournisseur_file: 1,
-																titre_importation_file: 2,
-																swift_file: 2,
-																documents_originaux_file: 4,
-																justificatifs_file: 7,
-															})[field] === selectedStep,
-													)
-													.map((field) => ({
-														field,
-														label: documentLabels[field],
-														currentUrl: order?.[field] ?? null,
-													}))}
-											/>
-										)}
-
-										{selectedStep === 2 && (
-											<DetailSection title={t.logistique.paymentSection} icon={<PaymentIcon color="primary" />}>
-												<Stack spacing={2.5}>
-													{!order?.is_proforma_step_complete && (
-														<Alert variant="outlined" severity="info">
-															{t.logistique.paymentStepLocked}
-														</Alert>
-													)}
-													<Grid container spacing={2}>
-														<Grid size={{ xs: 12, lg: 6 }}>
-															<InfoRow
-																icon={<InfoIcon />}
-																label={t.logistique.fieldStatutTI}
-																value={order?.statut_titre_importation}
-															/>
-															<InfoRow
-																icon={<PaymentIcon />}
-																label={t.logistique.fieldPaymentStepStatus}
-																value={order?.statut_banque_paiement}
-															/>
-															<InfoRow
-																icon={<PaymentIcon />}
-																label={t.logistique.fieldAccountingStatus}
-																value={order?.statut_traitement_paiement}
-															/>
-															<InfoRow
-																icon={<EmailIcon />}
-																label={t.logistique.paymentEmailStatus}
-																value={
-																	order?.demande_paiement_email_statut ? (
-																		<Chip
-																			label={order.demande_paiement_email_statut}
-																			color={emailDeliveryColor(order.demande_paiement_email_statut)}
-																			size="small"
-																			variant="outlined"
-																		/>
-																	) : null
-																}
-															/>
-														</Grid>
-														<Grid size={{ xs: 12, lg: 6 }}>
-															<InfoRow
-																icon={<PersonIcon />}
-																label={t.logistique.fieldAssignedAccountant}
-																value={order?.paiement_assigne_a_name}
-															/>
-															<InfoRow
-																icon={<PaymentIcon />}
-																label={t.logistique.fieldMethodePaiement}
-																value={order?.methode_paiement}
-															/>
-															{order?.methode_paiement === 'LC' && (
-																<InfoRow
-																	icon={<PaymentIcon />}
-																	label={t.logistique.fieldAdvancePercentage}
-																	value={
-																		order.avance_pourcentage === null || order.avance_pourcentage === ''
-																			? '-'
-																			: `${formatNumberWithSpaces(order.avance_pourcentage, 2)} %`
-																	}
-																/>
-															)}
-															<InfoRow
-																icon={<PaymentIcon />}
-																label={t.logistique.fieldRemainingBalance}
-																value={formatMoney(order?.solde_restant, order?.devise_titre_importation)}
-															/>
-															<InfoRow
-																icon={<EmailIcon />}
-																label={t.logistique.paymentEmailRecipients}
-																value={order?.demande_paiement_email_destinataires?.join(', ')}
-															/>
-														</Grid>
-													</Grid>
-													{order?.demande_paiement_email_relance_disponible && (
-														<Alert
-															variant="outlined"
-															severity={
-																order.demande_paiement_email_statut === 'Historique non vérifié' ? 'warning' : 'error'
-															}
-															action={
-																isOrderResponsible && order.statut_paiement === 'En attente' ? (
-																	<PrimaryLoadingButton
-																		buttonText={t.logistique.retryPaymentEmail}
-																		size="small"
-																		loading={false}
-																		active={!isRetryingPaymentEmail}
-																		inverted
-																		color="inherit"
-																		onClick={handleRetryPaymentEmail}
-																	/>
-																) : undefined
-															}
-														>
-															{order.demande_paiement_email_statut === 'Historique non vérifié'
-																? t.logistique.emailDeliveryUnverified
-																: t.logistique.emailDeliveryError}
-															{order.demande_paiement_email_erreur ? `: ${order.demande_paiement_email_erreur}` : ''}
-														</Alert>
-													)}
-													{isOrderResponsible &&
-														!isOrderCancelled &&
-														order?.is_proforma_step_complete &&
-														order?.statut_paiement === 'Non demandé' && (
-															<Box sx={{ alignSelf: { xs: 'stretch', sm: 'flex-start' } }}>
-																<PrimaryLoadingButton
-																	buttonText={t.logistique.requestPayment}
-																	size="small"
-																	loading={false}
-																	active
-																	inverted
-																	type="button"
-																	startIcon={<PaymentIcon />}
-																	onClick={openPaymentRequest}
-																/>
-															</Box>
-														)}
-													{isOrderResponsible &&
-														order?.statut_paiement === 'Non demandé' &&
-														!hasCompleteImportTitle && (
-															<Alert variant="outlined" severity="warning">
-																{t.logistique.incompleteImportTitle}
-															</Alert>
-														)}
-
-													<Stack spacing={1.5}>
-														<Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-															{t.logistique.paymentSchedule}
-														</Typography>
-														{order?.echeancier_paiement?.length ? (
-															order.echeancier_paiement.map((installment) => (
-																<Card key={installment.id} variant="outlined" sx={{ borderRadius: 2 }}>
-																	<CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-																		<Stack spacing={1.5}>
-																			<Stack
-																				direction={{ xs: 'column', sm: 'row' }}
-																				sx={{ justifyContent: 'space-between', alignItems: { sm: 'center' }, gap: 1 }}
-																			>
-																				<Typography sx={{ fontWeight: 700 }}>
-																					{formatDateOnly(installment.date_echeance)} ·{' '}
-																					{formatNumberWithSpaces(installment.pourcentage, 2)} % ·{' '}
-																					{formatMoney(installment.montant_prevu, installment.devise)}
-																				</Typography>
-																				<Chip label={installment.statut_traitement} size="small" variant="outlined" />
-																			</Stack>
-																			{installment.preuve_email_statut !== 'Non demandé' && (
-																				<Chip
-																					icon={<EmailIcon />}
-																					label={`${t.logistique.sendPaymentProof}: ${installment.preuve_email_statut}`}
-																					color={emailDeliveryColor(installment.preuve_email_statut)}
-																					size="small"
-																					variant="outlined"
-																					sx={{ alignSelf: 'flex-start' }}
-																				/>
-																			)}
-																			{installment.preuve_email_relance_disponible && (
-																				<Alert
-																					variant="outlined"
-																					severity={
-																						installment.preuve_email_statut === 'Historique non vérifié'
-																							? 'warning'
-																							: 'error'
-																					}
-																				>
-																					{installment.preuve_email_statut === 'Historique non vérifié'
-																						? t.logistique.emailDeliveryUnverified
-																						: t.logistique.emailDeliveryError}
-																					{installment.preuve_email_erreur
-																						? `: ${installment.preuve_email_erreur}`
-																						: ''}
-																				</Alert>
-																			)}
-																			{installment.execution_enregistree_le && (
-																				<Typography variant="body2" color="text.secondary">
-																					{t.logistique.executedPaymentSummary(
-																						formatMoney(installment.montant_paye, installment.devise),
-																						formatDateOnly(installment.date_paiement),
-																					)}
-																				</Typography>
-																			)}
-																			{installment.justificatif_file && (
-																				<MuiLink
-																					href={installment.justificatif_file}
-																					target="_blank"
-																					rel="noopener noreferrer"
-																					sx={{ alignSelf: 'flex-start' }}
-																				>
-																					{t.logistique.openPaymentProof}
-																				</MuiLink>
-																			)}
-																			<Stack direction={{ xs: 'column', sm: 'row' }} sx={{ gap: 1, flexWrap: 'wrap' }}>
-																				{canProcessAssignedPayment &&
-																					installment.statut_traitement === 'Paiement à traiter' && (
-																						<PrimaryLoadingButton
-																							buttonText={t.logistique.startPayment}
-																							size="small"
-																							loading={false}
-																							active
-																							inverted
-																							startIcon={<PaymentIcon />}
-																							onClick={() => handleStartPayment(installment)}
-																						/>
-																					)}
-																				{canProcessAssignedPayment &&
-																					installment.statut_traitement === 'Paiement en cours' && (
-																						<PrimaryLoadingButton
-																							buttonText={t.logistique.recordPaymentExecution}
-																							size="small"
-																							loading={false}
-																							active
-																							inverted
-																							startIcon={<EditIcon />}
-																							onClick={() => openPaymentExecution(installment)}
-																						/>
-																					)}
-																				{canProcessAssignedPayment &&
-																					installment.statut_traitement ===
-																						'Paiement effectué – Justificatif à joindre' && (
-																						<PrimaryLoadingButton
-																							buttonText={t.logistique.validatePayment}
-																							size="small"
-																							loading={false}
-																							active
-																							inverted
-																							startIcon={<UploadFileIcon />}
-																							onClick={() => openPaymentValidation(installment)}
-																						/>
-																					)}
-																				{isOrderResponsible && installment.paiement_valide_le && (
-																					<FormControlLabel
-																						control={
-																							<Checkbox
-																								size="small"
-																								checked={installment.preuve_email_statut === 'Envoyé'}
-																								disabled={isUpdatingProofEmail}
-																								onChange={(event) =>
-																									handleProofEmailStatus(installment, event.target.checked)
-																								}
-																							/>
-																						}
-																						label={t.logistique.sendPaymentProof}
-																					/>
-																				)}
-																				{isOrderResponsible &&
-																					installment.preuve_email_statut === 'Envoyé' &&
-																					installment.preuve_envoyee_fournisseur_le &&
-																					!installment.reception_confirmee_le && (
-																						<PrimaryLoadingButton
-																							buttonText={t.logistique.confirmSupplierReceipt}
-																							size="small"
-																							loading={false}
-																							active
-																							inverted
-																							startIcon={<CheckCircleIcon />}
-																							onClick={() => handleConfirmReceipt(installment)}
-																						/>
-																					)}
-																			</Stack>
-																		</Stack>
-																	</CardContent>
-																</Card>
-															))
-														) : (
-															<Typography variant="body2" color="text.secondary">
-																{t.logistique.noPaymentSchedule}
-															</Typography>
-														)}
-													</Stack>
-													{canProcessAssignedPayment && order?.statut_paiement === 'En attente' && (
-														<PrimaryLoadingButton
-															buttonText={t.logistique.blockPayment}
-															size="small"
-															loading={false}
-															active
-															inverted
-															color="error"
-															startIcon={<CloseIcon />}
-															onClick={() => setShowRejectModal(true)}
-														/>
-													)}
-													{canStartSupplierPreparation && (
-														<PrimaryLoadingButton
-															buttonText={t.logistique.startSupplierPreparation}
-															size="small"
-															loading={false}
-															active={!isChangingWorkflowStatus}
-															inverted
-															startIcon={<InventoryIcon />}
-															onClick={handleStartSupplierPreparation}
-														/>
-													)}
-												</Stack>
-											</DetailSection>
-										)}
-
-										{selectedStep === 2 && (
-											<DetailSection title={t.logistique.traceabilitySection} icon={<HistoryIcon color="primary" />}>
-												<Grid container spacing={2}>
-													<Grid size={{ xs: 12, lg: 6 }}>
-														<InfoRow
-															icon={<SendIcon />}
-															label={t.logistique.requestPayment}
-															value={formatDate(order?.demande_paiement_envoyee_le ?? null)}
-														/>
-														<InfoRow
-															icon={<PersonIcon />}
-															label={t.logistique.paymentRequestSentBy}
-															value={order?.demande_paiement_envoyee_par_name}
-														/>
-													</Grid>
-													<Grid size={{ xs: 12, lg: 6 }}>
-														<InfoRow
-															icon={<CheckCircleIcon />}
-															label={t.logistique.validatePayment}
-															value={formatDate(order?.paiement_valide_le ?? null)}
-														/>
-														<InfoRow
-															icon={<PersonIcon />}
-															label={t.logistique.paymentValidatedBy}
-															value={order?.paiement_valide_par_name}
-														/>
-														<InfoRow
-															icon={<UploadFileIcon />}
-															label={t.logistique.swiftUploadedAt}
-															value={formatDate(order?.date_upload_swift ?? null)}
-														/>
-														<InfoRow
-															icon={<SendIcon />}
-															label={t.logistique.swiftSentAt}
-															value={formatDate(order?.swift_envoye_fournisseur_le ?? null)}
-														/>
-													</Grid>
-												</Grid>
-											</DetailSection>
-										)}
-
-										{selectedStep === 7 && (
-											<DetailSection title={t.logistique.costsSection} icon={<LocalShippingIcon color="primary" />}>
-												<Grid container spacing={2}>
-													<Grid size={{ xs: 12, lg: 6 }}>
-														<InfoRow
-															icon={<PaymentIcon />}
-															label={t.articles.colPrixAchat}
-															value={formatMoney(order?.cout_achat, order?.devise)}
-														/>
-														<InfoRow
-															icon={<LocalShippingIcon />}
-															label={t.logistique.fieldCoutTransport}
-															value={formatMoney(order?.cout_transport, order?.devise)}
-														/>
-														<InfoRow
-															icon={<LocalShippingIcon />}
-															label={t.logistique.fieldFraisTransit}
-															value={formatMoney(order?.frais_transit, order?.devise)}
-														/>
-														<InfoRow
-															icon={<LocalShippingIcon />}
-															label={t.logistique.fieldFraisDouane}
-															value={formatMoney(order?.frais_douane, order?.devise)}
-														/>
-													</Grid>
-													<Grid size={{ xs: 12, lg: 6 }}>
-														<InfoRow
-															icon={<PaymentIcon />}
-															label={t.logistique.fieldTva}
-															value={formatMoney(order?.tva, order?.devise)}
-														/>
-														<InfoRow
-															icon={<LocalShippingIcon />}
-															label={t.logistique.fieldLivraisonLocale}
-															value={formatMoney(order?.livraison_locale, order?.devise)}
-														/>
-														<InfoRow
-															icon={<PaymentIcon />}
-															label={t.logistique.fieldAutresFrais}
-															value={formatMoney(order?.autres_frais, order?.devise)}
-														/>
-														<InfoRow
-															icon={<PaymentIcon />}
-															label={t.logistique.colCoutTotal}
-															value={formatMoney(order?.cout_total, order?.devise)}
-														/>
-													</Grid>
-												</Grid>
-											</DetailSection>
-										)}
-
-										{(selectedStep === 0 || selectedStep === 1) && (
-											<DetailSection title={t.logistique.linesSection} icon={<ReceiptLongIcon color="primary" />}>
-												<Stack divider={<Divider flexItem />} spacing={2}>
-													{order?.lignes?.length ? (
-														order.lignes.map((line) => (
-															<Stack key={line.id} divider={<Divider flexItem />} spacing={0}>
-																<InfoRow
-																	icon={<InventoryIcon />}
-																	label={t.logistique.linesSection}
-																	value={
-																		<Stack spacing={0.25}>
-																			<MuiLink
-																				component={NextLink}
-																				href={ARTICLES_VIEW(line.article, company_id)}
-																				underline="hover"
-																				sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, fontWeight: 700 }}
-																			>
-																				{line.article_reference}
-																				<OpenInNewIcon sx={{ fontSize: 16 }} />
-																			</MuiLink>
-																			<Typography variant="body2">{line.designation}</Typography>
-																		</Stack>
-																	}
-																/>
-																<InfoRow
-																	icon={<BusinessIcon />}
-																	label={t.logistique.colClients}
-																	value={line.client_name}
-																/>
-																<InfoRow
-																	icon={<InventoryIcon />}
-																	label={t.documentForm.colQuantite}
-																	value={formatNumberWithSpaces(line.quantity, 3)}
-																/>
-																<InfoRow
-																	icon={<PaymentIcon />}
-																	label={t.totalsCard.totalPrixAchat}
-																	value={formatMoney(line.total_achat, line.devise_prix_achat)}
-																/>
-																{line.incoming_active && (
-																	<InfoRow
-																		icon={<LocalShippingIcon />}
-																		label={t.logistique.incomingStock}
-																		value={`${t.logistique.receivedQuantity} : ${formatNumberWithSpaces(line.received_quantity, 3)} — ${t.logistique.remainingQuantity} : ${formatNumberWithSpaces(line.remaining_quantity, 3)} — ${line.expected_emplacement_name || t.logistique.locationToDefine}`}
-																	/>
-																)}
-																{line.project_reference && (
-																	<InfoRow
-																		icon={<AssignmentTurnedInIcon />}
-																		label={t.logistique.colProjects}
-																		value={line.project_reference}
-																	/>
-																)}
-															</Stack>
-														))
-													) : (
-														<Typography variant="body2" color="text.secondary">
-															{t.common.noData}
-														</Typography>
-													)}
-												</Stack>
-											</DetailSection>
-										)}
-
-										<Accordion disableGutters elevation={0}>
-											<AccordionSummary expandIcon={<ExpandMoreIcon />}>
-												<Typography sx={{ fontWeight: 600 }}>{t.logistique.historySection}</Typography>
-											</AccordionSummary>
-											<AccordionDetails>
-												{' '}
-												<Stack spacing={0}>
-													{events.length ? (
-														events.map((event, index) => (
-															<Box
-																key={event.id}
-																sx={{
-																	display: 'grid',
-																	gridTemplateColumns: '32px minmax(0, 1fr)',
-																	columnGap: 2,
-																	pb: index === events.length - 1 ? 0 : 2.5,
-																}}
-															>
-																<Box sx={{ position: 'relative', display: 'flex', justifyContent: 'center', pt: 0.75 }}>
-																	<Box
-																		sx={{
-																			width: 12,
-																			height: 12,
-																			borderRadius: '50%',
-																			bgcolor: 'primary.main',
-																			border: '3px solid',
-																			borderColor: 'background.paper',
-																			boxShadow: '0 0 0 2px',
-																			color: 'primary.light',
-																			zIndex: 1,
-																		}}
-																	/>
-																	{index < events.length - 1 && (
-																		<Box
-																			sx={{
-																				position: 'absolute',
-																				top: 16,
-																				bottom: -20,
-																				width: 2,
-																				bgcolor: 'divider',
-																			}}
-																		/>
-																	)}
-																</Box>
-																<Stack spacing={0.75} sx={{ minWidth: 0 }}>
-																	<Stack
-																		direction={{ xs: 'column', md: 'row' }}
-																		sx={{ justifyContent: 'space-between', gap: 0.5 }}
-																	>
-																		<Typography sx={{ fontWeight: 700 }}>{event.action}</Typography>
-																		<Typography variant="body2" color="text.secondary" sx={{ flexShrink: 0 }}>
-																			{formatDate(event.date_created)}
-																		</Typography>
-																	</Stack>
-																	<Typography variant="body2" color="text.secondary">
-																		{event.user_name || '-'}
-																	</Typography>
-																	{(event.old_value || event.new_value) && (
-																		<Chip
-																			label={`${event.old_value || '-'} → ${event.new_value || '-'}`}
-																			size="small"
-																			variant="outlined"
-																			sx={{ alignSelf: 'flex-start', maxWidth: '100%' }}
-																		/>
-																	)}
-																	{event.note && <Typography variant="body2">{event.note}</Typography>}
-																</Stack>
-															</Box>
-														))
-													) : (
-														<Typography variant="body2" color="text.secondary">
-															{t.common.noData}
-														</Typography>
-													)}
-												</Stack>
-											</AccordionDetails>
-										</Accordion>
-
-										<Accordion disableGutters elevation={0}>
-											<AccordionSummary expandIcon={<ExpandMoreIcon />}>
-												<Typography sx={{ fontWeight: 600 }}>Remarques du processus</Typography>
-											</AccordionSummary>
-											<AccordionDetails>
-												{' '}
-												<Stack spacing={2}>
-													{(canManage || isOrderResponsible || canProcessAssignedPayment) && !isOrderCancelled && (
-														<Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr auto' }, gap: 1.5 }}>
-															<CustomTextInput
-																placeholder={t.logistique.placeholders.process_remark}
-																id="process_remark"
-																type="textarea"
-																minRows={3}
-																label="Remarque"
-																value={processRemark}
-																onChange={(event) => setProcessRemark(event.target.value)}
-																fullWidth
-																size="small"
-																theme={inputTheme}
-																startIcon={<NotesIcon fontSize="small" />}
-															/>
-															<Stack spacing={1} sx={{ minWidth: 210 }}>
-																<>
-																	<PrimaryLoadingButton
-																		buttonText={processFile?.name || 'Joindre un fichier'}
-																		size="small"
-																		loading={false}
-																		active
-																		inverted
-																		startIcon={<UploadFileIcon />}
-																		onClick={() => processFileInputRef.current?.click()}
-																	/>
-																	<input
-																		ref={processFileInputRef}
-																		type="file"
-																		hidden
-																		accept={acceptedDocumentTypes}
-																		onChange={(event) => setProcessFile(event.target.files?.[0] ?? null)}
-																	/>
-																</>
-																<PrimaryLoadingButton
-																	buttonText="Ajouter"
-																	size="small"
-																	loading={false}
-																	active={!!processRemark.trim() && !isAddingProcessNote}
-																	onClick={handleAddProcessNote}
-																/>
-															</Stack>
-														</Box>
-													)}
-													<Divider />
-													{order?.process_notes?.length ? (
-														order.process_notes.map((note) => (
-															<Stack key={note.id} spacing={0.5} sx={{ py: 1 }}>
-																<Stack
-																	direction={{ xs: 'column', sm: 'row' }}
-																	sx={{ justifyContent: 'space-between', gap: 1 }}
-																>
-																	<Chip
-																		label={note.statut}
-																		size="small"
-																		variant="outlined"
-																		sx={{ alignSelf: 'flex-start' }}
-																	/>
-																	<Typography variant="caption" color="text.secondary">
-																		{note.user_name || '-'} · {formatDate(note.date_created)}
-																	</Typography>
-																</Stack>
-																<Typography>{note.remarque}</Typography>
-																{note.fichier && (
-																	<MuiLink href={note.fichier} target="_blank" rel="noopener noreferrer">
-																		Ouvrir la pièce jointe
-																	</MuiLink>
-																)}
-															</Stack>
-														))
-													) : (
-														<Typography variant="body2" color="text.secondary">
-															Aucune remarque.
-														</Typography>
-													)}
-												</Stack>
-											</AccordionDetails>
-										</Accordion>
-									</Stack>
-								</DetailCard>
+								<LogistiqueHistoricalDetails
+									workflowSteps={workflowSteps}
+									selectedStep={selectedStep}
+									t={t}
+									order={order}
+									sourceOrderDates={sourceOrderDates}
+									canManage={canManage}
+									isOrderCancelled={isOrderCancelled}
+									setLaunchStatusDraft={setLaunchStatusDraft}
+									setShowLaunchStatusModal={setShowLaunchStatusModal}
+									isRecordingProformaRequest={isRecordingProformaRequest}
+									setShowProformaRequestModal={setShowProformaRequestModal}
+									targetQuantity={targetQuantity}
+									targetPriceLines={targetPriceLines}
+									isReviewingSupplierProforma={isReviewingSupplierProforma}
+									openSupplierProformaReview={openSupplierProformaReview}
+									documentLabels={documentLabels}
+									isOrderResponsible={isOrderResponsible}
+									isRetryingPaymentEmail={isRetryingPaymentEmail}
+									handleRetryPaymentEmail={handleRetryPaymentEmail}
+									openPaymentRequest={openPaymentRequest}
+									hasCompleteImportTitle={hasCompleteImportTitle}
+									canProcessAssignedPayment={canProcessAssignedPayment}
+									handleStartPayment={handleStartPayment}
+									openPaymentExecution={openPaymentExecution}
+									openPaymentValidation={openPaymentValidation}
+									isUpdatingProofEmail={isUpdatingProofEmail}
+									handleProofEmailStatus={handleProofEmailStatus}
+									handleConfirmReceipt={handleConfirmReceipt}
+									setShowRejectModal={setShowRejectModal}
+									canStartSupplierPreparation={canStartSupplierPreparation}
+									isChangingWorkflowStatus={isChangingWorkflowStatus}
+									handleStartSupplierPreparation={handleStartSupplierPreparation}
+									company_id={company_id}
+									events={events}
+									processRemark={processRemark}
+									setProcessRemark={setProcessRemark}
+									processFile={processFile}
+									processFileInputRef={processFileInputRef}
+									setProcessFile={setProcessFile}
+									isAddingProcessNote={isAddingProcessNote}
+									handleAddProcessNote={handleAddProcessNote}
+								/>
 							</Stack>
 						)}
 					</Stack>
@@ -1988,729 +838,87 @@ const LogistiqueViewClient: FC<Props> = ({ session, company_id, id }) => {
 						/>
 					)}
 					{showLaunchStatusModal && (
-						<ActionModals
-							title={t.logistique.launchStatusModalTitle}
-							titleIcon={<EditIcon />}
-							titleIconColor="#1976D2"
-							body={t.logistique.launchStatusModalBody}
-							onClose={() => setShowLaunchStatusModal(false)}
-							actions={[
-								{
-									text: t.common.cancel,
-									active: false,
-									onClick: () => setShowLaunchStatusModal(false),
-									icon: <CloseIcon />,
-									color: '#6B6B6B',
-								},
-								{
-									text: t.common.save,
-									active: true,
-									onClick: handleLaunchStatusChange,
-									icon: <CheckCircleIcon />,
-									color: '#1976D2',
-									disabled: isChangingLaunchStatus,
-								},
-							]}
-						>
-							<Box sx={{ mt: 2 }}>
-								<CustomDropDownSelect
-									placeholder={t.logistique.placeholders.statut_commande_lancement}
-									id="statut_commande_lancement"
-									label={t.logistique.fieldStepStatus}
-									items={logistiqueLaunchStatusItemsList}
-									value={launchStatusDraft}
-									onChange={(event) => setLaunchStatusDraft(event.target.value as LogistiqueLaunchStatus)}
-									size="small"
-									theme={inputTheme}
-									startIcon={<InfoIcon fontSize="small" />}
-									required
-								/>
-							</Box>
-						</ActionModals>
+						<LogistiqueHistoricalLaunchStatusDialog
+							t={t}
+							setShowLaunchStatusModal={setShowLaunchStatusModal}
+							handleLaunchStatusChange={handleLaunchStatusChange}
+							isChangingLaunchStatus={isChangingLaunchStatus}
+							launchStatusDraft={launchStatusDraft}
+							setLaunchStatusDraft={setLaunchStatusDraft}
+						/>
 					)}
 					{showProformaRequestModal && (
-						<ActionModals
-							title={t.logistique.proformaRequestModalTitle}
-							titleIcon={<RequestQuoteIcon />}
-							titleIconColor="#1976D2"
-							body={t.logistique.proformaRequestModalBody}
-							actions={[
-								{
-									text: t.common.cancel,
-									active: false,
-									onClick: () => setShowProformaRequestModal(false),
-									icon: <CloseIcon />,
-									color: '#6B6B6B',
-								},
-								{
-									text: t.logistique.recordProformaRequest,
-									active: Boolean(nextProformaFollowUp),
-									onClick: handleRecordProformaRequest,
-									icon: <RequestQuoteIcon />,
-									color: '#1976D2',
-									disabled: !nextProformaFollowUp || isRecordingProformaRequest,
-								},
-							]}
-						>
-							<DatePicker
-								label={t.logistique.fieldNextProformaFollowUp}
-								value={nextProformaFollowUp ? new Date(nextProformaFollowUp) : null}
-								onChange={(date) => setNextProformaFollowUp(date ? formatLocalDate(date) : '')}
-								format="dd/MM/yyyy"
-								disablePast
-								slotProps={{
-									textField: {
-										size: 'small',
-										fullWidth: true,
-										required: true,
-										sx: { mt: 2 },
-										slotProps: {
-											input: {
-												startAdornment: (
-													<InputAdornment position="start">
-														<CalendarTodayIcon fontSize="small" color="action" />
-													</InputAdornment>
-												),
-											},
-										},
-									},
-								}}
-							/>
-						</ActionModals>
+						<LogistiqueHistoricalProformaRequestDialog
+							t={t}
+							setShowProformaRequestModal={setShowProformaRequestModal}
+							nextProformaFollowUp={nextProformaFollowUp}
+							handleRecordProformaRequest={handleRecordProformaRequest}
+							isRecordingProformaRequest={isRecordingProformaRequest}
+							setNextProformaFollowUp={setNextProformaFollowUp}
+						/>
 					)}
 					{showProformaReviewModal && (
-						<ActionModals
-							title={t.logistique.proformaReviewModalTitle}
-							titleIcon={<DescriptionIcon />}
-							titleIconColor="#1976D2"
-							body={t.logistique.proformaReviewModalBody}
-							maxWidth="md"
-							fullWidth
-							onClose={() => setShowProformaReviewModal(false)}
-							actions={[
-								{
-									text: t.common.cancel,
-									active: false,
-									onClick: () => setShowProformaReviewModal(false),
-									icon: <CloseIcon />,
-									color: '#6B6B6B',
-								},
-								{
-									text: t.logistique.saveProformaReview,
-									active: true,
-									onClick: handleSupplierProformaReview,
-									icon: <CheckCircleIcon />,
-									color: '#1976D2',
-									disabled: !hasRequiredProformaData || !isProformaDecisionValid || isReviewingSupplierProforma,
-								},
-							]}
-						>
-							<Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mt: 2 }}>
-								<Card variant="outlined" sx={{ gridColumn: { sm: '1 / -1' }, bgcolor: 'action.hover' }}>
-									<CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-										<Grid container spacing={2}>
-											<Grid size={{ xs: 12, sm: 4 }}>
-												<Typography variant="caption" color="text.secondary">
-													{t.logistique.fieldTargetQuantity}
-												</Typography>
-												<Typography sx={{ fontWeight: 700 }}>{formatNumberWithSpaces(targetQuantity, 3)}</Typography>
-											</Grid>
-											<Grid size={{ xs: 12, sm: 4 }}>
-												<Typography variant="caption" color="text.secondary">
-													{t.logistique.fieldTargetPurchaseTotal}
-												</Typography>
-												<Typography sx={{ fontWeight: 700 }}>
-													{formatMoney(order?.cout_achat, order?.devise)}
-												</Typography>
-											</Grid>
-											<Grid size={{ xs: 12, sm: 4 }}>
-												<Typography variant="caption" color="text.secondary">
-													{t.logistique.fieldTargetUnitPrices}
-												</Typography>
-												<Stack spacing={0.25} sx={{ mt: 0.5 }}>
-													{targetPriceLines.length ? targetPriceLines : <Typography variant="body2">-</Typography>}
-												</Stack>
-											</Grid>
-										</Grid>
-									</CardContent>
-								</Card>
-								<CustomTextInput
-									placeholder={t.logistique.placeholders.numero_proforma_fournisseur}
-									id="numero_proforma_fournisseur"
-									type="text"
-									label={t.logistique.fieldSupplierProformaNumber}
-									value={supplierProformaData.numero_proforma_fournisseur}
-									onChange={(event) =>
-										setSupplierProformaData((prev) => ({
-											...prev,
-											numero_proforma_fournisseur: event.target.value,
-										}))
-									}
-									fullWidth
-									size="small"
-									theme={inputTheme}
-									startIcon={<ReceiptLongIcon fontSize="small" />}
-								/>
-								<DatePicker
-									label={t.logistique.fieldSupplierProformaDate}
-									value={
-										supplierProformaData.date_proforma_fournisseur
-											? new Date(supplierProformaData.date_proforma_fournisseur)
-											: null
-									}
-									onChange={(date) =>
-										setSupplierProformaData((prev) => ({
-											...prev,
-											date_proforma_fournisseur: date ? formatLocalDate(date) : '',
-										}))
-									}
-									format="dd/MM/yyyy"
-									slotProps={{
-										textField: {
-											size: 'small',
-											fullWidth: true,
-											required: true,
-											slotProps: {
-												input: {
-													startAdornment: (
-														<InputAdornment position="start">
-															<CalendarTodayIcon fontSize="small" color="action" />
-														</InputAdornment>
-													),
-												},
-											},
-										},
-									}}
-								/>
-								<FormattedNumberInput
-									placeholder={t.logistique.placeholders.montant_proforma_fournisseur}
-									id="montant_proforma_fournisseur"
-									type="text"
-									label={t.logistique.fieldSupplierProformaAmount}
-									value={supplierProformaData.montant_proforma_fournisseur}
-									onChange={(event) =>
-										setSupplierProformaData((prev) => ({
-											...prev,
-											montant_proforma_fournisseur: event.target.value,
-										}))
-									}
-									fullWidth
-									size="small"
-									theme={inputTheme}
-									startIcon={<PaymentIcon fontSize="small" />}
-									required
-								/>
-								<CustomDropDownSelect
-									placeholder={t.logistique.placeholders.devise_proforma_fournisseur}
-									id="devise_proforma_fournisseur"
-									label={t.logistique.fieldSupplierProformaCurrency}
-									items={logistiqueCurrencyItemsList}
-									value={supplierProformaData.devise_proforma_fournisseur}
-									onChange={(event) =>
-										setSupplierProformaData((prev) => ({
-											...prev,
-											devise_proforma_fournisseur: event.target.value,
-										}))
-									}
-									size="small"
-									theme={inputTheme}
-									startIcon={<PaymentIcon fontSize="small" />}
-									required
-								/>
-								<CustomTextInput
-									placeholder={t.logistique.placeholders.incoterm_proforma}
-									id="incoterm_proforma"
-									type="text"
-									label={t.logistique.fieldIncoterm}
-									value={supplierProformaData.incoterm}
-									onChange={(event) => setSupplierProformaData((prev) => ({ ...prev, incoterm: event.target.value }))}
-									fullWidth
-									size="small"
-									theme={inputTheme}
-									startIcon={<PublicIcon fontSize="small" />}
-									required
-								/>
-								<FormattedNumberInput
-									placeholder={t.logistique.placeholders.delai_proforma_jours}
-									id="delai_proforma_jours"
-									type="text"
-									decimals={0}
-									label={t.logistique.fieldSupplierLeadTime}
-									value={supplierProformaData.delai_proforma_jours}
-									onChange={(event) =>
-										setSupplierProformaData((prev) => ({ ...prev, delai_proforma_jours: event.target.value }))
-									}
-									fullWidth
-									size="small"
-									theme={inputTheme}
-									startIcon={<CalendarTodayIcon fontSize="small" />}
-									required
-								/>
-								<CustomTextInput
-									placeholder={t.logistique.placeholders.conditions_paiement_proforma}
-									id="conditions_paiement_proforma"
-									type="textarea"
-									minRows={3}
-									label={t.logistique.fieldConditionsPaiement}
-									value={supplierProformaData.conditions_paiement}
-									onChange={(event) =>
-										setSupplierProformaData((prev) => ({ ...prev, conditions_paiement: event.target.value }))
-									}
-									fullWidth
-									size="small"
-									theme={inputTheme}
-									startIcon={<PaymentIcon fontSize="small" />}
-									required
-								/>
-								<CustomDropDownSelect
-									placeholder={t.logistique.placeholders.decision_proforma}
-									id="decision_proforma"
-									label={t.logistique.fieldProformaDecision}
-									items={logistiqueProformaDecisionItems}
-									value={proformaDecision}
-									onChange={(event) =>
-										setProformaDecision(event.target.value as Exclude<LogistiqueProformaStatus, 'En attente'>)
-									}
-									size="small"
-									theme={inputTheme}
-									startIcon={<CheckCircleIcon fontSize="small" />}
-									required
-								/>
-								<Stack direction={{ xs: 'column', sm: 'row' }} sx={{ gridColumn: { sm: '1 / -1' }, gap: 2 }}>
-									<FormControlLabel
-										control={
-											<Checkbox
-												size="small"
-												checked={supplierProformaData.ecart_prix_proforma}
-												onChange={(event) =>
-													setSupplierProformaData((prev) => ({
-														...prev,
-														ecart_prix_proforma: event.target.checked,
-													}))
-												}
-											/>
-										}
-										label={t.logistique.fieldPriceVariance}
-									/>
-									<FormControlLabel
-										control={
-											<Checkbox
-												size="small"
-												checked={supplierProformaData.ecart_quantite_proforma}
-												onChange={(event) =>
-													setSupplierProformaData((prev) => ({
-														...prev,
-														ecart_quantite_proforma: event.target.checked,
-													}))
-												}
-											/>
-										}
-										label={t.logistique.fieldQuantityVariance}
-									/>
-									<FormControlLabel
-										control={
-											<Checkbox
-												size="small"
-												checked={supplierProformaData.ecart_autre_proforma}
-												onChange={(event) =>
-													setSupplierProformaData((prev) => ({
-														...prev,
-														ecart_autre_proforma: event.target.checked,
-													}))
-												}
-											/>
-										}
-										label={`${t.logistique.fieldOtherVariance} *`}
-									/>
-								</Stack>
-								<Box sx={{ gridColumn: { sm: '1 / -1' } }}>
-									<CustomTextInput
-										placeholder={t.logistique.placeholders.notes_ecarts_proforma}
-										id="notes_ecarts_proforma"
-										disabled={!hasProformaVariance}
-										type="textarea"
-										minRows={3}
-										label={t.logistique.fieldVarianceNotes}
-										value={supplierProformaData.notes_ecarts_proforma}
-										onChange={(event) =>
-											setSupplierProformaData((prev) => ({ ...prev, notes_ecarts_proforma: event.target.value }))
-										}
-										fullWidth
-										size="small"
-										theme={inputTheme}
-										startIcon={<NotesIcon fontSize="small" />}
-									/>
-								</Box>
-								<Box sx={{ gridColumn: { sm: '1 / -1' } }}>
-									<LogistiqueDocumentsFormCard
-										items={[
-											{
-												field: 'proforma_fournisseur_file',
-												label: t.logistique.fieldProformaFournisseurFile,
-												file: supplierProformaFile,
-												currentUrl: order?.proforma_fournisseur_file,
-											},
-										]}
-										selectedField="proforma_fournisseur_file"
-										onSelectedFieldChangeAction={() => undefined}
-										onFileChangeAction={(_field, file) => setSupplierProformaFile(file)}
-										onClearFileAction={() => setSupplierProformaFile(null)}
-										isLoading={isReviewingSupplierProforma}
-										accept={acceptedDocumentTypes}
-									/>
-								</Box>
-							</Box>
-						</ActionModals>
+						<LogistiqueHistoricalProformaReviewDialog
+							t={t}
+							setShowProformaReviewModal={setShowProformaReviewModal}
+							handleSupplierProformaReview={handleSupplierProformaReview}
+							hasRequiredProformaData={hasRequiredProformaData}
+							isProformaDecisionValid={isProformaDecisionValid}
+							isReviewingSupplierProforma={isReviewingSupplierProforma}
+							targetQuantity={targetQuantity}
+							order={order}
+							targetPriceLines={targetPriceLines}
+							supplierProformaData={supplierProformaData}
+							setSupplierProformaData={setSupplierProformaData}
+							proformaDecision={proformaDecision}
+							setProformaDecision={setProformaDecision}
+							hasProformaVariance={hasProformaVariance}
+							supplierProformaFile={supplierProformaFile}
+							setSupplierProformaFile={setSupplierProformaFile}
+						/>
 					)}
 					{showRequestPaymentModal && (
-						<ActionModals
-							title={t.logistique.requestPaymentModalTitle}
-							titleIcon={<PaymentIcon />}
-							titleIconColor="#2E7D32"
-							body={t.logistique.requestPaymentModalBody}
-							actions={[
-								{
-									text: t.common.cancel,
-									active: false,
-									onClick: () => setShowRequestPaymentModal(false),
-									icon: <CloseIcon />,
-									color: '#6B6B6B',
-								},
-								{
-									text: t.logistique.requestPayment,
-									active: hasCompleteImportTitle && hasCompletePaymentSchedule,
-									onClick: handleRequestPayment,
-									icon: <PaymentIcon />,
-									color: '#2E7D32',
-									disabled: !hasCompleteImportTitle || !hasCompletePaymentSchedule,
-								},
-							]}
-						>
-							<Stack spacing={2} sx={{ mt: 2 }}>
-								{!hasCompleteImportTitle && <Alert severity="warning">{t.logistique.incompleteImportTitle}</Alert>}
-								<Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-									{t.logistique.paymentSchedule}
-								</Typography>
-								{paymentSchedule.map((item, index) => (
-									<Box
-										key={index}
-										sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr auto' }, gap: 1.5 }}
-									>
-										<DatePicker
-											label={t.logistique.fieldDueDate}
-											value={item.date_echeance ? new Date(`${item.date_echeance}T00:00:00`) : null}
-											onChange={(date) =>
-												setPaymentSchedule((previous) =>
-													previous.map((row, rowIndex) =>
-														rowIndex === index ? { ...row, date_echeance: date ? formatLocalDate(date) : '' } : row,
-													),
-												)
-											}
-											format="dd/MM/yyyy"
-											slotProps={{
-												textField: {
-													size: 'small',
-													fullWidth: true,
-													required: true,
-													slotProps: {
-														input: {
-															startAdornment: (
-																<InputAdornment position="start">
-																	<CalendarTodayIcon fontSize="small" color="action" />
-																</InputAdornment>
-															),
-														},
-													},
-												},
-											}}
-										/>
-										<FormattedNumberInput
-											placeholder={t.logistique.placeholders.pourcentage}
-											id={`pourcentage_${index}`}
-											startIcon={<PaymentIcon fontSize="small" />}
-											type="text"
-											label={t.logistique.fieldPlannedAmount}
-											value={item.pourcentage}
-											onChange={(event) =>
-												setPaymentSchedule((previous) =>
-													previous.map((row, rowIndex) =>
-														rowIndex === index ? { ...row, pourcentage: event.target.value } : row,
-													),
-												)
-											}
-											fullWidth
-											size="small"
-											theme={inputTheme}
-											required
-										/>
-										<PrimaryLoadingButton
-											buttonText={t.common.delete}
-											size="small"
-											loading={false}
-											active={!(paymentSchedule.length === 1)}
-											inverted
-											iconOnly
-											startIcon={<DeleteIcon />}
-											color="error"
-											aria-label={t.common.delete}
-											onClick={() =>
-												setPaymentSchedule((previous) => previous.filter((_, rowIndex) => rowIndex !== index))
-											}
-										/>
-									</Box>
-								))}
-								<PrimaryLoadingButton
-									buttonText={t.logistique.addInstallment}
-									size="small"
-									loading={false}
-									active
-									inverted
-									startIcon={<AddIcon />}
-									onClick={() =>
-										setPaymentSchedule((previous) => [...previous, { date_echeance: '', pourcentage: '' }])
-									}
-								/>
-								<Alert severity={hasCompletePaymentSchedule ? 'success' : 'warning'}>
-									{t.logistique.scheduleTotal(formatNumberWithSpaces(scheduledPercentage, 2))}
-								</Alert>
-							</Stack>
-						</ActionModals>
+						<LogistiqueHistoricalRequestPaymentDialog
+							t={t}
+							setShowRequestPaymentModal={setShowRequestPaymentModal}
+							hasCompleteImportTitle={hasCompleteImportTitle}
+							hasCompletePaymentSchedule={hasCompletePaymentSchedule}
+							handleRequestPayment={handleRequestPayment}
+							paymentSchedule={paymentSchedule}
+							setPaymentSchedule={setPaymentSchedule}
+							scheduledPercentage={scheduledPercentage}
+						/>
 					)}
 					{showExecutionModal && (
-						<ActionModals
-							title={t.logistique.executionModalTitle}
-							titleIcon={<PaymentIcon />}
-							titleIconColor="#2E7D32"
-							body={t.logistique.executionModalBody}
-							actions={[
-								{
-									text: t.common.cancel,
-									active: false,
-									onClick: () => {
-										setShowExecutionModal(false);
-										setSelectedInstallment(null);
-									},
-									icon: <CloseIcon />,
-									color: '#6B6B6B',
-								},
-								{
-									text: t.logistique.recordPaymentExecution,
-									active: hasCompletePaymentData,
-									onClick: handleRecordPaymentExecution,
-									icon: <CheckCircleIcon />,
-									color: '#2E7D32',
-									disabled: !hasCompletePaymentData,
-								},
-							]}
-						>
-							<Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mt: 2 }}>
-								<DatePicker
-									label={t.logistique.fieldDatePaiement}
-									value={paymentData.date_paiement ? new Date(paymentData.date_paiement) : null}
-									onChange={(date) =>
-										setPaymentData((prev) => ({
-											...prev,
-											date_paiement: date ? formatLocalDate(date) : '',
-										}))
-									}
-									format="dd/MM/yyyy"
-									slotProps={{
-										textField: {
-											size: 'small',
-											fullWidth: true,
-											required: true,
-											slotProps: {
-												input: {
-													startAdornment: (
-														<InputAdornment position="start">
-															<CalendarTodayIcon fontSize="small" color="action" />
-														</InputAdornment>
-													),
-												},
-											},
-										},
-									}}
-								/>
-								<FormattedNumberInput
-									placeholder={t.logistique.placeholders.montant_paiement}
-									id="montant_paiement"
-									type="text"
-									label={t.logistique.fieldMontantPaiement}
-									value={paymentData.montant_paiement}
-									onChange={(event) => setPaymentData((prev) => ({ ...prev, montant_paiement: event.target.value }))}
-									fullWidth
-									size="small"
-									theme={inputTheme}
-									startIcon={<PaymentIcon fontSize="small" />}
-									required
-								/>
-								<CustomDropDownSelect
-									placeholder={t.logistique.placeholders.devise_paiement}
-									id="devise_paiement"
-									label={t.logistique.fieldDevisePaiement}
-									items={logistiqueCurrencyItemsList}
-									value={paymentData.devise_paiement}
-									onChange={(event) => setPaymentData((prev) => ({ ...prev, devise_paiement: event.target.value }))}
-									size="small"
-									theme={inputTheme}
-									startIcon={<PaymentIcon fontSize="small" />}
-									required
-								/>
-								<CustomTextInput
-									placeholder={t.logistique.placeholders.banque_paiement}
-									id="banque_paiement"
-									type="text"
-									label={t.logistique.fieldBanquePaiement}
-									value={paymentData.banque_paiement}
-									onChange={(event) => setPaymentData((prev) => ({ ...prev, banque_paiement: event.target.value }))}
-									fullWidth
-									size="small"
-									theme={inputTheme}
-									startIcon={<PaymentIcon fontSize="small" />}
-									required
-								/>
-								<CustomTextInput
-									placeholder={t.logistique.placeholders.reference_paiement}
-									id="reference_paiement"
-									type="text"
-									label={t.logistique.fieldReferencePaiement}
-									value={paymentData.reference_paiement}
-									onChange={(event) => setPaymentData((prev) => ({ ...prev, reference_paiement: event.target.value }))}
-									fullWidth
-									size="small"
-									theme={inputTheme}
-									startIcon={<ReceiptLongIcon fontSize="small" />}
-								/>
-								<CustomDropDownSelect
-									placeholder={t.logistique.placeholders.methode_paiement}
-									id="methode_paiement"
-									label={t.logistique.fieldMethodePaiement}
-									items={logistiquePaymentMethodItemsList}
-									value={paymentData.methode_paiement}
-									onChange={(event) =>
-										setPaymentData((prev) => ({
-											...prev,
-											methode_paiement: event.target.value as LogistiquePaymentMethod,
-										}))
-									}
-									size="small"
-									theme={inputTheme}
-									startIcon={<PaymentIcon fontSize="small" />}
-									required
-								/>
-								<Box sx={{ gridColumn: { sm: '1 / -1' } }}>
-									<CustomTextInput
-										placeholder={t.logistique.placeholders.commentaire_paiement}
-										id="commentaire_paiement"
-										type="textarea"
-										minRows={3}
-										label={t.logistique.fieldCommentairePaiement}
-										value={paymentData.commentaire_paiement}
-										onChange={(event) =>
-											setPaymentData((prev) => ({ ...prev, commentaire_paiement: event.target.value }))
-										}
-										fullWidth
-										size="small"
-										theme={inputTheme}
-										startIcon={<NotesIcon fontSize="small" />}
-									/>
-								</Box>
-							</Box>
-						</ActionModals>
+						<LogistiqueHistoricalPaymentExecutionDialog
+							t={t}
+							setShowExecutionModal={setShowExecutionModal}
+							setSelectedInstallment={setSelectedInstallment}
+							hasCompletePaymentData={hasCompletePaymentData}
+							handleRecordPaymentExecution={handleRecordPaymentExecution}
+							paymentData={paymentData}
+							setPaymentData={setPaymentData}
+						/>
 					)}
 					{showValidateModal && (
-						<ActionModals
-							title={t.logistique.paymentModalTitle}
-							titleIcon={<UploadFileIcon />}
-							titleIconColor="#2E7D32"
-							body={t.logistique.paymentModalBody}
-							actions={[
-								{
-									text: t.common.cancel,
-									active: false,
-									onClick: () => {
-										setShowValidateModal(false);
-										setSelectedInstallment(null);
-										setSwiftProofFile(null);
-									},
-									icon: <CloseIcon />,
-									color: '#6B6B6B',
-								},
-								{
-									text: t.logistique.validatePayment,
-									active: Boolean(swiftProofFile),
-									onClick: handleValidatePayment,
-									icon: <CheckCircleIcon />,
-									color: '#2E7D32',
-									disabled: !swiftProofFile,
-								},
-							]}
-						>
-							<Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, p: 2, mt: 2 }}>
-								<input
-									id="swift-proof-file"
-									ref={swiftProofInputRef}
-									type="file"
-									accept={acceptedDocumentTypes}
-									hidden
-									onChange={(event) => setSwiftProofFile(event.target.files?.[0] ?? null)}
-								/>
-								<Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
-									<PrimaryLoadingButton
-										buttonText={swiftProofFile ? t.logistique.replaceDocument : t.logistique.uploadDocument}
-										size="small"
-										loading={false}
-										active
-										inverted
-										startIcon={<UploadFileIcon />}
-										onClick={() => swiftProofInputRef.current?.click()}
-									/>
-									<Typography variant="body2" color="text.secondary" sx={{ overflowWrap: 'anywhere' }}>
-										{swiftProofFile
-											? `${t.logistique.selectedFile}: ${swiftProofFile.name}`
-											: t.logistique.fieldBankProof}
-									</Typography>
-								</Stack>
-							</Box>
-						</ActionModals>
+						<LogistiqueHistoricalPaymentValidationDialog
+							t={t}
+							setShowValidateModal={setShowValidateModal}
+							setSelectedInstallment={setSelectedInstallment}
+							setSwiftProofFile={setSwiftProofFile}
+							swiftProofFile={swiftProofFile}
+							handleValidatePayment={handleValidatePayment}
+							swiftProofInputRef={swiftProofInputRef}
+						/>
 					)}
 					{showRejectModal && (
-						<ActionModals
-							title={t.logistique.rejectModalTitle}
-							titleIcon={<CloseIcon />}
-							titleIconColor="#D32F2F"
-							body={t.logistique.rejectModalBody}
-							actions={[
-								{
-									text: t.common.cancel,
-									active: false,
-									onClick: () => setShowRejectModal(false),
-									icon: <CloseIcon />,
-									color: '#6B6B6B',
-								},
-								{
-									text: t.logistique.rejectPayment,
-									active: true,
-									onClick: handleRejectPayment,
-									icon: <CloseIcon />,
-									color: '#D32F2F',
-								},
-							]}
-						>
-							<CustomTextInput
-								placeholder={t.logistique.placeholders.reject_note}
-								id="reject_note"
-								type="textarea"
-								minRows={3}
-								label={t.reglements.fieldObservations}
-								value={rejectNote}
-								onChange={(event) => setRejectNote(event.target.value)}
-								fullWidth
-								size="small"
-								theme={inputTheme}
-								startIcon={<NotesIcon fontSize="small" />}
-							/>
-						</ActionModals>
+						<LogistiqueHistoricalPaymentRejectionDialog
+							t={t}
+							setShowRejectModal={setShowRejectModal}
+							handleRejectPayment={handleRejectPayment}
+							rejectNote={rejectNote}
+							setRejectNote={setRejectNote}
+						/>
 					)}
 				</NavigationBar>
 			</Stack>

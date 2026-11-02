@@ -1,5 +1,6 @@
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
-import type { ReactNode } from 'react';
+import type { TranslationDictionary } from '@/types/languageTypes';
+import type { Dispatch, ReactElement, ReactNode, RefObject, SetStateAction } from 'react';
 
 export type LogistiqueChartCardProps = {
 	title: string;
@@ -547,3 +548,168 @@ export type LogistiqueViewDetailCardProps = {
 	icon: ReactNode;
 	children: ReactNode;
 };
+
+export type LogistiqueHistoricalDetailsProps = {
+	workflowSteps: string[];
+	selectedStep: number;
+	t: TranslationDictionary;
+	order: LogistiqueOrder | undefined;
+	sourceOrderDates: string;
+	canManage: boolean;
+	isOrderCancelled: boolean;
+	setLaunchStatusDraft: Dispatch<SetStateAction<LogistiqueLaunchStatus>>;
+	setShowLaunchStatusModal: Dispatch<SetStateAction<boolean>>;
+	isRecordingProformaRequest: boolean;
+	setShowProformaRequestModal: Dispatch<SetStateAction<boolean>>;
+	targetQuantity: number;
+	targetPriceLines: ReactElement[];
+	isReviewingSupplierProforma: boolean;
+	openSupplierProformaReview: () => void;
+	documentLabels: Record<LogistiqueDocumentField, string>;
+	isOrderResponsible: boolean;
+	isRetryingPaymentEmail: boolean;
+	handleRetryPaymentEmail: () => Promise<void>;
+	openPaymentRequest: () => void;
+	hasCompleteImportTitle: boolean;
+	canProcessAssignedPayment: boolean;
+	handleStartPayment: (installment: LogistiquePaymentInstallment) => Promise<void>;
+	openPaymentExecution: (installment: LogistiquePaymentInstallment) => void;
+	openPaymentValidation: (installment: LogistiquePaymentInstallment) => void;
+	isUpdatingProofEmail: boolean;
+	handleProofEmailStatus: (installment: LogistiquePaymentInstallment, emailSent: boolean) => Promise<void>;
+	handleConfirmReceipt: (installment: LogistiquePaymentInstallment) => Promise<void>;
+	setShowRejectModal: Dispatch<SetStateAction<boolean>>;
+	canStartSupplierPreparation: boolean;
+	isChangingWorkflowStatus: boolean;
+	handleStartSupplierPreparation: () => Promise<void>;
+	company_id: number;
+	events: LogistiqueEvent[];
+	processRemark: string;
+	setProcessRemark: Dispatch<SetStateAction<string>>;
+	processFile: File | null;
+	processFileInputRef: RefObject<HTMLInputElement | null>;
+	setProcessFile: Dispatch<SetStateAction<File | null>>;
+	isAddingProcessNote: boolean;
+	handleAddProcessNote: () => Promise<void>;
+};
+
+export type LogistiqueHistoricalLaunchStatusDialogProps = {
+	t: TranslationDictionary;
+	setShowLaunchStatusModal: Dispatch<SetStateAction<boolean>>;
+	handleLaunchStatusChange: () => Promise<void>;
+	isChangingLaunchStatus: boolean;
+	launchStatusDraft: LogistiqueLaunchStatus;
+	setLaunchStatusDraft: Dispatch<SetStateAction<LogistiqueLaunchStatus>>;
+};
+
+export type LogistiqueHistoricalProformaRequestDialogProps = {
+	t: TranslationDictionary;
+	setShowProformaRequestModal: Dispatch<SetStateAction<boolean>>;
+	nextProformaFollowUp: string;
+	handleRecordProformaRequest: () => Promise<void>;
+	isRecordingProformaRequest: boolean;
+	setNextProformaFollowUp: Dispatch<SetStateAction<string>>;
+};
+
+export type LogistiqueHistoricalProformaReviewDialogProps = {
+	t: TranslationDictionary;
+	setShowProformaReviewModal: Dispatch<SetStateAction<boolean>>;
+	handleSupplierProformaReview: () => Promise<void>;
+	hasRequiredProformaData: boolean;
+	isProformaDecisionValid: boolean;
+	isReviewingSupplierProforma: boolean;
+	targetQuantity: number;
+	order: LogistiqueOrder | undefined;
+	targetPriceLines: ReactElement[];
+	supplierProformaData: {
+		numero_proforma_fournisseur: string;
+		date_proforma_fournisseur: string;
+		montant_proforma_fournisseur: string;
+		devise_proforma_fournisseur: string;
+		incoterm: string;
+		conditions_paiement: string;
+		delai_proforma_jours: string;
+		ecart_prix_proforma: boolean;
+		ecart_quantite_proforma: boolean;
+		ecart_autre_proforma: boolean;
+		notes_ecarts_proforma: string;
+	};
+	setSupplierProformaData: Dispatch<
+		SetStateAction<LogistiqueHistoricalProformaReviewDialogProps['supplierProformaData']>
+	>;
+	proformaDecision: 'En contrôle' | 'Correction demandée' | 'Validée' | 'Refusée';
+	setProformaDecision: Dispatch<SetStateAction<'En contrôle' | 'Correction demandée' | 'Validée' | 'Refusée'>>;
+	hasProformaVariance: boolean;
+	supplierProformaFile: File | null;
+	setSupplierProformaFile: Dispatch<SetStateAction<File | null>>;
+};
+
+export type LogistiqueHistoricalRequestPaymentDialogProps = {
+	t: TranslationDictionary;
+	setShowRequestPaymentModal: Dispatch<SetStateAction<boolean>>;
+	hasCompleteImportTitle: boolean;
+	hasCompletePaymentSchedule: boolean;
+	handleRequestPayment: () => Promise<void>;
+	paymentSchedule: { date_echeance: string; pourcentage: string }[];
+	setPaymentSchedule: Dispatch<SetStateAction<LogistiqueHistoricalRequestPaymentDialogProps['paymentSchedule']>>;
+	scheduledPercentage: number;
+};
+
+export type LogistiqueHistoricalPaymentExecutionDialogProps = {
+	t: TranslationDictionary;
+	setShowExecutionModal: Dispatch<SetStateAction<boolean>>;
+	setSelectedInstallment: Dispatch<SetStateAction<LogistiquePaymentInstallment | null>>;
+	hasCompletePaymentData: boolean;
+	handleRecordPaymentExecution: () => Promise<void>;
+	paymentData: {
+		date_paiement: string;
+		montant_paiement: string;
+		devise_paiement: string;
+		banque_paiement: string;
+		reference_paiement: string;
+		methode_paiement: LogistiquePaymentMethod;
+		commentaire_paiement: string;
+	};
+	setPaymentData: Dispatch<SetStateAction<LogistiqueHistoricalPaymentExecutionDialogProps['paymentData']>>;
+};
+
+export type LogistiqueHistoricalPaymentValidationDialogProps = {
+	t: TranslationDictionary;
+	setShowValidateModal: Dispatch<SetStateAction<boolean>>;
+	setSelectedInstallment: Dispatch<SetStateAction<LogistiquePaymentInstallment | null>>;
+	setSwiftProofFile: Dispatch<SetStateAction<File | null>>;
+	swiftProofFile: File | null;
+	handleValidatePayment: () => Promise<void>;
+	swiftProofInputRef: RefObject<HTMLInputElement | null>;
+};
+
+export type LogistiqueHistoricalPaymentRejectionDialogProps = {
+	t: TranslationDictionary;
+	setShowRejectModal: Dispatch<SetStateAction<boolean>>;
+	handleRejectPayment: () => Promise<void>;
+	rejectNote: string;
+	setRejectNote: Dispatch<SetStateAction<string>>;
+};
+
+export type LogistiqueHistoricalPaymentProps = Pick<
+	LogistiqueHistoricalDetailsProps,
+	| 't'
+	| 'order'
+	| 'isOrderResponsible'
+	| 'isRetryingPaymentEmail'
+	| 'handleRetryPaymentEmail'
+	| 'isOrderCancelled'
+	| 'openPaymentRequest'
+	| 'hasCompleteImportTitle'
+	| 'canProcessAssignedPayment'
+	| 'handleStartPayment'
+	| 'openPaymentExecution'
+	| 'openPaymentValidation'
+	| 'isUpdatingProofEmail'
+	| 'handleProofEmailStatus'
+	| 'handleConfirmReceipt'
+	| 'setShowRejectModal'
+	| 'canStartSupplierPreparation'
+	| 'isChangingWorkflowStatus'
+	| 'handleStartSupplierPreparation'
+>;

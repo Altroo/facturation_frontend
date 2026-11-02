@@ -3,6 +3,7 @@ import { TextDecoder } from 'node:util';
 import { getSession, signOut } from 'next-auth/react';
 import axios, { AxiosError, AxiosHeaders, type AxiosInstance, type InternalAxiosRequestConfig } from 'axios';
 import {
+	logisticsFormPayload,
 	chatRequest,
 	consumeChatStream,
 	downloadInvoicePDF,
@@ -598,5 +599,34 @@ describe('CORS response helpers', () => {
 			expect(updatedResponse.statusText).toBe('Created');
 			expect(await updatedResponse.text()).toBe('Test Body');
 		});
+	});
+});
+
+describe('logistics form payloads', () => {
+	it('keeps structured values when no file needs multipart encoding', () => {
+		expect(
+			logisticsFormPayload({
+				action: 'proforma',
+				lignes: [{ article: 9, quantity: '150' }],
+				absent: undefined,
+				cleared: null,
+			}),
+		).toEqual({ action: 'proforma', lignes: [{ article: 9, quantity: '150' }], cleared: null });
+	});
+	it('preserves the uploaded document and encodes line values for the same request', () => {
+		const document = new File(['proof'], 'proof.pdf', { type: 'application/pdf' });
+		const payload = logisticsFormPayload({
+			action: 'proforma',
+			file: document,
+			lignes: [{ article: 9, quantity: '150' }],
+			cleared: null,
+			absent: undefined,
+		});
+		expect(payload).toBeInstanceOf(FormData);
+		const form = payload as FormData;
+		expect(form.get('file')).toBe(document);
+		expect(form.get('lignes')).toBe('[{"article":9,"quantity":"150"}]');
+		expect(form.get('cleared')).toBe('');
+		expect(form.has('absent')).toBe(false);
 	});
 });

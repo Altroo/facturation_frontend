@@ -1,13 +1,18 @@
-import { aiWritingFields, NECTAR_RAISON_SOCIALE } from '@/utils/rawData';
-import type { ListScope } from '@/types/routeTypes';
 import type { SalePriceBasis } from '@/types/articleTypes';
 import type { ChatMessage, NavigationTarget } from '@/types/chatAiTypes';
+import type {
+	LogistiqueEmailDeliveryStatus,
+	LogistiqueProformaStatus,
+	LogistiqueSupplierProformaReviewAction,
+} from '@/types/logistiqueTypes';
+import type { ListScope } from '@/types/routeTypes';
+import { aiWritingFields, NECTAR_RAISON_SOCIALE } from '@/utils/rawData';
 
+import type { APIContentTypeInterface, ApiErrorResponseType, InitStateToken } from '@/types/_initTypes';
+import { SITE_ROOT } from '@/utils/routes';
 import type { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import axios, { AxiosHeaders } from 'axios';
 import { getSession, signOut } from 'next-auth/react';
-import { SITE_ROOT } from '@/utils/routes';
-import type { APIContentTypeInterface, ApiErrorResponseType, InitStateToken } from '@/types/_initTypes';
 
 /**
  * Handles unauthorized response by clearing cookies, signing out, and resetting token.
@@ -398,33 +403,30 @@ export const getCompanyDocumentLabelForKey = (fieldLabels: Record<string, string
  * the first detail string is returned. Otherwise, returns the fallback message.
  */
 export const extractApiErrorMessage = (error: unknown, fallback: string): string => {
-	if (
-		typeof error === 'object' &&
-		error !== null &&
-		'data' in error &&
-		typeof (error as { data: unknown }).data === 'object' &&
-		(error as { data: { details?: Record<string, string[] | string> } }).data !== null
-	) {
-		const data = (error as { data: { message?: string; details?: Record<string, string[] | string> | string } }).data;
-		const details = data.details;
-		if (typeof details === 'string' && details.trim().length > 0) {
-			return details;
+	const visited = new Set<object>();
+	const firstDetail = (value: unknown): string | undefined => {
+		if (typeof value === 'string') return value.trim() ? value : undefined;
+		if (!value || typeof value !== 'object' || visited.has(value)) return undefined;
+		visited.add(value);
+		for (const entry of Object.values(value)) {
+			const message = firstDetail(entry);
+			if (message) return message;
 		}
-		if (details && typeof details === 'object') {
-			for (const values of Object.values(details)) {
-				if (Array.isArray(values) && values.length > 0) {
-					return values[0];
-				}
-				if (typeof values === 'string' && values.length > 0) {
-					return values;
-				}
-			}
-		}
-		if (data.message) {
-			return data.message;
-		}
-	}
-	return fallback;
+		return undefined;
+	};
+	const messageFrom = (value: unknown): string | undefined => {
+		if (!value || typeof value !== 'object' || visited.has(value)) return undefined;
+		visited.add(value);
+		const payload = value as Record<string, unknown>;
+		// RTK mutations may throw the payload or a data/error envelope.
+		return (
+			messageFrom(payload.error) ??
+			messageFrom(payload.data) ??
+			firstDetail(payload.details) ??
+			(typeof payload.message === 'string' && payload.message.trim() ? payload.message : undefined)
+		);
+	};
+	return messageFrom(error) ?? fallback;
 };
 
 export const reloadApp = (url: string) => window.location.replace(url);
@@ -740,4 +742,41 @@ export const logisticsChangeProposal = (
 	proposal.set('remarque', reason.trim());
 	proposal.set('modifications', JSON.stringify(changes));
 	return proposal;
+};
+
+export const getLogistiqueProformaReviewAction = (
+	status: Exclude<LogistiqueProformaStatus, 'En attente'>,
+): LogistiqueSupplierProformaReviewAction => {
+	switch (status) {
+		case 'En contrôle':
+			return 'control';
+		case 'Correction demandée':
+			return 'request_correction';
+		case 'Validée':
+			return 'validate';
+		case 'Refusée':
+			return 'reject';
+	}
+};
+
+export const logistiqueEmailDeliveryColor = (status: LogistiqueEmailDeliveryStatus) => {
+	if (status === 'Envoyé') return 'success' as const;
+	if (status === 'Échec') return 'error' as const;
+	if (status === 'En attente' || status === 'Envoi en cours') return 'warning' as const;
+	return 'default' as const;
+};
+
+export const formatLogistiqueMoney = (value: string | number | null | undefined, devise = 'MAD') =>
+	`${formatNumberWithSpaces(value ?? 0, 2)} ${devise}`;
+
+export const formatLogistiqueDate = (value: string | null | undefined) => {
+	if (!value) return '-';
+	const [datePart] = value.split('T');
+	const [year, month, day] = datePart.split('-').map(Number);
+	if (!year || !month || !day) return formatDate(value);
+	return new Intl.DateTimeFormat('fr-FR', {
+		year: 'numeric',
+		month: 'short',
+		day: '2-digit',
+	}).format(new Date(year, month - 1, day));
 };

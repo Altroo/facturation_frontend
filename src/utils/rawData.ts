@@ -1,7 +1,6 @@
-import { version } from '../../package.json';
 import type { AccountGenderCodeValueType, DropDownType, PasswordResetCodeField } from '@/types/accountTypes';
-import type { TranslationDictionary } from '@/types/languageTypes';
 import type { CompanyLike } from '@/types/companyDocumentsTypes';
+import type { TranslationDictionary } from '@/types/languageTypes';
 import type {
 	LogistiqueDocumentField,
 	LogistiqueFormValues,
@@ -13,6 +12,8 @@ import type {
 	LogistiqueProformaStatus,
 	LogistiqueStatut,
 } from '@/types/logistiqueTypes';
+import type { PurchaseFormMode } from '@/types/supplierPurchaseTypes';
+import { version } from '../../package.json';
 
 export const genderItemsList: Array<AccountGenderCodeValueType> = [
 	{
@@ -471,4 +472,19 @@ export const historicalLogisticsNextStatuses: Record<string, string[]> = {
 	transit: ['Dédouanement', 'Réception locale'],
 	reception: ['Livraison client'],
 	couts: ['Clôture'],
+};
+
+export const purchaseFormTitles: Record<PurchaseFormMode, string> = {
+	dossier: 'Informations du dossier',
+	proforma: 'Proforma fournisseur et conformité',
+	titre: 'Titre d’importation',
+	production: 'Préparation fournisseur',
+	expedition: 'Expédition et documents',
+	transit: 'Transit et douane',
+	reception: 'Réception des marchandises',
+	couts: 'Coûts du dossier',
+	demande_paiement: 'Demande de paiement',
+	paiement: 'Enregistrer le paiement',
+	justificatif: 'Justificatif bancaire',
+	remarque: 'Ajouter une remarque',
 };

@@ -1,3 +1,15 @@
+import type { ArticleClass, EmplacementClass, MarqueClass } from '@/models/classes';
+import type { DropDownType } from '@/types/accountTypes';
+import type { TranslationDictionary } from '@/types/languageTypes';
+import type {
+	LogistiqueFormProps,
+	LogistiqueOrder,
+	LogistiquePaymentInstallment,
+	LogistiqueResponsibleOption,
+	LogistiqueSupplier,
+} from '@/types/logistiqueTypes';
+import type { FormikProps } from 'formik';
+import type { Dispatch, ReactElement, ReactNode, SetStateAction } from 'react';
 export type PurchaseFormMode =
 	| 'dossier'
 	| 'proforma'
@@ -10,8 +22,7 @@ export type PurchaseFormMode =
 	| 'demande_paiement'
 	| 'paiement'
 	| 'justificatif'
-	| 'remarque'
-	| 'repertoire';
+	| 'remarque';
 
 export type PurchaseDecision = 'control' | 'request_correction' | 'validate' | 'reject';
 
@@ -87,8 +98,6 @@ export type PurchaseFormValues = {
 	montant_paye: string;
 	reference_paiement: string;
 	commentaire_paiement: string;
-	nom: string;
-	email_contact: string;
 	lignes: PurchaseLineValues[];
 	reception_lignes: PurchaseReceiptLineValues[];
 	proforma_fournisseur_file: File | null;
@@ -108,4 +117,78 @@ export type SupplierPurchaseSchemaContext = {
 	existingTitleFile?: boolean;
 	managedReceipt?: boolean;
 	maxPayment?: number;
+};
+
+export type SupplierPurchaseFormContentProps = LogistiqueFormProps & {
+	token: string;
+	mode: PurchaseFormMode;
+	order?: LogistiqueOrder;
+	echeanceId: number;
+	correctionId?: number;
+	proposalMode?: boolean;
+};
+
+export type SupplierPurchaseFormFieldsProps = {
+	attempted: boolean;
+	formik: FormikProps<PurchaseFormValues>;
+	t: TranslationDictionary;
+	disabled: boolean;
+	isCorrection: boolean;
+	responsibles: LogistiqueResponsibleOption[];
+	order: LogistiqueOrder | undefined;
+	locations: EmplacementClass[];
+	mode: PurchaseFormMode;
+	id: number | undefined;
+	numberPreview: { numero_commande: string } | undefined;
+	numberPreviewError: unknown;
+	suppliers: LogistiqueSupplier[];
+	filteredBrands: MarqueClass[];
+	brands: MarqueClass[];
+	articles: Partial<ArticleClass>[];
+	setSearch: Dispatch<SetStateAction<string>>;
+	addNewArticle: () => Promise<void>;
+	loadingArticles: boolean;
+	hasAnomaly: boolean;
+	transitAfterReceipt: boolean;
+	managedReceipt: boolean;
+	installment: LogistiquePaymentInstallment | undefined;
+};
+
+export type SupplierPurchaseDraftOptions = Pick<
+	SupplierPurchaseFormContentProps,
+	'company_id' | 'id' | 'token' | 'mode'
+> & {
+	userId: number | null;
+	formik: Pick<FormikProps<PurchaseFormValues>, 'values' | 'setValues'>;
+	setApiError: Dispatch<SetStateAction<string>>;
+};
+
+export type SupplierPurchaseProformaFieldsProps = Pick<
+	SupplierPurchaseFormFieldsProps,
+	'formik' | 'articles' | 'setSearch' | 'disabled' | 'addNewArticle' | 'loadingArticles' | 'hasAnomaly'
+> & {
+	text: (
+		name: string,
+		label: string,
+		icon?: ReactNode,
+		required?: boolean,
+		multiline?: boolean,
+		helper?: string,
+		readOnly?: boolean,
+	) => ReactElement;
+	date: (name: string, label: string, required?: boolean, helper?: string, readOnly?: boolean) => ReactElement;
+	number: (name: string, label: string, icon?: ReactNode, decimals?: number, required?: boolean) => ReactElement;
+	select: (name: string, label: string, items: string[], icon?: ReactNode, required?: boolean) => ReactElement;
+	t: TranslationDictionary;
+	errorFor: (name: string) => string | undefined;
+	articlesTotal: number;
+	autocomplete: (
+		name: string,
+		label: string,
+		items: DropDownType[],
+		required?: boolean,
+		icon?: ReactNode,
+	) => ReactElement;
+	checkbox: (name: keyof PurchaseFormValues, label: string) => ReactElement;
+	decisionItems: DropDownType[];
 };
