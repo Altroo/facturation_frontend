@@ -174,7 +174,7 @@ it('proposes actual edits on a completed historical step with a reason', async (
 	window.history.replaceState(null, '', '/dashboard/logistique/7/edit?company_id=12&etape=dossier&proposer=1');
 	await renderForm();
 	const submit = screen.getByRole('button', { name: 'Soumettre les modifications' });
-	expect(submit).toBeDisabled();
+	expect(submit).toBeEnabled();
 	fireEvent.change(screen.getByRole('textbox', { name: /Description|Remarque/i }), {
 		target: { value: 'Correction du dossier' },
 	});
@@ -194,4 +194,33 @@ it('proposes actual edits on a completed historical step with a reason', async (
 		}),
 	);
 	expect(mockEdit).not.toHaveBeenCalled();
+});
+
+it.each(['', '   '])('shows the historical proposal reason field error after submitting %p', async (reasonValue) => {
+	(useGetLogistiqueQuery as jest.Mock).mockReturnValue({
+		data: {
+			...order,
+			workflow: {
+				etape_courante: 'expedition',
+				etapes: [{ key: 'dossier', label: 'Dossier', completed: true, accessible: true }],
+			},
+		},
+	});
+	window.history.replaceState(null, '', '/dashboard/logistique/7/edit?company_id=12&etape=dossier&proposer=1');
+	await renderForm();
+	const submit = screen.getByRole('button', { name: 'Soumettre les modifications' });
+	const reason = screen.getByRole('textbox', { name: /Motif de la modification/ });
+
+	expect(submit).toBeEnabled();
+	expect(reason).not.toHaveAttribute('aria-invalid', 'true');
+	fireEvent.change(reason, { target: { value: reasonValue } });
+	fireEvent.click(submit);
+	await waitFor(() => expect(reason).toHaveAttribute('aria-invalid', 'true'));
+	expect(reason).toHaveAccessibleDescription(t.validation.required);
+	expect(mockPropose).not.toHaveBeenCalled();
+	expect(mockEdit).not.toHaveBeenCalled();
+	expect(mockPush).not.toHaveBeenCalled();
+	fireEvent.change(reason, { target: { value: 'Erreur de saisie' } });
+	await waitFor(() => expect(reason).not.toHaveAttribute('aria-invalid', 'true'));
+	expect(submit).toBeEnabled();
 });

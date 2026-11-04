@@ -46,6 +46,7 @@ export type PurchaseReceiptLineValues = {
 };
 
 export type PurchaseFormValues = {
+	correction_remarque?: string;
 	fournisseur_record: string;
 	fournisseur: string;
 	fournisseur_email: string;

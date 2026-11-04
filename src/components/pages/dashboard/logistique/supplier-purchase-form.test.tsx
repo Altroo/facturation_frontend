@@ -375,7 +375,7 @@ it('submits edited values and a reason for approval instead of directly saving t
 	});
 	await renderForm('dossier&proposer=1');
 	const submit = screen.getByRole('button', { name: 'Soumettre les modifications' });
-	expect(submit).toBeDisabled();
+	expect(submit).toBeEnabled();
 	fireEvent.change(screen.getByRole('textbox', { name: 'E-mail du fournisseur' }), {
 		target: { value: 'corrected@example.com' },
 	});
@@ -396,6 +396,32 @@ it('submits edited values and a reason for approval instead of directly saving t
 		}),
 	);
 	expect(mockPush).toHaveBeenCalledWith(`${LOGISTIQUE_VIEW(7, 12)}&etape=dossier`);
+});
+
+it.each(['', '   '])('shows the proposal reason field error after submitting %p', async (reasonValue) => {
+	(useGetLogistiqueQuery as jest.Mock).mockReturnValue({
+		data: {
+			...order,
+			workflow: {
+				etape_courante: 'proforma',
+				etapes: [{ key: 'dossier', label: 'Dossier', completed: true, accessible: true }],
+			},
+		},
+	});
+	await renderForm('dossier&proposer=1');
+	const submit = screen.getByRole('button', { name: 'Soumettre les modifications' });
+	const reason = screen.getByRole('textbox', { name: /Motif de la modification/ });
+	expect(submit).toBeEnabled();
+	expect(reason).not.toHaveAttribute('aria-invalid', 'true');
+	fireEvent.change(reason, { target: { value: reasonValue } });
+	fireEvent.click(submit);
+	await waitFor(() => expect(reason).toHaveAttribute('aria-invalid', 'true'));
+	expect(reason).toHaveAccessibleDescription('Ce champ est obligatoire.');
+	expect(mockPurchase).not.toHaveBeenCalled();
+	expect(mockPush).not.toHaveBeenCalled();
+	fireEvent.change(reason, { target: { value: 'Coordonnées à corriger' } });
+	await waitFor(() => expect(reason).not.toHaveAttribute('aria-invalid', 'true'));
+	expect(submit).toBeEnabled();
 });
 
 it('does not allow proposal mode to open a future step', async () => {

@@ -60,7 +60,6 @@ export default function SupplierPurchaseFormContent({
 	proposalMode = false,
 }: SupplierPurchaseFormContentProps) {
 	const isCorrection = !!correctionId || proposalMode;
-	const [correctionReason, setCorrectionReason] = useState('');
 	const router = useRouter();
 	const query = useSearchParams();
 	const { onSuccess, onError } = useToast();
@@ -125,7 +124,12 @@ export default function SupplierPurchaseFormContent({
 				etape: query.get('etape_correction') ?? mode,
 				...(correctionId ? { correction_id: correctionId } : {}),
 			};
-		if (proposalMode) data = logisticsChangeProposal(data, query.get('etape_correction') ?? mode, correctionReason);
+		if (proposalMode)
+			data = logisticsChangeProposal(
+				data,
+				query.get('etape_correction') ?? mode,
+				formik.values.correction_remarque ?? '',
+			);
 		return purchaseAction({ id: targetId, data });
 	};
 	const [extract, { isLoading: extracting }] = useExtractImportTitleMutation();
@@ -134,6 +138,7 @@ export default function SupplierPurchaseFormContent({
 	const [validatePayment] = useValidateLogistiquePaymentMutation();
 	const [addNote] = useAddLogistiqueProcessNoteMutation();
 	const initialValues: PurchaseFormValues = {
+		correction_remarque: '',
 		fournisseur_record: value(order?.fournisseur_record),
 		fournisseur: order?.fournisseur ?? '',
 		fournisseur_email: order?.fournisseur_email ?? '',
@@ -238,6 +243,8 @@ export default function SupplierPurchaseFormContent({
 	const formik = useFormik<PurchaseFormValues>({
 		initialValues,
 		validateOnMount: true,
+		validate: (values) =>
+			proposalMode && !values.correction_remarque?.trim() ? { correction_remarque: t.validation.required } : {},
 		validationSchema: toFormikValidationSchema(
 			getSupplierPurchaseSchema(mode, {
 				approvedCorrection: isCorrection,
@@ -250,10 +257,6 @@ export default function SupplierPurchaseFormContent({
 		onSubmit: async (values, { setFieldError }) => {
 			if (!draftReady) return;
 			setApiError('');
-			if (proposalMode && !correctionReason.trim()) {
-				setApiError('Expliquez le motif de la modification.');
-				return;
-			}
 			const optionalNumbers = new Set<keyof PurchaseFormValues>([
 				'poids_net',
 				'poids_brut',
@@ -649,18 +652,25 @@ export default function SupplierPurchaseFormContent({
 							{full(
 								<CustomTextInput
 									id="correction_remarque"
+									name="correction_remarque"
 									type="textarea"
 									theme={inputTheme}
 									startIcon={<Notes fontSize="small" />}
 									label="Motif de la modification"
 									placeholder="Expliquez pourquoi ces valeurs doivent être corrigées"
-									helperText="Les valeurs actuelles seront conservées jusqu’à la validation de votre proposition."
+									helperText={
+										(attempted || formik.touched.correction_remarque) && formik.errors.correction_remarque
+											? formik.errors.correction_remarque
+											: 'Les valeurs actuelles seront conservées jusqu’à la validation de votre proposition.'
+									}
+									error={!!formik.errors.correction_remarque && (attempted || !!formik.touched.correction_remarque)}
 									size="small"
 									fullWidth
 									minRows={3}
 									required
-									value={correctionReason}
-									onChange={(event) => setCorrectionReason(event.target.value)}
+									value={formik.values.correction_remarque ?? ''}
+									onChange={formik.handleChange}
+									onBlur={formik.handleBlur}
 									disabled={disabled}
 								/>,
 							)}
@@ -689,11 +699,7 @@ export default function SupplierPurchaseFormContent({
 					<Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
 						<PrimaryLoadingButton
 							buttonText={proposalMode ? 'Soumettre les modifications' : 'Enregistrer'}
-							active={
-								!disabled &&
-								(!proposalMode || (!!correctionReason.trim() && formik.dirty)) &&
-								(!['demande_paiement', 'paiement', 'justificatif'].includes(mode) || !!installment)
-							}
+							active={!disabled && (!['demande_paiement', 'paiement', 'justificatif'].includes(mode) || !!installment)}
 							loading={formik.isSubmitting}
 							onClick={() => {
 								setAttempted(true);

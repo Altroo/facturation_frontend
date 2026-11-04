@@ -436,6 +436,7 @@ export type LogistiqueSupplierDeleteDialogProps = {
 };
 
 export type LogistiqueFormValues = {
+	correction_remarque?: string;
 	proformas: number[];
 	fournisseur: string;
 	devise: string;
