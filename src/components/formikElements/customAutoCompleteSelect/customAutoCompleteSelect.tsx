@@ -1,6 +1,6 @@
 'use client';
 
-import { type Key, type HTMLAttributes } from 'react';
+import { Children, isValidElement, type ReactNode, type Key, type HTMLAttributes } from 'react';
 import TextField from '@mui/material/TextField';
 import { ThemeProvider } from '@/providers/scopedThemeProvider';
 import type { DropDownType } from '@/types/accountTypes';
@@ -81,43 +81,59 @@ const CustomAutoCompleteSelect = <Multiple extends boolean = false>({
 				renderOption={(props, option) =>
 					(renderOptionProp || defaultRenderOption)(props as HTMLAttributes<HTMLLIElement> & { key: Key }, option)
 				}
-				renderInput={(params) => (
-					<TextField
-						{...params}
-						label={label}
-						placeholder={placeholder}
-						error={error}
-						helperText={helperText}
-						required={required}
-						sx={{
-							'& .MuiOutlinedInput-root': {
-								borderRadius: '12px',
-								...(startIcon ? { paddingLeft: '14px !important' } : {}),
-							},
-						}}
-						slotProps={{
-							...params.slotProps,
-							...slotProps,
+				renderInput={(params) => {
+					const adornment = params.slotProps.input.endAdornment;
+					const buttons = isValidElement<{ children?: ReactNode }>(adornment)
+						? Children.toArray(adornment.props.children)
+						: [];
+					return (
+						<TextField
+							{...params}
+							label={label}
+							placeholder={placeholder}
+							error={error}
+							helperText={helperText}
+							required={required}
+							sx={{
+								'& .MuiOutlinedInput-root': {
+									borderRadius: '12px',
+									...(startIcon ? { paddingLeft: '14px !important' } : {}),
+									...(endIcon ? { paddingRight: '6px !important' } : {}),
+								},
+							}}
+							slotProps={{
+								...params.slotProps,
+								...slotProps,
 
-							input: {
-								...params.slotProps.input,
-								...slotProps?.input,
-								startAdornment: (
-									<>
-										{startIcon && <InputAdornment position="start">{startIcon}</InputAdornment>}
-										{params.slotProps.input.startAdornment}
-									</>
-								),
-								endAdornment: (
-									<>
-										{params.slotProps.input.endAdornment}
-										{endIcon && <InputAdornment position="end">{endIcon}</InputAdornment>}
-									</>
-								),
-							},
-						}}
-					/>
-				)}
+								input: {
+									...params.slotProps.input,
+									...slotProps?.input,
+									startAdornment: (
+										<>
+											{startIcon && <InputAdornment position="start">{startIcon}</InputAdornment>}
+											{params.slotProps.input.startAdornment}
+										</>
+									),
+									endAdornment: (
+										<>
+											{endIcon ? (
+												<Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+													{buttons.slice(0, -1)}
+													<InputAdornment position="end" sx={{ ml: 0 }}>
+														{endIcon}
+													</InputAdornment>
+													{buttons.at(-1)}
+												</Box>
+											) : (
+												adornment
+											)}
+										</>
+									),
+								},
+							}}
+						/>
+					);
+				}}
 			/>
 		</ThemeProvider>
 	);

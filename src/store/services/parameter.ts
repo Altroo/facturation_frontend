@@ -1,3 +1,4 @@
+import type { LogisticsParameter, LogisticsParameterKind } from '@/types/parameterTypes';
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { isAuthenticatedInstance } from '@/utils/helpers';
 import { axiosBaseQuery } from '@/utils/axiosBaseQuery';
@@ -193,6 +194,44 @@ export const uniteApi = createApi({
 	}),
 });
 
+export const incotermApi = createApi({
+	reducerPath: 'incotermApi',
+	tagTypes: ['LogisticsParameter'],
+	baseQuery: axiosBaseQuery((api) =>
+		isAuthenticatedInstance(
+			() => getInitStateToken(api.getState() as RootState),
+			() => api.dispatch(initToken()),
+		),
+	),
+	endpoints: (builder) => ({
+		getLogisticsParameterList: builder.query<
+			LogisticsParameter[],
+			{ kind: LogisticsParameterKind; company_id: number }
+		>({
+			query: ({ kind, company_id }) => ({ url: `/parameter/${kind}/`, method: 'GET', params: { company_id } }),
+			providesTags: ['LogisticsParameter'],
+		}),
+		addLogisticsParameter: builder.mutation<
+			LogisticsParameter,
+			{ kind: LogisticsParameterKind; data: { nom: string; company: number } }
+		>({
+			query: ({ kind, data }) => ({ url: `/parameter/${kind}/`, method: 'POST', data }),
+			invalidatesTags: ['LogisticsParameter'],
+		}),
+		editLogisticsParameter: builder.mutation<
+			LogisticsParameter,
+			{ kind: LogisticsParameterKind; id: number; data: { nom: string; company: number } }
+		>({
+			query: ({ kind, id, data }) => ({ url: `/parameter/${kind}/${id}/`, method: 'PUT', data }),
+			invalidatesTags: ['LogisticsParameter'],
+		}),
+		deleteLogisticsParameter: builder.mutation<void, { kind: LogisticsParameterKind; id: number }>({
+			query: ({ kind, id }) => ({ url: `/parameter/${kind}/${id}/`, method: 'DELETE' }),
+			invalidatesTags: ['LogisticsParameter'],
+		}),
+	}),
+});
+
 export const emplacementApi = createApi({
 	reducerPath: 'emplacementApi',
 	tagTypes: ['Emplacement'],
@@ -338,12 +377,8 @@ export const {
 	useAddModePaiementMutation,
 } = modePaiementApi;
 
-export const {
-	useGetMarqueListQuery,
-	useDeleteMarqueMutation,
-	useEditMarqueMutation,
-	useAddMarqueMutation,
-} = marqueApi;
+export const { useGetMarqueListQuery, useDeleteMarqueMutation, useEditMarqueMutation, useAddMarqueMutation } =
+	marqueApi;
 
 export const {
 	useGetCategorieListQuery,
@@ -352,12 +387,7 @@ export const {
 	useAddCategorieMutation,
 } = categorieApi;
 
-export const {
-	useGetUniteListQuery,
-	useDeleteUniteMutation,
-	useEditUniteMutation,
-	useAddUniteMutation,
-} = uniteApi;
+export const { useGetUniteListQuery, useDeleteUniteMutation, useEditUniteMutation, useAddUniteMutation } = uniteApi;
 
 export const {
 	useGetEmplacementListQuery,
@@ -366,16 +396,14 @@ export const {
 	useAddEmplacementMutation,
 } = emplacementApi;
 
-export const {
-	useGetCitiesListQuery,
-	useDeleteCityMutation,
-	useEditCityMutation,
-	useAddCityMutation,
-} = citiesApi;
+export const { useGetCitiesListQuery, useDeleteCityMutation, useEditCityMutation, useAddCityMutation } = citiesApi;
+
+export const { useGetLivreParListQuery, useDeleteLivreParMutation, useEditLivreParMutation, useAddLivreParMutation } =
+	livreParApi;
 
 export const {
-	useGetLivreParListQuery,
-	useDeleteLivreParMutation,
-	useEditLivreParMutation,
-	useAddLivreParMutation,
-} = livreParApi;
+	useGetLogisticsParameterListQuery,
+	useAddLogisticsParameterMutation,
+	useEditLogisticsParameterMutation,
+	useDeleteLogisticsParameterMutation,
+} = incotermApi;

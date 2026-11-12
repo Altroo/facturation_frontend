@@ -255,6 +255,36 @@ describe('Zod Schema Validation', () => {
 		};
 
 		it.each([
+			['1676,80', '1676,80', 'MAD', 'MAD', 'HT', 20, true],
+			['1 676,80', '1 676,80', 'EUR', 'EUR', 'HT', 20, true],
+			[0, 0, 'MAD', 'MAD', 'HT', 20, true],
+			[1676.8, 1676.79, 'MAD', 'MAD', 'HT', 20, false],
+			[1676.8, 2012.16, 'MAD', 'MAD', 'TTC', 20, true],
+			[1676.8, 1676.8, 'MAD', 'MAD', 'TTC', 20, false],
+			[16768, 1676.8, 'MAD', 'EUR', 'HT', 20, true],
+		])(
+			'compares %s purchase and %s sale at currency and tax precision',
+			(purchase, sale, buyCurrency, sellCurrency, basis, vat, valid) => {
+				const result = articleSchema.safeParse({
+					...article,
+					prix_achat: purchase,
+					prix_vente: sale,
+					devise_prix_achat: buyCurrency,
+					devise_prix_vente: sellCurrency,
+					prix_vente_base: basis,
+					tva: vat,
+				});
+				expect(result.success).toBe(valid);
+				if (!valid && !result.success)
+					expect(result.error.issues).toEqual(
+						expect.arrayContaining([
+							expect.objectContaining({ path: ['prix_vente'], message: expect.stringContaining('supérieur ou égal') }),
+						]),
+					);
+			},
+		);
+
+		it.each([
 			[true, 'Produit', null, false],
 			[true, 'Produit', 1, true],
 			[true, 'Service', null, true],
@@ -1764,7 +1794,7 @@ describe('Zod Schema Validation', () => {
 			).not.toThrow();
 		});
 
-		it('fails when prix_vente = prix_achat (not strictly greater)', () => {
+		it('accepts equal purchase and sale prices', () => {
 			expect(() =>
 				articleSchema.parse({
 					type_article: 'Produit',
@@ -1775,7 +1805,7 @@ describe('Zod Schema Validation', () => {
 					prix_achat: 100,
 					prix_vente: 100,
 				}),
-			).toThrow();
+			).not.toThrow();
 		});
 
 		it('validates tva field as optional number', () => {

@@ -1,4 +1,4 @@
-import { type ChangeEvent } from 'react';
+import { type ChangeEvent, type ReactNode } from 'react';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { createTheme } from '@mui/material/styles';
@@ -25,6 +25,7 @@ jest.mock('@/utils/hooks', () => ({
 			},
 			addEntityModal: {
 				addError: (label: string) => `Ajouter ${label}`,
+				deleteError: (label: string) => `Impossible de supprimer ${label}.`,
 			},
 		},
 	}),
@@ -81,14 +82,17 @@ jest.mock('@/components/htmlElements/modals/actionModal/actionModals', () => ({
 		title,
 		body,
 		actions,
+		children,
 	}: {
 		title: string;
 		body: string;
 		actions: Array<{ text: string; onClick: () => void }>;
+		children?: ReactNode;
 	}) => (
 		<div data-testid="action-modal">
 			<div>{title}</div>
 			<div>{body}</div>
+			{children}
 			{actions.map((action) => (
 				<button key={action.text} onClick={action.onClick}>
 					{action.text}
@@ -101,6 +105,31 @@ jest.mock('@/components/htmlElements/modals/actionModal/actionModals', () => ({
 describe('EntityCrudControls', () => {
 	const inputTheme = createTheme();
 	const selectedItem: DropDownType = { code: 'Matériaux', value: '12' };
+
+	it('keeps a used selection and displays the API rejection inside the delete dialog', async () => {
+		const request = createMutationResult({});
+		request.unwrap = () =>
+			Promise.reject({ data: { details: { nom: ['Cette valeur est déjà utilisée dans un dossier.'] } } });
+		const onDeleteSuccess = jest.fn();
+		render(
+			<EntityCrudControls
+				label="catégorie"
+				icon={<span />}
+				inputTheme={inputTheme}
+				selectedItem={selectedItem}
+				addEntity={() => createMutationResult({})}
+				editEntity={() => createMutationResult({})}
+				deleteEntity={() => request}
+				onAddSuccess={jest.fn()}
+				onDeleteSuccess={onDeleteSuccess}
+			/>,
+		);
+		fireEvent.click(screen.getByTitle('Supprimer'));
+		fireEvent.click(within(screen.getByTestId('action-modal')).getByRole('button', { name: 'Supprimer' }));
+		expect(await screen.findByRole('alert')).toHaveTextContent('déjà utilisée dans un dossier');
+		expect(screen.getByTestId('action-modal')).toBeInTheDocument();
+		expect(onDeleteSuccess).not.toHaveBeenCalled();
+	});
 
 	it('handles add, edit and delete with the selected dropdown item', async () => {
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars

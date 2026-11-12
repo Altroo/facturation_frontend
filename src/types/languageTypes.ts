@@ -1613,6 +1613,7 @@ export type TranslationDictionary = {
 		fieldLabel: (label: string) => string;
 		requiredError: (label: string) => string;
 		addError: (label: string) => string;
+		deleteError: (label: string) => string;
 		cancelBtn: string;
 		addBtn: string;
 	};

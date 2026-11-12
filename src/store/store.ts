@@ -14,6 +14,7 @@ import {
 	categorieApi,
 	marqueApi,
 	uniteApi,
+	incotermApi,
 	modePaiementApi,
 	livreParApi,
 } from '@/store/services/parameter';
@@ -50,6 +51,7 @@ const rootReducer = combineReducers({
 	[categorieApi.reducerPath]: categorieApi.reducer,
 	[marqueApi.reducerPath]: marqueApi.reducer,
 	[uniteApi.reducerPath]: uniteApi.reducer,
+	[incotermApi.reducerPath]: incotermApi.reducer,
 	[modePaiementApi.reducerPath]: modePaiementApi.reducer,
 	[livreParApi.reducerPath]: livreParApi.reducer,
 	[deviApi.reducerPath]: deviApi.reducer,
@@ -96,6 +98,7 @@ export const makeStore = (): SagaStore => {
 					categorieApi.middleware,
 					marqueApi.middleware,
 					uniteApi.middleware,
+					incotermApi.middleware,
 					modePaiementApi.middleware,
 					livreParApi.middleware,
 					deviApi.middleware,

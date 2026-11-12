@@ -896,6 +896,7 @@ describe('articlePricing', () => {
 				reference: 'PRICE-TEST',
 				designation: 'Article test',
 				company: 1,
+				marque: 1,
 				prix_achat: 105,
 				prix_vente: price,
 				prix_vente_base: basis,

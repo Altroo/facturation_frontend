@@ -2,7 +2,7 @@
 
 import { extractApiErrorMessage, runWithCleanup } from '@/utils/helpers';
 import { type FC, useState } from 'react';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Stack } from '@mui/material';
+import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Stack } from '@mui/material';
 import { Close as CloseIcon, Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
 import AddEntityModal from '@/components/shared/addEntityModal/addEntityModal';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
@@ -28,6 +28,7 @@ const EntityCrudControls: FC<EntityCrudControlsProps> = ({
 	const [editName, setEditName] = useState('');
 	const [editError, setEditError] = useState<string | null>(null);
 	const [deleteOpen, setDeleteOpen] = useState(false);
+	const [deleteError, setDeleteError] = useState<string | null>(null);
 	const [actionLoading, setActionLoading] = useState(false);
 
 	const selectedId = (() => {
@@ -71,14 +72,18 @@ const EntityCrudControls: FC<EntityCrudControlsProps> = ({
 		setActionLoading(true);
 		await runWithCleanup(
 			async () => {
-				const request = deleteEntity({ id: selectedId });
-				if (typeof request.unwrap === 'function') {
-					await request.unwrap();
-				} else {
-					await request;
+				try {
+					const request = deleteEntity({ id: selectedId });
+					if (typeof request.unwrap === 'function') {
+						await request.unwrap();
+					} else {
+						await request;
+					}
+					setDeleteOpen(false);
+					onDeleteSuccess?.();
+				} catch (error) {
+					setDeleteError(extractApiErrorMessage(error, t.addEntityModal.deleteError(label)));
 				}
-				setDeleteOpen(false);
-				onDeleteSuccess?.();
 			},
 			() => setActionLoading(false),
 		);
@@ -94,7 +99,10 @@ const EntityCrudControls: FC<EntityCrudControlsProps> = ({
 						</IconButton>
 						<IconButton
 							size="small"
-							onClick={() => setDeleteOpen(true)}
+							onClick={() => {
+								setDeleteError(null);
+								setDeleteOpen(true);
+							}}
 							title={t.common.delete}
 							color="error"
 							disabled={disabled}
@@ -170,7 +178,9 @@ const EntityCrudControls: FC<EntityCrudControlsProps> = ({
 						},
 					]}
 					onClose={() => setDeleteOpen(false)}
-				/>
+				>
+					{deleteError && <Alert severity="error">{deleteError}</Alert>}
+				</ActionModals>
 			)}
 		</>
 	);

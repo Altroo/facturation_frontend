@@ -216,6 +216,9 @@ export type LogistiqueOrder = {
 	marques_names: string[];
 	devise: string;
 	incoterm: string;
+	incoterm_record?: number | null;
+	origine_marchandise_record?: number | null;
+	nature_marchandise_record?: number | null;
 	transport: string;
 	conditions_paiement: string;
 	description: string;

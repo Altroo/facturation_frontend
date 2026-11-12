@@ -1,7 +1,7 @@
 'use client';
 
 import { runWithErrorHandler } from '@/utils/helpers';
-import { type FC, useState } from 'react';
+import { type FC, useId, useState } from 'react';
 import { Box, Button, Modal, Typography } from '@mui/material';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import type { ApiErrorResponseType } from '@/types/_initTypes';
@@ -10,6 +10,7 @@ import type { AddEntityModalProps } from '@/types/uiTypes';
 
 const AddEntityModal: FC<AddEntityModalProps> = ({ open, setOpen, label, icon, inputTheme, mutationFn, onSuccess }) => {
 	const { t } = useLanguage();
+	const titleId = useId();
 	const [newName, setNewName] = useState('');
 	const [error, setError] = useState<string | null>(null);
 
@@ -22,6 +23,9 @@ const AddEntityModal: FC<AddEntityModalProps> = ({ open, setOpen, label, icon, i
 			keepMounted={false}
 		>
 			<Box
+				role="dialog"
+				aria-modal="true"
+				aria-labelledby={titleId}
 				sx={{
 					p: 3,
 					bgcolor: 'background.paper',
@@ -34,6 +38,7 @@ const AddEntityModal: FC<AddEntityModalProps> = ({ open, setOpen, label, icon, i
 				}}
 			>
 				<Typography
+					id={titleId}
 					variant="h6"
 					sx={{
 						mb: 2,

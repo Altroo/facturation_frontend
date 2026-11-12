@@ -347,7 +347,7 @@ export const articleSchema = z
 			const deviseVente = (data.devise_prix_vente ?? 'MAD') as 'MAD' | 'EUR' | 'USD';
 			const aInMAD = a * rates[deviseAchat];
 			const vInMAD = calculateSalePriceHT(v, data.tva ?? 0, data.prix_vente_base) * rates[deviseVente];
-			return vInMAD > aInMAD;
+			return Math.round(vInMAD * 100) >= Math.round(aInMAD * 100);
 		},
 		{ error: INPUT_PRICE_VENTE_ACHAT, path: ['prix_vente'] },
 	);

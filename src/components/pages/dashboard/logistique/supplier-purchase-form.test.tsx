@@ -44,6 +44,19 @@ jest.mock('@/store/services/article', () => ({
 }));
 jest.mock('@/store/services/parameter', () => ({
 	useGetMarqueListQuery: () => ({ data: [] }),
+	useGetLogisticsParameterListQuery: ({ kind }: { kind: string }) => ({
+		currentData:
+			kind === 'incoterm'
+				? ['EXW', 'FCA', 'CPT', 'CIP', 'DAP', 'DPU', 'DDP', 'FAS', 'FOB', 'CFR', 'CIF'].map((nom, index) => ({
+						id: index + 1,
+						nom,
+						company: 12,
+					}))
+				: [],
+	}),
+	useAddLogisticsParameterMutation: () => [jest.fn()],
+	useEditLogisticsParameterMutation: () => [jest.fn()],
+	useDeleteLogisticsParameterMutation: () => [jest.fn()],
 	useGetEmplacementListQuery: () => ({ data: [] }),
 }));
 jest.mock('@/store/services/logistique', () => ({
@@ -124,6 +137,26 @@ beforeEach(() => {
 afterEach(() => jest.restoreAllMocks());
 
 describe('SupplierPurchaseForm', () => {
+	it('offers exactly the eleven Incoterms 2020 and retains the selected code', async () => {
+		await renderForm('proforma');
+		fireEvent.mouseDown(screen.getByRole('combobox', { name: /Incoterm/ }));
+		const options = within(screen.getByRole('listbox')).getAllByRole('option');
+		expect(options.map((option) => option.textContent)).toEqual([
+			'EXW',
+			'FCA',
+			'CPT',
+			'CIP',
+			'DAP',
+			'DPU',
+			'DDP',
+			'FAS',
+			'FOB',
+			'CFR',
+			'CIF',
+		]);
+		fireEvent.click(screen.getByRole('option', { name: 'CIF' }));
+		expect(screen.getByRole('combobox', { name: /Incoterm/ })).toHaveValue('CIF');
+	});
 	it('opens the current step when Edit from the list has no step parameter', async () => {
 		(useGetLogistiqueQuery as jest.Mock).mockReturnValue({
 			data: {

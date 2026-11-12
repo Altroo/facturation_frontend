@@ -178,8 +178,9 @@ export type SupplierPurchaseDraftOptions = Pick<
 
 export type SupplierPurchaseProformaFieldsProps = Pick<
 	SupplierPurchaseFormFieldsProps,
-	'formik' | 'articles' | 'setSearch' | 'disabled' | 'addNewArticle' | 'loadingArticles' | 'hasAnomaly'
+	'formik' | 'articles' | 'setSearch' | 'disabled' | 'addNewArticle' | 'loadingArticles' | 'hasAnomaly' | 'order'
 > & {
+	companyId: number;
 	text: (
 		name: string,
 		label: string,

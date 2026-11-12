@@ -307,6 +307,8 @@ export default function SupplierPurchaseFormFields({
 	if (mode === 'proforma')
 		sections.push(
 			<SupplierPurchaseProformaFields
+				companyId={order?.company ?? Number(query.get('company_id'))}
+				order={order}
 				key="proforma"
 				text={text}
 				date={date}

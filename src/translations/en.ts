@@ -1712,6 +1712,7 @@ export const en: TranslationDictionary = {
 		fieldLabel: (label: string) => `${label} name`,
 		requiredError: (label: string) => `The ${label} name is required.`,
 		addError: (label: string) => `Error adding the ${label}.`,
+		deleteError: (label: string) => `Unable to delete ${label}.`,
 		cancelBtn: 'Cancel',
 		addBtn: 'Add',
 	},

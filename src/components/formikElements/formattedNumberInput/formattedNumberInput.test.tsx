@@ -1,5 +1,9 @@
 import { forwardRef, type ChangeEvent, type FocusEvent, type Ref } from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { useFormik } from 'formik';
+import { toFormikValidationSchema } from 'zod-formik-adapter';
+import { getArticleSchema } from '@/utils/formValidationSchemas';
 import '@testing-library/jest-dom';
 
 // Mock CustomTextInput to expose all relevant props
@@ -57,9 +61,67 @@ const defaultProps = {
 	theme,
 };
 
+const ArticlePricesForm = ({ onSubmit }: { onSubmit: jest.Mock }) => {
+	const formik = useFormik({
+		initialValues: {
+			type_article: 'Produit',
+			reference: 'PRICE-REGRESSION',
+			designation: 'Article test',
+			company: 1,
+			marque: 1,
+			prix_achat: 0,
+			prix_vente: 0,
+		},
+		validationSchema: toFormikValidationSchema(getArticleSchema()),
+		onSubmit,
+	});
+	return (
+		<form onSubmit={formik.handleSubmit}>
+			{(['prix_achat', 'prix_vente'] as const).map((field) => (
+				<FormattedNumberInput
+					key={field}
+					{...defaultProps}
+					id={field}
+					label={field}
+					value={formik.values[field]}
+					onChange={(event) => void formik.setFieldValue(field, Number(event.target.value))}
+					onBlur={formik.handleBlur(field)}
+				/>
+			))}
+			{formik.touched.prix_vente && formik.errors.prix_vente && <p role="alert">{formik.errors.prix_vente}</p>}
+			<button type="submit">Enregistrer</button>
+		</form>
+	);
+};
+
 describe('FormattedNumberInput', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
+	});
+
+	it('submits equal comma prices and clears a previous lower-price error without refreshing', async () => {
+		const user = userEvent.setup();
+		const onSubmit = jest.fn();
+		render(<ArticlePricesForm onSubmit={onSubmit} />);
+		const purchase = screen.getByRole('textbox', { name: 'prix_achat' });
+		const sale = screen.getByRole('textbox', { name: 'prix_vente' });
+		await user.clear(purchase);
+		await user.type(purchase, '1676,80');
+		await user.clear(sale);
+		await user.type(sale, '1600');
+		await user.tab();
+		expect(await screen.findByRole('alert')).toHaveTextContent('supérieur ou égal');
+		await user.clear(sale);
+		await user.type(sale, '1676,80');
+		await user.tab();
+		await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
+		await user.click(screen.getByRole('button', { name: 'Enregistrer' }));
+		await waitFor(() =>
+			expect(onSubmit).toHaveBeenCalledWith(
+				expect.objectContaining({ prix_achat: 1676.8, prix_vente: 1676.8 }),
+				expect.anything(),
+			),
+		);
 	});
 
 	it('renders with formatted value when not focused', () => {

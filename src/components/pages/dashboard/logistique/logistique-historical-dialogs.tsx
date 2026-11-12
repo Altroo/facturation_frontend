@@ -1,5 +1,7 @@
 'use client';
 
+import LogistiqueParameterSelect from './logistique-parameter-select';
+
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import FormattedNumberInput from '@/components/formikElements/formattedNumberInput/formattedNumberInput';
@@ -38,7 +40,6 @@ import {
 	Info as InfoIcon,
 	Notes as NotesIcon,
 	Payment as PaymentIcon,
-	Public as PublicIcon,
 	ReceiptLong as ReceiptLongIcon,
 	RequestQuote as RequestQuoteIcon,
 	UploadFile as UploadFileIcon,
@@ -319,18 +320,12 @@ export function LogistiqueHistoricalProformaReviewDialog({
 					startIcon={<PaymentIcon fontSize="small" />}
 					required
 				/>
-				<CustomTextInput
-					placeholder={t.logistique.placeholders.incoterm_proforma}
-					id="incoterm_proforma"
-					type="text"
-					label={t.logistique.fieldIncoterm}
+				<LogistiqueParameterSelect
+					kind="incoterm"
+					companyId={order?.company ?? 0}
 					value={supplierProformaData.incoterm}
-					onChange={(event) => setSupplierProformaData((prev) => ({ ...prev, incoterm: event.target.value }))}
-					fullWidth
-					size="small"
-					theme={inputTheme}
-					startIcon={<PublicIcon fontSize="small" />}
-					required
+					recordId={supplierProformaData.incoterm === order?.incoterm ? order?.incoterm_record : undefined}
+					onChange={(term) => setSupplierProformaData((prev) => ({ ...prev, incoterm: term }))}
 				/>
 				<FormattedNumberInput
 					placeholder={t.logistique.placeholders.delai_proforma_jours}

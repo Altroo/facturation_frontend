@@ -1,5 +1,7 @@
 'use client';
 
+import LogistiqueParameterSelect from './logistique-parameter-select';
+
 import { purchaseLineFromArticle, withPurchaseLines } from '@/utils/logisticsPurchaseLines';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
@@ -24,6 +26,8 @@ import { Alert, Box, Button, IconButton, Stack, Typography } from '@mui/material
 import FormCard, { full, grid } from './supplier-purchase-form-card';
 const inputTheme = textInputTheme();
 export default function SupplierPurchaseProformaFields({
+	companyId,
+	order,
 	text,
 	date,
 	number,
@@ -54,14 +58,16 @@ export default function SupplierPurchaseProformaFields({
 					<Public fontSize="small" />,
 					true,
 				)}
-				{text(
-					'incoterm',
-					'Incoterm',
-					<Description fontSize="small" />,
-					true,
-					false,
-					'Indiqué par le fournisseur, par exemple EXW, FCA ou FOB.',
-				)}
+				<LogistiqueParameterSelect
+					kind="incoterm"
+					companyId={companyId}
+					value={formik.values.incoterm}
+					recordId={formik.values.incoterm === order?.incoterm ? order?.incoterm_record : undefined}
+					onChange={(term) => void formik.setFieldValue('incoterm', term)}
+					onBlur={() => void formik.setFieldTouched('incoterm', true)}
+					error={errorFor('incoterm')}
+					disabled={disabled}
+				/>
 				{number('delai_proforma_jours', 'Délai fournisseur (jours)', <CalendarToday fontSize="small" />, 0, true)}
 			</FormCard>
 			<FormCard key="lignes" title="Articles de la proforma fournisseur" icon={<Inventory color="primary" />}>
@@ -222,8 +228,34 @@ export default function SupplierPurchaseProformaFields({
 							{formik.values.devise_proforma_fournisseur}, sans conversion.
 						</Alert>,
 					)}
-				{text('origine_marchandise', 'Origine de la marchandise', <Public fontSize="small" />)}
-				{text('nature_marchandise', 'Nature de la marchandise', <Inventory fontSize="small" />)}
+				<LogistiqueParameterSelect
+					kind="origine_marchandise"
+					companyId={companyId}
+					value={formik.values.origine_marchandise}
+					recordId={
+						formik.values.origine_marchandise === order?.origine_marchandise
+							? order?.origine_marchandise_record
+							: undefined
+					}
+					onChange={(term) => void formik.setFieldValue('origine_marchandise', term)}
+					onBlur={() => void formik.setFieldTouched('origine_marchandise', true)}
+					error={errorFor('origine_marchandise')}
+					disabled={disabled}
+				/>
+				<LogistiqueParameterSelect
+					kind="nature_marchandise"
+					companyId={companyId}
+					value={formik.values.nature_marchandise}
+					recordId={
+						formik.values.nature_marchandise === order?.nature_marchandise
+							? order?.nature_marchandise_record
+							: undefined
+					}
+					onChange={(term) => void formik.setFieldValue('nature_marchandise', term)}
+					onBlur={() => void formik.setFieldTouched('nature_marchandise', true)}
+					error={errorFor('nature_marchandise')}
+					disabled={disabled}
+				/>
 				{number('poids_net', 'Poids net (kg)', <Scale fontSize="small" />)}
 				{number('poids_brut', 'Poids brut (kg)', <Scale fontSize="small" />)}
 				{full(
