@@ -60,6 +60,9 @@ jest.mock('@/components/shared/paginatedDataGrid/paginatedDataGrid', () => ({
 			{data?.results.map((row) => (
 				<div key={row.id}>
 					{columns.find((column) => column.field === 'actions')?.renderCell?.({ row } as GridRenderCellParams)}
+					{columns
+						.find((column) => column.field === 'cout_total')
+						?.renderCell?.({ row, value: row.cout_total } as GridRenderCellParams)}
 				</div>
 			))}
 		</div>
@@ -166,4 +169,30 @@ describe('LogistiqueListClient', () => {
 		await waitFor(() => expect(mockBulkDelete).toHaveBeenCalledWith({ ids: [7, 8] }));
 		expect(mockOnSuccess).toHaveBeenCalledWith(t.logistique.bulkDeleteSuccess(2));
 	});
+});
+
+it.each([
+	[2, 'MAD'],
+	[1, 'EUR'],
+])('labels workflow %s total costs in %s', (workflow_version, currency) => {
+	(useGetLogistiqueListQuery as jest.Mock).mockReturnValue({
+		data: {
+			...listData,
+			results: [{ ...row, workflow_version, devise: 'EUR', cout_total: '595.00', cout_achat_mad: '440.00' }],
+		},
+	});
+	render(<LogistiqueListClient />);
+	expect(screen.getByText(`595,00 ${currency}`)).toBeInTheDocument();
+});
+
+it('does not label an unconverted supplier amount as MAD', () => {
+	(useGetLogistiqueListQuery as jest.Mock).mockReturnValue({
+		data: {
+			...listData,
+			results: [{ ...row, workflow_version: 2, devise: 'EUR', cout_total: '100.00', cout_achat_mad: null }],
+		},
+	});
+	render(<LogistiqueListClient />);
+	expect(screen.getByText('À renseigner')).toBeInTheDocument();
+	expect(screen.queryByText('100,00 MAD')).not.toBeInTheDocument();
 });

@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
 	Accordion,
@@ -185,6 +185,17 @@ export default function SupplierPurchase({ session, company_id, id }: Logistique
 	const selectedStep = order?.workflow?.etapes?.some((step) => step.key === requestedStep && step.accessible)
 		? requestedStep!
 		: currentStep;
+	const previousStep = useRef(currentStep);
+	useEffect(() => {
+		const before = previousStep.current;
+		previousStep.current = currentStep;
+		if (before !== currentStep && ['paiement', 'solde'].includes(before) && requestedStep === before) {
+			setChosenStep(null);
+			const url = new URL(window.location.href);
+			url.searchParams.delete('etape');
+			router.replace(url.pathname + url.search);
+		}
+	}, [currentStep, requestedStep, router]);
 	const isCurrentStep = selectedStep === currentStep;
 	const canEdit = canManage && active && isCurrentStep;
 	const responsible = order?.responsable === userId;
@@ -230,6 +241,7 @@ export default function SupplierPurchase({ session, company_id, id }: Logistique
 					['titre_importation_file', 'Titre d’importation'],
 					['documents_originaux_file', 'Documents originaux'],
 					['justificatifs_file', 'Justificatifs'],
+					['bon_reception_file', 'Bon de réception'],
 				] as const
 			).map(([field, label]) => ({ field, label, currentUrl: order[field] }))
 		: [];
@@ -322,11 +334,7 @@ export default function SupplierPurchase({ session, company_id, id }: Logistique
 								value={`${dateTime(item.paiement_valide_le)} · ${item.paiement_valide_par_name ?? '-'}`}
 								icon={<CheckCircle />}
 							/>
-							{item.justificatif_file && (
-								<Link href={item.justificatif_file} target="_blank" rel="noreferrer">
-									Ouvrir le justificatif bancaire
-								</Link>
-							)}
+
 							{item.notification_createur_erreur ? (
 								<Alert severity="warning">
 									{item.notification_createur_erreur}
@@ -395,11 +403,8 @@ export default function SupplierPurchase({ session, company_id, id }: Logistique
 					label="Statut du titre d’importation"
 					value={order.date_validation_titre_importation ? 'Validé' : order.statut_titre_importation}
 				/>
-				<InfoRow
-					label="Validation du titre d’importation"
-					value={date(order.date_validation_titre_importation)}
-					icon={<CalendarToday />}
-				/>
+				<InfoRow label="Date de validité du" value={date(order.date_validite_titre_du)} icon={<CalendarToday />} />
+				<InfoRow label="Date de validité au" value={date(order.date_validite_titre_au)} icon={<CalendarToday />} />
 				<InfoRow
 					label="Comptable affecté"
 					value={
@@ -509,10 +514,21 @@ export default function SupplierPurchase({ session, company_id, id }: Logistique
 					value={date(order.documents_remis_banque_le)}
 					icon={<Description />}
 				/>
-				<InfoRow label="Transport" value={money(order.cout_transport, order.devise)} />
-				<InfoRow label="Frais de transit" value={money(order.frais_transit, order.devise)} />
-				<InfoRow label="Droits de douane" value={money(order.frais_douane, order.devise)} />
-				<InfoRow label="TVA" value={money(order.tva, order.devise)} />
+				<InfoRow label="Transport" value={money(order.cout_transport, 'MAD')} />
+				<InfoRow label="Frais de transit" value={money(order.frais_transit, 'MAD')} />
+				<InfoRow label="Droits de douane" value={money(order.frais_douane, 'MAD')} />
+				{order.autres_frais_virement_actif && (
+					<InfoRow
+						label="Autres frais (virement)"
+						value={`${money(order.autres_frais_virement, 'MAD')} · ${order.description_frais_virement || '-'}`}
+					/>
+				)}
+				{order.autres_frais_cash_actif && (
+					<InfoRow
+						label="Autres frais (cash)"
+						value={`${money(order.autres_frais_cash, 'MAD')} · ${order.description_frais_cash || '-'}`}
+					/>
+				)}
 			</Box>
 			{canEdit &&
 				actionButton(
@@ -841,22 +857,46 @@ export default function SupplierPurchase({ session, company_id, id }: Logistique
 											<Box sx={grid}>
 												<InfoRow
 													label="Coût d’achat"
-													value={hasUnconfirmedSourceLines ? '-' : money(order.cout_achat, order.devise)}
+													value={
+														hasUnconfirmedSourceLines
+															? '-'
+															: order.devise === 'MAD'
+																? money(order.cout_achat, 'MAD')
+																: order.cout_achat_mad == null
+																	? 'À renseigner par la comptabilité'
+																	: money(order.cout_achat_mad, 'MAD')
+													}
 													icon={<Payment />}
 												/>
 												<InfoRow
 													label="Livraison locale"
-													value={money(order.livraison_locale, order.devise)}
+													value={money(order.livraison_locale, 'MAD')}
 													icon={<LocalShipping />}
 												/>
+												<InfoRow label="Autres frais" value={money(order.autres_frais, 'MAD')} icon={<Payment />} />
 												<InfoRow
-													label="Autres frais"
-													value={money(order.autres_frais, order.devise)}
+													label="Coût total sans cash"
+													value={
+														hasUnconfirmedSourceLines
+															? '-'
+															: order.devise !== 'MAD' && order.cout_achat_mad == null
+																? 'Coût d’achat en MAD à renseigner'
+																: money(order.cout_total, 'MAD')
+													}
 													icon={<Payment />}
 												/>
 												<InfoRow
-													label="Coût total"
-													value={hasUnconfirmedSourceLines ? '-' : money(order.cout_total, order.devise)}
+													label="Coût total avec cash"
+													value={
+														order.devise !== 'MAD' && order.cout_achat_mad == null
+															? 'Coût d’achat en MAD à renseigner'
+															: money(
+																	order.cout_total_avec_cash ??
+																		Number(order.cout_total) +
+																			(order.autres_frais_cash_actif ? Number(order.autres_frais_cash) : 0),
+																	'MAD',
+																)
+													}
 													icon={<Payment />}
 												/>
 											</Box>
@@ -877,15 +917,49 @@ export default function SupplierPurchase({ session, company_id, id }: Logistique
 							)}
 							<Box sx={{ ...grid, gap: 2 }}>
 								<LogistiqueDocumentsViewCard
-									items={orderFiles.filter(
-										(file) =>
-											({
-												proforma_fournisseur_file: 'proforma',
-												titre_importation_file: 'titre',
-												documents_originaux_file: 'expedition',
-												justificatifs_file: 'couts',
-											})[file.field] === selectedStep,
-									)}
+									items={
+										order.documents
+											? order.documents
+													.filter(
+														(document) =>
+															order.statut === 'Clôture' ||
+															document.etape === selectedStep ||
+															document.etape === 'remarque',
+													)
+													.map((document) => ({
+														field: 'justificatifs_file' as const,
+														label: document.etape_label,
+														currentUrl: document.url,
+													}))
+											: [
+													...orderFiles.filter(
+														(file) =>
+															order.statut === 'Clôture' ||
+															{
+																proforma_fournisseur_file: 'proforma',
+																titre_importation_file: 'titre',
+																documents_originaux_file: 'expedition',
+																justificatifs_file: 'couts',
+																bon_reception_file: 'reception',
+															}[file.field] === selectedStep,
+													),
+													...(order.echeancier_paiement ?? [])
+														.filter(
+															(item) =>
+																item.justificatif_file &&
+																(order.statut === 'Clôture' ||
+																	(item.declencheur === 'advance' ? 'paiement' : 'solde') === selectedStep),
+														)
+														.map((item) => ({
+															field: 'swift_file' as const,
+															label:
+																item.declencheur === 'advance'
+																	? 'Avance et comptabilité : Justificatif bancaire'
+																	: 'Paiement et comptabilité : Justificatif bancaire',
+															currentUrl: item.justificatif_file,
+														})),
+												]
+									}
 								/>
 								<DetailCard
 									title="Remarques"

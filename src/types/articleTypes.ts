@@ -36,6 +36,9 @@ export type ArticleSchemaType = {
 };
 
 export type ArticlesFormFormikContentProps = {
+	logisticsOrderId?: number;
+	onCreated?: (article: ArticleClass) => void;
+	onCancel?: () => void;
 	token?: string;
 	company_id: number;
 	id?: number;

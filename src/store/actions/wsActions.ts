@@ -29,3 +29,9 @@ export const WSNotificationAction = (notification: NotificationType) => {
 		notification,
 	};
 };
+
+export const WSLogisticsUpdatedAction = (id: number, company_id: number) => ({
+	type: types.WS_LOGISTICS_UPDATED,
+	id,
+	company_id,
+});

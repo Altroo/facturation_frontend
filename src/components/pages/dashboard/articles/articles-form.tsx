@@ -105,8 +105,8 @@ import EntityCrudControls from '@/components/shared/entityCrudControls/entityCru
 
 const inputTheme = textInputTheme();
 
-const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
-	const { token, company_id, id } = props;
+export const ArticleFormContent: FC<FormikContentProps> = (props: FormikContentProps) => {
+	const { token, company_id, id, onCreated, onCancel, logisticsOrderId } = props;
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
 	const isEditMode = id !== undefined;
@@ -220,7 +220,14 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 							await updateArticle({ data: submissionPayload, id: id! }).unwrap();
 							onSuccess(t.articles.updateSuccess);
 						} else {
-							const result = await addArticle({ data: submissionPayload }).unwrap();
+							const result = await addArticle({
+								data: { ...submissionPayload, ...(logisticsOrderId ? { logistics_order: logisticsOrderId } : {}) },
+							}).unwrap();
+							if (onCreated) {
+								onSuccess(t.articles.addSuccess);
+								onCreated(result);
+								return;
+							}
 							if (returnUrl && result.id) {
 								onSuccess(t.articles.addSuccess);
 								router.replace(`${returnUrl}&article_id=${result.id}`);
@@ -362,7 +369,9 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 				<Button
 					variant="outlined"
 					startIcon={<ArrowBackIcon />}
-					onClick={() => router.push(returnUrl ?? listReturnUrl(`${ARTICLES_LIST}?company_id=${company_id}`))}
+					onClick={() =>
+						onCancel ? onCancel() : router.push(returnUrl ?? listReturnUrl(`${ARTICLES_LIST}?company_id=${company_id}`))
+					}
 					sx={{
 						whiteSpace: 'nowrap',
 						px: { xs: 1.5, sm: 2, md: 3 },
@@ -370,7 +379,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 						fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
 					}}
 				>
-					{t.articles.backToList}
+					{onCancel ? t.common.cancel : t.articles.backToList}
 				</Button>
 			</Stack>
 			{hasValidationErrors && (
@@ -400,7 +409,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 			) : shouldShowError ? (
 				<ApiAlert errorDetails={axiosError?.data.details} />
 			) : (
-				<form onSubmit={formik.handleSubmit}>
+				<form onSubmit={formik.handleSubmit} noValidate>
 					<Stack spacing={3}>
 						{/* Profile Picture Card */}
 						<Card elevation={2} sx={{ borderRadius: 2 }}>
@@ -844,6 +853,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 									/>
 									<CustomAutoCompleteSelect
 										id="marque"
+										required
 										size="small"
 										noOptionsText={t.articles.noMarque}
 										label={t.articles.filterMarque}
@@ -949,7 +959,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 };
 
 const ArticlesForm: FC<Props> = (props) => (
-	<ClientArticleWrapperForm {...props} entityName="article" FormikComponent={FormikContent} />
+	<ClientArticleWrapperForm {...props} entityName="article" FormikComponent={ArticleFormContent} />
 );
 
 export default ArticlesForm;

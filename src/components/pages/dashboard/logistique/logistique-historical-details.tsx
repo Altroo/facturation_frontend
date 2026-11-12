@@ -452,6 +452,7 @@ export function LogistiqueHistoricalDetails({
 							.filter(
 								(field) =>
 									({
+										bon_reception_file: 7,
 										proforma_fournisseur_file: 1,
 										titre_importation_file: 2,
 										swift_file: 2,

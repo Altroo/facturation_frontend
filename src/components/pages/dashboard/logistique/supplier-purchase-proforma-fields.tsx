@@ -1,5 +1,6 @@
 'use client';
 
+import { purchaseLineFromArticle, withPurchaseLines } from '@/utils/logisticsPurchaseLines';
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import Controls from '@/styles/dashboard/logistique/logistique-controls.module.sass';
@@ -39,7 +40,6 @@ export default function SupplierPurchaseProformaFields({
 	autocomplete,
 	checkbox,
 	hasAnomaly,
-	decisionItems,
 }: SupplierPurchaseProformaFieldsProps) {
 	return (
 		<>
@@ -99,13 +99,14 @@ export default function SupplierPurchaseProformaFields({
 											if (reason === 'input') setSearch(input);
 										}}
 										onChange={(_, entry) => {
-											const article = articles?.find((item) => String(item.id) === entry?.value);
-											void formik.setFieldValue(`lignes.${index}`, {
-												...line,
-												article: article?.id ?? null,
-												article_reference: article?.reference ?? '',
-												designation: article?.designation ?? '',
-											});
+											const article = articles.find((item) => String(item.id) === entry?.value);
+											const updated = purchaseLineFromArticle(
+												article,
+												formik.values.devise_proforma_fournisseur,
+												line.quantity,
+											);
+											const next = formik.values.lignes.map((item, position) => (position === index ? updated : item));
+											void formik.setValues((previous) => withPurchaseLines(previous, next, articles));
 										}}
 										onBlur={() => formik.setFieldTouched(`lignes.${index}.article`, true)}
 										helperText={errorFor(`lignes.${index}.article`)}
@@ -137,9 +138,12 @@ export default function SupplierPurchaseProformaFields({
 										className={Controls.articleDeleteAction}
 										aria-label={`Retirer l’article ${index + 1}`}
 										onClick={() =>
-											formik.setFieldValue(
-												'lignes',
-												formik.values.lignes.filter((_, position) => position !== index),
+											formik.setValues((previous) =>
+												withPurchaseLines(
+													previous,
+													previous.lignes.filter((_, position) => position !== index),
+													articles,
+												),
 											)
 										}
 									>
@@ -240,7 +244,6 @@ export default function SupplierPurchaseProformaFields({
 						!hasAnomaly,
 					),
 				)}
-				{full(autocomplete('decision', 'Décision', decisionItems, true, <CheckCircle fontSize="small" />))}
 			</FormCard>
 		</>
 	);

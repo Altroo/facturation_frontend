@@ -196,6 +196,7 @@ export type FormattedNumberInputProps = {
 	onChange: (e: ChangeEvent<HTMLInputElement>) => void;
 	theme: Theme;
 	decimals?: number; // Number of decimal places (default: 2)
+	trimTrailingZeros?: boolean;
 	onBlur?: (e: FocusEvent<HTMLInputElement>) => void;
 	cssClass?: string;
 	helperText?: string;

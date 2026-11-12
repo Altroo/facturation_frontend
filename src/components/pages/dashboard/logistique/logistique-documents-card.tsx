@@ -2,6 +2,7 @@
 
 import { type ChangeEvent, type DragEvent, type FC, useRef, useState } from 'react';
 import {
+	Alert,
 	Box,
 	Button,
 	Card,
@@ -113,10 +114,10 @@ const AttachmentRow: FC<AttachmentRowProps> = ({ icon, title, subtitle, actions 
 			{icon}
 		</Box>
 		<Box sx={{ minWidth: 0, flex: 1 }}>
-			<Typography variant="body2" noWrap sx={{ fontWeight: 700 }}>
+			<Typography variant="body2" sx={{ fontWeight: 700, overflowWrap: 'anywhere' }}>
 				{title}
 			</Typography>
-			<Typography variant="caption" color="text.secondary" noWrap component="div">
+			<Typography variant="caption" color="text.secondary" component="div" sx={{ overflowWrap: 'anywhere' }}>
 				{subtitle}
 			</Typography>
 		</Box>
@@ -207,6 +208,17 @@ export const LogistiqueDocumentsFormCard: FC<LogistiqueDocumentsFormCardProps> =
 				<Divider />
 
 				<Stack spacing={2} sx={{ p: 3 }}>
+					{items
+						.filter((item) => item.error)
+						.map((item) => (
+							<Alert
+								severity="error"
+								key={`${item.field}:${item.currentUrl ?? item.file?.name ?? item.label}`}
+								id={`${item.field}-error`}
+							>
+								{item.label} : {item.error}
+							</Alert>
+						))}
 					<Box className={Controls.attachmentControls}>
 						<CustomAutoCompleteSelect
 							id="attachment_type"
@@ -323,7 +335,7 @@ export const LogistiqueDocumentsFormCard: FC<LogistiqueDocumentsFormCardProps> =
 
 								return (
 									<AttachmentRow
-										key={item.field}
+										key={`${item.field}:${item.currentUrl ?? item.file?.name ?? item.label}`}
 										icon={getFileIcon(filename, item.file?.type)}
 										title={item.label}
 										subtitle={subtitle}
@@ -418,7 +430,7 @@ export const LogistiqueDocumentsViewCard: FC<LogistiqueDocumentsViewCardProps> =
 
 								return (
 									<AttachmentRow
-										key={item.field}
+										key={`${item.field}:${item.currentUrl ?? item.file?.name ?? item.label}`}
 										icon={getFileIcon(filename)}
 										title={item.label}
 										subtitle={filename || t.logistique.currentDocument}

@@ -113,3 +113,16 @@ describe('LogistiqueDocumentsViewCard', () => {
 		expect(screen.queryByText(t.logistique.noAttachments)).not.toBeInTheDocument();
 	});
 });
+
+it('shows a red field error even when there is no selected attachment', () => {
+	render(
+		<LogistiqueDocumentsFormCard
+			{...props}
+			items={[
+				{ field: 'titre_importation_file', label: 'Titre d’importation', error: 'Joignez le titre d’importation.' },
+			]}
+		/>,
+	);
+	expect(screen.getByRole('alert')).toHaveTextContent('Titre d’importation : Joignez le titre d’importation.');
+	expect(screen.getByText(t.logistique.noAttachments)).toBeInTheDocument();
+});

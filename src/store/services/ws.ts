@@ -4,6 +4,7 @@ import {
 	WSMaintenanceAction,
 	WSNotificationAction,
 	WSReconnectedAction,
+	WSLogisticsUpdatedAction,
 	WSUserAvatarAction,
 } from '@/store/actions/wsActions';
 import type { WSAction, WSEnvelope } from '@/types/wsTypes';
@@ -97,6 +98,16 @@ export function initWebsocket(getToken: () => Promise<string | null>): EventChan
 								if (typeof message.maintenance === 'boolean') {
 									emitter(WSMaintenanceAction(message.maintenance, message.version));
 								}
+							} else if (signalType === 'LOGISTICS_UPDATED') {
+								if (
+									typeof message.id === 'number' &&
+									Number.isSafeInteger(message.id) &&
+									message.id > 0 &&
+									typeof message.company_id === 'number' &&
+									Number.isSafeInteger(message.company_id) &&
+									message.company_id > 0
+								)
+									emitter(WSLogisticsUpdatedAction(message.id, message.company_id));
 							} else if (signalType === 'NOTIFICATION') {
 								if (typeof message.id === 'number' && typeof message.title === 'string') {
 									const notification: NotificationType = {

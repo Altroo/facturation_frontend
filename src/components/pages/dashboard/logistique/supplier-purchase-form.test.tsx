@@ -10,7 +10,6 @@ import {
 import { useGetUserCompaniesQuery } from '@/store/services/company';
 import { getInitStateToken } from '@/store/selectors';
 import { useAppSelector } from '@/utils/hooks';
-import { purchaseDraft } from '@/utils/helpers';
 import { LOGISTIQUE_VIEW } from '@/utils/routes';
 import SupplierPurchaseForm from './supplier-purchase-form';
 
@@ -33,6 +32,11 @@ jest.mock('@/utils/hooks', () => ({
 jest.mock('@/store/services/company', () => ({
 	useGetUserCompaniesQuery: jest.fn(),
 	useGetCompanyQuery: () => ({ data: { stock_management_enabled: false } }),
+}));
+jest.mock('../articles/articles-form', () => ({
+	ArticleFormContent: ({ onCancel }: { onCancel: () => void }) => (
+		<button onClick={onCancel}>Annuler la création</button>
+	),
 }));
 jest.mock('@/store/services/article', () => ({
 	useGetArticlesListQuery: () => ({ data: [] }),
@@ -87,7 +91,9 @@ const mockUnwrap = jest.fn();
 const mockAdd = jest.fn<{ unwrap: typeof mockUnwrap }, [{ company_id: number; data: Record<string, unknown> }]>(() => ({
 	unwrap: mockUnwrap,
 }));
-const mockPurchase = jest.fn(() => ({ unwrap: mockUnwrap }));
+const mockPurchase = jest.fn<{ unwrap: typeof mockUnwrap }, [{ id: number; data: Record<string, unknown> | FormData }]>(
+	() => ({ unwrap: mockUnwrap }),
+);
 const mockAddNote = jest.fn<{ unwrap: typeof mockUnwrap }, [{ id: number; data: FormData }]>(() => ({
 	unwrap: mockUnwrap,
 }));
@@ -98,7 +104,7 @@ const renderForm = async (mode: string, id: number | undefined = 7) => {
 		render(<SupplierPurchaseForm company_id={12} id={id} />);
 	});
 };
-const save = () => fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
+const save = () => fireEvent.click(screen.getByRole('button', { name: /^(Enregistrer|Valider la proforma)$/ }));
 
 beforeEach(() => {
 	jest.clearAllMocks();
@@ -108,7 +114,7 @@ beforeEach(() => {
 	);
 	(useGetUserCompaniesQuery as jest.Mock).mockReturnValue({ data: [{ id: 12, role: 'Logistique' }] });
 	(useGetLogistiqueQuery as jest.Mock).mockReturnValue({ data: order, refetch: mockRefetch });
-	(useGetNumLogistiqueQuery as jest.Mock).mockReturnValue({ currentData: { numero_commande: 'LOG008/26' } });
+	(useGetNumLogistiqueQuery as jest.Mock).mockReturnValue({ currentData: { numero_commande: 'COM008/26' } });
 	(useAddLogistiqueMutation as jest.Mock).mockReturnValue([mockAdd]);
 	(usePurchaseActionMutation as jest.Mock).mockReturnValue([mockPurchase]);
 	(useAddLogistiqueProcessNoteMutation as jest.Mock).mockReturnValue([mockAddNote]);
@@ -130,6 +136,8 @@ describe('SupplierPurchaseForm', () => {
 			render(<SupplierPurchaseForm company_id={12} id={7} />);
 		});
 		expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Proforma fournisseur et conformité');
+		expect(screen.getByRole('button', { name: 'Valider la proforma' })).toBeEnabled();
+		expect(screen.queryByRole('combobox', { name: 'Décision' })).not.toBeInTheDocument();
 		expect(screen.queryByText('Accès refusé')).not.toBeInTheDocument();
 	});
 
@@ -163,28 +171,21 @@ describe('SupplierPurchaseForm', () => {
 		},
 	);
 
-	it('opens article creation from the selector after preserving the proforma draft', async () => {
-		(purchaseDraft as jest.Mock).mockResolvedValue(undefined);
+	it('opens article creation in a modal while retaining the proforma values', async () => {
 		await renderForm('proforma');
+		fireEvent.change(screen.getByRole('textbox', { name: /N° de proforma fournisseur/ }), {
+			target: { value: 'PRESERVED-PF' },
+		});
 		fireEvent.click(screen.getByRole('button', { name: 'Ajouter un article' }));
 		const field = screen
 			.getByRole('combobox', { name: /Article : référence et désignation/ })
 			.closest('.MuiInputBase-root')!;
-		expect(screen.queryByRole('button', { name: 'Nouvel article' })).not.toBeInTheDocument();
 		fireEvent.click(within(field as HTMLElement).getByRole('button', { name: 'Ajouter' }));
-		await waitFor(() => expect(mockPush).toHaveBeenCalledTimes(1));
-		expect(purchaseDraft).toHaveBeenCalledWith(
-			expect.stringContaining('purchase:27:12:7:'),
-			'write',
-			expect.objectContaining({ lignes: expect.any(Array) }),
-		);
-		const destination = new URL(mockPush.mock.calls[0][0], 'http://localhost');
-		expect(destination.pathname).toBe('/dashboard/articles/new/');
-		expect(destination.searchParams.get('company_id')).toBe('12');
-		const back = new URL(destination.searchParams.get('retour')!, 'http://localhost');
-		expect(back.pathname).toBe('/dashboard/logistique/7/edit');
-		expect(back.searchParams.get('etape')).toBe('proforma');
-		expect(back.searchParams.get('brouillon')).toBeTruthy();
+		expect(await screen.findByRole('dialog')).toBeInTheDocument();
+		expect(mockPush).not.toHaveBeenCalled();
+		fireEvent.click(screen.getByRole('button', { name: 'Annuler la création' }));
+		await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+		expect(screen.getByRole('textbox', { name: /N° de proforma fournisseur/ })).toHaveValue('PRESERVED-PF');
 	});
 
 	it('creates an independent supplier dossier without date inputs or a client proforma', async () => {
@@ -193,7 +194,7 @@ describe('SupplierPurchaseForm', () => {
 		await act(async () => {
 			render(<SupplierPurchaseForm company_id={12} />);
 		});
-		expect(screen.getByRole('textbox', { name: 'Référence dossier' })).toHaveValue('LOG008/26');
+		expect(screen.getByRole('textbox', { name: 'Référence dossier' })).toHaveValue('COM008/26');
 		expect(screen.getByRole('textbox', { name: 'Référence dossier' })).toBeDisabled();
 		expect(useGetNumLogistiqueQuery).toHaveBeenCalledWith(
 			{ company_id: 12 },
@@ -292,9 +293,9 @@ describe('SupplierPurchaseForm', () => {
 				cout_transport: '0',
 				frais_transit: '0',
 				frais_douane: '0',
-				tva: '0',
 				livraison_locale: '0',
 				autres_frais: '0',
+				cout_achat_mad: null,
 				remarque: '',
 			},
 		});
@@ -436,4 +437,32 @@ it('does not allow proposal mode to open a future step', async () => {
 	});
 	await renderForm('titre&proposer=1');
 	expect(screen.getByText('Accès refusé')).toBeInTheDocument();
+});
+
+it.each(['Dédouanement', 'Réception locale'])(
+	'preserves the current phase %s when saving transit without a phase selector',
+	async (statut) => {
+		(useGetLogistiqueQuery as jest.Mock).mockReturnValue({ data: { ...order, statut } });
+		await renderForm('transit');
+		expect(screen.queryByRole('combobox', { name: 'Phase du dossier' })).not.toBeInTheDocument();
+		save();
+		await waitFor(() =>
+			expect(mockPurchase).toHaveBeenCalledWith(
+				expect.objectContaining({ data: expect.objectContaining({ action: 'progression', statut }) }),
+			),
+		);
+	},
+);
+
+it('uploads the selected cost document with the manual MAD amount', async () => {
+	await renderForm('couts');
+	fireEvent.change(screen.getByRole('textbox', { name: 'Coût d’achat converti (MAD)' }), { target: { value: '440' } });
+	const file = new File(['%PDF-1.4 proof'], 'fees.pdf', { type: 'application/pdf' });
+	fireEvent.change(document.querySelector('input[type="file"]')!, { target: { files: [file] } });
+	save();
+	await waitFor(() => expect(mockPurchase).toHaveBeenCalled());
+	const body = mockPurchase.mock.calls[0][0].data as FormData;
+	expect(body).toBeInstanceOf(FormData);
+	expect(body.get('cout_achat_mad')).toBe('440');
+	expect(body.get('justificatifs_file')).toBe(file);
 });

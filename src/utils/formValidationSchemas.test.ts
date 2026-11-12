@@ -248,6 +248,7 @@ describe('Zod Schema Validation', () => {
 	describe('articleSchema', () => {
 		const article = {
 			type_article: 'Produit',
+			marque: 1,
 			reference: 'REF001',
 			designation: 'Produit Test',
 			company: 1,
@@ -288,6 +289,7 @@ describe('Zod Schema Validation', () => {
 			expect(() =>
 				articleSchema.parse({
 					type_article: 'Produit',
+					marque: 1,
 					reference: 'REF001',
 					designation: 'Produit Test',
 					company: 1,
@@ -298,6 +300,7 @@ describe('Zod Schema Validation', () => {
 			expect(() =>
 				articleSchema.parse({
 					type_article: 'Produit',
+					marque: 1,
 					designation: 'Produit Test',
 					company: 1,
 				}),
@@ -1710,6 +1713,7 @@ describe('Zod Schema Validation', () => {
 			expect(() =>
 				articleSchema.parse({
 					type_article: 'Produit',
+					marque: 1,
 					reference: 'REF100',
 					designation: 'Test Product',
 					company: 1,
@@ -1723,6 +1727,7 @@ describe('Zod Schema Validation', () => {
 			expect(() =>
 				articleSchema.parse({
 					type_article: 'Produit',
+					marque: 1,
 					reference: 'REF101',
 					designation: 'Test Product',
 					company: 1,
@@ -1736,6 +1741,7 @@ describe('Zod Schema Validation', () => {
 			expect(() =>
 				articleSchema.parse({
 					type_article: 'Produit',
+					marque: 1,
 					reference: 'REF102',
 					designation: 'Test Product',
 					company: 1,
@@ -1748,6 +1754,7 @@ describe('Zod Schema Validation', () => {
 			expect(() =>
 				articleSchema.parse({
 					type_article: 'Service',
+					marque: 1,
 					reference: 'REF103',
 					designation: 'Test Service',
 					company: 1,
@@ -1761,6 +1768,7 @@ describe('Zod Schema Validation', () => {
 			expect(() =>
 				articleSchema.parse({
 					type_article: 'Produit',
+					marque: 1,
 					reference: 'REF104',
 					designation: 'Test Product',
 					company: 1,
@@ -1774,6 +1782,7 @@ describe('Zod Schema Validation', () => {
 			expect(() =>
 				articleSchema.parse({
 					type_article: 'Produit',
+					marque: 1,
 					reference: 'REF105',
 					designation: 'Test Product',
 					company: 1,
@@ -1786,6 +1795,7 @@ describe('Zod Schema Validation', () => {
 			expect(() =>
 				articleSchema.parse({
 					type_article: 'Produit',
+					marque: 1,
 					reference: 'REF106',
 					designation: 'Test Product',
 					company: 1,
@@ -1798,6 +1808,7 @@ describe('Zod Schema Validation', () => {
 			expect(() =>
 				articleSchema.parse({
 					type_article: 'Produit',
+					marque: 1,
 					reference: 'REF107',
 					designation: 'Test Product',
 					company: 1,
@@ -2909,4 +2920,16 @@ describe('supplierPurchaseSchemas', () => {
 			inner: [{ path: 'methode_paiement', message: 'Choisissez une méthode de paiement.' }],
 		});
 	});
+});
+
+it.each([undefined, null, ''])('requires an article brand (%s)', (marque) => {
+	const result = articleSchema.safeParse({
+		reference: 'ART1',
+		designation: 'Produit',
+		company: 1,
+		type_article: 'Produit',
+		marque,
+	});
+	expect(result.success).toBe(false);
+	if (!result.success) expect(result.error.issues.map((entry) => entry.path)).toContainEqual(['marque']);
 });

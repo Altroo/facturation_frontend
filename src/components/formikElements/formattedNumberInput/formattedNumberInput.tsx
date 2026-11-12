@@ -6,16 +6,19 @@ import { formatNumberWithSpaces, parseFormattedNumber } from '@/utils/helpers';
 import type { FormattedNumberInputProps as Props } from '@/types/uiTypes';
 
 const FormattedNumberInput = (props: Props) => {
-	const { value, onChange, decimals = 2, onBlur, ref, ...restOfProps } = props;
+	const { value, onChange, decimals = 2, trimTrailingZeros = false, onBlur, ref, ...restOfProps } = props;
 	const [isFocused, setIsFocused] = useState(false);
 	const [editValue, setEditValue] = useState('');
 
 	// Determine what to display
+	const formattedValue = formatNumberWithSpaces(value, decimals);
+	const compactValue =
+		trimTrailingZeros && decimals > 0 ? formattedValue.replace(/([.,]\d*?[1-9])0+$|[.,]0+$/, '$1') : formattedValue;
 	const displayValue = isFocused
 		? editValue
 		: value === null || value === undefined || value === ''
 			? ''
-			: formatNumberWithSpaces(value, decimals);
+			: compactValue;
 
 	const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
 		const inputValue = e.target.value;

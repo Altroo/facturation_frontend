@@ -1,5 +1,8 @@
 'use client';
 
+import { purchaseLineFromArticle, withPurchaseLines } from '@/utils/logisticsPurchaseLines';
+import { ArticleFormContent } from '../articles/articles-form';
+import type { ArticleClass } from '@/models/classes';
 import { logisticsFormPayload as payload } from '@/utils/apiHelpers';
 import { useSupplierPurchaseDraft } from './use-supplier-purchase-draft';
 
@@ -37,10 +40,21 @@ import { useAppSelector, useLanguage, useToast } from '@/utils/hooks';
 import { LOGISTIQUE_ADD, LOGISTIQUE_LIST, LOGISTIQUE_VIEW } from '@/utils/routes';
 import { textInputTheme } from '@/utils/themes';
 import { ArrowBack, Notes, Save, Send, Warning } from '@mui/icons-material';
-import { Alert, Box, Button, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import {
+	Alert,
+	Box,
+	Button,
+	Dialog,
+	DialogContent,
+	DialogTitle,
+	Stack,
+	Typography,
+	useMediaQuery,
+	useTheme,
+} from '@mui/material';
 import { useFormik } from 'formik';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useDeferredValue, useRef, useState } from 'react';
+import { useDeferredValue, useEffect, useRef, useState } from 'react';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import { LogistiqueDocumentsFormCard } from './logistique-documents-card';
 import FormCard, { full } from './supplier-purchase-form-card';
@@ -69,8 +83,14 @@ export default function SupplierPurchaseFormContent({
 	const userId = useAppSelector(getInitStateToken).user.pk;
 	const [attempted, setAttempted] = useState(false);
 	const [apiError, setApiError] = useState('');
+	const errorSummary = useRef<HTMLDivElement>(null);
 	const [warnings, setWarnings] = useState<string[]>([]);
 	const [search, setSearch] = useState('');
+	const [articleModalOpen, setArticleModalOpen] = useState(false);
+	const [createdArticles, setCreatedArticles] = useState<ArticleClass[]>([]);
+	const addNewArticle = async () => {
+		setArticleModalOpen(true);
+	};
 	const deferredSearch = useDeferredValue(search);
 	const [selectedDocument, setSelectedDocument] = useState<LogistiqueDocumentField>(
 		mode === 'proforma'
@@ -103,7 +123,11 @@ export default function SupplierPurchaseFormContent({
 		{ company_id, with_pagination: true, page: 1, pageSize: 30, search: deferredSearch },
 		{ skip: !token || mode !== 'proforma' },
 	);
-	const articles = !articleData ? [] : Array.isArray(articleData) ? articleData : articleData.results;
+	const fetchedArticles = !articleData ? [] : Array.isArray(articleData) ? articleData : articleData.results;
+	const articles = [
+		...createdArticles.filter((item) => !fetchedArticles.some((entry) => entry.id === item.id)),
+		...fetchedArticles,
+	];
 	const installment = order?.echeancier_paiement?.find((entry) => entry.id === echeanceId);
 	const productLines =
 		order?.lignes?.filter(
@@ -139,6 +163,16 @@ export default function SupplierPurchaseFormContent({
 	const [addNote] = useAddLogistiqueProcessNoteMutation();
 	const initialValues: PurchaseFormValues = {
 		correction_remarque: '',
+		date_validite_titre_du: value(order?.date_validite_titre_du),
+		date_validite_titre_au: value(order?.date_validite_titre_au),
+		cout_achat_mad: value(order?.cout_achat_mad),
+		autres_frais_virement_actif: order?.autres_frais_virement_actif ?? false,
+		autres_frais_virement: value(order?.autres_frais_virement),
+		description_frais_virement: value(order?.description_frais_virement),
+		autres_frais_cash_actif: order?.autres_frais_cash_actif ?? false,
+		autres_frais_cash: value(order?.autres_frais_cash),
+		description_frais_cash: value(order?.description_frais_cash),
+		bon_reception_file: null,
 		fournisseur_record: value(order?.fournisseur_record),
 		fournisseur: order?.fournisseur ?? '',
 		fournisseur_email: order?.fournisseur_email ?? '',
@@ -164,7 +198,7 @@ export default function SupplierPurchaseFormContent({
 		ecart_quantite_proforma: order?.ecart_quantite_proforma ?? false,
 		ecart_autre_proforma: order?.ecart_autre_proforma ?? false,
 		notes_ecarts_proforma: order?.notes_ecarts_proforma ?? '',
-		decision: isCorrection ? 'validate' : 'control',
+		decision: 'validate',
 		numero_domiciliation: order?.numero_domiciliation ?? '',
 		banque: order?.banque ?? '',
 		montant_titre_importation: value(
@@ -218,6 +252,8 @@ export default function SupplierPurchaseFormContent({
 		lignes:
 			order?.lignes?.map((line) => ({
 				article: line.article,
+				origin_name: line.expected_emplacement_name ?? '',
+				brand_name: line.marque_name ?? '',
 				article_reference: line.article_reference,
 				designation: line.designation,
 				quantity: line.proforma || line.source_line || line.client ? '' : value(line.quantity),
@@ -267,6 +303,8 @@ export default function SupplierPurchaseFormContent({
 				'tva',
 				'livraison_locale',
 				'autres_frais',
+				'autres_frais_virement',
+				'autres_frais_cash',
 			]);
 			const pick = (keys: (keyof PurchaseFormValues)[]) =>
 				Object.fromEntries(
@@ -392,6 +430,8 @@ export default function SupplierPurchaseFormContent({
 								'montant_titre_importation',
 								'devise_titre_importation',
 								'date_titre_importation',
+								'date_validite_titre_du',
+								'date_validite_titre_au',
 							]),
 							...(values.titre_importation_file ? { titre_importation_file: values.titre_importation_file } : {}),
 						};
@@ -417,15 +457,22 @@ export default function SupplierPurchaseFormContent({
 					else if (mode === 'transit')
 						data = {
 							action: 'progression',
+							description_frais_virement: values.description_frais_virement ?? '',
+							description_frais_cash: values.description_frais_cash ?? '',
 							...pick([
 								'date_arrivee_maroc',
 								'documents_remis_banque_le',
 								'cout_transport',
 								'frais_transit',
 								'frais_douane',
-								'tva',
+								'autres_frais_virement_actif',
+								'autres_frais_virement',
+								'description_frais_virement',
+								'autres_frais_cash_actif',
+								'autres_frais_cash',
+								'description_frais_cash',
 							]),
-							statut: transitAfterReceipt ? order!.statut : values.statut,
+							statut: transitAfterReceipt || order?.statut === 'Dédouanement' ? order!.statut : 'Transit',
 							remarque: values.remarque,
 							...(values.documents_originaux_file ? { documents_originaux_file: values.documents_originaux_file } : {}),
 							...(values.justificatifs_file ? { justificatifs_file: values.justificatifs_file } : {}),
@@ -454,9 +501,19 @@ export default function SupplierPurchaseFormContent({
 					else
 						data = {
 							action: 'progression',
-							...pick(['cout_transport', 'frais_transit', 'frais_douane', 'tva', 'livraison_locale', 'autres_frais']),
+							cout_achat_mad: values.cout_achat_mad?.trim() ? values.cout_achat_mad : null,
+							...(values.justificatifs_file ? { justificatifs_file: values.justificatifs_file } : {}),
+							...pick([
+								'cout_transport',
+								'frais_transit',
+								'frais_douane',
+								'livraison_locale',
+								'autres_frais',
+								'cout_achat_mad',
+							]),
 							remarque: values.remarque,
 						};
+					if (mode === 'reception' && values.bon_reception_file) data.bon_reception_file = values.bon_reception_file;
 					await purchase({ id: id!, data: payload(data) }).unwrap();
 				}
 				onSuccess(proposalMode ? 'Modifications proposées, en attente de validation.' : 'Modifications enregistrées.');
@@ -474,11 +531,19 @@ export default function SupplierPurchaseFormContent({
 				setApiError(message);
 				onError(message);
 				setFormikAutoErrors({ e: failure, setFieldError });
-				window.scrollTo({ top: 0, behavior: 'smooth' });
 			}
 		},
 	});
-	const { draftKey, draftReady, addNewArticle } = useSupplierPurchaseDraft({
+	const hasValidationErrors = Object.keys(formik.errors).length > 0;
+	useEffect(() => {
+		if (!formik.submitCount || formik.isSubmitting || (!hasValidationErrors && !apiError)) return;
+		const frame = requestAnimationFrame(() => {
+			errorSummary.current?.focus({ preventScroll: true });
+			errorSummary.current?.scrollIntoView?.({ behavior: 'instant', block: 'start' });
+		});
+		return () => cancelAnimationFrame(frame);
+	}, [formik.submitCount, formik.isSubmitting, hasValidationErrors, apiError]);
+	const { draftKey, draftReady } = useSupplierPurchaseDraft({
 		company_id,
 		id,
 		token,
@@ -500,18 +565,25 @@ export default function SupplierPurchaseFormContent({
 		(mode === 'proforma' && order?.is_proforma_step_complete && !isCorrection);
 	const disabled = formik.isSubmitting || extracting || !!locked || !draftReady;
 	const requiredFileNames: LogistiqueDocumentField[] =
-		mode === 'proforma'
-			? ['proforma_fournisseur_file']
-			: mode === 'titre'
-				? ['titre_importation_file']
-				: mode === 'expedition' || mode === 'transit'
-					? ['documents_originaux_file', 'justificatifs_file']
-					: mode === 'justificatif'
-						? ['swift_file']
-						: mode === 'remarque'
-							? ['justificatifs_file']
-							: [];
+		mode === 'reception'
+			? isCorrection && managedReceipt
+				? []
+				: ['bon_reception_file']
+			: mode === 'couts'
+				? ['justificatifs_file']
+				: mode === 'proforma'
+					? ['proforma_fournisseur_file']
+					: mode === 'titre'
+						? ['titre_importation_file']
+						: mode === 'expedition' || mode === 'transit'
+							? ['documents_originaux_file', 'justificatifs_file']
+							: mode === 'justificatif'
+								? ['swift_file']
+								: mode === 'remarque'
+									? ['justificatifs_file']
+									: [];
 	const documentLabels: Record<LogistiqueDocumentField, string> = {
+		bon_reception_file: 'Bon de réception',
 		proforma_fournisseur_file: 'Proforma fournisseur',
 		titre_importation_file: 'Titre d’importation',
 		documents_originaux_file: 'Documents originaux',
@@ -522,7 +594,9 @@ export default function SupplierPurchaseFormContent({
 		field,
 		label: documentLabels[field],
 		file: mode === 'remarque' ? formik.values.fichier : formik.values[field],
-		currentUrl: mode === 'remarque' ? undefined : order?.[field],
+		currentUrl:
+			mode === 'remarque' ? undefined : field === 'swift_file' ? installment?.justificatif_file : order?.[field],
+		error: attempted && typeof formik.errors[field] === 'string' ? formik.errors[field] : undefined,
 	}));
 	async function changeDocument(field: LogistiqueDocumentField, file: File | null) {
 		await formik.setFieldValue(mode === 'remarque' ? 'fichier' : field, file);
@@ -566,6 +640,32 @@ export default function SupplierPurchaseFormContent({
 	]);
 	return (
 		<Stack spacing={3} sx={{ p: { xs: 2, md: 3 }, width: '100%' }}>
+			<Dialog open={articleModalOpen} onClose={() => setArticleModalOpen(false)} maxWidth="lg" fullWidth>
+				<DialogTitle>Ajouter un article</DialogTitle>
+				<DialogContent>
+					{articleModalOpen && (
+						<ArticleFormContent
+							logisticsOrderId={id}
+							token={token}
+							company_id={company_id}
+							onCancel={() => setArticleModalOpen(false)}
+							onCreated={(article) => {
+								setCreatedArticles((previous) => [...previous, article]);
+								const line = purchaseLineFromArticle(article, formik.values.devise_proforma_fournisseur);
+								void formik.setValues((previous) => {
+									const empty = previous.lignes.findIndex((entry) => !entry.article);
+									const lines =
+										empty < 0
+											? [...previous.lignes, line]
+											: previous.lignes.map((entry, index) => (index === empty ? line : entry));
+									return withPurchaseLines(previous, lines, articles);
+								});
+								setArticleModalOpen(false);
+							}}
+						/>
+					)}
+				</DialogContent>
+			</Dialog>
 			<Stack direction={isMobile ? 'column' : 'row'} spacing={2} sx={{ pt: 2, justifyContent: 'space-between' }}>
 				{id && (
 					<Button
@@ -604,12 +704,12 @@ export default function SupplierPurchaseFormContent({
 			)}
 			{locked && <Alert severity="info">Ce formulaire est verrouillé. Consultez le dossier pour poursuivre.</Alert>}
 			{apiError && (
-				<Alert severity="error" icon={<Warning />}>
+				<Alert ref={errorSummary} tabIndex={-1} sx={{ scrollMarginTop: 96 }} severity="error" icon={<Warning />}>
 					{apiError}
 				</Alert>
 			)}
 			{attempted && validationEntries.length > 0 && (
-				<Alert severity="error" icon={<Warning />}>
+				<Alert ref={errorSummary} tabIndex={-1} sx={{ scrollMarginTop: 96 }} severity="error" icon={<Warning />}>
 					<Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
 						Vérifiez les informations du formulaire.
 					</Typography>
@@ -620,7 +720,13 @@ export default function SupplierPurchaseFormContent({
 					</ul>
 				</Alert>
 			)}
-			<form onSubmit={formik.handleSubmit} noValidate>
+			<form
+				onSubmit={(event) => {
+					setAttempted(true);
+					formik.handleSubmit(event);
+				}}
+				noValidate
+			>
 				<Stack spacing={3}>
 					<SupplierPurchaseFormFields
 						attempted={attempted}
@@ -698,7 +804,13 @@ export default function SupplierPurchaseFormContent({
 					))}
 					<Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
 						<PrimaryLoadingButton
-							buttonText={proposalMode ? 'Soumettre les modifications' : 'Enregistrer'}
+							buttonText={
+								proposalMode
+									? 'Soumettre les modifications'
+									: mode === 'proforma' && !isCorrection
+										? 'Valider la proforma'
+										: 'Enregistrer'
+							}
 							active={!disabled && (!['demande_paiement', 'paiement', 'justificatif'].includes(mode) || !!installment)}
 							loading={formik.isSubmitting}
 							onClick={() => {

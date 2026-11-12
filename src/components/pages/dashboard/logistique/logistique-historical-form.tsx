@@ -2,7 +2,6 @@
 
 import {
 	extractApiErrorMessage,
-	formatLocalDate,
 	getLabelForKey,
 	listReturnUrl,
 	logisticsChangeProposal,
@@ -46,7 +45,7 @@ import {
 	Star as StarIcon,
 	Warning as WarningIcon,
 } from '@mui/icons-material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import LogistiqueDatePicker from './logistique-date-picker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { enUS, frFR } from '@mui/x-date-pickers/locales';
@@ -305,10 +304,10 @@ const DateField = ({
 	required?: boolean;
 	disabled?: boolean;
 }) => (
-	<DatePicker
+	<LogistiqueDatePicker
 		label={label}
-		value={value ? new Date(value) : null}
-		onChange={(date) => onChange(date ? formatLocalDate(date) : '')}
+		value={value}
+		onChange={onChange}
 		format="dd/MM/yyyy"
 		disabled={disabled}
 		slotProps={{

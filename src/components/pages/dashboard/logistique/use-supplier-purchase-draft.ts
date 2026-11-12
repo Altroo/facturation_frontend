@@ -51,6 +51,8 @@ export function useSupplierPurchaseDraft({
 				) {
 					const line = {
 						article: returnedArticle.id,
+						origin_name: returnedArticle.emplacement_name ?? '',
+						brand_name: returnedArticle.marque_name ?? '',
 						article_reference: returnedArticle.reference,
 						designation: returnedArticle.designation ?? '',
 						quantity: '1',

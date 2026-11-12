@@ -3,13 +3,15 @@ import {
 	WSNotificationAction,
 	WSUserAvatarAction,
 	WSReconnectedAction,
+	WSLogisticsUpdatedAction,
 } from '@/store/actions/wsActions';
 
 export type WSAction =
 	| ReturnType<typeof WSUserAvatarAction>
 	| ReturnType<typeof WSMaintenanceAction>
 	| ReturnType<typeof WSNotificationAction>
-	| ReturnType<typeof WSReconnectedAction>;
+	| ReturnType<typeof WSReconnectedAction>
+	| ReturnType<typeof WSLogisticsUpdatedAction>;
 
 type WSMessage = {
 	type: string;
@@ -18,6 +20,7 @@ type WSMessage = {
 	maintenance?: boolean;
 	version?: string;
 	id?: number;
+	company_id?: number;
 	title?: string;
 	message?: string;
 	notification_type?: string;

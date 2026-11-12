@@ -8,11 +8,14 @@ import type { EventChannel, SagaIterator } from 'redux-saga';
 import * as Types from '@/store/actions';
 import { setWSMaintenance, setWSServerVersion } from '@/store/slices/wsSlice';
 import { incrementUnreadCount, setLatestNotification } from '@/store/slices/notificationSlice';
+import { logistiqueApi } from '@/store/services/logistique';
 import { notificationApi } from '@/store/services/notification';
 import type { NotificationType } from '@/types/facturationTypes';
 import { initMaintenanceSaga } from '@/store/sagas/_initSaga';
 
 type WSChannelAction = Action & {
+	id?: number;
+	company_id?: number;
 	maintenance?: boolean;
 	version?: string;
 	notification?: NotificationType;
@@ -50,6 +53,15 @@ export function* watchWS(): SagaIterator<void> {
 					if (action.version !== undefined) yield put(setWSServerVersion(action.version));
 				} else if (action.type === Types.WS_RECONNECTED) {
 					yield call(initMaintenanceSaga);
+					yield put(logistiqueApi.util.invalidateTags(['Logistique', 'Dashboard']));
+				} else if (action.type === Types.WS_LOGISTICS_UPDATED && action.id) {
+					yield put(
+						logistiqueApi.util.invalidateTags([
+							{ type: 'Logistique', id: action.id },
+							{ type: 'Logistique', id: 'LIST' },
+							'Dashboard',
+						]),
+					);
 				} else if (action.type === Types.WS_NOTIFICATION && action.notification) {
 					yield put(incrementUnreadCount());
 					yield put(setLatestNotification(action.notification));

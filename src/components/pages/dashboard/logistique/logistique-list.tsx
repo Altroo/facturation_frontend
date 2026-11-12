@@ -309,7 +309,11 @@ const FormikContent: FC<FormikContentProps> = ({ session, company_id, role }) =>
 			minWidth: 120,
 			filterOperators: createNumericFilterOperators(),
 			renderCell: (params: GridRenderCellParams<LogistiqueOrder>) => {
-				const formatted = formatMoney(params.value, params.row.devise);
+				const conversionPending =
+					params.row.workflow_version === 2 && params.row.devise !== 'MAD' && params.row.cout_achat_mad == null;
+				const formatted = conversionPending
+					? 'À renseigner'
+					: formatMoney(params.value, params.row.workflow_version === 2 ? 'MAD' : params.row.devise);
 				return (
 					<DarkTooltip title={formatted}>
 						<Typography variant="body2" color="primary" sx={{ fontWeight: 600 }} noWrap>

@@ -27,6 +27,8 @@ export type PurchaseFormMode =
 export type PurchaseDecision = 'control' | 'request_correction' | 'validate' | 'reject';
 
 export type PurchaseLineValues = {
+	origin_name?: string;
+	brand_name?: string;
 	article: number | null;
 	article_reference: string;
 	designation: string;
@@ -46,6 +48,16 @@ export type PurchaseReceiptLineValues = {
 };
 
 export type PurchaseFormValues = {
+	date_validite_titre_du?: string;
+	date_validite_titre_au?: string;
+	cout_achat_mad?: string;
+	autres_frais_virement_actif?: boolean;
+	autres_frais_virement?: string;
+	description_frais_virement?: string;
+	autres_frais_cash_actif?: boolean;
+	autres_frais_cash?: string;
+	description_frais_cash?: string;
+	bon_reception_file?: File | null;
 	correction_remarque?: string;
 	fournisseur_record: string;
 	fournisseur: string;
@@ -191,5 +203,4 @@ export type SupplierPurchaseProformaFieldsProps = Pick<
 		icon?: ReactNode,
 	) => ReactElement;
 	checkbox: (name: keyof PurchaseFormValues, label: string) => ReactElement;
-	decisionItems: DropDownType[];
 };

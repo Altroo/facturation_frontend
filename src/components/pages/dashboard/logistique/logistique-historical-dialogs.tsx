@@ -18,7 +18,7 @@ import type {
 	LogistiquePaymentMethod,
 	LogistiqueProformaStatus,
 } from '@/types/logistiqueTypes';
-import { formatLocalDate, formatLogistiqueMoney as formatMoney, formatNumberWithSpaces } from '@/utils/helpers';
+import { formatLogistiqueMoney as formatMoney, formatNumberWithSpaces } from '@/utils/helpers';
 import {
 	acceptedDocumentTypes,
 	logistiqueCurrencyItemsList,
@@ -55,7 +55,7 @@ import {
 	Typography,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import LogistiqueDatePicker from './logistique-date-picker';
 const inputTheme = textInputTheme();
 export function LogistiqueHistoricalLaunchStatusDialog({
 	t,
@@ -140,10 +140,10 @@ export function LogistiqueHistoricalProformaRequestDialog({
 				},
 			]}
 		>
-			<DatePicker
+			<LogistiqueDatePicker
 				label={t.logistique.fieldNextProformaFollowUp}
-				value={nextProformaFollowUp ? new Date(nextProformaFollowUp) : null}
-				onChange={(date) => setNextProformaFollowUp(date ? formatLocalDate(date) : '')}
+				value={nextProformaFollowUp}
+				onChange={(date) => setNextProformaFollowUp(date)}
 				format="dd/MM/yyyy"
 				disablePast
 				slotProps={{
@@ -257,17 +257,13 @@ export function LogistiqueHistoricalProformaReviewDialog({
 					theme={inputTheme}
 					startIcon={<ReceiptLongIcon fontSize="small" />}
 				/>
-				<DatePicker
+				<LogistiqueDatePicker
 					label={t.logistique.fieldSupplierProformaDate}
-					value={
-						supplierProformaData.date_proforma_fournisseur
-							? new Date(supplierProformaData.date_proforma_fournisseur)
-							: null
-					}
+					value={supplierProformaData.date_proforma_fournisseur}
 					onChange={(date) =>
 						setSupplierProformaData((prev) => ({
 							...prev,
-							date_proforma_fournisseur: date ? formatLocalDate(date) : '',
+							date_proforma_fournisseur: date,
 						}))
 					}
 					format="dd/MM/yyyy"
@@ -511,14 +507,12 @@ export function LogistiqueHistoricalRequestPaymentDialog({
 				</Typography>
 				{paymentSchedule.map((item, index) => (
 					<Box key={index} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr auto' }, gap: 1.5 }}>
-						<DatePicker
+						<LogistiqueDatePicker
 							label={t.logistique.fieldDueDate}
-							value={item.date_echeance ? new Date(`${item.date_echeance}T00:00:00`) : null}
+							value={item.date_echeance}
 							onChange={(date) =>
 								setPaymentSchedule((previous) =>
-									previous.map((row, rowIndex) =>
-										rowIndex === index ? { ...row, date_echeance: date ? formatLocalDate(date) : '' } : row,
-									),
+									previous.map((row, rowIndex) => (rowIndex === index ? { ...row, date_echeance: date } : row)),
 								)
 							}
 							format="dd/MM/yyyy"
@@ -626,13 +620,13 @@ export function LogistiqueHistoricalPaymentExecutionDialog({
 			]}
 		>
 			<Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mt: 2 }}>
-				<DatePicker
+				<LogistiqueDatePicker
 					label={t.logistique.fieldDatePaiement}
-					value={paymentData.date_paiement ? new Date(paymentData.date_paiement) : null}
+					value={paymentData.date_paiement}
 					onChange={(date) =>
 						setPaymentData((prev) => ({
 							...prev,
-							date_paiement: date ? formatLocalDate(date) : '',
+							date_paiement: date,
 						}))
 					}
 					format="dd/MM/yyyy"

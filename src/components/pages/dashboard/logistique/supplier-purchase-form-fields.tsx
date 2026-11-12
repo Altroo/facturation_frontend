@@ -1,5 +1,6 @@
 'use client';
 
+import { purchaseLinesInCurrency } from '@/utils/logisticsPurchaseLines';
 import SupplierPurchaseProformaFields from './supplier-purchase-proforma-fields';
 
 import CustomAutoCompleteSelect from '@/components/formikElements/customAutoCompleteSelect/customAutoCompleteSelect';
@@ -8,7 +9,7 @@ import CustomTextInput from '@/components/formikElements/customTextInput/customT
 import FormattedNumberInput from '@/components/formikElements/formattedNumberInput/formattedNumberInput';
 import type { DropDownType } from '@/types/accountTypes';
 import type { PurchaseFormValues, SupplierPurchaseFormFieldsProps } from '@/types/supplierPurchaseTypes';
-import { formatLocalDate } from '@/utils/helpers';
+import LogistiqueDatePicker from './logistique-date-picker';
 import {
 	logistiqueManagerRoles,
 	logistiquePaymentMethodItemsList,
@@ -29,7 +30,6 @@ import {
 	Public,
 } from '@mui/icons-material';
 import { Alert, Box, Checkbox, FormControlLabel, InputAdornment, Stack, Typography } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { getIn } from 'formik';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { type ReactNode } from 'react';
@@ -57,7 +57,6 @@ export default function SupplierPurchaseFormFields({
 	addNewArticle,
 	loadingArticles,
 	hasAnomaly,
-	transitAfterReceipt,
 	managedReceipt,
 	installment,
 }: SupplierPurchaseFormFieldsProps) {
@@ -121,14 +120,15 @@ export default function SupplierPurchaseFormFields({
 			theme={inputTheme}
 			startIcon={icon}
 			decimals={decimals}
+			trimTrailingZeros={name.endsWith('.quantity')}
 		/>
 	);
 	const date = (name: string, label: string, required = false, helper?: string, readOnly = false) => (
-		<DatePicker
+		<LogistiqueDatePicker
 			label={label}
-			value={getIn(formik.values, name) ? new Date(`${getIn(formik.values, name)}T00:00:00`) : null}
+			value={getIn(formik.values, name)}
 			onChange={(entry) => {
-				void formik.setFieldValue(name, entry && !Number.isNaN(entry.getTime()) ? formatLocalDate(entry) : '');
+				void formik.setFieldValue(name, entry);
 			}}
 			format="dd/MM/yyyy"
 			disabled={disabled || (readOnly && !isCorrection)}
@@ -166,7 +166,11 @@ export default function SupplierPurchaseFormFields({
 			placeholder={placeholderFor(name, label)}
 			items={items}
 			value={value(getIn(formik.values, name))}
-			onChange={(event) => formik.setFieldValue(name, event.target.value)}
+			onChange={(event) =>
+				name === 'devise_proforma_fournisseur'
+					? formik.setValues((previous) => purchaseLinesInCurrency(previous, String(event.target.value), articles))
+					: formik.setFieldValue(name, event.target.value)
+			}
 			onBlur={() => formik.setFieldTouched(name, true)}
 			helperText={errorFor(name)}
 			error={!!errorFor(name)}
@@ -229,16 +233,6 @@ export default function SupplierPurchaseFormFields({
 	if (!responsibleItems.some((entry) => entry.value === formik.values.responsable))
 		responsibleItems.push({ value: formik.values.responsable, code: order?.responsable_name ?? 'Vous-même' });
 	const locationItems: DropDownType[] = locations.map((entry) => ({ value: String(entry.id), code: entry.nom }));
-	const decisionLabels: Record<string, string> = {
-		control: 'Enregistrer le contrôle',
-		request_correction: 'Demander une correction',
-		validate: 'Valider la proforma',
-		reject: 'Refuser la proforma',
-	};
-	const decisionItems: DropDownType[] = Object.entries(decisionLabels).map(([choice, label]) => ({
-		value: choice,
-		code: label,
-	}));
 	const sections: ReactNode[] = [];
 	if (mode === 'dossier')
 		sections.push(
@@ -330,7 +324,6 @@ export default function SupplierPurchaseFormFields({
 				autocomplete={autocomplete}
 				checkbox={checkbox}
 				hasAnomaly={hasAnomaly}
-				decisionItems={decisionItems}
 			/>,
 		);
 	if (mode === 'titre')
@@ -362,6 +355,8 @@ export default function SupplierPurchaseFormFields({
 					true,
 				)}
 				{date('date_titre_importation', 'Date du titre d’importation', true)}
+				{date('date_validite_titre_du', 'Date de validité du')}
+				{date('date_validite_titre_au', 'Date de validité au')}
 			</FormCard>,
 		);
 	if (mode === 'production')
@@ -408,14 +403,6 @@ export default function SupplierPurchaseFormFields({
 	if (mode === 'transit')
 		sections.push(
 			<FormCard key="transit" title="Transit et douane" icon={<LocalShipping color="primary" />}>
-				{transitAfterReceipt
-					? full(
-							<Alert severity="info">
-								Le dossier reste à l’étape « {order?.statut} ». Vous pouvez compléter les informations de transit et les
-								pièces jointes.
-							</Alert>,
-						)
-					: select('statut', 'Phase du dossier', ['Transit', 'Dédouanement'], <LocalShipping fontSize="small" />, true)}
 				{date('date_arrivee_maroc', 'Date d’arrivée au Maroc', false, undefined, !!order?.date_arrivee_maroc)}
 				{date(
 					'documents_remis_banque_le',
@@ -424,10 +411,53 @@ export default function SupplierPurchaseFormFields({
 					undefined,
 					!!order?.documents_remis_banque_le,
 				)}
-				{number('cout_transport', `Transport (${order?.devise})`, <LocalShipping fontSize="small" />)}
-				{number('frais_transit', `Frais de transit (${order?.devise})`, <LocalShipping fontSize="small" />)}
-				{number('frais_douane', `Droits de douane (${order?.devise})`)}
-				{number('tva', `TVA (${order?.devise})`)}
+				{number('cout_transport', 'Transport (MAD)', <LocalShipping fontSize="small" />)}
+				{number('frais_transit', 'Frais de transit (MAD)', <LocalShipping fontSize="small" />)}
+				{number('frais_douane', 'Droits de douane (MAD)')}
+				{full(
+					<Stack spacing={2}>
+						{(['virement', 'cash'] as const).map((kind) => (
+							<Box key={kind}>
+								{checkbox(`autres_frais_${kind}_actif`, `Autres frais (${kind})`)}
+								<Box sx={grid}>
+									<FormattedNumberInput
+										id={`autres_frais_${kind}`}
+										type="text"
+										label={`Autres frais (${kind}) (MAD)`}
+										value={value(formik.values[`autres_frais_${kind}`])}
+										onChange={formik.handleChange(`autres_frais_${kind}`)}
+										onBlur={formik.handleBlur(`autres_frais_${kind}`)}
+										disabled={disabled || !formik.values[`autres_frais_${kind}_actif`]}
+										error={!!errorFor(`autres_frais_${kind}`)}
+										helperText={errorFor(`autres_frais_${kind}`)}
+										decimals={2}
+										fullWidth
+										size="small"
+										theme={inputTheme}
+										startIcon={<Payment fontSize="small" />}
+									/>
+									<CustomTextInput
+										id={`description_frais_${kind}`}
+										name={`description_frais_${kind}`}
+										type="text"
+										label={`Description (${kind})`}
+										value={value(formik.values[`description_frais_${kind}`])}
+										onChange={formik.handleChange}
+										onBlur={formik.handleBlur}
+										error={!!errorFor(`description_frais_${kind}`)}
+										helperText={errorFor(`description_frais_${kind}`)}
+										disabled={disabled || !formik.values[`autres_frais_${kind}_actif`]}
+										fullWidth
+										size="small"
+										theme={inputTheme}
+										startIcon={<Notes fontSize="small" />}
+									/>
+								</Box>
+							</Box>
+						))}
+					</Stack>,
+				)}
+
 				{full(text('remarque', 'Remarque', <Notes fontSize="small" />, false, true))}
 			</FormCard>,
 		);
@@ -523,12 +553,21 @@ export default function SupplierPurchaseFormFields({
 	if (mode === 'couts')
 		sections.push(
 			<FormCard key="couts" title="Coûts du dossier" icon={<Payment color="primary" />}>
-				{number('cout_transport', `Transport (${order?.devise})`, <LocalShipping fontSize="small" />)}
-				{number('frais_transit', `Frais de transit (${order?.devise})`)}
-				{number('frais_douane', `Droits de douane (${order?.devise})`)}
-				{number('tva', `TVA (${order?.devise})`)}
-				{number('livraison_locale', `Livraison locale (${order?.devise})`, <LocalShipping fontSize="small" />)}
-				{number('autres_frais', `Autres frais (${order?.devise})`)}
+				{order?.devise !== 'MAD' && (
+					<>
+						{number('cout_achat_mad', 'Coût d’achat converti (MAD)', <Payment fontSize="small" />)}
+						{full(
+							<Typography variant="body2" color="text.secondary">
+								Saisissez le montant en MAD communiqué par la comptabilité.
+							</Typography>,
+						)}
+					</>
+				)}
+				{number('cout_transport', 'Transport (MAD)', <LocalShipping fontSize="small" />)}
+				{number('frais_transit', 'Frais de transit (MAD)')}
+				{number('frais_douane', 'Droits de douane (MAD)')}
+				{number('livraison_locale', 'Livraison locale (MAD)', <LocalShipping fontSize="small" />)}
+				{number('autres_frais', 'Autres frais (MAD)')}
 				{full(text('remarque', 'Remarque sur les frais', <Notes fontSize="small" />, false, true))}
 			</FormCard>,
 		);

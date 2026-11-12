@@ -60,7 +60,8 @@ export type LogistiqueDocumentField =
 	| 'proforma_fournisseur_file'
 	| 'justificatifs_file'
 	| 'swift_file'
-	| 'documents_originaux_file';
+	| 'documents_originaux_file'
+	| 'bon_reception_file';
 
 export type LogistiqueLine = {
 	type_article?: string;
@@ -160,6 +161,18 @@ export type LogistiquePaymentInstallment = {
 };
 
 export type LogistiqueOrder = {
+	date_validite_titre_du?: string;
+	date_validite_titre_au?: string;
+	cout_achat_mad?: number | string | null;
+	autres_frais_virement_actif?: boolean;
+	autres_frais_virement?: string;
+	description_frais_virement?: string;
+	autres_frais_cash_actif?: boolean;
+	autres_frais_cash?: string;
+	description_frais_cash?: string;
+	cout_total_avec_cash?: number | string;
+	bon_reception_file?: string | null;
+	documents?: { etape: string; etape_label: string; nom: string; url: string }[];
 	change_requests?: {
 		id: number;
 		etape: string;
@@ -436,6 +449,7 @@ export type LogistiqueSupplierDeleteDialogProps = {
 };
 
 export type LogistiqueFormValues = {
+	bon_reception_file?: File | null;
 	correction_remarque?: string;
 	proformas: number[];
 	fournisseur: string;
@@ -491,6 +505,7 @@ export type LogistiqueDashboardDashboardContentProps = SessionProps & {
 export type LogistiqueDocumentItem = {
 	field: LogistiqueDocumentField;
 	label: string;
+	error?: string;
 	file?: File | null;
 	currentUrl?: string | null;
 };

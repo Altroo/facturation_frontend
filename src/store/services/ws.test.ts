@@ -3,6 +3,7 @@ import {
 	WSMaintenanceAction,
 	WSNotificationAction,
 	WSReconnectedAction,
+	WSLogisticsUpdatedAction,
 	WSUserAvatarAction,
 } from '@/store/actions/wsActions';
 
@@ -531,6 +532,23 @@ describe('initWebsocket', () => {
 		await jest.advanceTimersByTimeAsync(2000);
 		expect(createCount).toBe(3);
 
+		channel.close();
+	});
+	it('accepts scoped logistics events and ignores malformed identifiers', async () => {
+		const socket = new MockWebSocket('ws://localhost');
+		global.WebSocket = jest.fn(() => socket) as unknown as typeof WebSocket;
+		const channel = initWebsocket(async () => 'token');
+		const received = jest.fn();
+		channel.take(received);
+		await Promise.resolve();
+		for (const message of [
+			{ type: 'LOGISTICS_UPDATED', id: 0, company_id: 1 },
+			{ type: 'LOGISTICS_UPDATED', id: 7, company_id: '1' },
+			{ type: 'LOGISTICS_UPDATED', id: 7, company_id: 1 },
+		])
+			socket.onmessage?.(new MessageEvent('message', { data: JSON.stringify({ message }) }));
+		expect(received).toHaveBeenCalledTimes(1);
+		expect(received).toHaveBeenCalledWith(WSLogisticsUpdatedAction(7, 1));
 		channel.close();
 	});
 });

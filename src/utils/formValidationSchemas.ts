@@ -324,7 +324,7 @@ export const articleSchema = z
 		photo: base64ImageField,
 		photo_cropped: base64ImageField,
 		emplacement: optionalNumberField(1).nullable(),
-		marque: optionalNumberField(1).nullable(),
+		marque: requiredNumberField(1),
 		categorie: optionalNumberField(1).nullable(),
 		unite: optionalNumberField(1).nullable(),
 		prix_achat: optionalArticlePriceField,
@@ -886,6 +886,16 @@ const documentFile = z
 	.nullable();
 
 const formShape = z.object({
+	date_validite_titre_du: z.string().default(''),
+	date_validite_titre_au: z.string().default(''),
+	cout_achat_mad: z.string().default(''),
+	autres_frais_virement_actif: z.boolean().default(false),
+	autres_frais_virement: z.string().default(''),
+	description_frais_virement: z.string().default(''),
+	autres_frais_cash_actif: z.boolean().default(false),
+	autres_frais_cash: z.string().default(''),
+	description_frais_cash: z.string().default(''),
+	bon_reception_file: documentFile.optional(),
 	correction_remarque: z.string().default(''),
 	fournisseur_record: z.string().default(''),
 	fournisseur: z.string().default(''),
@@ -1023,7 +1033,7 @@ export const getSupplierPurchaseSchema = (mode: PurchaseFormMode, context: Suppl
 				issue([key], 'Saisissez une adresse e-mail valide.');
 		};
 		const date = (key: keyof PurchaseFormValues, mandatory = false, actual = false) => {
-			const value = String(values[key]);
+			const value = String(values[key] ?? '');
 			if (!value) {
 				if (mandatory) required(key);
 				return;
@@ -1040,9 +1050,19 @@ export const getSupplierPurchaseSchema = (mode: PurchaseFormMode, context: Suppl
 			if (!['MAD', 'EUR', 'USD'].includes(values[key])) issue([key], 'Choisissez une devise.');
 		};
 		const costs = (
-			keys: ('cout_transport' | 'frais_transit' | 'frais_douane' | 'tva' | 'livraison_locale' | 'autres_frais')[],
+			keys: (
+				| 'cout_transport'
+				| 'frais_transit'
+				| 'frais_douane'
+				| 'tva'
+				| 'livraison_locale'
+				| 'autres_frais'
+				| 'cout_achat_mad'
+				| 'autres_frais_virement'
+				| 'autres_frais_cash'
+			)[],
 		) => {
-			keys.forEach((key) => numeric(values[key], [key]));
+			keys.forEach((key) => numeric(values[key] ?? '', [key]));
 		};
 
 		if (mode === 'dossier') {
@@ -1094,6 +1114,14 @@ export const getSupplierPurchaseSchema = (mode: PurchaseFormMode, context: Suppl
 			numeric(values.montant_titre_importation, ['montant_titre_importation'], true, true);
 			currency('devise_titre_importation');
 			date('date_titre_importation', true);
+			date('date_validite_titre_du');
+			date('date_validite_titre_au');
+			if (
+				values.date_validite_titre_du &&
+				values.date_validite_titre_au &&
+				values.date_validite_titre_au < values.date_validite_titre_du
+			)
+				issue(['date_validite_titre_au'], 'La date de fin doit suivre la date de début de validité.');
 			if (!values.titre_importation_file && !context.existingTitleFile)
 				issue(['titre_importation_file'], 'Joignez le titre d’importation.');
 		} else if (mode === 'production') {
@@ -1110,7 +1138,9 @@ export const getSupplierPurchaseSchema = (mode: PurchaseFormMode, context: Suppl
 				values.date_arrivee_maroc < values.date_expedition_reelle
 			)
 				issue(['date_arrivee_maroc'], 'L’arrivée au Maroc doit suivre l’expédition.');
-			costs(['cout_transport', 'frais_transit', 'frais_douane', 'tva']);
+			costs(['cout_transport', 'frais_transit', 'frais_douane']);
+			if (values.autres_frais_virement_actif) costs(['autres_frais_virement']);
+			if (values.autres_frais_cash_actif) costs(['autres_frais_cash']);
 		} else if (mode === 'reception') {
 			text('reference_reception', 80);
 			if (context.managedReceipt) {
@@ -1137,7 +1167,7 @@ export const getSupplierPurchaseSchema = (mode: PurchaseFormMode, context: Suppl
 					issue(['date_reelle'], 'La réception doit suivre l’expédition.');
 			}
 		} else if (mode === 'couts') {
-			costs(['cout_transport', 'frais_transit', 'frais_douane', 'tva', 'livraison_locale', 'autres_frais']);
+			costs(['cout_transport', 'frais_transit', 'frais_douane', 'livraison_locale', 'autres_frais', 'cout_achat_mad']);
 		} else if (mode === 'demande_paiement') {
 			id('echeance_id');
 			date('date_echeance', true);

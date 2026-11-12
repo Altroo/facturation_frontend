@@ -180,3 +180,12 @@ describe('FormattedNumberInput', () => {
 		expect(FormattedNumberInput.displayName).toBe('FormattedNumberInput');
 	});
 });
+
+it.each([
+	[1, '1'],
+	[1.25, '1.25'],
+	[1000, '1 000'],
+])('can hide trailing quantity zeros without truncating %s', (value, displayed) => {
+	render(<FormattedNumberInput {...defaultProps} value={value} decimals={3} trimTrailingZeros />);
+	expect(screen.getByTestId('custom-text-input')).toHaveValue(displayed);
+});
