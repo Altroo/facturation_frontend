@@ -41,14 +41,56 @@ export const cookiesDeleter = async (url: string, body: object) => {
 	return { status: response.status };
 };
 
-/*** Fetch a PDF blob via GET with Bearer auth token */
+let pendingPdfRequests = 0;
+const pdfRequestListeners = new Set<() => void>();
+
+export const subscribePdfRequests = (listener: () => void) => {
+	pdfRequestListeners.add(listener);
+	return () => { pdfRequestListeners.delete(listener); };
+};
+export const getPendingPdfRequests = () => pendingPdfRequests;
+export const getServerPendingPdfRequests = () => 0;
+
+const notifyPdfRequests = (change: number) => {
+	pendingPdfRequests += change;
+	for (const listener of pdfRequestListeners) listener();
+};
+
+const isPdfTranslationPending = async (error: unknown): Promise<boolean> => {
+	if (!axios.isAxiosError(error) || error.response?.status !== 409) return false;
+	try {
+		const data: unknown = error.response.data;
+		const payload: unknown = data instanceof Blob ? JSON.parse(await data.text()) : data;
+		if (!payload || typeof payload !== 'object') return false;
+		const details = 'details' in payload ? payload.details : payload;
+		return Boolean(details && typeof details === 'object' && 'code' in details && details.code === 'pdf_translation_pending');
+	} catch {
+		return false;
+	}
+};
+
+/** Fetch a PDF, keeping loading feedback active while new background text is prepared. */
 export const fetchPdfBlob = async (url: string, accessToken: string): Promise<Blob> => {
-	const instance = axios.create();
-	const response = await instance.get<Blob>(url, {
-		headers: { Authorization: `Bearer ${accessToken}` },
-		responseType: 'blob',
-	});
-	return response.data;
+	notifyPdfRequests(1);
+	try {
+		const instance = axios.create();
+		const deadline = Date.now() + 180_000;
+		for (;;) {
+			try {
+				const response = await instance.get<Blob>(url, {
+					headers: { Authorization: `Bearer ${accessToken}` },
+					responseType: 'blob',
+					timeout: Math.min(30_000, Math.max(1, deadline - Date.now())),
+				});
+				return response.data;
+			} catch (error) {
+				if (!(await isPdfTranslationPending(error)) || Date.now() + 2_000 >= deadline) throw error;
+				await new Promise<void>((resolve) => setTimeout(resolve, 2_000));
+			}
+		}
+	} finally {
+		notifyPdfRequests(-1);
+	}
 };
 
 /*** Base Axios JSON Api call [POST] */

@@ -17,6 +17,7 @@ import { LanguageContextProvider } from '@/contexts/languageContext';
 import { cookies } from 'next/headers';
 import { AuthThemeToggle } from '@/components/shared/themeToggle/themeToggle';
 import { resolveColorMode } from '@/utils/colorMode';
+import PdfLoadingIndicator from '@/components/shared/pdfLoadingIndicator/pdfLoadingIndicator';
 
 export const metadata: Metadata = {
 	title: 'E.B.H - Facturation',
@@ -89,6 +90,7 @@ const RootLayout: FC<EntryPointProps> = async (props) => {
 											<ToastContextProvider>
 												<SessionExpiredListener />
 												<Maintenance />
+												<PdfLoadingIndicator />
 												<div id="main-content">{props.children}</div>
 											</ToastContextProvider>
 										</ErrorBoundary>

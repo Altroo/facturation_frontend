@@ -210,6 +210,7 @@ export const en: TranslationDictionary = {
 	},
 	pdf: {
 		generatePdf: 'PDF Generation',
+		preparingPdf: 'Preparing your PDF…',
 		chooseLanguage: 'Choose the language in which you want to generate the PDF document.',
 		french: 'Français',
 		english: 'English',
