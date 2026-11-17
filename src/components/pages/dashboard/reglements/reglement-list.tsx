@@ -1,5 +1,7 @@
 'use client';
 
+import { showPdfError } from '@/utils/pdfErrors';
+
 import { extractApiErrorMessage, formatDate, formatNumberWithSpaces, runWithCleanup } from '@/utils/helpers';
 import { type FC, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -55,7 +57,7 @@ import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActio
 
 const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 	const { session, company_id, role } = props;
-	const { onSuccess, onError } = useToast();
+	const { onSuccess, onError, onInfo } = useToast();
 	const { t } = useLanguage();
 	const statutFilterOptions = [
 		{ value: 'Valide', label: t.reglements.statusValide, color: 'success' as const },
@@ -293,8 +295,8 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 					setTimeout(() => {
 						window.URL.revokeObjectURL(blobUrl);
 					}, 60_000);
-				} catch {
-					onError(t.errors.documentOpenError);
+				} catch (error) {
+					showPdfError(error, onError, onInfo, t.pdf.translationPending, t.errors.documentOpenError);
 				}
 			},
 			() => {

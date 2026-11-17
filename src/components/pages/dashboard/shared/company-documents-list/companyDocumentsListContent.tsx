@@ -1,5 +1,7 @@
 'use client';
 
+import { showPdfError } from '@/utils/pdfErrors';
+
 import { useState, type ReactNode, type JSX, type MouseEvent } from 'react';
 import {
 	Box,
@@ -139,7 +141,7 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 		accessToken,
 	} = props;
 
-	const { onSuccess, onError } = useToast();
+	const { onSuccess, onError, onInfo } = useToast();
 	const { t } = useLanguage();
 
 	const { data, isLoading, refetch } = queryResult;
@@ -289,8 +291,8 @@ function CompanyDocumentsListContent<TDocument extends DocumentListClass>(
 					setTimeout(() => {
 						window.URL.revokeObjectURL(blobUrl);
 					}, 60_000);
-				} catch {
-					onError(t.errors.documentOpenError);
+				} catch (error) {
+					showPdfError(error, onError, onInfo, t.pdf.translationPending, t.errors.documentOpenError);
 				}
 			},
 			() => {

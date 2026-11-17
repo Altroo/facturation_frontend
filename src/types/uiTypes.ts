@@ -36,6 +36,7 @@ import type { Language } from '@/types/languageTypes';
 
 export type ToastContextType = {
 	onSuccess: (msg: string) => void;
+	onInfo?: (message: string) => void;
 	onError: (msg: string) => void;
 };
 

@@ -210,6 +210,7 @@ export const fr: TranslationDictionary = {
 			'Il semble que nous ne puissions pas nous connecter. Veuillez vérifier votre connexion réseau et réessayer.',
 	},
 	pdf: {
+		translationPending: 'La traduction de ce document est en attente. Elle se poursuit en arrière-plan. Veuillez réessayer plus tard.',
 		generatePdf: 'Génération du PDF',
 		preparingPdf: 'Préparation du PDF en cours…',
 		chooseLanguage: 'Choisissez la langue dans laquelle vous souhaitez générer le document PDF.',

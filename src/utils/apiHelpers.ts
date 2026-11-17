@@ -1,3 +1,4 @@
+import { PdfTranslationDeferredError } from '@/utils/pdfErrors';
 import { getSession } from 'next-auth/react';
 import {
 	chatErrorCode,
@@ -56,16 +57,16 @@ const notifyPdfRequests = (change: number) => {
 	for (const listener of pdfRequestListeners) listener();
 };
 
-const isPdfTranslationPending = async (error: unknown): Promise<boolean> => {
-	if (!axios.isAxiosError(error) || error.response?.status !== 409) return false;
+const pdfTranslationState = async (error: unknown): Promise<string | undefined> => {
+	if (!axios.isAxiosError(error) || error.response?.status !== 409) return undefined;
 	try {
 		const data: unknown = error.response.data;
 		const payload: unknown = data instanceof Blob ? JSON.parse(await data.text()) : data;
-		if (!payload || typeof payload !== 'object') return false;
+		if (!payload || typeof payload !== 'object') return undefined;
 		const details = 'details' in payload ? payload.details : payload;
-		return Boolean(details && typeof details === 'object' && 'code' in details && details.code === 'pdf_translation_pending');
+		return details && typeof details === 'object' && 'code' in details && typeof details.code === 'string' ? details.code : undefined;
 	} catch {
-		return false;
+		return undefined;
 	}
 };
 
@@ -84,7 +85,9 @@ export const fetchPdfBlob = async (url: string, accessToken: string): Promise<Bl
 				});
 				return response.data;
 			} catch (error) {
-				if (!(await isPdfTranslationPending(error)) || Date.now() + 2_000 >= deadline) throw error;
+				const state = await pdfTranslationState(error);
+				if (state === 'pdf_translation_deferred' || (state === 'pdf_translation_pending' && Date.now() + 2_000 >= deadline)) throw new PdfTranslationDeferredError();
+				if (state !== 'pdf_translation_pending') throw error;
 				await new Promise<void>((resolve) => setTimeout(resolve, 2_000));
 			}
 		}

@@ -209,6 +209,7 @@ export const en: TranslationDictionary = {
 		networkError: 'It seems we cannot connect. Please check your network connection and try again.',
 	},
 	pdf: {
+		translationPending: 'This document is awaiting translation. Processing continues in the background. Please try again later.',
 		generatePdf: 'PDF Generation',
 		preparingPdf: 'Preparing your PDF…',
 		chooseLanguage: 'Choose the language in which you want to generate the PDF document.',

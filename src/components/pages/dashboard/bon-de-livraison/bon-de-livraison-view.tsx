@@ -1,5 +1,7 @@
 'use client';
 
+import { showPdfError } from '@/utils/pdfErrors';
+
 import { listReturnUrl, runWithCleanup, extractApiErrorMessage } from '@/utils/helpers';
 
 import { type FC, useState } from 'react';
@@ -29,7 +31,7 @@ const BonDeLivraisonViewClient: FC<Props> = ({ session, company_id, id }) => {
 	const companies = useAppSelector(getUserCompaniesState);
 	const company = companies?.find((c) => c.id === company_id);
 	const [deleteRecord] = useDeleteBonDeLivraisonMutation();
-	const { onSuccess, onError } = useToast();
+	const { onSuccess, onError, onInfo } = useToast();
 	const { t } = useLanguage();
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
 	const [showLanguageModal, setShowLanguageModal] = useState(false);
@@ -71,8 +73,8 @@ const BonDeLivraisonViewClient: FC<Props> = ({ session, company_id, id }) => {
 			const blobUrl = window.URL.createObjectURL(blob);
 			window.open(blobUrl, '_blank');
 			setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60_000);
-		} catch {
-			onError(t.errors.documentOpenError);
+		} catch (error) {
+			showPdfError(error, onError, onInfo, t.pdf.translationPending, t.errors.documentOpenError);
 		}
 	};
 

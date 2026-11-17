@@ -1,5 +1,7 @@
 'use client';
 
+import { showPdfError } from '@/utils/pdfErrors';
+
 import { extractApiErrorMessage, listReturnUrl, runWithCleanup } from '@/utils/helpers';
 import { type FC, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -34,7 +36,7 @@ const FactureAvoirViewClient: FC<Props> = ({ session, company_id, id }) => {
 	const router = useRouter();
 	const companies = useAppSelector(getUserCompaniesState);
 	const company = companies?.find((c) => c.id === company_id);
-	const { onSuccess, onError } = useToast();
+	const { onSuccess, onError, onInfo } = useToast();
 	const { t } = useLanguage();
 	const [showLanguageModal, setShowLanguageModal] = useState(false);
 	const [pendingPdfType, setPendingPdfType] = useState<DocumentPdfType | null>(null);
@@ -79,8 +81,8 @@ const FactureAvoirViewClient: FC<Props> = ({ session, company_id, id }) => {
 					const blobUrl = window.URL.createObjectURL(blob);
 					window.open(blobUrl, '_blank');
 					setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60_000);
-				} catch {
-					onError(t.errors.documentOpenError);
+				} catch (error) {
+					showPdfError(error, onError, onInfo, t.pdf.translationPending, t.errors.documentOpenError);
 				}
 			},
 			() => {

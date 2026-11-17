@@ -1,3 +1,4 @@
+import { PdfTranslationDeferredError } from '@/utils/pdfErrors';
 import { ReadableStream } from 'node:stream/web';
 import { TextDecoder } from 'node:util';
 import { getSession, signOut } from 'next-auth/react';
@@ -68,6 +69,16 @@ describe('PDF preparation and loading', () => {
 		expect(getPendingPdfRequests()).toBe(0);
 	});
 
+	it('stops polling a deferred quota and clears the spinner immediately', async () => {
+		const waiting = new AxiosError('queued');
+		waiting.response = { status: 409, data: { details: { code: 'pdf_translation_deferred' } } } as AxiosError['response'];
+		const get = jest.fn().mockRejectedValue(waiting);
+		mockedAxios.create.mockReturnValue({ get } as unknown as AxiosInstance);
+		await expect(fetchPdfBlob('/one', 'token')).rejects.toBeInstanceOf(PdfTranslationDeferredError);
+		expect(get).toHaveBeenCalledTimes(1);
+		expect(getPendingPdfRequests()).toBe(0);
+	});
+
 	it.each([401, 403, 409, 503])('does not retry unrelated HTTP %i errors and clears loading', async (status) => {
 		const failure = new AxiosError('failed');
 		failure.response = { status, data: { details: { code: 'other_error' } } } as AxiosError['response'];
@@ -83,7 +94,7 @@ describe('PDF preparation and loading', () => {
 		const waiting = new AxiosError('preparing');
 		waiting.response = { status: 409, data: { code: 'pdf_translation_pending' } } as AxiosError['response'];
 		mockedAxios.create.mockReturnValue({ get: jest.fn().mockRejectedValue(waiting) } as unknown as AxiosInstance);
-		const request = expect(fetchPdfBlob('/one', 'token')).rejects.toBe(waiting);
+		const request = expect(fetchPdfBlob('/one', 'token')).rejects.toBeInstanceOf(PdfTranslationDeferredError);
 		await jest.advanceTimersByTimeAsync(180_000);
 		await request;
 		expect(getPendingPdfRequests()).toBe(0);

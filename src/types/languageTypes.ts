@@ -216,6 +216,7 @@ export type TranslationDictionary = {
 		networkError: string;
 	};
 	pdf: {
+		translationPending: string;
 		generatePdf: string;
 		preparingPdf: string;
 		chooseLanguage: string;
