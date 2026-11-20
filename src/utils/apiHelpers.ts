@@ -44,6 +44,7 @@ export const cookiesDeleter = async (url: string, body: object) => {
 
 let pendingPdfRequests = 0;
 const pdfRequestListeners = new Set<() => void>();
+const PDF_WAIT_MS = 45_000;
 
 export const subscribePdfRequests = (listener: () => void) => {
 	pdfRequestListeners.add(listener);
@@ -75,7 +76,7 @@ export const fetchPdfBlob = async (url: string, accessToken: string): Promise<Bl
 	notifyPdfRequests(1);
 	try {
 		const instance = axios.create();
-		const deadline = Date.now() + 180_000;
+		const deadline = Date.now() + PDF_WAIT_MS;
 		for (;;) {
 			try {
 				const response = await instance.get<Blob>(url, {
