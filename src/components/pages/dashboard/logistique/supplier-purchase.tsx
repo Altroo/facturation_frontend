@@ -929,7 +929,7 @@ export default function SupplierPurchase({ session, company_id, id }: Logistique
 													)
 													.map((document) => ({
 														field: 'justificatifs_file' as const,
-														label: document.etape_label,
+														label: [document.etape_label, document.libelle].filter(Boolean).join(' · '),
 														currentUrl: document.url,
 													}))
 											: [

@@ -61,6 +61,7 @@ import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadi
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import NoPermission from '@/components/shared/noPermission/noPermission';
+import { logisticsFormPayload } from '@/utils/apiHelpers';
 import { LogistiqueDocumentsFormCard } from '@/components/pages/dashboard/logistique/logistique-documents-card';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import { getInitStateToken, getUserCompaniesState } from '@/store/selectors';
@@ -393,6 +394,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 	const [isPending, setIsPending] = useState(false);
 	const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 	const [selectedDocumentField, setSelectedDocumentField] = useState<LogistiqueDocumentField>('titre_importation_file');
+	const [originalFiles, setOriginalFiles] = useState<File[]>([]);
 
 	const proformas = (() => {
 		if (!proformasData) return [] as Partial<FactureClass>[];
@@ -423,6 +425,7 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 			request.statut === 'approved',
 	);
 	const proposalMode = query.get('proposer') === '1';
+	const multipleOriginals = proposalMode && selectedStep === 'expedition';
 	const canPropose =
 		proposalMode &&
 		canManage &&
@@ -523,11 +526,23 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 									})(),
 								};
 								if (proposalMode) {
-									if (submission.data instanceof FormData) submission.data.set('action', 'historical');
-									else Object.assign(submission.data, { action: 'historical' });
+									const files = multipleOriginals ? originalFiles : [];
+									const data = submission.data;
+									if (data instanceof FormData) {
+										data.set('action', 'historical');
+										files.forEach((file) => data.append('documents_originaux_files', file));
+									}
+									const proposalData =
+										data instanceof FormData
+											? data
+											: logisticsFormPayload({
+													...data,
+													action: 'historical',
+													...(files.length ? { documents_originaux_files: files } : {}),
+												});
 									await proposeChange({
 										id,
-										data: logisticsChangeProposal(submission.data, selectedStep, values.correction_remarque ?? ''),
+										data: logisticsChangeProposal(proposalData, selectedStep, values.correction_remarque ?? ''),
 									}).unwrap();
 								} else await editLogistique(submission).unwrap();
 								onSuccess(
@@ -1375,6 +1390,26 @@ const LogistiqueForm: FC<Props> = ({ session, company_id, id }) => {
 																	label: documentLabels[field],
 																	file: formik.values[field],
 																	currentUrl: order?.[field] ?? null,
+																	multiple:
+																		multipleOriginals && field === 'documents_originaux_file'
+																			? {
+																					files: originalFiles,
+																					currentUrls: [
+																						...(order?.documents_originaux_file
+																							? [order.documents_originaux_file]
+																							: []),
+																						...(order?.documents ?? [])
+																							.filter(
+																								(document) =>
+																									document.champ === 'documents_originaux_files' &&
+																									document.etape === 'expedition',
+																							)
+																							.map((document) => document.url),
+																					],
+																					numberedLabel: 'Document original',
+																					onChange: setOriginalFiles,
+																				}
+																			: undefined,
 																}))}
 																selectedField={
 																	editableDocumentFields.includes(selectedDocumentField)

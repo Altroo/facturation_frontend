@@ -467,7 +467,7 @@ export default function SupplierPurchaseFormContent({
 							documents_originaux_requis: values.documents_originaux_requis,
 							statut_documents_originaux: values.documents_originaux_requis ? values.statut_documents_originaux : '',
 							remarque: values.remarque,
-							...(values.documents_originaux_file ? { documents_originaux_file: values.documents_originaux_file } : {}),
+							...(originalFiles.length ? { documents_originaux_files: originalFiles } : {}),
 							...(values.justificatifs_file ? { justificatifs_file: values.justificatifs_file } : {}),
 						};
 					else if (mode === 'transit')
@@ -609,7 +609,7 @@ export default function SupplierPurchaseFormContent({
 	const originalUrls = [
 		...(order?.documents_originaux_file ? [order.documents_originaux_file] : []),
 		...(order?.documents ?? [])
-			.filter((document) => document.champ === 'documents_originaux_files')
+			.filter((document) => document.champ === 'documents_originaux_files' && document.etape === mode)
 			.map((document) => document.url),
 	];
 	const items = requiredFileNames.map((field) => ({
@@ -620,8 +620,13 @@ export default function SupplierPurchaseFormContent({
 			mode === 'remarque' ? undefined : field === 'swift_file' ? installment?.justificatif_file : order?.[field],
 		error: attempted && typeof formik.errors[field] === 'string' ? formik.errors[field] : undefined,
 		multiple:
-			mode === 'transit' && field === 'documents_originaux_file'
-				? { files: originalFiles, currentUrls: originalUrls, onChange: setOriginalFiles }
+			(mode === 'expedition' || mode === 'transit') && field === 'documents_originaux_file'
+				? {
+						files: originalFiles,
+						currentUrls: originalUrls,
+						numberedLabel: 'Document original',
+						onChange: setOriginalFiles,
+					}
 				: undefined,
 	}));
 	async function changeDocument(field: LogistiqueDocumentField, file: File | null) {

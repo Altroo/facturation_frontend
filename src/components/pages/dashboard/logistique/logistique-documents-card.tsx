@@ -183,22 +183,31 @@ export const LogistiqueDocumentsFormCard: FC<LogistiqueDocumentsFormCardProps> =
 	const inputRef = useRef<HTMLInputElement>(null);
 	const [isDragging, setIsDragging] = useState(false);
 	const selectedItem = items.find((item) => item.field === selectedField) ?? items[0];
-	const visibleItems = items.flatMap<LogistiqueDocumentItem & { fileIndex?: number }>((item) =>
-		item.multiple
-			? [
-					...item.multiple.currentUrls.map((currentUrl) => ({ ...item, currentUrl })),
-					...item.multiple.files.map((file, fileIndex) => ({ ...item, file, fileIndex })),
-				]
-			: item.file || item.currentUrl
-				? [item]
-				: [],
-	);
+	const visibleItems = items.flatMap<LogistiqueDocumentItem & { fileIndex?: number }>((item) => {
+		const multiple = item.multiple;
+		if (!multiple) return item.file || item.currentUrl ? [item] : [];
+		return [
+			...multiple.currentUrls.map((currentUrl, index) => ({
+				...item,
+				label: multiple.numberedLabel + ' ' + (index + 1),
+				file: null,
+				currentUrl,
+			})),
+			...multiple.files.map((file, fileIndex) => ({
+				...item,
+				label: multiple.numberedLabel + ' ' + (multiple.currentUrls.length + fileIndex + 1),
+				currentUrl: undefined,
+				file,
+				fileIndex,
+			})),
+		];
+	});
 	const count = visibleItems.length;
 
 	const handleFiles = (files: File[]) => {
 		if (!selectedItem || isLoading || files.length === 0) return;
 		if (selectedItem.multiple) {
-			selectedItem.multiple.onChange([...selectedItem.multiple.files, ...files]);
+			selectedItem.multiple.onChange((previous) => [...previous, ...files]);
 		} else {
 			onFileChangeAction(selectedItem.field, files[0]);
 		}
@@ -389,8 +398,8 @@ export const LogistiqueDocumentsFormCard: FC<LogistiqueDocumentsFormCardProps> =
 															onClick={(event) => {
 																event.stopPropagation();
 																if (item.multiple) {
-																	item.multiple.onChange(
-																		item.multiple.files.filter((_, index) => index !== item.fileIndex),
+																	item.multiple.onChange((files) =>
+																		files.filter((_, index) => index !== item.fileIndex),
 																	);
 																} else {
 																	onClearFileAction(item.field);

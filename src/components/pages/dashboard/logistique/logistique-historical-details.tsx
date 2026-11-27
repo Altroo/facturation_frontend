@@ -99,6 +99,11 @@ export function LogistiqueHistoricalDetails({
 	isAddingProcessNote,
 	handleAddProcessNote,
 }: LogistiqueHistoricalDetailsProps) {
+	const expeditionDocuments = (order?.documents ?? []).filter(
+		(document) =>
+			document.etape === 'expedition' &&
+			(document.champ === 'documents_originaux_file' || document.champ === 'documents_originaux_files'),
+	);
 	return (
 		<DetailCard title={workflowSteps[selectedStep]} icon={<DescriptionIcon color="primary" />}>
 			<Stack spacing={3}>
@@ -448,23 +453,33 @@ export function LogistiqueHistoricalDetails({
 
 				{[1, 2, 4, 7].includes(selectedStep) && (
 					<LogistiqueDocumentsViewCard
-						items={documentFields
-							.filter(
-								(field) =>
-									({
-										bon_reception_file: 7,
-										proforma_fournisseur_file: 1,
-										titre_importation_file: 2,
-										swift_file: 2,
-										documents_originaux_file: 4,
-										justificatifs_file: 7,
-									})[field] === selectedStep,
-							)
-							.map((field) => ({
-								field,
-								label: documentLabels[field],
-								currentUrl: order?.[field] ?? null,
-							}))}
+						items={[
+							...documentFields
+								.filter(
+									(field) =>
+										({
+											bon_reception_file: 7,
+											proforma_fournisseur_file: 1,
+											titre_importation_file: 2,
+											swift_file: 2,
+											documents_originaux_file: 4,
+											justificatifs_file: 7,
+										})[field] === selectedStep &&
+										(field !== 'documents_originaux_file' || expeditionDocuments.length === 0),
+								)
+								.map((field) => ({
+									field,
+									label: documentLabels[field],
+									currentUrl: order?.[field] ?? null,
+								})),
+							...(selectedStep === 4 || (selectedStep === 7 && order?.statut === 'Clôture')
+								? expeditionDocuments.map((document) => ({
+										field: 'documents_originaux_file' as const,
+										label: [document.etape_label, document.libelle].filter(Boolean).join(' · '),
+										currentUrl: document.url,
+									}))
+								: []),
+						]}
 					/>
 				)}
 

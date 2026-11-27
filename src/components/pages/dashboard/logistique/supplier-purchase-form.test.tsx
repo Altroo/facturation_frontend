@@ -616,3 +616,41 @@ it('rereads a validated proforma while flagging financial differences for accoun
 	expect(screen.getByRole('textbox', { name: /Montant total fournisseur/ })).toHaveValue('100,01');
 	expect(screen.getByRole('combobox', { name: /Devise de la proforma fournisseur/ })).toHaveTextContent('EUR');
 });
+
+it('keeps successive original document selections in the Expédition correction', async () => {
+	(useGetLogistiqueQuery as jest.Mock).mockReturnValue({
+		data: {
+			...order,
+			statut: 'Transit',
+			date_expedition_reelle: '2026-11-26',
+			documents_originaux_file: '/media/ancien.pdf',
+			documents: [{ champ: 'documents_originaux_files', etape: 'transit', url: '/media/transit-only.pdf' }],
+			workflow: {
+				etape_courante: 'transit',
+				etapes: [{ key: 'expedition', completed: true, accessible: true }],
+			},
+		},
+	});
+	await renderForm('expedition&proposer=1');
+	fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Libellé' }));
+	fireEvent.click(screen.getByRole('option', { name: 'Documents originaux' }));
+	const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+	expect(input.multiple).toBe(true);
+	const packingList = new File(['%PDF-1.4 list'], 'packing-list.pdf', { type: 'application/pdf' });
+	const certificate = new File(['%PDF-1.4 certificate'], 'certificat.pdf', { type: 'application/pdf' });
+	fireEvent.change(input, { target: { files: [packingList] } });
+	fireEvent.change(input, { target: { files: [certificate] } });
+	expect(screen.getByText('Document original 1')).toBeInTheDocument();
+	expect(screen.getByText('Document original 2')).toBeInTheDocument();
+	expect(screen.getByText('Document original 3')).toBeInTheDocument();
+	expect(screen.queryByText(/transit-only/)).not.toBeInTheDocument();
+	fireEvent.change(screen.getByRole('textbox', { name: /Motif de la modification/ }), {
+		target: { value: 'Ajouter la liste de colisage et le certificat.' },
+	});
+	fireEvent.click(screen.getByRole('button', { name: 'Soumettre les modifications' }));
+	await waitFor(() => expect(mockPurchase).toHaveBeenCalled());
+	const body = mockPurchase.mock.calls[0][0].data as FormData;
+	expect(body.get('action')).toBe('demander_modification');
+	expect(body.get('etape')).toBe('expedition');
+	expect(body.getAll('documents_originaux_files')).toEqual([packingList, certificate]);
+});
