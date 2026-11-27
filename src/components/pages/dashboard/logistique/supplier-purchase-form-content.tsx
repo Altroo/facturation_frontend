@@ -96,6 +96,7 @@ export default function SupplierPurchaseFormContent({
 	const [apiError, setApiError] = useState('');
 	const errorSummary = useRef<HTMLDivElement>(null);
 	const [warnings, setWarnings] = useState<string[]>([]);
+	const [proformaRead, setProformaRead] = useState(false);
 	const [originalFiles, setOriginalFiles] = useState<File[]>([]);
 	const [search, setSearch] = useState('');
 	const [articleModalOpen, setArticleModalOpen] = useState(false);
@@ -628,6 +629,7 @@ export default function SupplierPurchaseFormContent({
 			const sequence = ++extractionSequence.current;
 			const suggestions = proformaSuggestions.current;
 			proformaSuggestions.current = {};
+			setProformaRead(false);
 			setWarnings([]);
 			await formik.setValues((previous) => {
 				const next = { ...previous, proforma_fournisseur_file: file };
@@ -678,11 +680,12 @@ export default function SupplierPurchaseFormContent({
 	async function readSupplierProforma(file?: File) {
 		if (!id) return;
 		const sequence = ++extractionSequence.current;
+		setProformaRead(false);
 		setWarnings([]);
 		const body = new FormData();
 		if (file) body.append('file', file);
 		try {
-			const result = await extractProforma({ id, data: body }).unwrap();
+			const result = await extractProforma(file ? { id, data: body } : { id }).unwrap();
 			if (sequence !== extractionSequence.current) return;
 			const validated = order?.is_proforma_step_complete;
 			const amount = result.fields.montant_proforma_fournisseur;
@@ -706,15 +709,17 @@ export default function SupplierPurchaseFormContent({
 				}
 				return next;
 			});
-			setWarnings([
+			if (sequence !== extractionSequence.current) return;
+			const readWarnings = [
 				...result.warnings,
 				...(accountingMismatch
 					? [
 							'Le montant ou la devise du document diffère de l’échéancier validé. Vérifiez cet écart avec la comptabilité.',
 						]
 					: []),
-				'Vérifiez le numéro, la date, le montant et les articles avec la proforma avant de continuer.',
-			]);
+			];
+			setWarnings(readWarnings);
+			setProformaRead(readWarnings.length === 0 && proformaReadFields.some((key) => Boolean(result.fields[key])));
 		} catch (failure) {
 			if (sequence === extractionSequence.current) {
 				setWarnings([
@@ -896,6 +901,11 @@ export default function SupplierPurchaseFormContent({
 					)}
 					{extractingTitle && <Alert severity="info">Lecture du titre d’importation en cours…</Alert>}
 					{extractingProforma && <Alert severity="info">Lecture de la proforma fournisseur en cours…</Alert>}
+					{proformaRead && (
+						<Alert severity="info">
+							Vérifiez les champs préremplis et les articles avec la proforma avant de continuer.
+						</Alert>
+					)}
 					{warnings.map((warning, index) => (
 						<Alert severity="warning" key={index}>
 							{warning}

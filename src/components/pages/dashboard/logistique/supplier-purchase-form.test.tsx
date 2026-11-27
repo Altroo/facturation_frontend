@@ -524,6 +524,10 @@ it('reads a revised supplier proforma into the form without submitting it', asyn
 		expect(screen.getByRole('textbox', { name: /N° de proforma fournisseur/ })).toHaveValue('026001'),
 	);
 	expect(mockExtractProforma.mock.calls[0][0].data.get('file')).toBe(upload);
+	expect(screen.getByText(/Vérifiez les champs préremplis/).closest('.MuiAlert-root')).toHaveClass(
+		'MuiAlert-colorInfo',
+	);
+	expect(screen.queryByText(/Champs à vérifier ou à renseigner/)).not.toBeInTheDocument();
 	expect(mockPurchase).not.toHaveBeenCalled();
 });
 
@@ -606,6 +610,7 @@ it('rereads a validated proforma while flagging financial differences for accoun
 	});
 	await renderForm('proforma&proposer=1');
 	fireEvent.click(screen.getByRole('button', { name: 'Relire la proforma jointe' }));
+	expect(mockExtractProforma).toHaveBeenCalledWith({ id: 7 });
 	expect(await screen.findByText(/diffère de l’échéancier validé/)).toBeInTheDocument();
 	expect(screen.getByRole('textbox', { name: /N° de proforma fournisseur/ })).toHaveValue('026001');
 	expect(screen.getByRole('textbox', { name: /Montant total fournisseur/ })).toHaveValue('100,01');

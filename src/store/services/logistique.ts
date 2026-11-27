@@ -65,12 +65,12 @@ export const logistiqueApi = createApi({
 		}),
 		extractSupplierProforma: builder.mutation<
 			{ fields: Record<string, string>; warnings: string[] },
-			{ id: number; data: FormData }
+			{ id: number; data?: FormData }
 		>({
 			query: ({ id, data }) => ({
 				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/${id}/extract_supplier_proforma/`,
 				method: 'POST',
-				data,
+				data: data ?? {},
 			}),
 		}),
 		getLogistiqueList: builder.query<
