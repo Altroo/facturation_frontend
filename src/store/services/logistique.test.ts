@@ -110,6 +110,13 @@ describe('logistiqueApi endpoints', () => {
 					.unwrap(),
 		],
 		[
+			'extractSupplierProforma',
+			async () =>
+				storeRef.store
+					.dispatch(logistiqueApi.endpoints.extractSupplierProforma.initiate({ id: 1, data: formData() }))
+					.unwrap(),
+		],
+		[
 			'getLogistiqueList',
 			async () =>
 				storeRef.store.dispatch(logistiqueApi.endpoints.getLogistiqueList.initiate({ company_id: 1 })).unwrap(),

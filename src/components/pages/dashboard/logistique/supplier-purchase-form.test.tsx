@@ -17,6 +17,8 @@ const mockPush = jest.fn();
 const mockReplace = jest.fn();
 const mockOnSuccess = jest.fn();
 const mockOnError = jest.fn();
+const mockExtractProforma = jest.fn();
+const mockProformaFields = jest.fn();
 jest.mock('@/utils/helpers', () => ({ ...jest.requireActual('@/utils/helpers'), purchaseDraft: jest.fn() }));
 jest.mock('next/navigation', () => ({
 	useRouter: () => ({ push: mockPush, replace: mockReplace }),
@@ -68,6 +70,7 @@ jest.mock('@/store/services/logistique', () => ({
 	useGetLogistiqueResponsablesQuery: () => ({ data: [{ id: 27, label: 'Responsable Test' }] }),
 	useGetLogistiqueSuppliersQuery: () => ({ currentData: [] }),
 	useExtractImportTitleMutation: () => [jest.fn(), {}],
+	useExtractSupplierProformaMutation: () => [mockExtractProforma, {}],
 	useRequestPurchasePaymentMutation: () => [jest.fn()],
 	useRecordLogistiquePaymentExecutionMutation: () => [jest.fn()],
 	useValidateLogistiquePaymentMutation: () => [jest.fn()],
@@ -132,6 +135,8 @@ beforeEach(() => {
 	(usePurchaseActionMutation as jest.Mock).mockReturnValue([mockPurchase]);
 	(useAddLogistiqueProcessNoteMutation as jest.Mock).mockReturnValue([mockAddNote]);
 	mockUnwrap.mockResolvedValue({ orders: [{ id: 7 }] });
+	mockProformaFields.mockReset();
+	mockExtractProforma.mockReturnValue({ unwrap: mockProformaFields });
 });
 
 afterEach(() => jest.restoreAllMocks());
@@ -498,4 +503,111 @@ it('uploads the selected cost document with the manual MAD amount', async () => 
 	expect(body).toBeInstanceOf(FormData);
 	expect(body.get('cout_achat_mad')).toBe('440');
 	expect(body.get('justificatifs_file')).toBe(file);
+});
+
+it('reads a revised supplier proforma into the form without submitting it', async () => {
+	(useGetLogistiqueQuery as jest.Mock).mockReturnValue({
+		data: {
+			...order,
+			numero_proforma_fournisseur: 'OLD-2026',
+			proforma_fournisseur_file: '/media/ancien.pdf',
+		},
+	});
+	mockProformaFields.mockResolvedValue({
+		fields: { numero_proforma_fournisseur: '026001', montant_proforma_fournisseur: '100.01' },
+		warnings: [],
+	});
+	await renderForm('proforma');
+	const upload = new File(['%PDF-1.4'], 'revised.pdf', { type: 'application/pdf' });
+	fireEvent.change(document.querySelector('input[type="file"]')!, { target: { files: [upload] } });
+	await waitFor(() =>
+		expect(screen.getByRole('textbox', { name: /N° de proforma fournisseur/ })).toHaveValue('026001'),
+	);
+	expect(mockExtractProforma.mock.calls[0][0].data.get('file')).toBe(upload);
+	expect(mockPurchase).not.toHaveBeenCalled();
+});
+
+it('sends every original from Transit and keeps previously attached files visible', async () => {
+	(useGetLogistiqueQuery as jest.Mock).mockReturnValue({
+		data: { ...order, documents_originaux_file: '/media/ancien.pdf' },
+	});
+	await renderForm('transit');
+	const documents = screen.getByRole('combobox', { name: 'Libellé' });
+	fireEvent.mouseDown(documents);
+	fireEvent.click(screen.getByRole('option', { name: 'Documents originaux' }));
+	const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+	expect(input.multiple).toBe(true);
+	const files = [
+		new File(['%PDF-1.4'], 'packing-list.pdf', { type: 'application/pdf' }),
+		new File(['%PDF-1.4'], 'certificat.pdf', { type: 'application/pdf' }),
+	];
+	fireEvent.change(input, { target: { files } });
+	expect(screen.getByText(/ancien.pdf/)).toBeInTheDocument();
+	expect(screen.getByText(/packing-list.pdf/)).toBeInTheDocument();
+	expect(screen.getByText(/certificat.pdf/)).toBeInTheDocument();
+	save();
+	await waitFor(() => expect(mockPurchase).toHaveBeenCalled());
+	const body = mockPurchase.mock.calls[0][0].data as FormData;
+	expect(body.getAll('documents_originaux_files')).toEqual(files);
+	expect(body.get('etape')).toBe('transit');
+});
+
+it.each(['remove', 'replace'])('discards values suggested by a proforma after %s', async (change) => {
+	(useGetLogistiqueQuery as jest.Mock).mockReturnValue({
+		data: {
+			...order,
+			numero_proforma_fournisseur: 'OLD-2026',
+			proforma_fournisseur_file: '/media/ancien.pdf',
+		},
+	});
+	mockProformaFields
+		.mockResolvedValueOnce({ fields: { numero_proforma_fournisseur: 'REVISED' }, warnings: [] })
+		.mockResolvedValueOnce({ fields: {}, warnings: ['Vérifiez le numéro manuellement.'] });
+	await renderForm('proforma');
+	const input = document.querySelector('input[type="file"]')!;
+	const number = screen.getByRole('textbox', { name: /N° de proforma fournisseur/ });
+	fireEvent.change(input, {
+		target: { files: [new File(['%PDF-1.4'], 'revised.pdf', { type: 'application/pdf' })] },
+	});
+	await waitFor(() => expect(number).toHaveValue('REVISED'));
+	if (change === 'remove') {
+		fireEvent.click(screen.getByRole('button', { name: 'Supprimer' }));
+	} else {
+		fireEvent.change(input, {
+			target: { files: [new File(['%PDF-1.4'], 'unreadable.pdf', { type: 'application/pdf' })] },
+		});
+		await screen.findByText('Vérifiez le numéro manuellement.');
+	}
+	await waitFor(() => expect(number).toHaveValue('OLD-2026'));
+});
+
+it('rereads a validated proforma while flagging financial differences for accounting', async () => {
+	(useGetLogistiqueQuery as jest.Mock).mockReturnValue({
+		data: {
+			...order,
+			is_proforma_step_complete: true,
+			numero_proforma_fournisseur: 'OLD-2026',
+			montant_proforma_fournisseur: '100.01',
+			devise_proforma_fournisseur: 'EUR',
+			proforma_fournisseur_file: '/media/ancien.pdf',
+			workflow: {
+				etape_courante: 'production',
+				etapes: [{ key: 'proforma', completed: true, accessible: true }],
+			},
+		},
+	});
+	mockProformaFields.mockResolvedValue({
+		fields: {
+			numero_proforma_fournisseur: '026001',
+			montant_proforma_fournisseur: '250.00',
+			devise_proforma_fournisseur: 'MAD',
+		},
+		warnings: [],
+	});
+	await renderForm('proforma&proposer=1');
+	fireEvent.click(screen.getByRole('button', { name: 'Relire la proforma jointe' }));
+	expect(await screen.findByText(/diffère de l’échéancier validé/)).toBeInTheDocument();
+	expect(screen.getByRole('textbox', { name: /N° de proforma fournisseur/ })).toHaveValue('026001');
+	expect(screen.getByRole('textbox', { name: /Montant total fournisseur/ })).toHaveValue('100,01');
+	expect(screen.getByRole('combobox', { name: /Devise de la proforma fournisseur/ })).toHaveTextContent('EUR');
 });

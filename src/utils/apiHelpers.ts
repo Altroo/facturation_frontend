@@ -48,7 +48,9 @@ const PDF_WAIT_MS = 45_000;
 
 export const subscribePdfRequests = (listener: () => void) => {
 	pdfRequestListeners.add(listener);
-	return () => { pdfRequestListeners.delete(listener); };
+	return () => {
+		pdfRequestListeners.delete(listener);
+	};
 };
 export const getPendingPdfRequests = () => pendingPdfRequests;
 export const getServerPendingPdfRequests = () => 0;
@@ -65,7 +67,9 @@ const pdfTranslationState = async (error: unknown): Promise<string | undefined> 
 		const payload: unknown = data instanceof Blob ? JSON.parse(await data.text()) : data;
 		if (!payload || typeof payload !== 'object') return undefined;
 		const details = 'details' in payload ? payload.details : payload;
-		return details && typeof details === 'object' && 'code' in details && typeof details.code === 'string' ? details.code : undefined;
+		return details && typeof details === 'object' && 'code' in details && typeof details.code === 'string'
+			? details.code
+			: undefined;
 	} catch {
 		return undefined;
 	}
@@ -87,7 +91,11 @@ export const fetchPdfBlob = async (url: string, accessToken: string): Promise<Bl
 				return response.data;
 			} catch (error) {
 				const state = await pdfTranslationState(error);
-				if (state === 'pdf_translation_deferred' || (state === 'pdf_translation_pending' && Date.now() + 2_000 >= deadline)) throw new PdfTranslationDeferredError();
+				if (
+					state === 'pdf_translation_deferred' ||
+					(state === 'pdf_translation_pending' && Date.now() + 2_000 >= deadline)
+				)
+					throw new PdfTranslationDeferredError();
 				if (state !== 'pdf_translation_pending') throw error;
 				await new Promise<void>((resolve) => setTimeout(resolve, 2_000));
 			}
@@ -307,9 +315,15 @@ export function addCorsHeaders(response: Response, origin: string | null): Respo
 
 export function logisticsFormPayload(data: Record<string, unknown>): Record<string, unknown> | FormData {
 	const entries = Object.entries(data).filter(([, entry]) => entry !== undefined);
-	if (!entries.some(([, entry]) => entry instanceof File)) return Object.fromEntries(entries);
+	const isFileList = (entry: unknown): entry is File[] =>
+		Array.isArray(entry) && entry.length > 0 && entry.every((item) => item instanceof File);
+	if (!entries.some(([, entry]) => entry instanceof File || isFileList(entry))) return Object.fromEntries(entries);
 	const body = new FormData();
-	for (const [key, entry] of entries)
+	for (const [key, entry] of entries) {
+		if (isFileList(entry)) {
+			entry.forEach((file) => body.append(key, file));
+			continue;
+		}
 		body.append(
 			key,
 			entry instanceof File
@@ -320,5 +334,6 @@ export function logisticsFormPayload(data: Record<string, unknown>): Record<stri
 						? JSON.stringify(entry)
 						: String(entry),
 		);
+	}
 	return body;
 }

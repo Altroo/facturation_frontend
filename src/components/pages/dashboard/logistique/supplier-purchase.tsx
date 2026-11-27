@@ -924,6 +924,7 @@ export default function SupplierPurchase({ session, company_id, id }: Logistique
 														(document) =>
 															order.statut === 'Clôture' ||
 															document.etape === selectedStep ||
+															(selectedStep === 'transit' && document.champ === 'documents_originaux_file') ||
 															document.etape === 'remarque',
 													)
 													.map((document) => ({

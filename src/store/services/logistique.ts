@@ -63,6 +63,16 @@ export const logistiqueApi = createApi({
 				data,
 			}),
 		}),
+		extractSupplierProforma: builder.mutation<
+			{ fields: Record<string, string>; warnings: string[] },
+			{ id: number; data: FormData }
+		>({
+			query: ({ id, data }) => ({
+				url: `${process.env.NEXT_PUBLIC_LOGISTIQUE_ROOT || '/logistique'}/${id}/extract_supplier_proforma/`,
+				method: 'POST',
+				data,
+			}),
+		}),
 		getLogistiqueList: builder.query<
 			LogistiqueListResponse,
 			{
@@ -499,6 +509,7 @@ export const {
 	usePurchaseActionMutation,
 	useRequestPurchasePaymentMutation,
 	useExtractImportTitleMutation,
+	useExtractSupplierProformaMutation,
 	useGetLogistiqueListQuery,
 	useGetLogistiqueDashboardQuery,
 	useGetLogistiqueQuery,

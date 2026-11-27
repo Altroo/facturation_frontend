@@ -15,6 +15,7 @@ import {
 	useAddLogistiqueMutation,
 	useAddLogistiqueProcessNoteMutation,
 	useExtractImportTitleMutation,
+	useExtractSupplierProformaMutation,
 	useGetLogistiqueResponsablesQuery,
 	useGetLogistiqueSuppliersQuery,
 	useGetNumLogistiqueQuery,
@@ -62,6 +63,16 @@ import SupplierPurchaseFormFields from './supplier-purchase-form-fields';
 const inputTheme = textInputTheme();
 const value = (input: unknown) => (input == null ? '' : String(input));
 const today = () => formatLocalDate(new Date());
+const proformaReadFields = [
+	'numero_proforma_fournisseur',
+	'date_proforma_fournisseur',
+	'montant_proforma_fournisseur',
+	'devise_proforma_fournisseur',
+	'incoterm',
+] as const;
+type ProformaSuggestions = Partial<
+	Record<(typeof proformaReadFields)[number], { previous: string; suggested: string }>
+>;
 
 export default function SupplierPurchaseFormContent({
 	company_id,
@@ -85,6 +96,7 @@ export default function SupplierPurchaseFormContent({
 	const [apiError, setApiError] = useState('');
 	const errorSummary = useRef<HTMLDivElement>(null);
 	const [warnings, setWarnings] = useState<string[]>([]);
+	const [originalFiles, setOriginalFiles] = useState<File[]>([]);
 	const [search, setSearch] = useState('');
 	const [articleModalOpen, setArticleModalOpen] = useState(false);
 	const [createdArticles, setCreatedArticles] = useState<ArticleClass[]>([]);
@@ -103,6 +115,7 @@ export default function SupplierPurchaseFormContent({
 	);
 	const transitAfterReceipt = ['Réception locale', 'Livraison client', 'Clôture'].includes(order?.statut ?? '');
 	const extractionSequence = useRef(0);
+	const proformaSuggestions = useRef<ProformaSuggestions>({});
 	const { data: company } = useGetCompanyQuery({ id: company_id }, { skip: !token });
 	const { currentData: numberPreview, error: numberPreviewError } = useGetNumLogistiqueQuery(
 		{ company_id },
@@ -156,7 +169,9 @@ export default function SupplierPurchaseFormContent({
 			);
 		return purchaseAction({ id: targetId, data });
 	};
-	const [extract, { isLoading: extracting }] = useExtractImportTitleMutation();
+	const [extractTitle, { isLoading: extractingTitle }] = useExtractImportTitleMutation();
+	const [extractProforma, { isLoading: extractingProforma }] = useExtractSupplierProformaMutation();
+	const extracting = extractingTitle || extractingProforma;
 	const [requestPayment] = useRequestPurchasePaymentMutation();
 	const [recordPayment] = useRecordLogistiquePaymentExecutionMutation();
 	const [validatePayment] = useValidateLogistiquePaymentMutation();
@@ -474,7 +489,7 @@ export default function SupplierPurchaseFormContent({
 							]),
 							statut: transitAfterReceipt || order?.statut === 'Dédouanement' ? order!.statut : 'Transit',
 							remarque: values.remarque,
-							...(values.documents_originaux_file ? { documents_originaux_file: values.documents_originaux_file } : {}),
+							...(originalFiles.length ? { documents_originaux_files: originalFiles } : {}),
 							...(values.justificatifs_file ? { justificatifs_file: values.justificatifs_file } : {}),
 						};
 					else if (mode === 'reception')
@@ -590,6 +605,12 @@ export default function SupplierPurchaseFormContent({
 		justificatifs_file: mode === 'remarque' ? 'Fichier joint à la remarque' : 'Justificatif',
 		swift_file: 'Justificatif bancaire',
 	};
+	const originalUrls = [
+		...(order?.documents_originaux_file ? [order.documents_originaux_file] : []),
+		...(order?.documents ?? [])
+			.filter((document) => document.champ === 'documents_originaux_files')
+			.map((document) => document.url),
+	];
 	const items = requiredFileNames.map((field) => ({
 		field,
 		label: documentLabels[field],
@@ -597,8 +618,28 @@ export default function SupplierPurchaseFormContent({
 		currentUrl:
 			mode === 'remarque' ? undefined : field === 'swift_file' ? installment?.justificatif_file : order?.[field],
 		error: attempted && typeof formik.errors[field] === 'string' ? formik.errors[field] : undefined,
+		multiple:
+			mode === 'transit' && field === 'documents_originaux_file'
+				? { files: originalFiles, currentUrls: originalUrls, onChange: setOriginalFiles }
+				: undefined,
 	}));
 	async function changeDocument(field: LogistiqueDocumentField, file: File | null) {
+		if (mode === 'proforma') {
+			const sequence = ++extractionSequence.current;
+			const suggestions = proformaSuggestions.current;
+			proformaSuggestions.current = {};
+			setWarnings([]);
+			await formik.setValues((previous) => {
+				const next = { ...previous, proforma_fournisseur_file: file };
+				for (const key of proformaReadFields) {
+					const suggestion = suggestions[key];
+					if (suggestion && previous[key] === suggestion.suggested) next[key] = suggestion.previous;
+				}
+				return next;
+			});
+			if (file && sequence === extractionSequence.current) await readSupplierProforma(file);
+			return;
+		}
 		await formik.setFieldValue(mode === 'remarque' ? 'fichier' : field, file);
 		if (mode !== 'titre') return;
 		const sequence = ++extractionSequence.current;
@@ -616,7 +657,7 @@ export default function SupplierPurchaseFormContent({
 		try {
 			const body = new FormData();
 			body.append('file', file);
-			const result = await extract({ id, data: body }).unwrap();
+			const result = await extractTitle({ id, data: body }).unwrap();
 			if (sequence !== extractionSequence.current) return;
 			await formik.setValues((previous) => ({
 				...previous,
@@ -631,6 +672,58 @@ export default function SupplierPurchaseFormContent({
 						'Lecture automatique indisponible. Renseignez les informations manuellement.',
 					),
 				]);
+		}
+	}
+
+	async function readSupplierProforma(file?: File) {
+		if (!id) return;
+		const sequence = ++extractionSequence.current;
+		setWarnings([]);
+		const body = new FormData();
+		if (file) body.append('file', file);
+		try {
+			const result = await extractProforma({ id, data: body }).unwrap();
+			if (sequence !== extractionSequence.current) return;
+			const validated = order?.is_proforma_step_complete;
+			const amount = result.fields.montant_proforma_fournisseur;
+			const currency = result.fields.devise_proforma_fournisseur;
+			const accountingMismatch =
+				validated &&
+				((amount && Number(amount) !== Number(order.montant_proforma_fournisseur)) ||
+					(currency && currency !== order.devise_proforma_fournisseur));
+			await formik.setValues((previous) => {
+				const next = { ...previous };
+				for (const key of proformaReadFields) {
+					if (validated && (key === 'montant_proforma_fournisseur' || key === 'devise_proforma_fournisseur')) continue;
+					const suggested = result.fields[key];
+					if (!suggested) continue;
+					const prior = proformaSuggestions.current[key];
+					proformaSuggestions.current[key] = {
+						previous: prior && previous[key] === prior.suggested ? prior.previous : previous[key],
+						suggested,
+					};
+					next[key] = suggested;
+				}
+				return next;
+			});
+			setWarnings([
+				...result.warnings,
+				...(accountingMismatch
+					? [
+							'Le montant ou la devise du document diffère de l’échéancier validé. Vérifiez cet écart avec la comptabilité.',
+						]
+					: []),
+				'Vérifiez le numéro, la date, le montant et les articles avec la proforma avant de continuer.',
+			]);
+		} catch (failure) {
+			if (sequence === extractionSequence.current) {
+				setWarnings([
+					extractApiErrorMessage(
+						failure,
+						'Lecture de la proforma indisponible. Vérifiez les informations et corrigez les champs manuellement.',
+					),
+				]);
+			}
 		}
 	}
 
@@ -796,7 +889,13 @@ export default function SupplierPurchaseFormContent({
 							isLoading={disabled}
 						/>
 					)}
-					{extracting && <Alert severity="info">Lecture du titre d’importation en cours…</Alert>}
+					{mode === 'proforma' && order?.proforma_fournisseur_file && !formik.values.proforma_fournisseur_file && (
+						<Button type="button" onClick={() => void readSupplierProforma()} disabled={disabled}>
+							Relire la proforma jointe
+						</Button>
+					)}
+					{extractingTitle && <Alert severity="info">Lecture du titre d’importation en cours…</Alert>}
+					{extractingProforma && <Alert severity="info">Lecture de la proforma fournisseur en cours…</Alert>}
 					{warnings.map((warning, index) => (
 						<Alert severity="warning" key={index}>
 							{warning}

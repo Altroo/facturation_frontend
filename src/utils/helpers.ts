@@ -730,7 +730,7 @@ export const logisticsChangeProposal = (
 	const changes: Record<string, unknown> = {};
 	const proposal = new FormData();
 	for (const [field, entry] of data.entries()) {
-		if (entry instanceof File) proposal.set(field, entry);
+		if (entry instanceof File) proposal.append(field, entry);
 		else if (field === 'lignes') changes[field] = JSON.parse(entry);
 		else if (field === 'marques') {
 			const values = data.getAll(field) as string[];

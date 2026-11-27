@@ -35,6 +35,7 @@ import Controls from '@/styles/dashboard/logistique/logistique-controls.module.s
 import type {
 	AttachmentRowProps,
 	LogistiqueDocumentField,
+	LogistiqueDocumentItem,
 	LogistiqueDocumentsFormCardProps,
 	LogistiqueDocumentsViewCardProps,
 } from '@/types/logistiqueTypes';
@@ -182,12 +183,25 @@ export const LogistiqueDocumentsFormCard: FC<LogistiqueDocumentsFormCardProps> =
 	const inputRef = useRef<HTMLInputElement>(null);
 	const [isDragging, setIsDragging] = useState(false);
 	const selectedItem = items.find((item) => item.field === selectedField) ?? items[0];
-	const visibleItems = items.filter((item) => item.file || item.currentUrl);
+	const visibleItems = items.flatMap<LogistiqueDocumentItem & { fileIndex?: number }>((item) =>
+		item.multiple
+			? [
+					...item.multiple.currentUrls.map((currentUrl) => ({ ...item, currentUrl })),
+					...item.multiple.files.map((file, fileIndex) => ({ ...item, file, fileIndex })),
+				]
+			: item.file || item.currentUrl
+				? [item]
+				: [],
+	);
 	const count = visibleItems.length;
 
 	const handleFiles = (files: File[]) => {
-		if (!selectedItem || files.length === 0) return;
-		onFileChangeAction(selectedItem.field, files[0]);
+		if (!selectedItem || isLoading || files.length === 0) return;
+		if (selectedItem.multiple) {
+			selectedItem.multiple.onChange([...selectedItem.multiple.files, ...files]);
+		} else {
+			onFileChangeAction(selectedItem.field, files[0]);
+		}
 	};
 
 	const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -251,6 +265,7 @@ export const LogistiqueDocumentsFormCard: FC<LogistiqueDocumentsFormCardProps> =
 						component="input"
 						ref={inputRef}
 						type="file"
+						multiple={!!selectedItem?.multiple}
 						accept={accept}
 						disabled={isLoading}
 						onChange={handleFileChange}
@@ -335,7 +350,7 @@ export const LogistiqueDocumentsFormCard: FC<LogistiqueDocumentsFormCardProps> =
 
 								return (
 									<AttachmentRow
-										key={`${item.field}:${item.currentUrl ?? item.file?.name ?? item.label}`}
+										key={`${item.field}:${item.currentUrl ?? item.file?.name ?? item.label}:${item.fileIndex ?? ''}`}
 										icon={getFileIcon(filename, item.file?.type)}
 										title={item.label}
 										subtitle={subtitle}
@@ -373,7 +388,13 @@ export const LogistiqueDocumentsFormCard: FC<LogistiqueDocumentsFormCardProps> =
 															color="error"
 															onClick={(event) => {
 																event.stopPropagation();
-																onClearFileAction(item.field);
+																if (item.multiple) {
+																	item.multiple.onChange(
+																		item.multiple.files.filter((_, index) => index !== item.fileIndex),
+																	);
+																} else {
+																	onClearFileAction(item.field);
+																}
 															}}
 														/>
 													</Tooltip>

@@ -172,7 +172,7 @@ export type LogistiqueOrder = {
 	description_frais_cash?: string;
 	cout_total_avec_cash?: number | string;
 	bon_reception_file?: string | null;
-	documents?: { etape: string; etape_label: string; nom: string; url: string }[];
+	documents?: { champ?: string; etape: string; etape_label: string; nom: string; url: string }[];
 	change_requests?: {
 		id: number;
 		etape: string;
@@ -511,6 +511,11 @@ export type LogistiqueDocumentItem = {
 	error?: string;
 	file?: File | null;
 	currentUrl?: string | null;
+	multiple?: {
+		files: File[];
+		currentUrls: string[];
+		onChange: (files: File[]) => void;
+	};
 };
 
 export type LogistiqueDocumentsFormCardProps = {
