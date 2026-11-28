@@ -12,7 +12,8 @@ import {
 	Print as PrintIcon,
 	ReceiptLong as ReceiptLongIcon,
 } from '@mui/icons-material';
-import { GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
+import { type GridColDef, GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
+import { createDropdownFilterOperators } from '@/components/shared/dropdownFilter/dropdownFilter';
 import { useInitAccessToken } from '@/contexts/InitContext';
 import {
 	useBulkDeleteFactureClientMutation,
@@ -36,10 +37,35 @@ import { useDataGridPagination } from '@/components/shared/paginatedDataGrid/use
 import type { DocumentListConfig, FactureClientListResponseType } from '@/types/companyDocumentsTypes';
 import { formatNumberWithSpaces } from '@/utils/helpers';
 import { useGetModePaiementListQuery } from '@/store/services/parameter';
-import type { ChipFilterConfig } from '@/types/uiTypes';
+import type { ChipFilterConfig, DropdownFilterOption } from '@/types/uiTypes';
 import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 import { useLanguage } from '@/utils/hooks';
 import type { FactureClientListFormikContentProps as FormikContentProps } from '@/types/companyDocumentsTypes';
+
+const createPaymentStatusColumn = (t: TranslationDictionary): GridColDef => {
+	const unpaid: DropdownFilterOption = {
+		value: 'Non payée',
+		label: t.facturesClient.paymentStatusUnpaid,
+		color: 'default',
+	};
+	const options: DropdownFilterOption[] = [
+		{ value: 'Payée', label: t.facturesClient.paymentStatusPaid, color: 'success' },
+		{ value: 'Partiellement payée', label: t.facturesClient.paymentStatusPartial, color: 'warning' },
+		unpaid,
+	];
+
+	return {
+		field: 'statut_paiement',
+		headerName: t.facturesClient.colStatutPaiement,
+		flex: 0.9,
+		minWidth: 145,
+		filterOperators: createDropdownFilterOperators(options, t.common.allStatuses, true, t.filterPanel.is),
+		renderCell: ({ value }) => {
+			const status = options.find((option) => option.value === value) ?? unpaid;
+			return <Chip label={status.label} color={status.color} variant="outlined" size="small" />;
+		},
+	};
+};
 
 const createFactureClientListConfig = (t: TranslationDictionary): DocumentListConfig<FactureClass> => ({
 	documentType: 'facture-client',
@@ -133,18 +159,7 @@ const createFactureClientListConfig = (t: TranslationDictionary): DocumentListCo
 				);
 			},
 		},
-		{
-			field: 'statut_paiement',
-			headerName: t.facturesClient.colStatutPaiement,
-			flex: 0.9,
-			minWidth: 145,
-			renderCell: (params) => {
-				const value = String(params.value ?? t.facturesClient.paymentStatusUnpaid);
-				const color =
-					value === 'Payée' ? 'success' : value === 'Partiellement payée' ? 'warning' : ('default' as const);
-				return <Chip label={value} color={color} variant="outlined" size="small" />;
-			},
-		},
+		createPaymentStatusColumn(t),
 		{
 			field: 'reste_a_payer',
 			headerName: t.facturesClient.colResteAPayer,

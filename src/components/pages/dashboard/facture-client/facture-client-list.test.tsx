@@ -1,6 +1,7 @@
 import { type ReactNode } from 'react';
 import { render, screen, cleanup, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import type { GridColDef } from '@mui/x-data-grid';
 import type { AppSession } from '@/types/_initTypes';
 
 // Mock next/navigation
@@ -225,10 +226,6 @@ jest.mock('@/components/htmlElements/buttons/textButton/textButton', () => ({
 	),
 }));
 
-jest.mock('@/components/shared/dropdownFilter/dropdownFilter', () => ({
-	createDropdownFilterOperators: jest.fn(() => []),
-}));
-
 jest.mock('@/utils/helpers', () => ({
 	...jest.requireActual('@/utils/helpers'),
 	formatDate: (date: string | null) => (date ? new Date(date).toLocaleDateString('fr-FR') : '—'),
@@ -255,6 +252,7 @@ interface PrintAction {
 }
 
 interface CapturedConfig {
+	getExtraColumns?: () => GridColDef[];
 	printActions?: PrintAction[];
 	convertActions?: Array<{ key: string }>;
 	documentType?: string;
@@ -440,6 +438,23 @@ describe('FactureClientListClient', () => {
 		it('renders Statut header', () => {
 			render(<FactureClientListClient session={mockSession} />);
 			expect(screen.getByText('Statut')).toBeInTheDocument();
+		});
+
+		it('offers every invoice payment status as a dropdown choice', () => {
+			render(<FactureClientListClient session={mockSession} />);
+			const column = capturedConfig?.getExtraColumns?.().find((entry) => entry.field === 'statut_paiement');
+			const Input = column?.filterOperators?.find((operator) => operator.value === 'is')?.InputComponent;
+			if (!Input) throw new Error('Expected the payment-status dropdown');
+
+			const item = { field: 'statut_paiement', operator: 'is' };
+			const applyValue = jest.fn();
+			render(<Input item={item} applyValue={applyValue} />);
+			fireEvent.mouseDown(screen.getByRole('combobox'));
+
+			expect(screen.getByRole('option', { name: 'Payée' })).toBeInTheDocument();
+			expect(screen.getByRole('option', { name: 'Non payée' })).toBeInTheDocument();
+			fireEvent.click(screen.getByRole('option', { name: 'Partiellement payée' }));
+			expect(applyValue).toHaveBeenCalledWith({ ...item, value: 'Partiellement payée' });
 		});
 
 		it('renders Total TTC après remise header', () => {
