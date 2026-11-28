@@ -69,6 +69,10 @@ export default function SupplierPurchaseProformaFields({
 					disabled={disabled}
 				/>
 				{number('delai_proforma_jours', 'Délai fournisseur (jours)', <CalendarToday fontSize="small" />, 0, true)}
+				{order?.is_proforma_step_complete &&
+					order.workflow?.proforma_total_editable &&
+					Number(formik.values.montant_proforma_fournisseur) !== Number(order.montant_proforma_fournisseur) &&
+					full(<Alert severity="info">Les échéances seront recalculées après approbation de la correction.</Alert>)}
 			</FormCard>
 			<FormCard key="lignes" title="Articles de la proforma fournisseur" icon={<Inventory color="primary" />}>
 				{full(

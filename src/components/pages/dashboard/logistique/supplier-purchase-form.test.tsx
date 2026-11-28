@@ -654,3 +654,59 @@ it('keeps successive original document selections in the Expédition correction'
 	expect(body.get('etape')).toBe('expedition');
 	expect(body.getAll('documents_originaux_files')).toEqual([packingList, certificate]);
 });
+
+it('prefills and proposes a revised total while installments are still unsubmitted', async () => {
+	(useGetLogistiqueQuery as jest.Mock).mockReturnValue({
+		data: {
+			...order,
+			is_proforma_step_complete: true,
+			numero_proforma_fournisseur: 'ZLZ2-2388/26',
+			date_proforma_fournisseur: '2026-10-29',
+			montant_proforma_fournisseur: '40121.80',
+			devise_proforma_fournisseur: 'EUR',
+			condition_achat: 'advance30_documentary70',
+			incoterm: 'CIF',
+			delai_proforma_jours: 10,
+			proforma_fournisseur_file: '/media/ancien.pdf',
+			lignes: [
+				{
+					article: 1,
+					article_reference: 'QA',
+					designation: 'Article QA',
+					quantity: '1',
+					prix_achat: '38888.89',
+					expected_emplacement: null,
+				},
+			],
+			workflow: {
+				etape_courante: 'titre',
+				etapes: [{ key: 'proforma', completed: true, accessible: true }],
+				proforma_total_editable: true,
+			},
+		},
+	});
+	mockProformaFields.mockResolvedValue({
+		fields: { montant_proforma_fournisseur: '38888.89', devise_proforma_fournisseur: 'EUR', incoterm: 'CFR' },
+		warnings: [],
+	});
+	await renderForm('proforma&proposer=1');
+	const upload = new File(['%PDF-1.4'], 'revised.pdf', { type: 'application/pdf' });
+	fireEvent.change(document.querySelector('input[type="file"]')!, { target: { files: [upload] } });
+	const total = screen.getByRole('textbox', { name: /Montant total fournisseur/ });
+	await waitFor(() => expect(total).toHaveValue('38\u202f888,89'));
+	expect(total).toBeEnabled();
+	expect(screen.getByText(/Les échéances seront recalculées/)).toBeInTheDocument();
+	expect(screen.queryByText(/diffère de l’échéancier validé/)).not.toBeInTheDocument();
+	fireEvent.change(screen.getByRole('textbox', { name: /Motif de la modification/ }), {
+		target: { value: 'Nouveau montant indiqué sur la proforma fournisseur.' },
+	});
+	fireEvent.click(screen.getByRole('button', { name: 'Soumettre les modifications' }));
+	await waitFor(() => expect(mockPurchase).toHaveBeenCalled());
+	const body = mockPurchase.mock.calls[0][0].data as FormData;
+	expect(body.get('proforma_fournisseur_file')).toBe(upload);
+	expect(JSON.parse(String(body.get('modifications')))).toMatchObject({
+		montant_proforma_fournisseur: '38888.89',
+		devise_proforma_fournisseur: 'EUR',
+		condition_achat: 'advance30_documentary70',
+	});
+});

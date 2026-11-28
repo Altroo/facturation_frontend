@@ -695,14 +695,20 @@ export default function SupplierPurchaseFormContent({
 			const validated = order?.is_proforma_step_complete;
 			const amount = result.fields.montant_proforma_fournisseur;
 			const currency = result.fields.devise_proforma_fournisseur;
+			const currencyMismatch = validated && currency && currency !== order.devise_proforma_fournisseur;
+			const editableTotal = !validated || !!order.workflow?.proforma_total_editable;
 			const accountingMismatch =
-				validated &&
-				((amount && Number(amount) !== Number(order.montant_proforma_fournisseur)) ||
-					(currency && currency !== order.devise_proforma_fournisseur));
+				currencyMismatch || (!editableTotal && amount && Number(amount) !== Number(order.montant_proforma_fournisseur));
 			await formik.setValues((previous) => {
 				const next = { ...previous };
 				for (const key of proformaReadFields) {
-					if (validated && (key === 'montant_proforma_fournisseur' || key === 'devise_proforma_fournisseur')) continue;
+					if (validated && key === 'devise_proforma_fournisseur') continue;
+					if (
+						validated &&
+						key === 'montant_proforma_fournisseur' &&
+						(!editableTotal || currency !== order.devise_proforma_fournisseur)
+					)
+						continue;
 					const suggested = result.fields[key];
 					if (!suggested) continue;
 					const prior = proformaSuggestions.current[key];

@@ -64,6 +64,12 @@ export default function SupplierPurchaseFormFields({
 	const router = useRouter();
 	const errorFor = (name: string) =>
 		attempted || getIn(formik.touched, name) ? (getIn(formik.errors, name) as string | undefined) : undefined;
+	const lockedProformaField = (name: string) =>
+		mode === 'proforma' &&
+		order?.is_proforma_step_complete &&
+		(name === 'devise_proforma_fournisseur' ||
+			name === 'condition_achat' ||
+			(name === 'montant_proforma_fournisseur' && !order.workflow?.proforma_total_editable));
 	const placeholderFor = (name: string, label: string) =>
 		t.logistique.placeholders[name.split('.').at(-1) ?? name] ?? label;
 	const text = (
@@ -114,7 +120,7 @@ export default function SupplierPurchaseFormFields({
 			helperText={errorFor(name)}
 			error={!!errorFor(name)}
 			required={required}
-			disabled={disabled}
+			disabled={disabled || lockedProformaField(name)}
 			fullWidth
 			size="small"
 			theme={inputTheme}
@@ -175,7 +181,7 @@ export default function SupplierPurchaseFormFields({
 			helperText={errorFor(name)}
 			error={!!errorFor(name)}
 			required={required}
-			disabled={disabled}
+			disabled={disabled || lockedProformaField(name)}
 			size="small"
 			theme={inputTheme}
 			startIcon={icon}
@@ -199,7 +205,7 @@ export default function SupplierPurchaseFormFields({
 			helperText={errorFor(name)}
 			error={!!errorFor(name)}
 			required={required}
-			disabled={disabled}
+			disabled={disabled || lockedProformaField(name)}
 			fullWidth
 			size="small"
 			theme={inputTheme}
