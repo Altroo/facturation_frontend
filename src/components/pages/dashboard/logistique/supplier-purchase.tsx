@@ -198,7 +198,14 @@ export default function SupplierPurchase({ session, company_id, id }: Logistique
 	}, [currentStep, requestedStep, router]);
 	const isCurrentStep = selectedStep === currentStep;
 	const canEdit = canManage && active && isCurrentStep;
-	const responsible = order?.responsable === userId;
+	const responsible = userId != null && order?.responsable === userId;
+	const pendingProforma = order?.change_requests?.some(
+		(request) =>
+			request.etape === 'proforma' &&
+			request.statut === 'pending' &&
+			request.has_proposal &&
+			(request.demandeur === userId || responsible || company?.role === 'Caissier'),
+	);
 	const creator = order?.created_by_user === userId;
 	const accounting = company?.role === 'Comptable' && order?.paiement_assigne_a === userId;
 	const edit = (mode: PurchaseFormMode, installment?: number) =>
@@ -832,10 +839,15 @@ export default function SupplierPurchase({ session, company_id, id }: Logistique
 														))}
 													</Stack>
 													{!hasUnconfirmedSourceLines &&
-														Math.abs(Number(order.cout_achat) - Number(order.montant_proforma_fournisseur)) > 0.01 && (
-															<Alert severity="warning">
-																Le total des articles diffère du montant de la proforma fournisseur. Vérifiez les
-																quantités, les prix, les remises et les frais du document.
+														Math.round(Number(order.cout_achat) * 100) !==
+															Math.round(Number(order.montant_proforma_fournisseur) * 100) && (
+															<Alert severity={pendingProforma ? 'info' : 'warning'}>
+																Dossier enregistré : total des articles {money(order.cout_achat, order.devise)}, montant
+																de la proforma{' '}
+																{money(order.montant_proforma_fournisseur, order.devise_proforma_fournisseur)}.{' '}
+																{pendingProforma
+																	? 'Consultez les montants proposés dans la demande en attente de validation.'
+																	: 'Vérifiez les quantités, les prix, les remises et les frais du document.'}
 															</Alert>
 														)}
 													{order.notes_ecarts_proforma && (

@@ -178,6 +178,7 @@ export type LogistiqueOrder = {
 		etape: string;
 		remarque: string;
 		has_proposal?: boolean;
+		totaux_proposes?: { articles: string; proforma: string; devise: string } | null;
 		changes?: { field: string; label: string; before: string; after: string; file_url?: string }[];
 		statut: 'pending' | 'approved' | 'rejected' | 'applied';
 		demandeur: number;

@@ -108,3 +108,53 @@ it('lets a company admin review the values and hides decisions from the requeste
 	fireEvent.click(screen.getByRole('button', { name: 'Refuser' }));
 	expect(props.onAction).toHaveBeenCalledWith({ action: 'refuser_modification', demande_id: 3 });
 });
+
+it('puts the assigned requester’s decision and proposed amounts before the comparison', () => {
+	const request = {
+		id: 21,
+		etape: 'proforma',
+		remarque: 'Changement de l’incoterm',
+		demandeur: 8,
+		responsable: 8,
+		demandeur_name: 'Responsable',
+		statut: 'pending' as const,
+		date_created: '',
+		has_proposal: true,
+		totaux_proposes: { articles: '39962.80', proforma: '39962.80', devise: 'EUR' },
+		changes: [{ field: 'incoterm', label: 'Incoterm', before: 'CIF', after: 'CFR' }],
+	};
+	const pendingOrder = { ...order, workflow_version: 2, change_requests: [request] };
+	const { rerender } = render(<SupplierPurchaseSteps {...props} userId={8} order={pendingOrder} />);
+	expect(screen.getByText(/attend votre décision/)).toBeVisible();
+	expect(screen.getByText(/Les deux montants correspondent/)).toHaveTextContent(/39\s?962,80.*39\s?962,80/);
+	expect(
+		screen.getByRole('button', { name: 'Accepter' }).compareDocumentPosition(screen.getByText('CFR')) &
+			Node.DOCUMENT_POSITION_FOLLOWING,
+	).toBeTruthy();
+	expect(screen.queryByText(/lecture seule/)).not.toBeInTheDocument();
+
+	rerender(
+		<SupplierPurchaseSteps
+			{...props}
+			userId={8}
+			order={{
+				...order,
+				change_requests: [{ ...request, totaux_proposes: { ...request.totaux_proposes, articles: '39962.79' } }],
+			}}
+		/>,
+	);
+	expect(screen.getByText(/Vérifiez les prix/)).toHaveTextContent(/39\s?962,79.*39\s?962,80/);
+
+	rerender(<SupplierPurchaseSteps {...props} userId={8} order={{ ...pendingOrder, statut: 'Clôture' }} />);
+	expect(screen.queryByRole('button', { name: 'Accepter' })).not.toBeInTheDocument();
+	expect(screen.getByRole('button', { name: 'Refuser' })).toBeVisible();
+
+	rerender(
+		<SupplierPurchaseSteps {...props} userId={8} order={{ ...pendingOrder, workflow_version: 1, statut: 'Clôture' }} />,
+	);
+	expect(screen.getByRole('button', { name: 'Accepter' })).toBeVisible();
+
+	rerender(<SupplierPurchaseSteps {...props} userId={8} order={{ ...pendingOrder, statut_global: 'Annulé' }} />);
+	expect(screen.getByText(/demande est suspendue/)).toBeVisible();
+	expect(screen.queryByRole('button', { name: /Accepter|Refuser/ })).not.toBeInTheDocument();
+});
