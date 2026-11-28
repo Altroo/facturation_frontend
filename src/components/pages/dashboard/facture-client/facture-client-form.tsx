@@ -25,6 +25,7 @@ import type { TypeFactureLivraisonDevisStatus } from '@/types/devisTypes';
 import type { FactureClass } from '@/models/classes';
 import { useLanguage } from '@/utils/hooks';
 import InvoicePaymentsSection from './invoice-payments-section';
+import { isInvoicePayable } from '@/utils/permissions';
 
 // Configuration for facture client form
 const createFactureClientFormConfig = (t: TranslationDictionary): DocumentFormConfig<FactureClass> => ({
@@ -125,7 +126,7 @@ const FormikContent: FC<FormikContentProps> = ({ token, company_id, id, isEditMo
 						companyId={company_id}
 						factureClientId={id}
 						token={token}
-						canManagePayments={Boolean((role === 'Caissier' || role === 'Commercial') && rawData?.statut === 'Accepté')}
+						canManagePayments={(role === 'Caissier' || role === 'Commercial') && isInvoicePayable(rawData)}
 					/>
 				) : undefined
 			}

@@ -34,7 +34,19 @@ export const InitEffects: FC = () => {
 	// Queries — parameter queries removed (they require company_id, fetched per-company in forms)
 	const { data: user } = useGetProfilQuery(undefined, { skip });
 	const { data: groupes } = useGetGroupsQuery(undefined, { skip });
-	const { data: companies } = useGetUserCompaniesQuery(undefined, { skip });
+	const { data: companies, refetch: refetchCompanies } = useGetUserCompaniesQuery(undefined, {
+		skip,
+		refetchOnFocus: true,
+		refetchOnReconnect: true,
+	});
+
+	useEffect(() => {
+		const isPaymentPage =
+			pathname.startsWith('/dashboard/facture-client/') ||
+			pathname === '/dashboard/reglements' ||
+			pathname.startsWith('/dashboard/reglements/');
+		if (!skip && isPaymentPage) void refetchCompanies();
+	}, [pathname, refetchCompanies, skip]);
 
 	const handleSessionExpired = useEffectEvent(() => {
 		dispatch(initToken());

@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useState, type ReactNode } from 'react';
 import { Provider } from 'react-redux';
+import { setupListeners } from '@reduxjs/toolkit/query';
 import { makeStore, type SagaStore } from '@/store/store';
 import { rootSaga } from '@/store/sagas';
 
@@ -11,7 +12,11 @@ const StoreProvider = ({ children }: { children: ReactNode }) => {
 	useLayoutEffect(() => {
 		// Start after commit, before children dispatch initialization actions in effects.
 		const sagaTask = store.runSaga(rootSaga);
-		return () => sagaTask.cancel();
+		const stopListeners = setupListeners(store.dispatch);
+		return () => {
+			stopListeners();
+			sagaTask.cancel();
+		};
 	}, [store]);
 	return <Provider store={store}>{children}</Provider>;
 };

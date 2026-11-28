@@ -242,15 +242,26 @@ describe('FactureClientViewClient UI and navigation', () => {
 		expect(screen.queryByText('Modifier', { selector: 'button' })).not.toBeInTheDocument();
 	});
 
-	it.each([false, true])('requires an explicit Comptable payment grant (%s)', (granted) => {
+	it.each([
+		{ granted: true, statut: 'Accepté', balance: 25, visible: true },
+		{ granted: true, statut: 'Envoyé', balance: '25.00', visible: true },
+		{ granted: false, statut: 'Accepté', balance: 25, visible: false },
+		{ granted: false, statut: 'Envoyé', balance: 25, visible: false },
+		{ granted: true, statut: 'Brouillon', balance: 25, visible: false },
+		{ granted: true, statut: 'Accepté', balance: '0.00', visible: false },
+	])('shows payment action for Comptable when eligible ($statut, $granted, $balance)', (testCase) => {
+		const { granted, statut, balance, visible } = testCase;
 		(useAppSelector as jest.Mock).mockReturnValue([{ id: 1, role: 'Comptable', can_add_payment: granted }]);
-		useGetFactureClientQuery.mockReturnValue({ isLoading: false, data: { ...mockFacture, statut: 'Accepté' } });
+		useGetFactureClientQuery.mockReturnValue({
+			isLoading: false,
+			data: { ...mockFacture, statut, reste_a_payer: balance },
+		});
 		useGetArticlesListQuery.mockReturnValue({ isLoading: false, data: [mockArticle] });
 
 		renderWithProviders(<FactureClientViewClient {...defaultProps} />);
 
 		expect(screen.getByTestId('invoice-payments-section')).toBeInTheDocument();
-		expect(Boolean(screen.queryByRole('button', { name: 'Ajouter un paiement' }))).toBe(granted);
+		expect(Boolean(screen.queryByRole('button', { name: 'Ajouter un paiement' }))).toBe(visible);
 		expect(screen.queryByRole('button', { name: 'Modifier' })).not.toBeInTheDocument();
 	});
 

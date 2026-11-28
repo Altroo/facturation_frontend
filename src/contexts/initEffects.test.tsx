@@ -41,6 +41,25 @@ describe('InitEffects', () => {
 		(useGetUserCompaniesQuery as jest.Mock).mockReturnValue({ data: undefined });
 	});
 
+	it('refetches company memberships when navigating to an invoice or payment page', () => {
+		(useSession as jest.Mock).mockReturnValue({ data: { accessToken: 'mock-token' }, status: 'authenticated' });
+		const refetch = jest.fn();
+		(useGetUserCompaniesQuery as jest.Mock).mockReturnValue({ refetch });
+		const view = render(<InitEffects />);
+		expect(refetch).not.toHaveBeenCalled();
+		expect(useGetUserCompaniesQuery).toHaveBeenCalledWith(undefined, {
+			skip: false,
+			refetchOnFocus: true,
+			refetchOnReconnect: true,
+		});
+
+		(usePathname as jest.Mock).mockReturnValue('/dashboard/facture-client/12');
+		view.rerender(<InitEffects />);
+		(usePathname as jest.Mock).mockReturnValue('/dashboard/reglements/new');
+		view.rerender(<InitEffects />);
+		expect(refetch).toHaveBeenCalledTimes(2);
+	});
+
 	it('dispatches init tokens when session is authenticated', async () => {
 		const mockSession = { user: { name: 'Test' }, accessToken: 'mock-access-token' };
 		(useSession as jest.Mock).mockReturnValue({ data: mockSession, status: 'authenticated' });

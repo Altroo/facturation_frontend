@@ -27,7 +27,7 @@ import ActionModals from '@/components/htmlElements/modals/actionModal/actionMod
 import CompanyDocumentsWrapperView from '@/components/pages/dashboard/shared/company-documents-view/companyDocumentsWrapperView';
 import type { FactureClientData, FactureClientViewProps as Props } from '@/types/companyDocumentsTypes';
 import InvoicePaymentsSection from './invoice-payments-section';
-import { canAddPayment } from '@/utils/permissions';
+import { canAddPayment, isInvoicePayable } from '@/utils/permissions';
 
 const FactureClientViewClient: FC<Props> = ({ session, company_id, id }) => {
 	const query = useGetFactureClientQuery({ id });
@@ -113,7 +113,7 @@ const FactureClientViewClient: FC<Props> = ({ session, company_id, id }) => {
 	const isDraft = query.data?.statut === 'Brouillon';
 	const canOpenPdf = canPrint && (isDraft || isAccepted);
 	const canValidate = company?.can_validate_factures === true && company?.can_change_document_status === true;
-	const canManagePayments = canAddPayment(company) && isAccepted;
+	const canManagePayments = canAddPayment(company) && isInvoicePayable(query.data);
 
 	const headerActions = (
 		<>
