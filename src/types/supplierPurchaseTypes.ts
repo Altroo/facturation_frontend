@@ -27,6 +27,7 @@ export type PurchaseFormMode =
 export type PurchaseDecision = 'control' | 'request_correction' | 'validate' | 'reject';
 
 export type PurchaseLineValues = {
+	id?: number;
 	origin_name?: string;
 	brand_name?: string;
 	article: number | null;

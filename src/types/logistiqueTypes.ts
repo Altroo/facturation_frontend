@@ -201,6 +201,7 @@ export type LogistiqueOrder = {
 		prochaine_action?: string;
 		preparation_possible?: boolean;
 		proforma_total_editable?: boolean;
+		proforma_lines_editable?: boolean;
 		raison_preparation?: string;
 		conditions?: { value: string; label: string }[];
 		paiements?: { id: number; declencheur: string; demande_possible: boolean; raison_attente: string }[];

@@ -69,6 +69,7 @@ export default function SupplierPurchaseFormFields({
 		order?.is_proforma_step_complete &&
 		(name === 'devise_proforma_fournisseur' ||
 			name === 'condition_achat' ||
+			(name.startsWith('lignes.') && !order.workflow?.proforma_lines_editable) ||
 			(name === 'montant_proforma_fournisseur' && !order.workflow?.proforma_total_editable));
 	const placeholderFor = (name: string, label: string) =>
 		t.logistique.placeholders[name.split('.').at(-1) ?? name] ?? label;

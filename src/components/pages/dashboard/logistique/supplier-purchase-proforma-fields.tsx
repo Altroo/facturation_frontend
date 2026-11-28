@@ -45,6 +45,7 @@ export default function SupplierPurchaseProformaFields({
 	checkbox,
 	hasAnomaly,
 }: SupplierPurchaseProformaFieldsProps) {
+	const validated = !!order?.is_proforma_step_complete;
 	return (
 		<>
 			<FormCard key="proforma" title="Proforma fournisseur" icon={<Description color="primary" />}>
@@ -77,7 +78,9 @@ export default function SupplierPurchaseProformaFields({
 			<FormCard key="lignes" title="Articles de la proforma fournisseur" icon={<Inventory color="primary" />}>
 				{full(
 					<Typography variant="body2" color="text.secondary">
-						Renseignez les quantités et prix d’achat du document fournisseur.
+						{validated && !order.workflow?.proforma_lines_editable
+							? 'Les quantités et prix d’achat sont verrouillés.'
+							: 'Renseignez les quantités et prix d’achat du document fournisseur.'}
 					</Typography>,
 				)}
 				{formik.values.lignes.map((line, index) => {
@@ -121,44 +124,48 @@ export default function SupplierPurchaseProformaFields({
 										onBlur={() => formik.setFieldTouched(`lignes.${index}.article`, true)}
 										helperText={errorFor(`lignes.${index}.article`)}
 										error={!!errorFor(`lignes.${index}.article`)}
-										disabled={disabled}
+										disabled={disabled || validated}
 										required
 										fullWidth
 										size="small"
 										theme={inputTheme}
 										startIcon={<Inventory fontSize="small" />}
 										endIcon={
-											<Button
-												size="small"
-												variant="outlined"
-												disabled={disabled}
-												onClick={() => void addNewArticle()}
-												className={Controls.inlineAction}
-											>
-												{t.common.add}
-											</Button>
+											!validated && (
+												<Button
+													size="small"
+													variant="outlined"
+													disabled={disabled}
+													onClick={() => void addNewArticle()}
+													className={Controls.inlineAction}
+												>
+													{t.common.add}
+												</Button>
+											)
 										}
 										noOptionsText={loadingArticles ? 'Recherche en cours…' : 'Aucun article trouvé'}
 									/>
-									<IconButton
-										size="small"
-										color="error"
-										disabled={disabled}
-										title={t.common.delete}
-										className={Controls.articleDeleteAction}
-										aria-label={`Retirer l’article ${index + 1}`}
-										onClick={() =>
-											formik.setValues((previous) =>
-												withPurchaseLines(
-													previous,
-													previous.lignes.filter((_, position) => position !== index),
-													articles,
-												),
-											)
-										}
-									>
-										<Delete fontSize="small" />
-									</IconButton>
+									{!validated && (
+										<IconButton
+											size="small"
+											color="error"
+											disabled={disabled}
+											title={t.common.delete}
+											className={Controls.articleDeleteAction}
+											aria-label={`Retirer l’article ${index + 1}`}
+											onClick={() =>
+												formik.setValues((previous) =>
+													withPurchaseLines(
+														previous,
+														previous.lignes.filter((_, position) => position !== index),
+														articles,
+													),
+												)
+											}
+										>
+											<Delete fontSize="small" />
+										</IconButton>
+									)}
 								</Box>
 								<Box sx={grid}>
 									{number(`lignes.${index}.quantity`, 'Quantité achetée', <Inventory fontSize="small" />, 3, true)}
@@ -191,29 +198,30 @@ export default function SupplierPurchaseProformaFields({
 							remises et les frais du document avant de valider.
 						</Alert>,
 					)}
-				{full(
-					<PrimaryLoadingButton
-						buttonText="Ajouter un article"
-						size="small"
-						loading={false}
-						active={!disabled}
-						inverted
-						startIcon={<Add />}
-						onClick={() =>
-							formik.setFieldValue('lignes', [
-								...formik.values.lignes,
-								{
-									article: null,
-									article_reference: '',
-									designation: '',
-									quantity: '1',
-									prix_achat: '',
-									expected_emplacement: null,
-								},
-							])
-						}
-					/>,
-				)}
+				{!validated &&
+					full(
+						<PrimaryLoadingButton
+							buttonText="Ajouter un article"
+							size="small"
+							loading={false}
+							active={!disabled}
+							inverted
+							startIcon={<Add />}
+							onClick={() =>
+								formik.setFieldValue('lignes', [
+									...formik.values.lignes,
+									{
+										article: null,
+										article_reference: '',
+										designation: '',
+										quantity: '1',
+										prix_achat: '',
+										expected_emplacement: null,
+									},
+								])
+							}
+						/>,
+					)}
 			</FormCard>
 			<FormCard key="controle" title="Conditions d’achat et contrôle" icon={<CheckCircle color="primary" />}>
 				{full(

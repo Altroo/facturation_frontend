@@ -267,6 +267,7 @@ export default function SupplierPurchaseFormContent({
 		commentaire_paiement: isCorrection ? (installment?.commentaire ?? '') : '',
 		lignes:
 			order?.lignes?.map((line) => ({
+				id: line.id,
 				article: line.article,
 				origin_name: line.expected_emplacement_name ?? '',
 				brand_name: line.marque_name ?? '',
@@ -427,12 +428,17 @@ export default function SupplierPurchaseFormContent({
 							origine_marchandise: values.origine_marchandise,
 							nature_marchandise: values.nature_marchandise,
 							notes_ecarts_proforma: values.notes_ecarts_proforma,
-							lignes: values.lignes.map(({ article, quantity, prix_achat, expected_emplacement }) => ({
-								article,
-								quantity,
-								prix_achat,
-								expected_emplacement,
-							})),
+							...(!order?.is_proforma_step_complete || order.workflow?.proforma_lines_editable
+								? {
+										lignes: values.lignes.map(({ id, article, quantity, prix_achat, expected_emplacement }) => ({
+											...(order?.is_proforma_step_complete ? { id } : {}),
+											article,
+											quantity,
+											prix_achat,
+											expected_emplacement,
+										})),
+									}
+								: {}),
 							...(values.proforma_fournisseur_file
 								? { proforma_fournisseur_file: values.proforma_fournisseur_file }
 								: {}),

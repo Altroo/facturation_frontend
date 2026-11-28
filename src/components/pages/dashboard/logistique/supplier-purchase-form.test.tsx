@@ -670,6 +670,7 @@ it('prefills and proposes a revised total while installments are still unsubmitt
 			proforma_fournisseur_file: '/media/ancien.pdf',
 			lignes: [
 				{
+					id: 41,
 					article: 1,
 					article_reference: 'QA',
 					designation: 'Article QA',
@@ -682,6 +683,7 @@ it('prefills and proposes a revised total while installments are still unsubmitt
 				etape_courante: 'titre',
 				etapes: [{ key: 'proforma', completed: true, accessible: true }],
 				proforma_total_editable: true,
+				proforma_lines_editable: true,
 			},
 		},
 	});
@@ -695,6 +697,10 @@ it('prefills and proposes a revised total while installments are still unsubmitt
 	const total = screen.getByRole('textbox', { name: /Montant total fournisseur/ });
 	await waitFor(() => expect(total).toHaveValue('38\u202f888,89'));
 	expect(total).toBeEnabled();
+	expect(screen.queryByRole('button', { name: 'Ajouter un article' })).not.toBeInTheDocument();
+	const price = screen.getByRole('textbox', { name: /Prix unitaire d’achat/ });
+	expect(price).toBeEnabled();
+	fireEvent.change(price, { target: { value: '38888,90' } });
 	expect(screen.getByText(/Les échéances seront recalculées/)).toBeInTheDocument();
 	expect(screen.queryByText(/diffère de l’échéancier validé/)).not.toBeInTheDocument();
 	fireEvent.change(screen.getByRole('textbox', { name: /Motif de la modification/ }), {
@@ -708,5 +714,6 @@ it('prefills and proposes a revised total while installments are still unsubmitt
 		montant_proforma_fournisseur: '38888.89',
 		devise_proforma_fournisseur: 'EUR',
 		condition_achat: 'advance30_documentary70',
+		lignes: [{ id: 41, article: 1, quantity: '1', prix_achat: '38888.9', expected_emplacement: null }],
 	});
 });
