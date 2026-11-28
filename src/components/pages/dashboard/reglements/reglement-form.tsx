@@ -73,11 +73,12 @@ import {
 } from '@/store/services/parameter';
 import NoPermission from '@/components/shared/noPermission/noPermission';
 import { useGetClientsListQuery } from '@/store/services/client';
+import { canAddPayment } from '@/utils/permissions';
 
 const inputTheme = textInputTheme();
 
 const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
-	const { token, company_id, id, facture_client_id } = props;
+	const { token, company_id, id, facture_client_id, canManagePaymentReferences } = props;
 	const { onSuccess, onError } = useToast();
 	const { t } = useLanguage();
 	const isEditMode = id !== undefined;
@@ -521,7 +522,8 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 											disabled={isEditMode}
 											startIcon={<ReceiptIcon fontSize="small" />}
 											endIcon={
-												!isEditMode && (
+												!isEditMode &&
+												canManagePaymentReferences && (
 													<Button
 														size="small"
 														variant="outlined"
@@ -577,23 +579,25 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 											helperText={formik.touched.mode_reglement ? formik.errors.mode_reglement : ''}
 											startIcon={<PaymentIcon fontSize="small" />}
 											endIcon={
-												<EntityCrudControls
-													label={t.reglements.fieldModeReglement.toLowerCase()}
-													icon={<PaymentIcon fontSize="small" />}
-													inputTheme={inputTheme}
-													selectedItem={selectedModeReglement}
-													addEntity={(args) => addModeReglement({ data: { ...args.data, company: company_id } })}
-													editEntity={({ id: entityId, data }) =>
-														editModeReglement({ id: entityId, data: { ...data, company: company_id } })
-													}
-													deleteEntity={({ id: entityId }) => deleteModeReglement({ id: entityId })}
-													onAddSuccess={(newId) => {
-														void formik.setFieldValue('mode_reglement', newId);
-													}}
-													onDeleteSuccess={() => {
-														void formik.setFieldValue('mode_reglement', null);
-													}}
-												/>
+												canManagePaymentReferences && (
+													<EntityCrudControls
+														label={t.reglements.fieldModeReglement.toLowerCase()}
+														icon={<PaymentIcon fontSize="small" />}
+														inputTheme={inputTheme}
+														selectedItem={selectedModeReglement}
+														addEntity={(args) => addModeReglement({ data: { ...args.data, company: company_id } })}
+														editEntity={({ id: entityId, data }) =>
+															editModeReglement({ id: entityId, data: { ...data, company: company_id } })
+														}
+														deleteEntity={({ id: entityId }) => deleteModeReglement({ id: entityId })}
+														onAddSuccess={(newId) => {
+															void formik.setFieldValue('mode_reglement', newId);
+														}}
+														onDeleteSuccess={() => {
+															void formik.setFieldValue('mode_reglement', null);
+														}}
+													/>
+												)
 											}
 										/>
 										<CustomTextInput
@@ -758,14 +762,22 @@ const ReglementForm: FC<Props> = ({ session, company_id, id, facture_client_id }
 	const { t } = useLanguage();
 
 	const isEditMode = id !== undefined;
+	const canManagePaymentReferences = company?.role === 'Caissier' || company?.role === 'Commercial';
+	const canAccessForm = isEditMode ? canManagePaymentReferences : canAddPayment(company);
 
 	return (
 		<Stack direction="column" sx={{ position: 'relative' }}>
 			<NavigationBar title={isEditMode ? t.reglements.editTitle : t.reglements.addTitle}>
 				<main className={`${Styles.main} ${Styles.fixMobile}`}>
-					{company?.role === 'Caissier' || company?.role === 'Commercial' ? (
+					{canAccessForm ? (
 						<Box sx={{ width: '100%' }}>
-							<FormikContent token={token} id={id} company_id={company_id} facture_client_id={facture_client_id} />
+							<FormikContent
+								token={token}
+								id={id}
+								company_id={company_id}
+								facture_client_id={facture_client_id}
+								canManagePaymentReferences={canManagePaymentReferences}
+							/>
 						</Box>
 					) : (
 						<NoPermission />

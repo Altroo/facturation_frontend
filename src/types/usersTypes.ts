@@ -11,6 +11,7 @@ export type UserCompaniesType = {
 	role: string;
 	can_validate_factures?: boolean;
 	can_change_document_status?: boolean;
+	can_add_payment?: boolean;
 };
 
 export interface UserWithCompaniesResponseType extends UserClass {

@@ -22,6 +22,7 @@ export type ManagedByType = {
 	role: string | null;
 	can_validate_factures?: boolean;
 	can_change_document_status?: boolean;
+	can_add_payment?: boolean;
 };
 
 export type ManagedByWriteOnlyType = {
@@ -29,6 +30,7 @@ export type ManagedByWriteOnlyType = {
 	role: string | null;
 	can_validate_factures?: boolean;
 	can_change_document_status?: boolean;
+	can_add_payment?: boolean;
 };
 
 type ManagedByEntry = {
@@ -38,6 +40,7 @@ type ManagedByEntry = {
 	role: string | null;
 	can_validate_factures?: boolean;
 	can_change_document_status?: boolean;
+	can_add_payment?: boolean;
 };
 
 export type CompanyFormValuesType = {
@@ -77,6 +80,7 @@ export type CompaniesUserCompaniesType = {
 	inventory_management_enabled?: boolean;
 	can_validate_factures?: boolean;
 	can_change_document_status?: boolean;
+	can_add_payment?: boolean;
 };
 
 export type setCompaniesUserSagatype = SagaPayloadType<Array<CompaniesUserCompaniesType>>;
@@ -144,6 +148,7 @@ export type ManagedByTableSectionProps = {
 	onRoleChange: (index: number, newRole: string) => void;
 	onInvoiceValidationChange?: (index: number, checked: boolean) => void;
 	onDocumentStatusChangePermissionChange?: (index: number, checked: boolean) => void;
+	onAddPaymentPermissionChange?: (index: number, checked: boolean) => void;
 	onDelete: (index: number) => void;
 	addSectionProps: AddManagedBySectionProps;
 	showInvoiceValidationPermission?: boolean;

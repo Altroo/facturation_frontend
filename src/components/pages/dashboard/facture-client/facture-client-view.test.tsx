@@ -45,7 +45,9 @@ jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
 
 jest.mock('./invoice-payments-section', () => ({
 	__esModule: true,
-	default: () => <div data-testid="invoice-payments-section">Paiements</div>,
+	default: ({ canManagePayments }: { canManagePayments: boolean }) => (
+		<div data-testid="invoice-payments-section">{canManagePayments && <button>Ajouter un paiement</button>}</div>
+	),
 }));
 
 // Mock selector hook
@@ -238,6 +240,18 @@ describe('FactureClientViewClient UI and navigation', () => {
 
 		renderWithProviders(<FactureClientViewClient {...defaultProps} />);
 		expect(screen.queryByText('Modifier', { selector: 'button' })).not.toBeInTheDocument();
+	});
+
+	it.each([false, true])('requires an explicit Comptable payment grant (%s)', (granted) => {
+		(useAppSelector as jest.Mock).mockReturnValue([{ id: 1, role: 'Comptable', can_add_payment: granted }]);
+		useGetFactureClientQuery.mockReturnValue({ isLoading: false, data: { ...mockFacture, statut: 'Accepté' } });
+		useGetArticlesListQuery.mockReturnValue({ isLoading: false, data: [mockArticle] });
+
+		renderWithProviders(<FactureClientViewClient {...defaultProps} />);
+
+		expect(screen.getByTestId('invoice-payments-section')).toBeInTheDocument();
+		expect(Boolean(screen.queryByRole('button', { name: 'Ajouter un paiement' }))).toBe(granted);
+		expect(screen.queryByRole('button', { name: 'Modifier' })).not.toBeInTheDocument();
 	});
 
 	it('does not show "Modifier" button during loading', () => {

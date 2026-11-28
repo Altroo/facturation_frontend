@@ -25,6 +25,7 @@ export interface ReglementListResponseType extends PaginationResponseType<Reglem
 
 export type ReglementFormFormikContentProps = {
 	token?: string;
+	canManagePaymentReferences: boolean;
 	company_id: number;
 	id?: number;
 	facture_client_id?: number;

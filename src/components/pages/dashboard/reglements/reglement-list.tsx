@@ -54,6 +54,7 @@ import DashboardStatCard from '@/components/shared/dashboardStatCard/dashboardSt
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
 import { useGetCompanyQuery } from '@/store/services/company';
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
+import { canAddPayment } from '@/utils/permissions';
 
 const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 	const { session, company_id, role } = props;
@@ -543,7 +544,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 				</Box>
 				<Divider sx={{ mb: 2 }} />
 			</Box>
-			{(role === 'Caissier' || role === 'Commercial') && (
+			{canAddPayment({ role, can_add_payment: selectedCompany?.can_add_payment }) && (
 				<Box
 					sx={{
 						width: '100%',

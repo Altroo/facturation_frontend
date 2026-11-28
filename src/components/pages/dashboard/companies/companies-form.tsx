@@ -133,6 +133,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 			last_name: u.last_name,
 			can_validate_factures: u.can_validate_factures ?? false,
 			can_change_document_status: u.can_change_document_status ?? false,
+			can_add_payment: u.can_add_payment ?? false,
 		}));
 	})();
 
@@ -210,6 +211,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 		last_name: entry.last_name || '',
 		role: entry.role || '',
 		can_validate_factures: entry.can_validate_factures ?? false,
+		can_add_payment: entry.can_add_payment ?? false,
 	}));
 
 	const managedIds = formik.values.managed_by.map((entry) => entry.pk);
@@ -240,6 +242,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 						last_name: userData.last_name,
 						can_validate_factures: false,
 						can_change_document_status: false,
+						can_add_payment: false,
 					},
 				]);
 				setSelectedUser(null);
@@ -834,6 +837,12 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 								onDocumentStatusChangePermissionChange={(index, checked) => {
 									const updated = formik.values.managed_by.map((entry, i) =>
 										i === index ? { ...entry, can_change_document_status: checked } : entry,
+									);
+									void formik.setFieldValue('managed_by', updated);
+								}}
+								onAddPaymentPermissionChange={(index, checked) => {
+									const updated = formik.values.managed_by.map((entry, i) =>
+										i === index ? { ...entry, can_add_payment: checked } : entry,
 									);
 									void formik.setFieldValue('managed_by', updated);
 								}}

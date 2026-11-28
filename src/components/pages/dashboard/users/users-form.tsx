@@ -116,7 +116,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 			email: rawData?.email ?? '',
 			gender: rawData?.gender ?? '',
 			is_active: rawData?.is_active ?? true,
-			is_staff: rawData?.is_staff ?? true,
+			is_staff: rawData?.is_staff ?? false,
 			avatar: rawData?.avatar ?? '',
 			avatar_cropped: rawData?.avatar ?? '',
 			// Initialize with server companies; Formik will reinitialize when rawData changes
@@ -212,6 +212,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 					role: selectedRole,
 					can_validate_factures: false,
 					can_change_document_status: false,
+					can_add_payment: false,
 				};
 				setCompaniesAdmin([...companiesAdmin, newCompany]);
 				setSelectedCompany(null);
@@ -526,6 +527,12 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
 								onDocumentStatusChangePermissionChange={(index, checked) => {
 									const updatedCompanies = companiesAdmin.map((company, i) =>
 										i === index ? { ...company, can_change_document_status: checked } : company,
+									);
+									setCompaniesAdmin(updatedCompanies);
+								}}
+								onAddPaymentPermissionChange={(index, checked) => {
+									const updatedCompanies = companiesAdmin.map((company, i) =>
+										i === index ? { ...company, can_add_payment: checked } : company,
 									);
 									setCompaniesAdmin(updatedCompanies);
 								}}

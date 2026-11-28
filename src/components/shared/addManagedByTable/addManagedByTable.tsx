@@ -40,6 +40,7 @@ const ManagedByTableSection: FC<ManagedByTableSectionProps> = ({
 	onRoleChange,
 	onInvoiceValidationChange,
 	onDocumentStatusChangePermissionChange,
+	onAddPaymentPermissionChange,
 	onDelete,
 	addSectionProps,
 	showInvoiceValidationPermission = false,
@@ -95,6 +96,9 @@ const ManagedByTableSection: FC<ManagedByTableSectionProps> = ({
 							{showDocumentStatusChangePermission && (
 								<TableCell sx={{ fontWeight: 700 }}>{t.managedByTable.documentStatusChange}</TableCell>
 							)}
+							{onAddPaymentPermissionChange && (
+								<TableCell sx={{ fontWeight: 700 }}>{t.facturesClient.addPayment}</TableCell>
+							)}
 							<TableCell align="right" sx={{ fontWeight: 700 }}>
 								{t.managedByTable.actions}
 							</TableCell>
@@ -108,7 +112,8 @@ const ManagedByTableSection: FC<ManagedByTableSectionProps> = ({
 										headers.length +
 										1 +
 										(showInvoiceValidationPermission ? 1 : 0) +
-										(showDocumentStatusChangePermission ? 1 : 0)
+										(showDocumentStatusChangePermission ? 1 : 0) +
+										(onAddPaymentPermissionChange ? 1 : 0)
 									}
 									align="center"
 									sx={{ py: 4 }}
@@ -201,6 +206,18 @@ const ManagedByTableSection: FC<ManagedByTableSectionProps> = ({
 												onChange={(e) => onDocumentStatusChangePermissionChange?.(index, e.target.checked)}
 												disabled={isUserTable && (item as ManagedByType).id === currentUserId}
 											/>
+										</TableCell>
+									)}
+									{onAddPaymentPermissionChange && (
+										<TableCell>
+											{item.role === 'Comptable' && (
+												<Checkbox
+													checked={item.can_add_payment === true}
+													onChange={(e) => onAddPaymentPermissionChange(index, e.target.checked)}
+													disabled={isUserTable && (item as ManagedByType).id === currentUserId}
+													slotProps={{ input: { 'aria-label': t.facturesClient.addPayment } }}
+												/>
+											)}
 										</TableCell>
 									)}
 									<TableCell align="right">

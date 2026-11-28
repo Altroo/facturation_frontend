@@ -203,6 +203,7 @@ export const companySchema = z.object({
 				pk: requiredNumberField(1),
 				role: requiredTextField(1, 50),
 				can_validate_factures: z.boolean().optional(),
+				can_add_payment: z.boolean().optional(),
 			}),
 		)
 		.optional(),
@@ -233,6 +234,7 @@ export const userSchema = z.object({
 				raison_sociale: z.string(),
 				role: z.string(),
 				can_validate_factures: z.boolean().optional(),
+				can_add_payment: z.boolean().optional(),
 			}),
 		)
 		.optional(),
